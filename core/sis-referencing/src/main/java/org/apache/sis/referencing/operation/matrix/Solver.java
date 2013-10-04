@@ -31,11 +31,19 @@ import org.apache.sis.util.ArraysExt;
  * <p>This class implements the {@link Matrix} interface as an implementation convenience.
  * This implementation details can be ignored.</p>
  *
+ * @author  JAMA team
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
  */
 final class Solver implements Matrix {
+    /**
+     * The size of the (i, j, s) tuples used internally by {@link #solve(MatrixSIS, Matrix, double[], int, int)}
+     * for storing information about the NaN values.
+     */
+    private static final int TUPLE_SIZE = 3;
+
     /**
      * A immutable identity matrix without defined size.
      * This is used only for computing the inverse.
@@ -138,8 +146,12 @@ final class Solver implements Matrix {
     }
 
     /**
-     * Implementation of {@code solve} and {@code inverse} methods.
-     * Use a "left-looking", dot-product, Crout/Doolittle algorithm.
+     * Implementation of {@code solve} and {@code inverse} methods, with filtering of NaN values.
+     * This method searches for NaN values before to attempt solving or inverting the matrix.
+     * If some NaN values are found but the matrix is written in such a way that each NaN value
+     * is used for exactly one ordinate value (i.e. a matrix row is used for a one-dimensional
+     * conversion which is independent of all other dimensions), then we will edit the matrix in
+     * such a way that this NaN value does not prevent the inverse matrix to be computed.
      *
      * <p>This method does <strong>not</strong> checks the matrix size.
      * Check for matrix size shall be performed by the caller like below:</p>
@@ -166,9 +178,139 @@ final class Solver implements Matrix {
     {
         assert (X.getNumRow() == size && X.getNumCol() == size) : size;
         assert (Y.getNumRow() == size && Y.getNumCol() == innerSize) || (Y instanceof Solver);
-
-        final int errorLU = size * size;
         final double[] LU = GeneralMatrix.getExtendedElements(X, size, size, true);
+        final int lastRowOrColumn = size - 1;
+        /*
+         * indexOfNaN array will be created only if at least one NaN value is found, and those NaN meet
+         * the conditions documented in the code below. In such case, the array will contain a sequence
+         * of (i,j,s) where (i,j) are the indices where the NaN value has been found and s is the column
+         * of the scale factor.
+         */
+        int[] indexOfNaN = null;
+        int   indexCount = 0;
+        if (X.isAffine()) {
+            /*
+             * Conservatively search for NaN values only if the matrix looks like an affine transform.
+             * If the matrix is affine, then we will assume that we can interpret the last column as
+             * translation terms and other columns as scale factors.
+             */
+searchNaN:  for (int j=lastRowOrColumn; --j>=0;) {  // Skip the last row, since it is (0, 0, ..., 1).
+                for (int i=size; --i>=0;) {         // Scan all columns, including the translation terms.
+                    if (Double.isNaN(LU[j*size + i])) {
+                        /*
+                         * Found a NaN value. First, if we are not in the translation column, ensure
+                         * that the column contains only zero values except on the current line.
+                         */
+                        int columnOfScale = -1;
+                        if (i != lastRowOrColumn) {                // Enter only if this column is not for translations.
+                            columnOfScale = i;                     // The non-translation element is the scale factor.
+                            for (int k=lastRowOrColumn; --k>=0;) { // Scan all other rows in the current column.
+                                if (k != j && LU[k*size + i] != 0) {
+                                    // Found a non-zero element in the current column.
+                                    // We can not proceed - cancel everything.
+                                    indexOfNaN = null;
+                                    indexCount = 0;
+                                    break searchNaN;
+                                }
+                            }
+                        }
+                        /*
+                         * Next, ensure that the row contains only zero elements except for
+                         * the scale factor and the offset (the element in the translation
+                         * column, which is not checked by the loop below).
+                         */
+                        for (int k=lastRowOrColumn; --k>=0;) {
+                            if (k != i && LU[j*size + k] != 0) {
+                                if (columnOfScale >= 0) {
+                                    // If there is more than 1 non-zero element,
+                                    // abandon the attempt to handle NaN values.
+                                    indexOfNaN = null;
+                                    indexCount = 0;
+                                    break searchNaN;
+                                }
+                                columnOfScale = k;
+                            }
+                        }
+                        /*
+                         * At this point, the NaN element has been determined as replaceable.
+                         * Remember its index; the replacement will be performed later.
+                         */
+                        if (indexOfNaN == null) {
+                            indexOfNaN = new int[lastRowOrColumn * (2*TUPLE_SIZE)]; // At most one scale and one offset per row.
+                        }
+                        indexOfNaN[indexCount++] = i;
+                        indexOfNaN[indexCount++] = j;
+                        indexOfNaN[indexCount++] = columnOfScale; // May be -1 (while uncommon)
+                        assert (indexCount % TUPLE_SIZE) == 0;
+                    }
+                }
+            }
+            /*
+             * If there is any NaN value to edit, replace them by 0 if they appear in the translation column
+             * or by 1 otherwise (scale or shear). We perform this replacement after the loop searching for
+             * NaN, not inside the loop, in order to not change anything if the search has been canceled.
+             */
+            for (int k=0; k<indexCount; k += TUPLE_SIZE) {
+                final int i = indexOfNaN[k  ];
+                final int j = indexOfNaN[k+1];
+                final int flatIndex = j*size + i;
+                LU[flatIndex] = (i == lastRowOrColumn) ? 0 : 1;
+                LU[flatIndex + size*size] = 0; // Error term (see 'errorLU') in next method.
+            }
+        }
+        /*
+         * Now apply the inversion.
+         */
+        final MatrixSIS matrix = solve(LU, Y, eltY, size, innerSize);
+        /*
+         * At this point, the matrix has been inverted. If they were any NaN value in the original
+         * matrix, set the corresponding scale factor and offset to NaN in the resulting matrix.
+         */
+        for (int k=0; k<indexCount;) {
+            assert (k % TUPLE_SIZE) == 0;
+            final int i = indexOfNaN[k++];
+            final int j = indexOfNaN[k++];
+            final int s = indexOfNaN[k++];
+            if (i != lastRowOrColumn) {
+                // Found a scale factor to set to NaN.
+                matrix.setElement(i, j, Double.NaN); // Note that i,j indices are interchanged.
+                if (matrix.getElement(i, lastRowOrColumn) != 0) {
+                    matrix.setElement(i, lastRowOrColumn, Double.NaN); // = -offset/scale, so 0 stay 0.
+                }
+            } else if (s >= 0) {
+                // Found a translation factory to set to NaN.
+                matrix.setElement(s, lastRowOrColumn, Double.NaN);
+            }
+        }
+        return matrix;
+    }
+
+    /**
+     * Implementation of {@code solve} and {@code inverse} methods.
+     * This method contains the code ported from the JAMA package.
+     * Use a "left-looking", dot-product, Crout/Doolittle algorithm.
+     *
+     * <p>This method does <strong>not</strong> checks the matrix size.
+     * It is caller's responsibility to ensure that the following hold:</p>
+     *
+     * {@preformat java
+     *   X.getNumRow() == size;
+     *   X.getNumCol() == size;
+     *   Y.getNumRow() == size;
+     *   Y.getNumCol() == innerSize;
+     * }
+     *
+     * @param  LU        Elements of the {@code X} matrix to invert, including error terms.
+     * @param  Y         The desired result of {@code X} × <var>U</var>.
+     * @param  eltY      Elements and error terms of the {@code Y} matrix, or {@code null} if not available.
+     * @param  size      The value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
+     * @param  innerSize The value of {@code Y.getNumCol()}.
+     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
+     */
+    private static MatrixSIS solve(final double[] LU, final Matrix Y, final double[] eltY,
+            final int size, final int innerSize) throws NoninvertibleMatrixException
+    {
+        final int errorLU = size * size;
         assert errorLU == GeneralMatrix.indexOfErrors(size, size, LU);
         final int[] pivot = new int[size];
         for (int j=0; j<size; j++) {
