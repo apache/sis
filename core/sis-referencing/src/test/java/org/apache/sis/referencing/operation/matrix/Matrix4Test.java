@@ -115,12 +115,10 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
          * We have a slight residu in the longitude translation term because of the
          * prime meridian shift - we will set this residu to zero for this test.
          *
-         * Note that the 'isIdentity(0)' test fail if the double-double arithmetic is
+         * Note that the 'isIdentity()' test fail if the double-double arithmetic is
          * disabled, because some scale factors will be 0.9999999999999999 instead of 1.
          */
         final MatrixSIS result = step3.multiply(step2).multiply(step1);
-        assertEquals("translateX", 0, result.getElement(0,3), 1E-32);
-        result.setElement(0,3, 0);
-        assertTrue("isIdentity(0)", Matrices.isIdentity(result, 0));
+        assertTrue("isIdentity()", result.isIdentity());
     }
 }

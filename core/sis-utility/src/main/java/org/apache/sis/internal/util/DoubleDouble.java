@@ -421,6 +421,20 @@ public final class DoubleDouble extends Number {
         value += otherValue;
         error += v - (value + (v -= value)) + (otherValue + v);
         error += otherError;
+        if (value == 0 && error != 0) {
+            /*
+             * The two values almost cancelled, only their error terms are different.
+             * The number of significand bits (mantissa) in the IEEE 'double' representation is 52,
+             * not counting the hidden bit. So estimate the accuracy of the double-double number as
+             * the accuracy of the 'double' value (which is 1 ULP) scaled as if we had 50 additional
+             * significand bits (we ignore 2 bits as a safety margin). If the error is not greater
+             * than that value, then assume that it is not significant.
+             */
+            if (Math.abs(error) <= Math.scalb(Math.ulp(otherValue), -50)) {
+                error = 0;
+                return;
+            }
+        }
         normalize();
     }
 
@@ -622,11 +636,11 @@ public final class DoubleDouble extends Number {
      * {@section Implementation}
      * If <var>a</var> and <var>b</var> are {@code DoubleDouble} instances, then we estimate:
      *
-     *   <blockquote>(a / b) = (a.value / b.value) + remaining / b</blockquote>
+     *   <blockquote>(a / b) = (a.value / b.value) + remainder / b</blockquote>
      *
      * where:
      *
-     *   <blockquote>remaining = a - b * (a.value / b.value)</blockquote>
+     *   <blockquote>remainder = a - b * (a.value / b.value)</blockquote>
      *
      * @param numeratorValue The other value to divide by this {@code DoubleDouble}.
      * @param numeratorError The error of the other value to divide by this {@code DoubleDouble}.
@@ -644,14 +658,14 @@ public final class DoubleDouble extends Number {
         final double quotient = numeratorValue / denominatorValue;
         multiply(quotient, 0);
         /*
-         * Compute 'remaining' as 'a - above_product'.
+         * Compute 'remainder' as 'a - above_product'.
          */
         final double productError = error;
         setToSum(numeratorValue, -value);
         error -= productError;  // Complete the above subtraction
         error += numeratorError;
         /*
-         * Adds the 'remaining / b' term, using 'remaining / b.value' as an approximation
+         * Adds the 'remainder / b' term, using 'remainder / b.value' as an approximation
          * (otherwise we would have to invoke this method recursively). The approximation
          * is assumed okay since the second term is small compared to the first one.
          */
