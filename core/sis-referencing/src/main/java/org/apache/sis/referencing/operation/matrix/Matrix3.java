@@ -90,19 +90,13 @@ public final class Matrix3 extends MatrixSIS {
      * @param m21 The second matrix element in the third row.
      * @param m22 The third matrix element in the third row.
      */
-    public Matrix3(double m00, double m01, double m02,
-                   double m10, double m11, double m12,
-                   double m20, double m21, double m22)
+    public Matrix3(final double m00, final double m01, final double m02,
+                   final double m10, final double m11, final double m12,
+                   final double m20, final double m21, final double m22)
     {
-        this.m00 = m00;
-        this.m01 = m01;
-        this.m02 = m02;
-        this.m10 = m10;
-        this.m11 = m11;
-        this.m12 = m12;
-        this.m20 = m20;
-        this.m21 = m21;
-        this.m22 = m22;
+        this.m00 = m00;    this.m01 = m01;    this.m02 = m02;
+        this.m10 = m10;    this.m11 = m11;    this.m12 = m12;
+        this.m20 = m20;    this.m21 = m21;    this.m22 = m22;
     }
 
     /**
@@ -111,6 +105,9 @@ public final class Matrix3 extends MatrixSIS {
      *
      * @param elements Elements of the matrix. Column indices vary fastest.
      * @throws IllegalArgumentException If the given array does not have the expected length.
+     *
+     * @see #setElements(double[])
+     * @see Matrices#create(int, int, double[])
      */
     public Matrix3(final double[] elements) throws IllegalArgumentException {
         setElements(elements);
@@ -240,11 +237,20 @@ public final class Matrix3 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        return new double[] {
-            m00, m01, m02,
-            m10, m11, m12,
-            m20, m21, m22
-        };
+        final double[] elements = new double[SIZE*SIZE];
+        getElements(elements);
+        return elements;
+    }
+
+    /**
+     * Copies the matrix elements in the given flat array.
+     * The array length shall be at least 9, may also be 18.
+     */
+    @Override
+    final void getElements(final double[] elements) {
+        elements[0] = m00;    elements[1] = m01;    elements[2] = m02;
+        elements[3] = m10;    elements[4] = m11;    elements[5] = m12;
+        elements[6] = m20;    elements[7] = m21;    elements[8] = m22;
     }
 
     /**
@@ -254,15 +260,9 @@ public final class Matrix3 extends MatrixSIS {
     @Override
     public final void setElements(final double[] elements) {
         ensureLengthMatch(SIZE*SIZE, elements);
-        m00 = elements[0];
-        m01 = elements[1];
-        m02 = elements[2];
-        m10 = elements[3];
-        m11 = elements[4];
-        m12 = elements[5];
-        m20 = elements[6];
-        m21 = elements[7];
-        m22 = elements[8];
+        m00 = elements[0];    m01 = elements[1];    m02 = elements[2];
+        m10 = elements[3];    m11 = elements[4];    m12 = elements[5];
+        m20 = elements[6];    m21 = elements[7];    m22 = elements[8];
     }
 
     /**
