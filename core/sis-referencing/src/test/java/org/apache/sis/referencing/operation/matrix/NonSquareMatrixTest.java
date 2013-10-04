@@ -81,6 +81,14 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     }
 
     /**
+     * TODO: inverse transform not yet implemented for non-square matrix.
+     */
+    @Override
+    @org.junit.Ignore
+    public void testSolve() throws NoninvertibleMatrixException {
+    }
+
+    /**
      * Prints the statistics about the differences between JAMA and SIS matrix elements.
      * Those statistics will be visible only if {@link #verbose} is {@code true}.
      */

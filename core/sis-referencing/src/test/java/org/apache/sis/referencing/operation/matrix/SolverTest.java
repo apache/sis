@@ -109,7 +109,7 @@ public final strictfp class SolverTest extends TestCase {
                 out.println(e); // "Matrix is singular."
                 continue;
             }
-            final MatrixSIS U = Solver.solve(matrix, matrixArg, matrixArg.getNumRow(), matrixArg.getNumCol());
+            final MatrixSIS U = Solver.solve(matrix, matrixArg);
             MatrixTestCase.assertMatrixEquals(jama, U, TOLERANCE);
         }
     }

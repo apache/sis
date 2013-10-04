@@ -238,26 +238,6 @@ public final class Matrix1 extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(SIZE, matrix, nc);
-        if (m00 == 0) {
-            throw new NoninvertibleMatrixException();
-        }
-        if (nc != SIZE) {
-            final NonSquareMatrix m = new NonSquareMatrix(SIZE, nc, false, 1);
-            for (int i=0; i<nc; i++) {
-                m.elements[i] = matrix.getElement(0, i) / m00;
-            }
-            return m;
-        }
-        return new Matrix1(matrix.getElement(0,0) / m00);
-    }
-
-    /**
      * Returns {@code true} if the specified object is of type {@code Matrix1} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *
