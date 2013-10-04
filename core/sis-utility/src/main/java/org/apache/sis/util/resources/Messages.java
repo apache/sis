@@ -55,6 +55,11 @@ public final class Messages extends IndexedResourceBundle {
         }
 
         /**
+         * {0} “{1}” is already registered. The second instance will be ignored.
+         */
+        public static final int AlreadyRegistered_2 = 5;
+
+        /**
          * Changed the container capacity from {0} to {1} elements.
          */
         public static final int ChangedContainerCapacity_2 = 0;

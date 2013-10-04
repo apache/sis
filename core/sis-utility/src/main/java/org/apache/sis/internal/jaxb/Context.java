@@ -25,6 +25,9 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
@@ -401,12 +404,42 @@ public final class Context extends MarshalContext {
     }
 
     /**
+     * Convenience method for sending a warning for the given message from the {@link Errors} or {@link Messages}
+     * resources. The message will be logged at {@link Level#WARNING}.
+     *
+     * @param context   The current context, or {@code null} if none.
+     * @param source    The object that emitted a warning. Can not be null.
+     * @param classe    The class to declare as the warning source.
+     * @param method    The name of the method to declare as the warning source.
+     * @param resources Either {@code Errors.class} or {@code Messages.class}.
+     * @param key       The resource keys as one of the constants defined in the {@code Keys} inner class.
+     * @param arguments The arguments to be given to {@code MessageFormat} for formatting the log message.
+     */
+    public static void warningOccured(final Context context, final Object source, final Class<?> classe, final String method,
+            final Class<? extends IndexedResourceBundle> resources, final int key, final Object... arguments)
+    {
+        final Locale locale = context != null ? context.getLocale() : null;
+        final IndexedResourceBundle bundle;
+        if (resources == Errors.class) {
+            bundle = Errors.getResources(locale);
+        } else if (resources == Messages.class) {
+            bundle = Messages.getResources(locale);
+        } else {
+            throw new IllegalArgumentException(String.valueOf(resources));
+        }
+        final LogRecord warning = bundle.getLogRecord(Level.WARNING, key, arguments);
+        warning.setSourceClassName(classe.getCanonicalName());
+        warning.setSourceMethodName(method);
+        warningOccured(context, source, warning);
+    }
+
+    /**
      * Convenience method for sending a warning for the given exception.
      * The logger will be {@code "org.apache.sis.xml"}.
      *
      * @param context The current context, or {@code null} if none.
      * @param source  The object that emitted a warning. Can not be null.
-     * @param classe  The name of the class to declare as the warning source.
+     * @param classe  The class to declare as the warning source.
      * @param method  The name of the method to declare as the warning source.
      * @param cause   The exception which occurred.
      * @param warning {@code true} for {@link Level#WARNING}, or {@code false} for {@link Level#FILE}.

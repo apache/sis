@@ -58,9 +58,11 @@ import org.junit.BeforeClass;
     org.apache.sis.math.StatisticsFormatTest.class,
     org.apache.sis.internal.util.UtilitiesTest.class,
     org.apache.sis.internal.util.NumericsTest.class,
+    org.apache.sis.internal.util.DoubleDoubleTest.class,
     org.apache.sis.internal.jdk8.JDK8Test.class,
 
     // Collections.
+    org.apache.sis.internal.util.CheckedArrayListTest.class,
     org.apache.sis.internal.system.ReferenceQueueConsumerTest.class,
     org.apache.sis.util.collection.WeakHashSetTest.class,
     org.apache.sis.util.collection.WeakValueHashMapTest.class,

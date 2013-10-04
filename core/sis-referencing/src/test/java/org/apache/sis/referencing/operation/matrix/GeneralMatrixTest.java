@@ -16,7 +16,8 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
-import org.apache.sis.test.DependsOn;
+import java.util.Random;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -30,17 +31,19 @@ import static org.junit.Assert.*;
  * @version 0.4
  * @module
  */
-@DependsOn(SolverTest.class)
 public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     /**
      * Number of rows and columns.
      */
-    private final int size;
+    private int size;
 
     /**
-     * Creates a test with a random size for the square matrix.
+     * Computes a random size for the next matrix to create.
+     *
+     * @param random The random number generator to use.
      */
-    public GeneralMatrixTest() {
+    @Override
+    void prepareNewMatrixSize(final Random random) {
         size = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
     }
 
@@ -54,5 +57,40 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     void validate(final MatrixSIS matrix) {
         super.validate(matrix);
         assertEquals(GeneralMatrix.class, matrix.getClass());
+    }
+
+    /**
+     * Tests {@link GeneralMatrix#getExtendedElements(Matrix, int, int, boolean)}.
+     * This test verifies that {@code getExtendedElements} can infer default error
+     * terms for some well known values.
+     *
+     * @see Matrix2Test#testGetExtendedElements()
+     */
+    @Test
+    public void testGetExtendedElements() {
+        testGetExtendedElements(new GeneralMatrix(2, 2, new double[] {
+                StrictMath.PI / 180, // Degrees to radians
+                180 / StrictMath.PI, // Radians to degrees
+                0.9,                 // Gradians to degrees
+                0.1234567}));        // Random value with no special meaning.
+    }
+
+    /**
+     * Implementation of {@link #testGetExtendedElements()} shared by {@link Matrix2Test}.
+     */
+    static void testGetExtendedElements(final MatrixSIS matrix) {
+        final double[] elements = GeneralMatrix.getExtendedElements(matrix, Matrix2.SIZE, Matrix2.SIZE, false);
+        assertArrayEquals(new double[] {
+                // Same values than in the above matrix.
+                StrictMath.PI / 180,
+                180 / StrictMath.PI,
+                0.9,
+                0.1234567,
+
+                // Values below this point are error terms copied from DoubleDouble.ERRORS.
+                 2.9486522708701687E-19,
+                -1.9878495670576283E-15,
+                -2.2204460492503132E-17,
+                 0}, elements, STRICT);
     }
 }

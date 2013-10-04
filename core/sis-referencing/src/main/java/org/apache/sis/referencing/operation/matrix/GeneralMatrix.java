@@ -21,10 +21,17 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.internal.util.DoubleDouble;
 
 
 /**
  * A two dimensional array of numbers. Row and column numbering begins with zero.
+ *
+ * {@section Support for extended precision}
+ * This class can optionally support extended precision using the <cite>double-double arithmetic</cite>.
+ * In extended precision mode, the {@link #elements} array have twice its normal length. The first half
+ * of the array contains the same value than in normal precision mode, while the second half contains
+ * the {@link DoubleDouble#error}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
@@ -42,6 +49,10 @@ class GeneralMatrix extends MatrixSIS {
     /**
      * All matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is <code>{@linkplain #numRow} * {@linkplain #numCol}</code>.
+     *
+     * <p>In <cite>extended precision mode</cite>, the length of this array is actually twice the above-cited length.
+     * The first half contains {@link DoubleDouble#value}, and the second half contains the {@link DoubleDouble#error}
+     * for each value in the first half.</p>
      */
     final double[] elements;
 
@@ -60,12 +71,14 @@ class GeneralMatrix extends MatrixSIS {
      * @param numCol Number of columns.
      * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
      *        or {@code false} for leaving it initialized to zero.
+     * @param precision 1 for normal precision, or 2 for extended precision.
+     *        No other value is allowed (this is not verified).
      */
-    GeneralMatrix(final int numRow, final int numCol, final boolean setToIdentity) {
+    GeneralMatrix(final int numRow, final int numCol, final boolean setToIdentity, final int precision) {
         ensureValidSize(numRow, numCol);
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
-        elements = new double[numRow * numCol];
+        elements = new double[numRow * numCol * precision];
         if (setToIdentity) {
             final int stop = Math.min(numRow, numCol) * numCol;
             for (int i=0; i<stop; i += numCol+1) {
@@ -85,7 +98,7 @@ class GeneralMatrix extends MatrixSIS {
      */
     GeneralMatrix(final int numRow, final int numCol, final double[] elements) {
         ensureValidSize(numRow, numCol);
-        ensureLengthMatch(numRow*numCol, elements);
+        ensureLengthMatch(numRow * numCol, elements);
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
         this.elements = elements.clone();
@@ -103,11 +116,7 @@ class GeneralMatrix extends MatrixSIS {
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
         elements = new double[numRow * numCol];
-        for (int k=0,j=0; j<numRow; j++) {
-            for (int i=0; i<numCol; i++) {
-                elements[k++] = matrix.getElement(j, i);
-            }
-        }
+        getElements(matrix, numRow, numCol, elements);
     }
 
     /**
@@ -117,6 +126,64 @@ class GeneralMatrix extends MatrixSIS {
         numRow   = matrix.numRow;
         numCol   = matrix.numCol;
         elements = matrix.elements.clone();
+    }
+
+    /**
+     * Creates a new extended precision matrix of the given size.
+     *
+     * @param numRow Number of rows.
+     * @param numCol Number of columns.
+     */
+    static GeneralMatrix createExtendedPrecision(final int numRow, final int numCol) {
+        if (numRow == numCol) {
+            return new GeneralMatrix(numRow, numCol, false, 2);
+        } else {
+            return new NonSquareMatrix(numRow, numCol, false, 2);
+        }
+    }
+
+    /**
+     * Copies the elements of the given matrix in the given array.
+     * This method ignores the error terms, if any.
+     *
+     * @param matrix   The matrix to copy.
+     * @param numRow   The number of rows to copy (usually {@code matrix.getNumRow()}).
+     * @param numCol   The number of columns to copy (usually {@code matrix.getNumCol()}).
+     * @param elements Where to copy the elements.
+     */
+    private static void getElements(final Matrix matrix, final int numRow, final int numCol, final double[] elements) {
+        if (matrix instanceof MatrixSIS) {
+            ((MatrixSIS) matrix).getElements(elements);
+        } else {
+            for (int k=0,j=0; j<numRow; j++) {
+                for (int i=0; i<numCol; i++) {
+                    elements[k++] = matrix.getElement(j, i);
+                }
+            }
+        }
+    }
+
+    /**
+     * Infers all {@link DoubleDouble#error} with a default values inferred from {@link DoubleDouble#value}.
+     * For example if a matrix element is exactly 3.141592653589793, there is good chances that the user's
+     * intend was to specify the {@link Math#PI} value, in which case this method will infer that we would
+     * need to add 1.2246467991473532E-16 in order to get a value closer to π.
+     */
+    private static void inferErrors(final double[] elements) {
+        final int length = elements.length / 2;
+        for (int i=length; i<elements.length; i++) {
+            elements[i] = DoubleDouble.errorForWellKnownValue(elements[i - length]);
+        }
+    }
+
+    /**
+     * Returns the index of the first {@link DoubleDouble#error} value in the {@link #elements} array,
+     * or 0 if none. This method returns a non-zero value only if the matrix has been created in extended
+     * precision mode.
+     */
+    static int indexOfErrors(final int numRow, final int numCol, final double[] elements) {
+        assert elements.length % (numRow * numCol) == 0;
+        return (numRow * numCol) % elements.length; // A % B is for getting 0 without branching if A == B.
     }
 
     /**
@@ -169,10 +236,45 @@ class GeneralMatrix extends MatrixSIS {
     @Override
     public final void setElement(final int row, final int column, final double value) {
         if (row >= 0 && row < numRow && column >= 0 && column < numCol) {
-            elements[row * numCol + column] = value;
+            int i = row * numCol + column;
+            elements[i] = value;
+            i += numRow * numCol;
+            if (i < elements.length) {
+                elements[i] = DoubleDouble.errorForWellKnownValue(value);
+            }
         } else {
             throw indexOutOfBounds(row, column);
         }
+    }
+
+    /**
+     * Returns all elements of the given matrix followed by the error terms for extended-precision arithmetic.
+     * The array will have twice the normal length. See {@link #elements} for more discussion.
+     *
+     * <p>This method may return a direct reference to the internal array. <strong>Do not modify.</strong>,
+     * unless the {@code copy} argument is {@code true}.</p>
+     *
+     * @param copy If {@code true}, then the returned array is guaranteed to be a copy, never the internal array.
+     */
+    static double[] getExtendedElements(final Matrix matrix, final int numRow, final int numCol, final boolean copy) {
+        double[] elements;
+        final int length = numRow * numCol * 2;
+        if (matrix instanceof GeneralMatrix) {
+            elements = ((GeneralMatrix) matrix).elements;
+            if (elements.length == length) {
+                if (copy) {
+                    elements = elements.clone();
+                }
+                return elements; // Internal array already uses extended precision.
+            } else {
+                elements = Arrays.copyOf(elements, length);
+            }
+        } else {
+            elements = new double[length];
+            getElements(matrix, numRow, numCol, elements);
+        }
+        inferErrors(elements);
+        return elements;
     }
 
     /**
@@ -180,27 +282,45 @@ class GeneralMatrix extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        return elements.clone();
+        return Arrays.copyOf(elements, numRow*numCol);
+    }
+
+    /**
+     * Copies the matrix elements in the given flat array. This method does not verify the array length,
+     * since the destination array may contain room for {@link DoubleDouble#error} terms.
+     */
+    @Override
+    final void getElements(final double[] dest) {
+        System.arraycopy(elements, 0, dest, 0, numRow*numCol);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public final void setElements(final double[] elements) {
-        ensureLengthMatch(this.elements.length, elements);
-        System.arraycopy(elements, 0, this.elements, 0, elements.length);
+    public final void setElements(final double[] newValues) {
+        ensureLengthMatch(numRow*numCol, newValues);
+        System.arraycopy(newValues, 0, elements, 0, newValues.length);
+        if (elements.length != newValues.length) {
+            inferErrors(newValues);
+        }
     }
 
     /**
      * {@inheritDoc}
+     *
+     * <p>This method does not check the error terms, because those terms are not visible to the user
+     * (they can not appear in the value returned by {@link #getElement(int, int)}, and are not shown
+     * by {@link #toString()}) - returning {@code false} while the matrix clearly looks like affine
+     * would be confusing for the user. Furthermore, the errors can be non-zero only in the very last
+     * element and that value always smaller than 2.3E-16.</p>
      */
     @Override
     public final boolean isAffine() {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
         if (numRow == numCol) {
-            int i = elements.length;
+            int i = numRow * numCol;
             if (elements[--i] == 1) {
                 final int base = (numRow - 1) * numCol;
                 while (--i >= base) {
@@ -216,6 +336,16 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * <p>This method does not check the error terms, because those terms are not visible to the user
+     * (they can not appear in the value returned by {@link #getElement(int, int)}, and are not shown
+     * by {@link #toString()}) - returning {@code false} while the matrix clearly looks like identity
+     * would be confusing for the user. Furthermore, the errors can be non-zero only on the diagonal,
+     * and those values always smaller than 2.3E-16.</p>
+     *
+     * <p>An other argument is that the extended precision is for reducing rounding errors during
+     * matrix arithmetics. But since the user provided the original data as {@code double} values,
+     * the extra precision usually have no "real" meaning.</p>
      */
     @Override
     public final boolean isIdentity() {
@@ -225,7 +355,8 @@ class GeneralMatrix extends MatrixSIS {
             return false;
         }
         int di = 0; // Index of next diagonal element.
-        for (int i=0; i<elements.length; i++) {
+        final int length = numRow * numCol;
+        for (int i=0; i<length; i++) {
             final double element = elements[i];
             if (i == di) {
                 if (element != 1) return false;
@@ -247,15 +378,24 @@ class GeneralMatrix extends MatrixSIS {
     public void transpose() {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
+        final int errors = indexOfErrors(numRow, numCol, elements); // Where error values start, or 0 if none.
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<j; i++) {
-                ArraysExt.swap(elements, j*numCol + i, i*numCol + j);
+                final int lo = j*numCol + i;
+                final int up = i*numCol + j;
+                ArraysExt.swap(elements, lo, up);
+                if (errors != 0) {
+                    // Swap also the error terms in extended precision mode.
+                    ArraysExt.swap(elements, lo + errors, up + errors);
+                }
             }
         }
     }
 
     /**
      * {@inheritDoc}
+     *
+     * <p>The current implementation discards the extended precision, if any.</p>
      */
     @Override
     public final void normalizeColumns() {
@@ -271,45 +411,49 @@ class GeneralMatrix extends MatrixSIS {
                 elements[j*numCol + i] /= m;
             }
         }
+        Arrays.fill(elements, numRow * numCol, elements.length, 0);
     }
 
     /**
-     * {@inheritDoc}
+     * Sets this matrix to the product of the given matrices: {@code this = A × B}.
+     * The matrix sizes much match - this is not verified unless assertions are enabled.
      */
-    @Override
-    public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        return Solver.inverse(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final MatrixSIS multiply(final Matrix matrix) {
+    final void setToProduct(final MatrixSIS A, final Matrix B) {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(numCol, matrix, nc);
-        final MatrixSIS result = Matrices.createZero(numRow, nc);
-        for (int j=0; j<numRow; j++) {
-            final int srcOff = j * numCol;
-            for (int i=0; i<nc; i++) {
-                double sum = 0;
-                for (int k=0; k<numCol; k++) {
-                    sum += elements[srcOff + k] * matrix.getElement(k, i);
+        final int nc = A.getNumCol();
+        assert B.getNumRow() == nc;
+        assert numRow == A.getNumRow() && numCol == B.getNumCol();
+        /*
+         * Get the matrix element values, together with the error terms if the matrix
+         * use extended precision (double-double arithmetic).
+         */
+        final double[] eltA   = getExtendedElements(A, numRow, nc, false);
+        final double[] eltB   = getExtendedElements(B, nc, numCol, false);
+        final int errorOffset = numRow * numCol; // Where error terms start.
+        final int errA        = numRow * nc;
+        final int errB        = nc * numCol;
+        /*
+         * Compute the product, to be stored directly in 'this'.
+         */
+        final DoubleDouble dot = new DoubleDouble();
+        final DoubleDouble sum = new DoubleDouble();
+        for (int k=0,j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                sum.clear();
+                int iB = i;       // Index of values in a single column of B.
+                int iA = j * nc;  // Index of values in a single row of A.
+                final int nextRow = iA + nc;
+                while (iA < nextRow) {
+                    dot.setFrom (eltA, iA, errA);
+                    dot.multiply(eltB, iB, errB);
+                    sum.add(dot);
+                    iB += numCol; // Move to next row of B.
+                    iA++;         // Move to next column of A.
                 }
-                result.setElement(j, i, sum);
+                sum.storeTo(elements, k++, errorOffset);
             }
         }
-        return result;
     }
 
     /**
