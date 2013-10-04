@@ -43,6 +43,20 @@
  *
  * <p><center><img src="doc-files/AffineTransform.png"></center></p>
  *
+ * {@section Extended floating point precision}
+ * This package uses extended floating point precision for most arithmetic operations like matrix multiplications and
+ * inversions. SIS needs extended precision because <cite>affine transforms</cite> concatenations like conversion from
+ * degrees to radians, followed by some operations, followed by conversion back from radians to degrees, are very frequent.
+ * Without extended precision, we often obtain values like 0.99999… where we would expect an identity transform.
+ * The usual workaround - namely comparing the floating point values with a small <var>epsilon</var> tolerance value -
+ * is dangerous in this particular case because <cite>datum shifts</cite>, when expressed as a matrix from their
+ * {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}, are very close to the
+ * identity transform.
+ *
+ * <p>The current implementation uses
+ * <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">double-double
+ * arithmetic</a>. However this may change in any future SIS version.</p>
+ *
  * {@section Related projects}
  * This package is <strong>not</strong> designed for large matrices, and is rooted in
  * {@code org.apache.sis.referencing} for making clearer that this is not a general-purpose library.

@@ -44,9 +44,10 @@ final class NonSquareMatrix extends GeneralMatrix {
      * @param numCol Number of columns.
      * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
      *        or {@code false} for leaving it initialized to zero.
+     * @param precision 1 for normal precision, or 2 for extended precision.
      */
-    NonSquareMatrix(final int numRow, final int numCol, final boolean setToIdentity) {
-        super(numRow, numCol, setToIdentity);
+    NonSquareMatrix(final int numRow, final int numCol, final boolean setToIdentity, final int precision) {
+        super(numRow, numCol, setToIdentity, precision);
     }
 
     /**
@@ -79,39 +80,23 @@ final class NonSquareMatrix extends GeneralMatrix {
     }
 
     /**
-     * Initializes this matrix to the product of the given matrices.
-     * This constructor shall be invoked only when the result is known to be a non-square matrix.
-     */
-    NonSquareMatrix(final Matrix A, final Matrix B) {
-        super(A.getNumRow(), B.getNumCol(), false);
-        final int numRow = this.numRow; // Protection against accidental changes.
-        final int numCol = this.numCol;
-        final int common = A.getNumCol();
-        ensureNumRowMatch(common, B, numCol);
-        int offset = 0;
-        for (int j=0; j<numRow; j++) {
-            for (int i=0; i<numCol; i++) {
-                double sum = 0;
-                for (int k=0; k<common; k++) {
-                    sum += A.getElement(j, k) * B.getElement(k, i);
-                }
-                elements[offset++] = sum;
-            }
-        }
-    }
-
-    /**
      * Sets the value of this matrix to its transpose.
      */
     @Override
     public void transpose() {
         final short numRow = this.numRow; // Protection against accidental changes before we are done.
         final short numCol = this.numCol;
+        final int   errors = indexOfErrors(numRow, numCol, elements); // Where error values start, or 0 if none.
         final double[] copy = elements.clone();
         int k = 0;
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
-                elements[i*numRow + j] = copy[k++];
+                final int t = i*numRow + j;
+                elements[t] = copy[k];
+                if (errors != 0) {
+                    elements[t + errors] = copy[k + errors];
+                }
+                k++;
             }
         }
         this.numRow = numCol;

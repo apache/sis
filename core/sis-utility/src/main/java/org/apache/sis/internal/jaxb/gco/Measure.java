@@ -19,8 +19,6 @@ package org.apache.sis.internal.jaxb.gco;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlValue;
@@ -165,11 +163,8 @@ public final class Measure {
      */
     public void setUnit(final Unit<?> newUnit) {
         if (unit != null && !unit.equals(newUnit)) {
-            final LogRecord record = Errors.getResources(null)
-                    .getLogRecord(Level.WARNING, Errors.Keys.IncompatiblePropertyValue_1, unit);
-            record.setSourceClassName(getClass().getName());
-            record.setSourceMethodName("setUnit");
-            Context.warningOccured(Context.current(), this, record);
+            Context.warningOccured(Context.current(), this, getClass(), "setUnit",
+                    Errors.class, Errors.Keys.IncompatiblePropertyValue_1, unit);
         }
         unit = newUnit;
     }

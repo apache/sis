@@ -90,19 +90,13 @@ public final class Matrix3 extends MatrixSIS {
      * @param m21 The second matrix element in the third row.
      * @param m22 The third matrix element in the third row.
      */
-    public Matrix3(double m00, double m01, double m02,
-                   double m10, double m11, double m12,
-                   double m20, double m21, double m22)
+    public Matrix3(final double m00, final double m01, final double m02,
+                   final double m10, final double m11, final double m12,
+                   final double m20, final double m21, final double m22)
     {
-        this.m00 = m00;
-        this.m01 = m01;
-        this.m02 = m02;
-        this.m10 = m10;
-        this.m11 = m11;
-        this.m12 = m12;
-        this.m20 = m20;
-        this.m21 = m21;
-        this.m22 = m22;
+        this.m00 = m00;    this.m01 = m01;    this.m02 = m02;
+        this.m10 = m10;    this.m11 = m11;    this.m12 = m12;
+        this.m20 = m20;    this.m21 = m21;    this.m22 = m22;
     }
 
     /**
@@ -111,6 +105,9 @@ public final class Matrix3 extends MatrixSIS {
      *
      * @param elements Elements of the matrix. Column indices vary fastest.
      * @throws IllegalArgumentException If the given array does not have the expected length.
+     *
+     * @see #setElements(double[])
+     * @see Matrices#create(int, int, double[])
      */
     public Matrix3(final double[] elements) throws IllegalArgumentException {
         setElements(elements);
@@ -129,6 +126,24 @@ public final class Matrix3 extends MatrixSIS {
                 setElement(j,i, matrix.getElement(j,i));
             }
         }
+    }
+
+    /**
+     * Casts or copies the given matrix to a {@code Matrix3} implementation. If the given {@code matrix}
+     * is already an instance of {@code Matrix3}, then it is returned unchanged. Otherwise this method
+     * verifies the matrix size, then copies all elements in a new {@code Matrix3} object.
+     *
+     * @param  matrix The matrix to cast or copy, or {@code null}.
+     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     * @throws MismatchedMatrixSizeException If the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     */
+    public static Matrix3 castOrCopy(final Matrix matrix) throws MismatchedMatrixSizeException {
+        if (matrix == null || matrix instanceof Matrix3) {
+            return (Matrix3) matrix;
+        }
+        ensureSizeMatch(SIZE, matrix);
+        return new Matrix3(matrix);
     }
 
     /*
@@ -222,11 +237,20 @@ public final class Matrix3 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        return new double[] {
-            m00, m01, m02,
-            m10, m11, m12,
-            m20, m21, m22
-        };
+        final double[] elements = new double[SIZE*SIZE];
+        getElements(elements);
+        return elements;
+    }
+
+    /**
+     * Copies the matrix elements in the given flat array.
+     * The array length shall be at least 9, may also be 18.
+     */
+    @Override
+    final void getElements(final double[] elements) {
+        elements[0] = m00;    elements[1] = m01;    elements[2] = m02;
+        elements[3] = m10;    elements[4] = m11;    elements[5] = m12;
+        elements[6] = m20;    elements[7] = m21;    elements[8] = m22;
     }
 
     /**
@@ -236,15 +260,9 @@ public final class Matrix3 extends MatrixSIS {
     @Override
     public final void setElements(final double[] elements) {
         ensureLengthMatch(SIZE*SIZE, elements);
-        m00 = elements[0];
-        m01 = elements[1];
-        m02 = elements[2];
-        m10 = elements[3];
-        m11 = elements[4];
-        m12 = elements[5];
-        m20 = elements[6];
-        m21 = elements[7];
-        m22 = elements[8];
+        m00 = elements[0];    m01 = elements[1];    m02 = elements[2];
+        m10 = elements[3];    m11 = elements[4];    m12 = elements[5];
+        m20 = elements[6];    m21 = elements[7];    m22 = elements[8];
     }
 
     /**
@@ -286,44 +304,6 @@ public final class Matrix3 extends MatrixSIS {
         v[0]=m00; v[1]=m10; v[2]=m20; m = MathFunctions.magnitude(v); m00 /= m; m10 /= m; m20 /= m;
         v[0]=m01; v[1]=m11; v[2]=m21; m = MathFunctions.magnitude(v); m01 /= m; m11 /= m; m21 /= m;
         v[0]=m02; v[1]=m12; v[2]=m22; m = MathFunctions.magnitude(v); m02 /= m; m12 /= m; m22 /= m;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        return Solver.inverse(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS multiply(final Matrix matrix) {
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(SIZE, matrix, nc);
-        if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix);
-        }
-        final Matrix3 k = (matrix instanceof Matrix3) ? (Matrix3) matrix : new Matrix3(matrix);
-        return new Matrix3(m00 * k.m00  +  m01 * k.m10  +  m02 * k.m20,
-                           m00 * k.m01  +  m01 * k.m11  +  m02 * k.m21,
-                           m00 * k.m02  +  m01 * k.m12  +  m02 * k.m22,
-                           m10 * k.m00  +  m11 * k.m10  +  m12 * k.m20,
-                           m10 * k.m01  +  m11 * k.m11  +  m12 * k.m21,
-                           m10 * k.m02  +  m11 * k.m12  +  m12 * k.m22,
-                           m20 * k.m00  +  m21 * k.m10  +  m22 * k.m20,
-                           m20 * k.m01  +  m21 * k.m11  +  m22 * k.m21,
-                           m20 * k.m02  +  m21 * k.m12  +  m22 * k.m22);
     }
 
     /**

@@ -105,27 +105,15 @@ public final class Matrix4 extends MatrixSIS {
      * @param m32 The third matrix element in the forth row.
      * @param m33 The forth matrix element in the forth row.
      */
-    public Matrix4(double m00, double m01, double m02, double m03,
-                   double m10, double m11, double m12, double m13,
-                   double m20, double m21, double m22, double m23,
-                   double m30, double m31, double m32, double m33)
+    public Matrix4(final double m00, final double m01, final double m02, final double m03,
+                   final double m10, final double m11, final double m12, final double m13,
+                   final double m20, final double m21, final double m22, final double m23,
+                   final double m30, final double m31, final double m32, final double m33)
     {
-        this.m00 = m00;
-        this.m01 = m01;
-        this.m02 = m02;
-        this.m03 = m03;
-        this.m10 = m10;
-        this.m11 = m11;
-        this.m12 = m12;
-        this.m13 = m13;
-        this.m20 = m20;
-        this.m21 = m21;
-        this.m22 = m22;
-        this.m23 = m23;
-        this.m30 = m30;
-        this.m31 = m31;
-        this.m32 = m32;
-        this.m33 = m33;
+        this.m00 = m00;    this.m01 = m01;    this.m02 = m02;    this.m03 = m03;
+        this.m10 = m10;    this.m11 = m11;    this.m12 = m12;    this.m13 = m13;
+        this.m20 = m20;    this.m21 = m21;    this.m22 = m22;    this.m23 = m23;
+        this.m30 = m30;    this.m31 = m31;    this.m32 = m32;    this.m33 = m33;
     }
 
     /**
@@ -134,6 +122,9 @@ public final class Matrix4 extends MatrixSIS {
      *
      * @param elements Elements of the matrix. Column indices vary fastest.
      * @throws IllegalArgumentException If the given array does not have the expected length.
+     *
+     * @see #setElements(double[])
+     * @see Matrices#create(int, int, double[])
      */
     public Matrix4(final double[] elements) throws IllegalArgumentException {
         setElements(elements);
@@ -147,12 +138,30 @@ public final class Matrix4 extends MatrixSIS {
      * @param matrix The matrix to copy.
      * @throws IllegalArgumentException if the given matrix is not of the expected size.
      */
-    public Matrix4(final Matrix matrix) throws IllegalArgumentException {
+    Matrix4(final Matrix matrix) throws IllegalArgumentException {
         for (int j=0; j<SIZE; j++) {
             for (int i=0; i<SIZE; i++) {
                 setElement(j,i, matrix.getElement(j,i));
             }
         }
+    }
+
+    /**
+     * Casts or copies the given matrix to a {@code Matrix4} implementation. If the given {@code matrix}
+     * is already an instance of {@code Matrix4}, then it is returned unchanged. Otherwise this method
+     * verifies the matrix size, then copies all elements in a new {@code Matrix4} object.
+     *
+     * @param  matrix The matrix to cast or copy, or {@code null}.
+     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     * @throws MismatchedMatrixSizeException If the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     */
+    public static Matrix4 castOrCopy(final Matrix matrix) throws MismatchedMatrixSizeException {
+        if (matrix == null || matrix instanceof Matrix4) {
+            return (Matrix4) matrix;
+        }
+        ensureSizeMatch(SIZE, matrix);
+        return new Matrix4(matrix);
     }
 
     /*
@@ -260,12 +269,21 @@ public final class Matrix4 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        return new double[] {
-            m00, m01, m02, m03,
-            m10, m11, m12, m13,
-            m20, m21, m22, m23,
-            m30, m31, m32, m33
-        };
+        final double[] elements = new double[SIZE*SIZE];
+        getElements(elements);
+        return elements;
+    }
+
+    /**
+     * Copies the matrix elements in the given flat array.
+     * The array length shall be at least 16, may also be 32.
+     */
+    @Override
+    final void getElements(final double[] elements) {
+        elements[ 0] = m00;    elements[ 1] = m01;    elements[ 2] = m02;    elements[ 3] = m03;
+        elements[ 4] = m10;    elements[ 5] = m11;    elements[ 6] = m12;    elements[ 7] = m13;
+        elements[ 8] = m20;    elements[ 9] = m21;    elements[10] = m22;    elements[11] = m23;
+        elements[12] = m30;    elements[13] = m31;    elements[14] = m32;    elements[15] = m33;
     }
 
     /**
@@ -275,22 +293,10 @@ public final class Matrix4 extends MatrixSIS {
     @Override
     public final void setElements(final double[] elements) {
         ensureLengthMatch(SIZE*SIZE, elements);
-        m00 = elements[ 0];
-        m01 = elements[ 1];
-        m02 = elements[ 2];
-        m03 = elements[ 3];
-        m10 = elements[ 4];
-        m11 = elements[ 5];
-        m12 = elements[ 6];
-        m13 = elements[ 7];
-        m20 = elements[ 8];
-        m21 = elements[ 9];
-        m22 = elements[10];
-        m23 = elements[11];
-        m30 = elements[12];
-        m31 = elements[13];
-        m32 = elements[14];
-        m33 = elements[15];
+        m00 = elements[ 0];    m01 = elements[ 1];    m02 = elements[ 2];    m03 = elements[ 3];
+        m10 = elements[ 4];    m11 = elements[ 5];    m12 = elements[ 6];    m13 = elements[ 7];
+        m20 = elements[ 8];    m21 = elements[ 9];    m22 = elements[10];    m23 = elements[11];
+        m30 = elements[12];    m31 = elements[13];    m32 = elements[14];    m33 = elements[15];
     }
 
     /**
@@ -337,51 +343,6 @@ public final class Matrix4 extends MatrixSIS {
         v[0]=m01; v[1]=m11; v[2]=m21; v[3]=m31; m = MathFunctions.magnitude(v); m01 /= m; m11 /= m; m21 /= m; m31 /= m;
         v[0]=m02; v[1]=m12; v[2]=m22; v[3]=m32; m = MathFunctions.magnitude(v); m02 /= m; m12 /= m; m22 /= m; m32 /= m;
         v[0]=m03; v[1]=m13; v[2]=m23; v[3]=m33; m = MathFunctions.magnitude(v); m03 /= m; m13 /= m; m23 /= m; m33 /= m;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        return Solver.inverse(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS multiply(final Matrix matrix) {
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(SIZE, matrix, nc);
-        if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix);
-        }
-        final Matrix4 k = (matrix instanceof Matrix4) ? (Matrix4) matrix : new Matrix4(matrix);
-        return new Matrix4(m00 * k.m00  +  m01 * k.m10  +  m02 * k.m20  +  m03 * k.m30,
-                           m00 * k.m01  +  m01 * k.m11  +  m02 * k.m21  +  m03 * k.m31,
-                           m00 * k.m02  +  m01 * k.m12  +  m02 * k.m22  +  m03 * k.m32,
-                           m00 * k.m03  +  m01 * k.m13  +  m02 * k.m23  +  m03 * k.m33,
-                           m10 * k.m00  +  m11 * k.m10  +  m12 * k.m20  +  m13 * k.m30,
-                           m10 * k.m01  +  m11 * k.m11  +  m12 * k.m21  +  m13 * k.m31,
-                           m10 * k.m02  +  m11 * k.m12  +  m12 * k.m22  +  m13 * k.m32,
-                           m10 * k.m03  +  m11 * k.m13  +  m12 * k.m23  +  m13 * k.m33,
-                           m20 * k.m00  +  m21 * k.m10  +  m22 * k.m20  +  m23 * k.m30,
-                           m20 * k.m01  +  m21 * k.m11  +  m22 * k.m21  +  m23 * k.m31,
-                           m20 * k.m02  +  m21 * k.m12  +  m22 * k.m22  +  m23 * k.m32,
-                           m20 * k.m03  +  m21 * k.m13  +  m22 * k.m23  +  m23 * k.m33,
-                           m30 * k.m00  +  m31 * k.m10  +  m32 * k.m20  +  m33 * k.m30,
-                           m30 * k.m01  +  m31 * k.m11  +  m32 * k.m21  +  m33 * k.m31,
-                           m30 * k.m02  +  m31 * k.m12  +  m32 * k.m22  +  m33 * k.m32,
-                           m30 * k.m03  +  m31 * k.m13  +  m32 * k.m23  +  m33 * k.m33);
     }
 
     /**

@@ -84,6 +84,9 @@ public final class Matrix1 extends MatrixSIS {
      *
      * @param elements Elements of the matrix.
      * @throws IllegalArgumentException If the given array does not have the expected length.
+     *
+     * @see #setElements(double[])
+     * @see Matrices#create(int, int, double[])
      */
     public Matrix1(final double[] elements) throws IllegalArgumentException {
         setElements(elements);
@@ -98,6 +101,24 @@ public final class Matrix1 extends MatrixSIS {
      */
     Matrix1(final Matrix matrix) {
         m00 = matrix.getElement(0,0);
+    }
+
+    /**
+     * Casts or copies the given matrix to a {@code Matrix1} implementation. If the given {@code matrix}
+     * is already an instance of {@code Matrix1}, then it is returned unchanged. Otherwise this method
+     * verifies the matrix size, then copies the element in a new {@code Matrix1} object.
+     *
+     * @param  matrix The matrix to cast or copy, or {@code null}.
+     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     * @throws MismatchedMatrixSizeException If the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     */
+    public static Matrix1 castOrCopy(final Matrix matrix) throws MismatchedMatrixSizeException {
+        if (matrix == null || matrix instanceof Matrix1) {
+            return (Matrix1) matrix;
+        }
+        ensureSizeMatch(SIZE, matrix);
+        return new Matrix1(matrix);
     }
 
     /*
@@ -173,7 +194,18 @@ public final class Matrix1 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        return new double[] {m00};
+        final double[] elements = new double[SIZE*SIZE];
+        getElements(elements);
+        return elements;
+    }
+
+    /**
+     * Copies the matrix elements in the given flat array.
+     * The array length shall be at least 1, may also be 2.
+     */
+    @Override
+    final void getElements(final double[] elements) {
+        elements[0] = m00;
     }
 
     /**
@@ -217,50 +249,6 @@ public final class Matrix1 extends MatrixSIS {
     @Override
     public void normalizeColumns() {
         m00 = 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        if (m00 == 0) {
-            throw new NoninvertibleMatrixException();
-        }
-        return new Matrix1(1 / m00);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(SIZE, matrix, nc);
-        if (m00 == 0) {
-            throw new NoninvertibleMatrixException();
-        }
-        if (nc != SIZE) {
-            final NonSquareMatrix m = new NonSquareMatrix(SIZE, nc, false);
-            for (int i=0; i<nc; i++) {
-                m.elements[i] = matrix.getElement(0, i) / m00;
-            }
-            return m;
-        }
-        return new Matrix1(matrix.getElement(0,0) / m00);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS multiply(final Matrix matrix) {
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(SIZE, matrix, nc);
-        if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix);
-        }
-        return new Matrix1(m00 * matrix.getElement(0,0));
     }
 
     /**

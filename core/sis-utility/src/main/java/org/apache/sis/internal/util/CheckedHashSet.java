@@ -41,7 +41,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see Collections#checkedSet(Set, Class)
@@ -98,6 +98,14 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
     @Override
     public boolean add(final E element) throws IllegalArgumentException {
         if (!type.isInstance(element)) {
+            if (CheckedArrayList.warning(this, element, type)) {
+                /*
+                 * If a unmarshalling process is under way, silently discard null element.
+                 * This case happen when a XML element for a collection contains no child.
+                 * See https://issues.apache.org/jira/browse/SIS-139
+                 */
+                return false;
+            }
             ensureNonNull("element", element);
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass()));
