@@ -81,10 +81,8 @@ public final class Matrix2 extends MatrixSIS {
     public Matrix2(final double m00, final double m01,
                    final double m10, final double m11)
     {
-        this.m00 = m00;
-        this.m01 = m01;
-        this.m10 = m10;
-        this.m11 = m11;
+        this.m00 = m00;    this.m01 = m01;
+        this.m10 = m10;    this.m11 = m11;
     }
 
     /**
@@ -93,6 +91,9 @@ public final class Matrix2 extends MatrixSIS {
      *
      * @param elements Elements of the matrix. Column indices vary fastest.
      * @throws IllegalArgumentException If the given array does not have the expected length.
+     *
+     * @see #setElements(double[])
+     * @see Matrices#create(int, int, double[])
      */
     public Matrix2(final double[] elements) throws IllegalArgumentException {
         setElements(elements);
@@ -110,6 +111,24 @@ public final class Matrix2 extends MatrixSIS {
         m01 = matrix.getElement(0,1);
         m10 = matrix.getElement(1,0);
         m11 = matrix.getElement(1,1);
+    }
+
+    /**
+     * Casts or copies the given matrix to a {@code Matrix2} implementation. If the given {@code matrix}
+     * is already an instance of {@code Matrix2}, then it is returned unchanged. Otherwise this method
+     * verifies the matrix size, then copies all elements in a new {@code Matrix2} object.
+     *
+     * @param  matrix The matrix to cast or copy, or {@code null}.
+     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     * @throws MismatchedMatrixSizeException If the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     */
+    public static Matrix2 castOrCopy(final Matrix matrix) throws MismatchedMatrixSizeException {
+        if (matrix == null || matrix instanceof Matrix2) {
+            return (Matrix2) matrix;
+        }
+        ensureSizeMatch(SIZE, matrix);
+        return new Matrix2(matrix);
     }
 
     /*
@@ -193,7 +212,19 @@ public final class Matrix2 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        return new double[] {m00, m01, m10, m11};
+        final double[] elements = new double[SIZE*SIZE];
+        getElements(elements);
+        return elements;
+    }
+
+    /**
+     * Copies the matrix elements in the given flat array.
+     * The array length shall be at least 4, may also be 8.
+     */
+    @Override
+    final void getElements(final double[] elements) {
+        elements[0] = m00;    elements[1] = m01;
+        elements[2] = m10;    elements[3] = m11;
     }
 
     /**
@@ -203,10 +234,8 @@ public final class Matrix2 extends MatrixSIS {
     @Override
     public final void setElements(final double[] elements) {
         ensureLengthMatch(SIZE*SIZE, elements);
-        m00 = elements[0];
-        m01 = elements[1];
-        m10 = elements[2];
-        m11 = elements[3];
+        m00 = elements[0];    m01 = elements[1];
+        m10 = elements[2];    m11 = elements[3];
     }
 
     /**
@@ -244,44 +273,6 @@ public final class Matrix2 extends MatrixSIS {
         double m;
         m = Math.hypot(m00, m10); m00 /= m; m10 /= m;
         m = Math.hypot(m01, m11); m01 /= m; m11 /= m;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        final double det = m00*m11 - m01*m10;
-        if (det == 0) {
-            throw new NoninvertibleMatrixException();
-        }
-        return new Matrix2(m11 / det, -m01 / det,
-                          -m10 / det,  m00 / det);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS multiply(final Matrix matrix) {
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(SIZE, matrix, nc);
-        if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix);
-        }
-        final Matrix2 k = (matrix instanceof Matrix2) ? (Matrix2) matrix : new Matrix2(matrix);
-        return new Matrix2(m00 * k.m00  +  m01 * k.m10,
-                           m00 * k.m01  +  m01 * k.m11,
-                           m10 * k.m00  +  m11 * k.m10,
-                           m10 * k.m01  +  m11 * k.m11);
     }
 
     /**

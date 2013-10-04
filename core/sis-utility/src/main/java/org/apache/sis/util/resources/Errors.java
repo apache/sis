@@ -456,6 +456,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NonInvertibleConversion = 82;
 
         /**
+         * Non invertible {0}×{1} matrix.
+         */
+        public static final int NonInvertibleMatrix_2 = 124;
+
+        /**
          * Transform is not invertible.
          */
         public static final int NonInvertibleTransform = 83;

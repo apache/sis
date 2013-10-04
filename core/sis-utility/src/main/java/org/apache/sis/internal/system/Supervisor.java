@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import javax.management.MBeanServer;
@@ -32,12 +33,14 @@ import javax.management.MBeanParameterInfo;
 import javax.management.MBeanConstructorInfo;
 import javax.management.JMException;
 import javax.management.NotCompliantMBeanException;
+import javax.management.InstanceAlreadyExistsException;
 import java.lang.management.ManagementFactory;
 
 import org.apache.sis.setup.About;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.TreeTable;
 
 
@@ -87,8 +90,13 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
                 final ObjectName n = new ObjectName(NAME);
                 server.registerMBean(new Supervisor(null, null), n);
                 name = n; // Store only on success.
+            } catch (InstanceAlreadyExistsException e) {
+                final LogRecord record = Messages.getResources(null)
+                        .getLogRecord(Level.CONFIG, Messages.Keys.AlreadyRegistered_2, "MBean", NAME);
+                record.setLoggerName("org.apache.sis");
+                Logging.log(Supervisor.class, "register", record);
             } catch (Exception e) { // (SecurityException | JMException) on the JDK7 branch.
-                Logging.unexpectedException(Logger.getLogger("org.apache.sis"), Supervisor.class, "register", e);
+                Logging.unexpectedException(Logging.getLogger("org.apache.sis"), Supervisor.class, "register", e);
             }
         }
     }

@@ -94,9 +94,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     static void ensureNumRowMatch(final int expected, final Matrix matrix, final int numCol) {
         final int actual = matrix.getNumRow();
         if (actual != expected) {
-            final Integer n = numCol;
             throw new MismatchedMatrixSizeException(Errors.format(
-                    Errors.Keys.MismatchedMatrixSize_4, expected, n, actual, n));
+                    Errors.Keys.MismatchedMatrixSize_4, expected, "⒩", actual, numCol));
         }
     }
 
@@ -108,12 +107,43 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Casts or copies the given matrix to a SIS implementation. If {@code matrix} is already
+     * an instance of {@code MatrixSIS}, then it is returned unchanged. Otherwise all elements
+     * are copied in a new {@code MatrixSIS} object.
+     *
+     * @param  matrix The matrix to cast or copy, or {@code null}.
+     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     *
+     * @see Matrices#copy(Matrix)
+     */
+    public static MatrixSIS castOrCopy(final Matrix matrix) {
+        if (matrix == null || matrix instanceof MatrixSIS) {
+            return (MatrixSIS) matrix;
+        }
+        return Matrices.copy(matrix);
+    }
+
+    /**
      * Returns a copy of all matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *
      * @return A copy of all current matrix elements in a row-major array.
      */
     public abstract double[] getElements();
+
+    /**
+     * Stores all matrix elements in the given flat array. This method does not verify the array length.
+     * All subclasses in this {@code org.apache.sis.referencing.operation.matrix} package override this
+     * method with a more efficient implementation.
+     *
+     * @param dest The destination array. May be longer than necessary (this happen when the caller needs to
+     *             append {@link org.apache.sis.internal.util.DoubleDouble#error} values after the elements).
+     */
+    void getElements(final double[] dest) {
+        final double[] elements = getElements();
+        System.arraycopy(elements, 0, dest, 0, elements.length);
+    }
 
     /**
      * Sets all matrix elements from a flat, row-major (column indices vary fastest) array.
@@ -186,7 +216,15 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @throws MismatchedMatrixSizeException if the number of rows in the given matrix is not equals to the
      *         number of columns in this matrix.
      */
-    public abstract MatrixSIS multiply(Matrix matrix) throws MismatchedMatrixSizeException;
+    public MatrixSIS multiply(final Matrix matrix) throws MismatchedMatrixSizeException {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final int nc = matrix.getNumCol();
+        ensureNumRowMatch(numCol, matrix, nc);
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(numRow, nc);
+        result.setToProduct(this, matrix);
+        return result;
+    }
 
     /**
      * Returns the value of <var>U</var> which solves {@code this} × <var>U</var> = {@code matrix}.
@@ -199,7 +237,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *         to the number of columns in this matrix.
      * @throws NoninvertibleMatrixException if this matrix is not invertible.
      */
-    public abstract MatrixSIS solve(Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException;
+    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
+        return Solver.solve(this, matrix);
+    }
 
     /**
      * Returns the inverse of this matrix.
@@ -209,7 +249,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @see java.awt.geom.AffineTransform#createInverse()
      */
-    public abstract MatrixSIS inverse() throws NoninvertibleMatrixException;
+    public MatrixSIS inverse() throws NoninvertibleMatrixException {
+        return Solver.inverse(this);
+    }
 
     /**
      * Compares the given matrices for equality, using the given absolute tolerance threshold.
