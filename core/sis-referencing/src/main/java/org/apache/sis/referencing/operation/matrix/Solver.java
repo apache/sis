@@ -193,56 +193,58 @@ final class Solver implements Matrix {
              * Conservatively search for NaN values only if the matrix looks like an affine transform.
              * If the matrix is affine, then we will assume that we can interpret the last column as
              * translation terms and other columns as scale factors.
+             *
+             * Note: the iteration below skips the last row, since it is (0, 0, ..., 1).
              */
-searchNaN:  for (int j=lastRowOrColumn; --j>=0;) {  // Skip the last row, since it is (0, 0, ..., 1).
-                for (int i=size; --i>=0;) {         // Scan all columns, including the translation terms.
-                    if (Double.isNaN(LU[j*size + i])) {
-                        /*
-                         * Found a NaN value. First, if we are not in the translation column, ensure
-                         * that the column contains only zero values except on the current line.
-                         */
-                        int columnOfScale = -1;
-                        if (i != lastRowOrColumn) {                // Enter only if this column is not for translations.
-                            columnOfScale = i;                     // The non-translation element is the scale factor.
-                            for (int k=lastRowOrColumn; --k>=0;) { // Scan all other rows in the current column.
-                                if (k != j && LU[k*size + i] != 0) {
-                                    // Found a non-zero element in the current column.
-                                    // We can not proceed - cancel everything.
-                                    indexOfNaN = null;
-                                    indexCount = 0;
-                                    break searchNaN;
-                                }
+searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
+                if (Double.isNaN(LU[flatIndex])) {
+                    final int j = flatIndex / size;
+                    final int i = flatIndex % size;
+                    /*
+                     * Found a NaN value. First, if we are not in the translation column, ensure
+                     * that the column contains only zero values except on the current line.
+                     */
+                    int columnOfScale = -1;
+                    if (i != lastRowOrColumn) {                // Enter only if this column is not for translations.
+                        columnOfScale = i;                     // The non-translation element is the scale factor.
+                        for (int k=lastRowOrColumn; --k>=0;) { // Scan all other rows in the current column.
+                            if (k != j && LU[k*size + i] != 0) {
+                                // Found a non-zero element in the current column.
+                                // We can not proceed - cancel everything.
+                                indexOfNaN = null;
+                                indexCount = 0;
+                                break searchNaN;
                             }
                         }
-                        /*
-                         * Next, ensure that the row contains only zero elements except for
-                         * the scale factor and the offset (the element in the translation
-                         * column, which is not checked by the loop below).
-                         */
-                        for (int k=lastRowOrColumn; --k>=0;) {
-                            if (k != i && LU[j*size + k] != 0) {
-                                if (columnOfScale >= 0) {
-                                    // If there is more than 1 non-zero element,
-                                    // abandon the attempt to handle NaN values.
-                                    indexOfNaN = null;
-                                    indexCount = 0;
-                                    break searchNaN;
-                                }
-                                columnOfScale = k;
-                            }
-                        }
-                        /*
-                         * At this point, the NaN element has been determined as replaceable.
-                         * Remember its index; the replacement will be performed later.
-                         */
-                        if (indexOfNaN == null) {
-                            indexOfNaN = new int[lastRowOrColumn * (2*TUPLE_SIZE)]; // At most one scale and one offset per row.
-                        }
-                        indexOfNaN[indexCount++] = i;
-                        indexOfNaN[indexCount++] = j;
-                        indexOfNaN[indexCount++] = columnOfScale; // May be -1 (while uncommon)
-                        assert (indexCount % TUPLE_SIZE) == 0;
                     }
+                    /*
+                     * Next, ensure that the row contains only zero elements except for
+                     * the scale factor and the offset (the element in the translation
+                     * column, which is not checked by the loop below).
+                     */
+                    for (int k=lastRowOrColumn; --k>=0;) {
+                        if (k != i && LU[j*size + k] != 0) {
+                            if (columnOfScale >= 0) {
+                                // If there is more than 1 non-zero element,
+                                // abandon the attempt to handle NaN values.
+                                indexOfNaN = null;
+                                indexCount = 0;
+                                break searchNaN;
+                            }
+                            columnOfScale = k;
+                        }
+                    }
+                    /*
+                     * At this point, the NaN element has been determined as replaceable.
+                     * Remember its index; the replacement will be performed later.
+                     */
+                    if (indexOfNaN == null) {
+                        indexOfNaN = new int[lastRowOrColumn * (2*TUPLE_SIZE)]; // At most one scale and one offset per row.
+                    }
+                    indexOfNaN[indexCount++] = i;
+                    indexOfNaN[indexCount++] = j;
+                    indexOfNaN[indexCount++] = columnOfScale; // May be -1 (while uncommon)
+                    assert (indexCount % TUPLE_SIZE) == 0;
                 }
             }
             /*
