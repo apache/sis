@@ -25,7 +25,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
-import static org.junit.Assert.*;
+import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertMatrixEquals;
 
 
 /**
@@ -60,19 +60,6 @@ public final strictfp class SolverTest extends TestCase {
      * @see NonSquareMatrixTest#printStatistics()
      */
     protected static final double TOLERANCE = 100 * MatrixTestCase.TOLERANCE;
-
-    /**
-     * Asserts that the given matrix is equals to the given expected values, up to the {@link #TOLERANCE}
-     * threshold. This method compares the elements values in two slightly redundant ways.
-     */
-    private static void assertMatrixEquals(final double[] expected,
-            final int numRow, final int numCol, final MatrixSIS actual)
-    {
-        assertEquals("numRow", numRow, actual.getNumRow());
-        assertEquals("numCol", numCol, actual.getNumCol());
-        assertArrayEquals(expected, actual.getElements(), TOLERANCE); // First because more informative in case of failure.
-        assertTrue(Matrices.create(numRow, numCol, expected).equals(actual, TOLERANCE));
-    }
 
     /**
      * The matrix to test.
@@ -127,7 +114,7 @@ public final strictfp class SolverTest extends TestCase {
                 continue;
             }
             final MatrixSIS U = Solver.solve(matrix, matrixArg);
-            MatrixTestCase.assertMatrixEquals(jama, U, TOLERANCE);
+            assertMatrixEquals(jama, U, TOLERANCE);
         }
     }
 
@@ -157,7 +144,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  0,      0,    1
         };
         MatrixSIS inverse = Solver.inverse(matrix);
-        assertMatrixEquals(expected, 5, 5, inverse);
+        assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
         /*
          * Set a scale factor to NaN. The translation term for the corresponding
          * dimension become unknown, so it most become NaN in the inverse matrix.
@@ -177,7 +164,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  0,      0,    1
         };
         inverse = Solver.inverse(matrix);
-        assertMatrixEquals(expected, 5, 5, inverse);
+        assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
         /*
          * Set a scale factor to NaN with translation equals to 0.
          * The zero value should be preserved, since 0 × any == 0
@@ -198,7 +185,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  0,      0,    1
         };
         inverse = Solver.inverse(matrix);
-        assertMatrixEquals(expected, 5, 5, inverse);
+        assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
         /*
          * Set a translation term to NaN. The translation should be NaN in
          * the inverse matrix too, but the scale factor can still be compute.
@@ -218,6 +205,6 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  0,      0,    1
         };
         inverse = Solver.inverse(matrix);
-        assertMatrixEquals(expected, 5, 5, inverse);
+        assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
     }
 }
