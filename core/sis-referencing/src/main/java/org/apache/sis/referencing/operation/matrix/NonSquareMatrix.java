@@ -105,11 +105,75 @@ final class NonSquareMatrix extends GeneralMatrix {
 
     /**
      * {@inheritDoc}
+     *
+     * <p>This method performs a special check for non-square matrix in an attempt to invert them anyway.
+     * This is possible only if some columns or rows contain contain only 0 elements.</p>
      */
     @Override
     public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        // TODO: This is where we will need a special treatment different than what JAMA do (because different needs).
-        throw new UnsupportedOperationException();
+        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numCol = this.numCol;
+        if (numRow < numCol) {
+            /*
+             * Target points have fewer ordinates than source point. If a column contains only zero values,
+             * then this means that the ordinate at the corresponding column is simply deleted. We can omit
+             * that column. We check the last columns before the first columns on the assumption that last
+             * dimensions are more likely to be independant dimensions like time.
+             */
+            int oi = numCol - numRow;
+            final int[] omitted = new int[oi];
+skipColumn: for (int i=numCol; --i>=0;) {
+                for (int j=numRow; --j>=0;) {
+                    if (getElement(j, i) != 0) {
+                        continue skipColumn;
+                    }
+                }
+                // Found a column which contains only 0 elements.
+                omitted[--oi] = i;
+                if (oi == 0) {
+                    break; // Found enough columns to skip.
+                }
+            }
+            if (oi == 0) {
+                /*
+                 * Create a square matrix omitting some or all columns containing only 0 elements, and invert
+                 * that matrix. Finally, create a new matrix with new rows added for the omitted ordinates.
+                 */
+                MatrixSIS squareMatrix = new GeneralMatrix(numRow, numRow, false, 2);
+                for (int k=0,i=0; i<numCol; i++) {
+                    if (oi != omitted.length && i == omitted[oi]) {
+                        oi++;
+                    } else {
+                        for (int j=numRow; --j>=0;) {
+                            squareMatrix.setElement(j, k, getElement(j, i));
+                        }
+                        k++;
+                    }
+                }
+                squareMatrix = squareMatrix.inverse();
+                /*
+                 * From this point, the meaning of 'numCol' and 'numRow' are interchanged.
+                 */
+                final MatrixSIS inverse = new NonSquareMatrix(numCol, numRow, false, 2);
+                oi = 0;
+                for (int k=0,j=0; j<numCol; j++) {
+                    if (oi != omitted.length && j == omitted[oi]) {
+                        if (j < numRow) {
+                            inverse.setElement(j, j, 0);
+                        }
+                        inverse.setElement(j, numRow-1, Double.NaN);
+                        oi++;
+                    } else {
+                        for (int i=numRow; --i>=0;) {
+                            inverse.setElement(j, i, squareMatrix.getElement(k, i));
+                        }
+                        k++;
+                    }
+                }
+                return inverse;
+            }
+        }
+        return super.inverse();
     }
 
     /**

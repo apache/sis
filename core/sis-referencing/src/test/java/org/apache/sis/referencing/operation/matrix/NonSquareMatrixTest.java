@@ -21,6 +21,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.junit.AfterClass;
 
+import static java.lang.Double.NaN;
 import static org.junit.Assert.*;
 
 
@@ -73,11 +74,24 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     }
 
     /**
-     * TODO: inverse transform not yet implemented for non-square matrix.
+     * Tests {@link #inverse()} with a non-square matrix.
      */
     @Override
-    @org.junit.Ignore
     public void testInverse() throws NoninvertibleMatrixException {
+        final MatrixSIS matrix = Matrices.create(3, 5, new double[] {
+            2, 0, 0, 0, 8,
+            0, 0, 4, 0, 5,
+            0, 0, 0, 0, 1
+        });
+        final double[] expected = {
+            0.5, 0,    -4,
+            0,   0,     NaN,
+            0,   0.25, -1.25,
+            0,   0,     NaN,
+            0,   0,     1
+        };
+        final MatrixSIS inverse = matrix.inverse();
+        assertMatrixEquals(expected, 5, 3, inverse, SolverTest.TOLERANCE);
     }
 
     /**
