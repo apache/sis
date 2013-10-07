@@ -108,15 +108,17 @@ final class Solver implements Matrix {
     /**
      * Computes the inverse of the given matrix. This method shall be invoked only for square matrices.
      *
+     * @param  X        The matrix to invert, which must be square.
+     * @param  noChange If {@code true}, do not allow modifications to the {@code X} matrix.
      * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
      */
-    static MatrixSIS inverse(final MatrixSIS X) throws NoninvertibleMatrixException {
+    static MatrixSIS inverse(final MatrixSIS X, final boolean noChange) throws NoninvertibleMatrixException {
         final int size = X.getNumRow();
         final int numCol = X.getNumCol();
         if (numCol != size) {
             throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, size, numCol));
         }
-        return solve(X, IDENTITY, null, size, size);
+        return solve(X, IDENTITY, null, size, size, noChange);
     }
 
     /**
@@ -142,7 +144,7 @@ final class Solver implements Matrix {
                 eltY = null; // Matrix does not contains error terms.
             }
         }
-        return solve(X, Y, eltY, size, innerSize);
+        return solve(X, Y, eltY, size, innerSize, true);
     }
 
     /**
@@ -166,19 +168,20 @@ final class Solver implements Matrix {
      *     }
      * }
      *
-     * @param  X         The matrix to invert.
+     * @param  X         The matrix to invert, which must be square.
      * @param  Y         The desired result of {@code X} × <var>U</var>.
      * @param  eltY      Elements and error terms of the {@code Y} matrix, or {@code null} if not available.
      * @param  size      The value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
      * @param  innerSize The value of {@code Y.getNumCol()}.
+     * @param  noChange  If {@code true}, do not allow modifications to the {@code X} matrix.
      * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
      */
     private static MatrixSIS solve(final MatrixSIS X, final Matrix Y, final double[] eltY,
-            final int size, final int innerSize) throws NoninvertibleMatrixException
+            final int size, final int innerSize, final boolean noChange) throws NoninvertibleMatrixException
     {
         assert (X.getNumRow() == size && X.getNumCol() == size) : size;
         assert (Y.getNumRow() == size && Y.getNumCol() == innerSize) || (Y instanceof Solver);
-        final double[] LU = GeneralMatrix.getExtendedElements(X, size, size, true);
+        final double[] LU = GeneralMatrix.getExtendedElements(X, size, size, noChange);
         final int lastRowOrColumn = size - 1;
         /*
          * indexOfNaN array will be created only if at least one NaN value is found, and those NaN meet

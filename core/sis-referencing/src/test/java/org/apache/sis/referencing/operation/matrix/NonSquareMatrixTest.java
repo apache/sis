@@ -74,32 +74,51 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link #inverse()} with a non-square matrix.
+     * Tests {@link NonSquareMatrix#inverse()} with a non-square matrix.
      */
     @Override
     public void testInverse() throws NoninvertibleMatrixException {
+        testDimensionReduction(null, 1, 0);
+    }
+
+    /**
+     * Tests {@link NonSquareMatrix#solve(Matrix)} with a non-square matrix.
+     */
+    @Override
+    public void testSolve() throws NoninvertibleMatrixException {
+        final Matrix3 Y = new Matrix3(
+                2, 0, 0,
+                0, 2, 0,
+                0, 0, 1);
+        testDimensionReduction(Y, 2, NaN);
+    }
+
+    /**
+     * Tests {@link NonSquareMatrix#inverse()} or {@link NonSquareMatrix#solve(Matrix)} with a conversion
+     * matrix having more source dimensions (columns) than target dimensions (rows).
+     *
+     * @param  Y    The matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
+     * @param  sf   The scale factor by which to multiply all expected scale elements.
+     * @param  uks  Value of unknown scales (O for {@code inverse()}, or NaN for {@code solve(Y)}).
+     * @throws NoninvertibleMatrixException Should never happen.
+     */
+    private static void testDimensionReduction(final MatrixSIS Y, final double sf, final double uks)
+            throws NoninvertibleMatrixException
+    {
         final MatrixSIS matrix = Matrices.create(3, 5, new double[] {
             2, 0, 0, 0, 8,
             0, 0, 4, 0, 5,
             0, 0, 0, 0, 1
         });
         final double[] expected = {
-            0.5, 0,    -4,
-            0,   0,     NaN,
-            0,   0.25, -1.25,
-            0,   0,     NaN,
-            0,   0,     1
+            0.5*sf, 0,          -4,
+            uks,    uks,       NaN,
+            0,      0.25*sf, -1.25,
+            uks,    uks,       NaN,
+            0,      0,           1
         };
-        final MatrixSIS inverse = matrix.inverse();
+        final MatrixSIS inverse = (Y != null) ? matrix.solve(Y) : matrix.inverse();
         assertMatrixEquals(expected, 5, 3, inverse, SolverTest.TOLERANCE);
-    }
-
-    /**
-     * TODO: inverse transform not yet implemented for non-square matrix.
-     */
-    @Override
-    @org.junit.Ignore
-    public void testSolve() throws NoninvertibleMatrixException {
     }
 
     /**

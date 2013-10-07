@@ -93,10 +93,10 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
          * and a random conversion factor for z values.
          */
         final Matrix4 step1 = new Matrix4(
-                0.9,    0,   0, parisMeridian,
-                0, 0.9, 0,   0,
-                0, 0,   0.8, 0, // Random conversion factor for z values.
-                0, 0,   0,   1);
+                0.9,  0,    0,    parisMeridian,
+                0,    0.9,  0,    0,
+                0,    0,    0.8,  0, // Random conversion factor for z values.
+                0,    0,    0,    1);
         /*
          * Degrees to radians with swapping of (longitude, latitude) axes
          * and a conversion factor of z values from feet to metres.

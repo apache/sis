@@ -27,6 +27,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.lang.Double.NaN;
 import static org.apache.sis.test.Assert.*;
 import static org.opengis.referencing.cs.AxisDirection.*;
 
@@ -338,14 +339,21 @@ public final strictfp class MatricesTest extends TestCase {
                 "│ 0  0  1  0 │\n" +
                 "│ 0  0  0  1 │\n" +
                 "└            ┘\n", new Matrix4().toString());
+
+        assertMultilinesEquals(
+                "┌               ┐\n" +
+                "│   1    0    0 │\n" +
+                "│ NaN  NaN  NaN │\n" +
+                "│   0    0    1 │\n" +
+                "└               ┘\n", new Matrix3(1, 0, 0, NaN, NaN, NaN, 0, 0, 1).toString());
         /*
          * Mix of values with different precision, ±0, ±1, NaN and infinities.
          */
         final MatrixSIS matrix = Matrices.create(4, 5, new double[] {
-            39.5193682106975150,  -68.5200,     -1.0,  1,  98,
-           -66.0358637477182200,   Double.NaN,  43.0,  0,  Double.NEGATIVE_INFINITY,
-             2.0741018968776337,   83.7260,     -0.0,  1,  -3,
-            91.8796187759200600,  -18.2674,     24.5,  0,  36.5
+            39.5193682106975150,  -68.5200,  -1.0,  1,  98,
+           -66.0358637477182200,       NaN,  43.0,  0,  Double.NEGATIVE_INFINITY,
+             2.0741018968776337,   83.7260,  -0.0,  1,  -3,
+            91.8796187759200600,  -18.2674,  24.5,  0,  36.5
         });
         assertMultilinesEquals(
                 "┌                                               ┐\n" +

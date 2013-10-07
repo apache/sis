@@ -71,4 +71,33 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
         validate(matrix);
         assertArrayEquals(elements, matrix.getElements(), STRICT);
     }
+
+    /**
+     * Verifies our claim that {@code A.solve(B)} is equivalent to {@code A.inverse().multiply(B)}.
+     * This claim is documented in {@link MatrixSIS#solve(Matrix)} javadoc.
+     *
+     * @throws NoninvertibleMatrixException Should not happen.
+     */
+    @Test
+    public void testSolveEquivalence() throws NoninvertibleMatrixException {
+        final Matrix3 A = new Matrix3(
+                0.5,  0,    0,
+                0,    0.5,  0,
+                0,    0,    1);
+
+        final Matrix3 B = new Matrix3(
+                0,  3,  0,
+                3,  0,  0,
+                0,  0,  1);
+
+        // Verify the result of A.inverse().multiply(B) as a matter of principle.
+        final double[] expected = A.inverse().multiply(B).getElements();
+        assertArrayEquals(new double[] {
+                0,  6,  0,
+                6,  0,  0,
+                0,  0,  1}, expected, TOLERANCE);
+
+        // Now the actual test.
+        assertMatrixEquals(expected, SIZE, SIZE, A.solve(B), TOLERANCE);
+    }
 }

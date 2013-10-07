@@ -250,7 +250,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @see java.awt.geom.AffineTransform#createInverse()
      */
     public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        return Solver.inverse(this);
+        return Solver.inverse(this, true);
     }
 
     /**
