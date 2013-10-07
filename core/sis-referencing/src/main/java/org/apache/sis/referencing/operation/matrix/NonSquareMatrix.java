@@ -106,16 +106,56 @@ final class NonSquareMatrix extends GeneralMatrix {
     /**
      * {@inheritDoc}
      *
-     * <p>This method performs a special check for non-square matrix in an attempt to invert them anyway.
-     * This is possible only if some columns or rows contain contain only 0 elements.</p>
+     * <p>This method delegates the work to {@code inverse().multiply(matrix)} in order to leverage
+     * the special handling done by {@code inverse()} for non-square matrices.</p>
+     */
+    @Override
+    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
+        MatrixSIS result = inverse();
+        if (!matrix.isIdentity()) {
+            result = result.multiply(matrix);
+        }
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This method performs a special check for non-square matrices in an attempt to invert them anyway.
+     * If this matrix has more columns than rows, then this method can invert that matrix if and only if
+     * some columns contain only 0 elements. In such case, the dimensions corresponding to those columns are
+     * considered independent of all other dimensions. This happen typically with the dimension of <var>z</var>
+     * and <var>t</var> ordinate values.</p>
+     *
+     * <p><b>Example:</b> in a conversion from (x₁,y₁,z,t) to (x₂,y₂), if the (x,y) dimensions are independent
+     * of z and t dimensions, then we do not need those (z,t) dimensions for calculating the inverse of (x₁,y₁)
+     * to (x₂,y₂). We can omit the (z,t) dimensions in order to have a square matrix, perform the inversion,
+     * then insert NaN in place of the omitted dimensions. In the matrix below, we can see that (x,y) are
+     * independent of (z,t) because the 3th and 4th columns contains only 0 elements:</p>
+     *
+     * {@preformat math
+     *   ┌               ┐ -1        ┌                  ┐
+     *   │ 2  0  0  0  8 │           │ 0.5  0     -4.00 │
+     *   │ 0  4  0  0  5 │     =     │ 0    0.25  -1.25 │
+     *   │ 0  0  0  0  1 │           │ 0    0       NaN │
+     *   └               ┘           │ 0    0       NaN │
+     *                               │ 0    0      1    │
+     *                               └                  ┘
+     * }
+     *
+     * There is an issue about whether the full row shall contains NaN, or only the last element (the translation
+     * term) as in the above example.  The current implementation inserts a NaN value in the translation term and
+     * sets all other values to 0 on the assumption that if (x₂,y₂) do not depend on (z,t), then conversely (z,t)
+     * do not depend on (x₂,y₂) neither.
      */
     @Override
     public MatrixSIS inverse() throws NoninvertibleMatrixException {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
         if (numRow < numCol) {
+            final int length = numRow * numCol;
             /*
-             * Target points have fewer ordinates than source point. If a column contains only zero values,
+             * Target points have fewer ordinates than source points. If a column contains only zero values,
              * then this means that the ordinate at the corresponding column is simply deleted. We can omit
              * that column. We check the last columns before the first columns on the assumption that last
              * dimensions are more likely to be independant dimensions like time.
@@ -123,57 +163,88 @@ final class NonSquareMatrix extends GeneralMatrix {
             int oi = numCol - numRow;
             final int[] omitted = new int[oi];
 skipColumn: for (int i=numCol; --i>=0;) {
-                for (int j=numRow; --j>=0;) {
-                    if (getElement(j, i) != 0) {
+                for (int j=length + i; (j -= numCol) >= 0;) {
+                    if (elements[j] != 0) {
                         continue skipColumn;
                     }
                 }
-                // Found a column which contains only 0 elements.
-                omitted[--oi] = i;
+                omitted[--oi] = i; // Found a column which contains only 0 elements.
                 if (oi == 0) {
-                    break; // Found enough columns to skip.
-                }
-            }
-            if (oi == 0) {
-                /*
-                 * Create a square matrix omitting some or all columns containing only 0 elements, and invert
-                 * that matrix. Finally, create a new matrix with new rows added for the omitted ordinates.
-                 */
-                MatrixSIS squareMatrix = new GeneralMatrix(numRow, numRow, false, 2);
-                for (int k=0,i=0; i<numCol; i++) {
-                    if (oi != omitted.length && i == omitted[oi]) {
-                        oi++;
-                    } else {
-                        for (int j=numRow; --j>=0;) {
-                            squareMatrix.setElement(j, k, getElement(j, i));
-                        }
-                        k++;
+                    /*
+                     * Found enough columns containing only zero elements. Create a square matrix omitting those
+                     * columns, and invert that matrix. Note that we also need to either copy the error terms,
+                     * or to infer them.
+                     */
+                    GeneralMatrix squareMatrix = new GeneralMatrix(numRow, numRow, false, 2);
+                    int j=0;
+                    for (i=0; i<numCol; i++) {
+                        if (oi != omitted.length && i == omitted[oi]) oi++;
+                        else copyColumnTo(i, squareMatrix, j++); // Copy only if not skipped.
                     }
-                }
-                squareMatrix = squareMatrix.inverse();
-                /*
-                 * From this point, the meaning of 'numCol' and 'numRow' are interchanged.
-                 */
-                final MatrixSIS inverse = new NonSquareMatrix(numCol, numRow, false, 2);
-                oi = 0;
-                for (int k=0,j=0; j<numCol; j++) {
-                    if (oi != omitted.length && j == omitted[oi]) {
-                        if (j < numRow) {
-                            inverse.setElement(j, j, 0);
-                        }
-                        inverse.setElement(j, numRow-1, Double.NaN);
-                        oi++;
-                    } else {
-                        for (int i=numRow; --i>=0;) {
-                            inverse.setElement(j, i, squareMatrix.getElement(k, i));
-                        }
-                        k++;
+                    // If the source matrix does not use double-double arithmetic, infer the error terms.
+                    if (indexOfErrors(numRow, numCol, elements) == 0) {
+                        inferErrors(squareMatrix.elements);
                     }
+                    squareMatrix = (GeneralMatrix) Solver.inverse(squareMatrix, false);
+                    /*
+                     * Create a new matrix with new rows added for the omitted ordinates.
+                     * From this point, the meaning of 'numCol' and 'numRow' are interchanged.
+                     */
+                    final NonSquareMatrix inverse = new NonSquareMatrix(numCol, numRow, false, 2);
+                    for (oi=0, j=0, i=0; i<numCol; i++) {
+                        if (oi != omitted.length && i == omitted[oi]) {
+                            inverse.setElement(i, numRow-1, Double.NaN);
+                            oi++;
+                        } else {
+                            inverse.copyRowFrom(squareMatrix, j++, i);
+                        }
+                    }
+                    return inverse;
                 }
-                return inverse;
             }
         }
+        /*
+         * If we reach this point, we have not been able to replace the non-square matrix by a square one.
+         * Delegate to the super-class method as a matter of principle, but that method is expected to fail.
+         */
         return super.inverse();
+    }
+
+    /**
+     * Copies a column from this matrix to the given matrix, including the double-double arithmetic error terms
+     * if any. The given matrix must have the same number of rows than this matrix, and must have enough room for
+     * error terms (this is not verified).
+     *
+     * @param srcIndex  Index of the column to copy from this matrix.
+     * @param target    The matrix where to copy the column.
+     * @param dstIndex  Index of the column where to copy in the target matrix.
+     */
+    private void copyColumnTo(int srcIndex, final GeneralMatrix target, int dstIndex) {
+        assert target.numRow == numRow;
+        while (srcIndex < elements.length) {
+            target.elements[dstIndex] = elements[srcIndex];
+            srcIndex += this.numCol;
+            dstIndex += target.numCol;
+        }
+    }
+
+    /**
+     * Copies a row from the given matrix to this matrix, including the double-double arithmetic error terms.
+     * The two matrix must have the same number of columns, and both of them must have room for the error terms
+     * (this is not verified).
+     *
+     * @param source   The matrix from which to copy a row.
+     * @param srcIndex Index of the row to copy from the source matrix.
+     * @param dstIndex Index of the row where to copy in this matrix.
+     */
+    private void copyRowFrom(final GeneralMatrix source, int srcIndex, int dstIndex) {
+        final int numCol = this.numCol;
+        assert numCol == source.numCol;
+        srcIndex *= numCol;
+        dstIndex *= numCol;
+        System.arraycopy(source.elements, srcIndex, elements, dstIndex, numCol);  // Copy main values
+        System.arraycopy(source.elements, srcIndex + numCol * source.numRow,      // Copy error terms
+                                elements, dstIndex + numCol * numRow, numCol);
     }
 
     /**

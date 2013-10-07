@@ -903,6 +903,7 @@ public final class Matrices extends Static {
                         // NaN or Infinity.
                         element = element.replace("Infinity", "∞");
                         width = spacing + element.length();
+                        widthBeforeFraction[i] = Math.max(widthBeforeFraction[i], width);
                     }
                 }
                 columnWidth[i] = Math.max(columnWidth[i], width);

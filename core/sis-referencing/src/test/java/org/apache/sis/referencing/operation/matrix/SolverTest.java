@@ -143,7 +143,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  0.5,    0,  -10,
             0,     0,  0,      0,    1
         };
-        MatrixSIS inverse = Solver.inverse(matrix);
+        MatrixSIS inverse = Solver.inverse(matrix, false);
         assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
         /*
          * Set a scale factor to NaN. The translation term for the corresponding
@@ -163,7 +163,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  NaN,    0,  NaN,
             0,     0,  0,      0,    1
         };
-        inverse = Solver.inverse(matrix);
+        inverse = Solver.inverse(matrix, false);
         assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
         /*
          * Set a scale factor to NaN with translation equals to 0.
@@ -184,7 +184,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  NaN,    0,    0,
             0,     0,  0,      0,    1
         };
-        inverse = Solver.inverse(matrix);
+        inverse = Solver.inverse(matrix, false);
         assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
         /*
          * Set a translation term to NaN. The translation should be NaN in
@@ -204,7 +204,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  0.5,    0,  NaN,
             0,     0,  0,      0,    1
         };
-        inverse = Solver.inverse(matrix);
+        inverse = Solver.inverse(matrix, false);
         assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
     }
 }
