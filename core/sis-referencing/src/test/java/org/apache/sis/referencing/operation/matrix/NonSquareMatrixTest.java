@@ -79,6 +79,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     @Override
     public void testInverse() throws NoninvertibleMatrixException {
         testDimensionReduction(null, 1, 0);
+        testDimensionIncrease (null, 1);
     }
 
     /**
@@ -86,11 +87,16 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      */
     @Override
     public void testSolve() throws NoninvertibleMatrixException {
-        final Matrix3 Y = new Matrix3(
+        testDimensionReduction(new Matrix3(
                 2, 0, 0,
                 0, 2, 0,
-                0, 0, 1);
-        testDimensionReduction(Y, 2, NaN);
+                0, 0, 1), 2, NaN);
+        testDimensionIncrease(new GeneralMatrix(5, 5, new double[] {
+                2, 0, 0, 0, 0,
+                0, 2, 0, 0, 0,
+                0, 0, 2, 0, 0,
+                0, 0, 0, 2, 0,
+                0, 0, 0, 0, 1}), 2);
     }
 
     /**
@@ -111,14 +117,41 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
             0, 0, 0, 0, 1
         });
         final double[] expected = {
-            0.5*sf, 0,          -4,
-            uks,    uks,       NaN,
-            0,      0.25*sf, -1.25,
-            uks,    uks,       NaN,
-            0,      0,           1
+            0.5*sf,  0,           -4,
+            uks,     uks,        NaN,
+            0,       0.25*sf,  -1.25,
+            uks,     uks,        NaN,
+            0,       0,            1
         };
         final MatrixSIS inverse = (Y != null) ? matrix.solve(Y) : matrix.inverse();
-        assertMatrixEquals(expected, 5, 3, inverse, SolverTest.TOLERANCE);
+        assertMatrixEquals(expected, 5, 3, inverse, TOLERANCE);
+    }
+
+    /**
+     * Tests {@link NonSquareMatrix#inverse()} or {@link NonSquareMatrix#solve(Matrix)} with a conversion
+     * matrix having more target dimensions (rows) than source dimensions (columns).
+     *
+     * @param  Y    The matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
+     * @param  sf   The scale factor by which to multiply all expected scale elements.
+     * @throws NoninvertibleMatrixException Should never happen.
+     */
+    private static void testDimensionIncrease(final MatrixSIS Y, final double sf)
+            throws NoninvertibleMatrixException
+    {
+        final MatrixSIS matrix = Matrices.create(5, 3, new double[] {
+              2,   0,   8,
+            NaN, NaN, NaN,
+              0,   4,   5,
+              0,   0,   0,
+              0,   0,   1
+        });
+        final double[] expected = {
+            0.5*sf,  0,  0,        0,  -4,
+            0,       0,  0.25*sf,  0,  -1.25,
+            0,       0,  0,        0,   1
+        };
+        final MatrixSIS inverse = (Y != null) ? matrix.solve(Y) : matrix.inverse();
+        assertMatrixEquals(expected, 3, 5, inverse, TOLERANCE);
     }
 
     /**
