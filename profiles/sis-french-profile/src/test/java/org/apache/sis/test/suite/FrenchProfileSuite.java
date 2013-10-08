@@ -41,6 +41,7 @@ public final strictfp class FrenchProfileSuite extends TestSuite {
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(UtilityTestSuite.class, BASE_TEST_CLASSES);
+        assertNoMissingTest(FrenchProfileSuite.class);
+        verifyTestList(FrenchProfileSuite.class);
     }
 }
