@@ -58,7 +58,8 @@ public final strictfp class CacheTest extends TestCase {
      */
     @Test
     public void testStrongReferences() {
-        WeakValueHashMapTest.testStrongReferences(new Cache<Integer,Integer>(500, 0, false));
+        WeakValueHashMapTest.testStrongReferences(
+                new Cache<Integer,Integer>(WeakValueHashMapTest.SAMPLE_SIZE, 0, false));
     }
 
     /**
@@ -72,7 +73,8 @@ public final strictfp class CacheTest extends TestCase {
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
-        WeakValueHashMapTest.testWeakReferences(new Cache<Integer,Integer>(500, 0, false));
+        WeakValueHashMapTest.testWeakReferences(
+                new Cache<Integer,Integer>(WeakValueHashMapTest.SAMPLE_SIZE, 0, false));
     }
 
     /**
@@ -207,7 +209,7 @@ public final strictfp class CacheTest extends TestCase {
     @Performance
     @DependsOnMethod("testThreadBlocking")
     public void stress() throws InterruptedException {
-        final int count = 10000;
+        final int count = 5000;
         final Cache<Integer,Integer> cache = new Cache<>();
         final AtomicReference<Throwable> failures = new AtomicReference<>();
         final class WriterThread extends Thread {
@@ -309,7 +311,8 @@ public final strictfp class CacheTest extends TestCase {
          */
         final Statistics afterGC = validateStressEntries("After GC", cache);
         out.println("Statistics on the keys before and after garbage collection.");
-        out.println("The minimum value should be greater after GC.");
+        out.println("The minimum value shall always be equals or greater after GC.");
+        out.println("The mean value is usually greater too, except by coincidence.");
         final StatisticsFormat format = StatisticsFormat.getInstance();
         format.setBorderWidth(1);
         try {
