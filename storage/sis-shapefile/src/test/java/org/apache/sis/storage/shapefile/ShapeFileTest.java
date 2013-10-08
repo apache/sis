@@ -18,12 +18,12 @@ package org.apache.sis.storage.shapefile;
 
 import java.io.File;
 import java.io.IOException;
-
 import java.net.URISyntaxException;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 
 /**
@@ -33,7 +33,7 @@ import static junit.framework.Assert.assertEquals;
  * @version 0.4
  * @module
  */
-public final strictfp class ShapeFileTest {
+public final strictfp class ShapeFileTest extends TestCase {
     private static String path(final String name) throws IOException, URISyntaxException {
         return new File(ShapeFileTest.class.getResource(name).toURI()).getPath();
     }

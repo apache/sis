@@ -114,6 +114,12 @@ Console application.
 
     <!-- Test dependencies -->
     <dependency>
+      <!-- For UCAR NetCDF -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.opengis.wrapper</groupId>
       <artifactId>geoapi-netcdf</artifactId>
       <version>${geoapi.version}</version>

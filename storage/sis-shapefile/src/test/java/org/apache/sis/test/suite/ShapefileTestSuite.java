@@ -14,27 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.shapefile;
+package org.apache.sis.test.suite;
 
-import java.io.IOException;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.apache.sis.test.TestSuite;
+import org.junit.runners.Suite;
+import org.junit.BeforeClass;
 
 
 /**
- * Unit test for simple App.
- *
- * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
- * @module
+ * All tests from the {@code sis-shapefile} module, in approximative dependency order.
  */
-public final strictfp class CmdLineDriverTest extends TestCase {
-
-    @Test
-    public void testApp() throws IOException {
-        assertTrue( true );
+@Suite.SuiteClasses({
+    org.apache.sis.storage.shapefile.ShapeFileTest.class,
+    org.apache.sis.storage.shapefile.CmdLineDriverTest.class
+})
+public final strictfp class ShapefileTestSuite extends TestSuite {
+    /**
+     * Verifies the list of tests before to run the suite.
+     * See {@link #verifyTestList(Class, Class[])} for more information.
+     */
+    @BeforeClass
+    public static void verifyTestList() {
+        assertNoMissingTest(ShapefileTestSuite.class);
+        verifyTestList(ShapefileTestSuite.class);
     }
 }
