@@ -403,8 +403,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
         for (int j=0; j<size; j++) {
             rat.setFrom(LU, j*size + j, errorLU);
             if (rat.isZero()) {
-                final Integer n = size;
-                throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, n, n));
+                throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.SingularMatrix));
             }
         }
         /*
