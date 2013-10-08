@@ -48,6 +48,7 @@ public final strictfp class StorageTestSuite extends TestSuite {
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(StorageTestSuite.class, BASE_TEST_CLASSES);
+        assertNoMissingTest(StorageTestSuite.class);
+        verifyTestList(StorageTestSuite.class);
     }
 }
