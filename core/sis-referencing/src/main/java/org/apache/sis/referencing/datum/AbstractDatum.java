@@ -56,8 +56,8 @@ import java.util.Objects;
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.2)
- * @version 0.3
+ * @since   0.4 (derived from geotk-1.2)
+ * @version 0.4
  * @module
  *
  * @see org.apache.sis.referencing.cs.AbstractCS
