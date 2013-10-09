@@ -16,43 +16,26 @@
  */
 package org.apache.sis.test.suite;
 
-import org.apache.sis.internal.netcdf.IOTestCase;
 import org.apache.sis.test.TestSuite;
-import org.apache.sis.test.TestCase;
 import org.junit.runners.Suite;
 import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-netcdf} module, in approximative dependency order.
- *
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
- * @module
+ * All tests from the {@code sis-shapefile} module, in approximative dependency order.
  */
 @Suite.SuiteClasses({
-    org.apache.sis.internal.netcdf.DecoderTest.class,
-    org.apache.sis.internal.netcdf.VariableTest.class,
-    org.apache.sis.internal.netcdf.GridGeometryTest.class,
-    org.apache.sis.internal.netcdf.impl.ChannelDecoderTest.class,
-    org.apache.sis.internal.netcdf.impl.VariableInfoTest.class,
-    org.apache.sis.internal.netcdf.impl.GridGeometryInfoTest.class,
-    org.apache.sis.storage.netcdf.MetadataReaderTest.class,
-    org.apache.sis.storage.netcdf.NetcdfStoreProviderTest.class,
-    org.apache.sis.storage.netcdf.NetcdfStoreTest.class
+    org.apache.sis.storage.shapefile.ShapeFileTest.class,
+    org.apache.sis.storage.shapefile.CmdLineDriverTest.class
 })
-public final strictfp class NetcdfTestSuite extends TestSuite {
+public final strictfp class ShapefileTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {
-        assertNoMissingTest(NetcdfTestSuite.class);
-        verifyTestList(NetcdfTestSuite.class, new Class<?>[] {
-            TestCase.class,
-            IOTestCase.class
-        });
+        assertNoMissingTest(ShapefileTestSuite.class);
+        verifyTestList(ShapefileTestSuite.class);
     }
 }

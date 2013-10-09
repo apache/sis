@@ -44,7 +44,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
     /**
      * The size of the test sets to be created.
      */
-    private static final int SAMPLE_SIZE = 500;
+    static final int SAMPLE_SIZE = 400;
 
     /**
      * Number of time to retry the tests.

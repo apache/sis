@@ -77,6 +77,12 @@ public final class Numerics extends Static {
     public static final long SIGN_BIT_MASK = Long.MIN_VALUE;
 
     /**
+     * Number of bits in the significand (mantissa) part of IEEE 754 {@code double} representation,
+     * including the hidden bit.
+     */
+    static final int SIGNIFICAND_SIZE = 53;
+
+    /**
      * A prime number used for hash code computation. Value 31 is often used because
      * some modern compilers can optimize {@code x*31} as {@code (x << 5) - x}
      * (Josh Bloch, <cite>Effective Java</cite>).

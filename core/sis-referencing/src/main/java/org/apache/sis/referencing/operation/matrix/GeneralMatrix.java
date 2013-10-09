@@ -169,7 +169,7 @@ class GeneralMatrix extends MatrixSIS {
      * intend was to specify the {@link Math#PI} value, in which case this method will infer that we would
      * need to add 1.2246467991473532E-16 in order to get a value closer to π.
      */
-    private static void inferErrors(final double[] elements) {
+    static void inferErrors(final double[] elements) {
         final int length = elements.length / 2;
         for (int i=length; i<elements.length; i++) {
             elements[i] = DoubleDouble.errorForWellKnownValue(elements[i - length]);
