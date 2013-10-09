@@ -249,10 +249,10 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Formats the inner part of a Well Known Text</cite> (WKT) element.
+     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
      *
      * @param  formatter The formatter to use.
-     * @return The WKT element name, which is "VERT_DATUM"
+     * @return The WKT element name, which is {@code "VERT_DATUM"}.
      */
     @Override
     public String formatTo(final Formatter formatter) {

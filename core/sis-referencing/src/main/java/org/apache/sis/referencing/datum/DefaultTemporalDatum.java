@@ -34,7 +34,7 @@ import java.util.Objects;
 
 
 /**
- * A temporal datum defines the origin of a temporal coordinate reference system.
+ * Defines the origin of a temporal coordinate reference system.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)

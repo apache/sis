@@ -42,7 +42,7 @@ import java.util.Objects;
 
 
 /**
- * A prime meridian defines the origin from which longitude values are determined.
+ * Defines the origin from which longitude values are determined.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
@@ -264,7 +264,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * Formats the inner part of a<cite>Well Known Text</cite> (WKT) element.
+     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
      *
      * @param  formatter The formatter to use.
      * @return The WKT element name, which is {@code "PRIMEM"}.
