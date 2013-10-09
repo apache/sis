@@ -192,12 +192,12 @@ public class ProbeResult implements Serializable {
      *
      * <table class="sis">
      *   <tr><th>MIME type</th>                                                    <th>Description</th>                                 <th>Namespace</th></tr>
-     *   <tr><td>{@code "application/gml+xml"}</td>                                <td>Official mime type for OGC GML</td>              <td>{@value org.apache.sis.XML.Namespaces#GML}</td></tr>
+     *   <tr><td>{@code "application/gml+xml"}</td>                                <td>Official mime type for OGC GML</td>              <td>{@value org.apache.sis.xml.Namespaces#GML}</td></tr>
      *   <tr><td>{@code "application/vnd.eu.europa.ec.inspire.resource+xml"}</td>  <td>Official mime type for INSPIRE Resources</td>    <td></td></tr>
-     *   <tr><td>{@code "application/vnd.iso.19139+xml"}</td>                      <td>Unofficial mime type for ISO 19139 metadata</td> <td>{@value org.apache.sis.XML.Namespaces#GMD}</td></tr>
+     *   <tr><td>{@code "application/vnd.iso.19139+xml"}</td>                      <td>Unofficial mime type for ISO 19139 metadata</td> <td>{@value org.apache.sis.xml.Namespaces#GMD}</td></tr>
      *   <tr><td>{@code "application/vnd.ogc.wms_xml"}</td>                        <td>Unofficial mime type for OGC WMS</td>            <td></td></tr>
      *   <tr><td>{@code "application/vnd.ogc.wfs_xml"}</td>                        <td>Unofficial mime type for OGC WFS </td>           <td></td></tr>
-     *   <tr><td>{@code "application/vnd.ogc.csw_xml"}</td>                        <td>Unofficial mime type for OGC CSW</td>            <td>{@value org.apache.sis.XML.Namespaces#CSW}</td></tr>
+     *   <tr><td>{@code "application/vnd.ogc.csw_xml"}</td>                        <td>Unofficial mime type for OGC CSW</td>            <td>{@value org.apache.sis.xml.Namespaces#CSW}</td></tr>
      *   <tr><td>{@code "application/vnd.google-earth.kml+xml"}</td>               <td></td><td></td></tr>
      *   <tr><td>{@code "application/rdf+xml"}</td>                                <td></td><td></td></tr>
      *   <tr><td>{@code "application/soap+xml"}</td>                               <td></td><td></td></tr>

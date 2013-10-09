@@ -50,6 +50,7 @@ public final strictfp class NetcdfTestSuite extends TestSuite {
      */
     @BeforeClass
     public static void verifyTestList() {
+        assertNoMissingTest(NetcdfTestSuite.class);
         verifyTestList(NetcdfTestSuite.class, new Class<?>[] {
             TestCase.class,
             IOTestCase.class

@@ -62,6 +62,11 @@ import org.apache.sis.math.MathFunctions;
  */
 public final class DoubleDouble extends Number {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -7602414219228638550L;
+
+    /**
      * {@code true} for disabling the extended precision. This variable should always be {@code false},
      * except for testing purpose. If set to {@code true}, then all double-double arithmetic operations
      * are immediately followed by a clearing of {@link DoubleDouble#error}.  The result should then be
@@ -79,9 +84,11 @@ public final class DoubleDouble extends Number {
     public static final boolean DISABLED = false;
 
     /**
-     * For cross-version compatibility.
+     * When computing <var>a</var> - <var>b</var> as a double-double (106 significand bits) value,
+     * if the amount of non-zero significand bits is equals or lower than that amount, consider the
+     * result as zero.
      */
-    private static final long serialVersionUID = -7602414219228638550L;
+    private static final int ZERO_THRESHOLD = 3;
 
     /**
      * The split constant used as part of multiplication algorithms. The split algorithm is as below
@@ -426,11 +433,11 @@ public final class DoubleDouble extends Number {
              * The two values almost cancelled, only their error terms are different.
              * The number of significand bits (mantissa) in the IEEE 'double' representation is 52,
              * not counting the hidden bit. So estimate the accuracy of the double-double number as
-             * the accuracy of the 'double' value (which is 1 ULP) scaled as if we had 50 additional
-             * significand bits (we ignore 2 bits as a safety margin). If the error is not greater
-             * than that value, then assume that it is not significant.
+             * the accuracy of the 'double' value (which is 1 ULP) scaled as if we had 52 additional
+             * significand bits (we ignore some more bits if ZERO_THRESHOLD is greater than 1).
+             * If the error is not greater than that value, then assume that it is not significant.
              */
-            if (Math.abs(error) <= Math.scalb(Math.ulp(otherValue), -50)) {
+            if (Math.abs(error) <= Math.scalb(Math.ulp(otherValue), ZERO_THRESHOLD - Numerics.SIGNIFICAND_SIZE)) {
                 error = 0;
                 return;
             }

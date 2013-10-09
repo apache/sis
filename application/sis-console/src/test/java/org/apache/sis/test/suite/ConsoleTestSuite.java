@@ -43,6 +43,7 @@ public final strictfp class ConsoleTestSuite extends TestSuite {
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(ConsoleTestSuite.class, BASE_TEST_CLASSES);
+        assertNoMissingTest(ConsoleTestSuite.class);
+        verifyTestList(ConsoleTestSuite.class);
     }
 }
