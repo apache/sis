@@ -139,7 +139,9 @@ ul.verbose li {
  * Overrides the <pre> definition provided by the Javadoc tools.
  */
 div.block pre {
-  font-size: 1em;
+  line-height: 1em;
+  font-size:   1em;
+  font-family: Andale Mono, Courier New, monospace;
 }
 
 

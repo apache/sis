@@ -50,34 +50,24 @@ import java.util.Objects;
  * while the <cite>legacy</cite> column lists the identifiers used in the legacy OGC 01-009 specification
  * (still used in some <cite>Well Known Texts</cite>).
  *
+ * <table class="compact"><tr><td>
  * <table class="sis">
- *   <tr><th>Code</th> <th>Name</th>               <th>Abbr.</th>            <th>Legacy</th></tr>
- *   <tr><td>8605</td> <td>X-axis translation</td> <td>{@linkplain #tX}</td> <td>dx</td></tr>
- *   <tr><td>8606</td> <td>Y-axis translation</td> <td>{@linkplain #tY}</td> <td>dy</td></tr>
- *   <tr><td>8607</td> <td>Z-axis translation</td> <td>{@linkplain #tZ}</td> <td>dz</td></tr>
- *   <tr><td>8608</td> <td>X-axis rotation</td>    <td>{@linkplain #rX}</td> <td>ex</td></tr>
- *   <tr><td>8609</td> <td>Y-axis rotation</td>    <td>{@linkplain #rY}</td> <td>ey</td></tr>
- *   <tr><td>8610</td> <td>Z-axis rotation</td>    <td>{@linkplain #rZ}</td> <td>ez</td></tr>
- *   <tr><td>8611</td> <td>Scale difference</td>   <td>{@linkplain #dS}</td> <td>ppm</td></tr>
+ *   <tr><th>Code</th> <th>Name</th>               <th>Abbr.</th>       <th>Legacy</th></tr>
+ *   <tr><td>8605</td> <td>X-axis translation</td> <td>{@link #tX}</td> <td>{@code dx}</td></tr>
+ *   <tr><td>8606</td> <td>Y-axis translation</td> <td>{@link #tY}</td> <td>{@code dy}</td></tr>
+ *   <tr><td>8607</td> <td>Z-axis translation</td> <td>{@link #tZ}</td> <td>{@code dz}</td></tr>
+ *   <tr><td>8608</td> <td>X-axis rotation</td>    <td>{@link #rX}</td> <td>{@code ex}</td></tr>
+ *   <tr><td>8609</td> <td>Y-axis rotation</td>    <td>{@link #rY}</td> <td>{@code ey}</td></tr>
+ *   <tr><td>8610</td> <td>Z-axis rotation</td>    <td>{@link #rZ}</td> <td>{@code ez}</td></tr>
+ *   <tr><td>8611</td> <td>Scale difference</td>   <td>{@link #dS}</td> <td>{@code ppm}</td></tr>
  * </table>
  *
- * The numerical fields in this {@code BursaWolfParameters} class uses the EPSG abbreviations
- * with 4 additional constraints compared to the EPSG definitions:
+ * </td><td style="padding-left: 40pt; white-space: nowrap">
+ * <center><b>Geocentric coordinates transformation</b></center>
+ * <center>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
+ *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)</center>
  *
- * <ul>
- *   <li>Unit of scale difference ({@link #dS}) is fixed to <em>parts per million</em>.</li>
- *   <li>Unit of translation terms ({@link #tX}, {@link #tY}, {@link #tZ}) is fixed to <em>metres</em>.</li>
- *   <li>Unit of rotation terms ({@link #rX}, {@link #rY}, {@link #rZ}) is fixed to <em>arc-seconds</em>.</li>
- *   <li>Sign of rotation terms is fixed to the <em>Position Vector</em> convention (EPSG operation method 9606).
- *       This is the opposite sign than the <cite>Coordinate Frame Rotation</cite> (EPSG operation method 9607).
- *       The Position Vector convention is used by IAG and recommended by ISO 19111.</li>
- * </ul>
- *
- * A transformation of geocentric coordinates from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>,
- * <var>Z</var><sub>s</sub>) to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)
- * can be in expressed in matrix form as below:
- *
- * <math alttext="MathML capable browser required">
+ * <p><math alttext="MathML capable browser required">
  *   <mfenced open="[" close="]">
  *     <mtable>
  *       <mtr><mtd><msub><mi>X</mi><mi>t</mi></msub></mtd></mtr>
@@ -123,7 +113,20 @@ import java.util.Objects;
  *       <mtr><mtd><msub><mi>t</mi><mi>z</mi></msub></mtd></mtr>
  *     </mtable>
  *   </mfenced>
- * </math>
+ * </math></p>
+ * </tr></td></table>
+ *
+ * The numerical fields in this {@code BursaWolfParameters} class uses the EPSG abbreviations
+ * with 4 additional constraints compared to the EPSG definitions:
+ *
+ * <ul>
+ *   <li>Unit of scale difference ({@link #dS}) is fixed to <em>parts per million</em>.</li>
+ *   <li>Unit of translation terms ({@link #tX}, {@link #tY}, {@link #tZ}) is fixed to <em>metres</em>.</li>
+ *   <li>Unit of rotation terms ({@link #rX}, {@link #rY}, {@link #rZ}) is fixed to <em>arc-seconds</em>.</li>
+ *   <li>Sign of rotation terms is fixed to the <em>Position Vector</em> convention (EPSG operation method 9606).
+ *       This is the opposite sign than the <cite>Coordinate Frame Rotation</cite> (EPSG operation method 9607).
+ *       The Position Vector convention is used by IAG and recommended by ISO 19111.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
@@ -135,6 +138,12 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 754825592343010900L;
+
+    /**
+     * The array to be returned by {@link DefaultGeodeticDatum#getBursaWolfParameters()}
+     * when there is no Bursa Wolf parameters.
+     */
+    static final BursaWolfParameters[] EMPTY_ARRAY = new BursaWolfParameters[0];
 
     /**
      * The conversion factor from <cite>parts per million</cite> to scale minus one.
@@ -232,14 +241,14 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * Returns an affine transform that can be used to define this Bursa Wolf parameters.
      * The formula is as below, where {@code R} is a conversion factor from arc-seconds to radians:
      *
-     * <blockquote><pre>R = toRadians(1″)
+     * <blockquote><pre> R = toRadians(1″)
      * S = 1 + {@linkplain #dS}/1000000
-     * ┌    ┐    ┌                            ┐  ┌   ┐
-     * │ X' │    │     S   -{@linkplain #rZ}*RS   +{@linkplain #rY}*RS   {@linkplain #tX} │  │ X │
-     * │ Y' │  = │ +{@linkplain #rZ}*RS       S   -{@linkplain #rX}*RS   {@linkplain #tY} │  │ Y │
-     * │ Z' │    │ -{@linkplain #rY}*RS   +{@linkplain #rX}*RS       S   {@linkplain #tZ} │  │ Z │
-     * │ 1  │    │     0       0       0    1 │  │ 1 │
-     * └    ┘    └                            ┘  └   ┘</pre></blockquote>
+     * ┌    ┐    ┌                               ┐  ┌   ┐
+     * │ X' │    │      S   -{@linkplain #rZ}*RS   +{@linkplain #rY}*RS   {@linkplain #tX} │  │ X │
+     * │ Y' │  = │ +{@linkplain #rZ}*RS        S   -{@linkplain #rX}*RS   {@linkplain #tY} │  │ Y │
+     * │ Z' │    │ -{@linkplain #rY}*RS   +{@linkplain #rX}*RS        S   {@linkplain #tZ} │  │ Z │
+     * │ 1  │    │      0        0        0    1 │  │ 1 │
+     * └    ┘    └                               ┘  └   ┘</pre></blockquote>
      *
      * This affine transform can be applied on <strong>geocentric</strong> coordinates.
      *
