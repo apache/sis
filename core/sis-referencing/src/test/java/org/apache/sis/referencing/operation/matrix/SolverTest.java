@@ -119,7 +119,7 @@ public final strictfp class SolverTest extends TestCase {
     }
 
     /**
-     * Tests {@link Solver#inverse(MatrixSIS)} with a square matrix that contains a {@link Double#NaN} value.
+     * Tests {@link Solver#inverse(MatrixSIS, boolean)} with a square matrix that contains a {@link Double#NaN} value.
      *
      * @throws NoninvertibleMatrixException Should not happen.
      */

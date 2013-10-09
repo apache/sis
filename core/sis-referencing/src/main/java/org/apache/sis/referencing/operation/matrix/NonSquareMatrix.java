@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.4
  * @module
  *
- * @see Matrices#create(int, int)
+ * @see Matrices#createDiagonal(int, int)
  */
 final class NonSquareMatrix extends GeneralMatrix {
     /**
