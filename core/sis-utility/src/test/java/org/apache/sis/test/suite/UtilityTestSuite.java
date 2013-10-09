@@ -124,6 +124,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
     org.apache.sis.internal.jaxb.gco.MeasureTest.class,
     org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
+    org.apache.sis.internal.jaxb.gmd.LanguageMarshallingTest.class,
     org.apache.sis.util.iso.NameMarshallingTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
@@ -133,6 +134,7 @@ public final strictfp class UtilityTestSuite extends TestSuite {
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(UtilityTestSuite.class, BASE_TEST_CLASSES);
+        assertNoMissingTest(UtilityTestSuite.class);
+        verifyTestList(UtilityTestSuite.class);
     }
 }

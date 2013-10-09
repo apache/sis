@@ -56,7 +56,7 @@ public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
         try {
             ensureOverrideMethods(new OGCNamespacePrefixMapper(null));
         } catch (NoClassDefFoundError e) {
-            assumeNoException(e);
+            // Ignore the exception, since it may be normal.
         }
     }
 
@@ -73,7 +73,7 @@ public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
         try {
             ensureOverrideMethods(new OGCNamespacePrefixMapper_Endorsed(null));
         } catch (NoClassDefFoundError e) {
-            assumeNoException(e);
+            // Ignore the exception, since it may be normal.
         }
     }
 

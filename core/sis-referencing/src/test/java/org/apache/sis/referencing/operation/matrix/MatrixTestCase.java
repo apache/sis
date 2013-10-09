@@ -181,6 +181,19 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
+     * Asserts that the given matrix is equals to the given expected values, up to the given tolerance threshold.
+     * This method compares the elements values in two slightly redundant ways.
+     */
+    static void assertMatrixEquals(final double[] expected, final int numRow, final int numCol,
+            final MatrixSIS actual, final double tolerance)
+    {
+        assertEquals("numRow", numRow, actual.getNumRow());
+        assertEquals("numCol", numCol, actual.getNumCol());
+        assertArrayEquals(expected, actual.getElements(), tolerance); // First because more informative in case of failure.
+        assertTrue(Matrices.create(numRow, numCol, expected).equals(actual, tolerance));
+    }
+
+    /**
      * Creates an array of the given length filled with random values. All random values are between 0 inclusive
      * and 100 exclusive. This method never write negative values. Consequently, any strictly negative value set
      * by the test method is guaranteed to be different than all original values in the returned array.
