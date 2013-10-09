@@ -19,9 +19,13 @@ package org.apache.sis.referencing.operation.matrix;
 import java.util.Random;
 import Jama.Matrix;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
+
+import static java.lang.Double.NaN;
+import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertMatrixEquals;
 
 
 /**
@@ -110,7 +114,97 @@ public final strictfp class SolverTest extends TestCase {
                 continue;
             }
             final MatrixSIS U = Solver.solve(matrix, matrixArg);
-            MatrixTestCase.assertMatrixEquals(jama, U, TOLERANCE);
+            assertMatrixEquals(jama, U, TOLERANCE);
         }
+    }
+
+    /**
+     * Tests {@link Solver#inverse(MatrixSIS, boolean)} with a square matrix that contains a {@link Double#NaN} value.
+     *
+     * @throws NoninvertibleMatrixException Should not happen.
+     */
+    @Test
+    @DependsOnMethod("testSolve")
+    public void testInverseWithNaN() throws NoninvertibleMatrixException {
+        /*
+         * Just for making sure that our matrix is correct.
+         */
+        matrix = Matrices.create(5, 5, new double[] {
+            20,  0,   0,   0, -3000,
+            0, -20,   0,   0,  4000,
+            0,   0,   0,   2,    20,
+            0,   0, 400,   0,  2000,
+            0,   0,   0,   0,     1
+        });
+        double[] expected = {
+            0.05,  0,  0,      0,  150,
+            0, -0.05,  0,      0,  200,
+            0,     0,  0, 0.0025,   -5,
+            0,     0,  0.5,    0,  -10,
+            0,     0,  0,      0,    1
+        };
+        MatrixSIS inverse = Solver.inverse(matrix, false);
+        assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
+        /*
+         * Set a scale factor to NaN. The translation term for the corresponding
+         * dimension become unknown, so it most become NaN in the inverse matrix.
+         */
+        matrix = Matrices.create(5, 5, new double[] {
+            20,  0,   0,   0, -3000,
+            0, -20,   0,   0,  4000,
+            0,   0,   0, NaN,    20,  // Translation is 20: can not be converted.
+            0,   0, 400,   0,  2000,
+            0,   0,   0,   0,     1
+        });
+        expected = new double[] {
+            0.05,  0,  0,      0,  150,
+            0, -0.05,  0,      0,  200,
+            0,     0,  0, 0.0025,   -5,
+            0,     0,  NaN,    0,  NaN,
+            0,     0,  0,      0,    1
+        };
+        inverse = Solver.inverse(matrix, false);
+        assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
+        /*
+         * Set a scale factor to NaN with translation equals to 0.
+         * The zero value should be preserved, since 0 × any == 0
+         * (ignoring infinities).
+         */
+        matrix = Matrices.create(5, 5, new double[] {
+            20,  0,   0,   0, -3000,
+            0, -20,   0,   0,  4000,
+            0,   0,   0, NaN,     0,  // Translation is 0: should be preserved.
+            0,   0, 400,   0,  2000,
+            0,   0,   0,   0,     1
+        });
+        expected = new double[] {
+            0.05,  0,  0,      0,  150,
+            0, -0.05,  0,      0,  200,
+            0,     0,  0, 0.0025,   -5,
+            0,     0,  NaN,    0,    0,
+            0,     0,  0,      0,    1
+        };
+        inverse = Solver.inverse(matrix, false);
+        assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
+        /*
+         * Set a translation term to NaN. The translation should be NaN in
+         * the inverse matrix too, but the scale factor can still be compute.
+         */
+        matrix = Matrices.create(5, 5, new double[] {
+            20,  0,   0,   0, -3000,
+            0, -20,   0,   0,  4000,
+            0,   0,   0,   2,   NaN,
+            0,   0, 400,   0,  2000,
+            0,   0,   0,   0,     1
+        });
+        expected = new double[] {
+            0.05,  0,  0,      0,  150,
+            0, -0.05,  0,      0,  200,
+            0,     0,  0, 0.0025,   -5,
+            0,     0,  0.5,    0,  NaN,
+            0,     0,  0,      0,    1
+        };
+        inverse = Solver.inverse(matrix, false);
+        assertMatrixEquals(expected, 5, 5, inverse, TOLERANCE);
     }
 }

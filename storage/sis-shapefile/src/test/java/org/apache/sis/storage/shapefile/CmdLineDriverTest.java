@@ -17,9 +17,10 @@
 package org.apache.sis.storage.shapefile;
 
 import java.io.IOException;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 /**
@@ -30,7 +31,7 @@ import static org.junit.Assert.assertTrue;
  * @version 0.4
  * @module
  */
-public final strictfp class CmdLineDriverTest {
+public final strictfp class CmdLineDriverTest extends TestCase {
 
     @Test
     public void testApp() throws IOException {

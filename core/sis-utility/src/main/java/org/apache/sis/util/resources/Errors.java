@@ -536,6 +536,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int RequireDecimalSeparator = 33;
 
         /**
+         * Matrix is singular.
+         */
+        public static final int SingularMatrix = 125;
+
+        /**
          * Thread “{0}” seems stalled.
          */
         public static final int StalledThread_1 = 63;
