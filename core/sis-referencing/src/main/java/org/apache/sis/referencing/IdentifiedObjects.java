@@ -386,9 +386,9 @@ public final class IdentifiedObjects extends Static {
      *   <li>Otherwise returns the {@linkplain Identifier#getCode() identifier code}.</li>
      * </ul>
      *
-     * This method is provided because the {@link GenericName#toString()} behavior is specified
-     * by its javadoc, while {@link ReferenceIdentifier} has no such contract. For example the
-     * {@link DefaultIdentifier} implementation provides a WKT-like string representation.
+     * This method is provided because the {@link GenericName#toString()} behavior is specified by its javadoc,
+     * while {@link ReferenceIdentifier} has no such contract. For example like most ISO 19115 objects in SIS,
+     * the {@link org.apache.sis.metadata.iso.DefaultIdentifier} implementation is formatted as a tree.
      * This static method can be used when a "name-like" representation is needed for any implementation.
      *
      * @param  identifier The identifier, or {@code null}.
