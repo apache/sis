@@ -199,7 +199,8 @@ public final class MathFunctions extends Static {
             dot.setToProduct(v1, v1);
             sum.add(dot);
         }
-        return Math.sqrt(sum.value);
+        sum.sqrt();
+        return sum.value;
     }
 
     /**
