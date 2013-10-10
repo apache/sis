@@ -97,7 +97,7 @@ import java.util.Objects;
  *       </mtr>
  *     </mtable>
  *   </mfenced>
- *   <mo>⋅</mo>
+ *   <mo>×</mo>
  *   <mfenced open="[" close="]">
  *     <mtable>
  *       <mtr><mtd><msub><mi>X</mi><mi>s</mi></msub></mtd></mtr>

@@ -20,7 +20,6 @@ import java.util.Arrays;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.util.DoubleDouble;
 
 
@@ -394,24 +393,33 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * {@inheritDoc}
-     *
-     * <p>The current implementation discards the extended precision, if any.</p>
      */
     @Override
     public final void normalizeColumns() {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
-        final double[] column = new double[numRow];
+        final int errors = numRow * numCol; // Where error values start.
+        final double[] elt = getExtendedElements(this, numRow, numCol, false);
+        final DoubleDouble sum = new DoubleDouble();
+        final DoubleDouble dot = new DoubleDouble();
         for (int i=0; i<numCol; i++) {
+            sum.clear();
             for (int j=0; j<numRow; j++) {
-                column[j] = elements[j*numCol + i];
+                dot.setFrom(elt, j*numCol + i, errors);
+                dot.multiply(dot);
+                sum.add(dot);
             }
-            final double m = MathFunctions.magnitude(column);
+            sum.sqrt();
             for (int j=0; j<numRow; j++) {
-                elements[j*numCol + i] /= m;
+                final int k = j*numCol + i;
+                dot.setFrom(sum);
+                dot.inverseDivide(elt, k, errors);
+                dot.storeTo(elt, k, errors);
             }
         }
-        Arrays.fill(elements, numRow * numCol, elements.length, 0);
+        if (elt != elements) {
+            System.arraycopy(elt, 0, elements, 0, elements.length);
+        }
     }
 
     /**
