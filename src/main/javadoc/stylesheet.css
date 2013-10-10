@@ -64,14 +64,16 @@
 
 /*
  * Table without vertical space between rows and a little bit of space between columns.
- * This table has no border.
+ * This table has no border. Headers are still centered and other cells left-aligned.
  */
-.contentContainer .block table.compact
+.contentContainer .block table.compact,
+.contentContainer ul.blockList ul.blockList li.blockList table.compact
 {
   width:          auto;
   border:         none;
   border-spacing: 0pt;
   padding:        0pt;
+  line-height:    1em;
 }
 
 .contentContainer .block table.compact tr td
@@ -80,20 +82,6 @@
   padding-bottom: 0pt;
   padding-right:  3pt;
   padding-left:   3pt;
-}
-
-.contentContainer .block table.compact tr td.onright
-{
-  padding-right: 1pt;
-  text-align:    right;
-  font-weight:   normal;
-}
-
-.contentContainer .block table.compact tr td.onleft
-{
-  padding-left: 1pt;
-  text-align:   left;
-  font-weight:  normal;
 }
 
 /*
@@ -573,7 +561,7 @@ table.packageSummary  td.colFirst {
  * The table for the class or members summaries.
  * This is where the appareance of rows are specified.
  *
- * Note: definitions need to be cancelled "table.sis" definition.
+ * Note: need to be cancelled in the "table.sis" and "table.compact" definitions.
  */
 ul.blockList ul.blockList li.blockList table {
   margin: 0 0 12px 0px;

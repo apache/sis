@@ -90,7 +90,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
             name(Vocabulary.Keys.DublinJulian), new Date(-25568 * (24*60*60*1000L) + (12*60*60*1000L)));
 
     /**
-     * Default datum for time measured since January 1st, 1970 at 00:00 UTC.
+     * Datum for time measured since January 1st, 1970 at 00:00 UTC.
      *
      * @see org.apache.sis.referencing.crs.DefaultTemporalCRS#UNIX
      * @see org.apache.sis.referencing.crs.DefaultTemporalCRS#JAVA

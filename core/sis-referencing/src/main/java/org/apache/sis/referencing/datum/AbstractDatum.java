@@ -161,9 +161,11 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Same convenience method than {@link org.apache.sis.cs.AbstractCS#name(int)} except that we get the
-     * unlocalized name (usually in English locale), because the name is part of the elements compared by
-     * the {@link #equals(Object, ComparisonMode)} method.
+     * Same convenience method than {@link org.apache.sis.referencing.cs.AbstractCS#name(int)} except that
+     * we get the unlocalized name (usually in English locale), because the name is part of the elements
+     * compared by the {@link #equals(Object, ComparisonMode)} method.
+     *
+     * @see org.apache.sis.referencing.cs.AbstractCS#name(int)
      */
     static Map<String,Object> name(final int key) {
         final Map<String,Object> properties = new HashMap<>(4);

@@ -246,9 +246,9 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
-        code      = property(properties, CODE_KEY,      String.class);
-        version   = property(properties, VERSION_KEY,   String.class);
-        remarks   = Types.toInternationalString(properties, REMARKS_KEY);
+        code    = property(properties, CODE_KEY,    String.class);
+        version = property(properties, VERSION_KEY, String.class);
+        remarks = Types.toInternationalString(properties, REMARKS_KEY);
         /*
          * Map String authority to one of the pre-defined constants (typically EPSG or OGC).
          */

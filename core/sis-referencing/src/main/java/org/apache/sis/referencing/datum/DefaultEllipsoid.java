@@ -65,6 +65,18 @@ import java.util.Objects;
  *       {@linkplain #getSemiMinorAxis() semi-minor axis}.</li>
  * </ul>
  *
+ * Some numerical values derived from the above properties are:
+ *
+ * <ul>
+ *   <li>{@linkplain #getAuthalicRadius() authalic radius}</li>
+ *   <li>{@linkplain #getEccentricity() eccentricity}</li>
+ * </ul>
+ *
+ * {@section Calculations}
+ * This class contains an {@link #orthodromicDistance(double, double, double, double)} convenience method
+ * for calculating distances on the great circle. This convenience method is provided as an alternative to
+ * the {@link org.apache.sis.referencing.GeodeticCalculator}.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4 (derived from geotk-1.2)
@@ -115,12 +127,20 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * WGS 1984 ellipsoid (EPSG:7030) used in GPS systems.
-     * The semi-major and semi-minor axis length are approximatively 6378137 and 6356752
-     * {@linkplain SI#METRE metres} respectively.
+     * WGS 1984 ellipsoid used in GPS systems.
      * This is the default ellipsoid for most {@code org.apache.sis} packages.
      *
+     *  <blockquote><table class="compact" style="text-align: left;">
+     *   <tr><th>EPSG code:</th>          <td>7030</td></tr>
+     *   <tr><th>Name and aliases:</th>   <td>WGS84, WGS 1984</td></tr>
+     *   <tr><th>Semi-major axis:</th>    <td>6378137</td></tr>
+     *   <tr><th>Semi-minor axis:</th>    <td>6356752 (approximative)</td></tr>
+     *   <tr><th>Inverse flattening:</th> <td>298.257223563 (definitive)</td></tr>
+     *   <tr><th>Axis unit:</th>          <td>{@link SI#METRE}</td></tr>
+     * </table></blockquote>
+     *
      * @see DefaultGeodeticDatum#WGS84
+     * @see org.apache.sis.referencing.crs.DefaultGeographicCRS#WGS84
      */
     public static final DefaultEllipsoid WGS84 = createFlattenedSphere(
             properties("WGS84", 7030, "WGS 1984"), 6378137.0, 298.257223563, SI.METRE);
@@ -181,7 +201,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @see DefaultGeodeticDatum#SPHERE
      */
     public static final DefaultEllipsoid SPHERE =
-            createEllipsoid("SPHERE", 6371000, 6371000, SI.METRE);
+            createEllipsoid("Sphere", 6371000, 6371000, SI.METRE);
 
     /**
      * The equatorial radius. This field should be considered as final.
@@ -275,7 +295,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Constructs a new ellipsoid using the specified axis length.
+     * Constructs a new ellipsoid using the specified name (without authority) and axis length.
      *
      * @param name          The ellipsoid name.
      * @param semiMajorAxis The equatorial radius.
@@ -292,9 +312,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Constructs a new ellipsoid using the specified axis length. The properties map is
-     * given unchanged to the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
-     * super-class constructor}.
+     * Constructs a new ellipsoid using the specified properties and axis length.
+     * The properties map is given unchanged to the
+     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
      * @param properties    Set of properties. Should contains at least {@code "name"}.
      * @param semiMajorAxis The equatorial radius.
@@ -316,7 +336,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Constructs a new ellipsoid using the specified axis length and inverse flattening value.
+     * Constructs a new ellipsoid using the specified name (without authority), axis length and inverse flattening value.
      *
      * @param name              The ellipsoid name.
      * @param semiMajorAxis     The equatorial radius.
@@ -333,8 +353,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Constructs a new ellipsoid using the specified axis length and
-     * inverse flattening value. The properties map is given unchanged to the
+     * Constructs a new ellipsoid using the specified properties, axis length and inverse flattening value.
+     * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
      * @param properties        Set of properties. Should contains at least {@code "name"}.
@@ -597,6 +617,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @param  x2 Longitude of second point (in decimal degrees).
      * @param  y2 Latitude  of second point (in decimal degrees).
      * @return The orthodromic distance (in the units of this ellipsoid's axis).
+     *
+     * @see org.apache.sis.referencing.GeodeticCalculator
      */
     public double orthodromicDistance(double x1, double y1, double x2, double y2) {
         x1 = toRadians(x1);
