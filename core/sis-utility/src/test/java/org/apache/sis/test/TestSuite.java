@@ -22,7 +22,11 @@ import java.util.HashSet;
 import java.io.File;
 import java.net.URL;
 import java.net.URISyntaxException;
+import javax.management.JMException;
+import org.apache.sis.internal.system.Shutdown;
+import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.util.Classes;
+import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -184,5 +188,22 @@ public abstract strictfp class TestSuite {
                 fail("Class " + testCase.getCanonicalName() + " is declared twice.");
             }
         }
+    }
+
+    /**
+     * Simulates a module uninstall after all tests. This method will first notify any classpath-dependant
+     * services that the should clear their cache, then stop the SIS daemon threads. Those operations are
+     * actually not needed in non-server environment (it is okay to just let the JVM stop by itself), but
+     * the intend here is to ensure that no exception is thrown.
+     *
+     * <p>Since this method stops SIS daemon threads, the SIS library shall not be used anymore after
+     * this method execution.</p>
+     *
+     * @throws JMException If an error occurred during unregistration of the supervisor MBean.
+     */
+    @AfterClass
+    public static void shutdown() throws JMException {
+        SystemListener.fireClasspathChanged();
+        Shutdown.stop(TestSuite.class);
     }
 }
