@@ -71,18 +71,40 @@ import java.util.Objects;
  *
  * {@section Distance calculations}
  * This class contains an {@link #orthodromicDistance(double, double, double, double)} convenience method
- * for calculating distances on the great circle. This convenience method is provided as an alternative to
+ * for calculating distances on great circles. This convenience method is provided as an alternative to
  * the {@link org.apache.sis.referencing.GeodeticCalculator}.
  *
- * {@section Frequently used ellipsoids}
- * A set of constants for frequently used ellipsoids is defined in the
- * {@link org.apache.sis.referencing.StandardObjects.Geodetic} class.
+ * {@section Creating new ellipsoid instances}
+ * New instances can be created either directly by specifying all information to a factory method, or
+ * indirectly by specifying the identifier (primary key) of a database entry containing all needed information.
+ * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many ellipsoids
+ * currently or historically used by various countries around the world, and
+ * Apache SIS provides convenience shortcuts for some frequently used EPSG definitions.
+ *
+ * <p>The first item in the following list is the easiest but most restrictive way to get an ellipsoid.
+ * Any other item can be chosen for more freedom. Each item typically implies all subsequent items under
+ * the hood, so this list can been seen as <cite>top to bottom</cite> API.</p>
+ *
+ * <ol>
+ *   <li>Create an {@code Ellipsoid} from one of the static convenience shortcuts listed in
+ *       {@link org.apache.sis.referencing.StandardObjects.Geodetic#ellipsoid()}.</li>
+ *   <li>Create an {@code Ellipsoid} from an identifier in a database by invoking
+ *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createEllipsoid(String)}.</li>
+ *   <li>Create an {@code Ellipsoid} by invoking the {@code createEllipsoid(…)} or {@code createFlattenedSphere(…)}
+ *       methods defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code DefaultEllipsoid} by invoking the
+ *       {@link #createEllipsoid(Map, double, double, Unit) createEllipsoid(…)} or
+ *       {@link #createFlattenedSphere(Map, double, double, Unit) createFlattenedSphere(…)}
+ *       static methods defined in this class.</li>
+ * </ol>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.StandardObjects.Geodetic#ellipsoid()
  */
 @Immutable
 @XmlType(name="EllipsoidType", propOrder={

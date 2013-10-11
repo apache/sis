@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Collections;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
@@ -26,9 +25,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -36,6 +33,7 @@ import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.GREENWICH;
 
 // Related to JDK7
 import java.util.Objects;
@@ -44,11 +42,35 @@ import java.util.Objects;
 /**
  * Defines the origin from which longitude values are determined.
  *
+ * {@section Creating new prime meridian instances}
+ * New instances can be created either directly by specifying all information to a constructor, or
+ * indirectly by specifying the identifier (primary key) of a database entry containing all needed information.
+ * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many prime meridians
+ * currently or historically used by various countries around the world, and
+ * Apache SIS provides convenience shortcuts for some frequently used EPSG definitions.
+ *
+ * <p>The first item in the following list is the easiest but most restrictive way to get a prime meridian.
+ * Any other item can be chosen for more freedom. Each item typically implies all subsequent items under
+ * the hood, so this list can been seen as <cite>top to bottom</cite> API.</p>
+ *
+ * <ol>
+ *   <li>Create a {@code PrimeMeridian} from one of the static convenience shortcuts listed in
+ *       {@link org.apache.sis.referencing.StandardObjects.Geodetic#primeMeridian()}.</li>
+ *   <li>Create a {@code PrimeMeridian} from an identifier in a database by invoking
+ *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createPrimeMeridian(String)}.</li>
+ *   <li>Create a {@code PrimeMeridian} by invoking the {@code createPrimeMeridian(…)}
+ *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code DefaultPrimeMeridian} by invoking the
+ *       {@linkplain #DefaultPrimeMeridian(Map, double, Unit) constructor}.</li>
+ * </ol>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.StandardObjects.Geodetic#primeMeridian()
  */
 @Immutable
 @XmlType(name = "PrimeMeridianType")
@@ -58,17 +80,6 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 541978454643213305L;;
-
-    /**
-     * The Greenwich meridian (EPSG:8901), with angular measurements in decimal degrees.
-     */
-    public static final DefaultPrimeMeridian GREENWICH;
-    static {
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(NAME_KEY, "Greenwich"); // Name is fixed by ISO 19111.
-        properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, "8901"));
-        GREENWICH = new DefaultPrimeMeridian(properties, 0, NonSI.DEGREE_ANGLE);
-    }
 
     /**
      * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
