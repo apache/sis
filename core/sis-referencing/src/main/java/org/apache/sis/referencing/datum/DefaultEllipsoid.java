@@ -75,15 +75,14 @@ import java.util.Objects;
  * the {@link org.apache.sis.referencing.GeodeticCalculator}.
  *
  * {@section Creating new ellipsoid instances}
- * New instances can be created either directly by specifying all information to a factory method, or
- * indirectly by specifying the identifier (primary key) of a database entry containing all needed information.
- * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many ellipsoids
- * currently or historically used by various countries around the world, and
- * Apache SIS provides convenience shortcuts for some frequently used EPSG definitions.
+ * New instances can be created either directly by specifying all information to a factory method (choices 3
+ * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
+ * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many ellipsoids,
+ * and Apache SIS provides convenience shortcuts for some of them.
  *
- * <p>The first item in the following list is the easiest but most restrictive way to get an ellipsoid.
- * Any other item can be chosen for more freedom. Each item typically implies all subsequent items under
- * the hood, so this list can been seen as <cite>top to bottom</cite> API.</p>
+ * <p>Choice 1 in the following list is the easiest but most restrictive way to get an ellipsoid.
+ * The other choices provide more freedom. Each choice delegates its work to the subsequent items
+ * (in the default configuration), so this list can been seen as <cite>top to bottom</cite> API.</p>
  *
  * <ol>
  *   <li>Create an {@code Ellipsoid} from one of the static convenience shortcuts listed in
@@ -97,6 +96,12 @@ import java.util.Objects;
  *       {@link #createFlattenedSphere(Map, double, double, Unit) createFlattenedSphere(…)}
  *       static methods defined in this class.</li>
  * </ol>
+ *
+ * <b>Example:</b> the following code gets the WGS84 ellipsoid:
+ *
+ * {@preformat java
+ *     Ellipsoid e = StandardObjects.Geodetic.WGS84.ellipsoid();
+ * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)

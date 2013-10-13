@@ -67,7 +67,7 @@ import java.util.Objects;
  * <center>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
  *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)</center>
  *
- * <p><math alttext="MathML capable browser required">
+ * <p><math display="block" alttext="MathML capable browser required">
  *   <mfenced open="[" close="]">
  *     <mtable>
  *       <mtr><mtd><msub><mi>X</mi><mi>t</mi></msub></mtd></mtr>

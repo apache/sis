@@ -43,15 +43,14 @@ import java.util.Objects;
  * Defines the origin from which longitude values are determined.
  *
  * {@section Creating new prime meridian instances}
- * New instances can be created either directly by specifying all information to a constructor, or
- * indirectly by specifying the identifier (primary key) of a database entry containing all needed information.
- * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many prime meridians
- * currently or historically used by various countries around the world, and
- * Apache SIS provides convenience shortcuts for some frequently used EPSG definitions.
+ * New instances can be created either directly by specifying all information to a factory method (choices 3
+ * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
+ * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many prime meridians,
+ * and Apache SIS provides convenience shortcuts for some of them.
  *
- * <p>The first item in the following list is the easiest but most restrictive way to get a prime meridian.
- * Any other item can be chosen for more freedom. Each item typically implies all subsequent items under
- * the hood, so this list can been seen as <cite>top to bottom</cite> API.</p>
+ * <p>Choice 1 in the following list is the easiest but most restrictive way to get a prime meridian.
+ * The other choices provide more freedom. Each choice delegates its work to the subsequent items
+ * (in the default configuration), so this list can been seen as <cite>top to bottom</cite> API.</p>
  *
  * <ol>
  *   <li>Create a {@code PrimeMeridian} from one of the static convenience shortcuts listed in
@@ -63,6 +62,12 @@ import java.util.Objects;
  *   <li>Create a {@code DefaultPrimeMeridian} by invoking the
  *       {@linkplain #DefaultPrimeMeridian(Map, double, Unit) constructor}.</li>
  * </ol>
+ *
+ * <b>Example:</b> the following code gets the Greenwich prime meridian:
+ *
+ * {@preformat java
+ *     PrimeMeridian pm = StandardObjects.Geodetic.WGS84.primeMeridian();
+ * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
