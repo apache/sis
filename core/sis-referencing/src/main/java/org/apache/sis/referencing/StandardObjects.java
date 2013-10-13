@@ -393,7 +393,7 @@ public abstract class StandardObjects implements Serializable {
          * The following table summarizes the ellipsoids known to this class,
          * together with a constant that can be used for fetching that ellipsoid:
          *
-         * <blockquote><table class="compact">
+         * <blockquote><table class="sis">
          *   <tr><th>Name or alias</th>                    <th>Constant</th>        <th>EPSG</th></tr>
          *   <tr><td>Clarke 1866</td>                      <td>{@link #NAD27}</td>  <td>7008</td></tr>
          *   <tr><td>International 1924</td>               <td>{@link #ED50}</td>   <td>7022</td></tr>
