@@ -20,11 +20,14 @@ import java.util.Map;
 import java.util.HashMap;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
+import javax.measure.unit.NonSI;
 import javax.measure.quantity.Length;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
+import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
@@ -42,9 +45,25 @@ import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
  */
 final class StandardDefinitions {
     /**
+     * The EPSG code for Greenwich meridian.
+     */
+    static final String GREENWICH = "8901";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private StandardDefinitions() {
+    }
+
+    /**
+     * Creates the Greenwich prime meridian. This is the only prime meridian supported by SIS convenience shortcuts.
+     * If an other prime meridian is desired, the EPSG database shall be used.
+     */
+    static PrimeMeridian primeMeridian() {
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, "Greenwich")); // Name is fixed by ISO 19111.
+        properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, GREENWICH));
+        return new DefaultPrimeMeridian(properties, 0, NonSI.DEGREE_ANGLE);
     }
 
     /**
