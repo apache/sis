@@ -16,16 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
-import java.util.Map;
-import java.util.HashMap;
-import javax.measure.unit.NonSI;
 import org.apache.sis.util.Static;
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
-
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 
 
 /**
@@ -42,24 +33,10 @@ import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
  */
 public final class ReferencingUtilities extends Static {
     /**
-     * The EPSG code for Greenwich meridian.
-     */
-    public static final String GREENWICH_CODE = "8901";
-
-    /**
-     * The Greenwich meridian (EPSG:8901), with angular measurements in decimal degrees.
-     */
-    public static final DefaultPrimeMeridian GREENWICH;
-    static {
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, "Greenwich")); // Name is fixed by ISO 19111.
-        properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, GREENWICH_CODE));
-        GREENWICH = new DefaultPrimeMeridian(properties, 0, NonSI.DEGREE_ANGLE);
-    }
-
-    /**
      * Do not allow instantiation of this class.
      */
     private ReferencingUtilities() {
     }
+
+    // TODO: methods to be ported from Geotk later.
 }

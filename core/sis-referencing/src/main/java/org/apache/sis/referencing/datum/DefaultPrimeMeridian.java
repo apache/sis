@@ -33,7 +33,6 @@ import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.GREENWICH;
 
 // Related to JDK7
 import java.util.Objects;
@@ -96,15 +95,6 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * The angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
      */
     private final Unit<Angle> angularUnit;
-
-    /**
-     * Constructs a new object in which every attributes are set to a default value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultPrimeMeridian() {
-        this(GREENWICH);
-    }
 
     /**
      * Constructs a new prime meridian with the same values than the specified one.

@@ -28,7 +28,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.util.logging.Logging;
@@ -354,7 +353,7 @@ public abstract class StandardObjects implements Serializable {
          * together with a constant that can be used for fetching that prime meridian:
          *
          * <blockquote><table class="sis">
-         *   <tr><th>Name or alias</th> <th>Constant</th>       <th>EPSG</th></tr>
+         *   <tr><th>Name or alias</th> <th>Field</th>          <th>EPSG</th></tr>
          *   <tr><td>Greenwich</td>     <td>{@link #WGS84}</td> <td>8901</td></tr>
          * </table></blockquote>
          *
@@ -374,12 +373,12 @@ public abstract class StandardObjects implements Serializable {
                         } else {
                             final DatumAuthorityFactory factory = datumFactory();
                             if (factory != null) try {
-                                cached = object = factory.createPrimeMeridian(ReferencingUtilities.GREENWICH_CODE);
+                                cached = object = factory.createPrimeMeridian(StandardDefinitions.GREENWICH);
                                 return object;
                             } catch (FactoryException e) {
                                 failure("primeMeridian", e);
                             }
-                            object = ReferencingUtilities.GREENWICH;
+                            object = StandardDefinitions.primeMeridian();
                         }
                         cached = object;
                     }
@@ -394,7 +393,7 @@ public abstract class StandardObjects implements Serializable {
          * together with a constant that can be used for fetching that ellipsoid:
          *
          * <blockquote><table class="sis">
-         *   <tr><th>Name or alias</th>                    <th>Constant</th>        <th>EPSG</th></tr>
+         *   <tr><th>Name or alias</th>                    <th>Field</th>           <th>EPSG</th></tr>
          *   <tr><td>Clarke 1866</td>                      <td>{@link #NAD27}</td>  <td>7008</td></tr>
          *   <tr><td>International 1924</td>               <td>{@link #ED50}</td>   <td>7022</td></tr>
          *   <tr><td>International 1979 / GRS 1980</td>    <td>{@link #ETRS89}</td> <td>7019</td></tr>
