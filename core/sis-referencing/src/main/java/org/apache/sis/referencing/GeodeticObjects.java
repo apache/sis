@@ -239,10 +239,10 @@ public enum GeodeticObjects {
     /**
      * Returns the prime meridian associated to this geodetic object.
      * The following table summarizes the prime meridians known to this class,
-     * together with a constant that can be used for fetching that prime meridian:
+     * together with an enumeration value that can be used for fetching that prime meridian:
      *
      * <blockquote><table class="sis">
-     *   <tr><th>Name or alias</th> <th>Field</th>          <th>EPSG</th></tr>
+     *   <tr><th>Name or alias</th> <th>Enum</th>           <th>EPSG</th></tr>
      *   <tr><td>Greenwich</td>     <td>{@link #WGS84}</td> <td>8901</td></tr>
      * </table></blockquote>
      *
@@ -279,10 +279,10 @@ public enum GeodeticObjects {
     /**
      * Returns the ellipsoid associated to this geodetic object.
      * The following table summarizes the ellipsoids known to this class,
-     * together with a constant that can be used for fetching that ellipsoid:
+     * together with an enumeration value that can be used for fetching that ellipsoid:
      *
      * <blockquote><table class="sis">
-     *   <tr><th>Name or alias</th>                    <th>Field</th>           <th>EPSG</th></tr>
+     *   <tr><th>Name or alias</th>                    <th>Enum</th>            <th>EPSG</th></tr>
      *   <tr><td>Clarke 1866</td>                      <td>{@link #NAD27}</td>  <td>7008</td></tr>
      *   <tr><td>International 1924</td>               <td>{@link #ED50}</td>   <td>7022</td></tr>
      *   <tr><td>International 1979 / GRS 1980</td>    <td>{@link #ETRS89}</td> <td>7019</td></tr>
