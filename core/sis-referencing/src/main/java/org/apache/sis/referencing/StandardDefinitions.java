@@ -35,7 +35,7 @@ import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 
 
 /**
- * Definitions of referencing objects identified by the {@link StandardObjects} constants.
+ * Definitions of referencing objects identified by the {@link GeodeticObjects} enumeration values.
  * This class is used only as a fallback if the objects can not be fetched from the EPSG database.
  *
  * @author  Martin Desruisseaux (Geomatys)
