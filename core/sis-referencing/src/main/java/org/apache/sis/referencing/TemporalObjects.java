@@ -105,7 +105,7 @@ public enum TemporalObjects {
      * The resource keys for the name as one of the {@code Vocabulary.Keys} constants,
      * or -1 for using the enumeration name.
      */
-    private final int name;
+    private final int key;
 
     /**
      * The date and time origin of this temporal datum.
@@ -123,7 +123,7 @@ public enum TemporalObjects {
      * Creates a new enumeration value of the given name with time counted since the given epoch.
      */
     private TemporalObjects(final int name, final long epoch) {
-        this.name  = name;
+        this.key   = name;
         this.epoch = epoch;
     }
 
@@ -156,9 +156,9 @@ public enum TemporalObjects {
                         object = JAVA.datum(); // Share the same instance for UNIX and JAVA.
                     } else {
                         final Map<String,Object> properties;
-                        if (name >= 0) {
+                        if (key >= 0) {
                             properties = new HashMap<>(4);
-                            final InternationalString name = Vocabulary.formatInternational(this.name);
+                            final InternationalString name = Vocabulary.formatInternational(key);
                             properties.put(NAME_KEY,  name.toString(Locale.ROOT));
                             properties.put(ALIAS_KEY, name);
                         } else {

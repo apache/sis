@@ -26,7 +26,6 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gml.GMLAdapter;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
@@ -43,10 +42,35 @@ import java.util.Objects;
  * {@linkplain org.opengis.referencing.cs.CoordinateSystemAxis coordinate system axis} with which
  * it is combined to create a {@linkplain org.opengis.referencing.crs.VerticalCRS vertical CRS}.
  *
+ * {@section Creating new vertical datum instances}
+ * New instances can be created either directly by specifying all information to a factory method (choices 3
+ * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
+ * Choice 1 in the following list is the easiest but most restrictive way to get a vertical datum.
+ * The other choices provide more freedom.
+ *
+ * <ol>
+ *   <li>Create a {@code VerticalDatum} from one of the static convenience shortcuts listed in
+ *       {@link org.apache.sis.referencing.VerticalObjects#datum()}.</li>
+ *   <li>Create a {@code VerticalDatum} from an identifier in a database by invoking
+ *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createVerticalDatum(String)}.</li>
+ *   <li>Create a {@code VerticalDatum} by invoking the {@code createVerticalDatum(…)}
+ *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code DefaultVerticalDatum} by invoking the
+ *       {@linkplain #DefaultVerticalDatum(Map, Date) constructor}.</li>
+ * </ol>
+ *
+ * <b>Example:</b> the following code gets a vertical datum for height above the geoid:
+ *
+ * {@preformat java
+ *     VerticalDatum pm = VerticalObjects.GEOID.datum();
+ * }
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.VerticalObjects#datum()
  */
 @Immutable
 @XmlType(name = "VerticalDatumType")
@@ -64,39 +88,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     private VerticalDatumType type;
 
     /**
-     * Default vertical datum for {@linkplain VerticalDatumType#BAROMETRIC barometric heights}.
-     */
-    public static final DefaultVerticalDatum BAROMETRIC =
-            new DefaultVerticalDatum(name(Vocabulary.Keys.BarometricAltitude), VerticalDatumType.BAROMETRIC);
-
-    /**
-     * Default vertical datum for {@linkplain VerticalDatumType#GEOIDAL geoidal heights}.
-     */
-    public static final DefaultVerticalDatum GEOIDAL =
-            new DefaultVerticalDatum(name(Vocabulary.Keys.Geoidal), VerticalDatumType.GEOIDAL);
-
-    /**
-     * Default vertical datum for ellipsoidal heights. Ellipsoidal heights are measured
-     * along the normal to the ellipsoid used in the definition of horizontal datum.
-     *
-     * <p><b>This datum is not part of ISO 19111 international standard.</b>
-     * Usage of this datum is generally not recommended since ellipsoidal heights make little sense without
-     * their (<var>latitude</var>, <var>longitude</var>) locations. The ISO specification defines instead
-     * three-dimensional {@code GeographicCRS} for that reason.</p>
-     */
-    public static final DefaultVerticalDatum ELLIPSOIDAL =
-            new DefaultVerticalDatum(name(Vocabulary.Keys.Ellipsoidal), VerticalDatumType.valueOf("ELLIPSOIDAL"));
-    // Do not use the VerticalDatumTypes.ELLIPSOIDAL constant in order to avoid unneeded class initialisation.
-
-    /**
-     * Default vertical datum for {@linkplain VerticalDatumType#OTHER_SURFACE other surface}.
-     */
-    public static final DefaultVerticalDatum OTHER_SURFACE =
-            new DefaultVerticalDatum(name(Vocabulary.Keys.OtherSurface), VerticalDatumType.OTHER_SURFACE);
-
-    /**
      * Creates a vertical datum from a name. This is a convenience constructor for
-     * {@link #DefaultVerticalDatum(Map, VerticalDatumType) DefaultTemporalDatum(Map, …)}
+     * {@link #DefaultVerticalDatum(Map, VerticalDatumType) DefaultVerticalDatum(Map, …)}
      * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property.
      *
      * @param name The datum name.
