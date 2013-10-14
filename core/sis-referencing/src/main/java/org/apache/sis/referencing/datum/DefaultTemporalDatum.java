@@ -80,21 +80,9 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     private final long origin;
 
     /**
-     * Constructs a new datum with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param datum The datum to copy.
-     */
-    public DefaultTemporalDatum(final TemporalDatum datum) {
-        super(datum);
-        origin = datum.getOrigin().getTime();
-    }
-
-    /**
-     * Constructs a temporal datum from a name.
+     * Creates a temporal datum from a name. This is a convenience constructor for
+     * {@link #DefaultTemporalDatum(Map, Date) DefaultTemporalDatum(Map, …)}
+     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property.
      *
      * @param name   The datum name.
      * @param origin The date and time origin of this temporal datum.
@@ -104,7 +92,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
-     * Constructs a temporal datum from a set of properties. The properties map is given
+     * Creates a temporal datum from a set of properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      *
      * @param properties Set of properties. Should contains at least {@code "name"}.
@@ -114,6 +102,22 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         super(properties);
         ensureNonNull("origin", origin);
         this.origin = origin.getTime();
+    }
+
+    /**
+     * Creates a new datum with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param datum The datum to copy.
+     *
+     * @see #castOrCopy(TemporalDatum)
+     */
+    protected DefaultTemporalDatum(final TemporalDatum datum) {
+        super(datum);
+        origin = datum.getOrigin().getTime();
     }
 
     /**

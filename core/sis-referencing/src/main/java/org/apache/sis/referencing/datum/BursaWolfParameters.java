@@ -208,7 +208,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     public final GeodeticDatum targetDatum;
 
     /**
-     * Constructs a new instance with all parameters set to 0.
+     * Creates a new instance with all parameters set to 0.
      *
      * @param target The target datum for this set of parameters, or {@code null} if unspecified.
      */
