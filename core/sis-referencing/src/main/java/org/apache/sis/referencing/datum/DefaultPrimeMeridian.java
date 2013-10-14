@@ -97,44 +97,21 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     private final Unit<Angle> angularUnit;
 
     /**
-     * Constructs a new prime meridian with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param meridian The prime meridian to copy.
-     */
-    public DefaultPrimeMeridian(final PrimeMeridian meridian) {
-        super(meridian);
-        greenwichLongitude = meridian.getGreenwichLongitude();
-        angularUnit        = meridian.getAngularUnit();
-    }
-
-    /**
-     * Constructs a prime meridian from a name and Greenwich longitude.
-     * The {@code greenwichLongitude} value is assumed in {@linkplain NonSI#DEGREE_ANGLE decimal degrees}.
-     *
-     * @param name The datum name.
-     * @param greenwichLongitude The longitude value relative to the Greenwich Meridian, in degrees.
-     */
-    public DefaultPrimeMeridian(final String name, final double greenwichLongitude) {
-        this(name, greenwichLongitude, NonSI.DEGREE_ANGLE);
-    }
-
-    /**
-     * Constructs a prime meridian from a name, Greenwich longitude and angular unit.
+     * Creates a prime meridian from a name and Greenwich longitude in degrees. This is a convenience
+     * constructor for {@link #DefaultPrimeMeridian(Map, double, Unit) DefaultPrimeMeridian(Map, …)}
+     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property,
+     * and with the unit of measurement fixed to {@link NonSI#DEGREE_ANGLE}.
      *
      * @param name                The datum name.
-     * @param greenwichLongitude  The longitude value relative to the Greenwich Meridian.
-     * @param angularUnit         The angular unit of the longitude, in degrees.
+     * @param greenwichLongitude  The longitude value relative to the Greenwich Meridian, in degrees.
+     *                            Positive values are east of Greenwich.
      */
-    public DefaultPrimeMeridian(final String name, final double greenwichLongitude, final Unit<Angle> angularUnit) {
-        this(Collections.singletonMap(NAME_KEY, name), greenwichLongitude, angularUnit);
+    public DefaultPrimeMeridian(final String name, final double greenwichLongitude) {
+        this(Collections.singletonMap(NAME_KEY, name), greenwichLongitude, NonSI.DEGREE_ANGLE);
     }
 
     /**
-     * Constructs a prime meridian from a set of properties. The properties map is given
+     * Creates a prime meridian from a set of properties. The properties map is given
      * unchanged to the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
      * super-class constructor}.
      *
@@ -150,6 +127,23 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         ensureNonNull("angularUnit", angularUnit);
         this.greenwichLongitude = greenwichLongitude;
         this.angularUnit = angularUnit;
+    }
+
+    /**
+     * Creates a new prime meridian with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param meridian The prime meridian to copy.
+     *
+     * @see #castOrCopy(PrimeMeridian)
+     */
+    protected DefaultPrimeMeridian(final PrimeMeridian meridian) {
+        super(meridian);
+        greenwichLongitude = meridian.getGreenwichLongitude();
+        angularUnit        = meridian.getAngularUnit();
     }
 
     /**

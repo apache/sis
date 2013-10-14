@@ -178,27 +178,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private Unit<Length> unit;
 
     /**
-     * Constructs a new ellipsoid with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param ellipsoid The ellipsoid to copy.
-     *
-     * @see #castOrCopy(Ellipsoid)
-     */
-    protected DefaultEllipsoid(final Ellipsoid ellipsoid) {
-        super(ellipsoid);
-        semiMajorAxis     = ellipsoid.getSemiMajorAxis();
-        semiMinorAxis     = ellipsoid.getSemiMinorAxis();
-        inverseFlattening = ellipsoid.getInverseFlattening();
-        ivfDefinitive     = ellipsoid.isIvfDefinitive();
-        unit              = ellipsoid.getAxisUnit();
-    }
-
-    /**
-     * Constructs a new ellipsoid using the specified axis length.
+     * Creates a new ellipsoid using the specified axis length.
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
@@ -232,30 +212,51 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Constructs a new ellipsoid using the specified name (without authority) and axis length.
+     * Creates a new ellipsoid with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param ellipsoid The ellipsoid to copy.
+     *
+     * @see #castOrCopy(Ellipsoid)
+     */
+    protected DefaultEllipsoid(final Ellipsoid ellipsoid) {
+        super(ellipsoid);
+        semiMajorAxis     = ellipsoid.getSemiMajorAxis();
+        semiMinorAxis     = ellipsoid.getSemiMinorAxis();
+        inverseFlattening = ellipsoid.getInverseFlattening();
+        ivfDefinitive     = ellipsoid.isIvfDefinitive();
+        unit              = ellipsoid.getAxisUnit();
+    }
+
+    /**
+     * Creates a new ellipsoid using the specified name and axis length in metres.
+     * This is a convenience method for {@link #createEllipsoid(Map, double, double, Unit) createEllipsoid(Map, …)}
+     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property
+     * and the unit of measurement fixed to {@link SI#METRE}.
      *
      * @param name          The ellipsoid name.
-     * @param semiMajorAxis The equatorial radius.
-     * @param semiMinorAxis The polar radius.
-     * @param unit          The units of the semi-major and semi-minor axis values.
+     * @param semiMajorAxis The equatorial radius in metres.
+     * @param semiMinorAxis The polar radius in metres.
      * @return An ellipsoid with the given axis length.
      */
     public static DefaultEllipsoid createEllipsoid(final String name,
                                                    final double semiMajorAxis,
-                                                   final double semiMinorAxis,
-                                                   final Unit<Length> unit)
+                                                   final double semiMinorAxis)
     {
-        return createEllipsoid(Collections.singletonMap(NAME_KEY, name), semiMajorAxis, semiMinorAxis, unit);
+        return createEllipsoid(Collections.singletonMap(NAME_KEY, name), semiMajorAxis, semiMinorAxis, SI.METRE);
     }
 
     /**
-     * Constructs a new ellipsoid using the specified properties and axis length.
+     * Creates a new ellipsoid using the specified properties and axis length.
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
      * @param properties    Set of properties. Should contains at least {@code "name"}.
-     * @param semiMajorAxis The equatorial radius.
-     * @param semiMinorAxis The polar radius.
+     * @param semiMajorAxis The equatorial radius in the given unit.
+     * @param semiMinorAxis The polar radius in the given unit.
      * @param unit          The units of the semi-major and semi-minor axis values.
      * @return An ellipsoid with the given axis length.
      */
@@ -273,29 +274,30 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Constructs a new ellipsoid using the specified name (without authority), axis length and inverse flattening value.
+     * Creates a new ellipsoid using the specified name, axis length in metres and inverse flattening value. This is
+     * a convenience method for {@link #createFlattenedSphere(Map, double, double, Unit) createFlattenedSphere(Map, …)}
+     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property and the unit
+     * of measurement fixed to {@link SI#METRE}.
      *
      * @param name              The ellipsoid name.
-     * @param semiMajorAxis     The equatorial radius.
+     * @param semiMajorAxis     The equatorial radius in metres.
      * @param inverseFlattening The inverse flattening value.
-     * @param unit              The units of the semi-major and semi-minor axis values.
      * @return An ellipsoid with the given axis length.
      */
     public static DefaultEllipsoid createFlattenedSphere(final String name,
                                                          final double semiMajorAxis,
-                                                         final double inverseFlattening,
-                                                         final Unit<Length> unit)
+                                                         final double inverseFlattening)
     {
-        return createFlattenedSphere(Collections.singletonMap(NAME_KEY, name), semiMajorAxis, inverseFlattening, unit);
+        return createFlattenedSphere(Collections.singletonMap(NAME_KEY, name), semiMajorAxis, inverseFlattening, SI.METRE);
     }
 
     /**
-     * Constructs a new ellipsoid using the specified properties, axis length and inverse flattening value.
+     * Creates a new ellipsoid using the specified properties, axis length and inverse flattening value.
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
      * @param properties        Set of properties. Should contains at least {@code "name"}.
-     * @param semiMajorAxis     The equatorial radius.
+     * @param semiMajorAxis     The equatorial radius in the given unit.
      * @param inverseFlattening The inverse flattening value.
      * @param unit              The units of the semi-major and semi-minor axis values.
      * @return An ellipsoid with the given axis length.

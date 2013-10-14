@@ -95,7 +95,9 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
             new DefaultVerticalDatum(name(Vocabulary.Keys.OtherSurface), VerticalDatumType.OTHER_SURFACE);
 
     /**
-     * Constructs a vertical datum from a name.
+     * Creates a vertical datum from a name. This is a convenience constructor for
+     * {@link #DefaultVerticalDatum(Map, VerticalDatumType) DefaultTemporalDatum(Map, …)}
+     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property.
      *
      * @param name The datum name.
      * @param type The type of this vertical datum.
@@ -105,21 +107,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Constructs a new datum with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param datum The datum to copy.
-     */
-    public DefaultVerticalDatum(final VerticalDatum datum) {
-        super(datum);
-        type = datum.getVerticalDatumType();
-    }
-
-    /**
-     * Constructs a vertical datum from a set of properties. The properties map is given
+     * Creates a vertical datum from a set of properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      *
      * @param properties Set of properties. Should contains at least {@code "name"}.
@@ -129,6 +117,22 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         super(properties);
         this.type = type;
         ensureNonNull("type", type);
+    }
+
+    /**
+     * Creates a new datum with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param datum The datum to copy.
+     *
+     * @see #castOrCopy(VerticalDatum)
+     */
+    protected DefaultVerticalDatum(final VerticalDatum datum) {
+        super(datum);
+        type = datum.getVerticalDatumType();
     }
 
     /**
