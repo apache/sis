@@ -18,8 +18,6 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Locale;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -33,7 +31,6 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.jaxb.gco.DateAsLongAdapter;
 
@@ -100,23 +97,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     private final InternationalString scope;
 
     /**
-     * Creates a new datum with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param datum The datum to copy.
-     */
-    public AbstractDatum(final Datum datum) {
-        super(datum);
-        realizationEpoch = MetadataUtilities.toMilliseconds(datum.getRealizationEpoch());
-        domainOfValidity = datum.getDomainOfValidity();
-        scope            = datum.getScope();
-        anchorPoint      = datum.getAnchorPoint();
-    }
-
-    /**
      * Creates a datum from a set of properties.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
@@ -161,18 +141,20 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Same convenience method than {@link org.apache.sis.referencing.cs.AbstractCS#name(int)} except that
-     * we get the unlocalized name (usually in English locale), because the name is part of the elements
-     * compared by the {@link #equals(Object, ComparisonMode)} method.
+     * Creates a new datum with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
      *
-     * @see org.apache.sis.referencing.cs.AbstractCS#name(int)
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param datum The datum to copy.
      */
-    static Map<String,Object> name(final int key) {
-        final Map<String,Object> properties = new HashMap<>(4);
-        final InternationalString name = Vocabulary.formatInternational(key);
-        properties.put(NAME_KEY,  name.toString(Locale.ROOT));
-        properties.put(ALIAS_KEY, name);
-        return properties;
+    protected AbstractDatum(final Datum datum) {
+        super(datum);
+        realizationEpoch = MetadataUtilities.toMilliseconds(datum.getRealizationEpoch());
+        domainOfValidity = datum.getDomainOfValidity();
+        scope            = datum.getScope();
+        anchorPoint      = datum.getAnchorPoint();
     }
 
     /**
