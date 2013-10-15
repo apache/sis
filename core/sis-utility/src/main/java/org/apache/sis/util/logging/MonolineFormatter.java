@@ -101,7 +101,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see SimpleFormatter
@@ -600,8 +600,8 @@ loop:   for (int i=0; ; i++) {
                 buffer.append(colorAt(level));
             }
             final int offset = buffer.length();
-            buffer.append(level.getLocalizedName());
-            buffer.append(CharSequences.spaces(levelWidth - (buffer.length() - offset)));
+            buffer.append(level.getLocalizedName())
+                  .append(CharSequences.spaces(levelWidth - (buffer.length() - offset)));
             margin += buffer.length() - offset;
             if (colors) {
                 buffer.append(X364.BACKGROUND_DEFAULT.sequence());
@@ -630,7 +630,6 @@ loop:   for (int i=0; ; i++) {
                     break;
                 }
             }
-            source = source.replace('$', '.');
             if (colors && emphase) {
                 buffer.append(X364.BOLD.sequence());
             }
