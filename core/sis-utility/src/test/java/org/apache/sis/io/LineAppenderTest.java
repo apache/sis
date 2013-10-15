@@ -87,9 +87,9 @@ public strictfp class LineAppenderTest extends AppenderTestCase {
     public void testInterleavedFlush() throws IOException {
         final LineAppender f = (LineAppender) appender;
         f.setTabulationWidth(4);
-        f.append("A");
+        f.append("S1");
         f.flush();
-        f.append("\tB");
-        assertOutputEquals(f.isTabulationExpanded() ? "A   B" : "A\tB");
+        f.append("\tS2");
+        assertOutputEquals(f.isTabulationExpanded() ? "S1  S2" : "S1\tS2");
     }
 }
