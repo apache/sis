@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -51,11 +50,11 @@ import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
  * <blockquote><table class="sis">
  *   <tr><th>Name or alias</th>    <th>Object type</th> <th>Enumeration value</th></tr>
  *   <tr><td>Dublin Julian</td>    <td>CRS, Datum</td>  <td>{@link #DUBLIN_JULIAN}</td></tr>
- *   <tr><td>Java time</td>        <td>CRS, Datum</td>  <td>{@link #JAVA}</td></tr>
+ *   <tr><td>Java time</td>        <td>CRS</td>         <td>{@link #JAVA}</td></tr>
  *   <tr><td>Julian</td>           <td>CRS, Datum</td>  <td>{@link #JULIAN}</td></tr>
  *   <tr><td>Modified Julian</td>  <td>CRS, Datum</td>  <td>{@link #MODIFIED_JULIAN}</td></tr>
  *   <tr><td>Truncated Julian</td> <td>CRS, Datum</td>  <td>{@link #TRUNCATED_JULIAN}</td></tr>
- *   <tr><td>Unix time</td>        <td>CRS, Datum</td>  <td>{@link #UNIX}</td></tr>
+ *   <tr><td>Unix/POSIX time</td>  <td>CRS, Datum</td>  <td>{@link #UNIX}</td></tr>
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -94,16 +93,15 @@ public enum TemporalObjects {
     /**
      * Time measured as seconds since January 1st, 1970 at 00:00 UTC.
      */
-    UNIX(-1, 0),
+    UNIX(Vocabulary.Keys.Time_1, 0),
 
     /**
      * Time measured as milliseconds since January 1st, 1970 at 00:00 UTC.
      */
-    JAVA(-1, 0);
+    JAVA(Vocabulary.Keys.Time_1, 0);
 
     /**
-     * The resource keys for the name as one of the {@code Vocabulary.Keys} constants,
-     * or -1 for using the enumeration name.
+     * The resource keys for the name as one of the {@code Vocabulary.Keys} constants.
      */
     private final int key;
 
@@ -133,12 +131,12 @@ public enum TemporalObjects {
      * together with an enumeration value that can be used for fetching that datum:
      *
      * <blockquote><table class="sis">
-     *   <tr><th>Name or alias</th>    <th>Enum</th></tr>
-     *   <tr><td>Dublin Julian</td>    <td>{@link #DUBLIN_JULIAN}</td></tr>
-     *   <tr><td>Julian</td>           <td>{@link #JULIAN}</td></tr>
-     *   <tr><td>Modified Julian</td>  <td>{@link #MODIFIED_JULIAN}</td></tr>
-     *   <tr><td>Truncated Julian</td> <td>{@link #TRUNCATED_JULIAN}</td></tr>
-     *   <tr><td>Unix / Java</td>      <td>{@link #JAVA}</td></tr>
+     *   <tr><th>Name or alias</th>      <th>Enum</th></tr>
+     *   <tr><td>Dublin Julian</td>      <td>{@link #DUBLIN_JULIAN}</td></tr>
+     *   <tr><td>Julian</td>             <td>{@link #JULIAN}</td></tr>
+     *   <tr><td>Modified Julian</td>    <td>{@link #MODIFIED_JULIAN}</td></tr>
+     *   <tr><td>Truncated Julian</td>   <td>{@link #TRUNCATED_JULIAN}</td></tr>
+     *   <tr><td>Unix/POSIX or Java</td> <td>{@link #UNIX}</td></tr>
      * </table></blockquote>
      *
      * @return The datum associated to this constant.
@@ -156,14 +154,15 @@ public enum TemporalObjects {
                         object = JAVA.datum(); // Share the same instance for UNIX and JAVA.
                     } else {
                         final Map<String,Object> properties;
-                        if (key >= 0) {
-                            properties = new HashMap<>(4);
-                            final InternationalString name = Vocabulary.formatInternational(key);
-                            properties.put(NAME_KEY,  name.toString(Locale.ROOT));
-                            properties.put(ALIAS_KEY, name);
+                        properties = new HashMap<>(4);
+                        final InternationalString name;
+                        if (key == Vocabulary.Keys.Time_1) {
+                            name = Vocabulary.formatInternational(key, this == JAVA ? "Java" : "Unix/POSIX");
                         } else {
-                            properties = Collections.<String,Object>singletonMap(NAME_KEY, name());
+                            name = Vocabulary.formatInternational(key);
                         }
+                        properties.put(NAME_KEY,  name.toString(Locale.ROOT));
+                        properties.put(ALIAS_KEY, name);
                         object = new DefaultTemporalDatum(properties, new Date(epoch));
                     }
                     cached = object;

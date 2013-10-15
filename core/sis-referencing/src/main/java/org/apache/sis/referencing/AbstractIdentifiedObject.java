@@ -158,23 +158,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private transient int hashCode;
 
     /**
-     * Constructs a new identified object with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one or a
-     * user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param object The object to shallow copy.
-     */
-    public AbstractIdentifiedObject(final IdentifiedObject object) {
-        ensureNonNull("object", object);
-        name        =          object.getName();
-        alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
-        identifiers = nonEmpty(object.getIdentifiers());
-        remarks     =          object.getRemarks();
-    }
-
-    /**
      * Constructs an object from a set of properties. Keys are strings from the table below.
      * The map given in argument shall contain an entry at least for the
      * {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} key.
@@ -288,6 +271,23 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     private static IllegalArgumentException illegalPropertyType(final String key, final Object value) {
         return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+    }
+
+    /**
+     * Constructs a new identified object with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one or a
+     * user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param object The object to shallow copy.
+     */
+    protected AbstractIdentifiedObject(final IdentifiedObject object) {
+        ensureNonNull("object", object);
+        name        =          object.getName();
+        alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
+        identifiers = nonEmpty(object.getIdentifiers());
+        remarks     =          object.getRemarks();
     }
 
     /**
