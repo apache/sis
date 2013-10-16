@@ -26,6 +26,7 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.referencing.IdentifiedObjects;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -128,6 +129,14 @@ import java.util.Objects;
  *       The Position Vector convention is used by IAG and recommended by ISO 19111.</li>
  * </ul>
  *
+ * {@section Target datum}
+ * The <var>source datum</var> in above coordinates transformation is the {@link DefaultGeodeticDatum} instance
+ * that contain this {@code BursaWolfParameters}. It can be any datum, including datum that are valid only locally.
+ * But the {@linkplain #targetDatum target datum} is often fixed to WGS 84, since it is the target of the
+ * {@code TOWGS84} element in <cite>Well Known Text</cite> (WKT) representations.
+ * A different target may be specified at construction time, however users are encouraged to always specify a
+ * target datum having a world-wide {@linkplain DefaultGeodeticDatum#getDomainOfValidity() domain of validity}.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
@@ -203,14 +212,19 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
 
     /**
      * The target datum for this set of parameters, or {@code null} if unspecified.
-     * The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters} instance.
+     * This is usually the WGS 84 datum, but other targets are allowed. We recommend the target datum
+     * to have a world-wide {@linkplain DefaultGeodeticDatum#getDomainOfValidity() domain of validity},
+     * but this is not enforced.
+     *
+     * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
+     * instance.</p>
      */
     public final GeodeticDatum targetDatum;
 
     /**
      * Creates a new instance with all parameters set to 0.
      *
-     * @param target The target datum for this set of parameters, or {@code null} if unspecified.
+     * @param target The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
      */
     public BursaWolfParameters(final GeodeticDatum target) {
         this.targetDatum = target;
@@ -368,13 +382,16 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
 
     /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element. The WKT contains the
-     * parameters in <var>translation</var>, <var>rotation</var>, <var>scale</var> order, as below:
+     * parameters in <var>translation</var>, <var>rotation</var>, <var>scale</var> order, like below:
      *
      * <blockquote><code>TOWGS84[{@linkplain #tX}, {@linkplain #tY}, {@linkplain #tZ}, {@linkplain #rX},
      * {@linkplain #rY}, {@linkplain #rZ}, {@linkplain #dS}]</code></blockquote>
      *
+     * The element name is {@code "TOWGS84"} in the common case where the {@linkplain #targetDatum target datum}
+     * is WGS 84. For other targets, the element name will be derived from the datum name.
+     *
      * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "TOWGS84"}.
+     * @return The WKT element name, usually {@code "TOWGS84"}.
      */
     @Override
     public String formatTo(final Formatter formatter) {
@@ -385,12 +402,15 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         formatter.append(rY);
         formatter.append(rZ);
         formatter.append(dS);
-        if (false /*!DefaultGeodeticDatum.isWGS84(targetDatum)*/) {
-            if (targetDatum != null) {
-                formatter.append(targetDatum.getName().getCode());
-            }
-            return super.formatTo(formatter);
+        if (true /*!DefaultGeodeticDatum.isWGS84(targetDatum)*/) {
+            return "TOWGS84";
         }
-        return "TOWGS84";
+        String keyword = super.formatTo(formatter); // Declare the WKT as invalid.
+        final String name = IdentifiedObjects.getName(targetDatum, null);
+        if (name != null) {
+            // We may try to build something better here in future SIS versions, if there is a need for that.
+            keyword = "To" + name;
+        }
+        return keyword;
     }
 }
