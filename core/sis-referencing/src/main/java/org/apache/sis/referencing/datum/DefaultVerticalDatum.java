@@ -50,7 +50,7 @@ import java.util.Objects;
  *
  * <ol>
  *   <li>Create a {@code VerticalDatum} from one of the static convenience shortcuts listed in
- *       {@link org.apache.sis.referencing.VerticalObjects#datum()}.</li>
+ *       {@link org.apache.sis.referencing.GeodeticObjects.Vertical#datum()}.</li>
  *   <li>Create a {@code VerticalDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createVerticalDatum(String)}.</li>
  *   <li>Create a {@code VerticalDatum} by invoking the {@code createVerticalDatum(…)}
@@ -62,7 +62,7 @@ import java.util.Objects;
  * <b>Example:</b> the following code gets a vertical datum for height above the geoid:
  *
  * {@preformat java
- *     VerticalDatum pm = VerticalObjects.GEOID.datum();
+ *     VerticalDatum pm = GeodeticObjects.Vertical.GEOID.datum();
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -70,7 +70,7 @@ import java.util.Objects;
  * @version 0.4
  * @module
  *
- * @see org.apache.sis.referencing.VerticalObjects#datum()
+ * @see org.apache.sis.referencing.GeodeticObjects.Vertical#datum()
  */
 @Immutable
 @XmlType(name = "VerticalDatumType")
