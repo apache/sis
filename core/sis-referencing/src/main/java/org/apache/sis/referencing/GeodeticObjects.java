@@ -70,6 +70,7 @@ import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
  *   <tr><td>European Terrestrial Reference System (ETRF) 1989</td> <td>Datum</td>                 <td>{@link #ETRS89}</td></tr>
  *   <tr><td>Greenwich</td>                                         <td>Prime meridian</td>        <td>{@link #WGS84}, {@link #WGS72}, {@link #ETRS89}, {@link #NAD83}, {@link #NAD27}, {@link #ED50}, {@link #SPHERE}</td></tr>
  *   <tr><td>GRS 1980</td>                                          <td>Ellipsoid</td>             <td>{@link #ETRS89}, {@link #NAD83}</td></tr>
+ *   <tr><td>GRS 1980 Authalic Sphere</td>                          <td>Ellipsoid</td>             <td>{@link #SPHERE}</td></tr>
  *   <tr><td>Hayford 1909</td>                                      <td>Ellipsoid</td>             <td>{@link #ED50}</td></tr>
  *   <tr><td>International 1924</td>                                <td>Ellipsoid</td>             <td>{@link #ED50}</td></tr>
  *   <tr><td>International 1979</td>                                <td>Ellipsoid</td>             <td>{@link #ETRS89}, {@link #NAD83}</td></tr>
@@ -198,25 +199,23 @@ public enum GeodeticObjects {
     ED50((short) 7022),
 
     /**
-     * A sphere with a radius of 6371000 metres. Spheres use a simpler algorithm for
+     * Unspecified datum based upon the GRS 1980 Authalic Sphere. Spheres use a simpler algorithm for
      * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#orthodromicDistance
      * orthodromic distance computation}, which may be faster and more robust.
      *
      * <blockquote><table class="compact" style="text-align:left">
-     *   <tr><th>Primary names:</th>           <td>"Sphere"</td></tr>
+     *   <tr><th>EPSG identifiers:</th>        <td>4047 &nbsp;(<i>datum:</i> 6047, &nbsp;<i>ellipsoid:</i> 7048)</td></tr>
+     *   <tr><th>Primary names:</th>           <td>"Unspecified datum based upon the GRS 1980 Authalic Sphere"</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
-     *   <tr><th>Semi-major axis length:</th>  <td>6371000</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6371000 <i>(definitive)</i></td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6371007</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6371007 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
-     *
-     * {@note This ellipsoid is close to the <cite>GRS 1980 Authalic Sphere</cite> (EPSG:7048),
-     *        which has a radius of 6371007 metres.}
      */
-    SPHERE((short) -1);
+    SPHERE((short) 7048);
 
     /**
-     * The EPSG or SIS code of the ellipsoid.
+     * The EPSG code of the ellipsoid.
      */
     private final short ellipsoid;
 
@@ -231,7 +230,7 @@ public enum GeodeticObjects {
      * Creates a new constant for the given EPSG or SIS codes.
      * By convention, SIS codes are negative.
      *
-     * @param ellipsoid The code for the ellipsoid.
+     * @param ellipsoid The EPSG code for the ellipsoid.
      */
     private GeodeticObjects(final short ellipsoid) {
         this.ellipsoid = ellipsoid;
@@ -300,6 +299,7 @@ public enum GeodeticObjects {
      * <blockquote><table class="sis">
      *   <tr><th>Name or alias</th>                    <th>Enum</th>            <th>EPSG</th></tr>
      *   <tr><td>Clarke 1866</td>                      <td>{@link #NAD27}</td>  <td>7008</td></tr>
+     *   <tr><td>GRS 1980 Authalic Sphere</td>         <td>{@link #SPHERE}</td> <td>7048</td></tr>
      *   <tr><td>International 1924</td>               <td>{@link #ED50}</td>   <td>7022</td></tr>
      *   <tr><td>International 1979 / GRS 1980</td>    <td>{@link #ETRS89}</td> <td>7019</td></tr>
      *   <tr><td>World Geodetic System (WGS) 1972</td> <td>{@link #WGS72}</td>  <td>7043</td></tr>
@@ -320,14 +320,12 @@ public enum GeodeticObjects {
                     if (this == NAD83) {
                         object = ETRS89.ellipsoid(); // Share the same instance for NAD83 and ETRS89.
                     } else {
-                        if (ellipsoid >= 0) {
-                            final DatumAuthorityFactory factory = StandardObjects.datumFactory();
-                            if (factory != null) try {
-                                cached = object = factory.createEllipsoid(String.valueOf(ellipsoid));
-                                return object;
-                            } catch (FactoryException e) {
-                                StandardObjects.failure(this, "ellipsoid", e);
-                            }
+                        final DatumAuthorityFactory factory = StandardObjects.datumFactory();
+                        if (factory != null) try {
+                            cached = object = factory.createEllipsoid(String.valueOf(ellipsoid));
+                            return object;
+                        } catch (FactoryException e) {
+                            StandardObjects.failure(this, "ellipsoid", e);
                         }
                         object = StandardDefinitions.createEllipsoid(ellipsoid);
                     }
