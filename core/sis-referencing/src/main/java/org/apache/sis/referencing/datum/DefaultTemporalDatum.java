@@ -43,7 +43,7 @@ import java.util.Objects;
  *
  * <ol>
  *   <li>Create a {@code TemporalDatum} from one of the static convenience shortcuts listed in
- *       {@link org.apache.sis.referencing.TemporalObjects#datum()}.</li>
+ *       {@link org.apache.sis.referencing.GeodeticObjects.Temporal#datum()}.</li>
  *   <li>Create a {@code TemporalDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createTemporalDatum(String)}.</li>
  *   <li>Create a {@code TemporalDatum} by invoking the {@code createTemporalDatum(…)}
@@ -55,7 +55,7 @@ import java.util.Objects;
  * <b>Example:</b> the following code gets a temporal datum having its origin at January 1st, 4713 BC at 12:00 UTC:
  *
  * {@preformat java
- *     TemporalDatum pm = TemporalObjects.JULIAN.datum();
+ *     TemporalDatum pm = GeodeticObjects.Temporal.JULIAN.datum();
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -63,7 +63,7 @@ import java.util.Objects;
  * @version 0.4
  * @module
  *
- * @see org.apache.sis.referencing.TemporalObjects#datum()
+ * @see org.apache.sis.referencing.GeodeticObjects.Temporal#datum()
  */
 @Immutable
 @XmlType(name = "TemporalDatumType")

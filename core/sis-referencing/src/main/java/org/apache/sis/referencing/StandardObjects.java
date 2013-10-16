@@ -25,7 +25,7 @@ import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Utility methods for the {@link GeodeticObjects}, {@link VerticalObjects} and {@link TemporalObjects} enumerations.
+ * Utility methods for the {@link GeodeticObjects} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
