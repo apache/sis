@@ -24,6 +24,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -142,17 +143,12 @@ import java.util.Objects;
  * @version 0.4
  * @module
  */
-public class BursaWolfParameters extends FormattableObject implements Cloneable, Serializable {
+@Immutable
+public class BursaWolfParameters extends FormattableObject implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 754825592343010900L;
-
-    /**
-     * The array to be returned by {@link DefaultGeodeticDatum#getBursaWolfParameters()}
-     * when there is no Bursa Wolf parameters.
-     */
-    static final BursaWolfParameters[] EMPTY_ARRAY = new BursaWolfParameters[0];
 
     /**
      * The conversion factor from <cite>parts per million</cite> to scale minus one.
@@ -168,37 +164,37 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * X-axis translation in metres (EPSG:8605).
      * The legacy OGC parameter name is {@code "dx"}.
      */
-    public double tX;
+    public final double tX;
 
     /**
      * Y-axis translation in metres (EPSG:8606).
      * The legacy OGC parameter name is {@code "dy"}.
      */
-    public double tY;
+    public final double tY;
 
     /**
      * Z-axis translation in metres (EPSG:8607).
      * The legacy OGC parameter name is {@code "dz"}.
      */
-    public double tZ;
+    public final double tZ;
 
     /**
      * X-axis rotation in arc seconds (EPSG:8608), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ex"}.
      */
-    public double rX;
+    public final double rX;
 
     /**
      * Y-axis rotation in arc seconds (EPSG:8609), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ey"}.
      */
-    public double rY;
+    public final double rY;
 
     /**
      * Z-axis rotation in arc seconds (EPSG:8610), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ez"}.
      */
-    public double rZ;
+    public final double rZ;
 
     /**
      * The scale difference in parts per million (EPSG:8611).
@@ -208,7 +204,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *           of 100.001 km in the target coordinate reference system, the scale difference is 1 ppm
      *           (the ratio being 1.000001).}
      */
-    public double dS;
+    public final double dS;
 
     /**
      * The target datum for this set of parameters, or {@code null} if unspecified.
@@ -222,12 +218,103 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     public final GeodeticDatum targetDatum;
 
     /**
-     * Creates a new instance with all parameters set to 0.
+     * Creates a new instance with the given parameters.
      *
-     * @param target The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
+     * @param tX X-axis translation in metres.
+     * @param tY Y-axis translation in metres.
+     * @param tZ Z-axis translation in metres.
+     * @param rX X-axis rotation in arc seconds.
+     * @param rY Y-axis rotation in arc seconds.
+     * @param rZ Z-axis rotation in arc seconds.
+     * @param dS The scale difference in parts per million.
+     * @param targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
      */
-    public BursaWolfParameters(final GeodeticDatum target) {
-        this.targetDatum = target;
+    public BursaWolfParameters(final double tX, final double tY, final double tZ,
+                               final double rX, final double rY, final double rZ,
+                               final double dS, final GeodeticDatum targetDatum)
+    {
+        this.tX = tX;
+        this.tY = tY;
+        this.tZ = tZ;
+        this.rX = rX;
+        this.rY = rY;
+        this.rZ = rZ;
+        this.dS = dS;
+        this.targetDatum = targetDatum;
+    }
+
+    /**
+     * Creates Bursa-Wolf parameters from the given matrix.
+     * The matrix shall comply to the following constraints:
+     *
+     * <ul>
+     *   <li>The matrix shall be {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#isAffine() affine}.</li>
+     *   <li>The sub-matrix defined by {@code matrix} without the last row and last column shall be
+     *       <a href="http://en.wikipedia.org/wiki/Skew-symmetric_matrix">skew-symmetric</a> (a.k.a. antisymmetric).</li>
+     * </ul>
+     *
+     * @param  matrix The matrix to fit as a Bursa-Wolf construct.
+     * @param  tolerance The tolerance error for the antisymmetric matrix test. Should be a small number like {@code 1E-8}.
+     * @param  targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
+     * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
+     *
+     * @see #getAffineTransform()
+     */
+    public BursaWolfParameters(final Matrix matrix, final double tolerance, final GeodeticDatum targetDatum)
+            throws IllegalArgumentException
+    {
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        if (numRow != SIZE || numCol != SIZE) {
+            final Integer n = SIZE;
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedMatrixSize_4, n, n, numRow, numCol));
+        }
+        if (!Matrices.isAffine(matrix)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotAnAffineTransform));
+        }
+        tX = matrix.getElement(0,3);
+        tY = matrix.getElement(1,3);
+        tZ = matrix.getElement(2,3);
+        final double S = (matrix.getElement(0,0) +
+                          matrix.getElement(1,1) +
+                          matrix.getElement(2,2)) / 3;
+        final double RS = TO_RADIANS * S;
+        dS = (S-1) * PPM;
+        double rX=0, rY=0, rZ=0;
+        for (int j=0; j < SIZE-1; j++) {
+            if (!(abs((matrix.getElement(j,j) - 1)*PPM - dS) <= tolerance)) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonUniformScale));
+            }
+            for (int i = j+1; i < SIZE-1; i++) {
+                final double elt1 = matrix.getElement(j,i) / RS;
+                final double elt2 = matrix.getElement(i,j) / RS;
+                if (!(abs(elt1 + elt2) <= tolerance)) { // We expect elt1 ≈ -elt2
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.NotASkewSymmetricMatrix));
+                }
+                final double elt = 0.5 * (elt2 - elt1);
+                switch (j*SIZE + i) {
+                    case 1: rZ =  elt; break;
+                    case 2: rY = -elt; break;
+                    case 6: rX =  elt; break;
+                }
+            }
+        }
+        this.rX = rX;
+        this.rY = rY;
+        this.rZ = rZ;
+        this.targetDatum = targetDatum;
+    }
+
+    /**
+     * Returns {@code true} if the {@linkplain #targetDatum target datum} is equals (at least on computation purpose)
+     * to the WGS84 datum. This method may conservatively returns {@code false} if the specified datum is uncertain.
+     *
+     * @return {@code true} if the given datum is equal to WGS84 for computational purpose.
+     */
+    final boolean isToWGS84() {
+        return (targetDatum != null) &&
+                (IdentifiedObjects.nameMatches(targetDatum, "WGS 84") ||
+                 IdentifiedObjects.nameMatches(targetDatum, "WGS84"));
     }
 
     /**
@@ -267,6 +354,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * This affine transform can be applied on <strong>geocentric</strong> coordinates.
      *
      * @return An affine transform created from the parameters.
+     *
+     * @see DefaultGeodeticDatum#getAffineTransform(GeodeticDatum)
      */
     public Matrix getAffineTransform() {
         final double  S = 1 + dS / PPM;
@@ -276,75 +365,6 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             +rZ*RS,       S,  -rX*RS,  tY,
             -rY*RS,  +rX*RS,       S,  tZ,
                  0,       0,       0,   1);
-    }
-
-    /**
-     * Sets the Bursa-Wolf parameters from the given matrix.
-     * This method is the converse of {@link #getAffineTransform()}.
-     * The matrix shall comply to the following constraints:
-     *
-     * <ul>
-     *   <li>The matrix shall be {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#isAffine() affine}.</li>
-     *   <li>The sub-matrix defined by {@code matrix} without the last row and last column shall be
-     *       <a href="http://en.wikipedia.org/wiki/Skew-symmetric_matrix">skew-symmetric</a> (a.k.a. antisymmetric).</li>
-     * </ul>
-     *
-     * @param  matrix The matrix to fit as a Bursa-Wolf construct.
-     * @param  tolerance The tolerance error for the antisymmetric matrix test. Should be a small number like {@code 1E-8}.
-     * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
-     */
-    public void setAffineTransform(final Matrix matrix, final double tolerance) throws IllegalArgumentException {
-        final int numRow = matrix.getNumRow();
-        final int numCol = matrix.getNumCol();
-        if (numRow != SIZE || numCol != SIZE) {
-            final Integer n = SIZE;
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedMatrixSize_4, n, n, numRow, numCol));
-        }
-        if (!Matrices.isAffine(matrix)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotAnAffineTransform));
-        }
-        tX = matrix.getElement(0,3);
-        tY = matrix.getElement(1,3);
-        tZ = matrix.getElement(2,3);
-        final double S = (matrix.getElement(0,0) +
-                          matrix.getElement(1,1) +
-                          matrix.getElement(2,2)) / 3;
-        final double RS = TO_RADIANS * S;
-        dS = (S-1) * PPM;
-        for (int j=0; j < SIZE-1; j++) {
-            if (!(abs((matrix.getElement(j,j) - 1)*PPM - dS) <= tolerance)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonUniformScale));
-            }
-            for (int i = j+1; i < SIZE-1; i++) {
-                final double elt1 = matrix.getElement(j,i) / RS;
-                final double elt2 = matrix.getElement(i,j) / RS;
-                if (!(abs(elt1 + elt2) <= tolerance)) { // We expect elt1 ≈ -elt2
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.NotASkewSymmetricMatrix));
-                }
-                final double elt = 0.5 * (elt2 - elt1);
-                switch (j*SIZE + i) {
-                    case 1: rZ =  elt; break;
-                    case 2: rY = -elt; break;
-                    case 6: rX =  elt; break;
-                }
-            }
-        }
-        assert Matrices.equals(matrix, getAffineTransform(), tolerance*RS, false) : matrix;
-    }
-
-    /**
-     * Returns a copy of this object.
-     *
-     * @return A clone of the parameters.
-     */
-    @Override
-    public BursaWolfParameters clone() {
-        try {
-            return (BursaWolfParameters) super.clone();
-        }  catch (CloneNotSupportedException exception) {
-            // Should not happen, since we are cloneable.
-            throw new AssertionError(exception);
-        }
     }
 
     /**
@@ -402,7 +422,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         formatter.append(rY);
         formatter.append(rZ);
         formatter.append(dS);
-        if (true /*!DefaultGeodeticDatum.isWGS84(targetDatum)*/) {
+        if (isToWGS84()) {
             return "TOWGS84";
         }
         String keyword = super.formatTo(formatter); // Declare the WKT as invalid.
