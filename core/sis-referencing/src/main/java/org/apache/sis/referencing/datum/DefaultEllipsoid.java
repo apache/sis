@@ -182,7 +182,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
-     * @param properties        Set of properties. Should contains at least {@code "name"}.
+     * @param  properties       The properties to be given to the identified object.
      * @param semiMajorAxis     The equatorial radius.
      * @param semiMinorAxis     The polar radius.
      * @param inverseFlattening The inverse of the flattening value.
@@ -254,7 +254,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
-     * @param properties    Set of properties. Should contains at least {@code "name"}.
+     * @param properties    The properties to be given to the identified object.
      * @param semiMajorAxis The equatorial radius in the given unit.
      * @param semiMinorAxis The polar radius in the given unit.
      * @param unit          The units of the semi-major and semi-minor axis values.
@@ -296,7 +296,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
-     * @param properties        Set of properties. Should contains at least {@code "name"}.
+     * @param  properties       The properties to be given to the identified object.
      * @param semiMajorAxis     The equatorial radius in the given unit.
      * @param inverseFlattening The inverse flattening value.
      * @param unit              The units of the semi-major and semi-minor axis values.
@@ -687,6 +687,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
 
     /**
      * Computes a hash value consistent with the given comparison mode.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {

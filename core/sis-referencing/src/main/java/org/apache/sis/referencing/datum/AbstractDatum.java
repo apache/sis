@@ -97,7 +97,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     private final InternationalString scope;
 
     /**
-     * Creates a datum from a set of properties.
+     * Creates a datum from the given properties.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      * Additionally, the following properties are understood by this constructor:

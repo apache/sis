@@ -111,11 +111,11 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * Creates a prime meridian from a set of properties. The properties map is given
+     * Creates a prime meridian from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
      * super-class constructor}.
      *
-     * @param properties          Set of properties. Should contains at least {@code "name"}.
+     * @param properties          The properties to be given to the identified object.
      * @param greenwichLongitude  The longitude value relative to the Greenwich Meridian.
      * @param angularUnit         The angular unit of the longitude.
      */
@@ -242,6 +242,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
 
     /**
      * Computes a hash value consistent with the given comparison mode.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {

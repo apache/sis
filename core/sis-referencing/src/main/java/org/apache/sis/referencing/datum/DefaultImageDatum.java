@@ -69,11 +69,11 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     }
 
     /**
-     * Creates an image datum from a set of properties. The properties map is given
+     * Creates an image datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      *
-     * @param properties  Set of properties. Should contains at least {@code "name"}.
-     * @param pixelInCell the way the image grid is associated with the image data attributes.
+     * @param properties  The properties to be given to the identified object.
+     * @param pixelInCell The way the image grid is associated with the image data attributes.
      */
     public DefaultImageDatum(final Map<String,?> properties, final PixelInCell pixelInCell) {
         super(properties);
@@ -154,6 +154,8 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
 
     /**
      * Computes a hash value consistent with the given comparison mode.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {

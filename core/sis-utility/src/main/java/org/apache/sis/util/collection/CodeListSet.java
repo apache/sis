@@ -183,6 +183,8 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
 
     /**
      * Returns {@code true} if this set does not contains any element.
+     *
+     * @return {@code true} if this set is empty.
      */
     @Override
     public boolean isEmpty() {
@@ -522,7 +524,9 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     }
 
     /**
-     * Returns a clone of this set.
+     * Returns a new set of the same class containing the same elements than this set.
+     *
+     * @return A clone of this set.
      */
     @Override
     @SuppressWarnings("unchecked")
