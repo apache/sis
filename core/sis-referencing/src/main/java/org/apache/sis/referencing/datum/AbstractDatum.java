@@ -286,6 +286,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * {@linkplain #getAnchorPoint() anchor point}, {@linkplain #getRealizationEpoch() realization epoch},
      * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}
      * properties are ignored.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
