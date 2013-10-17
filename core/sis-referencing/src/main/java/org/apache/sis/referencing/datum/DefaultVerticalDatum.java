@@ -62,7 +62,7 @@ import java.util.Objects;
  * <b>Example:</b> the following code gets a vertical datum for height above the geoid:
  *
  * {@preformat java
- *     VerticalDatum pm = GeodeticObjects.Vertical.GEOID.datum();
+ *     VerticalDatum datum = GeodeticObjects.Vertical.GEOID.datum();
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -100,10 +100,10 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Creates a vertical datum from a set of properties. The properties map is given
+     * Creates a vertical datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      *
-     * @param properties Set of properties. Should contains at least {@code "name"}.
+     * @param properties The properties to be given to the identified object.
      * @param type       The type of this vertical datum.
      */
     public DefaultVerticalDatum(final Map<String,?> properties, final VerticalDatumType type) {
@@ -233,6 +233,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
 
     /**
      * Computes a hash value consistent with the given comparison mode.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {

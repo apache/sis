@@ -98,7 +98,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     }
 
     /**
-     * Constructs an identifier from a set of properties. The content of the properties map is used as
+     * Constructs an identifier from the given properties. The content of the properties map is used as
      * described in the {@linkplain ImmutableIdentifier#ImmutableIdentifier(Map) super-class constructor}.
      *
      * @param  properties The properties to be given to this identifier.

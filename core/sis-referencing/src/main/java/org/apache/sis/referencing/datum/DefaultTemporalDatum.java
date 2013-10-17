@@ -55,7 +55,7 @@ import java.util.Objects;
  * <b>Example:</b> the following code gets a temporal datum having its origin at January 1st, 4713 BC at 12:00 UTC:
  *
  * {@preformat java
- *     TemporalDatum pm = GeodeticObjects.Temporal.JULIAN.datum();
+ *     TemporalDatum datum = GeodeticObjects.Temporal.JULIAN.datum();
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -92,10 +92,10 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
-     * Creates a temporal datum from a set of properties. The properties map is given
+     * Creates a temporal datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      *
-     * @param properties Set of properties. Should contains at least {@code "name"}.
+     * @param properties The properties to be given to the identified object.
      * @param origin The date and time origin of this temporal datum.
      */
     public DefaultTemporalDatum(final Map<String,?> properties, final Date origin) {
@@ -177,6 +177,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
 
     /**
      * Computes a hash value consistent with the given comparison mode.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {

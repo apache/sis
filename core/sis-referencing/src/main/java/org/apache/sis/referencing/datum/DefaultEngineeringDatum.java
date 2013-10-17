@@ -58,10 +58,10 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     }
 
     /**
-     * Creates an engineering datum from a set of properties. The properties map is given
+     * Creates an engineering datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      *
-     * @param properties Set of properties. Shall contains at least {@code "name"}.
+     * @param properties The properties to be given to the identified object.
      */
     public DefaultEngineeringDatum(final Map<String,?> properties) {
         super(properties);
@@ -116,6 +116,8 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
 
     /**
      * Computes a hash value consistent with the given comparison mode.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
