@@ -698,11 +698,35 @@ public final class DoubleDouble extends Number {
     /**
      * Sets this double-double value to its square root.
      *
-     * @todo This method is not yet implemented with double-double precision.
+     * {@section Implementation}
+     * This method searches for a {@code (r + ε)} value where:
+     *
+     * <blockquote>(r + ε)²  =  {@linkplain #value} + {@linkplain #error}</blockquote>
+     *
+     * If we could compute {@code r = sqrt(value + error)} with enough precision, then ε would be 0.
+     * But with the {@code double} type, we can only estimate {@code r ≈ sqrt(value)}. However, since
+     * that <var>r</var> value should be close to the "true" value, then ε should be small.
+     *
+     * <blockquote>value + error  =  (r + ε)²  =  r² + 2rε + ε²</blockquote>
+     *
+     * Neglecting ε² on the assumption that |ε| ≪ |r|:
+     *
+     * <blockquote>value + error  ≈  r² + 2rε</blockquote>
+     *
+     * Isolating ε:
+     *
+     * <blockquote>ε  ≈  (value + error - r²) / (2r)</blockquote>
      */
     public void sqrt() {
-        value = Math.sqrt(value);
-        error = 0;
+        final double thisValue = this.value;
+        final double thisError = this.error;
+        double r = Math.sqrt(thisValue);
+        setToProduct(r, r);
+        subtract(thisValue, thisError);
+        divide(-2*r, 0); // Multiplication by 2 does not cause any precision lost.
+        error = value;
+        value = r;
+        normalize();
     }
 
     /**
