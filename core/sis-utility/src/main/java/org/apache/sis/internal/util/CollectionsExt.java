@@ -175,6 +175,7 @@ public final class CollectionsExt extends Static {
     public static <E> E[] nonNullArraySet(final String name, final Object value, final E[] emptyArray)
             throws IllegalArgumentException
     {
+        assert emptyArray.length == 0;
         if (value == null) {
             return emptyArray;
         }

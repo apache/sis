@@ -39,10 +39,41 @@ import org.apache.sis.internal.jdk8.Function;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class CollectionsExtTest extends TestCase {
+    /**
+     * Tests {@link CollectionsExt#nonNullArraySet(String, Object, Object[])}.
+     */
+    @Test
+    public void testNonNullArraySet() {
+        final String name = "test";
+        final String[] emptyArray = new String[0];
+        assertSame(emptyArray,
+                CollectionsExt.nonNullArraySet(name, null, emptyArray));
+        assertSame(emptyArray,
+                CollectionsExt.nonNullArraySet(name, emptyArray, emptyArray));
+        assertArrayEquals(new String[] {"A"},
+                CollectionsExt.nonNullArraySet(name, "A", emptyArray));
+        assertArrayEquals(new String[] {"A"},
+                CollectionsExt.nonNullArraySet(name, new String[] {"A", null, "A"}, emptyArray));
+        assertArrayEquals(new String[] {"B", "A", "C"},
+                CollectionsExt.nonNullArraySet(name, new String[] {"B", "A", "B", "C", null, "A"}, emptyArray));
+        /*
+         * Verify that an exception is thrown in case of illegal value type.  Note that the Object[] type
+         * could be accepted if all elements are String instances, however the current method contract is
+         * to not accept them, so we will ensure that.
+         */
+        try {
+            CollectionsExt.nonNullArraySet(name, new Object[] {"A"}, emptyArray);
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains(name));
+            assertTrue(message, message.contains("Object[]"));
+        }
+    }
+
     /**
      * Tests {@link CollectionsExt#addToMultiValuesMap(Map, Object, Object)}.
      */
