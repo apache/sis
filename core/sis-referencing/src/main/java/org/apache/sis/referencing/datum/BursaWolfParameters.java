@@ -258,7 +258,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * @param  targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
      * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
      *
-     * @see #getAffineTransform()
+     * @see #getPositionVectorTransformation()
      */
     public BursaWolfParameters(final Matrix matrix, final double tolerance, final GeodeticDatum targetDatum)
             throws IllegalArgumentException
@@ -339,7 +339,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     }
 
     /**
-     * Returns an affine transform that can be used to define this Bursa Wolf parameters.
+     * Returns the position vector transformation (geocentric domain) as an affine transform.
      * The formula is as below, where {@code R} is a conversion factor from arc-seconds to radians:
      *
      * <blockquote><pre> R = toRadians(1″)
@@ -352,12 +352,13 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * └    ┘    └                               ┘  └   ┘</pre></blockquote>
      *
      * This affine transform can be applied on <strong>geocentric</strong> coordinates.
+     * This is identified as operation method 1033 in the EPSG database.
      *
-     * @return An affine transform created from the parameters.
+     * @return An affine transform in geocentric space created from this Bursa-Wolf parameters.
      *
-     * @see DefaultGeodeticDatum#getAffineTransform(GeodeticDatum)
+     * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum)
      */
-    public Matrix getAffineTransform() {
+    public Matrix getPositionVectorTransformation() {
         final double  S = 1 + dS / PPM;
         final double RS = TO_RADIANS * S;
         return new Matrix4(
