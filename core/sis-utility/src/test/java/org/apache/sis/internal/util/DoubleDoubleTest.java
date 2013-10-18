@@ -81,7 +81,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      * Fetches the next {@code DoubleDouble} random values and store them in the given object.
      */
     private void nextRandom(final DoubleDouble dd) {
-        dd.setToSum(nextRandom(), nextRandom());
+        dd.setToSum(nextRandom(), random.nextDouble());
     }
 
     /**
@@ -342,5 +342,41 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         assertTrue("toDegrees", DoubleDouble.errorForWellKnownValue(toDegrees(1)) != 0);
         assertTrue("toRadians", DoubleDouble.errorForWellKnownValue(PI / 180)     != 0);
         assertTrue("toRadians", DoubleDouble.errorForWellKnownValue(toRadians(1)) != 0);
+    }
+
+    /**
+     * Tests {@link DoubleDouble#sqrt()} first with the square root of 2, then with random values.
+     * In the {@code sqrt(2)} case:
+     *
+     * <ul>
+     *   <li>The error using {@code double} arithmetic is approximatively 1E-16.</li>
+     *   <li>The error using double-double arithmetic is expected to be slightly less that 1E-32.</li>
+     * </ul>
+     */
+    @Test
+    @DependsOnMethod({"testMultiply", "testDivide"})
+    public void testSqrt() {
+        final BigDecimal SQRT2 = new BigDecimal("1.414213562373095048801688724209698");
+        final DoubleDouble dd = new DoubleDouble();
+        dd.value = 2;
+        dd.sqrt();
+        assertEquals(0, SQRT2.subtract(toBigDecimal(dd)).doubleValue(), 1E-32);
+        /*
+         * If we have been able to compute √2, now test with random values.
+         * Since the range of values is approximatively [-1000 … 1000], use
+         * a tolerance value 1000 time the one that we used for √2.
+         */
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
+            nextRandom(dd);
+            if (dd.value < 0) {
+                dd.negate();
+            }
+            final double value = dd.value;
+            final double error = dd.error;
+            dd.multiply(dd);
+            dd.sqrt();
+            dd.subtract(value, error);
+            assertEquals(0, dd.doubleValue(), 1E-29);
+        }
     }
 }
