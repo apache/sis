@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
  * The EPSG geodetic parameter dataset is a structured database required to:
  *
  * <ul>
- *   <li>define {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem Coordinate Reference Systems (CRS)
+ *   <li>define {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem Coordinate Reference Systems} (CRS)
  *       such that coordinates describe positions unambiguously;</li>
  *   <li>define {@linkplain org.opengis.referencing.operation.CoordinateOperation Coordinate Operations}
  *       that allow coordinates to be changed from one CRS to another CRS.</li>
@@ -57,6 +57,8 @@ import java.lang.annotation.Target;
  * {@preformat java
  *   GeographicCRS crs = factory.createGeographicCRS("4326");
  * }
+ *
+ * The EPSG objects can also be inspected online on the <a href="http://www.epsg-registry.org/">EPSG registry</a> web site.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
