@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.datum.ImageDatum;
@@ -55,18 +54,6 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * Specification of the way the image grid is associated with the image data attributes.
      */
     private final PixelInCell pixelInCell;
-
-    /**
-     * Creates an image datum from a name. This is a convenience constructor for
-     * {@link #DefaultImageDatum(Map, PixelInCell) DefaultImageDatum(Map, …)}
-     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property.
-     *
-     * @param name The datum name.
-     * @param pixelInCell the way the image grid is associated with the image data attributes.
-     */
-    public DefaultImageDatum(final String name, final PixelInCell pixelInCell) {
-        this(Collections.singletonMap(NAME_KEY, name), pixelInCell);
-    }
 
     /**
      * Creates an image datum from the given properties. The properties map is given
