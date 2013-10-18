@@ -28,6 +28,8 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.EPSG;
 import org.apache.sis.referencing.GeodeticObjects;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
@@ -275,6 +277,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * @see BursaWolfParameters#getPositionVectorTransformation()
      */
+    @EPSG(type = OperationMethod.class, code = 1033)
     public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum) {
         ensureNonNull("targetDatum", targetDatum);
         try {
