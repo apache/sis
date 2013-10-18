@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -30,7 +29,6 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.EPSG;
-import org.apache.sis.referencing.GeodeticObjects;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -122,19 +120,6 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Bursa Wolf parameters for datum shifts, or {@code null} if none.
      */
     private final BursaWolfParameters[] bursaWolf;
-
-    /**
-     * Creates a geodetic datum using the Greenwich prime meridian. This is a convenience constructor for
-     * {@link #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) DefaultGeodeticDatum(Map, …)}
-     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property
-     * and the {@link #getPrimeMeridian() prime meridian} fixed to Greenwich.
-     *
-     * @param name      The datum name.
-     * @param ellipsoid The ellipsoid.
-     */
-    public DefaultGeodeticDatum(final String name, final Ellipsoid ellipsoid) {
-        this(Collections.singletonMap(NAME_KEY, name), ellipsoid, GeodeticObjects.WGS84.primeMeridian());
-    }
 
     /**
      * Creates a geodetic datum from the given properties. The properties map is given

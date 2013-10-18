@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -56,7 +55,7 @@ import java.util.Objects;
  *   <li>Create a {@code VerticalDatum} by invoking the {@code createVerticalDatum(…)}
  *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
  *   <li>Create a {@code DefaultVerticalDatum} by invoking the
- *       {@linkplain #DefaultVerticalDatum(Map, Date) constructor}.</li>
+ *       {@linkplain #DefaultVerticalDatum(Map, VerticalDatumType) constructor}.</li>
  * </ol>
  *
  * <b>Example:</b> the following code gets a vertical datum for height above the geoid:
@@ -86,18 +85,6 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * If {@code null}, a value will be inferred from the name by {@link #type()}.
      */
     private VerticalDatumType type;
-
-    /**
-     * Creates a vertical datum from a name. This is a convenience constructor for
-     * {@link #DefaultVerticalDatum(Map, VerticalDatumType) DefaultVerticalDatum(Map, …)}
-     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property.
-     *
-     * @param name The datum name.
-     * @param type The type of this vertical datum.
-     */
-    public DefaultVerticalDatum(final String name, final VerticalDatumType type) {
-        this(Collections.singletonMap(NAME_KEY, name), type);
-    }
 
     /**
      * Creates a vertical datum from the given properties. The properties map is given

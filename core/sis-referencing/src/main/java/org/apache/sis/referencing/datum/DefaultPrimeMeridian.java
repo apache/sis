@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
@@ -95,20 +94,6 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * The angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
      */
     private final Unit<Angle> angularUnit;
-
-    /**
-     * Creates a prime meridian from a name and Greenwich longitude in degrees. This is a convenience
-     * constructor for {@link #DefaultPrimeMeridian(Map, double, Unit) DefaultPrimeMeridian(Map, …)}
-     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property,
-     * and with the unit of measurement fixed to {@link NonSI#DEGREE_ANGLE}.
-     *
-     * @param name                The datum name.
-     * @param greenwichLongitude  The longitude value relative to the Greenwich Meridian, in degrees.
-     *                            Positive values are east of Greenwich.
-     */
-    public DefaultPrimeMeridian(final String name, final double greenwichLongitude) {
-        this(Collections.singletonMap(NAME_KEY, name), greenwichLongitude, NonSI.DEGREE_ANGLE);
-    }
 
     /**
      * Creates a prime meridian from the given properties. The properties map is given

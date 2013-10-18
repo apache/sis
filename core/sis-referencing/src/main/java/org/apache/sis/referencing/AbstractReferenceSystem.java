@@ -189,6 +189,8 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}
      * properties are ignored, in addition to other ignored properties documented in the
      * {@linkplain AbstractIdentifiedObject#hashCode(ComparisonMode) super-class}.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
