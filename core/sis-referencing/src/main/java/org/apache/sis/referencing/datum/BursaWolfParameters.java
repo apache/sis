@@ -268,7 +268,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * @param  targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
      * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
      *
-     * @see #getPositionVectorTransformation()
+     * @see #getPositionVectorTransformation(boolean)
      */
     public BursaWolfParameters(final Matrix matrix, final double tolerance, final GeodeticDatum targetDatum)
             throws IllegalArgumentException
@@ -317,12 +317,13 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
 
     /**
      * Returns {@code true} if the {@linkplain #targetDatum target datum} is equals (at least on computation purpose)
-     * to the WGS84 datum. This method may conservatively returns {@code false} if the specified datum is uncertain.
+     * to the WGS84 datum. If the datum is unspecified, then this method returns {@code true} since WGS84 is the only
+     * datum supported by the WKT 1 format, and is what users often mean.
      *
      * @return {@code true} if the given datum is equal to WGS84 for computational purpose.
      */
     final boolean isToWGS84() {
-        return (targetDatum != null) &&
+        return (targetDatum == null) ||
                 (IdentifiedObjects.nameMatches(targetDatum, "WGS 84") ||
                  IdentifiedObjects.nameMatches(targetDatum, "WGS84"));
     }
@@ -364,19 +365,21 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * This affine transform can be applied on <strong>geocentric</strong> coordinates.
      * This is identified as operation method 1033 in the EPSG database.
      *
+     * @param  inverse If {@code true}, returns the inverse transformation instead.
      * @return An affine transform in geocentric space created from this Bursa-Wolf parameters.
      *
      * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum)
      */
     @EPSG(type = OperationMethod.class, code = 1033)
-    public Matrix getPositionVectorTransformation() {
-        final double  S = 1 + dS / PPM;
-        final double RS = TO_RADIANS * S;
+    public Matrix getPositionVectorTransformation(final boolean inverse) {
+        final double sgn = inverse ? -1 : +1;
+        final double   S = 1 + sgn*dS / PPM;
+        final double  RS = sgn*TO_RADIANS * S;
         return new Matrix4(
-                 S,  -rZ*RS,  +rY*RS,  tX,
-            +rZ*RS,       S,  -rX*RS,  tY,
-            -rY*RS,  +rX*RS,       S,  tZ,
-                 0,       0,       0,   1);
+                 S,  -rZ*RS,  +rY*RS,  sgn*tX,
+            +rZ*RS,       S,  -rX*RS,  sgn*tY,
+            -rY*RS,  +rX*RS,       S,  sgn*tZ,
+                 0,       0,       0,      1);
     }
 
     /**

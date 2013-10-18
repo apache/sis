@@ -30,9 +30,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.EPSG;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.io.wkt.Formatter;
@@ -260,21 +258,12 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @param  targetDatum The target datum.
      * @return An affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
      *
-     * @see BursaWolfParameters#getPositionVectorTransformation()
+     * @see BursaWolfParameters#getPositionVectorTransformation(boolean)
      */
     @EPSG(type = OperationMethod.class, code = 1033)
     public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum) {
         ensureNonNull("targetDatum", targetDatum);
-        try {
-            return getPositionVectorTransformation(this, targetDatum, null);
-        } catch (NoninvertibleMatrixException e) {
-            /*
-             * Should never happen, unless the user has overriden BursaWolfParameters.getPositionVectorTransformation()
-             * and create an invalid matrix. Returning 'null' is compliant with this method contract.
-             */
-            Logging.unexpectedException(DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
-            return null;
-        }
+        return getPositionVectorTransformation(this, targetDatum, null);
     }
 
     /**
@@ -288,13 +277,13 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @return An affine transform from {@code source} to {@code target}, or {@code null} if none.
      */
     private static Matrix getPositionVectorTransformation(final GeodeticDatum source, final GeodeticDatum target,
-            Set<GeodeticDatum> exclusion) throws NoninvertibleMatrixException
+            Set<GeodeticDatum> exclusion)
     {
         final BursaWolfParameters[] sourceParam = bursaWolf(source);
         if (sourceParam != null) {
             for (final BursaWolfParameters candidate : sourceParam) {
                 if (deepEquals(target, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) {
-                    return candidate.getPositionVectorTransformation();
+                    return candidate.getPositionVectorTransformation(false);
                 }
             }
         }
@@ -306,7 +295,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (targetParam != null) {
             for (final BursaWolfParameters candidate : targetParam) {
                 if (deepEquals(source, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) {
-                    return MatrixSIS.castOrCopy(candidate.getPositionVectorTransformation()).inverse();
+                    return candidate.getPositionVectorTransformation(true);
                 }
             }
         }
