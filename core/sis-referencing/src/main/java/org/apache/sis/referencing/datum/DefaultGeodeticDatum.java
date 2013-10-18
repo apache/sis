@@ -95,7 +95,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
 
     /**
      * The <code>{@value #BURSA_WOLF_KEY}</code> property for
-     * {@link #getAffineTransform(GeodeticDatum) datum shifts}.
+     * {@linkplain #getBursaWolfParameters(GeodeticDatum) Bursa-Wolf parameters}.
      */
     public static final String BURSA_WOLF_KEY = "bursaWolf";
 
@@ -238,7 +238,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * This method searches only for Bursa-Wolf parameters explicitly specified in the {@code properties} map
      * given at construction time. This method doesn't try to infer a set of parameters from indirect informations.
      * For example it does not try to inverse the parameters specified in the {@code target} datum if none were found
-     * in this datum. If a more elaborated search is wanted, use {@link #getAffineTransform(GeodeticDatum)} instead.
+     * in this datum.
+     * If a more elaborated search is wanted, use {@link #getPositionVectorTransformation(GeodeticDatum)} instead.
      *
      * @param  target The target geodetic datum.
      * @return Bursa Wolf parameters from this datum to the given target datum, or {@code null} if none.
@@ -263,24 +264,27 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Returns a matrix that can be used to define a transformation to the specified datum.
+     * Returns the position vector transformation (geocentric domain) to the specified datum.
      * If no transformation path is found, then this method returns {@code null}.
+     * If non-null, then the representation is represented as an affine transform.
+     *
+     * {@note This is identified as operation method 1033 in the EPSG database.}
      *
      * @param  targetDatum The target datum.
-     * @return An affine transform from {@code this} to {@code target}, or {@code null} if none.
+     * @return An affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
      *
-     * @see BursaWolfParameters#getAffineTransform()
+     * @see BursaWolfParameters#getPositionVectorTransformation()
      */
-    public Matrix getAffineTransform(final GeodeticDatum targetDatum) {
+    public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum) {
         ensureNonNull("targetDatum", targetDatum);
         try {
-            return getAffineTransform(this, targetDatum, null);
+            return getPositionVectorTransformation(this, targetDatum, null);
         } catch (NoninvertibleMatrixException e) {
             /*
-             * Should never happen, unless the user has overriden BursaWolfParameters.getAffineTransform()
+             * Should never happen, unless the user has overriden BursaWolfParameters.getPositionVectorTransformation()
              * and create an invalid matrix. Returning 'null' is compliant with this method contract.
              */
-            Logging.unexpectedException(DefaultGeodeticDatum.class, "getAffineTransform", e);
+            Logging.unexpectedException(DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
             return null;
         }
     }
@@ -295,14 +299,14 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *         This is used in order to avoid never-ending recursivity.
      * @return An affine transform from {@code source} to {@code target}, or {@code null} if none.
      */
-    private static Matrix getAffineTransform(final GeodeticDatum source, final GeodeticDatum target,
+    private static Matrix getPositionVectorTransformation(final GeodeticDatum source, final GeodeticDatum target,
             Set<GeodeticDatum> exclusion) throws NoninvertibleMatrixException
     {
         final BursaWolfParameters[] sourceParam = bursaWolf(source);
         if (sourceParam != null) {
             for (final BursaWolfParameters candidate : sourceParam) {
                 if (deepEquals(target, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) {
-                    return candidate.getAffineTransform();
+                    return candidate.getPositionVectorTransformation();
                 }
             }
         }
@@ -314,7 +318,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (targetParam != null) {
             for (final BursaWolfParameters candidate : targetParam) {
                 if (deepEquals(source, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) {
-                    return MatrixSIS.castOrCopy(candidate.getAffineTransform()).inverse();
+                    return MatrixSIS.castOrCopy(candidate.getPositionVectorTransformation()).inverse();
                 }
             }
         }
@@ -336,9 +340,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                         }
                         if (exclusion.add(source)) {
                             if (exclusion.add(target)) {
-                                final Matrix step1 = getAffineTransform(source, sourceStep, exclusion);
+                                final Matrix step1 = getPositionVectorTransformation(source, sourceStep, exclusion);
                                 if (step1 != null) {
-                                    final Matrix step2 = getAffineTransform(targetStep, target, exclusion);
+                                    final Matrix step2 = getPositionVectorTransformation(targetStep, target, exclusion);
                                     if (step2 != null) {
                                         /*
                                          * MatrixSIS.multiply(MatrixSIS) is equivalent to AffineTransform.concatenate(…):
