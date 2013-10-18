@@ -57,7 +57,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      * This is a tolerance factor in units of {@link DoubleDouble#error} ULP, so even a "scary"
      * factor like 1E+4 should be very small compared to the {@link DoubleDouble#value}.
      */
-    private static final double PRODUCT_TOLERANCE_FACTOR = 10000;
+    private static final double PRODUCT_TOLERANCE_FACTOR = 20000;
 
     /**
      * Tolerance threshold for strict comparisons of floating point values.
@@ -271,6 +271,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
          "0.9",
          "0.9144",
          "1.111111111111111111111111111111111",
+         "1.414213562373095048801688724209698",
          "1.570796326794896619231321691639751",
          "1.8288",
          "2.356194490192344928846982537459627",
@@ -360,6 +361,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         final DoubleDouble dd = new DoubleDouble();
         dd.value = 2;
         dd.sqrt();
+        assertNormalizedAndEquals(sqrt(2), dd);
         assertEquals(0, SQRT2.subtract(toBigDecimal(dd)).doubleValue(), 1E-32);
         /*
          * If we have been able to compute √2, now test with random values.

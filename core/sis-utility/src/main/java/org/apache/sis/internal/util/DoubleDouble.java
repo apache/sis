@@ -144,6 +144,7 @@ public final class DoubleDouble extends Number {
          0.9,                                       // Degrees to gradians
          0.9144,                                    // Yard to metres
          1.111111111111111111111111111111111,       // Gradian to degrees
+         1.414213562373095048801688724209698,       // √2
          1.570796326794896619231321691639751,       // π/2
          1.8288,                                    // Fathom to metres
          2.356194490192344928846982537459627,       // π * 3/4
@@ -183,6 +184,7 @@ public final class DoubleDouble extends Number {
         /*  0.9       */ -2.2204460492503132E-17,
         /*  0.9144    */  9.414691248821328E-18,
         /*  1.111111… */ -4.9343245538895844E-17,
+        /*  1.414213… */ -9.667293313452913E-17,
         /*  1.570796… */  6.123233995736766E-17,
         /*  1.8288    */  1.8829382497642655E-17,
         /*  2.356194… */  9.184850993605148E-17,
@@ -724,9 +726,7 @@ public final class DoubleDouble extends Number {
         setToProduct(r, r);
         subtract(thisValue, thisError);
         divide(-2*r, 0); // Multiplication by 2 does not cause any precision lost.
-        error = value;
-        value = r;
-        normalize();
+        setToQuickSum(r, value);
     }
 
     /**
