@@ -41,9 +41,36 @@ import java.util.Objects;
 
 
 /**
- * Defines the location and precise orientation in 3-dimensional space of a defined ellipsoid
- * (or sphere) that approximates the shape of the earth. Used also for Cartesian coordinate
- * system centered in this ellipsoid (or sphere).
+ * Defines the location and orientation of an ellipsoid that approximates the shape of the earth.
+ * Geodetic datum are used together with ellipsoidal coordinate system, and also with Cartesian
+ * coordinate system centered in the ellipsoid (or sphere).
+ *
+ * {@section Bursa-Wolf parameters}
+ * One or many {@link BursaWolfParameters} can optionally be associated to each {@code DefaultGeodeticDatum} instance.
+ * This association is not part of the ISO 19111 model, but still a common practice (especially in older standards).
+ * Associating Bursa-Wolf parameters to geodetic datum is known as the <cite>early-binding</cite> approach.
+ * A recommended alternative, discussed below, is the <cite>late-binding</cite> approach.
+ *
+ * <p>There is different methods for transforming coordinates from one geodetic datum to an other datum,
+ * and Bursa-Wolf parameters are used with some of them. However different set of parameters may exist
+ * for the same pair of (<var>source</var>, <var>target</var>) datum, so it is often not sufficient to
+ * know those datum. The (<var>source</var>, <var>target</var>) pair of CRS are often necessary,
+ * sometime together with the geographic extent of the coordinates to transform.</p>
+ *
+ * <p>Apache SIS searches for datum shift methods (including Bursa-Wolf parameters) in the EPSG database when a
+ * {@link org.opengis.referencing.operation.CoordinateOperation} or a
+ * {@link org.opengis.referencing.operation.MathTransform} is requested for a pair of CRS.
+ * This is known as the <cite>late-binding</cite> approach.
+ * If a datum shift method is found in the database, it will have precedence over any {@code BursaWolfParameters}
+ * instance associated to this {@code DefaultGeodeticDatum}. Only if no datum shift method is found in the database,
+ * then the {@code BursaWolfParameters} associated to the datum may be used as a fallback.</p>
+ *
+ * <p>The Bursa-Wolf parameters association serves an other purpose: when a CRS is formatted in
+ * <cite>Well Known Text</cite> (WKT) format, the formatted string may contain a {@code TOWGS84[…]} element
+ * with the parameter values of the transformation to the WGS 84 datum. This element is provided as a help
+ * for other Geographic Information Systems that support only the <cite>early-binding</cite> approach.
+ * Apache SIS usually does not need the {@code TOWGS84} element, except as a fallback for datum that
+ * do not exist in the EPSG database.</p>
  *
  * {@section Creating new geodetic datum instances}
  * New instances can be created either directly by specifying all information to a factory method (choices 3
@@ -113,7 +140,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     private final PrimeMeridian primeMeridian;
 
     /**
-     * Bursa Wolf parameters for datum shifts, or {@code null} if none.
+     * Bursa-Wolf parameters for datum shifts, or {@code null} if none.
      */
     private final BursaWolfParameters[] bursaWolf;
 
@@ -208,16 +235,17 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Returns all Bursa Wolf parameters specified in the {@code properties} map at construction time.
+     * Returns all Bursa-Wolf parameters specified in the {@code properties} map at construction time.
+     * For a discussion about what Bursa-Wolf parameters are, see the class javadpc.
      *
-     * @return The Bursa Wolf parameters, or an empty array if none.
+     * @return The Bursa-Wolf parameters, or an empty array if none.
      */
     public BursaWolfParameters[] getBursaWolfParameters() {
         return (bursaWolf != null) ? bursaWolf.clone() : EMPTY_ARRAY;
     }
 
     /**
-     * Returns Bursa Wolf parameters for a datum shift toward the specified target, or {@code null} if none.
+     * Returns Bursa-Wolf parameters for a datum shift toward the specified target, or {@code null} if none.
      * This method searches only for Bursa-Wolf parameters explicitly specified in the {@code properties} map
      * given at construction time. This method doesn't try to infer a set of parameters from indirect informations.
      * For example it does not try to inverse the parameters specified in the {@code target} datum if none were found
@@ -225,7 +253,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * If a more elaborated search is wanted, use {@link #getPositionVectorTransformation(GeodeticDatum)} instead.
      *
      * @param  target The target geodetic datum.
-     * @return Bursa Wolf parameters from this datum to the given target datum, or {@code null} if none.
+     * @return Bursa-Wolf parameters from this datum to the given target datum, or {@code null} if none.
      */
     public BursaWolfParameters getBursaWolfParameters(final GeodeticDatum target) {
         if (bursaWolf != null) {
@@ -365,11 +393,11 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                     return deepEquals(getEllipsoid(),     that.getEllipsoid(),     mode) &&
                            deepEquals(getPrimeMeridian(), that.getPrimeMeridian(), mode);
                     /*
-                     * HACK: We do not consider Bursa Wolf parameters as a non-metadata field.
+                     * HACK: We do not consider Bursa-Wolf parameters as a non-metadata field.
                      *       This is needed in order to get equalsIgnoreMetadata(...) to returns
                      *       'true' when comparing the WGS84 constant in this class with a WKT
                      *       DATUM element with a TOWGS84[0,0,0,0,0,0,0] element. Furthermore,
-                     *       the Bursa Wolf parameters are not part of ISO 19111 specification.
+                     *       the Bursa-Wolf parameters are not part of ISO 19111 specification.
                      *       We don't want two CRS to be considered as different because one has
                      *       more of those transformation informations (which is nice, but doesn't
                      *       change the CRS itself).
