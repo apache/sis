@@ -71,6 +71,7 @@ import java.util.Objects;
  * <center><b>Geocentric coordinates transformation</b></center>
  * <center>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
  *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)</center>
+ * <center><font size="-1">(ignoring unit conversions)</font></center>
  *
  * <p><math display="block" alttext="MathML capable browser required">
  *   <mfenced open="[" close="]">
@@ -359,6 +360,12 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      *
      * This affine transform can be applied on <strong>geocentric</strong> coordinates.
      * This is identified as operation method 1033 in the EPSG database.
+     *
+     * {@section Inverse transformation}
+     * The inverse transformation can be computed by reversing the sign of the 7 parameters before to use
+     * them in the above matrix. Note that both the direct and inverse transformations are approximations.
+     * Multiplication of direct and inverse transformation matrices results in a matrix close to the identity,
+     * but not necessarily strictly equals.
      *
      * @param  inverse If {@code true}, returns the inverse transformation instead.
      * @return An affine transform in geocentric space created from this Bursa-Wolf parameters.

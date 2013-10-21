@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -50,7 +51,25 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     }
 
     /**
-     * Tests serialization of <cite>ED87 to WGS 84</cite> parameters (EPSG:1146).
+     * Multiplies the <cite>ED87 to WGS 84</cite> parameters (EPSG:1146) transformation by its inverse,
+     * and verify that the result is somewhat close to the identity. This is an internal consistency test.
+     */
+    @Test
+    @DependsOnMethod("testGetPositionVectorTransformation")
+    public void testP() {
+        final BursaWolfParameters bursaWolf = new BursaWolfParameters(
+                -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null);
+        final MatrixSIS toWGS84 = MatrixSIS.castOrCopy(bursaWolf.getPositionVectorTransformation(false));
+        final MatrixSIS toED87  = MatrixSIS.castOrCopy(bursaWolf.getPositionVectorTransformation(true));
+        final MatrixSIS product = toWGS84.multiply(toED87);
+        /*
+         * The error is below 1E-11 for all elements except the translation terms.
+         */
+        assertTrue(Matrices.isIdentity(product, 5E-4));
+    }
+
+    /**
+     * Tests the string representation of <cite>ED87 to WGS 84</cite> parameters (EPSG:1146).
      */
     @Test
     public void testToString() {
