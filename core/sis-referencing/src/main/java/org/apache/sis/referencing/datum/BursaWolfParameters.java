@@ -39,9 +39,12 @@ import java.util.Objects;
 
 /**
  * Parameters for a geographic transformation between two datum.
- * The Bursa Wolf parameters shall be applied to geocentric coordinates,
+ * For an explanation of Bursa-Wolf parameters purpose, see the <cite>Bursa-Wolf parameters</cite>
+ * section of {@link DefaultGeodeticDatum} class javadoc.
+ *
+ * <p>The Bursa-Wolf parameters shall be applied to geocentric coordinates,
  * where the <var>X</var> axis points towards the Greenwich Prime Meridian,
- * the <var>Y</var> axis points East, and the <var>Z</var> axis points North.
+ * the <var>Y</var> axis points East, and the <var>Z</var> axis points North.</p>
  *
  * {@note The upper case letters are intentional. By convention, (<var>X</var>, <var>Y</var>, <var>Z</var>)
  *        stand for <cite>geocentric</cite> coordinates while (<var>x</var>, <var>y</var>, <var>z</var>)
@@ -78,7 +81,7 @@ import java.util.Objects;
  *     </mtable>
  *   </mfenced>
  *   <mo>=</mo>
- *   <mi>dS</mi>
+ *   <mfenced><mn>1</mn><mo>+</mo><mi>dS</mi></mfenced>
  *   <mo>⋅</mo>
  *   <mfenced open="[" close="]">
  *     <mtable>
@@ -142,6 +145,8 @@ import java.util.Objects;
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
  * @module
+ *
+ * @see DefaultGeodeticDatum#getBursaWolfParameters()
  */
 @Immutable
 public class BursaWolfParameters extends FormattableObject implements Serializable {
@@ -319,7 +324,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     }
 
     /**
-     * Returns {@code true} if this Bursa Wolf parameters performs no operation.
+     * Returns {@code true} if this Bursa-Wolf parameters performs no operation.
      * This is true when all parameters are set to zero.
      *
      * @return {@code true} if the parameters describe no operation.
@@ -331,7 +336,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     }
 
     /**
-     * Returns {@code true} if this Bursa Wolf parameters contains only translation terms.
+     * Returns {@code true} if this Bursa-Wolf parameters contains only translation terms.
      *
      * @return {@code true} if the parameters describe to a translation only.
      */
