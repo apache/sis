@@ -16,11 +16,8 @@
  */
 package org.apache.sis.referencing.datum;
 
-import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.Transformation;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.EPSG;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -42,7 +39,6 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      * as documented in the example section of EPSG operation method 9606.
      */
     @Test
-    @EPSG(type = OperationMethod.class, code = 9606)
     public void testGetPositionVectorTransformation() {
         final BursaWolfParameters bursaWolf = new BursaWolfParameters(0, 0, 4.5, 0, 0, 0.554, 0.219, null);
         final MatrixSIS toWGS84 = MatrixSIS.castOrCopy(bursaWolf.getPositionVectorTransformation(false));
@@ -57,7 +53,6 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      * Tests serialization of <cite>ED87 to WGS 84</cite> parameters (EPSG:1146).
      */
     @Test
-    @EPSG(type = Transformation.class, code = 1146)
     public void testToString() {
         final BursaWolfParameters bursaWolf = new BursaWolfParameters(
                 -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null);

@@ -18,13 +18,10 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Arrays;
 import java.io.Serializable;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.datum.GeodeticDatum;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.EPSG;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Immutable;
@@ -167,42 +164,36 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * X-axis translation in metres (EPSG:8605).
      * The legacy OGC parameter name is {@code "dx"}.
      */
-    @EPSG(type = ParameterDescriptor.class, code = 8605)
     public final double tX;
 
     /**
      * Y-axis translation in metres (EPSG:8606).
      * The legacy OGC parameter name is {@code "dy"}.
      */
-    @EPSG(type = ParameterDescriptor.class, code = 8606)
     public final double tY;
 
     /**
      * Z-axis translation in metres (EPSG:8607).
      * The legacy OGC parameter name is {@code "dz"}.
      */
-    @EPSG(type = ParameterDescriptor.class, code = 8607)
     public final double tZ;
 
     /**
      * X-axis rotation in arc seconds (EPSG:8608), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ex"}.
      */
-    @EPSG(type = ParameterDescriptor.class, code = 8608)
     public final double rX;
 
     /**
      * Y-axis rotation in arc seconds (EPSG:8609), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ey"}.
      */
-    @EPSG(type = ParameterDescriptor.class, code = 8609)
     public final double rY;
 
     /**
      * Z-axis rotation in arc seconds (EPSG:8610), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ez"}.
      */
-    @EPSG(type = ParameterDescriptor.class, code = 8610)
     public final double rZ;
 
     /**
@@ -213,7 +204,6 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      *           of 100.001 km in the target coordinate reference system, the scale difference is 1 ppm
      *           (the ratio being 1.000001).}
      */
-    @EPSG(type = ParameterDescriptor.class, code = 8611)
     public final double dS;
 
     /**
@@ -370,7 +360,6 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      *
      * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum)
      */
-    @EPSG(type = OperationMethod.class, code = 1033)
     public Matrix getPositionVectorTransformation(final boolean inverse) {
         final double sgn = inverse ? -1 : +1;
         final double   S = 1 + sgn*dS / PPM;

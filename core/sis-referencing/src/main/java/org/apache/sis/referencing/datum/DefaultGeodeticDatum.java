@@ -27,8 +27,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.referencing.EPSG;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ComparisonMode;
@@ -253,14 +251,14 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * If no transformation path is found, then this method returns {@code null}.
      * If non-null, then the representation is represented as an affine transform.
      *
-     * {@note This is identified as operation method 1033 in the EPSG database.}
+     * {@note This is identified in the EPSG database as operation method 1033 -
+     *        <cite>Position Vector transformation (geocentric domain)</cite>.}
      *
      * @param  targetDatum The target datum.
      * @return An affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
      *
      * @see BursaWolfParameters#getPositionVectorTransformation(boolean)
      */
-    @EPSG(type = OperationMethod.class, code = 1033)
     public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum) {
         ensureNonNull("targetDatum", targetDatum);
         return getPositionVectorTransformation(this, targetDatum, null);
