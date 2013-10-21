@@ -104,7 +104,6 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    @EPSG(type = GeographicCRS.class, code = 4326)
     WGS84((short) 7030),
 
     /**
@@ -121,7 +120,6 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    @EPSG(type = GeographicCRS.class, code = 4322)
     WGS72((short) 7043),
 
     /**
@@ -144,7 +142,6 @@ public enum GeodeticObjects {
      *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses the NAD83 datum,
      *        while the <code>"IGNF:MILLER"</code> authority code uses the GRS80 datum.}
      */
-    @EPSG(type = GeographicCRS.class, code = 4258)
     ETRS89((short) 7019),
 
     /**
@@ -168,7 +165,6 @@ public enum GeodeticObjects {
      *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses the NAD83 datum,
      *        while the <code>"IGNF:MILLER"</code> authority code uses the GRS80 datum.}
      */
-    @EPSG(type = GeographicCRS.class, code = 4269)
     NAD83((short) 7019),
 
     /**
@@ -185,7 +181,6 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    @EPSG(type = GeographicCRS.class, code = 4267)
     NAD27((short) 7008),
 
     /**
@@ -202,7 +197,6 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    @EPSG(type = GeographicCRS.class, code = 4230)
     ED50((short) 7022),
 
     /**
@@ -219,7 +213,6 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    @EPSG(type = GeographicCRS.class, code = 4047)
     SPHERE((short) 7048);
 
     /**
