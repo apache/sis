@@ -82,7 +82,7 @@ import java.util.Objects;
  *     </mtable>
  *   </mfenced>
  *   <mo>=</mo>
- *   <mfenced><mn>1</mn><mo>+</mo><mi>dS</mi></mfenced>
+ *   <mo>(</mo><mn>1</mn><mo>+</mo><mi>dS</mi><mo>)</mo>
  *   <mo>⋅</mo>
  *   <mfenced open="[" close="]">
  *     <mtable>
