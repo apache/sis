@@ -39,7 +39,7 @@ import static java.lang.Double.isInfinite;
 import static org.apache.sis.math.MathFunctions.pow10;
 import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;
-import static org.apache.sis.math.MathFunctions.fractionDigitsForDelta;
+import static org.apache.sis.math.MathFunctions.fractionDigitsForValue;
 
 // Related to JDK7
 import java.util.Objects;
@@ -956,7 +956,7 @@ public class AngleFormat extends Format implements Localized {
         if (maximumFractionDigits != minimumFractionDigits) {
             if      (secondsFieldWidth != 0) angle *= 3600;
             else if (minutesFieldWidth != 0) angle *=   60;
-            final int n = fractionDigitsForDelta(Math.ulp(angle), false) - 1;
+            final int n = fractionDigitsForValue(angle) - 1;
             if (n < maximumFractionDigits) {
                 maximumFractionDigits = Math.max(minimumFractionDigits, n);
             }
@@ -1039,12 +1039,16 @@ public class AngleFormat extends Format implements Localized {
                 if (suffix != null) {
                     toAppendTo.append(suffix);
                 }
-                it.addFieldLimit(Field.forCode(field), hasMore
-                        ? (Number) Integer.valueOf((int) Math.round(value))
-                        : (Number) Float.valueOf((float) value), startPosition);
-                // The 'valueOf(…)' was for information purpose only. We use Float instead of Double
-                // because we don't want to give a false impression of accuracy (when formatting the
-                // seconds field, at least the 10 last bits of the double value are non-significant).
+                final Number userObject;
+                if (hasMore) {
+                    userObject = (int) Math.round(value);
+                } else {
+                    // Use Float instead of Double because we don't want to give a false impression of accuracy
+                    // (when formatting the seconds field, at least the 10 last bits of the 'double' value are
+                    // non-significant).
+                    userObject = (float) value;
+                }
+                it.addFieldLimit(Field.forCode(field), userObject, startPosition);
             } else {
                 toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
                 if (suffix != null) {
@@ -1746,6 +1750,8 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
 
     /**
      * Returns a clone of this {@code AngleFormat}.
+     *
+     * @return A clone of this format.
      */
     @Override
     public AngleFormat clone() {

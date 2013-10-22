@@ -702,7 +702,7 @@ public class Formatter {
          * a unit conversion). In the case of WGS84 semi-major axis in metres, we still have a
          * maximum of 8 fraction digits, which is more than enough.
          */
-        numberFormat.setMaximumFractionDigits(MathFunctions.fractionDigitsForDelta(Math.ulp(number), false) - 2);
+        numberFormat.setMaximumFractionDigits(MathFunctions.fractionDigitsForValue(number) - 2);
         numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
         numberFormat.format(number, buffer, dummy);
         resetColor();
@@ -819,6 +819,8 @@ public class Formatter {
 
     /**
      * Returns the WKT formatted by this object.
+     *
+     * @return The WKT formatted by this instance.
      */
     @Override
     public String toString() {

@@ -85,10 +85,10 @@ public final class DoubleDouble extends Number {
 
     /**
      * When computing <var>a</var> - <var>b</var> as a double-double (106 significand bits) value,
-     * if the amount of non-zero significand bits is equals or lower than that amount, consider the
-     * result as zero.
+     * if the amount of non-zero significand bits is equals or lower than {@code ZERO_THRESHOLD+1},
+     * consider the result as zero.
      */
-    private static final int ZERO_THRESHOLD = 3;
+    private static final int ZERO_THRESHOLD = 2;
 
     /**
      * The split constant used as part of multiplication algorithms. The split algorithm is as below
@@ -212,7 +212,30 @@ public final class DoubleDouble extends Number {
     public DoubleDouble() {
     }
 
-    /** Returns {@link #value}. */
+    /**
+     * Creates a new value initialized to the given value and error.
+     * It is caller's responsibility to ensure that the (value, error) pair is normalized.
+     *
+     * @param value The initial value.
+     * @param error The initial error.
+     */
+    public DoubleDouble(final double value, final double error) {
+        this.value = value;
+        this.error = error;
+        assert !(Math.abs(error) > Math.ulp(value)) : this; // Use ! for being tolerant to NaN.
+    }
+
+    /**
+     * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
+     * from angular degrees to radians.
+     *
+     * @return An instance initialize to the 0.01745329251994329576923690768488613 value.
+     */
+    public static DoubleDouble createDegreesToRadians() {
+        return new DoubleDouble(0.01745329251994329576923690768488613, 2.9486522708701687E-19);
+    }
+
+    /** @return {@link #value}. */
     @Override public double doubleValue() {return value;}
     @Override public float  floatValue()  {return (float) value;}
     @Override public long   longValue()   {return Math.round(value);}
@@ -436,7 +459,7 @@ public final class DoubleDouble extends Number {
              * The number of significand bits (mantissa) in the IEEE 'double' representation is 52,
              * not counting the hidden bit. So estimate the accuracy of the double-double number as
              * the accuracy of the 'double' value (which is 1 ULP) scaled as if we had 52 additional
-             * significand bits (we ignore some more bits if ZERO_THRESHOLD is greater than 1).
+             * significand bits (we ignore some more bits if ZERO_THRESHOLD is greater than 0).
              * If the error is not greater than that value, then assume that it is not significant.
              */
             if (Math.abs(error) <= Math.scalb(Math.ulp(otherValue), ZERO_THRESHOLD - Numerics.SIGNIFICAND_SIZE)) {
