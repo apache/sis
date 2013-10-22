@@ -252,6 +252,42 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     }
 
     /**
+     * Tests {@link DoubleDouble#sqrt()} first with the square root of 2, then with random values.
+     * In the {@code sqrt(2)} case:
+     *
+     * <ul>
+     *   <li>The error using {@code double} arithmetic is approximatively 1E-16.</li>
+     *   <li>The error using double-double arithmetic is expected to be slightly less that 1E-32.</li>
+     * </ul>
+     */
+    @Test
+    @DependsOnMethod({"testMultiply", "testDivide"})
+    public void testSqrt() {
+        final BigDecimal SQRT2 = new BigDecimal("1.414213562373095048801688724209698");
+        final DoubleDouble dd = new DoubleDouble(2, 0);
+        dd.sqrt();
+        assertNormalizedAndEquals(sqrt(2), dd);
+        assertEquals(0, SQRT2.subtract(toBigDecimal(dd)).doubleValue(), 1E-32);
+        /*
+         * If we have been able to compute √2, now test with random values.
+         * Since the range of values is approximatively [-1000 … 1000], use
+         * a tolerance value 1000 time the one that we used for √2.
+         */
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
+            nextRandom(dd);
+            if (dd.value < 0) {
+                dd.negate();
+            }
+            final double value = dd.value;
+            final double error = dd.error;
+            dd.multiply(dd);
+            dd.sqrt();
+            dd.subtract(value, error);
+            assertEquals(0, dd.doubleValue(), 1E-29);
+        }
+    }
+
+    /**
      * List of all {@link DoubleDouble#VALUES} as string decimal representation.
      */
     private static final String[] PREDEFINED_VALUES = {
@@ -346,39 +382,18 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     }
 
     /**
-     * Tests {@link DoubleDouble#sqrt()} first with the square root of 2, then with random values.
-     * In the {@code sqrt(2)} case:
-     *
-     * <ul>
-     *   <li>The error using {@code double} arithmetic is approximatively 1E-16.</li>
-     *   <li>The error using double-double arithmetic is expected to be slightly less that 1E-32.</li>
-     * </ul>
+     * Tests the {@code DoubleDouble.createFoo()} methods.
      */
     @Test
-    @DependsOnMethod({"testMultiply", "testDivide"})
-    public void testSqrt() {
-        final BigDecimal SQRT2 = new BigDecimal("1.414213562373095048801688724209698");
-        final DoubleDouble dd = new DoubleDouble();
-        dd.value = 2;
-        dd.sqrt();
-        assertNormalizedAndEquals(sqrt(2), dd);
-        assertEquals(0, SQRT2.subtract(toBigDecimal(dd)).doubleValue(), 1E-32);
-        /*
-         * If we have been able to compute √2, now test with random values.
-         * Since the range of values is approximatively [-1000 … 1000], use
-         * a tolerance value 1000 time the one that we used for √2.
-         */
-        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
-            nextRandom(dd);
-            if (dd.value < 0) {
-                dd.negate();
+    @DependsOnMethod("testErrorForWellKnownValue")
+    public void testCreate() {
+        for (int i=0; ; i++) {
+            final DoubleDouble dd;
+            switch (i) {
+                case 0:  dd = DoubleDouble.createDegreesToRadians(); break;
+                default: return; // Test done.
             }
-            final double value = dd.value;
-            final double error = dd.error;
-            dd.multiply(dd);
-            dd.sqrt();
-            dd.subtract(value, error);
-            assertEquals(0, dd.doubleValue(), 1E-29);
+            assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error, STRICT);
         }
     }
 }

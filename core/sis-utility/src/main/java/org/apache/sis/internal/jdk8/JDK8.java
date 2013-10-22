@@ -32,7 +32,7 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class JDK8 {
@@ -47,6 +47,18 @@ public final class JDK8 {
      * Do not allow instantiation of this class.
      */
     private JDK8() {
+    }
+
+    /**
+     * Returns the floating-point value adjacent to {@code value} in the direction of negative infinity.
+     *
+     * @param  value The value for which to get the adjacent value.
+     * @return The adjacent value in the direction of negative infinity.
+     *
+     * @since 0.4
+     */
+    public static double nextDown(final double value) {
+        return Math.nextAfter(value, Double.NEGATIVE_INFINITY);
     }
 
     /**
