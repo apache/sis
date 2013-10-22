@@ -141,8 +141,8 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
         codeSpace = identifier.getCodeSpace();
         authority = identifier.getAuthority();
         version   = identifier.getVersion();
-        if (identifier instanceof ImmutableIdentifier) {
-            remarks = ((ImmutableIdentifier) identifier).getRemarks();
+        if (identifier instanceof Deprecable) {
+            remarks = ((Deprecable) identifier).getRemarks();
         } else {
             remarks = null;
         }
@@ -197,7 +197,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
     }
 
     /**
-     * Constructs an identifier from a set of properties. Keys are strings from the table below.
+     * Constructs an identifier from the given properties. Keys are strings from the table below.
      * The map given in argument shall contain an entry at least for the
      * {@value org.opengis.metadata.Identifier#CODE_KEY} key.
      * Other properties listed in the table below are optional.
@@ -246,9 +246,9 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
-        code      = property(properties, CODE_KEY,      String.class);
-        version   = property(properties, VERSION_KEY,   String.class);
-        remarks   = Types.toInternationalString(properties, REMARKS_KEY);
+        code    = property(properties, CODE_KEY,    String.class);
+        version = property(properties, VERSION_KEY, String.class);
+        remarks = Types.toInternationalString(properties, REMARKS_KEY);
         /*
          * Map String authority to one of the pre-defined constants (typically EPSG or OGC).
          */

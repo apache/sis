@@ -59,7 +59,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @Decorator(Appendable.class)
@@ -563,6 +563,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     public void flush() throws IOException {
         out.append(buffer);
         buffer.setLength(0);
+        printableLength = 0;
         IO.flush(out);
     }
 

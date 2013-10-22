@@ -481,6 +481,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NonTemporalUnit_1 = 49;
 
         /**
+         * Scale is not uniform.
+         */
+        public static final int NonUniformScale = 126;
+
+        /**
          * Argument ‘{0}’ shall not be NaN (Not-a-Number).
          */
         public static final int NotANumber_1 = 9;
@@ -489,6 +494,11 @@ public final class Errors extends IndexedResourceBundle {
          * Class ‘{0}’ is not a primitive type wrapper.
          */
         public static final int NotAPrimitiveWrapper_1 = 10;
+
+        /**
+         * Matrix is not skew-symmetric.
+         */
+        public static final int NotASkewSymmetricMatrix = 127;
 
         /**
          * Text “{0}” is not a Unicode identifier.

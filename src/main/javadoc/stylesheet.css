@@ -56,13 +56,14 @@ table.sis tr td.sep {
 
 /*
  * Table without vertical space between rows and a little bit of space between columns.
- * This table has no border.
+ * This table has no border. Headers are still centered and other cells left-aligned.
  */
 table.compact {
   width:          auto;
   border:         none;
   border-spacing: 0pt;
   padding:        0pt;
+  line-height:    1em;
 }
 
 table.compact tr td {
@@ -127,7 +128,9 @@ ul.verbose li {
  * Overrides the <pre> definition provided by the Javadoc tools.
  */
 div.block pre {
-  font-size: 1em;
+  line-height: 1em;
+  font-size:   1em;
+  font-family: Andale Mono, Courier New, monospace;
 }
 
 

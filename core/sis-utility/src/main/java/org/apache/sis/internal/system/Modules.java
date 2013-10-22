@@ -24,7 +24,7 @@ package org.apache.sis.internal.system;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Modules {
@@ -37,6 +37,11 @@ public final class Modules {
      * The {@value} module name.
      */
     public static final String METADATA = "org.apache.sis.metadata";
+
+    /**
+     * The {@value} module name.
+     */
+    public static final String REFERENCING = "org.apache.sis.referencing";
 
     /**
      * The {@value} module name.

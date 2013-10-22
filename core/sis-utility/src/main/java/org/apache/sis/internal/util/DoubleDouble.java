@@ -696,6 +696,16 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Sets this double-double value to its square root.
+     *
+     * @todo This method is not yet implemented with double-double precision.
+     */
+    public void sqrt() {
+        value = Math.sqrt(value);
+        error = 0;
+    }
+
+    /**
      * Returns a string representation of this number for debugging purpose.
      * The returned string does not need to contains all digits that this {@code DoubleDouble} can handle.
      *

@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.maintenance;
 
 import java.util.Set;
+import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -145,12 +146,12 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
                     switch (i) {
                         case ATTRIBUTES:
                         case ATTRIBUTE_INSTANCES: {
-                            candidate = copySet((Set<AttributeType>) candidate, AttributeType.class);
+                            candidate = copySet((Collection<AttributeType>) candidate, AttributeType.class);
                             break;
                         }
                         case FEATURES:
                         case FEATURE_INSTANCES: {
-                            candidate = copySet((Set<FeatureType>) candidate, FeatureType.class);
+                            candidate = copySet((Collection<FeatureType>) candidate, FeatureType.class);
                             break;
                         }
                     }
