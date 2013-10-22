@@ -57,21 +57,9 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     private final PixelInCell pixelInCell;
 
     /**
-     * Constructs a new datum with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param datum The datum to copy.
-     */
-    public DefaultImageDatum(final ImageDatum datum) {
-        super(datum);
-        pixelInCell = datum.getPixelInCell();
-    }
-
-    /**
-     * Constructs an image datum from a name.
+     * Creates an image datum from a name. This is a convenience constructor for
+     * {@link #DefaultImageDatum(Map, PixelInCell) DefaultImageDatum(Map, …)}
+     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property.
      *
      * @param name The datum name.
      * @param pixelInCell the way the image grid is associated with the image data attributes.
@@ -81,16 +69,32 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     }
 
     /**
-     * Constructs an image datum from a set of properties. The properties map is given
+     * Creates an image datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      *
-     * @param properties  Set of properties. Should contains at least {@code "name"}.
-     * @param pixelInCell the way the image grid is associated with the image data attributes.
+     * @param properties  The properties to be given to the identified object.
+     * @param pixelInCell The way the image grid is associated with the image data attributes.
      */
     public DefaultImageDatum(final Map<String,?> properties, final PixelInCell pixelInCell) {
         super(properties);
         this.pixelInCell = pixelInCell;
         ensureNonNull("pixelInCell", pixelInCell);
+    }
+
+    /**
+     * Creates a new datum with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param datum The datum to copy.
+     *
+     * @see #castOrCopy(ImageDatum)
+     */
+    protected DefaultImageDatum(final ImageDatum datum) {
+        super(datum);
+        pixelInCell = datum.getPixelInCell();
     }
 
     /**
@@ -150,6 +154,8 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
 
     /**
      * Computes a hash value consistent with the given comparison mode.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {

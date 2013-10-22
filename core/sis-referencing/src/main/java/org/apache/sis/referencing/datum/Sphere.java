@@ -43,9 +43,9 @@ final class Sphere extends DefaultEllipsoid {
     private static final long serialVersionUID = 7867565381280669821L;
 
     /**
-     * Constructs a new sphere using the specified radius.
+     * Creates a new sphere using the specified radius.
      *
-     * @param properties    Set of properties. Should contains at least {@code "name"}.
+     * @param properties    The properties to be given to the identified object.
      * @param radius        The equatorial and polar radius.
      * @param ivfDefinitive {@code true} if the inverse flattening is definitive.
      * @param unit          The units of the radius value.

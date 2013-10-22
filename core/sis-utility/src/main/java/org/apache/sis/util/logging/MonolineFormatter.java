@@ -48,7 +48,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  * this formatter uses only one line per message instead of two. For example messages formatted by
  * {@code MonolineFormatter} may look like:
  *
- * <blockquote><table style="color:#FFFFFF; background:black" class="compact">
+ * <blockquote><table style="color:white; background:black" class="compact">
  * <tr><td><code>00:01</code></td><td style="background:blue"><code>CONFIG</code></td>
  *     <td><code><b>[MyApplication]</b> Read configuration from “my-application/setup.xml”.</code></td></tr>
  * <tr><td><code>00:03</code></td><td style="background:green"><code>INFO</code></td>
@@ -104,7 +104,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see SimpleFormatter
@@ -603,8 +603,8 @@ loop:   for (int i=0; ; i++) {
                 buffer.append(colorAt(level));
             }
             final int offset = buffer.length();
-            buffer.append(level.getLocalizedName());
-            buffer.append(CharSequences.spaces(levelWidth - (buffer.length() - offset)));
+            buffer.append(level.getLocalizedName())
+                  .append(CharSequences.spaces(levelWidth - (buffer.length() - offset)));
             margin += buffer.length() - offset;
             if (colors) {
                 buffer.append(X364.BACKGROUND_DEFAULT.sequence());
@@ -633,7 +633,6 @@ loop:   for (int i=0; ; i++) {
                     break;
                 }
             }
-            source = source.replace('$', '.');
             if (colors && emphase) {
                 buffer.append(X364.BOLD.sequence());
             }

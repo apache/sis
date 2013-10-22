@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
@@ -158,24 +157,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private transient int hashCode;
 
     /**
-     * Constructs a new identified object with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one or a
-     * user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param object The object to shallow copy.
-     */
-    public AbstractIdentifiedObject(final IdentifiedObject object) {
-        ensureNonNull("object", object);
-        name        =          object.getName();
-        alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
-        identifiers = nonEmpty(object.getIdentifiers());
-        remarks     =          object.getRemarks();
-    }
-
-    /**
-     * Constructs an object from a set of properties. Keys are strings from the table below.
+     * Constructs an object from the given properties. Keys are strings from the table below.
      * The map given in argument shall contain an entry at least for the
      * {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} key.
      * Other properties listed in the table below are optional.
@@ -288,6 +270,23 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     private static IllegalArgumentException illegalPropertyType(final String key, final Object value) {
         return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+    }
+
+    /**
+     * Constructs a new identified object with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one or a
+     * user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param object The object to shallow copy.
+     */
+    protected AbstractIdentifiedObject(final IdentifiedObject object) {
+        ensureNonNull("object", object);
+        name        =          object.getName();
+        alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
+        identifiers = nonEmpty(object.getIdentifiers());
+        remarks     =          object.getRemarks();
     }
 
     /**
@@ -578,7 +577,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <code>{@linkplain #equals(Object, ComparisonMode) equals}(object, IGNORE_METADATA)</code>.
      * This feature allows users to implement metadata-insensitive {@link java.util.HashMap}.
      *
-     * @param  mode Specifies the set of properties that can be used for hash code computation.
+     * @param  mode Specifies the properties that can be used for hash code computation.
      * @return The hash code value. This value may change between different execution of the Apache SIS library.
      * @throws IllegalArgumentException If the given {@code mode} is not one of {@code STRICT}, {@code BY_CONTRACT}
      *         or {@code IGNORE_METADATA} enumeration values.

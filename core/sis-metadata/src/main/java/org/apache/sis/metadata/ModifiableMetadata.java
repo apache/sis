@@ -609,7 +609,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             return EnumSet.noneOf((Class) elementType);
         }
         if (CodeList.class.isAssignableFrom(elementType) && Modifier.isFinal(elementType.getModifiers())) {
-            return new CodeListSet((Class) elementType);
+            return new CodeListSet(elementType);
         }
         return new CheckedHashSet<E>(elementType, capacity);
     }

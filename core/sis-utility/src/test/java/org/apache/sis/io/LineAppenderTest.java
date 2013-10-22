@@ -19,6 +19,7 @@ package org.apache.sis.io;
 import java.io.IOException;
 import org.apache.sis.test.DependsOn;
 import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -30,7 +31,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn({
@@ -72,5 +73,23 @@ public strictfp class LineAppenderTest extends AppenderTestCase {
         assertSame(f, f.append("out en perdant"));
         assertSame(f, f.append(lineSeparator + "ses illusions."));
         assertOutputEquals("Le vrai policitien, c'est celui qui arrive à garder son idéal tout en perdant ses illusions.");
+    }
+
+    /**
+     * Tests a call to {@link LineAppender#flush()} interleaved between two lines,
+     * where the second line begin with a tabulation.
+     *
+     * @throws IOException Should never happen, since we are writing in a {@link StringBuilder}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-140">SIS-140</a>
+     */
+    @Test
+    public void testInterleavedFlush() throws IOException {
+        final LineAppender f = (LineAppender) appender;
+        f.setTabulationWidth(4);
+        f.append("S1");
+        f.flush();
+        f.append("\tS2");
+        assertOutputEquals(f.isTabulationExpanded() ? "S1  S2" : "S1\tS2");
     }
 }

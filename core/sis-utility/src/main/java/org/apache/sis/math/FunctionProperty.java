@@ -144,7 +144,7 @@ public enum FunctionProperty {
      *
      * @see #isBijective(Set)
      */
-    private static EnumSet<FunctionProperty> BIJECTIVE = EnumSet.of(INJECTIVE, SURJECTIVE);
+    private static final EnumSet<FunctionProperty> BIJECTIVE = EnumSet.of(INJECTIVE, SURJECTIVE);
 
     /**
      * Returns {@code true} if a function having the given set of properties is <cite>bijective</cite>.
