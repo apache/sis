@@ -22,7 +22,6 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.datum.TemporalDatum;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Immutable;
 
@@ -34,12 +33,37 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * A temporal datum defines the origin of a temporal coordinate reference system.
+ * Defines the origin of a temporal coordinate reference system.
+ *
+ * {@section Creating new temporal datum instances}
+ * New instances can be created either directly by specifying all information to a factory method (choices 3
+ * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
+ * Choice 1 in the following list is the easiest but most restrictive way to get a temporal datum.
+ * The other choices provide more freedom.
+ *
+ * <ol>
+ *   <li>Create a {@code TemporalDatum} from one of the static convenience shortcuts listed in
+ *       {@link org.apache.sis.referencing.GeodeticObjects.Temporal#datum()}.</li>
+ *   <li>Create a {@code TemporalDatum} from an identifier in a database by invoking
+ *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createTemporalDatum(String)}.</li>
+ *   <li>Create a {@code TemporalDatum} by invoking the {@code createTemporalDatum(…)}
+ *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code DefaultTemporalDatum} by invoking the
+ *       {@linkplain #DefaultTemporalDatum(Map, Date) constructor}.</li>
+ * </ol>
+ *
+ * <b>Example:</b> the following code gets a temporal datum having its origin at January 1st, 4713 BC at 12:00 UTC:
+ *
+ * {@preformat java
+ *     TemporalDatum datum = GeodeticObjects.Temporal.JULIAN.datum();
+ * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.GeodeticObjects.Temporal#datum()
  */
 @Immutable
 @XmlType(name = "TemporalDatumType")
@@ -51,73 +75,14 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     private static final long serialVersionUID = 3357241732140076884L;
 
     /**
-     * Datum for time measured since January 1st, 4713 BC at 12:00 UTC.
-     *
-     * @see org.apache.sis.referencing.crs.DefaultTemporalCRS#JULIAN
-     */
-    public static final DefaultTemporalDatum JULIAN = new DefaultTemporalDatum(
-            name(Vocabulary.Keys.Julian), new Date(-2440588 * (24*60*60*1000L) + (12*60*60*1000L)));
-
-    /**
-     * Datum for time measured since November 17, 1858 at 00:00 UTC.
-     * A <cite>Modified Julian day</cite> (MJD) is defined relative to
-     * <cite>Julian day</cite> (JD) as {@code MJD = JD − 2400000.5}.
-     *
-     * @see org.apache.sis.referencing.crs.DefaultTemporalCRS#MODIFIED_JULIAN
-     */
-    public static final DefaultTemporalDatum MODIFIED_JULIAN = new DefaultTemporalDatum(
-            name(Vocabulary.Keys.ModifiedJulian), new Date(-40587 * (24*60*60*1000L)));
-
-    /**
-     * Datum for time measured since May 24, 1968 at 00:00 UTC.
-     * This epoch was introduced by NASA for the space program.
-     * A <cite>Truncated Julian day</cite> (TJD) is defined relative to
-     * <cite>Julian day</cite> (JD) as {@code TJD = JD − 2440000.5}.
-     *
-     * @see org.apache.sis.referencing.crs.DefaultTemporalCRS#TRUNCATED_JULIAN
-     */
-    public static final DefaultTemporalDatum TRUNCATED_JULIAN = new DefaultTemporalDatum(
-            name(Vocabulary.Keys.TruncatedJulian), new Date(-587 * (24*60*60*1000L)));
-
-    /**
-     * Datum for time measured since December 31, 1899 at 12:00 UTC.
-     * A <cite>Dublin Julian day</cite> (DJD) is defined relative to
-     * <cite>Julian day</cite> (JD) as {@code DJD = JD − 2415020}.
-     *
-     * @see org.apache.sis.referencing.crs.DefaultTemporalCRS#DUBLIN_JULIAN
-     */
-    public static final DefaultTemporalDatum DUBLIN_JULIAN = new DefaultTemporalDatum(
-            name(Vocabulary.Keys.DublinJulian), new Date(-25568 * (24*60*60*1000L) + (12*60*60*1000L)));
-
-    /**
-     * Default datum for time measured since January 1st, 1970 at 00:00 UTC.
-     *
-     * @see org.apache.sis.referencing.crs.DefaultTemporalCRS#UNIX
-     * @see org.apache.sis.referencing.crs.DefaultTemporalCRS#JAVA
-     */
-    public static final DefaultTemporalDatum UNIX = new DefaultTemporalDatum("UNIX", new Date(0));
-
-    /**
      * The date and time origin of this temporal datum.
      */
     private final long origin;
 
     /**
-     * Constructs a new datum with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param datum The datum to copy.
-     */
-    public DefaultTemporalDatum(final TemporalDatum datum) {
-        super(datum);
-        origin = datum.getOrigin().getTime();
-    }
-
-    /**
-     * Constructs a temporal datum from a name.
+     * Creates a temporal datum from a name. This is a convenience constructor for
+     * {@link #DefaultTemporalDatum(Map, Date) DefaultTemporalDatum(Map, …)}
+     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property.
      *
      * @param name   The datum name.
      * @param origin The date and time origin of this temporal datum.
@@ -127,16 +92,32 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
-     * Constructs a temporal datum from a set of properties. The properties map is given
+     * Creates a temporal datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      *
-     * @param properties Set of properties. Should contains at least {@code "name"}.
+     * @param properties The properties to be given to the identified object.
      * @param origin The date and time origin of this temporal datum.
      */
     public DefaultTemporalDatum(final Map<String,?> properties, final Date origin) {
         super(properties);
         ensureNonNull("origin", origin);
         this.origin = origin.getTime();
+    }
+
+    /**
+     * Creates a new datum with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param datum The datum to copy.
+     *
+     * @see #castOrCopy(TemporalDatum)
+     */
+    protected DefaultTemporalDatum(final TemporalDatum datum) {
+        super(datum);
+        origin = datum.getOrigin().getTime();
     }
 
     /**
@@ -196,6 +177,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
 
     /**
      * Computes a hash value consistent with the given comparison mode.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {

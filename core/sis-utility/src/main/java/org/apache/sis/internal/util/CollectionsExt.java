@@ -17,6 +17,7 @@
 package org.apache.sis.internal.util;
 
 import java.util.*;
+import java.lang.reflect.Array;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.resources.Errors;
@@ -92,16 +93,29 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns the given array if non-empty, or {@code null} if the given array is null or empty.
+     * This method is generally not recommended, since public API should prefer empty array instead of null.
+     * However this method is occasionally useful for managing private fields.
+     *
+     * @param  <E> The type of elements in the array.
+     * @param  array The array, or {@code null}.
+     * @return The given array, or {@code null} if the given array was empty.
+     */
+    public static <E> E[] nonEmpty(final E[] array) {
+        return (array != null && array.length == 0) ? null : array;
+    }
+
+    /**
      * Returns the given collection if non-empty, or {@code null} if the given collection is null or empty.
-     * This method is generally not recommended, since public API should prefer empty collection instead of
-     * null. However it is occasionally useful for managing private fields, especially for inter-operability
+     * This method is generally not recommended, since public API should prefer empty collection instead of null.
+     * However this method is occasionally useful for managing private fields, especially for inter-operability
      * with frameworks that may expect or return null (e.g. if we want to exclude completely an empty collection
      * from marshalling with JAXB).
      *
      * @param  <T> The type of the collection.
      * @param  <E> The type of elements in the collection.
      * @param  c   The collection, or {@code null}.
-     * @return The given collection, or an empty set of the given collection was null.
+     * @return The given collection, or {@code null} if the given collection was empty.
      */
     public static <T extends Collection<E>, E> T nonEmpty(final T c) {
         return (c != null && c.isEmpty()) ? null : c;
@@ -112,7 +126,7 @@ public final class CollectionsExt extends Static {
      *
      * @param  <E> The type of elements in the collection.
      * @param  c The collection, or {@code null}.
-     * @return The given collection, or an empty set of the given collection was null.
+     * @return The given collection, or an empty set if the given collection was null.
      */
     public static <E> Collection<E> nonNull(final Collection<E> c) {
         return (c != null) ? c : Collections.<E>emptySet();
@@ -123,10 +137,65 @@ public final class CollectionsExt extends Static {
      *
      * @param  <E> The type of elements in the collection.
      * @param  c The collection, or {@code null}.
-     * @return The given collection, or an empty set of the given collection was null.
+     * @return The given collection, or an empty set if the given collection was null.
      */
     public static <E> Set<E> nonNull(final Set<E> c) {
         return (c != null) ? c : Collections.<E>emptySet();
+    }
+
+    /**
+     * Given a value which is either {@code null}, an instance of {@code <E>} or an array of {@code <E>},
+     * returns a non-null array containing all elements without null and without duplicated values.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>If the given value is {@code null}, then this method returns {@code emptyArray}.</li>
+     *   <li>If the given value is an instance of {@code <E>}, then this method returns an array of length 1
+     *       which contain only {@code value}.</li>
+     *   <li>If the given value is an array of {@code <E>}, then this method returns copy of that array,
+     *       omitting {@code null} elements and duplicated elements.</li>
+     *   <li>Otherwise this method throws {@link IllegalArgumentException}.</li>
+     * </ul>
+     *
+     * {@note It would be very easy to add support for <code>value</code> argument of type <code>Object[]</code>
+     *        or collections. But we do not provide such support for now because this method is used mostly as a
+     *        helper method for constructors of <code>AbstractIdentifiedObject</code> subclasses receiving a map
+     *        of properties, and the contract of our constructors do not allow those other types for now.}
+     *
+     * @param  <E>        The type of elements in the array to be returned.
+     * @param  name       The parameter name, used only for formatting an error message in case of failure.
+     * @param  value      The value to return as an array, or {@code null}.
+     * @param  emptyArray An instance of {@code new E[0]}. This argument can not be null.
+     * @return The given value as an array of {@code <E>}. Never null.
+     * throws  IllegalArgumentException If the given value is not null, an instance of {@code <E>}
+     *         or an array of {@code <E>}.
+     *
+     * @since 0.4
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> E[] nonNullArraySet(final String name, final Object value, final E[] emptyArray)
+            throws IllegalArgumentException
+    {
+        if (value == null) {
+            return emptyArray;
+        }
+        Class<?> type = emptyArray.getClass();
+        final Class<?> valueType = value.getClass();
+        if (valueType.isArray()) {
+            if (type.isAssignableFrom(valueType)) {
+                final Set<E> set = new LinkedHashSet<E>(Arrays.asList((E[]) value));
+                set.remove(null);
+                return set.toArray(emptyArray);
+            }
+        } else {
+            type = type.getComponentType();
+            if (type.isAssignableFrom(valueType)) {
+                final E[] array = (E[]) Array.newInstance(type, 1);
+                array[0] = (E) value;
+                return array;
+            }
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, valueType));
     }
 
     /**

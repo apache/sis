@@ -320,6 +320,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int TemporaryFiles = 31;
 
         /**
+         * {0} time
+         */
+        public static final int Time_1 = 64;
+
+        /**
          * Timezone
          */
         public static final int Timezone = 20;
