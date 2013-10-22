@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Collections;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
@@ -33,10 +32,8 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ComparisonMode;
@@ -65,11 +62,54 @@ import org.apache.sis.internal.jdk7.Objects;
  *       {@linkplain #getSemiMinorAxis() semi-minor axis}.</li>
  * </ul>
  *
+ * Some numerical values derived from the above properties are:
+ *
+ * <ul>
+ *   <li>{@linkplain #getAuthalicRadius() authalic radius}</li>
+ *   <li>{@linkplain #getEccentricity() eccentricity}</li>
+ * </ul>
+ *
+ * {@section Distance calculations}
+ * This class contains an {@link #orthodromicDistance(double, double, double, double)} convenience method
+ * for calculating distances on great circles. This convenience method is provided as an alternative to
+ * the {@link org.apache.sis.referencing.GeodeticCalculator}.
+ *
+ * {@section Creating new ellipsoid instances}
+ * New instances can be created either directly by specifying all information to a factory method (choices 3
+ * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
+ * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many ellipsoids,
+ * and Apache SIS provides convenience shortcuts for some of them.
+ *
+ * <p>Choice 1 in the following list is the easiest but most restrictive way to get an ellipsoid.
+ * The other choices provide more freedom. Each choice delegates its work to the subsequent items
+ * (in the default configuration), so this list can been seen as <cite>top to bottom</cite> API.</p>
+ *
+ * <ol>
+ *   <li>Create an {@code Ellipsoid} from one of the static convenience shortcuts listed in
+ *       {@link org.apache.sis.referencing.GeodeticObjects#ellipsoid()}.</li>
+ *   <li>Create an {@code Ellipsoid} from an identifier in a database by invoking
+ *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createEllipsoid(String)}.</li>
+ *   <li>Create an {@code Ellipsoid} by invoking the {@code createEllipsoid(…)} or {@code createFlattenedSphere(…)}
+ *       methods defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code DefaultEllipsoid} by invoking the
+ *       {@link #createEllipsoid(Map, double, double, Unit) createEllipsoid(…)} or
+ *       {@link #createFlattenedSphere(Map, double, double, Unit) createFlattenedSphere(…)}
+ *       static methods defined in this class.</li>
+ * </ol>
+ *
+ * <b>Example:</b> the following code gets the WGS84 ellipsoid:
+ *
+ * {@preformat java
+ *     Ellipsoid e = GeodeticObjects.WGS84.ellipsoid();
+ * }
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.GeodeticObjects#ellipsoid()
  */
 @Immutable
 @XmlType(name="EllipsoidType", propOrder={
@@ -99,89 +139,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @see Numerics#COMPARISON_THRESHOLD
      */
     private static final double COMPARISON_THRESHOLD = 1E-10;
-
-    /**
-     * Returns a properties map with the given name and EPSG code.
-     * This is used for the creation of default ellipsoid constants.
-     */
-    private static Map<String,?> properties(final String name, final int code, final Object alias) {
-        final Map<String,Object> map = new HashMap<String,Object>(8);
-        map.put(NAME_KEY, name);
-        map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
-        if (alias != null) {
-            map.put(ALIAS_KEY, alias);
-        }
-        return map;
-    }
-
-    /**
-     * WGS 1984 ellipsoid (EPSG:7030) used in GPS systems.
-     * The semi-major and semi-minor axis length are approximatively 6378137 and 6356752
-     * {@linkplain SI#METRE metres} respectively.
-     * This is the default ellipsoid for most {@code org.apache.sis} packages.
-     *
-     * @see DefaultGeodeticDatum#WGS84
-     */
-    public static final DefaultEllipsoid WGS84 = createFlattenedSphere(
-            properties("WGS84", 7030, "WGS 1984"), 6378137.0, 298.257223563, SI.METRE);
-
-    /**
-     * WGS 1972 ellipsoid (EPSG:7043).
-     * The semi-major and semi-minor axis length are approximatively 6378135 and 6356751
-     * {@linkplain SI#METRE metres} respectively.
-     *
-     * @see DefaultGeodeticDatum#WGS72
-     */
-    public static final DefaultEllipsoid WGS72 = createFlattenedSphere(
-            properties("WGS72", 7043, "WGS 1972"), 6378135.0, 298.26, SI.METRE);
-
-    /**
-     * GRS 1980 ellipsoid (EPSG:7019), also called "<cite>International 1979</cite>".
-     * The semi-major and semi-minor axis length are approximatively 6378137 and 6356752
-     * {@linkplain SI#METRE metres} respectively. This ellipsoid is very close, but not
-     * identical, to {@linkplain #WGS84}.
-     *
-     * {@note The <cite>NAD83</cite> ellipsoid uses the same semi-axis length and units.
-     *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses that NAD83 ellipsoid.
-     *        The <code>"IGNF:MILLER"</code> authority code uses the GRS80 ellipsoid.}
-     */
-    public static final DefaultEllipsoid GRS80 = createFlattenedSphere(
-            properties("GRS80", 7019, new String[] {"GRS 1980", "International 1979"}),
-            6378137.0, 298.257222101, SI.METRE);
-
-    /**
-     * International 1924 ellipsoid (EPSG:7022).
-     * The semi-major and semi-minor axis length are approximatively 6378388 and 6356912
-     * {@linkplain SI#METRE metres} respectively.
-     *
-     * {@note The <cite>European Datum 1950</cite> ellipsoid uses the same semi-axis length and units.}
-     */
-    public static final DefaultEllipsoid INTERNATIONAL_1924 = createFlattenedSphere(
-            properties("International 1924", 7022, null), 6378388.0, 297.0, SI.METRE);
-
-    /**
-     * Clarke 1866 ellipsoid (EPSG:7008).
-     * The semi-major and semi-minor axis length are approximatively 6378206 and 6356584
-     * {@linkplain SI#METRE metres} respectively.
-     *
-     * {@note The <cite>NAD27</cite> ellipsoid uses the same semi-axis length and units.
-     *        The <cite>Web Map Server</cite> <code>"CRS:27"</code> authority code uses that NAD27 ellipsoid.}
-     */
-    public static final DefaultEllipsoid CLARKE_1866 = createEllipsoid(
-            properties("Clarke 1866", 7008, null), 6378206.4, 6356583.8, SI.METRE);
-
-    /**
-     * A sphere with a radius of 6371000 {@linkplain SI#METRE metres}. Spheres use a simpler
-     * algorithm for {@linkplain #orthodromicDistance orthodromic distance computation}, which
-     * may be faster and more robust.
-     *
-     * {@note This ellipsoid is close to the <cite>GRS 1980 Authalic Sphere</cite> (EPSG:7048),
-     *        which has a radius of 6371007 metres.}
-     *
-     * @see DefaultGeodeticDatum#SPHERE
-     */
-    public static final DefaultEllipsoid SPHERE =
-            createEllipsoid("SPHERE", 6371000, 6371000, SI.METRE);
 
     /**
      * The equatorial radius. This field should be considered as final.
@@ -221,31 +178,11 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private Unit<Length> unit;
 
     /**
-     * Constructs a new ellipsoid with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     * Creates a new ellipsoid using the specified axis length.
+     * The properties map is given unchanged to the
+     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param ellipsoid The ellipsoid to copy.
-     *
-     * @see #castOrCopy(Ellipsoid)
-     */
-    protected DefaultEllipsoid(final Ellipsoid ellipsoid) {
-        super(ellipsoid);
-        semiMajorAxis     = ellipsoid.getSemiMajorAxis();
-        semiMinorAxis     = ellipsoid.getSemiMinorAxis();
-        inverseFlattening = ellipsoid.getInverseFlattening();
-        ivfDefinitive     = ellipsoid.isIvfDefinitive();
-        unit              = ellipsoid.getAxisUnit();
-    }
-
-    /**
-     * Constructs a new ellipsoid using the specified axis length. The properties map is
-     * given unchanged to the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
-     * super-class constructor}.
-     *
-     * @param properties        Set of properties. Should contains at least {@code "name"}.
+     * @param  properties       The properties to be given to the identified object.
      * @param semiMajorAxis     The equatorial radius.
      * @param semiMinorAxis     The polar radius.
      * @param inverseFlattening The inverse of the flattening value.
@@ -275,30 +212,51 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Constructs a new ellipsoid using the specified axis length.
+     * Creates a new ellipsoid with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param ellipsoid The ellipsoid to copy.
+     *
+     * @see #castOrCopy(Ellipsoid)
+     */
+    protected DefaultEllipsoid(final Ellipsoid ellipsoid) {
+        super(ellipsoid);
+        semiMajorAxis     = ellipsoid.getSemiMajorAxis();
+        semiMinorAxis     = ellipsoid.getSemiMinorAxis();
+        inverseFlattening = ellipsoid.getInverseFlattening();
+        ivfDefinitive     = ellipsoid.isIvfDefinitive();
+        unit              = ellipsoid.getAxisUnit();
+    }
+
+    /**
+     * Creates a new ellipsoid using the specified name and axis length in metres.
+     * This is a convenience method for {@link #createEllipsoid(Map, double, double, Unit) createEllipsoid(Map, …)}
+     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property
+     * and the unit of measurement fixed to {@link SI#METRE}.
      *
      * @param name          The ellipsoid name.
-     * @param semiMajorAxis The equatorial radius.
-     * @param semiMinorAxis The polar radius.
-     * @param unit          The units of the semi-major and semi-minor axis values.
+     * @param semiMajorAxis The equatorial radius in metres.
+     * @param semiMinorAxis The polar radius in metres.
      * @return An ellipsoid with the given axis length.
      */
     public static DefaultEllipsoid createEllipsoid(final String name,
                                                    final double semiMajorAxis,
-                                                   final double semiMinorAxis,
-                                                   final Unit<Length> unit)
+                                                   final double semiMinorAxis)
     {
-        return createEllipsoid(Collections.singletonMap(NAME_KEY, name), semiMajorAxis, semiMinorAxis, unit);
+        return createEllipsoid(Collections.singletonMap(NAME_KEY, name), semiMajorAxis, semiMinorAxis, SI.METRE);
     }
 
     /**
-     * Constructs a new ellipsoid using the specified axis length. The properties map is
-     * given unchanged to the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
-     * super-class constructor}.
+     * Creates a new ellipsoid using the specified properties and axis length.
+     * The properties map is given unchanged to the
+     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
-     * @param properties    Set of properties. Should contains at least {@code "name"}.
-     * @param semiMajorAxis The equatorial radius.
-     * @param semiMinorAxis The polar radius.
+     * @param properties    The properties to be given to the identified object.
+     * @param semiMajorAxis The equatorial radius in the given unit.
+     * @param semiMinorAxis The polar radius in the given unit.
      * @param unit          The units of the semi-major and semi-minor axis values.
      * @return An ellipsoid with the given axis length.
      */
@@ -316,29 +274,30 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Constructs a new ellipsoid using the specified axis length and inverse flattening value.
+     * Creates a new ellipsoid using the specified name, axis length in metres and inverse flattening value. This is
+     * a convenience method for {@link #createFlattenedSphere(Map, double, double, Unit) createFlattenedSphere(Map, …)}
+     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property and the unit
+     * of measurement fixed to {@link SI#METRE}.
      *
      * @param name              The ellipsoid name.
-     * @param semiMajorAxis     The equatorial radius.
+     * @param semiMajorAxis     The equatorial radius in metres.
      * @param inverseFlattening The inverse flattening value.
-     * @param unit              The units of the semi-major and semi-minor axis values.
      * @return An ellipsoid with the given axis length.
      */
     public static DefaultEllipsoid createFlattenedSphere(final String name,
                                                          final double semiMajorAxis,
-                                                         final double inverseFlattening,
-                                                         final Unit<Length> unit)
+                                                         final double inverseFlattening)
     {
-        return createFlattenedSphere(Collections.singletonMap(NAME_KEY, name), semiMajorAxis, inverseFlattening, unit);
+        return createFlattenedSphere(Collections.singletonMap(NAME_KEY, name), semiMajorAxis, inverseFlattening, SI.METRE);
     }
 
     /**
-     * Constructs a new ellipsoid using the specified axis length and
-     * inverse flattening value. The properties map is given unchanged to the
+     * Creates a new ellipsoid using the specified properties, axis length and inverse flattening value.
+     * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
-     * @param properties        Set of properties. Should contains at least {@code "name"}.
-     * @param semiMajorAxis     The equatorial radius.
+     * @param  properties       The properties to be given to the identified object.
+     * @param semiMajorAxis     The equatorial radius in the given unit.
      * @param inverseFlattening The inverse flattening value.
      * @param unit              The units of the semi-major and semi-minor axis values.
      * @return An ellipsoid with the given axis length.
@@ -597,6 +556,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @param  x2 Longitude of second point (in decimal degrees).
      * @param  y2 Latitude  of second point (in decimal degrees).
      * @return The orthodromic distance (in the units of this ellipsoid's axis).
+     *
+     * @see org.apache.sis.referencing.GeodeticCalculator
      */
     public double orthodromicDistance(double x1, double y1, double x2, double y2) {
         x1 = toRadians(x1);
@@ -726,6 +687,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
 
     /**
      * Computes a hash value consistent with the given comparison mode.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {

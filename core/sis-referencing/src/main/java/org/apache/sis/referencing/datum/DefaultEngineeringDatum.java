@@ -47,20 +47,9 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     private static final long serialVersionUID = 1498304918725248637L;
 
     /**
-     * Constructs a new datum with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param datum The datum to copy.
-     */
-    public DefaultEngineeringDatum(final EngineeringDatum datum) {
-        super(datum);
-    }
-
-    /**
-     * Constructs an engineering datum from a name.
+     * Creates an engineering datum from a name. This is a convenience constructor for
+     * {@link #DefaultEngineeringDatum(Map)}
+     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property.
      *
      * @param name The datum name.
      */
@@ -69,13 +58,28 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     }
 
     /**
-     * Constructs an engineering datum from a set of properties. The properties map is given
+     * Creates an engineering datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      *
-     * @param properties Set of properties. Shall contains at least {@code "name"}.
+     * @param properties The properties to be given to the identified object.
      */
     public DefaultEngineeringDatum(final Map<String,?> properties) {
         super(properties);
+    }
+
+    /**
+     * Creates a new datum with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param datum The datum to copy.
+     *
+     * @see #castOrCopy(EngineeringDatum)
+     */
+    protected DefaultEngineeringDatum(final EngineeringDatum datum) {
+        super(datum);
     }
 
     /**
@@ -112,6 +116,8 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
 
     /**
      * Computes a hash value consistent with the given comparison mode.
+     *
+     * @return The hash code value for the given comparison mode.
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {

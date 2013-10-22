@@ -54,7 +54,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * Name of attributes used in the mapping from/to NetCDF metadata to ISO 19115 metadata.
  * The attributes recognized by SIS are listed below:
  *
- * <blockquote><table class="compact"><tr valign="top" width="25%"><td>
+ * <blockquote><table class="compact"><tr valign="top"><td width="25%">
  * {@value     #ACCESS_CONSTRAINT}<br>
  * {@value     #ACKNOWLEDGMENT}<br>
  * {@value     #COMMENT}<br>
