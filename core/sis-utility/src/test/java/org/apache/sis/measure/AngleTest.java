@@ -44,6 +44,7 @@ public final strictfp class AngleTest extends TestCase {
         assertEquals("45°30′N",       new Latitude (45.5).toString());
         assertEquals("45°30′E",       new Longitude(45.5).toString());
         assertEquals("45°30′56.25″E", new Longitude(45.515625).toString());
+        assertEquals("89°01′N",       new Latitude (89.01666666666667).toString());
 
         // Angle out of expected range.
         assertEquals( "720.0°E", new Longitude( 720).toString());

@@ -39,7 +39,7 @@ import static java.lang.Double.isInfinite;
 import static org.apache.sis.math.MathFunctions.pow10;
 import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;
-import static org.apache.sis.math.MathFunctions.fractionDigitsForValue;
+import static org.apache.sis.math.MathFunctions.fractionDigitsForDelta;
 
 // Related to JDK7
 import java.util.Objects;
@@ -895,7 +895,7 @@ public class AngleFormat extends Format implements Localized {
      *
      * @return The {@code toAppendTo} buffer, returned for method calls chaining.
      */
-    public StringBuffer format(double angle, StringBuffer toAppendTo, final FieldPosition pos) {
+    public StringBuffer format(final double angle, StringBuffer toAppendTo, final FieldPosition pos) {
         final int offset = toAppendTo.length();
         final int fieldPos = getField(pos);
         if (isNaN(angle) || isInfinite(angle)) {
@@ -913,9 +913,18 @@ public class AngleFormat extends Format implements Localized {
         double degrees = angle;
         double minutes = NaN;
         double seconds = NaN;
+        int maximumFractionDigits = fractionFieldWidth;
         if (minutesFieldWidth != 0 && !isNaN(angle)) {
             minutes = abs(degrees - (degrees = truncate(degrees))) * 60;
-            final double p = pow10(fractionFieldWidth);
+            /*
+             * Limit the maximal number of fraction digits to the amount of significant digits for a 'double' value.
+             * The intend is to avoid non-significant garbage that are pure artifacts from the conversion from base
+             * 2 to base 10.
+             */
+            final int n = fractionDigitsForDelta(Math.ulp(angle) * (secondsFieldWidth == 0 ? 60 : 3600), false);
+            final double p = pow10(Math.max(1, Math.min(maximumFractionDigits, n)));
+            maximumFractionDigits = Math.max(minimumFractionDigits,
+                                    Math.min(maximumFractionDigits, n - 1));
             if (secondsFieldWidth != 0) {
                 seconds = (minutes - (minutes = truncate(minutes))) * 60;
                 seconds = rint(seconds * p) / p; // Correction for rounding errors.
@@ -946,22 +955,7 @@ public class AngleFormat extends Format implements Localized {
             }
         }
         /*
-         * At this point the 'degrees', 'minutes' and 'seconds' variables contain the final values
-         * to format. But before to perform the numbers formating,  if the pattern uses a variable
-         * number of fraction digits, then limit the maximal number to the amount of significant
-         * fraction digits for a 'double' value. The intend is to avoid non-significant garbage
-         * that are pure artifacts from the conversion from base 2 to base 10.
-         */
-        int maximumFractionDigits = fractionFieldWidth;
-        if (maximumFractionDigits != minimumFractionDigits) {
-            if      (secondsFieldWidth != 0) angle *= 3600;
-            else if (minutesFieldWidth != 0) angle *=   60;
-            final int n = fractionDigitsForValue(angle) - 1;
-            if (n < maximumFractionDigits) {
-                maximumFractionDigits = Math.max(minimumFractionDigits, n);
-            }
-        }
-        /*
+         * At this point the 'degrees', 'minutes' and 'seconds' variables contain the final values to format.
          * The following loop will format fields from DEGREES_FIELD to SECONDS_FIELD inclusive.
          * The NumberFormat will be reconfigured at each iteration.
          */
@@ -1041,12 +1035,12 @@ public class AngleFormat extends Format implements Localized {
                 }
                 final Number userObject;
                 if (hasMore) {
-                    userObject = (int) Math.round(value);
+                    userObject = Integer.valueOf((int) Math.round(value));
                 } else {
                     // Use Float instead of Double because we don't want to give a false impression of accuracy
                     // (when formatting the seconds field, at least the 10 last bits of the 'double' value are
                     // non-significant).
-                    userObject = (float) value;
+                    userObject = Float.valueOf((float) value);
                 }
                 it.addFieldLimit(Field.forCode(field), userObject, startPosition);
             } else {
