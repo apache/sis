@@ -222,14 +222,14 @@ public final class DoubleDouble extends Number {
     public DoubleDouble(final double value, final double error) {
         this.value = value;
         this.error = error;
-        assert !(Math.abs(error) > Math.ulp(value)) : this; // Use ! for being tolerant to NaN.
+        assert !(Math.abs(error) >= Math.ulp(value)) : this; // Use ! for being tolerant to NaN.
     }
 
     /**
      * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
      * from angular degrees to radians.
      *
-     * @return An instance initialize to the 0.01745329251994329576923690768488613 value.
+     * @return An instance initialized to the 0.01745329251994329576923690768488613 value.
      */
     public static DoubleDouble createDegreesToRadians() {
         return new DoubleDouble(0.01745329251994329576923690768488613, 2.9486522708701687E-19);
