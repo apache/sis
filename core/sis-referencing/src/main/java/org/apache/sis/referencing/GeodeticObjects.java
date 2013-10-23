@@ -212,6 +212,8 @@ public enum GeodeticObjects {
      *   <tr><th>Semi-minor axis length:</th>  <td>6371007 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
+     *
+     * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */
     SPHERE((short) 7048);
 

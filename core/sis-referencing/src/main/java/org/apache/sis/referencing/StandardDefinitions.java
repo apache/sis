@@ -32,6 +32,7 @@ import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
 import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
+import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
 
 /**
@@ -85,7 +86,7 @@ final class StandardDefinitions {
             case 7019: alias = "International 1979";       name  = "GRS 1980";     semiMajorAxis = 6378137.0; other = 298.257222101; break;
             case 7022: name  = "International 1924";       alias = "Hayford 1909"; semiMajorAxis = 6378388.0; other = 297.0;         break;
             case 7008: name  = "Clarke 1866";              ivfDefinitive = false;  semiMajorAxis = 6378206.4; other = 6356583.8;     break;
-            case 7048: name  = "GRS 1980 Authalic Sphere"; ivfDefinitive = false;  semiMajorAxis =            other = 6371007;       break;
+            case 7048: name  = "GRS 1980 Authalic Sphere"; ivfDefinitive = false;  semiMajorAxis = other = AUTHALIC_RADIUS;          break;
             default:   throw new AssertionError(code);
         }
         final Map<String,Object> map = new HashMap<>(8);
