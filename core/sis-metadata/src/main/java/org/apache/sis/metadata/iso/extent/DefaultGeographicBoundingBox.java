@@ -432,8 +432,11 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * The {@linkplain #getInclusion() inclusion} status must be the same for both boxes.
      *
      * @param box The geographic bounding box to intersect with this box.
+     * @throws IllegalArgumentException If the inclusion status is not the same for both boxes.
+     *
+     * @see Extents#intersection(GeographicBoundingBox, GeographicBoundingBox)
      */
-    public void intersect(final GeographicBoundingBox box) {
+    public void intersect(final GeographicBoundingBox box) throws IllegalArgumentException {
         checkWritePermission();
         if (MetadataUtilities.getInclusion(    getInclusion()) !=
             MetadataUtilities.getInclusion(box.getInclusion()))

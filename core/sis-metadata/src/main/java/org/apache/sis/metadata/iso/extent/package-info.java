@@ -57,6 +57,16 @@
  *       getGeographicBoundingBox(Extent)}
  *       for extracting a global geographic bounding box.</li>
  *     </ul>
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.Extents#intersection
+ *       intersection(GeographicBoundingBox, GeographicBoundingBox)}
+ *       for computing the intersection of two geographic bounding boxes, which may be null.</li>
+ *     </ul>
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.Extents#area
+ *       area(GeographicBoundingBox)}
+ *       for estimating the area of a geographic bounding box.</li>
+ *     </ul>
  *   </li>
  *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox}
  *     <ul>
