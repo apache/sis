@@ -55,9 +55,10 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     /**
      * The tolerance factor (as a multiplicand) for the multiplication and division operations.
      * This is a tolerance factor in units of {@link DoubleDouble#error} ULP, so even a "scary"
-     * factor like 1E+4 should be very small compared to the {@link DoubleDouble#value}.
+     * factor like 1E+5 should be very small compared to the {@link DoubleDouble#value}.
+     * This is the worst case error found empirically - most errors are smaller than that.
      */
-    private static final double PRODUCT_TOLERANCE_FACTOR = 20000;
+    private static final double PRODUCT_TOLERANCE_FACTOR = 100000;
 
     /**
      * Tolerance threshold for strict comparisons of floating point values.
