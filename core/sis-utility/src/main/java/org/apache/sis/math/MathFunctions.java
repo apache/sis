@@ -65,17 +65,17 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  */
 public final class MathFunctions extends Static {
     /**
-     * The square root of 2, which is {@value}.
+     * The square root of 2, which is approximated by {@value}.
      *
      * @see Math#sqrt(double)
      */
     public static final double SQRT_2 = 1.4142135623730951;
 
     /**
-     * The logarithm of 2 in base 10, which is {@value}.
+     * The logarithm of 2 in base 10, which is approximated by {@value}.
      *
      * @see Math#log10(double)
-     * @see #fractionDigitsForValue(double)
+     * @see #getExponent(double)
      *
      * @since 0.4
      */
@@ -243,8 +243,8 @@ public final class MathFunctions extends Static {
      *   <li>If {@code accuracy} is {@link Double#NaN NaN} or infinity, then this method returns 0
      *       since those values are not represented by decimal digits.</li>
      *
-     *   <li>If {@code accuracy} is 0, then this method returns 324 since 10<sup>-324</sup> is the
-     *       first power of 10 smaller than {@link Double#MIN_VALUE}.
+     *   <li>If {@code accuracy} is 0, then this method returns 324 since 10<sup>-324</sup> is the first power of 10
+     *       smaller than the minimal strictly positive {@code double} value ({@value java.lang.Double#MIN_VALUE}).
      *
      *       {@note The above value can be understood in an other way: if the first 324 fraction digits are zero,
      *              then the IEEE <code>double</code> value is guaranteed to be rounded to exactly 0 no matter
