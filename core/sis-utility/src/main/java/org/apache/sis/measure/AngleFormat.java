@@ -922,9 +922,9 @@ public class AngleFormat extends Format implements Localized {
              * 2 to base 10.
              */
             final int n = fractionDigitsForDelta(Math.ulp(angle) * (secondsFieldWidth == 0 ? 60 : 3600), false);
-            final double p = pow10(Math.max(1, Math.min(maximumFractionDigits, n)));
             maximumFractionDigits = Math.max(minimumFractionDigits,
                                     Math.min(maximumFractionDigits, n - 1));
+            final double p = pow10(maximumFractionDigits);
             if (secondsFieldWidth != 0) {
                 seconds = (minutes - (minutes = truncate(minutes))) * 60;
                 seconds = rint(seconds * p) / p; // Correction for rounding errors.
