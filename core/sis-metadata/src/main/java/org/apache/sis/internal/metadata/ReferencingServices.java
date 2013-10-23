@@ -40,6 +40,16 @@ import org.apache.sis.util.resources.Errors;
  */
 public abstract class ReferencingServices extends SystemListener {
     /**
+     * The length of one nautical mile, in metres.
+     */
+    public static final double NAUTICAL_MILE = 1852;
+
+    /**
+     * The GRS80 {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() authalic radius}.
+     */
+    public static final double AUTHALIC_RADIUS = 6371007;
+
+    /**
      * The services, fetched when first needed.
      */
     private static ReferencingServices instance;

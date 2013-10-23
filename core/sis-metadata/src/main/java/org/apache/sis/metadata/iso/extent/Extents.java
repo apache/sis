@@ -23,7 +23,9 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Static;
 
+import static java.lang.Math.*;
 import static org.apache.sis.internal.metadata.MetadataUtilities.getInclusion;
+import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
 
 /**
@@ -31,7 +33,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.getInclusion;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.2)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see org.apache.sis.geometry.Envelopes
@@ -107,5 +109,30 @@ public final class Extents extends Static {
             }
         }
         return candidate;
+    }
+
+    /**
+     * Returns an <em>estimation</em> of the area (in square metres) of the given bounding box.
+     * Since {@code GeographicBoundingBox} provides only approximative information (for example
+     * they do not specify the datum), the value returned by this method is also approximative.
+     *
+     * <p>The current implementation assumes the
+     * {@linkplain org.apache.sis.referencing.GeodeticObjects#SPHERE GRS 1980 Authalic Sphere}.
+     * However this may change in any future SIS version.</p>
+     *
+     * @param  box The geographic bounding box for which to compute the area, or {@code null}.
+     * @return An estimation of the geographic area in the given bounding box,
+     *         or {@link Double#NaN} if the given box was null.
+     *
+     * @since 0.4
+     */
+    public static double area(final GeographicBoundingBox box) {
+        if (box == null) {
+            return Double.NaN;
+        }
+        return max(0, sin(toRadians(box.getNorthBoundLatitude())) -
+                      sin(toRadians(box.getSouthBoundLatitude()))) *
+               max(0, toRadians(box.getEastBoundLongitude() - box.getWestBoundLongitude())) *
+                (AUTHALIC_RADIUS * AUTHALIC_RADIUS);
     }
 }
