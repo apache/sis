@@ -386,6 +386,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * The radius is expressed in {@linkplain #getAxisUnit() axis linear unit}.
      *
      * @return The radius of a sphere having the same surface than this ellipsoid.
+     *
+     * @see org.apache.sis.referencing.GeodeticObjects#SPHERE
      */
     public double getAuthalicRadius() {
         return Formulas.getAuthalicRadius(getSemiMajorAxis(), getSemiMinorAxis());

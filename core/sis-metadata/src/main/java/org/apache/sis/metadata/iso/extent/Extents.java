@@ -112,11 +112,35 @@ public final class Extents extends Static {
     }
 
     /**
+     * Returns the intersection of the given geographic bounding boxes. If any of the arguments is {@code null},
+     * then this method returns the other argument. If both argument are non-null, then this method returns a
+     * new box which is the intersection of the two given boxes.
+     *
+     * @param  b1 The first bounding box, or {@code null}.
+     * @param  b2 The second bounding box, or {@code null}.
+     * @return The intersection (may be any of the {@code b1} or {@code b2} argument if unchanged),
+     *         or {@code null} if the two given boxes are null.
+     * @throws IllegalArgumentException If the {@linkplain DefaultGeographicBoundingBox#getInclusion() inclusion status}
+     *         is not the same for both boxes.
+     *
+     * @see DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)
+     *
+     * @since 0.4
+     */
+    public static GeographicBoundingBox intersection(final GeographicBoundingBox b1, final GeographicBoundingBox b2) {
+        if (b1 == null) return b2;
+        if (b2 == null) return b1;
+        final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(b1);
+        box.intersect(b2);
+        return box;
+    }
+
+    /**
      * Returns an <em>estimation</em> of the area (in square metres) of the given bounding box.
      * Since {@code GeographicBoundingBox} provides only approximative information (for example
-     * they do not specify the datum), the value returned by this method is also approximative.
+     * it does not specify the datum), the value returned by this method is also approximative.
      *
-     * <p>The current implementation assumes the
+     * <p>The current implementation performs its computation on the
      * {@linkplain org.apache.sis.referencing.GeodeticObjects#SPHERE GRS 1980 Authalic Sphere}.
      * However this may change in any future SIS version.</p>
      *

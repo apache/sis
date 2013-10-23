@@ -39,13 +39,27 @@ public final strictfp class ExtentsTest extends TestCase {
     private static final double MINUTE = 1./60;
 
     /**
+     * Tests {@link Extents#intersection(GeographicBoundingBox, GeographicBoundingBox)}.
+     */
+    @Test
+    public void testIntersection() {
+        final GeographicBoundingBox b1 = new DefaultGeographicBoundingBox(10, 20, 30, 40);
+        final GeographicBoundingBox b2 = new DefaultGeographicBoundingBox(15, 25, 26, 32);
+        assertEquals(new DefaultGeographicBoundingBox(15, 20, 30, 32), Extents.intersection(b1, b2));
+        assertSame(b1, Extents.intersection(b1,   null));
+        assertSame(b2, Extents.intersection(null, b2));
+        assertNull(    Extents.intersection(null, null));
+    }
+
+    /**
      * Tests {@link Extents#area(GeographicBoundingBox)}.
      */
     @Test
-    public void testGetArea() {
+    public void testArea() {
         /*
-         * The nautical mile is equals to the length of 1 second of arc along meridians or parallels at the equator.
-         * Since we are using the GRS80 authalic sphere instead than WGS84, we have a slight empirical shift.
+         * The nautical mile is equals to the length of 1 second of arc along a meridian or parallel at the equator.
+         * Since we are using the GRS80 authalic sphere instead than WGS84, and since the nautical mile definition
+         * itself is a little bit approximative, we add a slight empirical shift.
          */
         final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(10, 10+MINUTE, 2.9685, 2.9685+MINUTE);
         assertEquals(NAUTICAL_MILE * NAUTICAL_MILE, Extents.area(box), 0.1);
