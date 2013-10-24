@@ -22,10 +22,10 @@ import javax.xml.bind.annotation.XmlType;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -51,6 +51,25 @@ import java.util.Objects;
  *   <li>{@link #add(GeographicBoundingBox)} for expanding this extent to include an other bounding box.</li>
  *   <li>{@link #intersect(GeographicBoundingBox)} for the intersection between the two bounding boxes.</li>
  * </ul>
+ *
+ * {@section Validation and normalization}
+ * All constructors and setter methods in this class perform the following argument validation or normalization:
+ *
+ * <ul>
+ *   <li>If the {@linkplain #getSouthBoundLatitude() south bound latitude} is greater than the
+ *       {@linkplain #getNorthBoundLatitude() north bound latitude}, then an exception is thrown.</li>
+ *   <li>If any latitude is set to a value outside the
+ *       [{@linkplain Latitude#MIN_VALUE -90} … {@linkplain Latitude#MAX_VALUE 90}]° range,
+ *       then that latitude will be clamped.</li>
+ *   <li>If any longitude is set to a value outside the
+ *       [{@linkplain Longitude#MIN_VALUE -180} … {@linkplain Longitude#MAX_VALUE 180}]° range,
+ *       then a multiple of 360° will be added or subtracted to that longitude in order to bring
+ *       it back inside the range.</li>
+ * </ul>
+ *
+ * If the {@linkplain #getWestBoundLongitude() west bound longitude} is greater than the
+ * {@linkplain #getEastBoundLongitude() east bound longitude}, then the box spans the anti-meridian.
+ * See {@linkplain org.apache.sis.geometry.GeneralEnvelope} for more information on anti-meridian spanning.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -125,8 +144,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @param southBoundLatitude The minimal φ value.
      * @param northBoundLatitude The maximal φ value.
      *
-     * @throws IllegalArgumentException If (<var>west bound</var> &gt; <var>east bound</var>)
-     *         or (<var>south bound</var> &gt; <var>north bound</var>).
+     * @throws IllegalArgumentException If (<var>south bound</var> &gt; <var>north bound</var>).
      *         Note that {@linkplain Double#NaN NaN} values are allowed.
      *
      * @see #setBounds(double, double, double, double)
@@ -138,21 +156,12 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
             throws IllegalArgumentException
     {
         super(true);
+        verifyBounds(southBoundLatitude, northBoundLatitude);
         this.westBoundLongitude = westBoundLongitude;
         this.eastBoundLongitude = eastBoundLongitude;
         this.southBoundLatitude = southBoundLatitude;
         this.northBoundLatitude = northBoundLatitude;
-        final Angle min, max;
-        if (westBoundLongitude > eastBoundLongitude) {
-            min = new Longitude(westBoundLongitude);
-            max = new Longitude(eastBoundLongitude);
-        } else if (southBoundLatitude > northBoundLatitude) {
-            min = new Latitude(southBoundLatitude);
-            max = new Latitude(northBoundLatitude);
-        } else {
-            return;
-        }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, min, max));
+        normalize();
     }
 
     /**
@@ -171,6 +180,13 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
             eastBoundLongitude = object.getEastBoundLongitude();
             southBoundLatitude = object.getSouthBoundLatitude();
             northBoundLatitude = object.getNorthBoundLatitude();
+            verifyBounds(southBoundLatitude, northBoundLatitude);
+            normalize();
+        } else {
+            westBoundLongitude = Double.NaN;
+            eastBoundLongitude = Double.NaN;
+            southBoundLatitude = Double.NaN;
+            northBoundLatitude = Double.NaN;
         }
     }
 
@@ -203,7 +219,10 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * Returns the western-most coordinate of the limit of the dataset extent.
      * The value is expressed in longitude in decimal degrees (positive east).
      *
-     * @return The western-most longitude between -180 and +180°,
+     * <p>Note that the returned value is greater than the {@linkplain #getEastBoundLongitude()
+     * east bound longitude} if this box is spanning over the anti-meridian.</p>
+     *
+     * @return The western-most longitude between -180° and +180° inclusive,
      *         or {@linkplain Double#NaN NaN} if undefined.
      */
     @Override
@@ -216,12 +235,16 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     /**
      * Sets the western-most coordinate of the limit of the dataset extent.
      * The value is expressed in longitude in decimal degrees (positive east).
+     * Values outside the [-180 … 180]° range are {@linkplain Longitude#normalize(double) normalized}.
      *
-     * @param newValue The western-most longitude between -180 and +180°,
+     * @param newValue The western-most longitude between -180° and +180° inclusive,
      *        or {@linkplain Double#NaN NaN} to undefine.
      */
-    public void setWestBoundLongitude(final double newValue) {
+    public void setWestBoundLongitude(double newValue) {
         checkWritePermission();
+        if (newValue != Longitude.MAX_VALUE) { // Do not normalize +180° to -180°.
+            newValue = Longitude.normalize(newValue);
+        }
         westBoundLongitude = newValue;
     }
 
@@ -229,7 +252,10 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * Returns the eastern-most coordinate of the limit of the dataset extent.
      * The value is expressed in longitude in decimal degrees (positive east).
      *
-     * @return The eastern-most longitude between -180 and +180°,
+     * <p>Note that the returned value is smaller than the {@linkplain #getWestBoundLongitude()
+     * west bound longitude} if this box is spanning over the anti-meridian.</p>
+     *
+     * @return The eastern-most longitude between -180° and +180° inclusive,
      *         or {@linkplain Double#NaN NaN} if undefined.
      */
     @Override
@@ -242,12 +268,16 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     /**
      * Sets the eastern-most coordinate of the limit of the dataset extent.
      * The value is expressed in longitude in decimal degrees (positive east).
+     * Values outside the [-180 … 180]° range are {@linkplain Longitude#normalize(double) normalized}.
      *
-     * @param newValue The eastern-most longitude between -180 and +180°,
+     * @param newValue The eastern-most longitude between -180° and +180° inclusive,
      *        or {@linkplain Double#NaN NaN} to undefine.
      */
-    public void setEastBoundLongitude(final double newValue) {
+    public void setEastBoundLongitude(double newValue) {
         checkWritePermission();
+        if (newValue != Longitude.MAX_VALUE) { // Do not normalize +180° to -180°.
+            newValue = Longitude.normalize(newValue);
+        }
         eastBoundLongitude = newValue;
     }
 
@@ -255,7 +285,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * Returns the southern-most coordinate of the limit of the dataset extent.
      * The value is expressed in latitude in decimal degrees (positive north).
      *
-     * @return The southern-most latitude between -90 and +90°,
+     * @return The southern-most latitude between -90° and +90° inclusive,
      *         or {@linkplain Double#NaN NaN} if undefined.
      */
     @Override
@@ -268,20 +298,26 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     /**
      * Sets the southern-most coordinate of the limit of the dataset extent.
      * The value is expressed in latitude in decimal degrees (positive north).
+     * Values outside the [-90 … 90]° range are {@linkplain Latitude#clamp(double) clamped}.
+     * If the result is greater than the {@linkplain #getNorthBoundLatitude() north bound latitude},
+     * then the north bound is set to {@link Double#NaN}.
      *
-     * @param newValue The southern-most latitude between -90 and +90°,
+     * @param newValue The southern-most latitude between -90° and +90° inclusive,
      *        or {@linkplain Double#NaN NaN} to undefine.
      */
     public void setSouthBoundLatitude(final double newValue) {
         checkWritePermission();
-        southBoundLatitude = newValue;
+        southBoundLatitude = Latitude.clamp(newValue);
+        if (southBoundLatitude > northBoundLatitude) {
+            northBoundLatitude = Double.NaN;
+        }
     }
 
     /**
      * Returns the northern-most, coordinate of the limit of the dataset extent.
      * The value is expressed in latitude in decimal degrees (positive north).
      *
-     * @return The northern-most latitude between -90 and +90°,
+     * @return The northern-most latitude between -90° and +90° inclusive,
      *         or {@linkplain Double#NaN NaN} if undefined.
      */
     @Override
@@ -294,13 +330,81 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     /**
      * Sets the northern-most, coordinate of the limit of the dataset extent.
      * The value is expressed in latitude in decimal degrees (positive north).
+     * Values outside the [-90 … 90]° range are {@linkplain Latitude#clamp(double) clamped}.
+     * If the result is smaller than the {@linkplain #getSouthBoundLatitude() south bound latitude},
+     * then the south bound is set to {@link Double#NaN}.
      *
-     * @param newValue The northern-most latitude between -90 and +90°,
+     * @param newValue The northern-most latitude between -90° and +90° inclusive,
      *        or {@linkplain Double#NaN NaN} to undefine.
      */
     public void setNorthBoundLatitude(final double newValue) {
         checkWritePermission();
-        northBoundLatitude = newValue;
+        northBoundLatitude = Latitude.clamp(newValue);
+        if (northBoundLatitude < southBoundLatitude) {
+            southBoundLatitude = Double.NaN;
+        }
+    }
+
+    /**
+     * Verifies that the given bounding box is valid. This method verifies only the latitude values,
+     * because we allow the west bound longitude to be greater then east bound longitude (they are
+     * boxes spanning the anti-meridian).
+     *
+     * <p>This method should be invoked <strong>before</strong> {@link #normalize()}.</p>
+     *
+     * @throws IllegalArgumentException If (<var>south bound</var> &gt; <var>north bound</var>).
+     *         Note that {@linkplain Double#NaN NaN} values are allowed.
+     */
+    private static void verifyBounds(final double southBoundLatitude, final double northBoundLatitude)
+            throws IllegalArgumentException
+    {
+        if (southBoundLatitude > northBoundLatitude) { // Accept NaN.
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2,
+                    new Latitude(southBoundLatitude), new Latitude(northBoundLatitude)));
+        }
+    }
+
+    /**
+     * Clamps the latitudes and normalizes the longitudes.
+     *
+     * @see #denormalize(double, double)
+     */
+    private void normalize() {
+        southBoundLatitude = Latitude.clamp(southBoundLatitude);
+        northBoundLatitude = Latitude.clamp(northBoundLatitude);
+        final double span = eastBoundLongitude - westBoundLongitude;
+        if (!(span >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE))) { // 'span' may be NaN.
+            westBoundLongitude = Longitude.normalize(westBoundLongitude);
+            eastBoundLongitude = Longitude.normalize(eastBoundLongitude);
+            if (span != 0) {
+                /*
+                 * This is the usual case where east and west longitudes are different.
+                 * Since -180° and +180° are equivalent, always use -180° for the west
+                 * bound (this was ensured by the call to Longitude.normalize(…)), and
+                 * always use +180° for the east bound. So we get for example [5 … 180]
+                 * instead of [5 … -180] even if both are the same box.
+                 */
+                if (eastBoundLongitude == Longitude.MIN_VALUE) {
+                    eastBoundLongitude = Longitude.MAX_VALUE;
+                }
+                return;
+            }
+            /*
+             * If the longitude range is anything except [+0 … -0], we are done. Only in the
+             * particular case of [+0 … -0] we will replace the range by [-180 … +180].
+             */
+            if (!MathFunctions.isPositiveZero(westBoundLongitude) ||
+                !MathFunctions.isNegativeZero(eastBoundLongitude))
+            {
+                return;
+            }
+        }
+        /*
+         * If we reach this point, the longitude range is either [+0 … -0] or anything
+         * spanning 360° or more. Normalize the range to [-180 … +180].
+         */
+        westBoundLongitude = Longitude.MIN_VALUE;
+        eastBoundLongitude = Longitude.MAX_VALUE;
     }
 
     /**
@@ -317,8 +421,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @param southBoundLatitude The minimal φ value.
      * @param northBoundLatitude The maximal φ value.
      *
-     * @throws IllegalArgumentException If (<var>west bound</var> &gt; <var>east bound</var>)
-     *         or (<var>south bound</var> &gt; <var>north bound</var>).
+     * @throws IllegalArgumentException If (<var>south bound</var> &gt; <var>north bound</var>).
      *         Note that {@linkplain Double#NaN NaN} values are allowed.
      */
     public void setBounds(final double westBoundLongitude,
@@ -328,23 +431,12 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
             throws IllegalArgumentException
     {
         checkWritePermission();
-        final Angle min, max;
-        if (westBoundLongitude > eastBoundLongitude) {
-            min = new Longitude(westBoundLongitude);
-            max = new Longitude(eastBoundLongitude);
-            // Exception will be thrown below.
-        } else if (southBoundLatitude > northBoundLatitude) {
-            min = new Latitude(southBoundLatitude);
-            max = new Latitude(northBoundLatitude);
-            // Exception will be thrown below.
-        } else {
-            this.westBoundLongitude = westBoundLongitude;
-            this.eastBoundLongitude = eastBoundLongitude;
-            this.southBoundLatitude = southBoundLatitude;
-            this.northBoundLatitude = northBoundLatitude;
-            return;
-        }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, min, max));
+        verifyBounds(southBoundLatitude, northBoundLatitude);
+        this.westBoundLongitude = westBoundLongitude;
+        this.eastBoundLongitude = eastBoundLongitude;
+        this.southBoundLatitude = southBoundLatitude;
+        this.northBoundLatitude = northBoundLatitude;
+        normalize();
     }
 
     /**
@@ -353,11 +445,11 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * is assumed already in appropriate CRS.
      *
      * <p>When coordinate transformation is required, the target geographic CRS is not necessarily
-     * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS#WGS84 WGS84}. This method
-     * preserves the same {@linkplain org.opengis.referencing.datum.Ellipsoid ellipsoid} than
-     * in the envelope CRS when possible. This is because geographic bounding box are only
-     * approximative and the ISO specification do not mandates a particular CRS, so we avoid
-     * transformations that are not strictly necessary.</p>
+     * {@linkplain org.apache.sis.referencing.GeodeticObjects#WGS84 WGS84}. This method preserves
+     * the same {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} than in
+     * the envelope CRS when possible. This is because geographic bounding box are only approximative
+     * and the ISO specification do not mandates a particular CRS,
+     * so we avoid transformations that are not strictly necessary.</p>
      *
      * <p><b>Note:</b> This method is available only if the referencing module is on the classpath.</p>
      *
@@ -389,6 +481,56 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     }
 
     /**
+     * Returns ±1 if the given range of longitudes spans the anti-meridian, or 0 otherwise.
+     * If this method returns a non-zero value, then the sign indicates whether the caller
+     * should add 360° to {@code λmin} (+1) or subtract 360° to {@code λmax} (-1).
+     *
+     * @see #normalize()
+     */
+    private int denormalize(final double λmin, final double λmax) {
+        if (!(λmin < λmax) || westBoundLongitude > eastBoundLongitude) {
+            return 0;
+        }
+        /*
+         * If we were computing the union between this bounding box and the other box,
+         * by how much the width would be increased on the left side and on the right
+         * side? (ignore negative values for this first part). What we may get:
+         *
+         *   (+1) Left side is positive            (-1) Right side is positive
+         *
+         *          W┌──────────┐                     ┌──────────┐E
+         *   ──┐  ┌──┼──────────┼──                 ──┼──────────┼──┐  ┌──
+         *     │  │  └──────────┘                     └──────────┘  │  │
+         *   ──┘  └────────────────                 ────────────────┘  └──
+         *       λmin                                              λmax
+         *
+         * For each of the above case, if we apply the translation in the opposite way,
+         * the result would be much wort (for each lower rectangle, imagine translating
+         * the longuest part in the opposite direction instead than the shortest one).
+         *
+         * Note that only one of 'left' and 'right' can be positive, otherwise we would
+         * not be in the case where one box is spanning the anti-meridian while the other
+         * box does not.
+         */
+        final double left  = westBoundLongitude - λmin; if (left  >= 0) return +1;
+        final double right = λmax - eastBoundLongitude; if (right >= 0) return -1;
+        /*
+         * Both 'left' and 'right' are negative. For each alternatives (translating λmin
+         * or translating λmax), we will choose the one which give the closest result to
+         * a bound of this box:
+         *
+         *        W┌──────────┐E         Changes in width of the union compared to this box:
+         *   ───┐  │        ┌─┼──          ∙ if we move λmax to the right:  Δ = (λmax + 360) - E
+         *      │  └────────┼─┘            ∙ if we move λmin to the left:   Δ = W - (λmin + 360)
+         *   ───┘           └────
+         *    λmax         λmin
+         *
+         * We want the smallest option, se we get the condition below after cancelation of both "+ 360" terms.
+         */
+        return (left < right) ? -1 : +1;
+    }
+
+    /**
      * Adds a geographic bounding box to this box. If the {@linkplain #getInclusion() inclusion}
      * status is the same for this box and the box to be added, then the resulting bounding box
      * is the union of the two boxes. If the inclusion status are opposite (<cite>exclusion</cite>),
@@ -408,9 +550,9 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
          * valid metadata object.  If the metadata object is invalid, it is better to get a
          * an exception than having a code doing silently some inappropriate work.
          */
-        if (MetadataUtilities.getInclusion(    getInclusion()) ==
-            MetadataUtilities.getInclusion(box.getInclusion()))
-        {
+        final boolean i1 = MetadataUtilities.getInclusion(this.getInclusion());
+        final boolean i2 = MetadataUtilities.getInclusion(box. getInclusion());
+        if (i1 == i2) {
             if (λmin < westBoundLongitude) westBoundLongitude = λmin;
             if (λmax > eastBoundLongitude) eastBoundLongitude = λmax;
             if (φmin < southBoundLatitude) southBoundLatitude = φmin;
@@ -425,6 +567,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
                 if (φmax < northBoundLatitude) northBoundLatitude = φmax;
             }
         }
+        normalize();
     }
 
     /**
@@ -457,6 +600,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
         if (southBoundLatitude > northBoundLatitude) {
             southBoundLatitude = northBoundLatitude = 0.5 * (southBoundLatitude + northBoundLatitude);
         }
+        normalize();
     }
 
     /**

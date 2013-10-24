@@ -80,15 +80,16 @@ public final strictfp class MathFunctionsTest extends TestCase {
      * Tests {@link MathFunctions#truncate(double)}.
      */
     @Test
+    @DependsOnMethod({"testIsPositiveZero", "testIsNegativeZero"})
     public void testTruncate() {
         assertEquals(+4.0, truncate(+4.9), 0);
         assertEquals(-4.0, truncate(-4.9), 0);
         assertEquals(+0.0, truncate(+0.1), 0);
         assertEquals(-0.0, truncate(-0.1), 0);
-        assertEquals("Positive zero", doubleToLongBits(+0.0), doubleToLongBits(truncate(+0.5)));
-        assertEquals("Negative zero", doubleToLongBits(-0.0), doubleToLongBits(truncate(-0.5)));
-        assertEquals("Positive zero", doubleToLongBits(+0.0), doubleToLongBits(truncate(+0.0)));
-        assertEquals("Negative zero", doubleToLongBits(-0.0), doubleToLongBits(truncate(-0.0)));
+        assertTrue("Positive zero", isPositiveZero(truncate(+0.5)));
+        assertTrue("Negative zero", isNegativeZero(truncate(-0.5)));
+        assertTrue("Positive zero", isPositiveZero(truncate(+0.0)));
+        assertTrue("Negative zero", isNegativeZero(truncate(-0.0)));
     }
 
     /**
@@ -256,6 +257,26 @@ public final strictfp class MathFunctionsTest extends TestCase {
                 case +10: assertEquals(POSITIVE_INFINITY, y,  EPS); break;
             }
         }
+    }
+
+    /**
+     * Tests {@link MathFunctions#isPositiveZero(double)}.
+     */
+    @Test
+    public void testIsPositiveZero() {
+        assertTrue (isPositiveZero(+0.0));
+        assertFalse(isPositiveZero(-0.0));
+        assertFalse(isPositiveZero( NaN));
+    }
+
+    /**
+     * Tests {@link MathFunctions#isNegativeZero(double)}.
+     */
+    @Test
+    public void testIsNegativeZero() {
+        assertTrue (isNegativeZero(-0.0));
+        assertFalse(isNegativeZero(+0.0));
+        assertFalse(isNegativeZero( NaN));
     }
 
     /**

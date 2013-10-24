@@ -25,7 +25,7 @@ import org.apache.sis.util.Immutable;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see Longitude
@@ -97,5 +97,30 @@ public final class Latitude extends Angle {
     @Override
     final double maximum() {
         return 90;
+    }
+
+    /**
+     * Returns the given latitude value clamped to the [{@linkplain #MIN_VALUE -90} … {@linkplain #MAX_VALUE 90}]° range.
+     * If the given value is outside the latitude range, then this method replaces it by ±90° with the same sign than the
+     * given φ value.
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>{@linkplain Double#NaN NaN} values are returned unchanged</li>
+     *   <li>±∞ are mapped to ±90° (with the same sign)</li>
+     *   <li>±0 are returned unchanged (i.e. the sign of negative and positive zero is preserved)</li>
+     * </ul>
+     *
+     * @param  φ The latitude value in decimal degrees.
+     * @return The given value clamped to the [-90 … 90]° range, or NaN if the given value was NaN.
+     *
+     * @see Longitude#normalize(double)
+     *
+     * @since 0.4
+     */
+    public static double clamp(final double φ) {
+        if (φ < MIN_VALUE) return MIN_VALUE;
+        if (φ > MAX_VALUE) return MAX_VALUE;
+        return φ;
     }
 }

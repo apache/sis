@@ -113,8 +113,11 @@ public final class Extents extends Static {
 
     /**
      * Returns the intersection of the given geographic bounding boxes. If any of the arguments is {@code null},
-     * then this method returns the other argument. If both argument are non-null, then this method returns a
-     * new box which is the intersection of the two given boxes.
+     * then this method returns the other argument (which may be null). Otherwise this method returns a box which
+     * is the intersection of the two given boxes.
+     *
+     * <p>This method never modify the given boxes, but may return directly one of the given arguments if it
+     * already represents the intersection result.</p>
      *
      * @param  b1 The first bounding box, or {@code null}.
      * @param  b2 The second bounding box, or {@code null}.
@@ -129,7 +132,7 @@ public final class Extents extends Static {
      */
     public static GeographicBoundingBox intersection(final GeographicBoundingBox b1, final GeographicBoundingBox b2) {
         if (b1 == null) return b2;
-        if (b2 == null) return b1;
+        if (b2 == null || b2 == b1) return b1;
         final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(b1);
         box.intersect(b2);
         return box;
