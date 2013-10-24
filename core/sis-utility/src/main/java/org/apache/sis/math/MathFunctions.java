@@ -523,9 +523,33 @@ public final class MathFunctions extends Static {
      *
      * @param  value The value to test.
      * @return {@code true} if the given value is positive, excluding negative zero.
+     *
+     * @see #isPositiveZero(double)
+     * @see #isNegative(double)
      */
     public static boolean isPositive(final double value) {
         return (doubleToRawLongBits(value) & SIGN_BIT_MASK) == 0 && !Double.isNaN(value);
+    }
+
+    /**
+     * Returns {@code true} if the given value is the positive zero ({@code +0.0}).
+     * This method returns {@code false} for the negative zero ({@code -0.0}).
+     * This method is equivalent to the following code, but potentially faster:
+     *
+     * {@preformat java
+     *   return (value == 0) && isPositive(value);
+     * }
+     *
+     * @param  value The value to test.
+     * @return {@code true} if the given value is +0.0 (not -0.0).
+     *
+     * @see #isPositive(double)
+     * @see #isNegativeZero(double)
+     *
+     * @since 0.4
+     */
+    public static boolean isPositiveZero(final double value) {
+        return doubleToRawLongBits(value) == 0L;
     }
 
     /**
@@ -544,9 +568,33 @@ public final class MathFunctions extends Static {
      *
      * @param  value The value to test.
      * @return {@code true} if the given value is negative, including negative zero.
+     *
+     * @see #isNegativeZero(double)
+     * @see #isPositive(double)
      */
     public static boolean isNegative(final double value) {
         return (doubleToRawLongBits(value) & SIGN_BIT_MASK) != 0 && !Double.isNaN(value);
+    }
+
+    /**
+     * Returns {@code true} if the given value is the negative zero ({@code -0.0}).
+     * This method returns {@code false} for the positive zero ({@code +0.0}).
+     * This method is equivalent to the following code, but potentially faster:
+     *
+     * {@preformat java
+     *   return (value == 0) && isNegative(value);
+     * }
+     *
+     * @param  value The value to test.
+     * @return {@code true} if the given value is -0.0 (not +0.0).
+     *
+     * @see #isNegative(double)
+     * @see #isPositiveZero(double)
+     *
+     * @since 0.4
+     */
+    public static boolean isNegativeZero(final double value) {
+        return doubleToRawLongBits(value) == SIGN_BIT_MASK;
     }
 
     /**

@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.extent;
 
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -32,6 +33,7 @@ import static org.junit.Assert.*;
  * @version 0.4
  * @module
  */
+@DependsOn(DefaultGeographicBoundingBoxTest.class)
 public final strictfp class ExtentsTest extends TestCase {
     /**
      * One minute of angle, in degrees.
