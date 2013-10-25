@@ -480,54 +480,86 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
         setInclusion(box.getInclusion()); // Set only on success.
     }
 
+    /*
+     * IMPLEMENTATION NOTE: For the handling of anti-meridian spanning in union and intersection operations,
+     * this class applies a different strategy than GeneralEnvelope. Instead than trying to work directly with
+     * the ordinate values without adding or removing offset (which may cause rounding errors), we apply a ±360°
+     * shift on longitude values. This simpler strategy is okay here because the range is fixed in the code (not
+     * an arbitrarily high range), and GeographicBoundingBox are approximative by definition anyway.
+     */
+
     /**
-     * Returns ±1 if the given range of longitudes spans the anti-meridian, or 0 otherwise.
-     * If this method returns a non-zero value, then the sign indicates whether the caller
-     * should add 360° to {@code λmin} (+1) or subtract 360° to {@code λmax} (-1).
+     * Returns a code telling how to denormalize this box and/or the other box before to compute union or intersection.
+     * This method may also modify the {@link #westBoundLongitude} and {@link #eastBoundLongitude}. The codes are:
+     *
+     * <ul>
+     *   <li> 0 : Do nothing - both boxes are normal.</li>
+     *   <li> 3 : Do nothing - both boxes are spanning the anti-meridian.</li>
+     *   <li>-1 : Caller will need to subtract 360° from {@code λmin}.</li>
+     *   <li>+1 : Caller will need to add      360° to   {@code λmax}.</li>
+     *   <li>-2 : This method has subtracted   360° from {@link #westBoundLongitude}.</li>
+     *   <li>+2 : This method has added        360° to   {@link #eastBoundLongitude}.</li>
+     * </ul>
      *
      * @see #normalize()
      */
     private int denormalize(final double λmin, final double λmax) {
-        if (!(λmin < λmax) || westBoundLongitude > eastBoundLongitude) {
-            return 0;
+        final boolean isSpanningAntiMeridian = westBoundLongitude > eastBoundLongitude;
+        if ((λmin > λmax) == isSpanningAntiMeridian) {
+            return isSpanningAntiMeridian ? 3 : 0;
+        }
+        final double left  = westBoundLongitude - λmin;
+        final double right = λmax - eastBoundLongitude;
+        if (!isSpanningAntiMeridian) {
+            /*
+             * If we were computing the union between this bounding box and the other box,
+             * by how much the width would be increased on the left side and on the right
+             * side? (ignore negative values for this first part). What we may get:
+             *
+             *   (+1) Left side is positive            (-1) Right side is positive
+             *
+             *          W┌──────────┐                     ┌──────────┐E
+             *   ──┐  ┌──┼──────────┼──                 ──┼──────────┼──┐  ┌──
+             *     │  │  └──────────┘                     └──────────┘  │  │
+             *   ──┘  └────────────────                 ────────────────┘  └──
+             *       λmin                                              λmax
+             *
+             * For each of the above case, if we apply the translation in the opposite way,
+             * the result would be much wort (for each lower rectangle, imagine translating
+             * the longuest part in the opposite direction instead than the shortest one).
+             *
+             * Note that only one of 'left' and 'right' can be positive, otherwise we would
+             * not be in the case where one box is spanning the anti-meridian while the other
+             * box does not.
+             */
+            if (left  >= 0) return +1;
+            if (right >= 0) return -1;
+            /*
+             * Both 'left' and 'right' are negative. For each alternatives (translating λmin
+             * or translating λmax), we will choose the one which give the closest result to
+             * a bound of this box:
+             *
+             *        W┌──────────┐E         Changes in width of the union compared to this box:
+             *   ───┐  │        ┌─┼──          ∙ if we move λmax to the right:  Δ = (λmax + 360) - E
+             *      │  └────────┼─┘            ∙ if we move λmin to the left:   Δ = W - (λmin + 360)
+             *   ───┘           └────
+             *    λmax         λmin
+             *
+             * We want the smallest option. We get the condition below after cancelation of both "+ 360" terms.
+             */
+            return (left < right) ? -1 : +1;
         }
         /*
-         * If we were computing the union between this bounding box and the other box,
-         * by how much the width would be increased on the left side and on the right
-         * side? (ignore negative values for this first part). What we may get:
-         *
-         *   (+1) Left side is positive            (-1) Right side is positive
-         *
-         *          W┌──────────┐                     ┌──────────┐E
-         *   ──┐  ┌──┼──────────┼──                 ──┼──────────┼──┐  ┌──
-         *     │  │  └──────────┘                     └──────────┘  │  │
-         *   ──┘  └────────────────                 ────────────────┘  └──
-         *       λmin                                              λmax
-         *
-         * For each of the above case, if we apply the translation in the opposite way,
-         * the result would be much wort (for each lower rectangle, imagine translating
-         * the longuest part in the opposite direction instead than the shortest one).
-         *
-         * Note that only one of 'left' and 'right' can be positive, otherwise we would
-         * not be in the case where one box is spanning the anti-meridian while the other
-         * box does not.
+         * Same algorithm than above, but with the sign of 'left' an 'right' inversed.
+         * The "if" statements have been combined for avoiding to repeat the +/- operations.
          */
-        final double left  = westBoundLongitude - λmin; if (left  >= 0) return +1;
-        final double right = λmax - eastBoundLongitude; if (right >= 0) return -1;
-        /*
-         * Both 'left' and 'right' are negative. For each alternatives (translating λmin
-         * or translating λmax), we will choose the one which give the closest result to
-         * a bound of this box:
-         *
-         *        W┌──────────┐E         Changes in width of the union compared to this box:
-         *   ───┐  │        ┌─┼──          ∙ if we move λmax to the right:  Δ = (λmax + 360) - E
-         *      │  └────────┼─┘            ∙ if we move λmin to the left:   Δ = W - (λmin + 360)
-         *   ───┘           └────
-         *    λmax         λmin
-         *
-         * We want the smallest option, se we get the condition below after cancelation of both "+ 360" terms.
-         */
-        return (left < right) ? -1 : +1;
+        if (!(left <= 0) && right <= 0 || left > right) {
+            westBoundLongitude -= Longitude.MAX_VALUE - Longitude.MIN_VALUE;
+            return -2;
+        } else {
+            eastBoundLongitude += Longitude.MAX_VALUE - Longitude.MIN_VALUE;
+            return +2;
+        }
     }
 
     /**
@@ -541,10 +573,10 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      */
     public void add(final GeographicBoundingBox box) {
         checkWritePermission();
-        final double λmin = box.getWestBoundLongitude();
-        final double λmax = box.getEastBoundLongitude();
-        final double φmin = box.getSouthBoundLatitude();
-        final double φmax = box.getNorthBoundLatitude();
+        double λmin = box.getWestBoundLongitude();
+        double λmax = box.getEastBoundLongitude();
+        double φmin = box.getSouthBoundLatitude();
+        double φmax = box.getNorthBoundLatitude();
         /*
          * Reminder: 'inclusion' is a mandatory attribute, so it should never be null for a
          * valid metadata object.  If the metadata object is invalid, it is better to get a
@@ -552,6 +584,11 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
          */
         final boolean i1 = MetadataUtilities.getInclusion(this.getInclusion());
         final boolean i2 = MetadataUtilities.getInclusion(box. getInclusion());
+        final int status = denormalize(λmin, λmax);
+        switch (status) {
+            case -1: λmin -= Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
+            case +1: λmax += Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
+        }
         if (i1 == i2) {
             if (λmin < westBoundLongitude) westBoundLongitude = λmin;
             if (λmax > eastBoundLongitude) eastBoundLongitude = λmax;
@@ -565,6 +602,12 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
             if (λmin <= westBoundLongitude && λmax >= eastBoundLongitude) {
                 if (φmin > southBoundLatitude) southBoundLatitude = φmin;
                 if (φmax < northBoundLatitude) northBoundLatitude = φmax;
+            }
+        }
+        if (status == 3) {
+            if (eastBoundLongitude > westBoundLongitude) {
+                westBoundLongitude = Longitude.MIN_VALUE;
+                eastBoundLongitude = Longitude.MAX_VALUE;
             }
         }
         normalize();
