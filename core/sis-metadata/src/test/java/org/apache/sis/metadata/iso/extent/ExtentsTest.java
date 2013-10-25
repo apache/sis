@@ -74,5 +74,22 @@ public final strictfp class ExtentsTest extends TestCase {
         box.setSouthBoundLatitude(-90);
         box.setNorthBoundLatitude(-90+MINUTE);
         assertEquals(499.5, Extents.area(box), 0.1);
+        /*
+         * EPSG:1241    USA - CONUS including EEZ
+         * This is only an anti-regression test - the value has not been validated.
+         * However the expected area MUST be greater than the Alaska's one below,
+         * otherwise SIS will select the wrong datum shift operation over USA!!
+         */
+        box.setBounds(-129.16, -65.70, 23.82, 49.38);
+        assertFalse(DefaultGeographicBoundingBoxTest.isSpanningAntiMeridian(box));
+        assertEquals(15967665, Extents.area(box) / 1E6, 1); // Compare in km²
+        /*
+         * EPSG:2373    USA - Alaska including EEZ    (spanning the anti-meridian).
+         * This is only an anti-regression test - the value has not been validated.
+         * However the expected area MUST be smaller than the CONUS's one above.
+         */
+        box.setBounds(167.65, -129.99, 47.88, 74.71);
+        assertTrue(DefaultGeographicBoundingBoxTest.isSpanningAntiMeridian(box));
+        assertEquals(9845438, Extents.area(box) / 1E6, 1); // Compare in km²
     }
 }

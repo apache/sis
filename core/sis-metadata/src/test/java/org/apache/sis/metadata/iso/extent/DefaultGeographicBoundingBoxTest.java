@@ -21,6 +21,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.lang.Double.NaN;
 import static org.junit.Assert.*;
 
 
@@ -54,6 +55,13 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
     }
 
     /**
+     * Returns {@code true} if the given box is spanning over the anti-meridian.
+     */
+    static boolean isSpanningAntiMeridian(final GeographicBoundingBox box) {
+        return box.getWestBoundLongitude() > box.getEastBoundLongitude();
+    }
+
+    /**
      * Tests construction with an invalid range of latitudes.
      */
     @Test(expected = IllegalArgumentException.class)
@@ -71,31 +79,37 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
     public void testNormalize() {
         final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(-180, +180, -90, +90);
         assertBoxEquals(-180, +180, -90, +90, box);
+        assertFalse(isSpanningAntiMeridian(box));
         /*
          * Span more than the whole Earth.
          */
         box.setBounds  (-200, +200, -100, +100);
         assertBoxEquals(-180, +180,  -90,  +90, box);
+        assertFalse(isSpanningAntiMeridian(box));
         /*
          * Values in a shifted range, but without anti-meridian spanning.
          */
         box.setBounds  (380, 420, -8, 2);
         assertBoxEquals( 20,  60, -8, 2, box);
+        assertFalse(isSpanningAntiMeridian(box));
         /*
          * Anti-meridian spanning, without change needed.
          */
         box.setBounds  ( 160, -170, -8, 2);
         assertBoxEquals( 160, -170, -8, 2, box);
+        assertTrue(isSpanningAntiMeridian(box));
         /*
          * Anti-meridian spanning in the [0 … 360]° range.
          */
         box.setBounds  ( 160,  190, -8, 2);
         assertBoxEquals( 160, -170, -8, 2, box);
+        assertTrue(isSpanningAntiMeridian(box));
         /*
          * Random anti-meridian spanning outside of range.
          */
         box.setBounds  (-200, +20, -8, 2);
         assertBoxEquals( 160, +20, -8, 2, box);
+        assertTrue(isSpanningAntiMeridian(box));
         /*
          * Special care for the ±180° longitude bounds.
          */
@@ -112,35 +126,6 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
         box.setBounds(-0.0, +0.0, -8, 2); assertBoxEquals(-0.0, +0.0, -8, 2, box);
         box.setBounds(-0.0, -0.0, -8, 2); assertBoxEquals(-0.0, -0.0, -8, 2, box);
         box.setBounds(+0.0, -0.0, -8, 2); assertBoxEquals(-180, +180, -8, 2, box);
-    }
-
-    /**
-     * Sets the given box to the given values, and verifies if the box spans or not the anti-meridian as expected.
-     * This is a convenience method for the {@link #testAdd()} and {@link #testIntersect()} methods for checking
-     * that we are really testing the case that we intended to test.
-     *
-     * @param isSpanningAntiMeridian {@code true} if the box shall spans the anti-meridian.
-     * @param box The box to set. Previous values will be overwritten.
-     */
-    private static void setBounds(final boolean isSpanningAntiMeridian,
-                                  final double λbgn, final double λend,
-                                  final double φmin, final double φmax,
-                                  final DefaultGeographicBoundingBox box)
-    {
-        box.setBounds(λbgn, λend, φmin, φmax);
-        assertEquals("isSpanningAntiMeridian", isSpanningAntiMeridian,
-                box.getWestBoundLongitude() > box.getEastBoundLongitude());
-    }
-
-    /**
-     * Flips the given box horizontally. Longitudes are interchanged and their sign reversed.
-     * Union and intersection tests what worked with the given boxes shall work as well with flipped boxes.
-     */
-    private static void flipHorizontally(final DefaultGeographicBoundingBox box) {
-        box.setBounds(-box.getEastBoundLongitude(),
-                      -box.getWestBoundLongitude(),
-                       box.getSouthBoundLatitude(),
-                       box.getNorthBoundLatitude());
     }
 
     /**
@@ -167,15 +152,22 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
      * @param union {@code true} for {@code b1.add(b2)}, or {@code false} for {@code b1.intersect(b2)}.
      */
     private void testOperation(final boolean union) {
-        double λbgn, λend, φmin, φmax;
+        final DefaultGeographicBoundingBox b1 = new DefaultGeographicBoundingBox(NaN, 20, -20, NaN);
+        final DefaultGeographicBoundingBox b2 = new DefaultGeographicBoundingBox(-20, 20, NaN,  20);
+        assertFalse(isSpanningAntiMeridian(b1));
+        assertFalse(isSpanningAntiMeridian(b2));
+        assertOperationEquals(union, NaN, 20, NaN, NaN, b1, b2);
         /*
          *    ┌─────────────┐
          *    │  ┌───────┐  │
          *    │  └───────┘  │
          *    └─────────────┘
          */
-        final DefaultGeographicBoundingBox b1 = new DefaultGeographicBoundingBox(-40, 30, -38,  20);
-        final DefaultGeographicBoundingBox b2 = new DefaultGeographicBoundingBox(-20, 10, -30, -25);
+        double λbgn, λend, φmin, φmax;
+        b1.setBounds(-40, 30, -38,  20);
+        b2.setBounds(-20, 10, -30, -25);
+        assertFalse(isSpanningAntiMeridian(b1));
+        assertFalse(isSpanningAntiMeridian(b2));
         if (union) {
             λbgn = -40; φmin = -38;
             λend =  30; φmax =  20;
@@ -190,8 +182,10 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
          *    └──┼───────┘  │
          *       └──────────┘
          */
-        setBounds(false, -40, 30, -38,  20, b1);
-        setBounds(false, -30, 50, -42, -20, b2);
+        b1.setBounds(-40, 30, -38,  20);
+        b2.setBounds(-30, 50, -42, -20);
+        assertFalse(isSpanningAntiMeridian(b1));
+        assertFalse(isSpanningAntiMeridian(b2));
         if (union) {
             λbgn = -40; φmin = -42;
             λend =  50; φmax =  20;
@@ -201,13 +195,33 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
         }
         assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
         /*
+         *   ┌─────────┐
+         *   │         │  ┌─────┐
+         *   │         │  └─────┘
+         *   └─────────┘
+         */
+        b1.setBounds(-40, 30, -80, 40);
+        b2.setBounds( 50, 80, -30, 20);
+        assertFalse(isSpanningAntiMeridian(b1));
+        assertFalse(isSpanningAntiMeridian(b2));
+        if (union) {
+            λbgn = -40; φmin = -80;
+            λend =  80; φmax =  40;
+        } else {
+            λbgn = NaN; φmin = -30;
+            λend = NaN; φmax =  20;
+        }
+        assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
+        /*
          *   ──────────┐  ┌─────
          *     ┌────┐  │  │
          *     └────┘  │  │
          *   ──────────┘  └─────
          */
-        setBounds(true,    80, -100, -2, 2, b1);
-        setBounds(false, -140, -120, -1, 1, b2);
+        b1.setBounds(  80, -100, -2, 2);
+        b2.setBounds(-140, -120, -1, 1);
+        assertTrue (isSpanningAntiMeridian(b1));
+        assertFalse(isSpanningAntiMeridian(b2));
         if (union) {
             λbgn =   80; φmin = -2;
             λend = -100; φmax =  2;
@@ -222,8 +236,10 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
          *       └─┼────┘ │
          *    ─────┘      └─────
          */
-        setBounds(true,    80, -100, -2, 2, b1);
-        setBounds(false, -120,   50, -1, 1, b2);
+        b1.setBounds(  80, -100, -2, 2);
+        b2.setBounds(-120,   50, -1, 1);
+        assertTrue (isSpanningAntiMeridian(b1));
+        assertFalse(isSpanningAntiMeridian(b2));
         if (union) {
             λbgn =   80;
             λend =   50;
@@ -238,8 +254,10 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
          *     └──┼──┼─┘
          *    ────┘  └────
          */
-        setBounds(true,    80, -100, -2, 2, b1);
-        setBounds(false, -120,   90, -1, 1, b2);
+        b1.setBounds(  80, -100, -2, 2);
+        b2.setBounds(-120,   90, -1, 1);
+        assertTrue (isSpanningAntiMeridian(b1));
+        assertFalse(isSpanningAntiMeridian(b2));
         if (union) {
             λbgn = -180;
             λend =  180;
@@ -253,8 +271,10 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
          *    ──┘ │  │ └──
          *    ────┘  └────
          */
-        setBounds(true, 80, -100, -1, 1, b1);
-        setBounds(true, 90, -120, -2, 2, b2);
+        b1.setBounds(80, -100, -1, 1);
+        b2.setBounds(90, -120, -2, 2);
+        assertTrue(isSpanningAntiMeridian(b1));
+        assertTrue(isSpanningAntiMeridian(b2));
         if (union) {
             λbgn =   80;
             λend = -100;
@@ -269,8 +289,10 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
          *    ────┼──┼─┘└─
          *    ────┘  └────
          */
-        setBounds(true,  80, -100, -2, 2, b1);
-        setBounds(true, 100,   90, -1, 1, b2);
+        b1.setBounds( 80, -100, -2, 2);
+        b2.setBounds(100,   90, -1, 1);
+        assertTrue(isSpanningAntiMeridian(b1));
+        assertTrue(isSpanningAntiMeridian(b2));
         if (union) {
             λbgn =  -180;
             λend =   180;
@@ -285,16 +307,18 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
          *        │  └────┘  │
          *    ────┘          └────
          */
-        setBounds(true,  120, -110, -1, 1, b1);
-        setBounds(false, 100,  112, -2, 2, b2);
+        b1.setBounds(120, -110, -1, 1);
+        b2.setBounds(100,  112, -2, 2);
+        assertTrue (isSpanningAntiMeridian(b1));
+        assertFalse(isSpanningAntiMeridian(b2));
         if (union) {
             λbgn =  100;
             λend = -110;
-            assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
         } else {
-            applyOperation(union, b1, b2);
-            assertEquals("Expected empty box", b1.getEastBoundLongitude(), b1.getWestBoundLongitude(), STRICT);
+            λbgn =  NaN;
+            λend =  NaN;
         }
+        assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
     }
 
     /**
@@ -340,6 +364,17 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
         applyOperation(union, b1, b2);
         assertBoxEquals(λbgn, λend, φmin, φmax, b1);
         assertEquals(b1, b2);
+    }
+
+    /**
+     * Flips the given box horizontally. Longitudes are interchanged and their sign reversed.
+     * Union and intersection tests what worked with the given boxes shall work as well with flipped boxes.
+     */
+    private static void flipHorizontally(final DefaultGeographicBoundingBox box) {
+        box.setBounds(-box.getEastBoundLongitude(),
+                      -box.getWestBoundLongitude(),
+                       box.getSouthBoundLatitude(),
+                       box.getNorthBoundLatitude());
     }
 
     /**

@@ -20,6 +20,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.BoundingPolygon;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Static;
 
@@ -149,7 +150,7 @@ public final class Extents extends Static {
      *
      * @param  box The geographic bounding box for which to compute the area, or {@code null}.
      * @return An estimation of the geographic area in the given bounding box,
-     *         or {@link Double#NaN} if the given box was null.
+     *         or {@linkplain Double#NaN NaN} if the given box was null.
      *
      * @since 0.4
      */
@@ -157,9 +158,10 @@ public final class Extents extends Static {
         if (box == null) {
             return Double.NaN;
         }
-        return max(0, sin(toRadians(box.getNorthBoundLatitude())) -
-                      sin(toRadians(box.getSouthBoundLatitude()))) *
-               max(0, toRadians(box.getEastBoundLongitude() - box.getWestBoundLongitude())) *
-                (AUTHALIC_RADIUS * AUTHALIC_RADIUS);
+        double Δλ = box.getEastBoundLongitude() - box.getWestBoundLongitude(); // Negative if spanning the anti-meridian
+        Δλ -= floor(Δλ / (Longitude.MAX_VALUE - Longitude.MIN_VALUE)) * (Longitude.MAX_VALUE - Longitude.MIN_VALUE);
+        return (AUTHALIC_RADIUS * AUTHALIC_RADIUS) * toRadians(Δλ) *
+               max(0, sin(toRadians(box.getNorthBoundLatitude())) -
+                      sin(toRadians(box.getSouthBoundLatitude())));
     }
 }
