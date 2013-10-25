@@ -124,7 +124,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
             0,       0,            1
         };
         final MatrixSIS inverse = (Y != null) ? matrix.solve(Y) : matrix.inverse();
-        assertMatrixEquals(expected, 5, 3, inverse, TOLERANCE);
+        assertEqualsElements(expected, 5, 3, inverse, TOLERANCE);
     }
 
     /**
@@ -151,7 +151,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
             0,       0,  0,        0,   1
         };
         final MatrixSIS inverse = (Y != null) ? matrix.solve(Y) : matrix.inverse();
-        assertMatrixEquals(expected, 3, 5, inverse, TOLERANCE);
+        assertEqualsElements(expected, 3, 5, inverse, TOLERANCE);
     }
 
     /**

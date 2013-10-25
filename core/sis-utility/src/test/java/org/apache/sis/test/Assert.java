@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import javax.swing.tree.TreeNode;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
@@ -50,6 +51,33 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * For subclass constructor only.
      */
     protected Assert() {
+    }
+
+    /**
+     * Asserts that the given matrix is equals to the expected one, up to the given tolerance value.
+     *
+     * @param message   Header of the exception message in case of failure, or {@code null} if none.
+     * @param expected  The expected matrix.
+     * @param actual    The matrix to compare.
+     * @param tolerance The tolerance threshold.
+     */
+    public static void assertMatrixEquals(final String message, final Matrix expected, final Matrix actual, final double tolerance) {
+        if (TestCase.PENDING_NEXT_GEOAPI_RELEASE) {
+            // TODO: Remove this method, so we inherit the GeoAPI one instead.
+        }
+        final int numRow = actual.getNumRow();
+        final int numCol = actual.getNumCol();
+        assertEquals("numRow", expected.getNumRow(), numRow);
+        assertEquals("numCol", expected.getNumCol(), numCol);
+        for (int j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                final double e = expected.getElement(j,i);
+                final double a = actual.getElement(j,i);
+                if (!(StrictMath.abs(e - a) <= tolerance) && Double.doubleToLongBits(a) != Double.doubleToLongBits(e)) {
+                    fail("Matrix.getElement(" + j + ", " + i + "): expected " + e + " but got " + a);
+                }
+            }
+        }
     }
 
     /**

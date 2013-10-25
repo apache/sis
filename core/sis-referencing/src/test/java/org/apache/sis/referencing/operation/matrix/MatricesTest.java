@@ -348,19 +348,23 @@ public final strictfp class MatricesTest extends TestCase {
                 "└               ┘\n", new Matrix3(1, 0, 0, NaN, NaN, NaN, 0, 0, 1).toString());
         /*
          * Mix of values with different precision, ±0, ±1, NaN and infinities.
+         * In addition, the first column contains numbers having the maximal number of digits allowed
+         * by the IEEE 754 'double' representation (we put an additional trailing '1' for making sure
+         * that we exceed the 'double' accuracy). Our string representation shall put spaces, not 0,
+         * for those numbers in order to not give a false sense of accuracy.
          */
         final MatrixSIS matrix = Matrices.create(4, 5, new double[] {
-            39.5193682106975150,  -68.5200,  -1.0,  1,  98,
-           -66.0358637477182200,       NaN,  43.0,  0,  Double.NEGATIVE_INFINITY,
+            39.5193682106975151,  -68.5200,  -1.0,  1,  98,
+           -66.0358637477182201,       NaN,  43.0,  0,  Double.NEGATIVE_INFINITY,
              2.0741018968776337,   83.7260,  -0.0,  1,  -3,
-            91.8796187759200600,  -18.2674,  24.5,  0,  36.5
+            91.8796187759200601,  -18.2674,  24.5,  0,  36.5
         });
         assertMultilinesEquals(
                 "┌                                               ┐\n" +
-                "│  39.5193682106975150  -68.5200  -1    1  98.0 │\n" +
-                "│ -66.0358637477182200       NaN  43.0  0    -∞ │\n" +
+                "│  39.519368210697515   -68.5200  -1    1  98.0 │\n" +
+                "│ -66.03586374771822         NaN  43.0  0    -∞ │\n" +
                 "│   2.0741018968776337   83.7260  -0    1  -3.0 │\n" +
-                "│  91.8796187759200600  -18.2674  24.5  0  36.5 │\n" +
+                "│  91.87961877592006    -18.2674  24.5  0  36.5 │\n" +
                 "└                                               ┘\n", matrix.toString());
     }
 }

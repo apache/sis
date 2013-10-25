@@ -18,6 +18,7 @@ package org.apache.sis.geometry;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
@@ -27,7 +28,6 @@ import org.junit.Test;
 import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.referencing.Assert.*;
-import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
 
 
@@ -95,7 +95,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
             final double xLower, final double ymin, final double xUpper, final double ymax)
     {
         final double xmin, xmax;
-        if (isNegative(xUpper - xLower)) { // Check for anti-meridian spanning.
+        if (MathFunctions.isNegative(xUpper - xLower)) { // Check for anti-meridian spanning.
             xmin = -180;
             xmax = +180;
         } else {
@@ -395,8 +395,8 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
 
         e = create(0, 10, 360, 20);
         assertTrue(e.normalize());
-        assertEquals("Expect positive zero", Double.doubleToLongBits(+0.0), Double.doubleToLongBits(e.getLower(0)));
-        assertEquals("Expect negative zero", Double.doubleToLongBits(-0.0), Double.doubleToLongBits(e.getUpper(0)));
+        assertTrue("Expect positive zero", MathFunctions.isPositiveZero(e.getLower(0)));
+        assertTrue("Expect negative zero", MathFunctions.isNegativeZero(e.getUpper(0)));
         verifyInvariants(e);
     }
 

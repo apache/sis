@@ -136,6 +136,7 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals( "12°30.0", formatAndParse(f, new Angle( 12.50)));
         assertEquals("-10°15.0", formatAndParse(f, new Angle(-10.25)));
         assertEquals("-00°00.6", formatAndParse(f, new Angle( -0.01)));
+        assertEquals( "89°01.0", formatAndParse(f, new Angle( 89.01666666666667)));
     }
 
     /**
@@ -151,6 +152,7 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals( "12°30′56.250″", formatAndParse(f, new Angle( 12.515625)));
         assertEquals("-12°30′56.250″", formatAndParse(f, new Angle(-12.515625)));
         assertEquals("-00°00′36.000″", formatAndParse(f, new Angle( -0.01)));
+        assertEquals( "89°01′00.000″", formatAndParse(f, new Angle( 89.01666666666667)));
     }
 
     /**

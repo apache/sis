@@ -448,6 +448,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
 
     /**
      * Returns the {@linkplain #getMinimum(int) minimal} ordinate value for dimension 0.
+     *
+     * @return The minimal ordinate value for dimension 0.
      */
     @Override
     public double getMinX() {
@@ -456,6 +458,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
 
     /**
      * Returns the {@linkplain #getMinimum(int) minimal} ordinate value for dimension 1.
+     *
+     * @return The minimal ordinate value for dimension 1.
      */
     @Override
     public double getMinY() {
@@ -464,6 +468,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
 
     /**
      * Returns the {@linkplain #getMaximum(int) maximal} ordinate value for dimension 0.
+     *
+     * @return The maximal ordinate value for dimension 0.
      */
     @Override
     public double getMaxX() {
@@ -472,6 +478,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
 
     /**
      * Returns the {@linkplain #getMaximum(int) maximal} ordinate value for dimension 1.
+     *
+     * @return The maximal ordinate value for dimension 1.
      */
     @Override
     public double getMaxY() {
@@ -480,6 +488,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
 
     /**
      * Returns the {@linkplain #getMedian(int) median} ordinate value for dimension 0.
+     *
+     * @return The median ordinate value for dimension 0.
      */
     @Override
     public double getCenterX() {
@@ -488,6 +498,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
 
     /**
      * Returns the {@linkplain #getMedian(int) median} ordinate value for dimension 1.
+     *
+     * @return The median ordinate value for dimension 1.
      */
     @Override
     public double getCenterY() {
@@ -496,6 +508,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
 
     /**
      * Returns the {@linkplain #getSpan(int) span} for dimension 0.
+     *
+     * @return The span for dimension 0.
      */
     @Override
     public double getWidth() {
@@ -504,6 +518,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
 
     /**
      * Returns the {@linkplain #getSpan(int) span} for dimension 1.
+     *
+     * @return The span for dimension 1.
      */
     @Override
     public double getHeight() {
@@ -520,6 +536,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * {@link java.lang.Double#NaN NaN}, then the envelope is considered empty.
      * This is different than the default {@link java.awt.geom.Rectangle2D.Double#isEmpty()}
      * implementation, which doesn't check for {@code NaN} values.</p>
+     *
+     * @return {@code true} if this envelope is empty.
      */
     @Override
     public boolean isEmpty() {
@@ -822,8 +840,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
             double min = Math.max(min0, min1);
             double max = Math.min(max0, max1);
             /*
-             * See GeneralEnvelope.intersect(Envelope) for an explanation of the algorithm applied
-             * below.
+             * See GeneralEnvelope.intersect(Envelope) for an explanation of the algorithm applied below.
              */
             if (isSameSign(span0, span1)) { // Always 'false' if any value is NaN.
                 if ((min1 > max0 || max1 < min0) && !isNegativeUnsafe(span0)) {

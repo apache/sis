@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.datum.EngineeringDatum;
@@ -45,17 +44,6 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 1498304918725248637L;
-
-    /**
-     * Creates an engineering datum from a name. This is a convenience constructor for
-     * {@link #DefaultEngineeringDatum(Map)}
-     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property.
-     *
-     * @param name The datum name.
-     */
-    public DefaultEngineeringDatum(final String name) {
-        this(Collections.singletonMap(NAME_KEY, name));
-    }
 
     /**
      * Creates an engineering datum from the given properties. The properties map is given

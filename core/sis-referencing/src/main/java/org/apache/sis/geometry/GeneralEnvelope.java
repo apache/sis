@@ -585,7 +585,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                  * given envelope spans to infinities.
                  */
                 if (max0 <= max1 || min0 >= min1) {
-                    ordinates[iLower]   = min1;
+                    ordinates[iLower] = min1;
                     ordinates[iUpper] = max1;
                     continue;
                 }

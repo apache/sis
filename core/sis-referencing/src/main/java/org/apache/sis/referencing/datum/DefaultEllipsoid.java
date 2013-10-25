@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
@@ -232,24 +231,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Creates a new ellipsoid using the specified name and axis length in metres.
-     * This is a convenience method for {@link #createEllipsoid(Map, double, double, Unit) createEllipsoid(Map, …)}
-     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property
-     * and the unit of measurement fixed to {@link SI#METRE}.
-     *
-     * @param name          The ellipsoid name.
-     * @param semiMajorAxis The equatorial radius in metres.
-     * @param semiMinorAxis The polar radius in metres.
-     * @return An ellipsoid with the given axis length.
-     */
-    public static DefaultEllipsoid createEllipsoid(final String name,
-                                                   final double semiMajorAxis,
-                                                   final double semiMinorAxis)
-    {
-        return createEllipsoid(Collections.singletonMap(NAME_KEY, name), semiMajorAxis, semiMinorAxis, SI.METRE);
-    }
-
-    /**
      * Creates a new ellipsoid using the specified properties and axis length.
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
@@ -271,24 +252,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             return new DefaultEllipsoid(properties, semiMajorAxis, semiMinorAxis,
                        semiMajorAxis / (semiMajorAxis - semiMinorAxis), false, unit);
         }
-    }
-
-    /**
-     * Creates a new ellipsoid using the specified name, axis length in metres and inverse flattening value. This is
-     * a convenience method for {@link #createFlattenedSphere(Map, double, double, Unit) createFlattenedSphere(Map, …)}
-     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property and the unit
-     * of measurement fixed to {@link SI#METRE}.
-     *
-     * @param name              The ellipsoid name.
-     * @param semiMajorAxis     The equatorial radius in metres.
-     * @param inverseFlattening The inverse flattening value.
-     * @return An ellipsoid with the given axis length.
-     */
-    public static DefaultEllipsoid createFlattenedSphere(final String name,
-                                                         final double semiMajorAxis,
-                                                         final double inverseFlattening)
-    {
-        return createFlattenedSphere(Collections.singletonMap(NAME_KEY, name), semiMajorAxis, inverseFlattening, SI.METRE);
     }
 
     /**
@@ -423,6 +386,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * The radius is expressed in {@linkplain #getAxisUnit() axis linear unit}.
      *
      * @return The radius of a sphere having the same surface than this ellipsoid.
+     *
+     * @see org.apache.sis.referencing.GeodeticObjects#SPHERE
      */
     public double getAuthalicRadius() {
         return Formulas.getAuthalicRadius(getSemiMajorAxis(), getSemiMinorAxis());

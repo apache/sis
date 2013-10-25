@@ -22,8 +22,13 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 
 import static org.junit.Assert.*;
+import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.*;
 import static org.apache.sis.util.ArraysExt.isSorted;
+import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
+
+// Related to JDK8
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -31,7 +36,7 @@ import static org.apache.sis.util.ArraysExt.isSorted;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(org.apache.sis.util.ArraysExtTest.class)
@@ -40,6 +45,13 @@ public final strictfp class MathFunctionsTest extends TestCase {
      * Small number for floating point comparisons.
      */
     private static final double EPS = 1E-12;
+
+    /**
+     * The maximal exponent value such as {@code parseDouble("1E+304")} still a finite number.
+     *
+     * @see Double#MAX_VALUE
+     */
+    private static final int MAX_E10 = 308;
 
     /**
      * Highest prime number representable as a signed {@code short}.
@@ -52,26 +64,32 @@ public final strictfp class MathFunctionsTest extends TestCase {
     private static final int LOWEST_USHORT_PRIME = 32771;
 
     /**
+     * Verifies the values of {@link MathFunctions#SQRT_2} and {@link MathFunctions#LOG10_2}.
+     */
+    @Test
+    public void testConstants() {
+        assertEquals(StrictMath.sqrt (2), MathFunctions.SQRT_2,  0);
+        assertEquals(StrictMath.log10(2), MathFunctions.LOG10_2, 0);
+        assertEquals(0,  parseDouble("1E" +  E10_FOR_ZERO), 0);
+        assertTrue  (0 < parseDouble("1E" + (E10_FOR_ZERO + 1)));
+        assertTrue  (POSITIVE_INFINITY > parseDouble("1E" +  MAX_E10));
+        assertEquals(POSITIVE_INFINITY,  parseDouble("1E" + (MAX_E10 + 1)), 0);
+    }
+
+    /**
      * Tests {@link MathFunctions#truncate(double)}.
      */
     @Test
+    @DependsOnMethod({"testIsPositiveZero", "testIsNegativeZero"})
     public void testTruncate() {
         assertEquals(+4.0, truncate(+4.9), 0);
         assertEquals(-4.0, truncate(-4.9), 0);
         assertEquals(+0.0, truncate(+0.1), 0);
         assertEquals(-0.0, truncate(-0.1), 0);
-        assertEquals("Positive zero",
-                Double.doubleToLongBits(+0.0),
-                Double.doubleToLongBits(truncate(+0.5)));
-        assertEquals("Negative zero",
-                Double.doubleToLongBits(-0.0),
-                Double.doubleToLongBits(truncate(-0.5)));
-        assertEquals("Positive zero",
-                Double.doubleToLongBits(+0.0),
-                Double.doubleToLongBits(truncate(+0.0)));
-        assertEquals("Negative zero",
-                Double.doubleToLongBits(-0.0),
-                Double.doubleToLongBits(truncate(-0.0)));
+        assertTrue("Positive zero", isPositiveZero(truncate(+0.5)));
+        assertTrue("Negative zero", isNegativeZero(truncate(-0.5)));
+        assertTrue("Positive zero", isPositiveZero(truncate(+0.0)));
+        assertTrue("Negative zero", isNegativeZero(truncate(-0.0)));
     }
 
     /**
@@ -126,11 +144,91 @@ public final strictfp class MathFunctionsTest extends TestCase {
         assertEquals(-22,  fractionDigitsForDelta(9.6E+23,  true)); // Special case
         assertEquals(-300, fractionDigitsForDelta(1.1E+300, true));
 
-        // Special cases.
-        assertEquals(0,  fractionDigitsForDelta(0, true));
-        assertEquals(0,  fractionDigitsForDelta(Double.NaN, true));
-        assertEquals(0,  fractionDigitsForDelta(Double.POSITIVE_INFINITY, true));
-        assertEquals(0,  fractionDigitsForDelta(Double.NEGATIVE_INFINITY, true));
+        // Other cases.
+        assertEquals(-E10_FOR_ZERO, fractionDigitsForDelta(0,                 false));
+        assertEquals(-E10_FOR_ZERO, fractionDigitsForDelta(MIN_VALUE,         false));
+        assertEquals(           16, fractionDigitsForDelta(Math.ulp(1.0),     false));
+        assertEquals(           15, fractionDigitsForDelta(Math.ulp(45.0),    false));
+        assertEquals(            0, fractionDigitsForDelta(NaN,               false));
+        assertEquals(            0, fractionDigitsForDelta(POSITIVE_INFINITY, false));
+        assertEquals(            0, fractionDigitsForDelta(NEGATIVE_INFINITY, false));
+    }
+
+    /**
+     * Tests {@link MathFunctions#fractionDigitsForValue(double)}.
+     */
+    @Test
+    public void testFractionDigitsForValue() {
+        assertEquals(-E10_FOR_ZERO, fractionDigitsForValue(0));
+        assertEquals(-E10_FOR_ZERO, fractionDigitsForValue(MIN_VALUE));
+        assertEquals(           16, fractionDigitsForValue(1));
+        assertEquals(           15, fractionDigitsForValue(45));
+        assertEquals(            0, fractionDigitsForValue(NaN));
+        assertEquals(            0, fractionDigitsForValue(POSITIVE_INFINITY));
+        assertEquals(            0, fractionDigitsForValue(NEGATIVE_INFINITY));
+        for (int i=E10_FOR_ZERO; i<=MAX_E10; i++) {
+            final double value = pow10(i);
+            final double accuracy = pow10(-fractionDigitsForValue(value));
+            assertEquals("Shall not be greater than ULP", 0, accuracy, StrictMath.ulp(value));
+        }
+        for (int i=MIN_EXPONENT; i<=MAX_EXPONENT; i++) {
+            final double value = StrictMath.scalb(1, i);
+            final double accuracy = pow10(-fractionDigitsForValue(value));
+            assertEquals("Shall not be greater than ULP", 0, accuracy, StrictMath.ulp(value));
+        }
+    }
+
+    /**
+     * Tests the {@link MathFunctions#getExponent(double)} method.
+     * This method performs two tests:
+     *
+     * <ul>
+     *   <li>First, tests with a few normal (non-subnormal) numbers.
+     *       The result shall be identical to {@link StrictMath#getExponent(double)}.</li>
+     *   <li>Then, test with a few sub-normal numbers.</li>
+     * </ul>
+     */
+    @Test
+    public void testGetExponent() {
+        final double[] normalValues = {
+            1E+300, 1E+200, 1E+100, 1E+10, 50, 20, 1, 1E-10, 1E-100, 1E-200, 1E-300,
+            POSITIVE_INFINITY,
+            NEGATIVE_INFINITY,
+            NaN,
+            MAX_VALUE,
+            MIN_NORMAL
+        };
+        for (final double value : normalValues) {
+            assertEquals(StrictMath.getExponent(value), getExponent(value));
+        }
+        /*
+         * Tests sub-normal values. We expect:
+         *
+         *   getExponent(MIN_NORMAL    )  ==  MIN_EXPONENT
+         *   getExponent(MIN_NORMAL / 2)  ==  MIN_EXPONENT - 1
+         *   getExponent(MIN_NORMAL / 4)  ==  MIN_EXPONENT - 2
+         *   getExponent(MIN_NORMAL / 8)  ==  MIN_EXPONENT - 3
+         *   etc.
+         */
+        for (int i=0; i<=SIGNIFICAND_SIZE; i++) {
+            assertEquals(MIN_EXPONENT - i, getExponent(MIN_NORMAL / (1L << i)));
+        }
+        assertEquals(MIN_EXPONENT - 1,                    getExponent(JDK8.nextDown(MIN_NORMAL)));
+        assertEquals(MIN_EXPONENT - SIGNIFICAND_SIZE,     getExponent(MIN_VALUE));
+        assertEquals(MIN_EXPONENT - SIGNIFICAND_SIZE - 1, getExponent(0));
+        /*
+         * Tests consistency with scalb, as documented in MathFunctions.getExponent(double) javadoc.
+         */
+        for (int i = MIN_EXPONENT - SIGNIFICAND_SIZE - 1; i <= MAX_EXPONENT + 1; i++) {
+            assertEquals(i, getExponent(StrictMath.scalb(1.0, i)));
+        }
+        /*
+         * Tests consistency with log10, as documented in MathFunctions.getExponent(double) javadoc.
+         */
+        for (int i = MIN_EXPONENT - SIGNIFICAND_SIZE; i <= MAX_EXPONENT; i++) {
+            assertEquals(StrictMath.floor(StrictMath.log10(StrictMath.scalb(1.0, i))),
+                         StrictMath.floor(LOG10_2 * i /* i = getExponent(value) */), 0);
+        }
     }
 
     /**
@@ -140,8 +238,8 @@ public final strictfp class MathFunctionsTest extends TestCase {
      */
     @Test
     public void testPow10() {
-        for (int i=-304; i<=304; i++) { // Range of allowed exponents in base 10.
-            assertEquals(Double.parseDouble("1E"+i), pow10((double) i), 0);
+        for (int i=E10_FOR_ZERO; i<=MAX_E10; i++) { // Range of allowed exponents in base 10.
+            assertEquals(parseDouble("1E"+i), pow10((double) i), 0);
         }
     }
 
@@ -154,11 +252,31 @@ public final strictfp class MathFunctionsTest extends TestCase {
             final double x = 0.1 * i;
             final double y = atanh(x);
             switch (i) {
-                case -10: assertEquals(Double.NEGATIVE_INFINITY, y, EPS); break;
-                default:  assertEquals(x, StrictMath.tanh(y),       EPS); break;
-                case +10: assertEquals(Double.POSITIVE_INFINITY, y, EPS); break;
+                case -10: assertEquals(NEGATIVE_INFINITY, y,  EPS); break;
+                default:  assertEquals(x, StrictMath.tanh(y), EPS); break;
+                case +10: assertEquals(POSITIVE_INFINITY, y,  EPS); break;
             }
         }
+    }
+
+    /**
+     * Tests {@link MathFunctions#isPositiveZero(double)}.
+     */
+    @Test
+    public void testIsPositiveZero() {
+        assertTrue (isPositiveZero(+0.0));
+        assertFalse(isPositiveZero(-0.0));
+        assertFalse(isPositiveZero( NaN));
+    }
+
+    /**
+     * Tests {@link MathFunctions#isNegativeZero(double)}.
+     */
+    @Test
+    public void testIsNegativeZero() {
+        assertTrue (isNegativeZero(-0.0));
+        assertFalse(isNegativeZero(+0.0));
+        assertFalse(isNegativeZero( NaN));
     }
 
     /**

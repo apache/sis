@@ -55,9 +55,10 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     /**
      * The tolerance factor (as a multiplicand) for the multiplication and division operations.
      * This is a tolerance factor in units of {@link DoubleDouble#error} ULP, so even a "scary"
-     * factor like 1E+4 should be very small compared to the {@link DoubleDouble#value}.
+     * factor like 1E+5 should be very small compared to the {@link DoubleDouble#value}.
+     * This is the worst case error found empirically - most errors are smaller than that.
      */
-    private static final double PRODUCT_TOLERANCE_FACTOR = 10000;
+    private static final double PRODUCT_TOLERANCE_FACTOR = 100000;
 
     /**
      * Tolerance threshold for strict comparisons of floating point values.
@@ -81,7 +82,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      * Fetches the next {@code DoubleDouble} random values and store them in the given object.
      */
     private void nextRandom(final DoubleDouble dd) {
-        dd.setToSum(nextRandom(), nextRandom());
+        dd.setToSum(nextRandom(), random.nextDouble());
     }
 
     /**
@@ -252,6 +253,42 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     }
 
     /**
+     * Tests {@link DoubleDouble#sqrt()} first with the square root of 2, then with random values.
+     * In the {@code sqrt(2)} case:
+     *
+     * <ul>
+     *   <li>The error using {@code double} arithmetic is approximatively 1E-16.</li>
+     *   <li>The error using double-double arithmetic is expected to be slightly less that 1E-32.</li>
+     * </ul>
+     */
+    @Test
+    @DependsOnMethod({"testMultiply", "testDivide"})
+    public void testSqrt() {
+        final BigDecimal SQRT2 = new BigDecimal("1.414213562373095048801688724209698");
+        final DoubleDouble dd = new DoubleDouble(2, 0);
+        dd.sqrt();
+        assertNormalizedAndEquals(sqrt(2), dd);
+        assertEquals(0, SQRT2.subtract(toBigDecimal(dd)).doubleValue(), 1E-32);
+        /*
+         * If we have been able to compute √2, now test with random values.
+         * Since the range of values is approximatively [-1000 … 1000], use
+         * a tolerance value 1000 time the one that we used for √2.
+         */
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
+            nextRandom(dd);
+            if (dd.value < 0) {
+                dd.negate();
+            }
+            final double value = dd.value;
+            final double error = dd.error;
+            dd.multiply(dd);
+            dd.sqrt();
+            dd.subtract(value, error);
+            assertEquals(0, dd.doubleValue(), 1E-29);
+        }
+    }
+
+    /**
      * List of all {@link DoubleDouble#VALUES} as string decimal representation.
      */
     private static final String[] PREDEFINED_VALUES = {
@@ -271,6 +308,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
          "0.9",
          "0.9144",
          "1.111111111111111111111111111111111",
+         "1.414213562373095048801688724209698",
          "1.570796326794896619231321691639751",
          "1.8288",
          "2.356194490192344928846982537459627",
@@ -342,5 +380,21 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         assertTrue("toDegrees", DoubleDouble.errorForWellKnownValue(toDegrees(1)) != 0);
         assertTrue("toRadians", DoubleDouble.errorForWellKnownValue(PI / 180)     != 0);
         assertTrue("toRadians", DoubleDouble.errorForWellKnownValue(toRadians(1)) != 0);
+    }
+
+    /**
+     * Tests the {@code DoubleDouble.createFoo()} methods.
+     */
+    @Test
+    @DependsOnMethod("testErrorForWellKnownValue")
+    public void testCreate() {
+        for (int i=0; ; i++) {
+            final DoubleDouble dd;
+            switch (i) {
+                case 0:  dd = DoubleDouble.createDegreesToRadians(); break;
+                default: return; // Test done.
+            }
+            assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error, STRICT);
+        }
     }
 }
