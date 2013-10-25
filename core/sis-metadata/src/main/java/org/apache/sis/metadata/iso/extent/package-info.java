@@ -56,6 +56,14 @@
  *       <li>{@link org.apache.sis.metadata.iso.extent.Extents#getGeographicBoundingBox
  *       getGeographicBoundingBox(Extent)}
  *       for extracting a global geographic bounding box.</li>
+ *
+ *       <li>{@link org.apache.sis.metadata.iso.extent.Extents#intersection
+ *       intersection(GeographicBoundingBox, GeographicBoundingBox)}
+ *       for computing the intersection of two geographic bounding boxes, which may be null.</li>
+ *
+ *       <li>{@link org.apache.sis.metadata.iso.extent.Extents#area
+ *       area(GeographicBoundingBox)}
+ *       for estimating the area of a geographic bounding box.</li>
  *     </ul>
  *   </li>
  *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox}
@@ -64,19 +72,19 @@
  *       setBounds(double, double, double, double)}
  *       for setting the extent from (λ,φ) values.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.geometry.Envelope)
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.geometry.Envelope)
  *       setBounds(Envelope)}
  *       for setting the extent from the given envelope.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.metadata.extent.GeographicBoundingBox)
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.metadata.extent.GeographicBoundingBox)
  *       setBounds(GeographicBoundingBox)}
  *       for setting the extent from an other bounding box.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add
  *       add(GeographicBoundingBox)}
  *       for expanding this extent to include an other bounding box.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#intersect
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#intersect
  *       intersect(GeographicBoundingBox)}
  *       for the intersection between the two bounding boxes.</li>
  *     </ul>

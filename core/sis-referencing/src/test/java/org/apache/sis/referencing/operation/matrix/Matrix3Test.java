@@ -98,6 +98,6 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
                 0,  0,  1}, expected, TOLERANCE);
 
         // Now the actual test.
-        assertMatrixEquals(expected, SIZE, SIZE, A.solve(B), TOLERANCE);
+        assertEqualsElements(expected, SIZE, SIZE, A.solve(B), TOLERANCE);
     }
 }

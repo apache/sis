@@ -40,6 +40,8 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.spatial.DefaultGeorectifiedTest.class,
     org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,
     org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
+    org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
+    org.apache.sis.metadata.iso.extent.ExtentsTest.class,
 
     // Classes using Java reflection.
     org.apache.sis.metadata.PropertyInformationTest.class,

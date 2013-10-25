@@ -119,11 +119,7 @@ public final class Citations extends Static {
      * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> authority.
      * This citation is used as an authority for
      * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system}
-     * identifiers. When searching an {@linkplain org.opengis.referencing.crs.CRSAuthorityFactory CRS
-     * authority factory} on EPSG data, SIS compares the {@code "EPSG"} string against the
-     * {@linkplain Citation#getIdentifiers identifiers} (or against the {@linkplain Citation#getTitle
-     * title} and {@linkplain Citation#getAlternateTitles alternate titles} if there is no identifier)
-     * using the {@link #identifierMatches(Citation,String) identifierMatches} method.
+     * identifiers.
      *
      * @see #AUTO
      * @see #AUTO2
