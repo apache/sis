@@ -34,6 +34,11 @@ import static org.junit.Assert.*;
  */
 public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
+     * The tolerance factor for strict comparisons of floating point values.
+     */
+    private static final double STRICT = 0.0;
+
+    /**
      * Asserts that the given geographic bounding box is strictly equals to the given values.
      * The {@link GeographicBoundingBox#getInclusion()} is expected to be {@code true}.
      */
@@ -42,10 +47,10 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
                                         final GeographicBoundingBox box)
     {
         assertEquals("inclusion", Boolean.TRUE, box.getInclusion());
-        assertEquals("westBoundLongitude", λbgn, box.getWestBoundLongitude(), 0);
-        assertEquals("eastBoundLongitude", λend, box.getEastBoundLongitude(), 0);
-        assertEquals("southBoundLatitude", φmin, box.getSouthBoundLatitude(), 0);
-        assertEquals("northBoundLatitude", φmax, box.getNorthBoundLatitude(), 0);
+        assertEquals("westBoundLongitude", λbgn, box.getWestBoundLongitude(), STRICT);
+        assertEquals("eastBoundLongitude", λend, box.getEastBoundLongitude(), STRICT);
+        assertEquals("southBoundLatitude", φmin, box.getSouthBoundLatitude(), STRICT);
+        assertEquals("northBoundLatitude", φmax, box.getNorthBoundLatitude(), STRICT);
     }
 
     /**
@@ -144,33 +149,90 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
     @Test
     @DependsOnMethod("testNormalize")
     public void testAdd() {
+        testOperation(true);
+    }
+
+    /**
+     * Tests {@link DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)}.
+     */
+    @Test
+    @DependsOnMethod("testNormalize")
+    public void testIntersect() {
+        testOperation(false);
+    }
+
+    /**
+     * Implementation of {@link #testAdd()} and {@link #testIntersect()}.
+     *
+     * @param union {@code true} for {@code b1.add(b2)}, or {@code false} for {@code b1.intersect(b2)}.
+     */
+    private void testOperation(final boolean union) {
+        double λbgn, λend, φmin, φmax;
         /*
-         * Simple cases: no anti-meridian spanning.
-         *    ┌─────────────┐           ┌──────────┐
-         *    │  ┌───────┐  │    and    │  ┌───────┼──┐
-         *    │  └───────┘  │           └──┼───────┘  │
-         *    └─────────────┘              └──────────┘
-         *  -40             30         -40            50
+         *    ┌─────────────┐
+         *    │  ┌───────┐  │
+         *    │  └───────┘  │
+         *    └─────────────┘
          */
         final DefaultGeographicBoundingBox b1 = new DefaultGeographicBoundingBox(-40, 30, -38,  20);
         final DefaultGeographicBoundingBox b2 = new DefaultGeographicBoundingBox(-20, 10, -30, -25);
-        assertAddEquals( -40, 30, -38,  20, b1, b2);
-        setBounds(false, -30, 50, -42, -20, b2);
-        assertAddEquals( -40, 50, -42,  20, b1, b2);
+        if (union) {
+            λbgn = -40; φmin = -38;
+            λend =  30; φmax =  20;
+        } else {
+            λbgn = -20; φmin = -30;
+            λend =  10; φmax = -25;
+        }
+        assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
         /*
-         * Anti-meridian spanning for only one box.
-         *   ──────────┐  ┌─────           ─────┐      ┌─────
-         *     ┌────┐  │  │         and       ┌─┼────┐ │
-         *     └────┘  │  │                   └─┼────┘ │
-         *   ──────────┘  └─────           ─────┘      └─────
+         *    ┌──────────┐
+         *    │  ┌───────┼──┐
+         *    └──┼───────┘  │
+         *       └──────────┘
+         */
+        setBounds(false, -40, 30, -38,  20, b1);
+        setBounds(false, -30, 50, -42, -20, b2);
+        if (union) {
+            λbgn = -40; φmin = -42;
+            λend =  50; φmax =  20;
+        } else {
+            λbgn = -30; φmin = -38;
+            λend =  30; φmax = -20;
+        }
+        assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
+        /*
+         *   ──────────┐  ┌─────
+         *     ┌────┐  │  │
+         *     └────┘  │  │
+         *   ──────────┘  └─────
          */
         setBounds(true,    80, -100, -2, 2, b1);
         setBounds(false, -140, -120, -1, 1, b2);
-        assertAddEquals(   80, -100, -2, 2, b1, b2);
-        setBounds(false, -120,   50, -1, 1, b2);
-        assertAddEquals(   80,   50, -2, 2, b1, b2);
+        if (union) {
+            λbgn =   80; φmin = -2;
+            λend = -100; φmax =  2;
+        } else {
+            λbgn = -140; φmin = -1;
+            λend = -120; φmax =  1;
+        }
+        assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
         /*
-         * To be replaced by the whole world:
+         *    ─────┐      ┌─────
+         *       ┌─┼────┐ │
+         *       └─┼────┘ │
+         *    ─────┘      └─────
+         */
+        setBounds(true,    80, -100, -2, 2, b1);
+        setBounds(false, -120,   50, -1, 1, b2);
+        if (union) {
+            λbgn =   80;
+            λend =   50;
+        } else {
+            λbgn = -120;
+            λend = -100;
+        }
+        assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
+        /*
          *    ────┐  ┌────
          *     ┌──┼──┼─┐
          *     └──┼──┼─┘
@@ -178,38 +240,81 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
          */
         setBounds(true,    80, -100, -2, 2, b1);
         setBounds(false, -120,   90, -1, 1, b2);
-        assertAddEquals( -180,  180, -2, 2, b1, b2);
+        if (union) {
+            λbgn = -180;
+            λend =  180;
+        } else {
+            // Intersection unchanged.
+        }
+        assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
         /*
-         * Anti-meridian spanning in both boxes.
-         * The second case shall result in a box spanning the whole world.
-         *
-         *    ────┐  ┌────           ────┐  ┌────
-         *    ──┐ │  │ ┌──    and    ────┼──┼─┐┌─
-         *    ──┘ │  │ └──           ────┼──┼─┘└─
-         *    ────┘  └────           ────┘  └────
+         *    ────┐  ┌────
+         *    ──┐ │  │ ┌──
+         *    ──┘ │  │ └──
+         *    ────┘  └────
          */
-        setBounds(true,   80, -100, -1, 1, b1);
-        setBounds(true,   90, -120, -2, 2, b2);
-        assertAddEquals(  80, -100, -2, 2, b1, b2);
-        setBounds(true,  100,   90, -1, 1, b2);
-        assertAddEquals(-180,  180, -2, 2, b1, b2);
+        setBounds(true, 80, -100, -1, 1, b1);
+        setBounds(true, 90, -120, -2, 2, b2);
+        if (union) {
+            λbgn =   80;
+            λend = -100;
+        } else {
+            λbgn =   90;
+            λend = -120;
+        }
+        assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
+        /*
+         *    ────┐  ┌────
+         *    ────┼──┼─┐┌─
+         *    ────┼──┼─┘└─
+         *    ────┘  └────
+         */
+        setBounds(true,  80, -100, -2, 2, b1);
+        setBounds(true, 100,   90, -1, 1, b2);
+        if (union) {
+            λbgn =  -180;
+            λend =   180;
+        } else {
+            λbgn =  100;
+            λend = -100;
+        }
+        assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
+        /*
+         *    ────┐          ┌────
+         *        │  ┌────┐  │
+         *        │  └────┘  │
+         *    ────┘          └────
+         */
+        setBounds(true,  120, -110, -1, 1, b1);
+        setBounds(false, 100,  112, -2, 2, b2);
+        if (union) {
+            λbgn =  100;
+            λend = -110;
+            assertOperationEquals(union, λbgn, λend, φmin,  φmax, b1, b2);
+        } else {
+            applyOperation(union, b1, b2);
+            assertEquals("Expected empty box", b1.getEastBoundLongitude(), b1.getWestBoundLongitude(), STRICT);
+        }
     }
 
     /**
-     * Asserts that the call to {@code b1.add(b2)} and {@code b2.add(b1)} is strictly equals to the given values.
-     * This method tests also with horizontally flipped boxes, and tests with interchanged boxes ({@code b1.add(b2)}).
-     * After this method call, the two boxes are equal to the given values.
+     * Asserts that the result of applying the {@code add} or {@code intersect} operation on {@code b1}
+     * is equals to the given values. This method tests also with horizontally flipped boxes, and tests
+     * with interchanged boxes.
+     *
+     * @param union {@code true} for {@code b1.add(b2)}, or {@code false} for {@code b1.intersect(b2)}.
      */
-    private static void assertAddEquals(final double λbgn, final double λend,
-                                        final double φmin, final double φmax,
-                                        final DefaultGeographicBoundingBox b1,
-                                        final DefaultGeographicBoundingBox b2)
+    private static void assertOperationEquals(final boolean union,
+            final double λbgn, final double λend,
+            final double φmin, final double φmax,
+            final DefaultGeographicBoundingBox b1,
+            final DefaultGeographicBoundingBox b2)
     {
         final double westBoundLongitude = b1.getWestBoundLongitude();
         final double eastBoundLongitude = b1.getEastBoundLongitude();
         final double southBoundLatitude = b1.getSouthBoundLatitude();
         final double northBoundLatitude = b1.getNorthBoundLatitude();
-        b1.add(b2);
+        applyOperation(union, b1, b2);
         assertBoxEquals(λbgn, λend, φmin, φmax, b1);
         /*
          * The above tested the boxes as given in argument to this method. Now test again,
@@ -218,22 +323,40 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
          */
         flipHorizontally(b2);
         b1.setBounds(-eastBoundLongitude, -westBoundLongitude, southBoundLatitude, northBoundLatitude);
-        b1.add(b2);
+        applyOperation(union, b1, b2);
         assertBoxEquals(-λend, -λbgn, φmin, φmax, b1);
         /*
          * Reset the boxes to there initial state, then test again with the two boxes interchanged.
-         * The consequence for the implementation is not as smetric than the above test, so there
+         * The consequence for the implementation is not as symetric than the above test, so there
          * is more risk of failure here.
          */
         flipHorizontally(b2);
         b1.setBounds(westBoundLongitude, eastBoundLongitude, southBoundLatitude, northBoundLatitude);
-        b2.add(b1);
+        applyOperation(union, b2, b1);
         assertBoxEquals(λbgn, λend, φmin, φmax, b2);
         /*
          * Following should be equivalent to b1.setBounds(b2), tested opportunistically.
          */
-        b1.add(b2);
+        applyOperation(union, b1, b2);
         assertBoxEquals(λbgn, λend, φmin, φmax, b1);
         assertEquals(b1, b2);
+    }
+
+    /**
+     * Applies the given operation on the given bounding boxes.
+     * The operation is invoked on {@code b1}.
+     *
+     * @param union {@code true} for {@code b1.add(b2)}, or {@code false} for {@code b1.intersect(b2)}.
+     */
+    private static void applyOperation(final boolean union,
+            final DefaultGeographicBoundingBox b1,
+            final DefaultGeographicBoundingBox b2)
+    {
+        assertNotSame(b1, b2);
+        if (union) {
+            b1.add(b2);
+        } else {
+            b1.intersect(b2);
+        }
     }
 }

@@ -629,16 +629,23 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
         {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1, "inclusion"));
         }
-        final double λmin = box.getWestBoundLongitude();
-        final double λmax = box.getEastBoundLongitude();
-        final double φmin = box.getSouthBoundLatitude();
-        final double φmax = box.getNorthBoundLatitude();
+        double λmin = box.getWestBoundLongitude();
+        double λmax = box.getEastBoundLongitude();
+        double φmin = box.getSouthBoundLatitude();
+        double φmax = box.getNorthBoundLatitude();
+        final int status = denormalize(λmin, λmax);
+        switch (status) {
+            case -1: λmin -= Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
+            case +1: λmax += Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
+        }
         if (λmin > westBoundLongitude) westBoundLongitude = λmin;
         if (λmax < eastBoundLongitude) eastBoundLongitude = λmax;
         if (φmin > southBoundLatitude) southBoundLatitude = φmin;
         if (φmax < northBoundLatitude) northBoundLatitude = φmax;
-        if (westBoundLongitude > eastBoundLongitude) {
-            westBoundLongitude = eastBoundLongitude = 0.5 * (westBoundLongitude + eastBoundLongitude);
+        if (status != 3) {
+            if (westBoundLongitude > eastBoundLongitude) {
+                westBoundLongitude = eastBoundLongitude = 0.5 * (westBoundLongitude + eastBoundLongitude);
+            }
         }
         if (southBoundLatitude > northBoundLatitude) {
             southBoundLatitude = northBoundLatitude = 0.5 * (southBoundLatitude + northBoundLatitude);
