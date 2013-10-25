@@ -27,6 +27,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
@@ -211,6 +212,8 @@ public enum GeodeticObjects {
      *   <tr><th>Semi-minor axis length:</th>  <td>6371007 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
+     *
+     * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */
     SPHERE((short) 7048);
 

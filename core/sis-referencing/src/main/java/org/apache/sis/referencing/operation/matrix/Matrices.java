@@ -862,12 +862,13 @@ public final class Matrices extends Static {
     public static String toString(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
-        final String[]  elements            = new String [numCol * numRow];
-        final boolean[] noFractionDigits    = new boolean[numCol * numRow];
-        final boolean[] hasDecimalSeparator = new boolean[numCol];
-        final int[] maximumFractionDigits   = new int    [numCol];
-        final int[] widthBeforeFraction     = new int    [numCol]; // spacing + ('-') + integerDigits + '.'
-        final int[] columnWidth             = new int    [numCol];
+        final String[]  elements            = new String [numCol * numRow]; // String representation of matrix values.
+        final boolean[] noFractionDigits    = new boolean[numCol * numRow]; // Whether to remove the trailing ".0" for a given number.
+        final boolean[] hasDecimalSeparator = new boolean[numCol];          // Whether the column has at least one number where fraction digits are shown.
+        final byte[] maximumFractionDigits  = new byte   [numCol];          // The greatest amount of fraction digits found in a column.
+        final byte[] maximumPaddingZeros    = new byte   [numCol * numRow]; // Maximal amount of zeros that we can append before to exceed the IEEE 754 accuracy.
+        final byte[] widthBeforeFraction    = new byte   [numCol];          // Number of characters before the fraction digits: spacing + ('-') + integerDigits + '.'
+        final byte[] columnWidth            = new byte   [numCol];          // Total column width.
         int totalWidth = 1;
         /*
          * Create now the string representation of all matrix elements and measure the width
@@ -888,26 +889,39 @@ public final class Matrices extends Static {
                 if (value == -1 || value == 0 || value == +1) {
                     noFractionDigits[flatIndex] = true;
                     width = spacing + element.length() - 2; // The -2 is for ignoring the trailing ".0"
-                    widthBeforeFraction[i] = Math.max(widthBeforeFraction[i], width);
+                    widthBeforeFraction[i] = (byte) Math.max(widthBeforeFraction[i], width);
                 } else {
                     /*
-                     * All values other than ±0 and ±1. Store separately the width before and after
-                     * the decimal separator. The width before the separator contains the spacing.
+                     * All values other than ±0 and ±1. If the values is NaN or infinity (in which case there is
+                     * no decimal separator), give all spaces to the "before fraction" side for right-alignment.
                      */
                     int s = element.lastIndexOf('.');
-                    if (s >= 0) {
-                        s++; // After the separator.
-                        hasDecimalSeparator[i] = true;
-                        width = (widthBeforeFraction  [i] = Math.max(widthBeforeFraction  [i], spacing + s))
-                              + (maximumFractionDigits[i] = Math.max(maximumFractionDigits[i], element.length() - s));
-                    } else {
-                        // NaN or Infinity.
+                    if (s < 0) {
                         element = element.replace("Infinity", "∞");
                         width = spacing + element.length();
-                        widthBeforeFraction[i] = Math.max(widthBeforeFraction[i], width);
+                        widthBeforeFraction[i] = (byte) Math.max(widthBeforeFraction[i], width);
+                    } else {
+                        /*
+                         * All values other than ±0, ±1, NaN and infinity. We store separately the width before
+                         * and after the decimal separator. The width before the separator contains the spacing
+                         * between cells.
+                         */
+                        hasDecimalSeparator[i] = true;
+                        final int numFractionDigits = element.length() - ++s;
+                        width = (widthBeforeFraction  [i] = (byte) Math.max(widthBeforeFraction  [i], spacing + s))
+                              + (maximumFractionDigits[i] = (byte) Math.max(maximumFractionDigits[i], numFractionDigits));
+                        /*
+                         * If the number use exponential notation, we will not be allowed to append any zero.
+                         * Otherwise we will append some zeros for right-alignment, but without exceeding the
+                         * IEEE 754 'double' accuracy for not giving a false sense of precision.
+                         */
+                        if (element.indexOf('E') < 0) {
+                            final int accuracy = (int) Math.ceil(-Math.log10(Math.ulp(value)));
+                            maximumPaddingZeros[flatIndex] = (byte) (accuracy - numFractionDigits);
+                        }
                     }
                 }
-                columnWidth[i] = Math.max(columnWidth[i], width);
+                columnWidth[i] = (byte) Math.max(columnWidth[i], width);
                 elements[flatIndex] = element;
             }
             totalWidth += columnWidth[i];
@@ -935,18 +949,23 @@ public final class Matrices extends Static {
                     spaces = columnWidth[i] - width; // Number of spaces for right alignment (NaN or ∞ cases)
                 }
                 buffer.append(CharSequences.spaces(spaces)).append(element);
-                /*
-                 * Append trailing spaces for ±0 and ±1 values,
-                 * or trailing zeros for all other real values.
-                 */
-                s += maximumFractionDigits[i] - width;
-                if (noFractionDigits[flatIndex]) {
-                    buffer.setLength(buffer.length() - 2); // Erase the trailing ".0"
-                    buffer.append(CharSequences.spaces(s + 2));
-                } else {
-                    while (--s >= 0) {
-                        buffer.append('0');
+                if (s >= 0) {
+                    /*
+                     * Append trailing spaces for ±0 and ±1 values,
+                     * or trailing zeros for all other real values.
+                     */
+                    s += maximumFractionDigits[i] - width;
+                    if (noFractionDigits[flatIndex]) {
+                        buffer.setLength(buffer.length() - 2); // Erase the trailing ".0"
+                        s += 2;
+                    } else {
+                        int n = Math.min(s, maximumPaddingZeros[flatIndex]);
+                        s -= n;
+                        while (--n >= 0) {
+                            buffer.append('0');
+                        }
                     }
+                    buffer.append(CharSequences.spaces(s));
                 }
                 flatIndex++;
             }

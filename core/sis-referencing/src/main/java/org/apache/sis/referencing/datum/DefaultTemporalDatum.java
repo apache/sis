@@ -18,7 +18,6 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.datum.TemporalDatum;
@@ -78,18 +77,6 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * The date and time origin of this temporal datum.
      */
     private final long origin;
-
-    /**
-     * Creates a temporal datum from a name. This is a convenience constructor for
-     * {@link #DefaultTemporalDatum(Map, Date) DefaultTemporalDatum(Map, …)}
-     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property.
-     *
-     * @param name   The datum name.
-     * @param origin The date and time origin of this temporal datum.
-     */
-    public DefaultTemporalDatum(final String name, final Date origin) {
-        this(Collections.singletonMap(NAME_KEY, name), origin);
-    }
 
     /**
      * Creates a temporal datum from the given properties. The properties map is given

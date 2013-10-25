@@ -160,7 +160,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * @param actual    The SIS matrix to compare to JAMA.
      * @param tolerance The tolerance threshold, usually either {@link #STRICT} or {@link #TOLERANCE}.
      */
-    static void assertMatrixEquals(final Matrix expected, final MatrixSIS actual, final double tolerance) {
+    static void assertEqualsJAMA(final Matrix expected, final MatrixSIS actual, final double tolerance) {
         final int numRow = actual.getNumRow();
         final int numCol = actual.getNumCol();
         assertEquals("numRow", expected.getRowDimension(),    numRow);
@@ -184,7 +184,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * Asserts that the given matrix is equals to the given expected values, up to the given tolerance threshold.
      * This method compares the elements values in two slightly redundant ways.
      */
-    static void assertMatrixEquals(final double[] expected, final int numRow, final int numCol,
+    static void assertEqualsElements(final double[] expected, final int numRow, final int numCol,
             final MatrixSIS actual, final double tolerance)
     {
         assertEquals("numRow", numRow, actual.getNumRow());
@@ -227,7 +227,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
          * The JAMA constructor uses column-major array (FORTRAN convention), while SIS uses
          * row-major array. So we have to transpose the JAMA matrix after construction.
          */
-        assertMatrixEquals(new Matrix(elements, numCol).transpose(), matrix, STRICT);
+        assertEqualsJAMA(new Matrix(elements, numCol).transpose(), matrix, STRICT);
         assertArrayEquals("getElements", elements, matrix.getElements(), STRICT);
     }
 
@@ -249,14 +249,14 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         /*
          * End of initialization - now perform the actual test.
          */
-        assertMatrixEquals(reference, matrix, STRICT);
+        assertEqualsJAMA(reference, matrix, STRICT);
         for (int k=0; k<50; k++) {
             final int    j = random.nextInt(numRow);
             final int    i = random.nextInt(numCol);
             final double e = random.nextDouble() * 100;
             reference.set(j, i, e);
             matrix.setElement(j, i, e);
-            assertMatrixEquals(reference, matrix, STRICT);
+            assertEqualsJAMA(reference, matrix, STRICT);
         }
     }
 
@@ -343,7 +343,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
          * array. In other words, the JAMA matrix is already transposed from the SIS point of view.
          */
         matrix.transpose();
-        assertMatrixEquals(new Matrix(elements, numCol), matrix, STRICT);
+        assertEqualsJAMA(new Matrix(elements, numCol), matrix, STRICT);
     }
 
     /**
@@ -402,7 +402,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
              */
             final Matrix referenceResult = reference.times(referenceArg);
             final MatrixSIS matrixResult = matrix.multiply(matrixArg);
-            assertMatrixEquals(referenceResult, matrixResult, TOLERANCE);
+            assertEqualsJAMA(referenceResult, matrixResult, TOLERANCE);
         }
     }
 
@@ -442,7 +442,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
              */
             final Matrix referenceResult = reference.solve(referenceArg);
             final MatrixSIS matrixResult = matrix.solve(matrixArg);
-            assertMatrixEquals(referenceResult, matrixResult, SolverTest.TOLERANCE);
+            assertEqualsJAMA(referenceResult, matrixResult, SolverTest.TOLERANCE);
         }
     }
 
@@ -466,7 +466,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
                 continue; // To close to a singular matrix - search an other one.
             }
             final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
-            assertMatrixEquals(reference.inverse(), matrix.inverse(), TOLERANCE);
+            assertEqualsJAMA(reference.inverse(), matrix.inverse(), TOLERANCE);
         }
     }
 

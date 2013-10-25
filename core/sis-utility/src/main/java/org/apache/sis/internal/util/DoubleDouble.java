@@ -85,10 +85,10 @@ public final class DoubleDouble extends Number {
 
     /**
      * When computing <var>a</var> - <var>b</var> as a double-double (106 significand bits) value,
-     * if the amount of non-zero significand bits is equals or lower than that amount, consider the
-     * result as zero.
+     * if the amount of non-zero significand bits is equals or lower than {@code ZERO_THRESHOLD+1},
+     * consider the result as zero.
      */
-    private static final int ZERO_THRESHOLD = 3;
+    private static final int ZERO_THRESHOLD = 2;
 
     /**
      * The split constant used as part of multiplication algorithms. The split algorithm is as below
@@ -144,6 +144,7 @@ public final class DoubleDouble extends Number {
          0.9,                                       // Degrees to gradians
          0.9144,                                    // Yard to metres
          1.111111111111111111111111111111111,       // Gradian to degrees
+         1.414213562373095048801688724209698,       // √2
          1.570796326794896619231321691639751,       // π/2
          1.8288,                                    // Fathom to metres
          2.356194490192344928846982537459627,       // π * 3/4
@@ -183,6 +184,7 @@ public final class DoubleDouble extends Number {
         /*  0.9       */ -2.2204460492503132E-17,
         /*  0.9144    */  9.414691248821328E-18,
         /*  1.111111… */ -4.9343245538895844E-17,
+        /*  1.414213… */ -9.667293313452913E-17,
         /*  1.570796… */  6.123233995736766E-17,
         /*  1.8288    */  1.8829382497642655E-17,
         /*  2.356194… */  9.184850993605148E-17,
@@ -210,7 +212,30 @@ public final class DoubleDouble extends Number {
     public DoubleDouble() {
     }
 
-    /** Returns {@link #value}. */
+    /**
+     * Creates a new value initialized to the given value and error.
+     * It is caller's responsibility to ensure that the (value, error) pair is normalized.
+     *
+     * @param value The initial value.
+     * @param error The initial error.
+     */
+    public DoubleDouble(final double value, final double error) {
+        this.value = value;
+        this.error = error;
+        assert !(Math.abs(error) >= Math.ulp(value)) : this; // Use ! for being tolerant to NaN.
+    }
+
+    /**
+     * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
+     * from angular degrees to radians.
+     *
+     * @return An instance initialized to the 0.01745329251994329576923690768488613 value.
+     */
+    public static DoubleDouble createDegreesToRadians() {
+        return new DoubleDouble(0.01745329251994329576923690768488613, 2.9486522708701687E-19);
+    }
+
+    /** @return {@link #value}. */
     @Override public double doubleValue() {return value;}
     @Override public float  floatValue()  {return (float) value;}
     @Override public long   longValue()   {return Math.round(value);}
@@ -434,7 +459,7 @@ public final class DoubleDouble extends Number {
              * The number of significand bits (mantissa) in the IEEE 'double' representation is 52,
              * not counting the hidden bit. So estimate the accuracy of the double-double number as
              * the accuracy of the 'double' value (which is 1 ULP) scaled as if we had 52 additional
-             * significand bits (we ignore some more bits if ZERO_THRESHOLD is greater than 1).
+             * significand bits (we ignore some more bits if ZERO_THRESHOLD is greater than 0).
              * If the error is not greater than that value, then assume that it is not significant.
              */
             if (Math.abs(error) <= Math.scalb(Math.ulp(otherValue), ZERO_THRESHOLD - Numerics.SIGNIFICAND_SIZE)) {
@@ -698,11 +723,33 @@ public final class DoubleDouble extends Number {
     /**
      * Sets this double-double value to its square root.
      *
-     * @todo This method is not yet implemented with double-double precision.
+     * {@section Implementation}
+     * This method searches for a {@code (r + ε)} value where:
+     *
+     * <blockquote>(r + ε)²  =  {@linkplain #value} + {@linkplain #error}</blockquote>
+     *
+     * If we could compute {@code r = sqrt(value + error)} with enough precision, then ε would be 0.
+     * But with the {@code double} type, we can only estimate {@code r ≈ sqrt(value)}. However, since
+     * that <var>r</var> value should be close to the "true" value, then ε should be small.
+     *
+     * <blockquote>value + error  =  (r + ε)²  =  r² + 2rε + ε²</blockquote>
+     *
+     * Neglecting ε² on the assumption that |ε| ≪ |r|:
+     *
+     * <blockquote>value + error  ≈  r² + 2rε</blockquote>
+     *
+     * Isolating ε:
+     *
+     * <blockquote>ε  ≈  (value + error - r²) / (2r)</blockquote>
      */
     public void sqrt() {
-        value = Math.sqrt(value);
-        error = 0;
+        final double thisValue = this.value;
+        final double thisError = this.error;
+        double r = Math.sqrt(thisValue);
+        setToProduct(r, r);
+        subtract(thisValue, thisError);
+        divide(-2*r, 0); // Multiplication by 2 does not cause any precision lost.
+        setToQuickSum(r, value);
     }
 
     /**

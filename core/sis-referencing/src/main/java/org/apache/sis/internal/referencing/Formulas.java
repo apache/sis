@@ -21,6 +21,7 @@ import org.apache.sis.measure.Latitude;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
+import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
 
 
 /**
@@ -52,7 +53,7 @@ public final class Formulas extends Static {
      * @see #LINEAR_TOLERANCE
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
      */
-    public static final double ANGULAR_TOLERANCE = LINEAR_TOLERANCE / (1852 * 60);
+    public static final double ANGULAR_TOLERANCE = LINEAR_TOLERANCE / (NAUTICAL_MILE * 60);
 
     /**
      * Do not allow instantiation of this class.

@@ -39,9 +39,12 @@ import org.apache.sis.internal.jdk7.Objects;
 
 /**
  * Parameters for a geographic transformation between two datum.
- * The Bursa Wolf parameters shall be applied to geocentric coordinates,
+ * For an explanation of Bursa-Wolf parameters purpose, see the <cite>Bursa-Wolf parameters</cite>
+ * section of {@link DefaultGeodeticDatum} class javadoc.
+ *
+ * <p>The Bursa-Wolf parameters shall be applied to geocentric coordinates,
  * where the <var>X</var> axis points towards the Greenwich Prime Meridian,
- * the <var>Y</var> axis points East, and the <var>Z</var> axis points North.
+ * the <var>Y</var> axis points East, and the <var>Z</var> axis points North.</p>
  *
  * {@note The upper case letters are intentional. By convention, (<var>X</var>, <var>Y</var>, <var>Z</var>)
  *        stand for <cite>geocentric</cite> coordinates while (<var>x</var>, <var>y</var>, <var>z</var>)
@@ -68,6 +71,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * <center><b>Geocentric coordinates transformation</b></center>
  * <center>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
  *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)</center>
+ * <center><font size="-1">(ignoring unit conversions)</font></center>
  *
  * <p><math display="block" alttext="MathML capable browser required">
  *   <mfenced open="[" close="]">
@@ -78,7 +82,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *     </mtable>
  *   </mfenced>
  *   <mo>=</mo>
- *   <mi>dS</mi>
+ *   <mo>(</mo><mn>1</mn><mo>+</mo><mi>dS</mi><mo>)</mo>
  *   <mo>⋅</mo>
  *   <mfenced open="[" close="]">
  *     <mtable>
@@ -142,6 +146,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
  * @module
+ *
+ * @see DefaultGeodeticDatum#getBursaWolfParameters()
  */
 @Immutable
 public class BursaWolfParameters extends FormattableObject implements Serializable {
@@ -258,7 +264,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * @param  targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
      * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
      *
-     * @see #getAffineTransform()
+     * @see #getPositionVectorTransformation(boolean)
      */
     public BursaWolfParameters(final Matrix matrix, final double tolerance, final GeodeticDatum targetDatum)
             throws IllegalArgumentException
@@ -307,18 +313,19 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
 
     /**
      * Returns {@code true} if the {@linkplain #targetDatum target datum} is equals (at least on computation purpose)
-     * to the WGS84 datum. This method may conservatively returns {@code false} if the specified datum is uncertain.
+     * to the WGS84 datum. If the datum is unspecified, then this method returns {@code true} since WGS84 is the only
+     * datum supported by the WKT 1 format, and is what users often mean.
      *
      * @return {@code true} if the given datum is equal to WGS84 for computational purpose.
      */
     final boolean isToWGS84() {
-        return (targetDatum != null) &&
+        return (targetDatum == null) ||
                 (IdentifiedObjects.nameMatches(targetDatum, "WGS 84") ||
                  IdentifiedObjects.nameMatches(targetDatum, "WGS84"));
     }
 
     /**
-     * Returns {@code true} if this Bursa Wolf parameters performs no operation.
+     * Returns {@code true} if this Bursa-Wolf parameters performs no operation.
      * This is true when all parameters are set to zero.
      *
      * @return {@code true} if the parameters describe no operation.
@@ -330,7 +337,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     }
 
     /**
-     * Returns {@code true} if this Bursa Wolf parameters contains only translation terms.
+     * Returns {@code true} if this Bursa-Wolf parameters contains only translation terms.
      *
      * @return {@code true} if the parameters describe to a translation only.
      */
@@ -339,7 +346,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     }
 
     /**
-     * Returns an affine transform that can be used to define this Bursa Wolf parameters.
+     * Returns the position vector transformation (geocentric domain) as an affine transform.
      * The formula is as below, where {@code R} is a conversion factor from arc-seconds to radians:
      *
      * <blockquote><pre> R = toRadians(1″)
@@ -352,19 +359,28 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * └    ┘    └                               ┘  └   ┘</pre></blockquote>
      *
      * This affine transform can be applied on <strong>geocentric</strong> coordinates.
+     * This is identified as operation method 1033 in the EPSG database.
      *
-     * @return An affine transform created from the parameters.
+     * {@section Inverse transformation}
+     * The inverse transformation can be computed by reversing the sign of the 7 parameters before to use
+     * them in the above matrix. Note that both the direct and inverse transformations are approximations.
+     * Multiplication of direct and inverse transformation matrices results in a matrix close to the identity,
+     * but not necessarily strictly equals.
      *
-     * @see DefaultGeodeticDatum#getAffineTransform(GeodeticDatum)
+     * @param  inverse If {@code true}, returns the inverse transformation instead.
+     * @return An affine transform in geocentric space created from this Bursa-Wolf parameters.
+     *
+     * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum)
      */
-    public Matrix getAffineTransform() {
-        final double  S = 1 + dS / PPM;
-        final double RS = TO_RADIANS * S;
+    public Matrix getPositionVectorTransformation(final boolean inverse) {
+        final double sgn = inverse ? -1 : +1;
+        final double   S = 1 + sgn*dS / PPM;
+        final double  RS = sgn*TO_RADIANS * S;
         return new Matrix4(
-                 S,  -rZ*RS,  +rY*RS,  tX,
-            +rZ*RS,       S,  -rX*RS,  tY,
-            -rY*RS,  +rX*RS,       S,  tZ,
-                 0,       0,       0,   1);
+                 S,  -rZ*RS,  +rY*RS,  sgn*tX,
+            +rZ*RS,       S,  -rX*RS,  sgn*tY,
+            -rY*RS,  +rX*RS,       S,  sgn*tZ,
+                 0,       0,       0,      1);
     }
 
     /**

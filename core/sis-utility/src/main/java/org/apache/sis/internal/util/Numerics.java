@@ -78,9 +78,9 @@ public final class Numerics extends Static {
 
     /**
      * Number of bits in the significand (mantissa) part of IEEE 754 {@code double} representation,
-     * including the hidden bit.
+     * <strong>not</strong> including the hidden bit.
      */
-    static final int SIGNIFICAND_SIZE = 53;
+    public static final int SIGNIFICAND_SIZE = 52;
 
     /**
      * A prime number used for hash code computation. Value 31 is often used because
