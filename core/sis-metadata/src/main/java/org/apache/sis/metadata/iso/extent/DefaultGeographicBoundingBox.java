@@ -563,11 +563,20 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     }
 
     /**
-     * Adds a geographic bounding box to this box. If the {@linkplain #getInclusion() inclusion}
-     * status is the same for this box and the box to be added, then the resulting bounding box
-     * is the union of the two boxes. If the inclusion status are opposite (<cite>exclusion</cite>),
-     * then this method attempt to exclude some area of specified box from this box.
-     * The resulting bounding box is smaller if the exclusion can be performed without ambiguity.
+     * Adds a geographic bounding box to this box.
+     * This method behavior depends on whether the bounding boxes encompass an area covered by the data
+     * (<cite>inclusion</cite>) or an area where data is not present (<cite>exclusion</cite>):
+     *
+     * <ul>
+     *   <li>If the {@linkplain #getInclusion() inclusion} status is the same for this box and the box to be added,
+     *       then the resulting bounding box is the union of the two boxes.</li>
+     *   <li>If the inclusion/exclusion status are opposite, then this method attempts to exclude some area
+     *       of the specified box from this box. The resulting bounding box is smaller if the exclusion can
+     *       be performed without ambiguity.</li>
+     * </ul>
+     *
+     * In both cases, if either this box or the specified box has {@linkplain Double#NaN NaN} bounds,
+     * then the corresponding bounds of the result will bet set to NaN.
      *
      * @param box The geographic bounding box to add to this box.
      */
@@ -584,24 +593,24 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
          */
         final boolean i1 = MetadataUtilities.getInclusion(this.getInclusion());
         final boolean i2 = MetadataUtilities.getInclusion(box. getInclusion());
-        final int status = denormalize(λmin, λmax);
+        final int status = denormalize(λmin, λmax); // Must be after call to getInclusion().
         switch (status) {
             case -1: λmin -= Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
             case +1: λmax += Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
         }
         if (i1 == i2) {
-            if (λmin < westBoundLongitude) westBoundLongitude = λmin;
-            if (λmax > eastBoundLongitude) eastBoundLongitude = λmax;
-            if (φmin < southBoundLatitude) southBoundLatitude = φmin;
-            if (φmax > northBoundLatitude) northBoundLatitude = φmax;
+            westBoundLongitude = Math.min(westBoundLongitude, λmin);
+            eastBoundLongitude = Math.max(eastBoundLongitude, λmax);
+            southBoundLatitude = Math.min(southBoundLatitude, φmin);
+            northBoundLatitude = Math.max(northBoundLatitude, φmax);
         } else {
             if (φmin <= southBoundLatitude && φmax >= northBoundLatitude) {
-                if (λmin > westBoundLongitude) westBoundLongitude = λmin;
-                if (λmax < eastBoundLongitude) eastBoundLongitude = λmax;
+                westBoundLongitude = Math.max(westBoundLongitude, λmin);
+                eastBoundLongitude = Math.min(eastBoundLongitude, λmax);
             }
             if (λmin <= westBoundLongitude && λmax >= eastBoundLongitude) {
-                if (φmin > southBoundLatitude) southBoundLatitude = φmin;
-                if (φmax < northBoundLatitude) northBoundLatitude = φmax;
+                southBoundLatitude = Math.max(southBoundLatitude, φmin);
+                northBoundLatitude = Math.min(northBoundLatitude, φmax);
             }
         }
         if (status == 3) {
@@ -616,6 +625,11 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     /**
      * Sets this bounding box to the intersection of this box with the specified one.
      * The {@linkplain #getInclusion() inclusion} status must be the same for both boxes.
+     *
+     * <p>If there is no intersection between the two bounding boxes, then this method sets
+     * both longitudes and/or both latitudes to {@linkplain Double#NaN NaN}. If either this
+     * box or the specified box has NaN bounds, then the corresponding bounds of the
+     * intersection result will bet set to NaN.</p>
      *
      * @param box The geographic bounding box to intersect with this box.
      * @throws IllegalArgumentException If the inclusion status is not the same for both boxes.
@@ -638,17 +652,17 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
             case -1: λmin -= Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
             case +1: λmax += Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
         }
-        if (λmin > westBoundLongitude) westBoundLongitude = λmin;
-        if (λmax < eastBoundLongitude) eastBoundLongitude = λmax;
-        if (φmin > southBoundLatitude) southBoundLatitude = φmin;
-        if (φmax < northBoundLatitude) northBoundLatitude = φmax;
+        westBoundLongitude = Math.max(westBoundLongitude, λmin);
+        eastBoundLongitude = Math.min(eastBoundLongitude, λmax);
+        southBoundLatitude = Math.max(southBoundLatitude, φmin);
+        northBoundLatitude = Math.min(northBoundLatitude, φmax);
         if (status != 3) {
             if (westBoundLongitude > eastBoundLongitude) {
-                westBoundLongitude = eastBoundLongitude = 0.5 * (westBoundLongitude + eastBoundLongitude);
+                westBoundLongitude = eastBoundLongitude = Double.NaN;
             }
         }
         if (southBoundLatitude > northBoundLatitude) {
-            southBoundLatitude = northBoundLatitude = 0.5 * (southBoundLatitude + northBoundLatitude);
+            southBoundLatitude = northBoundLatitude = Double.NaN;
         }
         normalize();
     }
