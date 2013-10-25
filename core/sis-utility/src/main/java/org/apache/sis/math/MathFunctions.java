@@ -22,13 +22,14 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.DoubleDouble;
 
 import static java.lang.Float.intBitsToFloat;
 import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
 import static java.lang.Double.doubleToRawLongBits;
-import org.apache.sis.internal.util.DoubleDouble;
 import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
+import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
 
 
 /**
@@ -64,11 +65,31 @@ import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
  */
 public final class MathFunctions extends Static {
     /**
-     * The square root of 2, which is {@value}.
+     * The square root of 2, which is approximated by {@value}.
      *
      * @see Math#sqrt(double)
      */
     public static final double SQRT_2 = 1.4142135623730951;
+
+    /**
+     * The logarithm of 2 in base 10, which is approximated by {@value}.
+     *
+     * @see Math#log10(double)
+     * @see #getExponent(double)
+     *
+     * @since 0.4
+     */
+    public static final double LOG10_2 = 0.3010299956639812;
+
+    /**
+     * The greatest power of 10 such as {@code Math.pow(10, E10_FOR_ZERO) == 0}.
+     * This is the exponent in {@code parseDouble("1E-324")} &lt; {@link Double#MIN_VALUE},
+     * which is stored as zero because non-representable as a {@code double} value.
+     * The next power, {@code parseDouble("1E-323")}, is a non-zero {@code double} value.
+     *
+     * @see Double#MIN_VALUE
+     */
+    static final int E10_FOR_ZERO = -324;
 
     /**
      * Table of some integer powers of 10. Used for faster computation in {@link #pow10(int)}.
@@ -219,19 +240,29 @@ public final class MathFunctions extends Static {
      *
      * <p>Special cases:</p>
      * <ul>
-     *   <li>If {@code accuracy} is 0, {@link Double#NaN NaN} or infinity,
-     *       then this method returns 0.</li>
+     *   <li>If {@code accuracy} is {@link Double#NaN NaN} or infinity, then this method returns 0
+     *       since those values are not represented by decimal digits.</li>
+     *
+     *   <li>If {@code accuracy} is 0, then this method returns 324 since 10<sup>-324</sup> is the first power of 10
+     *       smaller than the minimal strictly positive {@code double} value ({@value java.lang.Double#MIN_VALUE}).
+     *
+     *       {@note The above value can be understood in an other way: if the first 324 fraction digits are zero,
+     *              then the IEEE <code>double</code> value is guaranteed to be rounded to exactly 0 no matter
+     *              what the next fraction digits are.}</li>
+     *
      *   <li>If {@code accuracy} is greater than 1, then this method returns
      *       the number of "unnecessary" trailing zeros as a negative number.
-     *       For example {@code fractionDigitsForDelta(100, …)} returns -2.</li>
+     *
+     *       {@example <code>fractionDigitsForDelta(100, …)</code> returns -2.}</li>
+     *
      *   <li>If the first non-zero digits of {@code accuracy} are equal or greater than 95
      *       (e.g. 0.00099) and the {@code strict} argument is {@code true}, then this method
      *       increases the number of needed fraction digits in order to prevent the rounded
      *       number to be collapsed into the next integer value.
      *
      *       {@example
-     *       If {@code accuracy} is 0.95, then a return value of 1 is not sufficient since the
-     *       rounded value of 0.95 with 1 fraction digit would be 1.0. Such value would be a
+     *       If <code>accuracy</code> is 0.95, then a return value of 1 is not sufficient since
+     *       the rounded value of 0.95 with 1 fraction digit would be 1.0. Such value would be a
      *       violation of this method contract since the difference between 0 and that formatted
      *       value would be greater than the accuracy. Note that this is not an artificial rule;
      *       this is related to the fact that 0.9999… is mathematically strictly equals to 1.}</li>
@@ -274,17 +305,121 @@ public final class MathFunctions extends Static {
         } else { // 'x' is out of range or NaN.
             final double y = Math.log10(accuracy);
             if (Double.isInfinite(y)) {
-                return 0;
+                return (accuracy == 0) ? -E10_FOR_ZERO : 0;
             }
             i = -((int) Math.floor(y));
             scale = pow10(i);
         }
-        while ((accuracy *= scale) >= 9.5) {
-            i++; // The 0.…95 special case.
-            accuracy -= Math.floor(accuracy);
-            scale = 10;
+        if (strict) {
+            while ((accuracy *= scale) >= 9.5) {
+                i++; // The 0.…95 special case.
+                accuracy -= Math.floor(accuracy);
+                scale = 10;
+            }
         }
         return i;
+    }
+
+    /**
+     * Returns the number of significant fraction digits when formatting the given number in base 10.
+     * This method does <strong>not</strong> ignore trailing zeros.
+     * For example {@code fractionDigitsForValue(1.0)} returns 16,
+     * because the {@code double} format can store <i>almost</i> 16 decimal digits after 1.
+     *
+     * {@note We said <i>almost</i> because the very last digit may be able to store only a subset of the
+     *        [0 … 9] digits.}
+     *
+     * Invoking this method is equivalent to invoking <code>{@linkplain #fractionDigitsForDelta(double, boolean)
+     * fractionDigitsForDelta}(Math.{@linkplain Math#ulp(double) ulp}(value), false)</code>, except that it is
+     * potentially faster.
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>If {@code value} is {@link Double#NaN NaN} or infinity, then this method returns 0
+     *       since those values are not represented by decimal digits.</li>
+     *
+     *   <li>If {@code value} is 0, then this method returns 324 since
+     *       {@code Math.ulp(0)} = {@value java.lang.Double#MIN_VALUE}.</li>
+     * </ul>
+     *
+     * {@example This method is useful with <code>NumberFormat</code> for formatting all significant digits
+     *           of a <code>double</code> value, padding with trailing zeros if necessary, but no more than
+     *           necessary.}
+     *
+     * @param  value The value for which to get the number of significant digits.
+     * @return The number of significant digits (may be negative), or 0 if {@code value} is NaN or infinity.
+     *
+     * @see java.text.NumberFormat#setMinimumFractionDigits(int)
+     *
+     * @since 0.4
+     */
+    public static int fractionDigitsForValue(final double value) {
+        /*
+         * We really need Math.getExponent(value) here rather than MathFunctions.getExponent(value).
+         * What we actually want is MathFunctions.getExponent(Math.ulp(value)), but we get the same
+         * result more efficiently if we replace the call to Math.ulp(double) by a SIGNIFICAND_SIZE
+         * subtraction in the exponent, provided that the exponent has NOT been corrected for sub-
+         * normal numbers (in order to reproduce the Math.ulp behavior).
+         */
+        final int exponent = Math.getExponent(value);
+        if (exponent <= Double.MAX_EXPONENT) { // Exclude NaN and ±∞ cases.
+            return (int) -Math.floor(LOG10_2 * (exponent - SIGNIFICAND_SIZE));
+        }
+        return 0;
+    }
+
+    /**
+     * Returns the unbiased exponent used in the representation of a {@code double}, with correction for
+     * sub-normal numbers. This method is related to {@link Math#getExponent(double)} in the following ways:
+     *
+     * <ul>
+     *   <li>For NaN and all values equal or greater than {@link Double#MIN_NORMAL} in magnitude (including
+     *       infinities), this method returns results that are identical to {@code Math.getExponent(double)}.</li>
+     *   <li>For values smaller than {@link Double#MIN_NORMAL} in magnitude (including zero), the correction
+     *       for sub-normal numbers results in return values smaller than what {@code Math.getExponent(double)}
+     *       would return.</li>
+     * </ul>
+     *
+     * Special cases:
+     * <ul>
+     *   <li>If the argument is NaN or infinite, then the result is {@link Double#MAX_EXPONENT} + 1.</li>
+     *   <li>If the argument is {@link Double#MAX_VALUE},  then the result is {@value java.lang.Double#MAX_EXPONENT}.</li>
+     *   <li>If the argument is {@link Double#MIN_NORMAL}, then the result is {@value java.lang.Double#MIN_EXPONENT}.</li>
+     *   <li>If the argument is {@link Double#MIN_VALUE},  then the result is -1074.</li>
+     *   <li>If the argument is zero, then the result is -1075.</li>
+     * </ul>
+     *
+     * {@section Identities}
+     * For any <var>p</var> values in the [-1075 … 1024] range and <var>value</var> = 2<sup>p</sup>:
+     * <ul>
+     *   <li><code>getExponent(Math.scalb(1.0, p)) == p</code></li>
+     *   <li><code>Math.scalb(1.0, getExponent(value)) == value</code></li>
+     *   <li><code>Math.floor({@linkplain #LOG10_2} * getExponent(value)) == Math.floor(Math.log10(value))</code></li>
+     * </ul>
+     *
+     * @param  value The value for which to get the exponent.
+     * @return The unbiased exponent, corrected for sub-normal numbers if needed.
+     *         Values will be in the [-1075 … 1024] range, inclusive.
+     *
+     * @see Math#getExponent(double)
+     * @see Math#scalb(double, int)
+     *
+     * @since 0.4
+     */
+    public static int getExponent(final double value) {
+        final long bits = doubleToRawLongBits(value);
+        int exponent = (int) ((bits >>> SIGNIFICAND_SIZE) & 0x7FFL);
+        if (exponent == 0) {
+            /*
+             * Number is sub-normal: there is no implicit 1 bit before the significand.
+             * We need to search for the position of the first real 1 bit, and fix the
+             * exponent accordingly.  Note that numberOfLeadingZeros(…) is relative to
+             * 64 bits while the significand size is only 52 bits. The last term below
+             * is for fixing this difference.
+             */
+            exponent -= Long.numberOfLeadingZeros(bits & ((1L << SIGNIFICAND_SIZE) - 1)) - (Long.SIZE - SIGNIFICAND_SIZE);
+        }
+        return exponent - Double.MAX_EXPONENT;
     }
 
     /**
@@ -388,9 +523,33 @@ public final class MathFunctions extends Static {
      *
      * @param  value The value to test.
      * @return {@code true} if the given value is positive, excluding negative zero.
+     *
+     * @see #isPositiveZero(double)
+     * @see #isNegative(double)
      */
     public static boolean isPositive(final double value) {
         return (doubleToRawLongBits(value) & SIGN_BIT_MASK) == 0 && !Double.isNaN(value);
+    }
+
+    /**
+     * Returns {@code true} if the given value is the positive zero ({@code +0.0}).
+     * This method returns {@code false} for the negative zero ({@code -0.0}).
+     * This method is equivalent to the following code, but potentially faster:
+     *
+     * {@preformat java
+     *   return (value == 0) && isPositive(value);
+     * }
+     *
+     * @param  value The value to test.
+     * @return {@code true} if the given value is +0.0 (not -0.0).
+     *
+     * @see #isPositive(double)
+     * @see #isNegativeZero(double)
+     *
+     * @since 0.4
+     */
+    public static boolean isPositiveZero(final double value) {
+        return doubleToRawLongBits(value) == 0L;
     }
 
     /**
@@ -409,9 +568,33 @@ public final class MathFunctions extends Static {
      *
      * @param  value The value to test.
      * @return {@code true} if the given value is negative, including negative zero.
+     *
+     * @see #isNegativeZero(double)
+     * @see #isPositive(double)
      */
     public static boolean isNegative(final double value) {
         return (doubleToRawLongBits(value) & SIGN_BIT_MASK) != 0 && !Double.isNaN(value);
+    }
+
+    /**
+     * Returns {@code true} if the given value is the negative zero ({@code -0.0}).
+     * This method returns {@code false} for the positive zero ({@code +0.0}).
+     * This method is equivalent to the following code, but potentially faster:
+     *
+     * {@preformat java
+     *   return (value == 0) && isNegative(value);
+     * }
+     *
+     * @param  value The value to test.
+     * @return {@code true} if the given value is -0.0 (not +0.0).
+     *
+     * @see #isNegative(double)
+     * @see #isPositiveZero(double)
+     *
+     * @since 0.4
+     */
+    public static boolean isNegativeZero(final double value) {
+        return doubleToRawLongBits(value) == SIGN_BIT_MASK;
     }
 
     /**
@@ -529,9 +712,9 @@ public final class MathFunctions extends Static {
      * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
      */
     public static short sgn(short x) {
-        if (x > 0) return (short) +1;
-        if (x < 0) return (short) -1;
-        else       return (short)  0;
+        if (x > 0) return +1;
+        if (x < 0) return -1;
+        else       return  0;
     }
 
     /**
@@ -544,9 +727,9 @@ public final class MathFunctions extends Static {
      * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
      */
     public static byte sgn(byte x) {
-        if (x > 0) return (byte) +1;
-        if (x < 0) return (byte) -1;
-        else       return (byte)  0;
+        if (x > 0) return +1;
+        if (x < 0) return -1;
+        else       return  0;
     }
 
     /**

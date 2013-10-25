@@ -21,11 +21,13 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
+import static java.lang.Double.NaN;
+import static java.lang.Double.doubleToLongBits;
 import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link Angle} class.
+ * Tests the {@link Angle}, {@link Longitude} and {@link Latitude} classes.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
@@ -44,6 +46,7 @@ public final strictfp class AngleTest extends TestCase {
         assertEquals("45°30′N",       new Latitude (45.5).toString());
         assertEquals("45°30′E",       new Longitude(45.5).toString());
         assertEquals("45°30′56.25″E", new Longitude(45.515625).toString());
+        assertEquals("89°01′N",       new Latitude (89.01666666666667).toString());
 
         // Angle out of expected range.
         assertEquals( "720.0°E", new Longitude( 720).toString());
@@ -86,5 +89,39 @@ public final strictfp class AngleTest extends TestCase {
         assertEquals("5,5°N  ",   String.format(Locale.FRANCE, "%-7.5s", new Latitude(5.51)));
         assertEquals("N",         String.format(Locale.FRANCE,  "%1.1s", new Latitude(5.51)));
         assertEquals(" ",         String.format(Locale.FRANCE,  "%1.0s", new Latitude(5.51)));
+    }
+
+    /**
+     * Tests {@link Latitude#clamp(double)}.
+     */
+    @Test
+    public void testClamp() {
+        assertEquals( 45, Latitude.clamp( 45), 0);
+        assertEquals(-45, Latitude.clamp(-45), 0);
+        assertEquals( 90, Latitude.clamp( 95), 0);
+        assertEquals(-90, Latitude.clamp(-95), 0);
+        assertEquals(NaN, Latitude.clamp(NaN), 0);
+        assertEquals( 90, Latitude.clamp(Double.POSITIVE_INFINITY), 0);
+        assertEquals(-90, Latitude.clamp(Double.NEGATIVE_INFINITY), 0);
+        assertEquals(doubleToLongBits(+0.0), doubleToLongBits(Latitude.clamp(+0.0)));
+        assertEquals(doubleToLongBits(-0.0), doubleToLongBits(Latitude.clamp(-0.0))); // Sign shall be preserved.
+    }
+
+    /**
+     * Tests {@link Longitude#normalize(double)}.
+     */
+    @Test
+    public void testNormalize() {
+        assertEquals( 120, Longitude.normalize( 120), 0);
+        assertEquals(-120, Longitude.normalize(-120), 0);
+        assertEquals(-160, Longitude.normalize( 200), 0);
+        assertEquals( 160, Longitude.normalize(-200), 0);
+        assertEquals(-180, Longitude.normalize(-180), 0);
+        assertEquals(-180, Longitude.normalize( 180), 0); // Upper value shall be exclusive.
+        assertEquals(NaN,  Longitude.normalize( NaN), 0);
+        assertEquals(NaN,  Longitude.normalize(Double.POSITIVE_INFINITY), 0);
+        assertEquals(NaN,  Longitude.normalize(Double.NEGATIVE_INFINITY), 0);
+        assertEquals(doubleToLongBits(+0.0), doubleToLongBits(Longitude.normalize(+0.0)));
+        assertEquals(doubleToLongBits(-0.0), doubleToLongBits(Longitude.normalize(-0.0))); // Sign shall be preserved.
     }
 }

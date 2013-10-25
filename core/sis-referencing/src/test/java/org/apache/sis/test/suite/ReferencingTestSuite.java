@@ -47,6 +47,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.NamedIdentifierTest.class,
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
     org.apache.sis.referencing.AbstractReferenceSystemTest.class,
+    org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,

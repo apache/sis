@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -28,11 +27,8 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.referencing.GeodeticObjects;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.io.wkt.Formatter;
@@ -45,9 +41,36 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * Defines the location and precise orientation in 3-dimensional space of a defined ellipsoid
- * (or sphere) that approximates the shape of the earth. Used also for Cartesian coordinate
- * system centered in this ellipsoid (or sphere).
+ * Defines the location and orientation of an ellipsoid that approximates the shape of the earth.
+ * Geodetic datum are used together with ellipsoidal coordinate system, and also with Cartesian
+ * coordinate system centered in the ellipsoid (or sphere).
+ *
+ * {@section Bursa-Wolf parameters}
+ * One or many {@link BursaWolfParameters} can optionally be associated to each {@code DefaultGeodeticDatum} instance.
+ * This association is not part of the ISO 19111 model, but still a common practice (especially in older standards).
+ * Associating Bursa-Wolf parameters to geodetic datum is known as the <cite>early-binding</cite> approach.
+ * A recommended alternative, discussed below, is the <cite>late-binding</cite> approach.
+ *
+ * <p>There is different methods for transforming coordinates from one geodetic datum to an other datum,
+ * and Bursa-Wolf parameters are used with some of them. However different set of parameters may exist
+ * for the same pair of (<var>source</var>, <var>target</var>) datum, so it is often not sufficient to
+ * know those datum. The (<var>source</var>, <var>target</var>) pair of CRS are often necessary,
+ * sometime together with the geographic extent of the coordinates to transform.</p>
+ *
+ * <p>Apache SIS searches for datum shift methods (including Bursa-Wolf parameters) in the EPSG database when a
+ * {@link org.opengis.referencing.operation.CoordinateOperation} or a
+ * {@link org.opengis.referencing.operation.MathTransform} is requested for a pair of CRS.
+ * This is known as the <cite>late-binding</cite> approach.
+ * If a datum shift method is found in the database, it will have precedence over any {@code BursaWolfParameters}
+ * instance associated to this {@code DefaultGeodeticDatum}. Only if no datum shift method is found in the database,
+ * then the {@code BursaWolfParameters} associated to the datum may be used as a fallback.</p>
+ *
+ * <p>The Bursa-Wolf parameters association serves an other purpose: when a CRS is formatted in
+ * <cite>Well Known Text</cite> (WKT) format, the formatted string may contain a {@code TOWGS84[…]} element
+ * with the parameter values of the transformation to the WGS 84 datum. This element is provided as a help
+ * for other Geographic Information Systems that support only the <cite>early-binding</cite> approach.
+ * Apache SIS usually does not need the {@code TOWGS84} element, except as a fallback for datum that
+ * do not exist in the EPSG database.</p>
  *
  * {@section Creating new geodetic datum instances}
  * New instances can be created either directly by specifying all information to a factory method (choices 3
@@ -95,7 +118,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
 
     /**
      * The <code>{@value #BURSA_WOLF_KEY}</code> property for
-     * {@link #getAffineTransform(GeodeticDatum) datum shifts}.
+     * {@linkplain #getBursaWolfParameters(GeodeticDatum) Bursa-Wolf parameters}.
      */
     public static final String BURSA_WOLF_KEY = "bursaWolf";
 
@@ -117,22 +140,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     private final PrimeMeridian primeMeridian;
 
     /**
-     * Bursa Wolf parameters for datum shifts, or {@code null} if none.
+     * Bursa-Wolf parameters for datum shifts, or {@code null} if none.
      */
     private final BursaWolfParameters[] bursaWolf;
-
-    /**
-     * Creates a geodetic datum using the Greenwich prime meridian. This is a convenience constructor for
-     * {@link #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) DefaultGeodeticDatum(Map, …)}
-     * with a map containing only the {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} property
-     * and the {@link #getPrimeMeridian() prime meridian} fixed to Greenwich.
-     *
-     * @param name      The datum name.
-     * @param ellipsoid The ellipsoid.
-     */
-    public DefaultGeodeticDatum(final String name, final Ellipsoid ellipsoid) {
-        this(Collections.singletonMap(NAME_KEY, name), ellipsoid, GeodeticObjects.WGS84.primeMeridian());
-    }
 
     /**
      * Creates a geodetic datum from the given properties. The properties map is given
@@ -225,23 +235,25 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Returns all Bursa Wolf parameters specified in the {@code properties} map at construction time.
+     * Returns all Bursa-Wolf parameters specified in the {@code properties} map at construction time.
+     * For a discussion about what Bursa-Wolf parameters are, see the class javadpc.
      *
-     * @return The Bursa Wolf parameters, or an empty array if none.
+     * @return The Bursa-Wolf parameters, or an empty array if none.
      */
     public BursaWolfParameters[] getBursaWolfParameters() {
         return (bursaWolf != null) ? bursaWolf.clone() : EMPTY_ARRAY;
     }
 
     /**
-     * Returns Bursa Wolf parameters for a datum shift toward the specified target, or {@code null} if none.
+     * Returns Bursa-Wolf parameters for a datum shift toward the specified target, or {@code null} if none.
      * This method searches only for Bursa-Wolf parameters explicitly specified in the {@code properties} map
      * given at construction time. This method doesn't try to infer a set of parameters from indirect informations.
      * For example it does not try to inverse the parameters specified in the {@code target} datum if none were found
-     * in this datum. If a more elaborated search is wanted, use {@link #getAffineTransform(GeodeticDatum)} instead.
+     * in this datum.
+     * If a more elaborated search is wanted, use {@link #getPositionVectorTransformation(GeodeticDatum)} instead.
      *
      * @param  target The target geodetic datum.
-     * @return Bursa Wolf parameters from this datum to the given target datum, or {@code null} if none.
+     * @return Bursa-Wolf parameters from this datum to the given target datum, or {@code null} if none.
      */
     public BursaWolfParameters getBursaWolfParameters(final GeodeticDatum target) {
         if (bursaWolf != null) {
@@ -263,26 +275,21 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Returns a matrix that can be used to define a transformation to the specified datum.
+     * Returns the position vector transformation (geocentric domain) to the specified datum.
      * If no transformation path is found, then this method returns {@code null}.
+     * If non-null, then the representation is represented as an affine transform.
+     *
+     * {@note This is identified in the EPSG database as operation method 1033 -
+     *        <cite>Position Vector transformation (geocentric domain)</cite>.}
      *
      * @param  targetDatum The target datum.
-     * @return An affine transform from {@code this} to {@code target}, or {@code null} if none.
+     * @return An affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
      *
-     * @see BursaWolfParameters#getAffineTransform()
+     * @see BursaWolfParameters#getPositionVectorTransformation(boolean)
      */
-    public Matrix getAffineTransform(final GeodeticDatum targetDatum) {
+    public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum) {
         ensureNonNull("targetDatum", targetDatum);
-        try {
-            return getAffineTransform(this, targetDatum, null);
-        } catch (NoninvertibleMatrixException e) {
-            /*
-             * Should never happen, unless the user has overriden BursaWolfParameters.getAffineTransform()
-             * and create an invalid matrix. Returning 'null' is compliant with this method contract.
-             */
-            Logging.unexpectedException(DefaultGeodeticDatum.class, "getAffineTransform", e);
-            return null;
-        }
+        return getPositionVectorTransformation(this, targetDatum, null);
     }
 
     /**
@@ -295,14 +302,14 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *         This is used in order to avoid never-ending recursivity.
      * @return An affine transform from {@code source} to {@code target}, or {@code null} if none.
      */
-    private static Matrix getAffineTransform(final GeodeticDatum source, final GeodeticDatum target,
-            Set<GeodeticDatum> exclusion) throws NoninvertibleMatrixException
+    private static Matrix getPositionVectorTransformation(final GeodeticDatum source, final GeodeticDatum target,
+            Set<GeodeticDatum> exclusion)
     {
         final BursaWolfParameters[] sourceParam = bursaWolf(source);
         if (sourceParam != null) {
             for (final BursaWolfParameters candidate : sourceParam) {
                 if (deepEquals(target, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) {
-                    return candidate.getAffineTransform();
+                    return candidate.getPositionVectorTransformation(false);
                 }
             }
         }
@@ -314,7 +321,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (targetParam != null) {
             for (final BursaWolfParameters candidate : targetParam) {
                 if (deepEquals(source, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) {
-                    return MatrixSIS.castOrCopy(candidate.getAffineTransform()).inverse();
+                    return candidate.getPositionVectorTransformation(true);
                 }
             }
         }
@@ -336,9 +343,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                         }
                         if (exclusion.add(source)) {
                             if (exclusion.add(target)) {
-                                final Matrix step1 = getAffineTransform(source, sourceStep, exclusion);
+                                final Matrix step1 = getPositionVectorTransformation(source, sourceStep, exclusion);
                                 if (step1 != null) {
-                                    final Matrix step2 = getAffineTransform(targetStep, target, exclusion);
+                                    final Matrix step2 = getPositionVectorTransformation(targetStep, target, exclusion);
                                     if (step2 != null) {
                                         /*
                                          * MatrixSIS.multiply(MatrixSIS) is equivalent to AffineTransform.concatenate(…):
@@ -386,11 +393,11 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                     return deepEquals(getEllipsoid(),     that.getEllipsoid(),     mode) &&
                            deepEquals(getPrimeMeridian(), that.getPrimeMeridian(), mode);
                     /*
-                     * HACK: We do not consider Bursa Wolf parameters as a non-metadata field.
+                     * HACK: We do not consider Bursa-Wolf parameters as a non-metadata field.
                      *       This is needed in order to get equalsIgnoreMetadata(...) to returns
                      *       'true' when comparing the WGS84 constant in this class with a WKT
                      *       DATUM element with a TOWGS84[0,0,0,0,0,0,0] element. Furthermore,
-                     *       the Bursa Wolf parameters are not part of ISO 19111 specification.
+                     *       the Bursa-Wolf parameters are not part of ISO 19111 specification.
                      *       We don't want two CRS to be considered as different because one has
                      *       more of those transformation informations (which is nice, but doesn't
                      *       change the CRS itself).
