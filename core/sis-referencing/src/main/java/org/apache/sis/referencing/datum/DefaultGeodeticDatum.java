@@ -65,8 +65,8 @@ import java.util.Objects;
  * instance associated to this {@code DefaultGeodeticDatum}. Only if no datum shift method is found in the database,
  * then the {@code BursaWolfParameters} associated to the datum may be used as a fallback.</p>
  *
- * <p>The Bursa-Wolf parameters association serves an other purpose: when a CRS is formatted in
- * <cite>Well Known Text</cite> (WKT) format, the formatted string may contain a {@code TOWGS84[…]} element
+ * <p>The Bursa-Wolf parameters association serves an other purpose: when a CRS is formatted in the older
+ * <cite>Well Known Text</cite> (WKT 1) format, the formatted string may contain a {@code TOWGS84[…]} element
  * with the parameter values of the transformation to the WGS 84 datum. This element is provided as a help
  * for other Geographic Information Systems that support only the <cite>early-binding</cite> approach.
  * Apache SIS usually does not need the {@code TOWGS84} element, except as a fallback for datum that

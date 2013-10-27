@@ -73,16 +73,17 @@ import java.util.Objects;
  *
  * {@section Relationship with Envelope classes}
  * The {@link org.apache.sis.geometry} package provides various {@code Envelope} classes serving a simular purpose.
- * The main difference is that envelopes can be expressed in any Coordinate Reference System (for example using any
- * map projection), may have any number of dimensions, axes may have any orientation (some map are south-oriented)
+ * The main difference is that envelopes can be expressed in any {@linkplain org.apache.sis.referencing.crs.AbstractCRS
+ * Coordinate Reference System} (for example using any map projection), may have any number of dimensions, axes may have
+ * any {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() direction} (some maps are south-oriented)
  * and may use any units of measurement. By contrast, geographic bounding box are restricted to two-dimensional
  * geographic CRS with latitude and longitude in decimal degrees, inside the [-90 … +90]° and [-180 … +180]° range
- * respectively, increasing toward north and east respectively, and longitude measured from the Greenwich meridian.
- *
- * <p>However {@code GeographicBoundingBox} said nothing about the
+ * respectively, increasing toward north and east respectively, and longitude measured from the <cite>international
+ * reference meridian</cite> (Greenwich on Earth). However {@code GeographicBoundingBox} said nothing about the
  * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}. Consequently this bounding
  * box should be used only as a convenient way to give an <em>approximate</em> description of a location.
- * Users can assume a precision of about 0.01° for the latitude and longitude values in this class.</p>
+ * Users can assume a precision of about 0.01° for the latitude and longitude values in this class.
+ * If more precision is desired, an {@code Envelope} should be considered instead.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
