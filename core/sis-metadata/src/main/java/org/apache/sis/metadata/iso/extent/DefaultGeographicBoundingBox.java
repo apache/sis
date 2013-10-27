@@ -71,11 +71,24 @@ import java.util.Objects;
  * {@linkplain #getEastBoundLongitude() east bound longitude}, then the box spans the anti-meridian.
  * See {@linkplain org.apache.sis.geometry.GeneralEnvelope} for more information on anti-meridian spanning.
  *
+ * {@section Relationship with Envelope classes}
+ * The {@link org.apache.sis.geometry} package provides various {@code Envelope} classes serving a simular purpose.
+ * The main difference is that envelopes can be expressed in any Coordinate Reference System (for example using any
+ * map projection), may have any number of dimensions, axes may have any orientation (some map are south-oriented)
+ * and may use any units of measurement. By contrast, geographic bounding box are restricted to two-dimensional
+ * geographic CRS with latitude and longitude in decimal degrees, inside the [-90 … +90]° and [-180 … +180]° range
+ * respectively, increasing toward north and east respectively, and longitude measured from the Greenwich meridian.
+ *
+ * <p>However {@code GeographicBoundingBox} said nothing about the
+ * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}. Consequently this bounding
+ * box should be used only as a convenient way to give an <em>approximate</em> description of a location.
+ * Users can assume a precision of about 0.01° for the latitude and longitude values in this class.</p>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see org.apache.sis.geometry.GeneralEnvelope
