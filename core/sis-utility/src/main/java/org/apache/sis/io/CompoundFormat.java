@@ -391,7 +391,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             if (!Locale.ROOT.equals(locale)) {
                 format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, locale);
             } else {
-                format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.ROOT);
+                format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
             }
             format.setTimeZone(getTimeZone());
             return format;
@@ -405,6 +405,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
 
     /**
      * Returns a clone of this format.
+     *
+     * @return A clone of this format.
      */
     @Override
     public CompoundFormat<T> clone() {

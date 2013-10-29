@@ -195,12 +195,13 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final String text = format.format(identification.asTreeTable());
         assertMultilinesEquals(
             "Data identification\n" +
+            "  ├─Descriptive keywords\n" +
+            "  │   ├─Keyword (1 of 3)…………… Apple\n" +
+            "  │   ├─Keyword (2 of 3)…………… Orange\n" +
+            "  │   └─Keyword (3 of 3)…………… Kiwi\n" +
             "  ├─Topic category (1 of 3)…… Health\n" +
             "  ├─Topic category (2 of 3)…… Oceans\n" +
-            "  ├─Topic category (3 of 3)…… Test\n" +
-            "  └─Descriptive keywords\n" +
-            "      ├─Keyword (1 of 3)…………… Apple\n" +
-            "      ├─Keyword (2 of 3)…………… Orange\n" +
-            "      └─Keyword (3 of 3)…………… Kiwi\n", text);
+            "  └─Topic category (3 of 3)…… Test\n",
+            text);
     }
 }
