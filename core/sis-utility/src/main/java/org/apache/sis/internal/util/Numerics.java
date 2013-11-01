@@ -83,11 +83,10 @@ public final class Numerics extends Static {
     public static final int SIGNIFICAND_SIZE = 52;
 
     /**
-     * A prime number used for hash code computation. Value 31 is often used because
-     * some modern compilers can optimize {@code x*31} as {@code (x << 5) - x}
-     * (Josh Bloch, <cite>Effective Java</cite>).
+     * Number of bits in the significand (mantissa) part of IEEE 754 {@code float} representation,
+     * <strong>not</strong> including the hidden bit.
      */
-    private static final int PRIME_NUMBER = 31;
+    public static final int SIGNIFICAND_SIZE_OF_FLOAT = 23;
 
     /**
      * Do not allow instantiation of this class.
@@ -217,7 +216,12 @@ public final class Numerics extends Static {
      * @return An updated hash code value.
      */
     public static int hash(final float value, final int seed) {
-        return seed * PRIME_NUMBER + Float.floatToIntBits(value);
+        /*
+         * Multiplication by prime number produces better hash code distribution.
+         * Value 31 is often used because some modern compilers can optimize x*31
+         * as  (x << 5) - x    (Josh Bloch, Effective Java).
+         */
+        return 31*seed + Float.floatToIntBits(value);
     }
 
     /**
@@ -241,6 +245,98 @@ public final class Numerics extends Static {
      * @return An updated hash code value.
      */
     public static int hash(final long value, final int seed) {
-        return seed * PRIME_NUMBER + (((int) value) ^ ((int) (value >>> 32)));
+        return 31*seed + (((int) value) ^ ((int) (value >>> 32)));
+    }
+
+    /**
+     * Converts a power of 2 to a power of 10, rounded toward negative infinity.
+     * This method is equivalent to the following code, but using only integer arithmetic:
+     *
+     * {@preformat java
+     *     return (int) Math.floor(exp2 * LOG10_2);
+     * }
+     *
+     * This method is valid only for arguments in the [-2620 … 2620] range, which is more than enough
+     * for the range of {@code double} exponents. We do not put this method in public API because it
+     * does not check the argument validity.
+     *
+     * @param  exp2 The power of 2 to convert Must be in the [-2620 … 2620] range.
+     * @return The power of 10, rounded toward negative infinity.
+     *
+     * @see org.apache.sis.math.MathFunctions#LOG10_2
+     * @see org.apache.sis.math.MathFunctions#getExponent(double)
+     */
+    public static int toExp10(final int exp2) {
+        /*
+         * Compute:
+         *          exp2 × (log10(2) × 2ⁿ) / 2ⁿ
+         * where:
+         *          n = 20   (arbitrary value)
+         *
+         * log10(2) × 2ⁿ  =  315652.82873335475, which we round to 315653.
+         *
+         * The range of valid values for such approximation is determined
+         * empirically by running the NumericsTest.testToExp10() method.
+         */
+        assert exp2 >= -2620 && exp2 <= 2620 : exp2;
+        return (exp2 * 315653) >> 20;
+    }
+
+    /**
+     * Returns the significand <var>m</var> of the given value such as {@code value = m×2ⁿ}
+     * where <var>n</var> is {@link Math#getExponent(double)} - {@value #SIGNIFICAND_SIZE}.
+     * For any non-NaN finite positive values, the following relationship should hold:
+     *
+     * {@preformat java
+     *    assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE) == value;
+     * }
+     *
+     * For negative values, this method behaves as if the value was positive.
+     * For NaN and infinite value, the returned value is undetermined.
+     *
+     * @param  value The value for which to get the significand.
+     * @return The significand of the given value.
+     */
+    public static long getSignificand(final double value) {
+        long bits = Double.doubleToRawLongBits(value);
+        final long exponent = bits & (0x7FFL << SIGNIFICAND_SIZE);
+        bits &= (1L << SIGNIFICAND_SIZE) - 1;
+        if (exponent != 0) {
+            bits |= (1L << SIGNIFICAND_SIZE);
+        } else {
+            /*
+             * Sub-normal value: compensate for the fact that Math.getExponent(value) returns
+             * Double.MIN_EXPONENT - 1 in this case, while we would need Double.MIN_EXPONENT.
+             */
+            bits <<= 1;
+        }
+        return bits;
+    }
+
+    /**
+     * Returns the significand <var>m</var> of the given value such as {@code value = m×2ⁿ} where
+     * <var>n</var> is {@link Math#getExponent(float)} - {@value #SIGNIFICAND_SIZE_OF_FLOAT}.
+     * For any non-NaN finite positive values, the following relationship should hold:
+     *
+     * {@preformat java
+     *    assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT) == value;
+     * }
+     *
+     * For negative values, this method behaves as if the value was positive.
+     * For NaN and infinite value, the returned value is undetermined.
+     *
+     * @param  value The value for which to get the significand.
+     * @return The significand of the given value.
+     */
+    public static int getSignificand(final float value) {
+        int bits = Float.floatToRawIntBits(value);
+        final int exponent = bits & (0xFF << SIGNIFICAND_SIZE_OF_FLOAT);
+        bits &= (1L << SIGNIFICAND_SIZE_OF_FLOAT) - 1;
+        if (exponent != 0) {
+            bits |= (1L << SIGNIFICAND_SIZE_OF_FLOAT);
+        } else {
+            bits <<= 1;
+        }
+        return bits;
     }
 }

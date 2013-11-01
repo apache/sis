@@ -24,7 +24,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -40,7 +39,6 @@ import static java.lang.StrictMath.*;
  * @version 0.4
  * @module
  */
-@DependsOn(org.apache.sis.math.MathFunctionsTest.class)
 public final strictfp class DoubleDoubleTest extends TestCase {
     /**
      * Number of time to repeat arithmetic tests.
@@ -293,9 +291,10 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      */
     private static final String[] PREDEFINED_VALUES = {
          "0.000001",
+         "0.000004848136811095359935899141023579480",
          "0.00001",
          "0.0001",
-         "0.00027777777777777777777777777777777778",
+         "0.0002777777777777777777777777777777778",
          "0.001",
          "0.002777777777777777777777777777777778",
          "0.01",
@@ -375,6 +374,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         assertEquals(6.123233995736766036E-17, DoubleDouble.errorForWellKnownValue(PI / 2), STRICT);
         assertEquals(3.061616997868383018E-17, DoubleDouble.errorForWellKnownValue(PI / 4), STRICT);
         assertEquals(9.184850993605148436E-17, DoubleDouble.errorForWellKnownValue(PI * (3./4)), STRICT);
+        assertEquals(9.320078015422868E-23,    DoubleDouble.errorForWellKnownValue(PI / (180 * 60 * 60)), STRICT);
 
         assertTrue("toDegrees", DoubleDouble.errorForWellKnownValue(180 / PI)     != 0);
         assertTrue("toDegrees", DoubleDouble.errorForWellKnownValue(toDegrees(1)) != 0);
@@ -392,6 +392,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
             final DoubleDouble dd;
             switch (i) {
                 case 0:  dd = DoubleDouble.createDegreesToRadians(); break;
+                case 1:  dd = DoubleDouble.createSecondsToRadians(); break;
                 default: return; // Test done.
             }
             assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error, STRICT);

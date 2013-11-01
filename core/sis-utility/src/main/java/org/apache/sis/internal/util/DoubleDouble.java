@@ -129,9 +129,10 @@ public final class DoubleDouble extends Number {
         // digits for documentation purpose, and in order to have identical content than DoubleDoubleTest
         // so that a plain copy-and-paste can be performed between those two classes.
          0.000001,
+         0.000004848136811095359935899141023579480, // Arc-second to radians
          0.00001,
          0.0001,
-         0.00027777777777777777777777777777777778,  // Second to degrees
+         0.0002777777777777777777777777777777778,   // Second to degrees
          0.001,
          0.002777777777777777777777777777777778,    // 1/360°
          0.01,
@@ -169,6 +170,7 @@ public final class DoubleDouble extends Number {
      */
     private static final double[] ERRORS = {
         /*  0.000001  */  4.525188817411374E-23,
+        /*  0.000004… */  9.320078015422868E-23,
         /*  0.00001   */ -8.180305391403131E-22,
         /*  0.0001    */ -4.79217360238593E-21,
         /*  0.000266… */  2.4093381610788987E-22,
@@ -233,6 +235,16 @@ public final class DoubleDouble extends Number {
      */
     public static DoubleDouble createDegreesToRadians() {
         return new DoubleDouble(0.01745329251994329576923690768488613, 2.9486522708701687E-19);
+    }
+
+    /**
+     * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
+     * from arc-seconds to radians.
+     *
+     * @return An instance initialized to the 0.000004848136811095359935899141023579480 value.
+     */
+    public static DoubleDouble createSecondsToRadians() {
+        return new DoubleDouble(0.000004848136811095359935899141023579480, 9.320078015422868E-23);
     }
 
     /** @return {@link #value}. */
