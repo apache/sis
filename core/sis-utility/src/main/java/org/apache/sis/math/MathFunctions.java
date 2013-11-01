@@ -22,6 +22,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 
 import static java.lang.Float.intBitsToFloat;
@@ -73,6 +74,25 @@ public final class MathFunctions extends Static {
 
     /**
      * The logarithm of 2 in base 10, which is approximated by {@value}.
+     * This constant is useful for converting a power of 2 to a power of 10 as below:
+     *
+     * {@preformat java
+     *   double exp10 = exp2 * LOG10_2;
+     * }
+     *
+     * <blockquote><font size="-1">
+     * <b>Tip:</b> for <em>integer</em> values in the [-2620 … 2620] range, the following expression:
+     *
+     * {@preformat java
+     *   int exp10 = (int) Math.floor(exp2 * LOG10_2);
+     * }
+     *
+     * can be approximated using only integer arithmetic by:
+     *
+     * {@preformat java
+     *   int exp10 = (exp2 * 315653) >> 20;
+     * }
+     * </font></blockquote>
      *
      * @see Math#log10(double)
      * @see #getExponent(double)
@@ -363,7 +383,7 @@ public final class MathFunctions extends Static {
          */
         final int exponent = Math.getExponent(value);
         if (exponent <= Double.MAX_EXPONENT) { // Exclude NaN and ±∞ cases.
-            return (int) -Math.floor(LOG10_2 * (exponent - SIGNIFICAND_SIZE));
+            return -Numerics.toExp10(exponent - SIGNIFICAND_SIZE);
         }
         return 0;
     }

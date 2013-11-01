@@ -36,6 +36,9 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.test.XMLComparatorTest.class,
 
     // Most basic functions of SIS library.
+    org.apache.sis.internal.jdk8.JDK8Test.class,
+    org.apache.sis.internal.util.NumericsTest.class,
+    org.apache.sis.internal.util.DoubleDoubleTest.class,
     org.apache.sis.setup.OptionKeyTest.class,
     org.apache.sis.util.ArraysExtTest.class,
     org.apache.sis.util.CharactersTest.class,
@@ -57,9 +60,6 @@ import org.junit.BeforeClass;
     org.apache.sis.math.StatisticsTest.class,
     org.apache.sis.math.StatisticsFormatTest.class,
     org.apache.sis.internal.util.UtilitiesTest.class,
-    org.apache.sis.internal.util.NumericsTest.class,
-    org.apache.sis.internal.util.DoubleDoubleTest.class,
-    org.apache.sis.internal.jdk8.JDK8Test.class,
 
     // Collections.
     org.apache.sis.internal.util.CheckedArrayListTest.class,
