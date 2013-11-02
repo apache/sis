@@ -65,6 +65,75 @@ public final class DecimalFunctions extends Static {
     }
 
     /**
+     * Converts the given {@code float} value to a {@code double} with the extra <em>decimal</em> fraction digits
+     * set to zero. This is different than the standard cast in the Java language, which set the extra <em>binary</em>
+     * fraction digits to zero.
+     * For example {@code (double) 0.1f} gives 0.10000000149011612 while {@code convert(0.1f)} returns 0.1.
+     *
+     * {@note This method is <strong>not</strong> more accurate than the standard Java cast —
+     *        it is only more intuitive for human used to base 10.
+     *        If the value come directly from an ASCII file or a user input, then this method may be useful
+     *        because the value was probably expressed in base 10 before conversion to a {@code float}.
+     *        But if the value come from an instrument measurement or a calculation, then there is probably
+     *        no reason to use this method because base 10 is not more "real" than base 2 or any other base
+     *        for natural phenomenon.}
+     *
+     * This method is equivalent to the following code, except that it is potentially faster since the
+     * actual implementation avoid to format and parse the value:
+     *
+     * {@preformat java
+     *   return Double.parseDouble(Float.toString(value));
+     * }
+     *
+     * @param  value The {@code float} value to convert as a {@code double}.
+     * @return The given value as a {@code double} with the extra decimal fraction digits set to zero.
+     */
+    public static double convert(final float value) {
+        if (Float.isNaN(value) || Float.isInfinite(value) || value == 0f) {
+            return value;
+        }
+        /*
+         * Decompose  value == m × 2^e  where m and e are integers. If the exponent is not negative, then
+         * there is no fractional part in the value, in which case there is no rounding error to fix.
+         */
+        final int e = Math.getExponent(value) - Numerics.SIGNIFICAND_SIZE_OF_FLOAT;
+        if (e >= 0) {
+            return value;
+        }
+        final int m = Numerics.getSignificand(value);
+        assert Math.scalb((float) m, e) == value : value;
+        /*
+         * Get the factor for converting the significand from base 2 to base 10, such as:
+         *
+         *    m × (2^e)  ==  m × c × (10 ^ -e10)
+         *
+         * where e10 is the smallest exponent which allow to represent the value without precision lost when (m × c)
+         * is rounded to an integer. Because the number of significant digits in base 2 does not correspond to an
+         * integer number of significand digits in base 10, we have slightly more precision than what the 'float'
+         * value had: we have something between 0 and 1 extraneous digits.
+         */
+        final int    e10 = -Numerics.toExp10(e);      // Make positive
+        final double c   = Math.scalb(pow10(e10), e); // Conversion factor, also 1 ULP in base 10.
+        final double mc  = m * c;
+        /*
+         * First, presume that our representation in base 10 has one extranous digit, so we will round
+         * to the tens instead of unities. If the difference appears to not be smaller than half a ULP,
+         * then the last digit was not extranous - we need to keep it.
+         */
+        double delta = Math.rint(mc/10)*10 - mc;
+        if (Math.abs(delta) >= c/2) {
+            delta = Math.rint(mc) - mc;
+        }
+        /*
+         * Now compute the final adjustment that we need to apply to the value.
+         * This adjustment shall always be lower then half a ULP.
+         */
+        delta = Math.scalb(delta / c, e);
+        assert Math.abs(delta) < Math.ulp(value) / 2 : value;
+        return value + delta;
+    }
+
+    /**
      * Returns the number of fraction digits needed for formatting in base 10 numbers of the given
      * accuracy. If the {@code strict} argument is {@code true}, then for any given {@code accuracy}
      * this method returns a value <var>n</var> such as the difference between adjacent numbers

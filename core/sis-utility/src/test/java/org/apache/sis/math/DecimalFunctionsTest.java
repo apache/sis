@@ -56,6 +56,20 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link DecimalFunctions#convert(float)}.
+     */
+    @Test
+    public void testConvertAsDecimal() {
+        assertEquals(10,     convert(10f),     0);
+        assertEquals(0.1,    convert(0.1f),    0);
+        assertEquals(0.01,   convert(0.01f),   0);
+        assertEquals(0.001,  convert(0.001f),  0);
+        assertEquals(0.0001, convert(0.0001f), 0);
+        assertEquals(3.7E-8, convert(3.7E-8f), 0);
+//      assertEquals(3.7E-9, convert(3.7E-9f), 0);
+    }
+
+    /**
      * Tests {@link DecimalFunctions#fractionDigitsForDelta(double, boolean)}.
      */
     @Test
