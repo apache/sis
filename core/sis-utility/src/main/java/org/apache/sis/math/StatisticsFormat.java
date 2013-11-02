@@ -400,7 +400,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             delta = max(delta/stats.count(), ulp(extremum)); // Mean delta for uniform distribution, not finer than 'double' accuracy.
             if (format instanceof NumberFormat) {
                 setFractionDigits((NumberFormat) format, max(0, ADDITIONAL_DIGITS
-                        + MathFunctions.fractionDigitsForDelta(delta, false)));
+                        + DecimalFunctions.fractionDigitsForDelta(delta, false)));
             } else {
                 // A future version could configure DateFormat here.
             }

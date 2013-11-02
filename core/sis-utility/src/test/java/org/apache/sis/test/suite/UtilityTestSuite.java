@@ -57,6 +57,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.logging.MonolineFormatterTest.class,
     org.apache.sis.util.logging.LoggerAdapterTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
+    org.apache.sis.math.DecimalFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
     org.apache.sis.math.StatisticsFormatTest.class,
     org.apache.sis.internal.util.UtilitiesTest.class,
