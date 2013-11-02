@@ -493,7 +493,10 @@ public final class MathFunctions extends Static {
      * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
      *
      * @see Math#signum(double)
+     *
+     * @deprecated Something close is available in standard Java as {@link Math#signum(double)}.
      */
+    @Deprecated
     public static int sgn(final double x) {
         if (x > 0) return +1;
         if (x < 0) return -1;
@@ -510,7 +513,10 @@ public final class MathFunctions extends Static {
      * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
      *
      * @see Math#signum(float)
+     *
+     * @deprecated Something close is available in standard Java as {@link Math#signum(float)}.
      */
+    @Deprecated
     public static int sgn(final float x) {
         if (x > 0) return +1;
         if (x < 0) return -1;
@@ -525,7 +531,10 @@ public final class MathFunctions extends Static {
      *
      * @param x The number from which to get the sign.
      * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
+     *
+     * @deprecated Available in standard Java as {@link Long#signum(long)}.
      */
+    @Deprecated
     public static int sgn(long x) {
         if (x > 0) return +1;
         if (x < 0) return -1;
@@ -540,7 +549,10 @@ public final class MathFunctions extends Static {
      *
      * @param x The number from which to get the sign.
      * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
+     *
+     * @deprecated Available in standard Java as {@link Integer#signum(int)}.
      */
+    @Deprecated
     public static int sgn(int x) {
         if (x > 0) return +1;
         if (x < 0) return -1;
@@ -555,7 +567,10 @@ public final class MathFunctions extends Static {
      *
      * @param x The number from which to get the sign.
      * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
+     *
+     * @deprecated Something close is available in standard Java as {@link Integer#signum(int)}.
      */
+    @Deprecated
     public static short sgn(short x) {
         if (x > 0) return +1;
         if (x < 0) return -1;
@@ -570,7 +585,10 @@ public final class MathFunctions extends Static {
      *
      * @param x The number from which to get the sign.
      * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
+     *
+     * @deprecated Something close is available in standard Java as {@link Integer#signum(int)}.
      */
+    @Deprecated
     public static byte sgn(byte x) {
         if (x > 0) return +1;
         if (x < 0) return -1;
