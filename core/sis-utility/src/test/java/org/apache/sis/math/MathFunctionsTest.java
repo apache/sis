@@ -50,13 +50,6 @@ public final strictfp class MathFunctionsTest extends TestCase {
     private static final double EPS = 1E-12;
 
     /**
-     * The maximal exponent value such as {@code parseDouble("1E+304")} still a finite number.
-     *
-     * @see Double#MAX_VALUE
-     */
-    private static final int MAX_E10 = 308;
-
-    /**
      * Highest prime number representable as a signed {@code short}.
      */
     private static final int HIGHEST_SHORT_PRIME = 32749;
@@ -71,12 +64,8 @@ public final strictfp class MathFunctionsTest extends TestCase {
      */
     @Test
     public void testConstants() {
-        assertEquals(StrictMath.sqrt (2), MathFunctions.SQRT_2,  0);
-        assertEquals(StrictMath.log10(2), MathFunctions.LOG10_2, 0);
-        assertEquals(0,  parseDouble("1E" +  E10_FOR_ZERO), 0);
-        assertTrue  (0 < parseDouble("1E" + (E10_FOR_ZERO + 1)));
-        assertTrue  (POSITIVE_INFINITY > parseDouble("1E" +  MAX_E10));
-        assertEquals(POSITIVE_INFINITY,  parseDouble("1E" + (MAX_E10 + 1)), 0);
+        assertEquals(StrictMath.sqrt (2), SQRT_2,  0);
+        assertEquals(StrictMath.log10(2), LOG10_2, 0);
     }
 
     /**
@@ -104,81 +93,6 @@ public final strictfp class MathFunctionsTest extends TestCase {
         assertEquals(4, magnitude(0, -4, 0), EPS);
         assertEquals(5, magnitude(0, -4, 0, 3, 0), EPS);
         assertEquals(5, magnitude(3, 1, -2, 1, -3, -1), EPS);
-    }
-
-    /**
-     * Tests {@link MathFunctions#fractionDigitsForDelta(double, boolean)}.
-     */
-    @Test
-    public void testFractionDigitsForDelta() {
-        assertEquals(3, fractionDigitsForDelta(0.001, true));
-        assertEquals(3, fractionDigitsForDelta(0.009, true));
-        assertEquals(2, fractionDigitsForDelta(0.010, true));
-        assertEquals(2, fractionDigitsForDelta(0.015, true));
-        assertEquals(1, fractionDigitsForDelta(0.100, true));
-        assertEquals(1, fractionDigitsForDelta(0.125, true));
-        assertEquals(1, fractionDigitsForDelta(0.949, true));
-        assertEquals(2, fractionDigitsForDelta(0.994, true)); // Special case
-        assertEquals(3, fractionDigitsForDelta(0.999, true)); // Special case
-
-        assertEquals( 0, fractionDigitsForDelta(  1.0, true));
-        assertEquals( 0, fractionDigitsForDelta(  1.9, true));
-        assertEquals( 0, fractionDigitsForDelta(  9.1, true));
-        assertEquals(-1, fractionDigitsForDelta( 10.0, true));
-        assertEquals(-1, fractionDigitsForDelta( 19.9, true));
-        assertEquals(-1, fractionDigitsForDelta( 94.9, true));
-        assertEquals( 0, fractionDigitsForDelta( 99.0, true)); // Special case
-        assertEquals(-2, fractionDigitsForDelta(100.0, true));
-        assertEquals(-2, fractionDigitsForDelta(100.1, true));
-        assertEquals(-1, fractionDigitsForDelta(994.9, true)); // Special case
-        assertEquals(+1, fractionDigitsForDelta(999.9, true)); // Special case
-        assertEquals(-3, fractionDigitsForDelta(1000,  true));
-
-        // Tests values out of the POW10 array range.
-        assertEquals(23,  fractionDigitsForDelta(1.0E-23,  true));
-        assertEquals(23,  fractionDigitsForDelta(1.9E-23,  true));
-        assertEquals(23,  fractionDigitsForDelta(9.1E-23,  true));
-        assertEquals(24,  fractionDigitsForDelta(9.6E-23,  true)); // Special case
-        assertEquals(300, fractionDigitsForDelta(1.1E-300, true));
-
-        assertEquals(-23,  fractionDigitsForDelta(1.0E+23,  true));
-        assertEquals(-23,  fractionDigitsForDelta(1.9E+23,  true));
-        assertEquals(-23,  fractionDigitsForDelta(9.1E+23,  true));
-        assertEquals(-22,  fractionDigitsForDelta(9.6E+23,  true)); // Special case
-        assertEquals(-300, fractionDigitsForDelta(1.1E+300, true));
-
-        // Other cases.
-        assertEquals(-E10_FOR_ZERO, fractionDigitsForDelta(0,                 false));
-        assertEquals(-E10_FOR_ZERO, fractionDigitsForDelta(MIN_VALUE,         false));
-        assertEquals(           16, fractionDigitsForDelta(Math.ulp(1.0),     false));
-        assertEquals(           15, fractionDigitsForDelta(Math.ulp(45.0),    false));
-        assertEquals(            0, fractionDigitsForDelta(NaN,               false));
-        assertEquals(            0, fractionDigitsForDelta(POSITIVE_INFINITY, false));
-        assertEquals(            0, fractionDigitsForDelta(NEGATIVE_INFINITY, false));
-    }
-
-    /**
-     * Tests {@link MathFunctions#fractionDigitsForValue(double)}.
-     */
-    @Test
-    public void testFractionDigitsForValue() {
-        assertEquals(-E10_FOR_ZERO, fractionDigitsForValue(0));
-        assertEquals(-E10_FOR_ZERO, fractionDigitsForValue(MIN_VALUE));
-        assertEquals(           16, fractionDigitsForValue(1));
-        assertEquals(           15, fractionDigitsForValue(45));
-        assertEquals(            0, fractionDigitsForValue(NaN));
-        assertEquals(            0, fractionDigitsForValue(POSITIVE_INFINITY));
-        assertEquals(            0, fractionDigitsForValue(NEGATIVE_INFINITY));
-        for (int i=E10_FOR_ZERO; i<=MAX_E10; i++) {
-            final double value = pow10(i);
-            final double accuracy = pow10(-fractionDigitsForValue(value));
-            assertEquals("Shall not be greater than ULP", 0, accuracy, StrictMath.ulp(value));
-        }
-        for (int i=MIN_EXPONENT; i<=MAX_EXPONENT; i++) {
-            final double value = StrictMath.scalb(1, i);
-            final double accuracy = pow10(-fractionDigitsForValue(value));
-            assertEquals("Shall not be greater than ULP", 0, accuracy, StrictMath.ulp(value));
-        }
     }
 
     /**
@@ -231,18 +145,6 @@ public final strictfp class MathFunctionsTest extends TestCase {
         for (int i = MIN_EXPONENT - SIGNIFICAND_SIZE; i <= MAX_EXPONENT; i++) {
             assertEquals(StrictMath.floor(StrictMath.log10(StrictMath.scalb(1.0, i))),
                          StrictMath.floor(LOG10_2 * i /* i = getExponent(value) */), 0);
-        }
-    }
-
-    /**
-     * Tests the {@link MathFunctions#pow10(double)} method.
-     * This will indirectly test {@link MathFunctions#pow10(int)}
-     * since the former will delegate to the later in this test.
-     */
-    @Test
-    public void testPow10() {
-        for (int i=E10_FOR_ZERO; i<=MAX_E10; i++) { // Range of allowed exponents in base 10.
-            assertEquals(parseDouble("1E"+i), pow10((double) i), 0);
         }
     }
 
