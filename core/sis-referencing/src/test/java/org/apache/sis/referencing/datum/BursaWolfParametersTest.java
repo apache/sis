@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -34,6 +35,25 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 public final strictfp class BursaWolfParametersTest extends TestCase {
+    /**
+     * The conversion factor from arc-seconds to radians.
+     */
+    private static final double TO_RADIANS = Math.PI / (180 * 60 * 60);
+
+    /**
+     * Same implementation than {@link BursaWolfParameters#getPositionVectorTransformation(boolean)}
+     * using only {@code double} arithmetic, for verification purpose.
+     */
+    private static Matrix4 getPositionVectorTransformation(final BursaWolfParameters p, final boolean inverse) {
+        final double sgn = inverse ? -1 : +1;
+        final double   S = 1 + sgn*p.dS / BursaWolfParameters.PPM;
+        final double  RS = sgn*TO_RADIANS * S;
+        return new Matrix4(
+                   S,  -p.rZ*RS,  +p.rY*RS,  sgn*p.tX,
+            +p.rZ*RS,         S,  -p.rX*RS,  sgn*p.tY,
+            -p.rY*RS,  +p.rX*RS,         S,  sgn*p.tZ,
+                   0,         0,         0,      1);
+    }
     /**
      * Tests {@link BursaWolfParameters#getPositionVectorTransformation(boolean)}.
      * This test transform a point from WGS72 to WGS84, and conversely,

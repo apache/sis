@@ -16,9 +16,11 @@
  */
 package org.apache.sis.math;
 
+import java.util.Random;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestUtilities;
 
 import static org.junit.Assert.*;
 import static java.lang.Double.*;
@@ -56,17 +58,22 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
     }
 
     /**
-     * Tests {@link DecimalFunctions#convert(float)}.
+     * Tests {@link DecimalFunctions#floatToDouble(float)}.
      */
     @Test
-    public void testConvertAsDecimal() {
-        assertEquals(10,     convert(10f),     0);
-        assertEquals(0.1,    convert(0.1f),    0);
-        assertEquals(0.01,   convert(0.01f),   0);
-        assertEquals(0.001,  convert(0.001f),  0);
-        assertEquals(0.0001, convert(0.0001f), 0);
-        assertEquals(3.7E-8, convert(3.7E-8f), 0);
-//      assertEquals(3.7E-9, convert(3.7E-9f), 0);
+    public void testFloatToDouble() {
+        assertEquals(10,     floatToDouble(10f),     0);
+        assertEquals(0.1,    floatToDouble(0.1f),    0);
+        assertEquals(0.01,   floatToDouble(0.01f),   0);
+        assertEquals(0.001,  floatToDouble(0.001f),  0);
+        assertEquals(0.0001, floatToDouble(0.0001f), 0);
+        assertEquals(3.7E-8, floatToDouble(3.7E-8f), 0);
+        assertEquals(3.7E-9, floatToDouble(3.7E-9f), 0);
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        for (int i=0; i<100; i++) {
+            final float value = Math.scalb(random.nextFloat(), random.nextInt(20) - 10);
+            assertEquals(String.valueOf(value), String.valueOf(floatToDouble(value)));
+        }
     }
 
     /**

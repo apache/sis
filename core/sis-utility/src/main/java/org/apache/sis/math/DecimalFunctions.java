@@ -68,12 +68,12 @@ public final class DecimalFunctions extends Static {
      * Converts the given {@code float} value to a {@code double} with the extra <em>decimal</em> fraction digits
      * set to zero. This is different than the standard cast in the Java language, which set the extra <em>binary</em>
      * fraction digits to zero.
-     * For example {@code (double) 0.1f} gives 0.10000000149011612 while {@code convert(0.1f)} returns 0.1.
+     * For example {@code (double) 0.1f} gives 0.10000000149011612 while {@code floatToDouble(0.1f)} returns 0.1.
      *
      * {@note This method is <strong>not</strong> more accurate than the standard Java cast —
      *        it is only more intuitive for human used to base 10.
      *        If the value come directly from an ASCII file or a user input, then this method may be useful
-     *        because the value was probably expressed in base 10 before conversion to a {@code float}.
+     *        because the value was probably expressed in base 10 before conversion to a <code>float</code>.
      *        But if the value come from an instrument measurement or a calculation, then there is probably
      *        no reason to use this method because base 10 is not more "real" than base 2 or any other base
      *        for natural phenomenon.}
@@ -88,7 +88,7 @@ public final class DecimalFunctions extends Static {
      * @param  value The {@code float} value to convert as a {@code double}.
      * @return The given value as a {@code double} with the extra decimal fraction digits set to zero.
      */
-    public static double convert(final float value) {
+    public static double floatToDouble(final float value) {
         if (Float.isNaN(value) || Float.isInfinite(value) || value == 0f) {
             return value;
         }
@@ -120,17 +120,11 @@ public final class DecimalFunctions extends Static {
          * to the tens instead of unities. If the difference appears to not be smaller than half a ULP,
          * then the last digit was not extranous - we need to keep it.
          */
-        double delta = Math.rint(mc/10)*10 - mc;
-        if (Math.abs(delta) >= c/2) {
-            delta = Math.rint(mc) - mc;
+        double r = Math.rint(mc / 10) * 10;
+        if (Math.abs(r - mc) >= c/2) {
+            r = Math.rint(mc);
         }
-        /*
-         * Now compute the final adjustment that we need to apply to the value.
-         * This adjustment shall always be lower then half a ULP.
-         */
-        delta = Math.scalb(delta / c, e);
-        assert Math.abs(delta) < Math.ulp(value) / 2 : value;
-        return value + delta;
+        return Math.scalb(r / c, e);
     }
 
     /**
