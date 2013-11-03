@@ -285,14 +285,13 @@ public final class Numerics extends Static {
     /**
      * Returns the significand <var>m</var> of the given value such as {@code value = m×2ⁿ}
      * where <var>n</var> is {@link Math#getExponent(double)} - {@value #SIGNIFICAND_SIZE}.
-     * For any non-NaN finite positive values, the following relationship should hold:
+     * For any non-NaN positive values (including infinity), the following relationship holds:
      *
      * {@preformat java
      *    assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE) == value;
      * }
      *
      * For negative values, this method behaves as if the value was positive.
-     * For NaN and infinite value, the returned value is undetermined.
      *
      * @param  value The value for which to get the significand.
      * @return The significand of the given value.
@@ -316,14 +315,13 @@ public final class Numerics extends Static {
     /**
      * Returns the significand <var>m</var> of the given value such as {@code value = m×2ⁿ} where
      * <var>n</var> is {@link Math#getExponent(float)} - {@value #SIGNIFICAND_SIZE_OF_FLOAT}.
-     * For any non-NaN finite positive values, the following relationship should hold:
+     * For any non-NaN positive values (including infinity), the following relationship holds:
      *
      * {@preformat java
      *    assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT) == value;
      * }
      *
      * For negative values, this method behaves as if the value was positive.
-     * For NaN and infinite value, the returned value is undetermined.
      *
      * @param  value The value for which to get the significand.
      * @return The significand of the given value.

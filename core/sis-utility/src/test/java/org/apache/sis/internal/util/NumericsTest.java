@@ -71,18 +71,18 @@ public final strictfp class NumericsTest extends TestCase {
      */
     @Test
     public void testGetSignificand() {
-        assertEquals(0x00000000000000L, getSignificand(0d));
-        assertEquals(0x10000000000000L, getSignificand(1d));
-        assertEquals(0x1F400000000000L, getSignificand(1000d));
-        assertEquals(0x1FFFFFFFFFFFFFL, getSignificand(Double.MAX_VALUE));
-        assertEquals(0x10000000000000L, getSignificand(Double.MIN_NORMAL));
-        assertEquals(0x00000000000002L, getSignificand(Double.MIN_VALUE));
+        assertSignificandEquals(0x00000000000000L, 0d);
+        assertSignificandEquals(0x10000000000000L, 1d);
+        assertSignificandEquals(0x1F400000000000L, 1000d);
+        assertSignificandEquals(0x1FFFFFFFFFFFFFL, Double.MAX_VALUE);
+        assertSignificandEquals(0x10000000000000L, Double.MIN_NORMAL);
+        assertSignificandEquals(0x00000000000002L, Double.MIN_VALUE);
+        assertSignificandEquals(0x10000000000000L, Double.POSITIVE_INFINITY);
+        assertSignificandEquals(0x10000000000000L, Double.NEGATIVE_INFINITY);
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<100; i++) {
-            final double value       = random.nextGaussian();
-            final double significand = getSignificand(value);
-            final double recomposed  = StrictMath.scalb(significand, StrictMath.getExponent(value) - SIGNIFICAND_SIZE);
-            assertEquals(value, StrictMath.copySign(recomposed, value), 0);
+            final double value = random.nextGaussian();
+            assertSignificandEquals(getSignificand(value), -value);
         }
     }
 
@@ -91,18 +91,40 @@ public final strictfp class NumericsTest extends TestCase {
      */
     @Test
     public void testGetSignificandOfFloat() {
-        assertEquals(0x000000, getSignificand(0f));
-        assertEquals(0x800000, getSignificand(1f));
-        assertEquals(0xFA0000, getSignificand(1000f));
-        assertEquals(0xFFFFFF, getSignificand(Float.MAX_VALUE));
-        assertEquals(0x800000, getSignificand(Float.MIN_NORMAL));
-        assertEquals(0x000002, getSignificand(Float.MIN_VALUE));
+        assertSignificandEquals(0x000000, 0f);
+        assertSignificandEquals(0x800000, 1f);
+        assertSignificandEquals(0xFA0000, 1000f);
+        assertSignificandEquals(0xFFFFFF, Float.MAX_VALUE);
+        assertSignificandEquals(0x800000, Float.MIN_NORMAL);
+        assertSignificandEquals(0x000002, Float.MIN_VALUE);
+        assertSignificandEquals(0x800000, Float.POSITIVE_INFINITY);
+        assertSignificandEquals(0x800000, Float.NEGATIVE_INFINITY);
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<100; i++) {
-            final float value       = (float) random.nextGaussian();
-            final float significand = getSignificand(value);
-            final float recomposed  = StrictMath.scalb(significand, StrictMath.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT);
-            assertEquals(value, StrictMath.copySign(recomposed, value), 0);
+            final float value = (float) random.nextGaussian();
+            assertSignificandEquals(getSignificand(value), -value);
         }
+    }
+
+    /**
+     * Asserts that {@link Numerics#getSignificand(double)} returns the expected value,
+     * then verify the {@link StrictMath#scalb(double, int)} identity.
+     */
+    private static void assertSignificandEquals(final long expected, final double value) {
+        assertEquals(expected, getSignificand(value));
+        final int e = StrictMath.getExponent(value) - SIGNIFICAND_SIZE;
+        final double recomposed = StrictMath.scalb((double) expected, e);
+        assertEquals(value, StrictMath.copySign(recomposed, value), 0);
+    }
+
+    /**
+     * Asserts that {@link Numerics#getSignificand(float)} returns the expected value,
+     * then verify the {@link StrictMath#scalb(float, int)} identity.
+     */
+    private static void assertSignificandEquals(final int expected, final float value) {
+        assertEquals(expected, getSignificand(value));
+        final int e = StrictMath.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT;
+        final float recomposed = StrictMath.scalb((float) expected, e);
+        assertEquals(value, StrictMath.copySign(recomposed, value), 0f);
     }
 }
