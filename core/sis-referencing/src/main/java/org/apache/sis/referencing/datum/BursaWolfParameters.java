@@ -27,6 +27,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 import static java.lang.Math.PI;
@@ -159,7 +160,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     /**
      * The conversion factor from <cite>parts per million</cite> to scale minus one.
      */
-    private static final double PPM = 1E+6;
+    static final double PPM = 1E+6;
 
     /**
      * The conversion factor from arc-seconds to radians.
@@ -373,6 +374,12 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum)
      */
     public Matrix getPositionVectorTransformation(final boolean inverse) {
+        if (!isTranslation()) {
+            final double sgn = inverse ? -1 : +1;
+            final DoubleDouble S = new DoubleDouble(PPM, 0);
+            S.inverseDivide(sgn*dS, 0);
+            
+        }
         final double sgn = inverse ? -1 : +1;
         final double   S = 1 + sgn*dS / PPM;
         final double  RS = sgn*TO_RADIANS * S;
