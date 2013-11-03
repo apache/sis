@@ -54,6 +54,9 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
             -p.rY*RS,  +p.rX*RS,         S,  sgn*p.tZ,
                    0,         0,         0,      1);
     }
+
+    // TODO: use above method for checking BursaWolfParameters calculations.
+
     /**
      * Tests {@link BursaWolfParameters#getPositionVectorTransformation(boolean)}.
      * This test transform a point from WGS72 to WGS84, and conversely,

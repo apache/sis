@@ -378,7 +378,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
             final double sgn = inverse ? -1 : +1;
             final DoubleDouble S = new DoubleDouble(PPM, 0);
             S.inverseDivide(sgn*dS, 0);
-            
+            // TODO: finish computation using double-double arithmetic.
         }
         final double sgn = inverse ? -1 : +1;
         final double   S = 1 + sgn*dS / PPM;
