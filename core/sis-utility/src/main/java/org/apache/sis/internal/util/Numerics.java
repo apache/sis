@@ -260,6 +260,12 @@ public final class Numerics extends Static {
      * for the range of {@code double} exponents. We do not put this method in public API because it
      * does not check the argument validity.
      *
+     * {@section Arithmetic notes}
+     * {@code toExp10(getExponent(10ⁿ))} returns <var>n</var> only for {@code n == 0}, and <var>n</var>-1 in all other
+     * cases. This is because 10ⁿ == m × 2<sup>exp2</sup> where the <var>m</var> significand is always greater than 1,
+     * which must be compensated by a smaller {@code exp2} value such as {@code toExp10(exp2) < n}. Note that if the
+     * {@code getExponent(…)} argument is not a power of 10, then the result can be either <var>n</var> or <var>n</var>-1.
+     *
      * @param  exp2 The power of 2 to convert Must be in the [-2620 … 2620] range.
      * @return The power of 10, rounded toward negative infinity.
      *
