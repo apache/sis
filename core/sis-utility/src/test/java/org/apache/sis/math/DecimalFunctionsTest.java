@@ -20,6 +20,7 @@ import java.util.Random;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 
 import static org.junit.Assert.*;
@@ -40,13 +41,6 @@ import static org.apache.sis.math.DecimalFunctions.*;
 })
 public final strictfp class DecimalFunctionsTest extends TestCase {
     /**
-     * The maximal exponent value such as {@code parseDouble("1E+308")} still a finite number.
-     *
-     * @see Double#MAX_VALUE
-     */
-    private static final int EXPONENT_FOR_MAX = 308;
-
-    /**
      * Verifies the values of {@link DecimalFunctions#EXPONENT_FOR_ZERO}.
      */
     @Test
@@ -58,9 +52,22 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
     }
 
     /**
+     * Tests the {@link MathFunctions#pow10(double)} method.
+     * This will indirectly test {@link MathFunctions#pow10(int)}
+     * since the former will delegate to the later in this test.
+     */
+    @Test
+    public void testPow10() {
+        for (int i=EXPONENT_FOR_ZERO; i<=EXPONENT_FOR_MAX; i++) { // Range of allowed exponents in base 10.
+            assertEquals(parseDouble("1E"+i), pow10(i), 0);
+        }
+    }
+
+    /**
      * Tests {@link DecimalFunctions#floatToDouble(float)}.
      */
     @Test
+    @DependsOnMethod("testPow10")
     public void testFloatToDouble() {
         assertEquals(10,     floatToDouble(10f),     0);
         assertEquals(0.1,    floatToDouble(0.1f),    0);
@@ -80,6 +87,7 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
      * Tests {@link DecimalFunctions#fractionDigitsForDelta(double, boolean)}.
      */
     @Test
+    @DependsOnMethod("testPow10")
     public void testFractionDigitsForDelta() {
         assertEquals(3, fractionDigitsForDelta(0.001, true));
         assertEquals(3, fractionDigitsForDelta(0.009, true));
@@ -148,18 +156,6 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
             final double value = StrictMath.scalb(1, i);
             final double accuracy = pow10(-fractionDigitsForValue(value));
             assertEquals("Shall not be greater than ULP", 0, accuracy, StrictMath.ulp(value));
-        }
-    }
-
-    /**
-     * Tests the {@link MathFunctions#pow10(double)} method.
-     * This will indirectly test {@link MathFunctions#pow10(int)}
-     * since the former will delegate to the later in this test.
-     */
-    @Test
-    public void testPow10() {
-        for (int i=EXPONENT_FOR_ZERO; i<=EXPONENT_FOR_MAX; i++) { // Range of allowed exponents in base 10.
-            assertEquals(parseDouble("1E"+i), pow10((double) i), 0);
         }
     }
 }

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.math;
 
-import java.util.Arrays;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.internal.util.Numerics;
@@ -26,6 +25,9 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
 
 /**
  * Functions working of {@code float} and {@code double} values while taking in account the representation in base 10.
+ * Methods in this class may be helpful when used immediately after parsing (i.e. before any calculations are applied
+ * on the value), or just before formatting a number in base 10. Methods in this class are usually <strong>not</strong>
+ * recommended for intermediate calculations, since base 10 is not more "real" than base 2 for natural phenomenon.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -46,22 +48,52 @@ public final class DecimalFunctions extends Static {
     static final int EXPONENT_FOR_ZERO = -324;
 
     /**
-     * Table of some integer powers of 10. Used for faster computation in {@link #pow10(int)}.
+     * The maximal exponent value such as {@code parseDouble("1E+308")} still a finite number.
+     *
+     * @see Double#MAX_VALUE
+     */
+    static final int EXPONENT_FOR_MAX = 308;
+
+    /**
+     * Table of integer powers of 10, precomputed both for performance and accuracy reasons.
+     * This table consumes 4.9 kb of memory. We pay this cost because integer powers of ten
+     * are requested often, and {@link Math#pow(double, double)} has slight rounding errors.
      *
      * @see #pow10(int)
      */
-    private static final double[] POW10 = {
-        1E+00, 1E+01, 1E+02, 1E+03, 1E+04, 1E+05, 1E+06, 1E+07, 1E+08, 1E+09,
-        1E+10, 1E+11, 1E+12, 1E+13, 1E+14, 1E+15, 1E+16, 1E+17, 1E+18, 1E+19,
-        1E+20, 1E+21, 1E+22
-        // Do not add more elements, unless we verified that 1/x is accurate.
-        // Last time we tried, it was not accurate anymore starting at 1E+23.
-    };
+    @Workaround(library="JDK", version="1.4")
+    private static final double[] POW10 = new double[EXPONENT_FOR_MAX - EXPONENT_FOR_ZERO];
+    static {
+        final StringBuilder buffer = new StringBuilder("1E");
+        for (int i=0; i<POW10.length; i++) {
+            buffer.setLength(2);
+            buffer.append(i + (EXPONENT_FOR_ZERO + 1));
+            /*
+             * Double.parseDouble("1E"+i) gives as good or better numbers than Math.pow(10,i)
+             * for ALL integer powers, but is slower. We hope that the current workaround is only
+             * temporary. See http://developer.java.sun.com/developer/bugParade/bugs/4358794.html
+             */
+            POW10[i] = Double.parseDouble(buffer.toString());
+        }
+    }
 
     /**
      * Do not allow instantiation of this class.
      */
     private DecimalFunctions() {
+    }
+
+    /**
+     * Computes 10 raised to the power of <var>x</var>. This is the implementation of the
+     * public {@link MathFunctions#pow10(int)} method, defined here in order to allow the
+     * JVM to initialize the {@link #POW10} table only when first needed.
+     *
+     * @param x The exponent.
+     * @return 10 raised to the given exponent.
+     */
+    static double pow10(int x) {
+        x -= EXPONENT_FOR_ZERO + 1;
+        return (x >= 0) ? (x < POW10.length ? POW10[x] : Double.POSITIVE_INFINITY) : 0;
     }
 
     /**
@@ -72,11 +104,24 @@ public final class DecimalFunctions extends Static {
      *
      * {@note This method is <strong>not</strong> more accurate than the standard Java cast —
      *        it is only more intuitive for human used to base 10.
-     *        If the value come directly from an ASCII file or a user input, then this method may be useful
-     *        because the value was probably expressed in base 10 before conversion to a <code>float</code>.
+     *        If the value come from a call to <code>Float.parseFloat(String)</code> (directly or indirectly),
+     *        and if that call can not be replaced by a call to <code>Double.parseDouble(String)</code>, then
+     *        this method may be useful since the definitive <code>String</code> value was expressed in base 10.
      *        But if the value come from an instrument measurement or a calculation, then there is probably
      *        no reason to use this method because base 10 is not more "real" than base 2 or any other base
-     *        for natural phenomenon.}
+     *        for natural phenomenon.
+     *
+     *        <p><b>Use case:</b></p>
+     *        <ul>
+     *          <li>Producer A provides data in ASCII files using less fraction digits than the <code>float</code>
+     *              storage capability. This is not uncommon when the primary accuracy constraint is the instrument
+     *              precision.</li>
+     *          <li>Producer B converts the above ASCII files to the NetCDF binary format for efficiency, with data
+     *              stored as <code>float</code> values. Producer B does not distribute the original ASCII files.</li>
+     *          <li>Client of producer B wants to use those data with a library working with <code>double</code> values.
+     *              For some reason (e.g. formatting), the client wants the same values as if the ASCII files had been
+     *              parsed with <code>Double.parseDouble(String)</code> in the first place.</li>
+     *        </ul>}
      *
      * This method is equivalent to the following code, except that it is potentially faster since the
      * actual implementation avoid to format and parse the value:
@@ -186,34 +231,17 @@ public final class DecimalFunctions extends Static {
      */
     public static int fractionDigitsForDelta(double accuracy, final boolean strict) {
         accuracy = Math.abs(accuracy);
-        final boolean isFraction = (accuracy < 1);
-        /*
-         * Compute (int) Math.log10(x) with opportunist use of the POW10 array.
-         * We use the POW10 array because accurate calculation of log10 is relatively costly,
-         * while we only want the integer part. A micro-benchmarking on JDK7 suggested that a
-         * binary search on POW10 is about 30% faster than invoking (int) Math.log10(x).
-         */
-        int i = Arrays.binarySearch(POW10, isFraction ? 1/accuracy : accuracy);
-        if (i >= 0) {
-            return isFraction ? i : -i;
+        int i = MathFunctions.getExponent(accuracy);
+        if (i == Double.MAX_EXPONENT + 1) {
+            return 0; // NaN or infinities.
         }
-        i = ~i;
-        double scale;
-        if (i < POW10.length) {
-            scale = POW10[i];
-            if (!isFraction) {
-                i = -(i-1);
-                scale = 10 / scale;
-            }
-        } else { // 'x' is out of range or NaN.
-            final double y = Math.log10(accuracy);
-            if (Double.isInfinite(y)) {
-                return (accuracy == 0) ? -EXPONENT_FOR_ZERO : 0;
-            }
-            i = -((int) Math.floor(y));
-            scale = pow10(i);
+        i = Numerics.toExp10(i);
+        if (accuracy >= pow10(i+1)) {
+            i++;
         }
+        i = -i;
         if (strict) {
+            double scale = pow10(i);
             while ((accuracy *= scale) >= 9.5) {
                 i++; // The 0.…95 special case.
                 accuracy -= Math.floor(accuracy);
@@ -267,65 +295,5 @@ public final class DecimalFunctions extends Static {
             return -Numerics.toExp10(exponent - SIGNIFICAND_SIZE);
         }
         return 0;
-    }
-
-    /**
-     * Computes 10 raised to the power of <var>x</var>. This method delegates to
-     * <code>{@linkplain #pow10(int) pow10}((int) x)</code> if <var>x</var> is an
-     * integer, or to <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>
-     * otherwise.
-     *
-     * @param x The exponent.
-     * @return 10 raised to the given exponent.
-     *
-     * @see #pow10(int)
-     * @see Math#pow(double, double)
-     */
-    static double pow10(final double x) {
-        final int ix = (int) x;
-        if (ix == x) {
-            return pow10(ix);
-        } else {
-            return Math.pow(10, x);
-        }
-    }
-
-    /**
-     * Computes 10 raised to the power of <var>x</var>. This method tries to be slightly more
-     * accurate than <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>,
-     * sometime at the cost of performance.
-     *
-     * {@note This method has been defined because the standard <code>Math.pow(10, x)</code>
-     *        method does not always return the closest IEEE floating point representation.
-     *        Slight departures (1 or 2 ULP) are often allowed in math functions for performance
-     *        reasons. The most accurate calculations are usually not necessary, but the base 10
-     *        is a special case since it is used for scaling axes or formatting human-readable
-     *        output.}
-     *
-     * @param x The exponent.
-     * @return 10 raised to the given exponent.
-     */
-    @Workaround(library="JDK", version="1.4")
-    static double pow10(final int x) {
-        if (x >= 0) {
-            if (x < POW10.length) {
-                return POW10[x];
-            }
-        } else if (x != Integer.MIN_VALUE) {
-            final int nx = -x;
-            if (nx < POW10.length) {
-                return 1 / POW10[nx];
-            }
-        }
-        try {
-            /*
-             * Double.parseDouble("1E"+x) gives as good or better numbers than Math.pow(10,x)
-             * for ALL integer powers, but is slower. We hope that the current workaround is only
-             * temporary. See http://developer.java.sun.com/developer/bugParade/bugs/4358794.html
-             */
-            return Double.parseDouble("1E" + x);
-        } catch (NumberFormatException exception) {
-            return StrictMath.pow(10, x);
-        }
     }
 }

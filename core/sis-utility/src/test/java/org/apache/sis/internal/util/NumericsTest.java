@@ -56,13 +56,18 @@ public final strictfp class NumericsTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Numerics#toExp10(int)} method over the full [-2620 … 2620] range of values.
-     * This is the range documented as valid.
+     * Tests the {@link Numerics#toExp10(int)} method over the full [-2620 … 2620] range of values
+     * (the validity range documented by method javadoc). Also verifies our javadoc claim that
+     * {@code toExp10(getExponent(10ⁿ))} returns {@code n-1} except for {@code n == 0}.
      */
     @Test
     public void testToExp10() {
         for (int i=-2620; i<=2620; i++) {
             assertEquals(Math.floor(i * MathFunctions.LOG10_2), toExp10(i), 0);
+        }
+        for (int i=-307; i<=308; i++) {
+            final String value = "1E" + i;
+            assertEquals(value, (i == 0) ? i : i-1, toExp10(StrictMath.getExponent(Double.parseDouble(value))));
         }
     }
 

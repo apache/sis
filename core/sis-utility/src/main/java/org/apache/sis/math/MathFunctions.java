@@ -19,7 +19,6 @@ package org.apache.sis.math;
 import java.util.Arrays;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -78,20 +77,6 @@ public final class MathFunctions extends Static {
      * {@preformat java
      *   double exp10 = exp2 * LOG10_2;
      * }
-     *
-     * <blockquote><font size="-1">
-     * <b>Tip:</b> for <em>integer</em> values in the [-2620 … 2620] range, the following expression:
-     *
-     * {@preformat java
-     *   int exp10 = (int) Math.floor(exp2 * LOG10_2);
-     * }
-     *
-     * can be approximated using only integer arithmetic by:
-     *
-     * {@preformat java
-     *   int exp10 = (exp2 * 315653) >> 20;
-     * }
-     * </font></blockquote>
      *
      * @see Math#log10(double)
      * @see #getExponent(double)
@@ -292,10 +277,9 @@ public final class MathFunctions extends Static {
     }
 
     /**
-     * Computes 10 raised to the power of <var>x</var>. This method delegates to
-     * <code>{@linkplain #pow10(int) pow10}((int) x)</code> if <var>x</var> is an
-     * integer, or to <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>
-     * otherwise.
+     * Computes 10 raised to the power of <var>x</var>. Invoking this method is equivalent to invoking
+     * <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>, but is slightly more accurate
+     * in the special case where the given argument is an integer.
      *
      * @param x The exponent.
      * @return 10 raised to the given exponent.
@@ -304,13 +288,17 @@ public final class MathFunctions extends Static {
      * @see Math#pow(double, double)
      */
     public static double pow10(final double x) {
-        return DecimalFunctions.pow10(x);
+        final int ix = (int) x;
+        if (ix == x) {
+            return DecimalFunctions.pow10(ix);
+        } else {
+            return Math.pow(10, x);
+        }
     }
 
     /**
-     * Computes 10 raised to the power of <var>x</var>. This method tries to be slightly more
-     * accurate than <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>,
-     * sometime at the cost of performance.
+     * Computes 10 raised to the power of <var>x</var>. This method is faster and slightly more accurate
+     * than invoking <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>.
      *
      * {@note This method has been defined because the standard <code>Math.pow(10, x)</code>
      *        method does not always return the closest IEEE floating point representation.
@@ -322,7 +310,6 @@ public final class MathFunctions extends Static {
      * @param x The exponent.
      * @return 10 raised to the given exponent.
      */
-    @Workaround(library="JDK", version="1.4")
     public static double pow10(final int x) {
         return DecimalFunctions.pow10(x);
     }
