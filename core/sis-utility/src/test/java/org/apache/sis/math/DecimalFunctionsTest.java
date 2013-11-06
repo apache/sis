@@ -69,6 +69,8 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
     @Test
     @DependsOnMethod("testPow10")
     public void testFloatToDouble() {
+        assertEquals(0.0,    floatToDouble(0.0f),    0);
+        assertEquals(-0.0,   floatToDouble(-0.0f),   0);
         assertEquals(10,     floatToDouble(10f),     0);
         assertEquals(0.1,    floatToDouble(0.1f),    0);
         assertEquals(0.01,   floatToDouble(0.01f),   0);
@@ -78,9 +80,12 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
         assertEquals(3.7E-9, floatToDouble(3.7E-9f), 0);
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<100; i++) {
-            final float value = Math.scalb(random.nextFloat(), random.nextInt(20) - 10);
+            final float value = StrictMath.scalb(random.nextFloat(), random.nextInt(20) - 10);
             assertEquals(String.valueOf(value), String.valueOf(floatToDouble(value)));
         }
+        assertEquals(POSITIVE_INFINITY, floatToDouble(Float.POSITIVE_INFINITY), 0);
+        assertEquals(NEGATIVE_INFINITY, floatToDouble(Float.NEGATIVE_INFINITY), 0);
+        assertEquals(NaN,               floatToDouble(Float.NaN),               0);
     }
 
     /**

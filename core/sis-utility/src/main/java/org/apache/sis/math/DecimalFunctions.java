@@ -102,26 +102,15 @@ public final class DecimalFunctions extends Static {
      * fraction digits to zero.
      * For example {@code (double) 0.1f} gives 0.10000000149011612 while {@code floatToDouble(0.1f)} returns 0.1.
      *
-     * {@note This method is <strong>not</strong> more accurate than the standard Java cast —
-     *        it is only more intuitive for human used to base 10.
+     * {@note This method is <strong>not</strong> more accurate than the standard Java cast –
+     *        it should be used only when the base 10 representation of the given value may be of special interest.
      *        If the value come from a call to <code>Float.parseFloat(String)</code> (directly or indirectly),
-     *        and if that call can not be replaced by a call to <code>Double.parseDouble(String)</code>, then
-     *        this method may be useful since the definitive <code>String</code> value was expressed in base 10.
+     *        and if that call can not be replaced by a call to <code>Double.parseDouble(String)</code>
+     *        (for example because the original <code>String</code> is not available anymore), then this method
+     *        may be useful if one consider the <code>String</code> representation in base 10 as definitive.
      *        But if the value come from an instrument measurement or a calculation, then there is probably
      *        no reason to use this method because base 10 is not more "real" than base 2 or any other base
-     *        for natural phenomenon.
-     *
-     *        <p><b>Use case:</b></p>
-     *        <ul>
-     *          <li>Producer A provides data in ASCII files using less fraction digits than the <code>float</code>
-     *              storage capability. This is not uncommon when the primary accuracy constraint is the instrument
-     *              precision.</li>
-     *          <li>Producer B converts the above ASCII files to the NetCDF binary format for efficiency, with data
-     *              stored as <code>float</code> values. Producer B does not distribute the original ASCII files.</li>
-     *          <li>Client of producer B wants to use those data with a library working with <code>double</code> values.
-     *              For some reason (e.g. formatting), the client wants the same values as if the ASCII files had been
-     *              parsed with <code>Double.parseDouble(String)</code> in the first place.</li>
-     *        </ul>}
+     *        for natural phenomenon.}
      *
      * This method is equivalent to the following code, except that it is potentially faster since the
      * actual implementation avoid to format and parse the value:
@@ -134,32 +123,32 @@ public final class DecimalFunctions extends Static {
      * @return The given value as a {@code double} with the extra decimal fraction digits set to zero.
      */
     public static double floatToDouble(final float value) {
-        if (Float.isNaN(value) || Float.isInfinite(value) || value == 0f) {
-            return value;
-        }
         /*
          * Decompose  value == m × 2^e  where m and e are integers. If the exponent is not negative, then
          * there is no fractional part in the value, in which case there is no rounding error to fix.
+         * (Note: NaN and infinities also have exponent greater than zero).
          */
         final int e = Math.getExponent(value) - Numerics.SIGNIFICAND_SIZE_OF_FLOAT;
         if (e >= 0) {
-            return value;
+            return value; // Integer, infinity or NaN.
         }
         final int m = Numerics.getSignificand(value);
         assert Math.scalb((float) m, e) == value : value;
         /*
-         * Get the factor for converting the significand from base 2 to base 10, such as:
+         * Get the factor c for converting the significand m from base 2 to base 10, such as:
          *
-         *    m × (2^e)  ==  m × c × (10 ^ -e10)
+         *    m × (2 ^ e)  ==  m × c × (10 ^ -e₁₀)
          *
-         * where e10 is the smallest exponent which allow to represent the value without precision lost when (m × c)
+         * where e₁₀ is the smallest exponent which allow to represent the value without precision lost when (m × c)
          * is rounded to an integer. Because the number of significant digits in base 2 does not correspond to an
          * integer number of significand digits in base 10, we have slightly more precision than what the 'float'
          * value had: we have something between 0 and 1 extraneous digits.
+         *
+         * Note: the conversation factor c is also equals to 1 ULP converted to the units of (m × c).
          */
-        final int    e10 = -Numerics.toExp10(e);      // Make positive
-        final double c   = Math.scalb(pow10(e10), e); // Conversion factor, also 1 ULP in base 10.
-        final double mc  = m * c;
+        final int    e10 = -Numerics.toExp10(e);        // Range: [0 … 45] inclusive.
+        final double c   = Math.scalb(pow10(e10), e);   // Range: (1 … 10) exclusive.
+        final double mc  = m * c;                       // Only integer part is meaningful.
         /*
          * First, presume that our representation in base 10 has one extranous digit, so we will round
          * to the tens instead of unities. If the difference appears to not be smaller than half a ULP,
@@ -170,6 +159,98 @@ public final class DecimalFunctions extends Static {
             r = Math.rint(mc);
         }
         return Math.scalb(r / c, e);
+    }
+
+    /**
+     * Returns the difference between the given {@code double} value and the representation of that value in base 10.
+     * This method is equivalent to the following code, except that it is potentially faster since the actual
+     * implementation avoid the creation of {@link java.math.BigDecimal} objects:
+     *
+     * {@preformat java
+     *   BigDecimal base2  = new BigDecimal(value);     // Exact same value as stored in IEEE 754 format.
+     *   BigDecimal base10 = BigDecimal.valueOf(value); // Exact same value as shown by println(value).
+     *   return base10.subtract(base2).doubleValue();   // Magnitude always smaller than Math.ulp(value).
+     * }
+     *
+     * {@section Use case}
+     * Many international standards define values in base 10. For example the conversion factor from inches
+     * to centimetres is defined as exactly 2.54 cm/inch. This is by an internationally accepted definition
+     * since 1959, not an approximation. But the 2.54 value can not be represented exactly in the IEEE 754
+     * format – the error is approximatively 3.6E-17 cm/inch. In the vast majority of cases such tiny error
+     * can be ignored. But in situations where it is desirable to have an error estimation
+     * (e.g. in non-linear equations where errors can grow exponentially), this method can be useful.
+     * Other examples of values defined in base 10 are conversions from feet to metres and
+     * map projection parameters defined by national mapping agencies.
+     *
+     * @param  value The value for which to get the delta compared to its base 10 representation.
+     * @return The delta that would need to be added to the given {@code double} value for getting
+     *         a result closer to its base 10 representation.
+     */
+    public static double deltaForDoubleToDecimal(final double value) {
+        /*
+         * Decompose  value == m × 2^e  where m and e are integers, then get the
+         * factor c for converting the significand m from base 2 to base 10 such as:
+         *
+         *    m × (2 ^ e)  ==  m × c × (10 ^ -e₁₀)
+         */
+        final int e = Math.getExponent(value) - SIGNIFICAND_SIZE;
+        if (e >= 0) {
+            return 0; // Integer, infinity or NaN.
+        }
+        final long m = Numerics.getSignificand(value);
+        assert Math.scalb((double) m, e) == value : value;
+        final int e10 = -Numerics.toExp10(e); // Range: [0 … 324] inclusive.
+        /*
+         * If we were continuing with the same strategy than in floatToDouble(float), we would compute:
+         *
+         *    c = Math.scalb(pow10(e10), e);  // Range: (1 … 10) exclusive.
+         *
+         * Unfortunately this would require a floating point type with twice the accuracy of 'double',
+         * which we don't have. Instead, we will apply a trick with integer arithmetic. But before to
+         * use integers, we will need to multiply 'c' by a scale factor high enough for promoting all
+         * significant fraction digits to the integer part. This factor is 2^56, explanation follows:
+         *
+         * For reasons explained later we will actually use c/10 instead of c, so the range will be
+         * (0.1 … 1) instead of (1 … 10). The exponent of 0.1 in base 2 is -4. Consequently for any
+         * value between 0.1 and 1, scaling the value by 56 binary places guarantee that the result
+         * will be equals or greater than 2^52. At that threshold, 'double' values can not have
+         * fraction digits.
+         */
+        final int PRECISION = SIGNIFICAND_SIZE + 4;            // Number of bits to use for scaling to integers.
+        double cs = Math.scalb(pow10(e10 - 1), e + PRECISION); // Range: (0.1 × 2^56  …  2^56) exclusive.
+        /*
+         * This is where magic happen: the following multiplication overflow (we would need a 128 bits integer
+         * for representing it), but we don't care because we are interrested only in the fraction digits (the
+         * 56 lower bits because of the scaling discussed in previous comment). In integer arithmetic, the low
+         * bits are always valid even if the multiplication overflow.
+         */
+        long mc = m * ((long) cs);
+        mc &= (1L << PRECISION) - 1;
+        /*
+         * Because we used c/10 instead than c,  the first (leftmost) decimal digit is potentially the last
+         * (rightmost) decimal digit of 'value'. Whether it is really the last 'value' digit or not depends
+         * on the magnitude of last decimal digit compared to 1 ULP.
+         */
+        long lastDigit = (long) (Math.scalb(mc, -PRECISION) * 10); // [0 … 9] range.
+        if (lastDigit >= 5) lastDigit -= 10;    // Wraparound in the [-5 … 4] range.
+        /*
+         * Redo exactly the same calculation than above, but now using the real 'c' conversion factor.
+         * The fraction digits extracted here are guaranteed to be smaller (after unscaling) than 1 ULP.
+         */
+        cs = Math.scalb(pow10(e10), e + PRECISION); // Equivalent to cs *= 10, but sometime more accurate.
+        mc = m * ((long) cs);
+        mc &= (1L << PRECISION) - 1;
+        /*
+         * The 'lastDigit' that we computed above may be a significant digit of 'value', or may be an artefact.
+         * Both cases can occur because 52 binary digits do not correspond to an integer number of decimal digits.
+         * If it was not a significant digit of 'value', then we need to add it ourself.
+         */
+        // TODO: compare with 1 ULP for determining if it was a significant digit.
+        mc += lastDigit << PRECISION;
+        /*
+         * We are done: unscale and return.
+         */
+        return -Math.scalb(mc / cs, e);
     }
 
     /**
