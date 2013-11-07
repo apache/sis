@@ -96,6 +96,7 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
 
     /**
      * Tests {@link DecimalFunctions#deltaForDoubleToDecimal(double)}.
+     * This method uses {@link BigDecimal} as the reference implementation.
      */
     @Test
     @DependsOnMethod("testPow10")
@@ -121,6 +122,8 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
         assertEquals(-1.3471890270011499E-15, deltaForDoubleToDecimal(20.1168),  STRICT); // Chain to metres
         /*
          * Tests random value that do not use the full 'double' accuracy.
+         * This is a simpler case than the next one after this one, because the
+         * final adjustment at the end of deltaForDoubleToDecimal is not needed.
          */
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int fractionDigits=0; fractionDigits<=9; fractionDigits++) {
@@ -132,14 +135,27 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
             }
         }
         /*
-         * Tests random values that do use the full 'double' accuracy.
+         * Tests random values that do use the full 'double' accuracy. First, tests a few values which
+         * were known to fail in an earlier version of deltaForDoubleToDecimal, then uses random values.
+         * The expected values were computed with BigDecimal. The tolerance thresholds were determined
+         * empirically. Comments on the right side give the tolerance thresholds in ULP of the delta.
+         * The later are sometime hight, but it does not really matter. What matter is the tolerance
+         * relative to the given value, not to the returned delta.
          */
-        for (int i=0; i<0; i++) { // TODO: disabled for now
+        assertEquals(-1.9216378778219224E-23, deltaForDoubleToDecimal(3.3446045755169960E-7), STRICT);
+        assertEquals(-4.1861088853329420E-24, deltaForDoubleToDecimal(3.5496578465465944E-7), 3E-39); //        4 ULP
+        assertEquals(-4.1997787803848041E-17, deltaForDoubleToDecimal(0.7714013208272988),    2E-32); //        3 ULP
+        assertEquals( 4.0373325589462183E-18, deltaForDoubleToDecimal(0.37197394704138476),   4E-33); //        4 ULP
+        assertEquals(-2.3295945035351907E-18, deltaForDoubleToDecimal(0.25380700796141886),   4E-33); //        9 ULP
+        assertEquals(-4.1729149110324215E-18, deltaForDoubleToDecimal(0.6546245266605436),    4E-32); //       43 ULP
+        assertEquals( 4.8633955884724856E-23, deltaForDoubleToDecimal(0.8234936921177336),    4E-32); //  5666840 ULP
+        assertEquals(-2.1507730707526207E-25, deltaForDoubleToDecimal(0.19920566694813302),   2E-33); // 36267774 ULP
+        for (int i=0; i<50; i++) {
             final double     ieee  = random.nextDouble();
             final String     text  = String.valueOf(ieee);
             final BigDecimal value = new BigDecimal(text);
-            final BigDecimal delta = value.subtract(new BigDecimal(ieee));
-            assertEquals(text, delta.doubleValue(), deltaForDoubleToDecimal(ieee), STRICT);
+            final double     delta = value.subtract(new BigDecimal(ieee)).doubleValue();
+            assertEquals(text, delta, deltaForDoubleToDecimal(ieee), StrictMath.ulp(ieee) * 1E-12);
         }
     }
 
