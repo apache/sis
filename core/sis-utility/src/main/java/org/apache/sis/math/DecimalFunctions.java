@@ -24,10 +24,25 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
 
 
 /**
- * Functions working of {@code float} and {@code double} values while taking in account the representation in base 10.
- * Methods in this class may be helpful when used immediately after parsing (i.e. before any calculations are applied
- * on the value), or just before formatting a number in base 10. Methods in this class are usually <strong>not</strong>
- * recommended for intermediate calculations, since base 10 is not more "real" than base 2 for natural phenomenon.
+ * Functions working on {@code float} and {@code double} values while taking in account their representation in base 10.
+ * Methods in this class may be helpful when used after parsing or before formatting a number in base 10:
+ *
+ * <ul>
+ *   <li>Post-parsing methods {@link #floatToDouble(float)} and {@link #deltaForDoubleToDecimal(double)}:
+ *     <ul>
+ *       <li>for compensating error if the base 10 representation was <cite>definitive</cite>.</li>
+ *     </ul>
+ *   </li>
+ *   <li>Pre-formatting methods {@link #fractionDigitsForValue(double)} and
+ *       {@link #fractionDigitsForDelta(double, boolean)}:
+ *     <ul>
+ *       <li>for formatting the exact amount of significant digits for a given precision.</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ *
+ * Methods in this class are usually <strong>not</strong> recommended for intermediate calculations,
+ * since base 10 is not more "real" than base 2 for natural phenomenon.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -169,10 +184,14 @@ public final class DecimalFunctions extends Static {
      * {@preformat java
      *   BigDecimal base2  = new BigDecimal(value);     // Exact same value as stored in IEEE 754 format.
      *   BigDecimal base10 = BigDecimal.valueOf(value); // Exact same value as shown by println(value).
-     *   return base10.subtract(base2).doubleValue();   // Magnitude always smaller than Math.ulp(value).
+     *   return base10.subtract(base2).doubleValue();
      * }
      *
-     * {@section Use case}
+     * Computing {@code value + deltaForDoubleToDecimal(value)} has no effect since the absolute value of the
+     * returned delta is always smaller than <code>{@linkplain Math#ulp(double) Math.ulp}(value) / 2</code>.
+     * To see an effect, a type with more precision than the {@code double} type is necessary.
+     *
+     * <blockquote><font size="-1"><b>Use case:</b>
      * Many international standards define values in base 10. For example the conversion factor from inches
      * to centimetres is defined as exactly 2.54 cm/inch. This is by an internationally accepted definition
      * since 1959, not an approximation. But the 2.54 value can not be represented exactly in the IEEE 754
@@ -181,6 +200,7 @@ public final class DecimalFunctions extends Static {
      * (e.g. in non-linear equations where errors can grow exponentially), this method can be useful.
      * Other examples of values defined in base 10 are conversions from feet to metres and
      * map projection parameters defined by national mapping agencies.
+     * </font></blockquote>
      *
      * @param  value The value for which to get the delta compared to its base 10 representation.
      * @return The delta that would need to be added to the given {@code double} value for getting

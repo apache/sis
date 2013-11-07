@@ -45,6 +45,11 @@ import org.apache.sis.internal.jdk8.JDK8;
 })
 public final strictfp class MathFunctionsTest extends TestCase {
     /**
+     * Tolerance threshold for strict comparisons of floating point values.
+     */
+    private static final double STRICT = 0;
+
+    /**
      * Small number for floating point comparisons.
      */
     private static final double EPS = 1E-12;
@@ -64,8 +69,8 @@ public final strictfp class MathFunctionsTest extends TestCase {
      */
     @Test
     public void testConstants() {
-        assertEquals(StrictMath.sqrt (2), SQRT_2,  0);
-        assertEquals(StrictMath.log10(2), LOG10_2, 0);
+        assertEquals(StrictMath.sqrt (2), SQRT_2,  STRICT);
+        assertEquals(StrictMath.log10(2), LOG10_2, STRICT);
     }
 
     /**
@@ -74,10 +79,10 @@ public final strictfp class MathFunctionsTest extends TestCase {
     @Test
     @DependsOnMethod({"testIsPositiveZero", "testIsNegativeZero"})
     public void testTruncate() {
-        assertEquals(+4.0, truncate(+4.9), 0);
-        assertEquals(-4.0, truncate(-4.9), 0);
-        assertEquals(+0.0, truncate(+0.1), 0);
-        assertEquals(-0.0, truncate(-0.1), 0);
+        assertEquals(+4.0, truncate(+4.9), STRICT);
+        assertEquals(-4.0, truncate(-4.9), STRICT);
+        assertEquals(+0.0, truncate(+0.1), STRICT);
+        assertEquals(-0.0, truncate(-0.1), STRICT);
         assertTrue("Positive zero", isPositiveZero(truncate(+0.5)));
         assertTrue("Negative zero", isNegativeZero(truncate(-0.5)));
         assertTrue("Positive zero", isPositiveZero(truncate(+0.0)));
@@ -144,7 +149,7 @@ public final strictfp class MathFunctionsTest extends TestCase {
          */
         for (int i = MIN_EXPONENT - SIGNIFICAND_SIZE; i <= MAX_EXPONENT; i++) {
             assertEquals(StrictMath.floor(StrictMath.log10(StrictMath.scalb(1.0, i))),
-                         StrictMath.floor(LOG10_2 * i /* i = getExponent(value) */), 0);
+                         StrictMath.floor(LOG10_2 * i /* i = getExponent(value) */), STRICT);
         }
     }
 
@@ -189,10 +194,10 @@ public final strictfp class MathFunctionsTest extends TestCase {
      */
     @Test
     public void testXorSign() {
-        assertEquals( 10, xorSign( 10,  0.5), 0);
-        assertEquals(-10, xorSign(-10,  0.5), 0);
-        assertEquals( 10, xorSign(-10, -0.5), 0);
-        assertEquals(-10, xorSign( 10, -0.5), 0);
+        assertEquals( 10, xorSign( 10,  0.5), STRICT);
+        assertEquals(-10, xorSign(-10,  0.5), STRICT);
+        assertEquals( 10, xorSign(-10, -0.5), STRICT);
+        assertEquals(-10, xorSign( 10, -0.5), STRICT);
     }
 
     /**

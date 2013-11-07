@@ -52,6 +52,11 @@ public final strictfp class StatisticsTest extends TestCase {
     private static final double EPS = 1E-10;
 
     /**
+     * Tolerance threshold for strict comparisons of floating point values.
+     */
+    private static final double STRICT = 0;
+
+    /**
      * Tests the initial state of newly constructed instance.
      */
     @Test
@@ -217,8 +222,8 @@ public final strictfp class StatisticsTest extends TestCase {
             }
             assertEquals(global.count(),    byBlock.count());
             assertEquals(global.countNaN(), byBlock.countNaN());
-            assertEquals(global.minimum(),  byBlock.minimum(), 0.0);
-            assertEquals(global.maximum(),  byBlock.maximum(), 0.0);
+            assertEquals(global.minimum(),  byBlock.minimum(), STRICT);
+            assertEquals(global.maximum(),  byBlock.maximum(), STRICT);
             assertEquals(global.mean(),     byBlock.mean(),    1E-15);
             assertEquals(global.rms(),      byBlock.rms(),     1E-15);
         }
@@ -240,8 +245,8 @@ public final strictfp class StatisticsTest extends TestCase {
         assertNotSame(statistics, after);
         assertEquals( 3,                 after.count());
         assertEquals( 1,                 after.countNaN());
-        assertEquals(10.0,               after.minimum(),                0.0);
-        assertEquals(40.0,               after.maximum(),                0.0);
+        assertEquals(10.0,               after.minimum(),             STRICT);
+        assertEquals(40.0,               after.maximum(),             STRICT);
         assertEquals(23.333333333333333, after.mean(),                   EPS);
         assertEquals(26.457513110645905, after.rms(),                    EPS);
         assertEquals(12.472191289246473, after.standardDeviation(true),  EPS);
