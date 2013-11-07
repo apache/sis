@@ -17,6 +17,7 @@
 package org.apache.sis.math;
 
 import java.util.Random;
+import java.math.BigDecimal;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -41,14 +42,19 @@ import static org.apache.sis.math.DecimalFunctions.*;
 })
 public final strictfp class DecimalFunctionsTest extends TestCase {
     /**
+     * Tolerance threshold for strict comparisons of floating point values.
+     */
+    private static final double STRICT = 0;
+
+    /**
      * Verifies the values of {@link DecimalFunctions#EXPONENT_FOR_ZERO}.
      */
     @Test
     public void testConstants() {
-        assertEquals(0,  parseDouble("1E" +  EXPONENT_FOR_ZERO), 0);
+        assertEquals(0,  parseDouble("1E" +  EXPONENT_FOR_ZERO), STRICT);
         assertTrue  (0 < parseDouble("1E" + (EXPONENT_FOR_ZERO + 1)));
         assertTrue  (POSITIVE_INFINITY > parseDouble("1E" +  EXPONENT_FOR_MAX));
-        assertEquals(POSITIVE_INFINITY,  parseDouble("1E" + (EXPONENT_FOR_MAX + 1)), 0);
+        assertEquals(POSITIVE_INFINITY,  parseDouble("1E" + (EXPONENT_FOR_MAX + 1)), STRICT);
     }
 
     /**
@@ -59,7 +65,7 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
     @Test
     public void testPow10() {
         for (int i=EXPONENT_FOR_ZERO; i<=EXPONENT_FOR_MAX; i++) { // Range of allowed exponents in base 10.
-            assertEquals(parseDouble("1E"+i), pow10(i), 0);
+            assertEquals(parseDouble("1E"+i), pow10(i), STRICT);
         }
     }
 
@@ -83,9 +89,58 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
             final float value = StrictMath.scalb(random.nextFloat(), random.nextInt(20) - 10);
             assertEquals(String.valueOf(value), String.valueOf(floatToDouble(value)));
         }
-        assertEquals(POSITIVE_INFINITY, floatToDouble(Float.POSITIVE_INFINITY), 0);
-        assertEquals(NEGATIVE_INFINITY, floatToDouble(Float.NEGATIVE_INFINITY), 0);
-        assertEquals(NaN,               floatToDouble(Float.NaN),               0);
+        assertEquals(POSITIVE_INFINITY, floatToDouble(Float.POSITIVE_INFINITY), STRICT);
+        assertEquals(NEGATIVE_INFINITY, floatToDouble(Float.NEGATIVE_INFINITY), STRICT);
+        assertEquals(NaN,               floatToDouble(Float.NaN),               STRICT);
+    }
+
+    /**
+     * Tests {@link DecimalFunctions#deltaForDoubleToDecimal(double)}.
+     */
+    @Test
+    @DependsOnMethod("testPow10")
+    public void testDeltaForDoubleToDecimal() {
+        assertEquals(0, deltaForDoubleToDecimal(0),                 STRICT);
+        assertEquals(0, deltaForDoubleToDecimal(1),                 STRICT);
+        assertEquals(0, deltaForDoubleToDecimal(NaN),               STRICT);
+        assertEquals(0, deltaForDoubleToDecimal(POSITIVE_INFINITY), STRICT);
+        assertEquals(0, deltaForDoubleToDecimal(NEGATIVE_INFINITY), STRICT);
+
+        assertEquals(-2.2204460492503132E-17, deltaForDoubleToDecimal(0.9),      STRICT);
+        assertEquals(-5.5511151231257827E-18, deltaForDoubleToDecimal(0.1),      STRICT);
+        assertEquals(-2.0816681711721684E-19, deltaForDoubleToDecimal(0.01),     STRICT);
+        assertEquals(-2.0816681711721686E-20, deltaForDoubleToDecimal(0.001),    STRICT);
+        assertEquals(-4.7921736023859296E-21, deltaForDoubleToDecimal(0.0001),   STRICT);
+        assertEquals(-8.1803053914031310E-22, deltaForDoubleToDecimal(0.00001),  STRICT);
+        assertEquals( 4.5251888174113741E-23, deltaForDoubleToDecimal(0.000001), STRICT);
+        assertEquals(-1.3471890270011499E-17, deltaForDoubleToDecimal(0.201168), STRICT); // Link to metres
+        assertEquals(-1.5365486660812166E-17, deltaForDoubleToDecimal(0.3048),   STRICT); // Feet to metres
+        assertEquals( 9.4146912488213275E-18, deltaForDoubleToDecimal(0.9144),   STRICT); // Yard to metres
+        assertEquals( 1.8829382497642655E-17, deltaForDoubleToDecimal(1.8288),   STRICT); // Fathom to metres
+        assertEquals(-3.5527136788005009E-17, deltaForDoubleToDecimal(2.54),     STRICT); // Inch to centimetres
+        assertEquals(-1.3471890270011499E-15, deltaForDoubleToDecimal(20.1168),  STRICT); // Chain to metres
+        /*
+         * Tests random value that do not use the full 'double' accuracy.
+         */
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        for (int fractionDigits=0; fractionDigits<=9; fractionDigits++) {
+            for (int i=0; i<10; i++) {
+                final BigDecimal value = BigDecimal.valueOf(random.nextInt(1000000000)).movePointLeft(fractionDigits);
+                final double     ieee  = value.doubleValue(); // Inexact approximation of value.
+                final BigDecimal delta = value.subtract(new BigDecimal(ieee));
+                assertEquals(delta.doubleValue(), deltaForDoubleToDecimal(ieee), STRICT);
+            }
+        }
+        /*
+         * Tests random values that do use the full 'double' accuracy.
+         */
+        for (int i=0; i<0; i++) { // TODO: disabled for now
+            final double     ieee  = random.nextDouble();
+            final String     text  = String.valueOf(ieee);
+            final BigDecimal value = new BigDecimal(text);
+            final BigDecimal delta = value.subtract(new BigDecimal(ieee));
+            assertEquals(text, delta.doubleValue(), deltaForDoubleToDecimal(ieee), STRICT);
+        }
     }
 
     /**
