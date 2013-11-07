@@ -30,13 +30,13 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * <ul>
  *   <li>Post-parsing methods {@link #floatToDouble(float)} and {@link #deltaForDoubleToDecimal(double)}:
  *     <ul>
- *       <li>for compensating error if the base 10 representation was <cite>definitive</cite>.</li>
+ *       <li>for compensating error when the base 10 representation is considered <cite>definitive</cite>.</li>
  *     </ul>
  *   </li>
  *   <li>Pre-formatting methods {@link #fractionDigitsForValue(double)} and
  *       {@link #fractionDigitsForDelta(double, boolean)}:
  *     <ul>
- *       <li>for formatting the exact amount of significant digits for a given precision.</li>
+ *       <li>for formatting numbers using the exact amount of significant digits for a given precision.</li>
  *     </ul>
  *   </li>
  * </ul>
@@ -178,8 +178,8 @@ public final class DecimalFunctions extends Static {
 
     /**
      * Returns the difference between the given {@code double} value and the representation of that value in base 10.
-     * This method is equivalent to the following code, except that it is potentially faster since the actual
-     * implementation avoid the creation of {@link java.math.BigDecimal} objects:
+     * This method is <em>approximatively</em> equivalent to the following code, except that it is potentially faster
+     * since the actual implementation avoid the creation of {@link java.math.BigDecimal} objects:
      *
      * {@preformat java
      *   BigDecimal base2  = new BigDecimal(value);     // Exact same value as stored in IEEE 754 format.
@@ -244,33 +244,49 @@ public final class DecimalFunctions extends Static {
          * 56 lower bits because of the scaling discussed in previous comment). In integer arithmetic, the low
          * bits are always valid even if the multiplication overflow.
          */
-        long mc = m * ((long) cs);
-        mc &= (1L << PRECISION) - 1;
+        final long ci = (long) cs;
+        long mc = (m * ci) & ((1L << PRECISION) - 1);
         /*
          * Because we used c/10 instead than c,  the first (leftmost) decimal digit is potentially the last
          * (rightmost) decimal digit of 'value'. Whether it is really the last 'value' digit or not depends
-         * on the magnitude of last decimal digit compared to 1 ULP.
+         * on the magnitude of last decimal digit compared to 1 ULP. The last digit is:
+         *
+         *    lastDigit = (mc * 10) >>> PRECISION;
+         *
+         * The above digit is guaranteed to be in the [0 … 9] range. We will wraparound in the [-5 … 4] range
+         * because the delta must be no more than ±0.5 ULP of the 'value' argument.
          */
-        long lastDigit = (long) (Math.scalb(mc, -PRECISION) * 10); // [0 … 9] range.
-        if (lastDigit >= 5) lastDigit -= 10;    // Wraparound in the [-5 … 4] range.
+        if (mc >= (5L << PRECISION) / 10) { // The  0.5 × 2^56  threshold.
+            mc -= (1L << PRECISION);        // Shift [5 … 9] digits to [-5 … -1].
+        }
         /*
-         * Redo exactly the same calculation than above, but now using the real 'c' conversion factor.
-         * The fraction digits extracted here are guaranteed to be smaller (after unscaling) than 1 ULP.
+         * At this point, 'mc' is less than 0.5 ULP if the last decimal digits were zero.
+         * But if the 'value' argument uses the full precision range of the 'double' type,
+         * then we still have 'mc' greater than 0.5 ULP is some cases. This difficulty happens
+         * because 52 binary digits do not correspond to an integer number of decimal digits.
+         *
+         * For now, I didn't found a better strategy than choosing the last decimal digit in such
+         * a way that 'mc' is as small as possible. We don't really care what this last digit is;
+         * we care only about the remainder after we removed the effet of that last digit.
          */
-        cs = Math.scalb(pow10(e10), e + PRECISION); // Equivalent to cs *= 10, but sometime more accurate.
-        mc = m * ((long) cs);
-        mc &= (1L << PRECISION) - 1;
-        /*
-         * The 'lastDigit' that we computed above may be a significant digit of 'value', or may be an artefact.
-         * Both cases can occur because 52 binary digits do not correspond to an integer number of decimal digits.
-         * If it was not a significant digit of 'value', then we need to add it ourself.
-         */
-        // TODO: compare with 1 ULP for determining if it was a significant digit.
-        mc += lastDigit << PRECISION;
+        if (Math.abs(mc) >= ci/2) {
+            mc %= (1L << PRECISION) / 10; // Remove the effect of last decimal digit.
+            if (mc >= 0) {                // Check if changing the sign would make it smaller.
+                if (mc >= (1L << PRECISION) / 20) {
+                    mc -= (1L << PRECISION) / 10;
+                }
+            } else {
+                if (mc < (-1L << PRECISION) / 20) {
+                    mc += (1L << PRECISION) / 10;
+                }
+            }
+        }
         /*
          * We are done: unscale and return.
          */
-        return -Math.scalb(mc / cs, e);
+        final double delta = -Math.scalb(mc / cs, e);
+        assert Math.abs(delta) <= Math.ulp(value) / 2 : value;
+        return delta;
     }
 
     /**
