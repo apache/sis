@@ -20,10 +20,12 @@ import java.util.Random;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.lang.reflect.Field;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -39,6 +41,7 @@ import static java.lang.StrictMath.*;
  * @version 0.4
  * @module
  */
+@DependsOn(org.apache.sis.math.DecimalFunctionsTest.class)
 public final strictfp class DoubleDoubleTest extends TestCase {
     /**
      * Number of time to repeat arithmetic tests.
@@ -287,62 +290,75 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     }
 
     /**
-     * List of all {@link DoubleDouble#VALUES} as string decimal representation.
+     * List of all {@link DoubleDouble#VALUES} as string decimal representations,
+     * together with some additional values to test.
      */
     private static final String[] PREDEFINED_VALUES = {
-         "0.000001",
-         "0.000004848136811095359935899141023579480",
-         "0.00001",
-         "0.0001",
-         "0.0002777777777777777777777777777777778",
-         "0.001",
-         "0.002777777777777777777777777777777778",
-         "0.01",
-         "0.01666666666666666666666666666666667",
-         "0.01745329251994329576923690768488613",
          "0.1",
-         "0.201168",
-         "0.3048",
-         "0.785398163397448309615660845819876",
-         "0.9",
-         "0.9144",
-         "1.111111111111111111111111111111111",
-         "1.414213562373095048801688724209698",
-         "1.570796326794896619231321691639751",
-         "1.8288",
-         "2.356194490192344928846982537459627",
-         "2.54",
-         "3.14159265358979323846264338327950",
-         "6.28318530717958647692528676655901",
-        "20.1168",
-        "57.2957795130823208767981548141052"
+         "0.01",
+         "0.001",
+         "0.0001",
+         "0.00001",
+         "0.000001",
+         "0.3048",                                      // Feet to metres
+         "0.201168",                                    // Link to metres
+         "0.9144",                                      // Yard to metres
+         "1.8288",                                      // Fathom to metres
+        "20.1168",                                      // Chain to metres
+         "2.54",                                        // Inch to centimetres
+         "0.9",                                         // Degrees to gradians
+         "1.111111111111111111111111111111111",         // Gradian to degrees
+         "0.002777777777777777777777777777777778",      // 1/360°
+         "0.0002777777777777777777777777777777778",     // Second to degrees
+         "0.01666666666666666666666666666666667",       // Minute to degrees
+         "0.000004848136811095359935899141023579480",   // Arc-second to radians
+         "0.01745329251994329576923690768488613",       // Degrees to radians
+        "57.2957795130823208767981548141052",           // Radians to degrees
+         "3.14159265358979323846264338327950",          //  π
+         "6.28318530717958647692528676655901",          // 2π
+         "1.570796326794896619231321691639751",         //  π/2
+         "0.785398163397448309615660845819876",         //  π/4
+         "2.356194490192344928846982537459627",         // 3π/4
+         "1.414213562373095048801688724209698"          // √2
     };
 
     /**
-     * Ensures that the {@link DoubleDouble#VALUES} elements are sorted in strictly increasing order.
-     * Also ensures that {@link DoubleDouble#ERRORS} has the same number of elements.
+     * Verifies the {@link DoubleDouble#VALUES} and {@link DoubleDouble#ERRORS} arrays.
+     *
+     * <ul>
+     *   <li>Elements in the {@code VALUES} array shall be sorted in increasing order.</li>
+     *   <li>{@code VALUES} and {@code ERRORS} arrays shall have the same length.</li>
+     *   <li>The arrays do not contains an entry for a value that could be omitted.</li>
+     * </ul>
      *
      * @throws ReflectiveOperationException Should never happen.
      */
     @Test
-    public void testValuesSorted() throws ReflectiveOperationException {
+    public void testArraysConsistency() throws ReflectiveOperationException {
         Field field = DoubleDouble.class.getDeclaredField("VALUES");
         field.setAccessible(true);
-        double[] array = (double[]) field.get(null);
-        assertTrue(ArraysExt.isSorted(array, true));
-        assertEquals(PREDEFINED_VALUES.length, array.length);
+        final double[] values = (double[]) field.get(null);
+        assertTrue(ArraysExt.isSorted(values, true));
 
         field = DoubleDouble.class.getDeclaredField("ERRORS");
         field.setAccessible(true);
-        array = (double[]) field.get(null);
-        assertEquals(PREDEFINED_VALUES.length, array.length);
+        final double[] errors = (double[]) field.get(null);
+        assertEquals(values.length, errors.length);
+
+        for (int i=0; i<values.length; i++) {
+            final double value = values[i];
+            final double delta = DecimalFunctions.deltaForDoubleToDecimal(value);
+            if (delta == errors[i]) {
+                fail("(value,entry) pair for value " + value + " can be omitted.");
+            }
+        }
     }
 
     /**
      * Tests {@link DoubleDouble#errorForWellKnownValue(double)}.
      */
     @Test
-    @DependsOnMethod("testValuesSorted")
+    @DependsOnMethod("testArraysConsistency")
     public void testErrorForWellKnownValue() {
         for (final String text : PREDEFINED_VALUES) {
             final double     value         = Double.valueOf(text);
@@ -376,10 +392,11 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         assertEquals(9.184850993605148436E-17, DoubleDouble.errorForWellKnownValue(PI * (3./4)), STRICT);
         assertEquals(9.320078015422868E-23,    DoubleDouble.errorForWellKnownValue(PI / (180 * 60 * 60)), STRICT);
 
-        assertTrue("toDegrees", DoubleDouble.errorForWellKnownValue(180 / PI)     != 0);
-        assertTrue("toDegrees", DoubleDouble.errorForWellKnownValue(toDegrees(1)) != 0);
-        assertTrue("toRadians", DoubleDouble.errorForWellKnownValue(PI / 180)     != 0);
-        assertTrue("toRadians", DoubleDouble.errorForWellKnownValue(toRadians(1)) != 0);
+        // Following is actually an anti-regression test.
+        assertEquals("toDegrees", -1.9878495670576283E-15, DoubleDouble.errorForWellKnownValue(180 / PI),     STRICT);
+        assertEquals("toDegrees", -1.9878495670576283E-15, DoubleDouble.errorForWellKnownValue(toDegrees(1)), STRICT);
+        assertEquals("toRadians",  2.9486522708701687E-19, DoubleDouble.errorForWellKnownValue(PI / 180),     STRICT);
+        assertEquals("toRadians",  2.9486522708701687E-19, DoubleDouble.errorForWellKnownValue(toRadians(1)), STRICT);
     }
 
     /**

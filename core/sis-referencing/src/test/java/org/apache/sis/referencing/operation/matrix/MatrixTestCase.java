@@ -85,7 +85,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * @see SolverTest#TOLERANCE
      * @see NonSquareMatrixTest#printStatistics()
      */
-    protected static final double TOLERANCE = DoubleDouble.DISABLED ? STRICT : 1E-12;
+    protected static final double TOLERANCE = DoubleDouble.DISABLED ? STRICT : 1E-11;
 
     /**
      * Number of random matrices to try in arithmetic operation tests.
