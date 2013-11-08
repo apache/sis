@@ -49,7 +49,8 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * @version 0.4
  * @module
  *
- * @see org.apache.sis.util.Numbers
+ * @see MathFunctions#pow10(int)
+ * @see Math#log10(double)
  */
 public final class DecimalFunctions extends Static {
     /**
@@ -173,7 +174,9 @@ public final class DecimalFunctions extends Static {
         if (Math.abs(r - mc) >= c/2) {
             r = Math.rint(mc);
         }
-        return Math.copySign(Math.scalb(r / c, e), value);
+        r = Math.copySign(Math.scalb(r / c, e), value);
+        assert value == (float) r : value;
+        return r;
     }
 
     /**
@@ -204,14 +207,14 @@ public final class DecimalFunctions extends Static {
      * </font></blockquote>
      *
      * {@section Domain of validity}
-     * The current implementation has a hole for {@code abs(value) < 3E-8} approximatively, except for the 0
-     * value which is supported. For any non-zero value closer to zero than the above-cited threshold, this
-     * method returns {@code NaN} because it currently can not compute the delta with enough accuracy.
-     * This limitation may change in any future SIS version if we found a better algorithm.
+     * The current implementation can not compute delta for {@code abs(value) < 3E-8} approximatively,
+     * except for the 0 value which is supported. For any non-zero value closer to zero than the 3E-8
+     * threshold, this method returns {@code NaN} because of insufficient algorithm accuracy.
+     * This limitation may change in any future SIS version if we find a better algorithm.
      *
      * @param  value The value for which to get the delta compared to its base 10 representation.
      * @return The delta that would need to be added to the given {@code double} value for getting a result
-     *         closer to its base 10 representation, or {@link Double#NaN} if it can not be computed.
+     *         closer to its base 10 representation, or {@link Double#NaN NaN} if it can not be computed.
      */
     public static double deltaForDoubleToDecimal(final double value) {
         /*

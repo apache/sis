@@ -37,9 +37,7 @@ import static org.apache.sis.math.DecimalFunctions.*;
  * @version 0.4
  * @module
  */
-@DependsOn({
-    org.apache.sis.internal.util.NumericsTest.class
-})
+@DependsOn(org.apache.sis.internal.util.NumericsTest.class)
 public final strictfp class DecimalFunctionsTest extends TestCase {
     /**
      * Tolerance threshold for strict comparisons of floating point values.
@@ -159,7 +157,7 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
         assertEquals(-4.1729149110324215E-18, deltaForDoubleToDecimal(0.6546245266605436),    4E-32); //       43 ULP
         assertEquals( 4.8633955884724856E-23, deltaForDoubleToDecimal(0.8234936921177336),    4E-32); //  5666840 ULP
         assertEquals(-2.1507730707526207E-25, deltaForDoubleToDecimal(0.19920566694813302),   2E-33); // 36267774 ULP
-        for (int i=0; i<50; i++) {
+        for (int i=0; i<500; i++) {
             double ieee = StrictMath.scalb(random.nextDouble(), 20 - random.nextInt(48));
             if (random.nextBoolean()) {
                 ieee = -ieee;
