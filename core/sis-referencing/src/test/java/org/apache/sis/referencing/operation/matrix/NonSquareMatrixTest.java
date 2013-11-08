@@ -75,6 +75,8 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
 
     /**
      * Tests {@link NonSquareMatrix#inverse()} with a non-square matrix.
+     *
+     * @throws NoninvertibleMatrixException Should never happen.
      */
     @Override
     public void testInverse() throws NoninvertibleMatrixException {
@@ -84,6 +86,8 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
 
     /**
      * Tests {@link NonSquareMatrix#solve(Matrix)} with a non-square matrix.
+     *
+     * @throws NoninvertibleMatrixException Should never happen.
      */
     @Override
     public void testSolve() throws NoninvertibleMatrixException {

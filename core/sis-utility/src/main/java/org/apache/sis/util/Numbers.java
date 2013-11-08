@@ -159,21 +159,6 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns {@code true} if the given {@code type} is an integer type. This method performs
-     * the same test than {@link #isPrimitiveInteger}, excluding {@link BigInteger}.
-     *
-     * @param  type The type to test (may be {@code null}).
-     * @return {@code true} if {@code type} is the primitive of wrapper class of
-     *         {@link Long}, {@link Integer}, {@link Short} or {@link Byte}.
-     *
-     * @see #isInteger(Class)
-     */
-    private static boolean isPrimitiveInteger(final Class<?> type) {
-        final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) && mapping.isInteger && (mapping.internal != 'L');
-    }
-
-    /**
      * Returns the number of bits used by primitive of the specified type.
      * The given type must be a primitive type or its wrapper class.
      *
@@ -274,17 +259,16 @@ public final class Numbers extends Static {
                                                       final Class<? extends Number> c2)
             throws IllegalArgumentException
     {
+        if (c1 == null) return c2;
+        if (c2 == null) return c1;
         final Numbers m1 = MAPPING.get(c1);
-        if (m1 == null && c1 != null) {
+        if (m1 == null) {
             throw unknownType(c1);
         }
         final Numbers m2 = MAPPING.get(c2);
-        if (m2 == null && c2 != null) {
+        if (m2 == null) {
             throw unknownType(c2);
         }
-        if (c1 == null) return c2;
-        if (c2 == null) return c1;
-        // At this point, m1 and m2 can not be null.
         return (m1.ordinal >= m2.ordinal) ? c1 : c2;
     }
 
@@ -336,17 +320,16 @@ public final class Numbers extends Static {
                                                          final Class<? extends Number> c2)
             throws IllegalArgumentException
     {
+        if (c1 == null) return c2;
+        if (c2 == null) return c1;
         final Numbers m1 = MAPPING.get(c1);
-        if (m1 == null && c1 != null) {
+        if (m1 == null) {
             throw unknownType(c1);
         }
         final Numbers m2 = MAPPING.get(c2);
-        if (m2 == null && c2 != null) {
+        if (m2 == null) {
             throw unknownType(c2);
         }
-        if (c1 == null) return c2;
-        if (c2 == null) return c1;
-        // At this point, m1 and m2 can not be null.
         return (m1.ordinal < m2.ordinal) ? c1 : c2;
     }
 

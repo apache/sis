@@ -246,36 +246,6 @@ public enum Convention {
     }
 
     /**
-     * Returns the citation for the organization, standard of project that defines this convention.
-     *
-     * @return The organization, standard or project that defines this convention.
-     *
-     * @see WKTFormat#getAuthority()
-     */
-    public Citation getAuthority() {
-        return authority;
-    }
-
-    /**
-     * If non-null, {@code PRIMEM} and {@code PARAMETER} values shall unconditionally use the returned units.
-     * The standard value is {@code null}, which means that units are inferred from the context as required by the
-     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html#PRIMEM">WKT specification</a>.
-     * However some conventions ignore the above WKT specification and use hard-coded units instead.
-     *
-     * @param  <T>       The compile-time type specified by the {@code quantity} argument.
-     * @param  quantity  The kind of quantity for which to get the unit.
-     *                   The most typical value for this argument is <code>{@linkplain Angle}.class</code>.
-     * @return The unit to use for the given kind of quantity, or {@code null} for inferring the unit in the standard way.
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends Quantity> Unit<T> getForcedUnit(final Class<T> quantity) {
-        if (quantity == Angle.class) {
-            return (Unit) forcedAngularUnit;
-        }
-        return null;
-    }
-
-    /**
      * Returns the convention for the organization, standard or project specified by the given citation.
      *
      * @param  authority The organization, standard or project for which to get the convention, or {@code null}.
@@ -311,6 +281,36 @@ public enum Convention {
             }
         }
         return defaultConvention;
+    }
+
+    /**
+     * Returns the citation for the organization, standard of project that defines this convention.
+     *
+     * @return The organization, standard or project that defines this convention.
+     *
+     * @see WKTFormat#getAuthority()
+     */
+    public Citation getAuthority() {
+        return authority;
+    }
+
+    /**
+     * If non-null, {@code PRIMEM} and {@code PARAMETER} values shall unconditionally use the returned units.
+     * The standard value is {@code null}, which means that units are inferred from the context as required by the
+     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html#PRIMEM">WKT specification</a>.
+     * However some conventions ignore the above WKT specification and use hard-coded units instead.
+     *
+     * @param  <T>       The compile-time type specified by the {@code quantity} argument.
+     * @param  quantity  The kind of quantity for which to get the unit.
+     *                   The most typical value for this argument is <code>{@linkplain Angle}.class</code>.
+     * @return The unit to use for the given kind of quantity, or {@code null} for inferring the unit in the standard way.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Quantity> Unit<T> getForcedUnit(final Class<T> quantity) {
+        if (quantity == Angle.class) {
+            return (Unit) forcedAngularUnit;
+        }
+        return null;
     }
 
     /**

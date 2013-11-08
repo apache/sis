@@ -115,7 +115,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @param topicCategory The main theme of the dataset, or {@code null} if none.
      */
     public DefaultDataIdentification(final Citation citation,
-                                     final InternationalString abstracts,
+                                     final CharSequence abstracts,
                                      final Locale language,
                                      final TopicCategory topicCategory)
     {

@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.util.Arrays;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.math.DecimalFunctions;
 // No BigDecimal dependency - see class javadoc
 
 
@@ -114,44 +115,31 @@ public final class DoubleDouble extends Number {
     public static final double MAX_VALUE = Double.MAX_VALUE / SPLIT;
 
     /**
-     * Pre-defined constants frequently used in SIS. SIS often creates matrices for unit conversions,
-     * and most conversion factors are defined precisely in base 10. For example the conversion from
-     * feet to metre is defined by a factor of exactly 0.3048, which can not be represented precisely
-     * as a {@code double}. Consequently if a value of 0.3048 is given, we can assume that the intend
-     * was to provide the "feet to metres" conversion factor and complete the double-double instance
-     * accordingly.
+     * Pre-defined constants frequently used in SIS, sorted in increasing order. This table contains only
+     * constants that can not be inferred by {@link DecimalFunctions#deltaForDoubleToDecimal(double)},
+     * for example some transcendental values.
      *
      * <p>Elements in this array shall be sorted in strictly increasing order.
      * For any value at index <var>i</var>, the associated error is {@code ERRORS[i]}.
+     *
+     * @see #errorForWellKnownValue(double)
      */
     private static final double[] VALUES = {
         // Some of the following constants have more fraction digits than necessary. We declare the extra
         // digits for documentation purpose, and in order to have identical content than DoubleDoubleTest
         // so that a plain copy-and-paste can be performed between those two classes.
-         0.000001,
-         0.00001,
-         0.0001,
-         0.00027777777777777777777777777777777778,  // Second to degrees
-         0.001,
+         0.000004848136811095359935899141023579480, // Arc-second to radians
+         0.0002777777777777777777777777777777778,   // Second to degrees
          0.002777777777777777777777777777777778,    // 1/360°
-         0.01,
          0.01666666666666666666666666666666667,     // Minute to degrees
          0.01745329251994329576923690768488613,     // Degrees to radians
-         0.1,
-         0.201168,                                  // Link to metres
-         0.3048,                                    // Feet to metres
          0.785398163397448309615660845819876,       // π/4
-         0.9,                                       // Degrees to gradians
-         0.9144,                                    // Yard to metres
          1.111111111111111111111111111111111,       // Gradian to degrees
          1.414213562373095048801688724209698,       // √2
          1.570796326794896619231321691639751,       // π/2
-         1.8288,                                    // Fathom to metres
          2.356194490192344928846982537459627,       // π * 3/4
-         2.54,                                      // Inch to centimetres
          3.14159265358979323846264338327950,        // π
          6.28318530717958647692528676655901,        // 2π
-        20.1168,                                    // Chain to metres
         57.2957795130823208767981548141052          // Radians to degrees
     };
 
@@ -168,30 +156,18 @@ public final class DoubleDouble extends Number {
      * </ul>
      */
     private static final double[] ERRORS = {
-        /*  0.000001  */  4.525188817411374E-23,
-        /*  0.00001   */ -8.180305391403131E-22,
-        /*  0.0001    */ -4.79217360238593E-21,
+        /*  0.000004… */  9.320078015422868E-23,
         /*  0.000266… */  2.4093381610788987E-22,
-        /*  0.001     */ -2.0816681711721686E-20,
         /*  0.002666… */ -1.0601087908747154E-19,
-        /*  0.01      */ -2.0816681711721684E-19,
         /*  0.016666… */  2.312964634635743E-19,
         /*  0.017453… */  2.9486522708701687E-19,
-        /*  0.1       */ -5.551115123125783E-18,
-        /*  0.201168  */ -1.3471890270011499E-17,
-        /*  0.3048    */ -1.5365486660812166E-17,
         /*  0.785398… */  3.061616997868383E-17,
-        /*  0.9       */ -2.2204460492503132E-17,
-        /*  0.9144    */  9.414691248821328E-18,
         /*  1.111111… */ -4.9343245538895844E-17,
         /*  1.414213… */ -9.667293313452913E-17,
         /*  1.570796… */  6.123233995736766E-17,
-        /*  1.8288    */  1.8829382497642655E-17,
         /*  2.356194… */  9.184850993605148E-17,
-        /*  2.54      */ -3.552713678800501E-17,
         /*  3.141592… */  1.2246467991473532E-16,
         /*  6.283185… */  2.4492935982947064E-16,
-        /* 20.1168    */ -1.3471890270011499E-15,
         /* 57.295779… */ -1.9878495670576283E-15
     };
 
@@ -210,6 +186,27 @@ public final class DoubleDouble extends Number {
      * Creates a new value initialized to zero.
      */
     public DoubleDouble() {
+    }
+
+    /**
+     * Creates a new value initialized to the given value.
+     *
+     * @param other The other value to copy.
+     */
+    public DoubleDouble(final DoubleDouble other) {
+        value = other.value;
+        error = other.error;
+    }
+
+    /**
+     * Creates a new value initialized to the given value and an error term inferred by
+     * {@link #errorForWellKnownValue(double)}.
+     *
+     * @param value The initial value.
+     */
+    public DoubleDouble(final double value) {
+        this.value = value;
+        this.error = errorForWellKnownValue(value);
     }
 
     /**
@@ -235,6 +232,16 @@ public final class DoubleDouble extends Number {
         return new DoubleDouble(0.01745329251994329576923690768488613, 2.9486522708701687E-19);
     }
 
+    /**
+     * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
+     * from arc-seconds to radians.
+     *
+     * @return An instance initialized to the 0.000004848136811095359935899141023579480 value.
+     */
+    public static DoubleDouble createSecondsToRadians() {
+        return new DoubleDouble(0.000004848136811095359935899141023579480, 9.320078015422868E-23);
+    }
+
     /** @return {@link #value}. */
     @Override public double doubleValue() {return value;}
     @Override public float  floatValue()  {return (float) value;}
@@ -242,17 +249,31 @@ public final class DoubleDouble extends Number {
     @Override public int    intValue()    {return (int) longValue();}
 
     /**
-     * If the given value is one of the well known constants, returns the error for that value.
-     * Otherwise returns 0.
+     * Suggests an {@link #error} for the given value. The {@code DoubleDouble} class contains a hard-coded list
+     * of some frequently used constants, for example for various factors of π. If the given value matches exactly
+     * one of those constants, then its error term is returned. Otherwise this method assumes that the given value
+     * is defined in base 10 (e.g. many unit conversion factors) and tries to compute an error term with
+     * {@link DecimalFunctions#deltaForDoubleToDecimal(double)}.
+     *
+     * {@section Rational}
+     * SIS often creates matrices for unit conversions, and most conversion factors are defined precisely in base 10.
+     * For example the conversion from feet to metres is defined by a factor of exactly 0.3048, which can not be
+     * represented precisely as a {@code double}. Consequently if a value of 0.3048 is given, we can assume that
+     * the intend was to provide the "feet to metres" conversion factor and complete the double-double instance
+     * accordingly.
      *
      * @param  value The value for which to get this error.
      * @return The error for the given value, or 0 if unknown. In the later case,
-     *         the given value is assumed to be the most accurate available representation.
+     *         the base 2 representation of the given value is assumed to be accurate enough.
      */
     public static double errorForWellKnownValue(final double value) {
         if (DISABLED) return 0;
         final int i = Arrays.binarySearch(VALUES, Math.abs(value));
-        return (i >= 0) ? MathFunctions.xorSign(ERRORS[i], value) : 0;
+        if (i >= 0) {
+            return MathFunctions.xorSign(ERRORS[i], value);
+        }
+        final double delta = DecimalFunctions.deltaForDoubleToDecimal(value);
+        return Double.isNaN(delta) ? 0 : delta;
     }
 
     /**
@@ -398,7 +419,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Set this number to {@code -this}.
+     * Sets this number to {@code -this}.
      */
     public void negate() {
         value = -value;
