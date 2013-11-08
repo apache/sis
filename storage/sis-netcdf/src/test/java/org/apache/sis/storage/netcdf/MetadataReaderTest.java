@@ -110,22 +110,10 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   ├─Cell geometry…………………………………………………………………… Area\n" +
             "  │   └─Transformation parameter availability…… false\n" +
             "  ├─Identification info\n" +
-            "  │   ├─Spatial representation type……………………………… Grid\n" +
-            "  │   ├─Extent\n" +
-            "  │   │   ├─Geographic element\n" +
-            "  │   │   │   ├─West bound longitude…………………………… 180°W\n" +
-            "  │   │   │   ├─East bound longitude…………………………… 180°E\n" +
-            "  │   │   │   ├─South bound latitude…………………………… 90°S\n" +
-            "  │   │   │   ├─North bound latitude…………………………… 90°N\n" +
-            "  │   │   │   └─Extent type code……………………………………… true\n" +
-            "  │   │   └─Vertical element\n" +
-            "  │   │       ├─Minimum value……………………………………………… 0.0\n" +
-            "  │   │       └─Maximum value……………………………………………… 0.0\n" +
-            "  │   ├─Abstract………………………………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
             "  │   ├─Citation\n" +
             "  │   │   ├─Title……………………………………………………………………………… Sea Surface Temperature Analysis Model\n" +
             "  │   │   ├─Date\n" +
-            "  │   │   │   ├─Date……………………………………………………………………… 2005/09/22 00:00:00\n" +
+            "  │   │   │   ├─Date……………………………………………………………………… 2005-09-22 00:00:00\n" +
             "  │   │   │   └─Date type………………………………………………………… Creation\n" +
             "  │   │   ├─Identifier\n" +
             "  │   │   │   ├─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
@@ -134,20 +122,32 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   │   └─Cited responsible party\n" +
             "  │   │       ├─Individual name………………………………………… NOAA/NWS/NCEP\n" +
             "  │   │       └─Role……………………………………………………………………… Originator\n" +
+            "  │   ├─Abstract………………………………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
+            "  │   ├─Point of contact\n" +
+            "  │   │   ├─Individual name…………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   │   └─Role………………………………………………………………………………… Point of contact\n" +
             "  │   ├─Descriptive keywords\n" +
             "  │   │   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
             "  │   │   ├─Type………………………………………………………………………………… Theme\n" +
             "  │   │   └─Thesaurus name\n" +
             "  │   │       └─Title…………………………………………………………………… GCMD Science Keywords\n" +
-            "  │   ├─Point of contact\n" +
-            "  │   │   ├─Individual name…………………………………………………… NOAA/NWS/NCEP\n" +
-            "  │   │   └─Role………………………………………………………………………………… Point of contact\n" +
-            "  │   └─Resource constraints\n" +
-            "  │       └─Use limitation……………………………………………………… Freely available\n" +
+            "  │   ├─Resource constraints\n" +
+            "  │   │   └─Use limitation……………………………………………………… Freely available\n" +
+            "  │   ├─Spatial representation type……………………………… Grid\n" +
+            "  │   └─Extent\n" +
+            "  │       ├─Geographic element\n" +
+            "  │       │   ├─West bound longitude…………………………… 180°W\n" +
+            "  │       │   ├─East bound longitude…………………………… 180°E\n" +
+            "  │       │   ├─South bound latitude…………………………… 90°S\n" +
+            "  │       │   ├─North bound latitude…………………………… 90°N\n" +
+            "  │       │   └─Extent type code……………………………………… true\n" +
+            "  │       └─Vertical element\n" +
+            "  │           ├─Minimum value……………………………………………… 0.0\n" +
+            "  │           └─Maximum value……………………………………………… 0.0\n" +
             "  ├─Content info\n" +
             "  │   └─Dimension\n" +
-            "  │       ├─Descriptor………………………………………………………………… Sea temperature\n" +
-            "  │       └─Sequence identifier………………………………………… SST\n" +
+            "  │       ├─Sequence identifier………………………………………… SST\n" +
+            "  │       └─Descriptor………………………………………………………………… Sea temperature\n" +
             "  └─Data quality info\n" +
             "      └─Lineage\n" +
             "          └─Statement…………………………………………………………………… 2003-04-07 12:12:50 - created by gribtocdl" +

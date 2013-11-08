@@ -461,6 +461,7 @@ public final class Units extends Static {
              * with "deg", then the check should be put in the above block instead.
              */
             if (uom.equals("°")                      || equalsIgnorePlural(uom, "decimal_degree")) return NonSI.DEGREE_ANGLE;
+            if (uom.equalsIgnoreCase("arcsec"))                                                    return NonSI.SECOND_ANGLE;
             if (uom.equalsIgnoreCase("rad")          || equalsIgnorePlural(uom, "radian"))         return SI.RADIAN;
             if (equalsIgnorePlural(uom, "kilometer") || equalsIgnorePlural(uom, "kilometre"))      return SI.KILOMETRE;
             if (equalsIgnorePlural(uom, "meter")     || equalsIgnorePlural(uom, "metre"))          return SI.METRE;

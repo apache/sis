@@ -27,10 +27,12 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
+import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
 
 // Related to JDK7
@@ -159,7 +161,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     /**
      * The conversion factor from <cite>parts per million</cite> to scale minus one.
      */
-    private static final double PPM = 1E+6;
+    static final double PPM = 1E+6;
 
     /**
      * The conversion factor from arc-seconds to radians.
@@ -247,6 +249,20 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
         this.rZ = rZ;
         this.dS = dS;
         this.targetDatum = targetDatum;
+        verify();
+    }
+
+    /**
+     * Verifies parameters validity after construction.
+     */
+    private void verify() {
+        ensureFinite("tX", tX);
+        ensureFinite("tY", tY);
+        ensureFinite("tZ", tZ);
+        ensureFinite("rX", rX);
+        ensureFinite("rY", rY);
+        ensureFinite("rZ", rZ);
+        ensureBetween("dS", -PPM, PPM, dS); // For preventing zero or negative value on the matrix diagonal.
     }
 
     /**
@@ -264,7 +280,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * @param  targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
      * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
      *
-     * @see #getPositionVectorTransformation(boolean)
+     * @see #getPositionVectorTransformation()
      */
     public BursaWolfParameters(final Matrix matrix, final double tolerance, final GeodeticDatum targetDatum)
             throws IllegalArgumentException
@@ -309,6 +325,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
         this.rY = rY;
         this.rZ = rZ;
         this.targetDatum = targetDatum;
+        verify();
     }
 
     /**
@@ -362,25 +379,46 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * This is identified as operation method 1033 in the EPSG database.
      *
      * {@section Inverse transformation}
-     * The inverse transformation can be computed by reversing the sign of the 7 parameters before to use
-     * them in the above matrix. Note that both the direct and inverse transformations are approximations.
-     * Multiplication of direct and inverse transformation matrices results in a matrix close to the identity,
-     * but not necessarily strictly equals.
+     * The inverse transformation can be approximated by reversing the sign of the 7 parameters before to use them
+     * in the above matrix. This is often considered sufficient since <cite>position vector transformations</cite>
+     * are themselves approximations. However Apache SIS will rather use
+     * {@link org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse()} in order to increase the chances
+     * that concatenation of transformations <var>A</var> → <var>B</var> followed by <var>B</var> → <var>A</var>
+     * gives back the identity transform.
      *
-     * @param  inverse If {@code true}, returns the inverse transformation instead.
      * @return An affine transform in geocentric space created from this Bursa-Wolf parameters.
      *
      * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum)
      */
-    public Matrix getPositionVectorTransformation(final boolean inverse) {
-        final double sgn = inverse ? -1 : +1;
-        final double   S = 1 + sgn*dS / PPM;
-        final double  RS = sgn*TO_RADIANS * S;
-        return new Matrix4(
-                 S,  -rZ*RS,  +rY*RS,  sgn*tX,
-            +rZ*RS,       S,  -rX*RS,  sgn*tY,
-            -rY*RS,  +rX*RS,       S,  sgn*tZ,
-                 0,       0,       0,      1);
+    public Matrix getPositionVectorTransformation() {
+        if (isTranslation()) {
+            final Matrix4 matrix = new Matrix4();
+            matrix.m03 = tX;
+            matrix.m13 = tY;
+            matrix.m13 = tZ;
+            return matrix;
+        }
+        /*
+         * Above was an optimization for the common case where the Bursa-Wolf parameters contain only
+         * translation terms. If we have rotation or scale terms, then use double-double arithmetic.
+         */
+        final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
+        final DoubleDouble S = new DoubleDouble(dS);
+        S.divide(PPM, 0);
+        S.add(1, 0);        // S = 1 + dS / PPM;
+        RS.multiply(S);     // RS = toRadians(1″) * S;
+        final DoubleDouble  X = new DoubleDouble(rX); X.multiply(RS);
+        final DoubleDouble  Y = new DoubleDouble(rY); Y.multiply(RS);
+        final DoubleDouble  Z = new DoubleDouble(rZ); Z.multiply(RS);
+        final DoubleDouble mX = new DoubleDouble( X); mX.negate();
+        final DoubleDouble mY = new DoubleDouble( Y); mY.negate();
+        final DoubleDouble mZ = new DoubleDouble( Z); mZ.negate();
+        final Integer       O = 0; // Fetch Integer instance only once.
+        return Matrices.create(4, 4, new Number[] {
+                 S,  mZ,   Y,  Double.valueOf(tX),
+                 Z,   S,  mX,  Double.valueOf(tY),
+                mY,   X,   S,  Double.valueOf(tZ),
+                 O,   O,   O,  1});
     }
 
     /**

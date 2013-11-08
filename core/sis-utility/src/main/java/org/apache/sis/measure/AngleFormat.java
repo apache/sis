@@ -39,7 +39,7 @@ import static java.lang.Double.isInfinite;
 import static org.apache.sis.math.MathFunctions.pow10;
 import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;
-import static org.apache.sis.math.MathFunctions.fractionDigitsForDelta;
+import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;

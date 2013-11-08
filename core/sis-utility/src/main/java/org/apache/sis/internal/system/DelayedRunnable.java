@@ -19,7 +19,6 @@ package org.apache.sis.internal.system;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.sis.math.MathFunctions;
 
 
 /**
@@ -70,13 +69,14 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * accepts only {@code DelayedRunnable} instances.
      *
      * @param other The other delayed object to compare with this delayed task.
+     * @return -1 if the other task should happen before this one, +1 if it should happen after, or 0.
      */
     @Override
     public int compareTo(final Delayed other) {
         if (other instanceof Immediate) {
             return +1; // "Immediate" tasks always have precedence over delayed ones.
         }
-        return MathFunctions.sgn(timestamp - ((DelayedRunnable) other).timestamp);
+        return Long.signum(timestamp - ((DelayedRunnable) other).timestamp);
     }
 
     /**
@@ -104,6 +104,9 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
 
         /**
          * Returns the delay, which is fixed to 0 in every cases.
+         *
+         * @param  unit The unit of the value to return (ignored).
+         * @return The delay, which is fixed to 0.
          */
         @Override
         public final long getDelay(final TimeUnit unit) {

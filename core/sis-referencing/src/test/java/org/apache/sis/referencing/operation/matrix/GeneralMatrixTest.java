@@ -87,10 +87,10 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
                 0.9,
                 0.1234567,
 
-                // Values below this point are error terms copied from DoubleDouble.ERRORS.
+                // Most values below this point are error terms copied from DoubleDouble.ERRORS.
                  2.9486522708701687E-19,
                 -1.9878495670576283E-15,
                 -2.2204460492503132E-17,
-                 0}, elements, STRICT);
+                -2.5483615218035994E-18}, elements, STRICT);
     }
 }
