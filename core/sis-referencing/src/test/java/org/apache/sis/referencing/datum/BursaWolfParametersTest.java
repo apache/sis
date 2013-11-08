@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
+import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -41,34 +42,35 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     private static final double TO_RADIANS = Math.PI / (180 * 60 * 60);
 
     /**
-     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(boolean)} and compares
+     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation()} and compares
      * with our own matrix calculated using double arithmetic.
      */
-    private static MatrixSIS getPositionVectorTransformation(final BursaWolfParameters p, final boolean inverse) {
-        final double sgn = inverse ? -1 : +1;
-        final double   S = 1 + sgn*p.dS / BursaWolfParameters.PPM;
-        final double  RS = sgn*TO_RADIANS * S;
+    private static MatrixSIS getPositionVectorTransformation(final BursaWolfParameters p) {
+        final double   S = 1 + p.dS / BursaWolfParameters.PPM;
+        final double  RS = TO_RADIANS * S;
         final Matrix4 expected = new Matrix4(
-                   S,  -p.rZ*RS,  +p.rY*RS,  sgn*p.tX,
-            +p.rZ*RS,         S,  -p.rX*RS,  sgn*p.tY,
-            -p.rY*RS,  +p.rX*RS,         S,  sgn*p.tZ,
-                   0,         0,         0,      1);
+                   S,  -p.rZ*RS,  +p.rY*RS,  p.tX,
+            +p.rZ*RS,         S,  -p.rX*RS,  p.tY,
+            -p.rY*RS,  +p.rX*RS,         S,  p.tZ,
+                   0,         0,         0,  1);
 
-        final MatrixSIS matrix = MatrixSIS.castOrCopy(p.getPositionVectorTransformation(inverse));
+        final MatrixSIS matrix = MatrixSIS.castOrCopy(p.getPositionVectorTransformation());
         assertMatrixEquals("getPositionVectorTransformation", expected, matrix, p.isTranslation() ? 0 : 1E-14);
         return matrix;
     }
 
     /**
-     * Tests {@link BursaWolfParameters#getPositionVectorTransformation(boolean)}.
+     * Tests {@link BursaWolfParameters#getPositionVectorTransformation()}.
      * This test transform a point from WGS72 to WGS84, and conversely,
      * as documented in the example section of EPSG operation method 9606.
+     *
+     * @throws NoninvertibleMatrixException Should never happen.
      */
     @Test
-    public void testGetPositionVectorTransformation() {
+    public void testGetPositionVectorTransformation() throws NoninvertibleMatrixException {
         final BursaWolfParameters bursaWolf = new BursaWolfParameters(0, 0, 4.5, 0, 0, 0.554, 0.219, null);
-        final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf, false);
-        final MatrixSIS toWGS72 = getPositionVectorTransformation(bursaWolf, true);
+        final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
+        final MatrixSIS toWGS72 = getPositionVectorTransformation(bursaWolf).inverse();
         final MatrixSIS source  = Matrices.create(4, 1, new double[] {3657660.66, 255768.55, 5201382.11, 1});
         final MatrixSIS target  = Matrices.create(4, 1, new double[] {3657660.78, 255778.43, 5201387.75, 1});
         assertMatrixEquals("toWGS84", target, toWGS84.multiply(source), 0.01);
@@ -76,21 +78,21 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     }
 
     /**
-     * Multiplies the <cite>ED87 to WGS 84</cite> parameters (EPSG:1146) transformation by its inverse,
-     * and verify that the result is somewhat close to the identity. This is an internal consistency test.
+     * Multiplies the <cite>ED87 to WGS 84</cite> parameters (EPSG:1146) transformation by its inverse and
+     * verifies that the result is very close to the identity matrix, thanks to the double-double arithmetic.
+     * This is an internal consistency test.
+     *
+     * @throws NoninvertibleMatrixException Should never happen.
      */
     @Test
     @DependsOnMethod("testGetPositionVectorTransformation")
-    public void testP() {
+    public void testProductOfInverse() throws NoninvertibleMatrixException {
         final BursaWolfParameters bursaWolf = new BursaWolfParameters(
                 -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null);
-        final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf, false);
-        final MatrixSIS toED87  = getPositionVectorTransformation(bursaWolf, true);
+        final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
+        final MatrixSIS toED87  = getPositionVectorTransformation(bursaWolf).inverse();
         final MatrixSIS product = toWGS84.multiply(toED87);
-        /*
-         * The error is below 1E-11 for all elements except the translation terms.
-         */
-        assertTrue(Matrices.isIdentity(product, 5E-4));
+        assertTrue(Matrices.isIdentity(product, 1E-37));
     }
 
     /**
