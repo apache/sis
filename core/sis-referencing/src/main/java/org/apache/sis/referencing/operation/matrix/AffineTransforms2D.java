@@ -25,7 +25,6 @@ import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -371,10 +370,10 @@ public final class AffineTransforms2D extends Static {
      */
     public static int getFlip(final AffineTransform transform) {
         ArgumentChecks.ensureNonNull("transform", transform);
-        final int scaleX = MathFunctions.sgn(transform.getScaleX());
-        final int scaleY = MathFunctions.sgn(transform.getScaleY());
-        final int shearX = MathFunctions.sgn(transform.getShearX());
-        final int shearY = MathFunctions.sgn(transform.getShearY());
+        final double scaleX = Math.signum(transform.getScaleX());
+        final double scaleY = Math.signum(transform.getScaleY());
+        final double shearX = Math.signum(transform.getShearX());
+        final double shearY = Math.signum(transform.getShearY());
         if (scaleX ==  scaleY && shearX == -shearY) return +1;
         if (scaleX == -scaleY && shearX ==  shearY) return -1;
         return 0;

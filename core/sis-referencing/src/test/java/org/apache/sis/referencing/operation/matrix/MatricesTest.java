@@ -19,9 +19,11 @@ package org.apache.sis.referencing.operation.matrix;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -49,6 +51,45 @@ import static org.opengis.referencing.cs.AxisDirection.*;
     NonSquareMatrixTest.class
 })
 public final strictfp class MatricesTest extends TestCase {
+    /**
+     * Tests {@link Matrices#create(int, int, Number[])}.
+     */
+    public void testCreateFromNumbers() {
+        final double SENTINEL_VALUE = Double.MIN_VALUE;
+        final int    SIZE           = Matrix3.SIZE;
+        final Matrix3 expected = new Matrix3(
+                  1,    2,    3,
+                0.1,  0.2,  0.3,
+                 -1,   -2,   -3);
+        final Number[] elements = {
+                  1,    2,    3,
+                0.1,  0.2,  0.3,
+                 -1,   -2,   -3};
+        /*
+         * Mix of Integer and Double objects but without DoubleDouble objects.
+         * The result shall be a matrix using the standard double Java type.
+         */
+        assertEquals(expected, Matrices.create(SIZE, SIZE, elements));
+        /*
+         * Now put some DoubleDouble instances in the diagonal. We set the error term to
+         * Double.MIN_VALUE in order to differentiate them from automatically calculated
+         * error terms. The result shall use double-double arithmetic, and we should be
+         * able to find back our error terms.
+         */
+        for (int i = 0; i < elements.length; i += SIZE+1) {
+            elements[i] = new DoubleDouble(elements[i].doubleValue(), SENTINEL_VALUE);
+        }
+        final MatrixSIS matrix = Matrices.create(SIZE, SIZE, elements);
+        assertInstanceOf("Created with DoubleDouble elements", GeneralMatrix.class, matrix);
+        assertFalse(expected.equals(matrix)); // Because not the same type.
+        assertTrue(Matrices.equals(expected, matrix, ComparisonMode.BY_CONTRACT));
+        final double[] errors = ((GeneralMatrix) matrix).elements;
+        for (int i = 0; i < SIZE*SIZE; i++) {
+            // Only elements on the diagonal shall be our sentinel value.
+            assertEquals((i % (SIZE+1)) == 0, errors[i + SIZE*SIZE] == SENTINEL_VALUE);
+        }
+    }
+
     /**
      * Tests {@link Matrices#createTransform(AxisDirection[], AxisDirection[])} with the same sequence of axes.
      * The result shall be an identity matrix.

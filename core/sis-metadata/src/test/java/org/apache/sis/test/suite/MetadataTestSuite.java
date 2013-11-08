@@ -31,17 +31,6 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
-    org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
-    org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
-    org.apache.sis.metadata.iso.identification.DefaultKeywordsTest.class,
-    org.apache.sis.metadata.iso.identification.DefaultRepresentativeFractionTest.class,
-    org.apache.sis.metadata.iso.identification.DefaultResolutionTest.class,
-    org.apache.sis.metadata.iso.identification.DefaultBrowseGraphicTest.class,
-    org.apache.sis.metadata.iso.spatial.DefaultGeorectifiedTest.class,
-    org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,
-    org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
-    org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
-    org.apache.sis.metadata.iso.extent.ExtentsTest.class,
 
     // Classes using Java reflection.
     org.apache.sis.metadata.PropertyInformationTest.class,
@@ -58,8 +47,6 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.MetadataStandardTest.class,
     org.apache.sis.metadata.PrunerTest.class,
     org.apache.sis.metadata.AbstractMetadataTest.class,
-    org.apache.sis.metadata.iso.ImmutableIdentifierTest.class,
-    org.apache.sis.metadata.iso.AllMetadataTest.class,
 
     // XML marshalling.
     org.apache.sis.internal.jaxb.code.CodeListMarshallingTest.class,
@@ -69,6 +56,24 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.NilReasonMarshallingTest.class,
     org.apache.sis.xml.AnchorMarshallingTest.class,
     org.apache.sis.xml.ObjectReferenceMarshallingTest.class,
+
+    // ISO implementations.
+    org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
+    org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
+    org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,
+    org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
+    org.apache.sis.metadata.iso.extent.ExtentsTest.class,
+    org.apache.sis.metadata.iso.spatial.DefaultGeorectifiedTest.class,
+    org.apache.sis.metadata.iso.identification.DefaultKeywordsTest.class,
+    org.apache.sis.metadata.iso.identification.DefaultRepresentativeFractionTest.class,
+    org.apache.sis.metadata.iso.identification.DefaultResolutionTest.class,
+    org.apache.sis.metadata.iso.identification.DefaultBrowseGraphicTest.class,
+    org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class,
+    org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
+    org.apache.sis.metadata.iso.ImmutableIdentifierTest.class,
+    org.apache.sis.metadata.iso.AllMetadataTest.class,
+
+    // XML marshalling (integration tests).
     org.apache.sis.xml.CustomMetadataTest.class,
     org.apache.sis.xml.ImageryMarshallingTest.class,
     org.apache.sis.xml.MetadataMarshallingTest.class

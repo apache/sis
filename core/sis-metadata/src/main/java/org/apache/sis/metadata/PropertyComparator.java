@@ -18,7 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Comparator;
 import java.util.Map;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.lang.reflect.Method;
 import javax.xml.bind.annotation.XmlType;
 
@@ -43,7 +43,7 @@ import org.opengis.annotation.Obligation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 final class PropertyComparator implements Comparator<Method> {
@@ -63,29 +63,51 @@ final class PropertyComparator implements Comparator<Method> {
     static final String SET = "set";
 
     /**
-     * Methods specified in the {@link XmlType} annotation, or {@code null} if none.
+     * Methods and property names specified in the {@link XmlType} annotation.
+     * Entries description:
+     *
+     * <ul>
+     *   <li>Keys in this map are either {@link String} or {@link Method} instances:
+     *     <ul>
+     *       <li>{@code String} keys property names as given by {@link XmlType#propOrder()}.
+     *           They are computed at construction time and do not change after construction.</li>
+     *       <li>{@code Method} keys will be added after construction, only as needed.</li>
+     *     </ul>
+     *   </li>
+     *
+     *   <li>Key is associated to an index that specify its position in descending order.
+     *       For example the property associated to integer 0 shall be sorted last.
+     *       This descending order is only an implementation convenience.</li>
+     * </ul>
      */
-    private final String[] order;
-
-    /**
-     * Indices of methods in the {@link #order} array, created when first needed.
-     */
-    private Map<Method,Integer> indices;
+    private final Map<Object,Integer> order;
 
     /**
      * Creates a new comparator for the given implementation class.
      *
      * @param implementation The implementation class, or {@code null} if unknown.
      */
-    PropertyComparator(final Class<?> implementation) {
-        if (implementation != null) {
+    PropertyComparator(Class<?> implementation) {
+        order = new HashMap<Object,Integer>();
+        while (implementation != null) {
             final XmlType xml = implementation.getAnnotation(XmlType.class);
             if (xml != null) {
-                order = xml.propOrder();
-                return;
+                final String[] propOrder = xml.propOrder();
+                for (int i=propOrder.length; --i>=0;) {
+                    /*
+                     * Add the entries in reverse order because we are iterating from the child class to
+                     * the parent class, and we want the properties in the parent class to be sorted first.
+                     * If duplicated properties are found, keep the first occurence (i.e. sort the property
+                     * with the most specialized child that declared it).
+                     */
+                    final Integer old = order.put(propOrder[i], order.size());
+                    if (old != null) {
+                        order.put(propOrder[i], old);
+                    }
+                }
             }
+            implementation = implementation.getSuperclass();
         }
-        order = null;
     }
 
     /**
@@ -93,7 +115,7 @@ final class PropertyComparator implements Comparator<Method> {
      */
     @Override
     public int compare(final Method m1, final Method m2) {
-        int c = indexOf(m1) - indexOf(m2);
+        int c = indexOf(m2) - indexOf(m1); // indexOf(…) are sorted in descending order.
         if (c == 0) {
             final UML a1 = m1.getAnnotation(UML.class);
             final UML a2 = m2.getAnnotation(UML.class);
@@ -131,30 +153,21 @@ final class PropertyComparator implements Comparator<Method> {
     }
 
     /**
-     * Returns the index of the given method, or {@code order.length} if the method is not found.
+     * Returns the index of the given method, or -1 if the method is not found.
+     * If positive, the index returned by this method correspond to a sorting in descending order.
      */
     private int indexOf(final Method method) {
-        int i = 0;
-        if (order != null) {
-            if (indices == null) {
-                indices = new IdentityHashMap<Method,Integer>();
-            } else {
-                Integer index = indices.get(method);
-                if (index != null) {
-                    return index;
-                }
-            }
+        Integer index = order.get(method);
+        if (index == null) {
             String name = method.getName();
             name = toPropertyName(name, prefix(name).length());
-            while (i < order.length) {
-                if (name.equals(order[i])) {
-                    break;
-                }
-                i++;
+            index = order.get(name);
+            if (index == null) {
+                index = -1;
             }
-            indices.put(method, i);
+            order.put(method, index);
         }
-        return i;
+        return index;
     }
 
     /**

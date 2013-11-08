@@ -39,7 +39,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.CodeList;
 
 import org.apache.sis.measure.Units;
-import org.apache.sis.math.MathFunctions;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -705,7 +705,7 @@ public class Formatter {
          * a unit conversion). In the case of WGS84 semi-major axis in metres, we still have a
          * maximum of 8 fraction digits, which is more than enough.
          */
-        numberFormat.setMaximumFractionDigits(MathFunctions.fractionDigitsForValue(number) - 2);
+        numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number) - 2);
         numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
         numberFormat.format(number, buffer, dummy);
         resetColor();

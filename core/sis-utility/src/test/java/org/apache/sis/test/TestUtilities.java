@@ -223,6 +223,7 @@ public final strictfp class TestUtilities extends Static {
 
     /**
      * Returns a unlocalized string representation of {@code NAME} and {@code VALUE} columns of the given tree table.
+     * Dates and times, if any, will be formatted using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
      * This method is used mostly as a convenient way to verify the content of an ISO 19115 metadata object.
      *
      * @param  table The table for which to get a string representation.
