@@ -189,6 +189,27 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Creates a new value initialized to the given value.
+     *
+     * @param other The other value to copy.
+     */
+    public DoubleDouble(final DoubleDouble other) {
+        value = other.value;
+        error = other.error;
+    }
+
+    /**
+     * Creates a new value initialized to the given value and an error term inferred by
+     * {@link #errorForWellKnownValue(double)}.
+     *
+     * @param value The initial value.
+     */
+    public DoubleDouble(final double value) {
+        this.value = value;
+        this.error = errorForWellKnownValue(value);
+    }
+
+    /**
      * Creates a new value initialized to the given value and error.
      * It is caller's responsibility to ensure that the (value, error) pair is normalized.
      *
@@ -398,7 +419,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Set this number to {@code -this}.
+     * Sets this number to {@code -this}.
      */
     public void negate() {
         value = -value;

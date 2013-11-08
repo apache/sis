@@ -363,7 +363,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * This is identified as operation method 1033 in the EPSG database.
      *
      * {@section Inverse transformation}
-     * The inverse transformation can be computed by reversing the sign of the 7 parameters before to use
+     * The inverse transformation can be approximated by reversing the sign of the 7 parameters before to use
      * them in the above matrix. Note that both the direct and inverse transformations are approximations.
      * Multiplication of direct and inverse transformation matrices results in a matrix close to the identity,
      * but not necessarily strictly equals.
@@ -374,20 +374,39 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum)
      */
     public Matrix getPositionVectorTransformation(final boolean inverse) {
-        if (!isTranslation()) {
-            final double sgn = inverse ? -1 : +1;
-            final DoubleDouble S = new DoubleDouble(PPM, 0);
-            S.inverseDivide(sgn*dS, 0);
-            // TODO: finish computation using double-double arithmetic.
-        }
         final double sgn = inverse ? -1 : +1;
-        final double   S = 1 + sgn*dS / PPM;
-        final double  RS = sgn*TO_RADIANS * S;
-        return new Matrix4(
-                 S,  -rZ*RS,  +rY*RS,  sgn*tX,
-            +rZ*RS,       S,  -rX*RS,  sgn*tY,
-            -rY*RS,  +rX*RS,       S,  sgn*tZ,
-                 0,       0,       0,      1);
+        if (isTranslation()) {
+            final Matrix4 matrix = new Matrix4();
+            matrix.m03 = sgn*tX;
+            matrix.m13 = sgn*tY;
+            matrix.m13 = sgn*tZ;
+            return matrix;
+        }
+        /*
+         * Above was an optimization for the common case where the Bursa-Wolf parameters contain only
+         * translation terms. If we have rotation or scale terms, then use double-double arithmetic.
+         */
+        final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
+        final DoubleDouble S = new DoubleDouble(dS);
+        if (inverse) {
+            RS.negate();
+            S.negate();
+        }
+        S.divide(PPM, 0);
+        S.add(1, 0);        // S = 1 + sgn*dS / PPM;
+        RS.multiply(S);     // RS = sgn*secondsToRadians * S;
+        final DoubleDouble  X = new DoubleDouble(rX); X.multiply(RS);
+        final DoubleDouble  Y = new DoubleDouble(rY); Y.multiply(RS);
+        final DoubleDouble  Z = new DoubleDouble(rZ); Z.multiply(RS);
+        final DoubleDouble mX = new DoubleDouble( X); mX.negate();
+        final DoubleDouble mY = new DoubleDouble( Y); mY.negate();
+        final DoubleDouble mZ = new DoubleDouble( Z); mZ.negate();
+        final Integer       O = 0; // Fetch Integer instance only once.
+        return Matrices.create(4, 4, new Number[] {
+                 S,  mZ,   Y,  Double.valueOf(sgn*tX),
+                 Z,   S,  mX,  Double.valueOf(sgn*tY),
+                mY,   X,   S,  Double.valueOf(sgn*tZ),
+                 O,   O,   O,  1});
     }
 
     /**

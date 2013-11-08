@@ -41,21 +41,23 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     private static final double TO_RADIANS = Math.PI / (180 * 60 * 60);
 
     /**
-     * Same implementation than {@link BursaWolfParameters#getPositionVectorTransformation(boolean)}
-     * using only {@code double} arithmetic, for verification purpose.
+     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(boolean)} and compares
+     * with our own matrix calculated using double arithmetic.
      */
-    private static Matrix4 getPositionVectorTransformation(final BursaWolfParameters p, final boolean inverse) {
+    private static MatrixSIS getPositionVectorTransformation(final BursaWolfParameters p, final boolean inverse) {
         final double sgn = inverse ? -1 : +1;
         final double   S = 1 + sgn*p.dS / BursaWolfParameters.PPM;
         final double  RS = sgn*TO_RADIANS * S;
-        return new Matrix4(
+        final Matrix4 expected = new Matrix4(
                    S,  -p.rZ*RS,  +p.rY*RS,  sgn*p.tX,
             +p.rZ*RS,         S,  -p.rX*RS,  sgn*p.tY,
             -p.rY*RS,  +p.rX*RS,         S,  sgn*p.tZ,
                    0,         0,         0,      1);
-    }
 
-    // TODO: use above method for checking BursaWolfParameters calculations.
+        final MatrixSIS matrix = MatrixSIS.castOrCopy(p.getPositionVectorTransformation(inverse));
+        assertMatrixEquals("getPositionVectorTransformation", expected, matrix, p.isTranslation() ? 0 : 1E-14);
+        return matrix;
+    }
 
     /**
      * Tests {@link BursaWolfParameters#getPositionVectorTransformation(boolean)}.
@@ -65,8 +67,8 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     @Test
     public void testGetPositionVectorTransformation() {
         final BursaWolfParameters bursaWolf = new BursaWolfParameters(0, 0, 4.5, 0, 0, 0.554, 0.219, null);
-        final MatrixSIS toWGS84 = MatrixSIS.castOrCopy(bursaWolf.getPositionVectorTransformation(false));
-        final MatrixSIS toWGS72 = MatrixSIS.castOrCopy(bursaWolf.getPositionVectorTransformation(true));
+        final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf, false);
+        final MatrixSIS toWGS72 = getPositionVectorTransformation(bursaWolf, true);
         final MatrixSIS source  = Matrices.create(4, 1, new double[] {3657660.66, 255768.55, 5201382.11, 1});
         final MatrixSIS target  = Matrices.create(4, 1, new double[] {3657660.78, 255778.43, 5201387.75, 1});
         assertMatrixEquals("toWGS84", target, toWGS84.multiply(source), 0.01);
@@ -82,8 +84,8 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     public void testP() {
         final BursaWolfParameters bursaWolf = new BursaWolfParameters(
                 -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null);
-        final MatrixSIS toWGS84 = MatrixSIS.castOrCopy(bursaWolf.getPositionVectorTransformation(false));
-        final MatrixSIS toED87  = MatrixSIS.castOrCopy(bursaWolf.getPositionVectorTransformation(true));
+        final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf, false);
+        final MatrixSIS toED87  = getPositionVectorTransformation(bursaWolf, true);
         final MatrixSIS product = toWGS84.multiply(toED87);
         /*
          * The error is below 1E-11 for all elements except the translation terms.

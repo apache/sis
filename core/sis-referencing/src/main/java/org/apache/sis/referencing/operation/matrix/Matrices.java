@@ -182,6 +182,29 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Creates a matrix of size {@code numRow} × {@code numCol} initialized to the given numbers.
+     * The elements array size must be equals to {@code numRow*numCol}. Column indices vary fastest.
+     *
+     * @param  numRow   Number of rows.
+     * @param  numCol   Number of columns.
+     * @param  elements The matrix elements in a row-major array. Column indices vary fastest.
+     * @return A matrix initialized to the given elements.
+     */
+    public static MatrixSIS create(final int numRow, final int numCol, final Number[] elements) {
+        ArgumentChecks.ensureNonNull("elements", elements);
+        final GeneralMatrix matrix = GeneralMatrix.createExtendedPrecision(numRow, numCol);
+        if (matrix.setElements(elements)) {
+            /*
+             * At least one org.apache.sis.internal.util.DoubleDouble instance has been found,
+             * in which case the matrix uses double-double arithmetic.  This case is the main
+             * purpose of this method.
+             */
+            return matrix;
+        }
+        return create(numRow, numCol, matrix.getElements());
+    }
+
+    /**
      * Implementation of {@code createTransform(…)} public methods expecting envelopes and/or axis directions.
      * Argument validity shall be verified by the caller.
      *
