@@ -20,6 +20,7 @@ import java.util.Arrays;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.DoubleDouble;
 
 
@@ -129,6 +130,7 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * Creates a new extended precision matrix of the given size.
+     * Matrices elements are initialized to zero (not to the matrix identity).
      *
      * @param numRow Number of rows.
      * @param numCol Number of columns.
@@ -303,6 +305,69 @@ class GeneralMatrix extends MatrixSIS {
         if (elements.length != newValues.length) {
             inferErrors(newValues);
         }
+    }
+
+    /**
+     * Sets all matrix elements like {@link #setElements(double)}, but from an array of {@code Number} instead
+     * of {@code double}. The main purpose of this method is to fetch the {@link DoubleDouble#error} terms when
+     * such instances are found.
+     *
+     * <p><b>Restrictions:</b></p>
+     * <ul>
+     *   <li>This matrix must use extended-precision elements, as by {@link #createExtendedPrecision(int, int)}.</li>
+     *   <li>If this method returns {@code false}, then error terms are <strong>not</strong> initialized - they
+     *       may have any values.</li>
+     * </ul>
+     *
+     * @param  elements The new matrix elements in a row-major array.
+     * @return {@code true} if at leat one {@link DoubleDouble} instance has been found, in which case all
+     *         errors terms have been initialized, or {@code false} otherwise, in which case no error term
+     *         has been initialized (this is a <cite>all or nothing</cite> operation).
+     * @throws IllegalArgumentException If the given array does not have the expected length.
+     *
+     * @see Matrices#create(int, int, Number[])
+     */
+    final boolean setElements(final Number[] newValues) {
+        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numCol = this.numCol;
+        final int length = numRow * numCol;
+        if (newValues.length != length) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.UnexpectedArrayLength_2, length, newValues.length));
+        }
+        boolean isExtended = false;
+        for (int i=0; i<length; i++) {
+            final Number value = newValues[i];
+            final double element = value.doubleValue();
+            elements[i] = element;
+            final double error;
+            if (value instanceof DoubleDouble) {
+                error = ((DoubleDouble) value).error;
+                /*
+                 * If this is the first time that we found an explicit error term, then we need to
+                 * initialize all elements before the current one because they were left unitialized
+                 * (i.e. we perform lazy initialization).
+                 */
+                if (!isExtended) {
+                    isExtended = true;
+                    for (int j=0; j<i; j++) {
+                        elements[j + length] = DoubleDouble.errorForWellKnownValue(elements[j]);
+                    }
+                }
+            } else {
+                /*
+                 * For any kind of numbers other than DoubleDoube, calculate the error term only if we know
+                 * that the final matrix will use extended precision (i.e. we previously found at least one
+                 * DoubleDouble instance). Otherwise skip the error calculation since maybe it will be discarded.
+                 */
+                if (!isExtended) {
+                    continue;
+                }
+                error = DoubleDouble.errorForWellKnownValue(element);
+            }
+            elements[i + length] = error;
+        }
+        return isExtended;
     }
 
     /**

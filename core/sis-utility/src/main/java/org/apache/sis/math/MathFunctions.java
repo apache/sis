@@ -60,6 +60,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * @version 0.4
  * @module
  *
+ * @see DecimalFunctions
  * @see org.apache.sis.util.Numbers
  */
 public final class MathFunctions extends Static {
