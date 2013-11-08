@@ -238,6 +238,7 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(DEGREE_ANGLE, valueOf("degrees_east"));
         assertSame(DEGREE_ANGLE, valueOf("degrées_north"));
         assertSame(DEGREE_ANGLE, valueOf("decimal_degree"));
+        assertSame(SECOND_ANGLE, valueOf("arcsec"));
         assertSame(RADIAN,       valueOf("rad"));
         assertSame(RADIAN,       valueOf("radian"));
         assertSame(RADIAN,       valueOf("radians"));

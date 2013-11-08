@@ -28,7 +28,9 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.io.wkt.Formatter;
@@ -65,8 +67,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * instance associated to this {@code DefaultGeodeticDatum}. Only if no datum shift method is found in the database,
  * then the {@code BursaWolfParameters} associated to the datum may be used as a fallback.</p>
  *
- * <p>The Bursa-Wolf parameters association serves an other purpose: when a CRS is formatted in
- * <cite>Well Known Text</cite> (WKT) format, the formatted string may contain a {@code TOWGS84[…]} element
+ * <p>The Bursa-Wolf parameters association serves an other purpose: when a CRS is formatted in the older
+ * <cite>Well Known Text</cite> (WKT 1) format, the formatted string may contain a {@code TOWGS84[…]} element
  * with the parameter values of the transformation to the WGS 84 datum. This element is provided as a help
  * for other Geographic Information Systems that support only the <cite>early-binding</cite> approach.
  * Apache SIS usually does not need the {@code TOWGS84} element, except as a fallback for datum that
@@ -285,7 +287,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @param  targetDatum The target datum.
      * @return An affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
      *
-     * @see BursaWolfParameters#getPositionVectorTransformation(boolean)
+     * @see BursaWolfParameters#getPositionVectorTransformation()
      */
     public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum) {
         ensureNonNull("targetDatum", targetDatum);
@@ -309,7 +311,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (sourceParam != null) {
             for (final BursaWolfParameters candidate : sourceParam) {
                 if (deepEquals(target, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) {
-                    return candidate.getPositionVectorTransformation(false);
+                    return candidate.getPositionVectorTransformation();
                 }
             }
         }
@@ -320,8 +322,16 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         final BursaWolfParameters[] targetParam = bursaWolf(target);
         if (targetParam != null) {
             for (final BursaWolfParameters candidate : targetParam) {
-                if (deepEquals(source, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) {
-                    return candidate.getPositionVectorTransformation(true);
+                if (deepEquals(source, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) try {
+                    return MatrixSIS.castOrCopy(candidate.getPositionVectorTransformation()).inverse();
+                } catch (NoninvertibleMatrixException e) {
+                    /*
+                     * Should never happen because BursaWolfParameters.getPositionVectorTransformation()
+                     * is defined in such a way that matrix should always be invertible. If it happen anyway,
+                     * search for an other BursaWolfParameters instance. If none are found, returning 'null'
+                     * is allowed by this method's contract.
+                     */
+                    Logging.unexpectedException(DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
                 }
             }
         }

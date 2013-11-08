@@ -31,6 +31,11 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.distribution.Format;
+import org.opengis.metadata.constraint.Constraints;
+import org.opengis.metadata.identification.*; // Really using almost everything.
+import org.opengis.metadata.maintenance.MaintenanceInformation;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -45,6 +50,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -70,7 +76,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(PropertyInformationTest.class)
@@ -174,6 +180,39 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
+     * Tests the constructor with the {@link DefaultDataIdentification} implementation.
+     * The purpose of this test is to ensure that the properties defined in the parent
+     * class are sorted first.
+     */
+    @Test
+    @DependsOnMethod("testConstructor")
+    public void testConstructorWithInheritance() {
+        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19115, DataIdentification.class, DefaultDataIdentification.class),
+        //……Declaring type………………………Method………………………………………………………………………JavaBeans………………………………………………………UML identifier………………………………………Sentence……………………………………………………………Type………………………………………………………………
+            Identification.class, "getCitation",                   "citation",                   "citation",                  "Citation",                     Citation.class,
+            Identification.class, "getAbstract",                   "abstract",                   "abstract",                  "Abstract",                     InternationalString.class,
+            Identification.class, "getPurpose",                    "purpose",                    "purpose",                   "Purpose",                      InternationalString.class,
+            Identification.class, "getCredits",                    "credits",                    "credit",                    "Credits",                      String[].class,
+            Identification.class, "getStatus",                     "status",                     "status",                    "Status",                       Progress[].class,
+            Identification.class, "getPointOfContacts",            "pointOfContacts",            "pointOfContact",            "Point of contacts",            ResponsibleParty[].class,
+            Identification.class, "getResourceMaintenances",       "resourceMaintenances",       "resourceMaintenance",       "Resource maintenances",        MaintenanceInformation[].class,
+            Identification.class, "getGraphicOverviews",           "graphicOverviews",           "graphicOverview",           "Graphic overviews",            BrowseGraphic[].class,
+            Identification.class, "getResourceFormats",            "resourceFormats",            "resourceFormat",            "Resource formats",             Format[].class,
+            Identification.class, "getDescriptiveKeywords",        "descriptiveKeywords",        "descriptiveKeywords",       "Descriptive keywords",         Keywords[].class,
+            Identification.class, "getResourceSpecificUsages",     "resourceSpecificUsages",     "resourceSpecificUsage",     "Resource specific usages",     Usage[].class,
+            Identification.class, "getResourceConstraints",        "resourceConstraints",        "resourceConstraints",       "Resource constraints",         Constraints[].class,
+            Identification.class, "getAggregationInfo",            "aggregationInfo",            "aggregationInfo",           "Aggregation info",             AggregateInformation[].class,
+        DataIdentification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
+        DataIdentification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
+        DataIdentification.class, "getLanguages",                  "languages",                  "language",                  "Languages",                    Locale[].class,
+        DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               CharacterSet[].class,
+        DataIdentification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
+        DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
+        DataIdentification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
+        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class);
+    }
+
+    /**
      * Tests the constructor with a method which override an other method with covariant
      * return type. This test may need to be updated if a future GeoAPI release modifies
      * the {@link GeographicCRS} interface.
@@ -181,7 +220,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-205">GEOTK-205</a>
      */
     @Test
-    @DependsOnMethod("testConstructor")
+    @DependsOnMethod("testConstructorWithInheritance")
     public void testConstructorWithCovariantReturnType() {
         final Class<?> type = GeographicCRS.class;
         assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO, type, type),
