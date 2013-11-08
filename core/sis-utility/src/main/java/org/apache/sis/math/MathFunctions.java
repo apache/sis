@@ -307,6 +307,14 @@ public final class MathFunctions extends Static {
      *        is a special case since it is used for scaling axes or formatting human-readable
      *        output.}
      *
+     * Special cases:
+     * <ul>
+     *   <li>If <var>x</var> is equals or lower than -324, then the result is 0.</li>
+     *   <li>If <var>x</var> is equals or greater than 309, then the result is {@link Double#POSITIVE_INFINITY}.</li>
+     *   <li>If <var>x</var> is in the [0 … 18] range inclusive, then the result is exact.</li>
+     *   <li>For all other <var>x</var> values, the result is the closest IEEE 754 approximation.</li>
+     * </ul>
+     *
      * @param x The exponent.
      * @return 10 raised to the given exponent.
      */
