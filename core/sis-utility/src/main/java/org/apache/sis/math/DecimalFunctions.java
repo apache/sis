@@ -148,7 +148,7 @@ public final class DecimalFunctions extends Static {
             return value; // Integer, infinity or NaN.
         }
         final int m = Numerics.getSignificand(value);
-        assert Math.scalb((float) m, e) == value : value;
+        assert Math.scalb((float) m, e) == Math.abs(value) : value;
         /*
          * Get the factor c for converting the significand m from base 2 to base 10, such as:
          *
@@ -173,13 +173,14 @@ public final class DecimalFunctions extends Static {
         if (Math.abs(r - mc) >= c/2) {
             r = Math.rint(mc);
         }
-        return Math.scalb(r / c, e);
+        return Math.copySign(Math.scalb(r / c, e), value);
     }
 
     /**
      * Returns the difference between the given {@code double} value and the representation of that value in base 10.
-     * This method is <em>approximatively</em> equivalent to the following code, except that it is potentially faster
-     * since the actual implementation avoid the creation of {@link java.math.BigDecimal} objects:
+     * For any value in the method's domain of validity (defined below), this method is <em>approximatively</em>
+     * equivalent to the following code except that it is potentially faster since the actual implementation
+     * avoids the creation of {@link java.math.BigDecimal} objects:
      *
      * {@preformat java
      *   BigDecimal base2  = new BigDecimal(value);     // Exact same value as stored in IEEE 754 format.
@@ -202,9 +203,15 @@ public final class DecimalFunctions extends Static {
      * map projection parameters defined by national mapping agencies.
      * </font></blockquote>
      *
+     * {@section Domain of validity}
+     * The current implementation has a hole for {@code abs(value) < 3E-8} approximatively, except for the 0
+     * value which is supported. For any non-zero value closer to zero than the above-cited threshold, this
+     * method returns {@code NaN} because it currently can not compute the delta with enough accuracy.
+     * This limitation may change in any future SIS version if we found a better algorithm.
+     *
      * @param  value The value for which to get the delta compared to its base 10 representation.
-     * @return The delta that would need to be added to the given {@code double} value for getting
-     *         a result closer to its base 10 representation.
+     * @return The delta that would need to be added to the given {@code double} value for getting a result
+     *         closer to its base 10 representation, or {@link Double#NaN} if it can not be computed.
      */
     public static double deltaForDoubleToDecimal(final double value) {
         /*
@@ -217,8 +224,11 @@ public final class DecimalFunctions extends Static {
         if (e >= 0) {
             return 0; // Integer, infinity or NaN.
         }
+        if (e < -24 - SIGNIFICAND_SIZE) {         // 2.9802322E-8 threshold found empirically.
+            return (e == -1075) ? 0 : Double.NaN; // Returns 0 for the 0 value, NaN for all others.
+        }
         final long m = Numerics.getSignificand(value);
-        assert Math.scalb((double) m, e) == value : value;
+        assert Math.scalb((double) m, e) == Math.abs(value) : value;
         final int e10 = -Numerics.toExp10(e); // Range: [0 … 324] inclusive.
         /*
          * If we were continuing with the same strategy than in floatToDouble(float), we would compute:
@@ -284,7 +294,7 @@ public final class DecimalFunctions extends Static {
         /*
          * We are done: unscale and return.
          */
-        final double delta = -Math.scalb(mc / cs, e);
+        final double delta = MathFunctions.xorSign(-Math.scalb(mc / cs, e), value);
         assert Math.abs(delta) <= Math.ulp(value) / 2 : value;
         return delta;
     }

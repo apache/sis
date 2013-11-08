@@ -63,10 +63,12 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
      * since the former will delegate to the later in this test.
      */
     @Test
+    @DependsOnMethod("testConstants")
     public void testPow10() {
         for (int i=EXPONENT_FOR_ZERO; i<=EXPONENT_FOR_MAX; i++) { // Range of allowed exponents in base 10.
             assertEquals(parseDouble("1E"+i), pow10(i), STRICT);
         }
+        assertEquals(1000000000000000000L, Math.round(pow10(18))); // Highest value having an exact representation.
     }
 
     /**
@@ -75,23 +77,30 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
     @Test
     @DependsOnMethod("testPow10")
     public void testFloatToDouble() {
-        assertEquals(0.0,    floatToDouble(0.0f),    0);
-        assertEquals(-0.0,   floatToDouble(-0.0f),   0);
-        assertEquals(10,     floatToDouble(10f),     0);
-        assertEquals(0.1,    floatToDouble(0.1f),    0);
-        assertEquals(0.01,   floatToDouble(0.01f),   0);
-        assertEquals(0.001,  floatToDouble(0.001f),  0);
-        assertEquals(0.0001, floatToDouble(0.0001f), 0);
-        assertEquals(3.7E-8, floatToDouble(3.7E-8f), 0);
-        assertEquals(3.7E-9, floatToDouble(3.7E-9f), 0);
-        final Random random = TestUtilities.createRandomNumberGenerator();
-        for (int i=0; i<100; i++) {
-            final float value = StrictMath.scalb(random.nextFloat(), random.nextInt(20) - 10);
-            assertEquals(String.valueOf(value), String.valueOf(floatToDouble(value)));
-        }
+        assertEquals(NaN,               floatToDouble(Float.NaN),               STRICT);
         assertEquals(POSITIVE_INFINITY, floatToDouble(Float.POSITIVE_INFINITY), STRICT);
         assertEquals(NEGATIVE_INFINITY, floatToDouble(Float.NEGATIVE_INFINITY), STRICT);
-        assertEquals(NaN,               floatToDouble(Float.NaN),               STRICT);
+
+        assertEquals( 0.0,    floatToDouble( 0.0f),    STRICT);
+        assertEquals(-0.0,    floatToDouble(-0.0f),    STRICT);
+        assertEquals( 10,     floatToDouble( 10f),     STRICT);
+        assertEquals(-10,     floatToDouble(-10f),     STRICT);
+        assertEquals( 0.1,    floatToDouble( 0.1f),    STRICT);
+        assertEquals( 0.01,   floatToDouble( 0.01f),   STRICT);
+        assertEquals(-0.01,   floatToDouble(-0.01f),   STRICT);
+        assertEquals( 0.001,  floatToDouble( 0.001f),  STRICT);
+        assertEquals( 0.0001, floatToDouble( 0.0001f), STRICT);
+        assertEquals( 3.7E-8, floatToDouble( 3.7E-8f), STRICT);
+        assertEquals( 3.7E-9, floatToDouble( 3.7E-9f), STRICT);
+
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        for (int i=0; i<100; i++) {
+            float value = StrictMath.scalb(random.nextFloat(), random.nextInt(20) - 10);
+            if (random.nextBoolean()) {
+                value = -value;
+            }
+            assertEquals(String.valueOf(value), String.valueOf(floatToDouble(value)));
+        }
     }
 
     /**
@@ -151,11 +160,17 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
         assertEquals( 4.8633955884724856E-23, deltaForDoubleToDecimal(0.8234936921177336),    4E-32); //  5666840 ULP
         assertEquals(-2.1507730707526207E-25, deltaForDoubleToDecimal(0.19920566694813302),   2E-33); // 36267774 ULP
         for (int i=0; i<50; i++) {
-            final double     ieee  = random.nextDouble();
+            double ieee = StrictMath.scalb(random.nextDouble(), 20 - random.nextInt(48));
+            if (random.nextBoolean()) {
+                ieee = -ieee;
+            }
             final String     text  = String.valueOf(ieee);
             final BigDecimal value = new BigDecimal(text);
             final double     delta = value.subtract(new BigDecimal(ieee)).doubleValue();
-            assertEquals(text, delta, deltaForDoubleToDecimal(ieee), StrictMath.ulp(ieee) * 1E-12);
+            final double    actual = deltaForDoubleToDecimal(ieee);
+            if (!Double.isNaN(actual)) {
+                assertEquals(text, delta, actual, StrictMath.ulp(ieee) * 1E-12);
+            }
         }
     }
 

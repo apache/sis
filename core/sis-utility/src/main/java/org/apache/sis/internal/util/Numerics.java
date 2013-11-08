@@ -291,10 +291,10 @@ public final class Numerics extends Static {
     /**
      * Returns the significand <var>m</var> of the given value such as {@code value = m×2ⁿ}
      * where <var>n</var> is {@link Math#getExponent(double)} - {@value #SIGNIFICAND_SIZE}.
-     * For any non-NaN positive values (including infinity), the following relationship holds:
+     * For any non-NaN values (including infinity), the following relationship holds:
      *
      * {@preformat java
-     *    assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE) == value;
+     *    assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE) == Math.abs(value);
      * }
      *
      * For negative values, this method behaves as if the value was positive.
