@@ -16,8 +16,10 @@
  */
 package org.apache.sis.referencing.datum;
 
+import java.util.Date;
 import java.util.Arrays;
 import java.io.Serializable;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
@@ -137,13 +139,27 @@ import java.util.Objects;
  *       The Position Vector convention is used by IAG and recommended by ISO 19111.</li>
  * </ul>
  *
- * {@section Target datum}
+ * {@section Source and target geodetic datum}
  * The <var>source datum</var> in above coordinates transformation is the {@link DefaultGeodeticDatum} instance
  * that contain this {@code BursaWolfParameters}. It can be any datum, including datum that are valid only locally.
- * But the {@linkplain #targetDatum target datum} is often fixed to WGS 84, since it is the target of the
- * {@code TOWGS84} element in <cite>Well Known Text</cite> (WKT) representations.
- * A different target may be specified at construction time, however users are encouraged to always specify a
- * target datum having a world-wide {@linkplain DefaultGeodeticDatum#getDomainOfValidity() domain of validity}.
+ * The <var>{@linkplain #getTargetDatum() target datum}</var> is specified at construction time and often fixed to
+ * WGS 84 for the needs of the {@code TOWGS84[…]} element in <cite>Well Known Text</cite> (WKT 1) representation.
+ *
+ * {@section When Bursa-Wolf parameters are used}
+ * {@code BursaWolfParameters} are used in three contexts:
+ * <ol>
+ *   <li>Created as a step while creating a {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation
+ *       coordinate operation} from the EPSG database.</li>
+ *   <li>Associated to a {@link DefaultGeodeticDatum} for the sole needs of the WKT 1 {@code TOWGS84[…]} element.
+ *       In this case, only Bursa-Wolf parameters having a WGS 84 {@linkplain #getTargetDatum() target datum} are
+ *       useful.</li>
+ *   <li>Specified at {@code DefaultGeodeticDatum} construction time for arbitrary target datum.
+ *       Apache SIS will ignore those Bursa-Wolf parameters, except as a fallback if no parameters
+ *       can been found in the EPSG database for a given pair of source and target CRS.</li>
+ * </ol>
+ *
+ * {@note In EPSG terminology, Apache SIS gives precedence to the <cite>late-binding</cite> approach
+ *        (case 1 above) over the <cite>early-binding</cite> approach (case 3 above).}
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
@@ -224,8 +240,18 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      *
      * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
      * instance.</p>
+     *
+     * @see #getTargetDatum()
      */
-    public final GeodeticDatum targetDatum;
+    private final GeodeticDatum targetDatum;
+
+    /**
+     * Region or timeframe in which a coordinate transformation based on those Bursa-Wolf parameters is valid,
+     * or {@code null} if unspecified.
+     *
+     * @see #getDomainOfValidity()
+     */
+    private final Extent domainOfValidity;
 
     /**
      * Creates a new instance with the given parameters.
@@ -238,10 +264,13 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * @param rZ Z-axis rotation in arc seconds.
      * @param dS The scale difference in parts per million.
      * @param targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
+     * @param domainOfValidity Area or region in which a coordinate transformation based on those Bursa-Wolf parameters
+     *        is valid, or {@code null} is unspecified.
      */
     public BursaWolfParameters(final double tX, final double tY, final double tZ,
                                final double rX, final double rY, final double rZ,
-                               final double dS, final GeodeticDatum targetDatum)
+                               final double dS, final GeodeticDatum targetDatum,
+                               Extent domainOfValidity)
     {
         this.tX = tX;
         this.tY = tY;
@@ -251,6 +280,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
         this.rZ = rZ;
         this.dS = dS;
         this.targetDatum = targetDatum;
+        this.domainOfValidity = domainOfValidity;
         verify();
     }
 
@@ -280,12 +310,14 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * @param  matrix The matrix to fit as a Bursa-Wolf construct.
      * @param  tolerance The tolerance error for the antisymmetric matrix test. Should be a small number like {@code 1E-8}.
      * @param  targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
+     * @param  domainOfValidity Area or region in which a coordinate transformation based on those Bursa-Wolf parameters
+     *         is valid, or {@code null} is unspecified.
      * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
      *
-     * @see #getPositionVectorTransformation()
+     * @see #getPositionVectorTransformation(Date)
      */
-    public BursaWolfParameters(final Matrix matrix, final double tolerance, final GeodeticDatum targetDatum)
-            throws IllegalArgumentException
+    public BursaWolfParameters(final Matrix matrix, final double tolerance, final GeodeticDatum targetDatum,
+            Extent domainOfValidity) throws IllegalArgumentException
     {
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
@@ -327,7 +359,23 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
         this.rY = rY;
         this.rZ = rZ;
         this.targetDatum = targetDatum;
+        this.domainOfValidity = domainOfValidity;
         verify();
+    }
+
+    /**
+     * Returns the target datum for this set of parameters, or {@code null} if unspecified.
+     * This is usually the WGS 84 datum, but other targets are allowed. We recommend the target datum
+     * to have a world-wide {@linkplain DefaultGeodeticDatum#getDomainOfValidity() domain of validity},
+     * but this is not enforced.
+     *
+     * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
+     * instance.</p>
+     *
+     * @return The target datum for this set of parameters, or {@code null} if unspecified.
+     */
+    public GeodeticDatum getTargetDatum() {
+        return targetDatum;
     }
 
     /**
@@ -366,7 +414,8 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
 
     /**
      * Returns the position vector transformation (geocentric domain) as an affine transform.
-     * The formula is as below, where {@code R} is a conversion factor from arc-seconds to radians:
+     * For transformations that do not depend on time, the formula is as below where {@code R}
+     * is a conversion factor from arc-seconds to radians:
      *
      * <blockquote><pre> R = toRadians(1″)
      * S = 1 + {@linkplain #dS}/1000000
@@ -379,6 +428,14 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      *
      * This affine transform can be applied on <strong>geocentric</strong> coordinates.
      * This is identified as operation method 1033 in the EPSG database.
+     * Those geocentric coordinates are typically converted from geographic coordinates
+     * in the region or timeframe given by {@link #getDomainOfValidity()}.
+     *
+     * {@section Time-dependent transformation}
+     * Some transformations use parameters that vary with time (e.g. operation method EPSG:1053).
+     * Users can optionally specify a date for which the transformation is desired.
+     * For transformations that do not depends on time, this date is ignored and can be null.
+     * For time-dependent transformations, {@code null} values default to the transformation's reference time.
      *
      * {@section Inverse transformation}
      * The inverse transformation can be approximated by reversing the sign of the 7 parameters before to use them
@@ -388,11 +445,12 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * that concatenation of transformations <var>A</var> → <var>B</var> followed by <var>B</var> → <var>A</var>
      * gives back the identity transform.
      *
-     * @return An affine transform in geocentric space created from this Bursa-Wolf parameters.
+     * @param  time Date for which the transformation is desired, or {@code null} for the transformation's reference time.
+     * @return An affine transform in geocentric space created from this Bursa-Wolf parameters and the given time.
      *
-     * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum)
+     * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum, Extent)
      */
-    public Matrix getPositionVectorTransformation() {
+    public Matrix getPositionVectorTransformation(final Date time) {
         if (isTranslation()) {
             final Matrix4 matrix = new Matrix4();
             matrix.m03 = tX;
@@ -424,6 +482,24 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     }
 
     /**
+     * Returns the region or timeframe in which a coordinate transformation based on those Bursa-Wolf parameters is
+     * valid, or {@code null} if unspecified. If an extent was specified at {@linkplain #BursaWolfParameters(double,
+     * double, double, double, double, double, double, GeodeticDatum, Extent) construction time}, then that extent
+     * is returned. Otherwise if a non-null target datum was specified, then the datum domain of validity is returned.
+     * Otherwise this method returns {@code null}.
+     *
+     * @return Area or region or timeframe in which the coordinate transformation is valid, or {@code null}.
+     *
+     * @see org.apache.sis.metadata.iso.extent.DefaultExtent
+     */
+    public Extent getDomainOfValidity() {
+        if (domainOfValidity == null && targetDatum != null) {
+            return targetDatum.getDomainOfValidity();
+        }
+        return domainOfValidity;
+    }
+
+    /**
      * Compares the specified object with this object for equality.
      *
      * @param object The object to compare with the parameters.
@@ -440,7 +516,8 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
                    Numerics.equals(this.rY, that.rY) &&
                    Numerics.equals(this.rZ, that.rZ) &&
                    Numerics.equals(this.dS, that.dS) &&
-                    Objects.equals(this.targetDatum, that.targetDatum);
+                    Objects.equals(this.targetDatum, that.targetDatum) &&
+                    Objects.equals(this.domainOfValidity, that.domainOfValidity);
         }
         return false;
     }
@@ -463,7 +540,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * <blockquote><code>TOWGS84[{@linkplain #tX}, {@linkplain #tY}, {@linkplain #tZ}, {@linkplain #rX},
      * {@linkplain #rY}, {@linkplain #rZ}, {@linkplain #dS}]</code></blockquote>
      *
-     * The element name is {@code "TOWGS84"} in the common case where the {@linkplain #targetDatum target datum}
+     * The element name is {@code "TOWGS84"} in the common case where the {@linkplain #getTargetDatum() target datum}
      * is WGS 84. For other targets, the element name will be derived from the datum name.
      *
      * @param  formatter The formatter to use.

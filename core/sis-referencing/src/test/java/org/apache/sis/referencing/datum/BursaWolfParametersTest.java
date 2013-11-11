@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.datum;
 
+import java.util.Date;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
@@ -42,8 +43,8 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     private static final double TO_RADIANS = Math.PI / (180 * 60 * 60);
 
     /**
-     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation()} and compares
-     * with our own matrix calculated using double arithmetic.
+     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(Date)}
+     * and compares with our own matrix calculated using double arithmetic.
      */
     private static MatrixSIS getPositionVectorTransformation(final BursaWolfParameters p) {
         final double   S = 1 + p.dS / BursaWolfParameters.PPM;
@@ -54,13 +55,13 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
             -p.rY*RS,  +p.rX*RS,         S,  p.tZ,
                    0,         0,         0,  1);
 
-        final MatrixSIS matrix = MatrixSIS.castOrCopy(p.getPositionVectorTransformation());
+        final MatrixSIS matrix = MatrixSIS.castOrCopy(p.getPositionVectorTransformation(null));
         assertMatrixEquals("getPositionVectorTransformation", expected, matrix, p.isTranslation() ? 0 : 1E-14);
         return matrix;
     }
 
     /**
-     * Tests {@link BursaWolfParameters#getPositionVectorTransformation()}.
+     * Tests {@link BursaWolfParameters#getPositionVectorTransformation(Date)}.
      * This test transform a point from WGS72 to WGS84, and conversely,
      * as documented in the example section of EPSG operation method 9606.
      *
@@ -68,7 +69,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      */
     @Test
     public void testGetPositionVectorTransformation() throws NoninvertibleMatrixException {
-        final BursaWolfParameters bursaWolf = new BursaWolfParameters(0, 0, 4.5, 0, 0, 0.554, 0.219, null);
+        final BursaWolfParameters bursaWolf = new BursaWolfParameters(0, 0, 4.5, 0, 0, 0.554, 0.219, null, null);
         final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
         final MatrixSIS toWGS72 = getPositionVectorTransformation(bursaWolf).inverse();
         final MatrixSIS source  = Matrices.create(4, 1, new double[] {3657660.66, 255768.55, 5201382.11, 1});
@@ -88,7 +89,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     @DependsOnMethod("testGetPositionVectorTransformation")
     public void testProductOfInverse() throws NoninvertibleMatrixException {
         final BursaWolfParameters bursaWolf = new BursaWolfParameters(
-                -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null);
+                -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null, null);
         final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
         final MatrixSIS toED87  = getPositionVectorTransformation(bursaWolf).inverse();
         final MatrixSIS product = toWGS84.multiply(toED87);
@@ -101,7 +102,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     @Test
     public void testToString() {
         final BursaWolfParameters bursaWolf = new BursaWolfParameters(
-                -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null);
+                -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null, null);
         assertEquals("TOWGS84[-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143]", bursaWolf.toString());
     }
 
@@ -111,7 +112,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     @Test
     public void testSerialization() {
         final BursaWolfParameters bursaWolf = new BursaWolfParameters(
-                -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null);
+                -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null, null);
         assertSerializedEquals(bursaWolf);
     }
 }
