@@ -36,7 +36,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  *
- * @see <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape codes</a>
+ * @see <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">Wikipedia: ANSI escape codes</a>
  * @see org.apache.sis.io.wkt.Colors
  */
 public enum X364 {

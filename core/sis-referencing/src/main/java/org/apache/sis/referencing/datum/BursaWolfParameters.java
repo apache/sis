@@ -41,8 +41,9 @@ import java.util.Objects;
 
 /**
  * Parameters for a geographic transformation between two datum.
- * For an explanation of Bursa-Wolf parameters purpose, see the <cite>Bursa-Wolf parameters</cite>
- * section of {@link DefaultGeodeticDatum} class javadoc.
+ * Bursa-Wolf parameters are also known as <cite>Helmert transformation parameters</cite>.
+ * For an explanation of their purpose, see the <cite>Bursa-Wolf parameters</cite> section
+ * of {@link DefaultGeodeticDatum} class javadoc.
  *
  * <p>The Bursa-Wolf parameters shall be applied to geocentric coordinates,
  * where the <var>X</var> axis points towards the Greenwich Prime Meridian,
@@ -150,6 +151,7 @@ import java.util.Objects;
  * @module
  *
  * @see DefaultGeodeticDatum#getBursaWolfParameters()
+ * @see <a href="http://en.wikipedia.org/wiki/Helmert_transformation">Wikipedia: Helmert transformation</a>
  */
 @Immutable
 public class BursaWolfParameters extends FormattableObject implements Serializable {
