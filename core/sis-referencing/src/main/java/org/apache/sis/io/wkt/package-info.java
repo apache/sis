@@ -59,7 +59,7 @@
  * <ul>
  *   <li><a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Known Text specification</a></li>
  *   <li><a href="http://home.gdal.org/projects/opengis/wktproblems.html">OGC WKT Coordinate System Issues</a></li>
- *   <li><a href="http://en.wikipedia.org/wiki/Well-known_text">Well Known Text in Wikipedia</a></li>
+ *   <li><a href="http://en.wikipedia.org/wiki/Well-known_text">Wikipedia: Well Known Text</a></li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

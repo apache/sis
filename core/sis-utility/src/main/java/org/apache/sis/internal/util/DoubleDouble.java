@@ -59,7 +59,7 @@ import org.apache.sis.math.DecimalFunctions;
  * @version 0.4
  * @module
  *
- * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Double-double arithmetic</a>
+ * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
  */
 public final class DoubleDouble extends Number {
     /**
