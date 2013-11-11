@@ -198,10 +198,9 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Returns the region or timeframe in which this reference system is valid,
-     * or {@code null} if unspecified.
+     * Returns the region or timeframe in which this datum is valid, or {@code null} if unspecified.
      *
-     * @return Area or region or timeframe in which this (coordinate) reference system is valid, or {@code null}.
+     * @return Area or region or timeframe in which this datum is valid, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */

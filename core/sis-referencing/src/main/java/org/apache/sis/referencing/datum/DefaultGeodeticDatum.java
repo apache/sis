@@ -20,13 +20,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Date;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -120,7 +124,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
 
     /**
      * The <code>{@value #BURSA_WOLF_KEY}</code> property for
-     * {@linkplain #getBursaWolfParameters(GeodeticDatum) Bursa-Wolf parameters}.
+     * {@linkplain #getBursaWolfParameters() Bursa-Wolf parameters}.
      */
     public static final String BURSA_WOLF_KEY = "bursaWolf";
 
@@ -148,7 +152,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
 
     /**
      * Creates a geodetic datum from the given properties. The properties map is given
-     * unchanged to the {@link AbstractDatum#AbstractDatum(Map) super-class constructor}.
+     * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      * In addition to the properties documented in the parent constructor,
      * the following properties are understood by this constructor:
      *
@@ -238,34 +242,12 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
 
     /**
      * Returns all Bursa-Wolf parameters specified in the {@code properties} map at construction time.
-     * For a discussion about what Bursa-Wolf parameters are, see the class javadpc.
+     * For a discussion about what Bursa-Wolf parameters are, see the class javadoc.
      *
      * @return The Bursa-Wolf parameters, or an empty array if none.
      */
     public BursaWolfParameters[] getBursaWolfParameters() {
         return (bursaWolf != null) ? bursaWolf.clone() : EMPTY_ARRAY;
-    }
-
-    /**
-     * Returns Bursa-Wolf parameters for a datum shift toward the specified target, or {@code null} if none.
-     * This method searches only for Bursa-Wolf parameters explicitly specified in the {@code properties} map
-     * given at construction time. This method doesn't try to infer a set of parameters from indirect informations.
-     * For example it does not try to inverse the parameters specified in the {@code target} datum if none were found
-     * in this datum.
-     * If a more elaborated search is wanted, use {@link #getPositionVectorTransformation(GeodeticDatum)} instead.
-     *
-     * @param  target The target geodetic datum.
-     * @return Bursa-Wolf parameters from this datum to the given target datum, or {@code null} if none.
-     */
-    public BursaWolfParameters getBursaWolfParameters(final GeodeticDatum target) {
-        if (bursaWolf != null) {
-            for (final BursaWolfParameters candidate : bursaWolf) {
-                if (deepEquals(target, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) {
-                    return candidate;
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -279,19 +261,22 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Returns the position vector transformation (geocentric domain) to the specified datum.
      * If no transformation path is found, then this method returns {@code null}.
-     * If non-null, then the representation is represented as an affine transform.
+     * If non-null, then the transformation is represented by an affine transform
+     * which can be applied on <strong>geocentric</strong> coordinates.
      *
      * {@note This is identified in the EPSG database as operation method 1033 -
-     *        <cite>Position Vector transformation (geocentric domain)</cite>.}
+     *        <cite>Position Vector transformation (geocentric domain)</cite>, or 1053 -
+     *        <cite>Time-dependent Position Vector transformation</cite>.}
      *
      * @param  targetDatum The target datum.
+     * @param  extent The geographic and temporal extent where the transformation is valid, or {@code null}.
      * @return An affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
      *
-     * @see BursaWolfParameters#getPositionVectorTransformation()
+     * @see BursaWolfParameters#getPositionVectorTransformation(Date)
      */
-    public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum) {
+    public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum, final Extent extent) {
         ensureNonNull("targetDatum", targetDatum);
-        return getPositionVectorTransformation(this, targetDatum, null);
+        return getPositionVectorTransformation(this, targetDatum, Extents.getGeographicBoundingBox(extent), null, null);
     }
 
     /**
@@ -300,18 +285,20 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * @param  source The source datum, or {@code null}.
      * @param  target The target datum, or {@code null}.
+     * @param  extent The geographic extent where the transformation is desired, or {@code null} if unspecified.
+     * @param  time   Date for which the transformation is desired, or {@code null} is unspecified.
      * @param  exclusion The set of datum to exclude from the search, or {@code null}.
      *         This is used in order to avoid never-ending recursivity.
      * @return An affine transform from {@code source} to {@code target}, or {@code null} if none.
      */
     private static Matrix getPositionVectorTransformation(final GeodeticDatum source, final GeodeticDatum target,
-            Set<GeodeticDatum> exclusion)
+            final GeographicBoundingBox extent, final Date time, Set<GeodeticDatum> exclusion)
     {
         final BursaWolfParameters[] sourceParam = bursaWolf(source);
         if (sourceParam != null) {
             for (final BursaWolfParameters candidate : sourceParam) {
-                if (deepEquals(target, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) {
-                    return candidate.getPositionVectorTransformation();
+                if (deepEquals(target, candidate.getTargetDatum(), ComparisonMode.IGNORE_METADATA)) {
+                    return candidate.getPositionVectorTransformation(time);
                 }
             }
         }
@@ -322,11 +309,11 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         final BursaWolfParameters[] targetParam = bursaWolf(target);
         if (targetParam != null) {
             for (final BursaWolfParameters candidate : targetParam) {
-                if (deepEquals(source, candidate.targetDatum, ComparisonMode.IGNORE_METADATA)) try {
-                    return MatrixSIS.castOrCopy(candidate.getPositionVectorTransformation()).inverse();
+                if (deepEquals(source, candidate.getTargetDatum(), ComparisonMode.IGNORE_METADATA)) try {
+                    return MatrixSIS.castOrCopy(candidate.getPositionVectorTransformation(time)).inverse();
                 } catch (NoninvertibleMatrixException e) {
                     /*
-                     * Should never happen because BursaWolfParameters.getPositionVectorTransformation()
+                     * Should never happen because BursaWolfParameters.getPositionVectorTransformation(Date)
                      * is defined in such a way that matrix should always be invertible. If it happen anyway,
                      * search for an other BursaWolfParameters instance. If none are found, returning 'null'
                      * is allowed by this method's contract.
@@ -344,21 +331,21 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
          */
         if (sourceParam != null && targetParam != null) {
             for (int i=0; i<sourceParam.length; i++) {
-                final GeodeticDatum sourceStep = sourceParam[i].targetDatum;
+                final GeodeticDatum sourceStep = sourceParam[i].getTargetDatum();
                 for (int j=0; j<targetParam.length; j++) {
-                    final GeodeticDatum targetStep = targetParam[j].targetDatum;
+                    final GeodeticDatum targetStep = targetParam[j].getTargetDatum();
                     if (deepEquals(sourceStep, targetStep, ComparisonMode.IGNORE_METADATA)) {
                         if (exclusion == null) {
                             exclusion = new HashSet<>();
                         }
                         if (exclusion.add(source)) {
                             if (exclusion.add(target)) {
-                                final Matrix step1 = getPositionVectorTransformation(source, sourceStep, exclusion);
+                                final Matrix step1 = getPositionVectorTransformation(source, sourceStep, extent, time, exclusion);
                                 if (step1 != null) {
-                                    final Matrix step2 = getPositionVectorTransformation(targetStep, target, exclusion);
+                                    final Matrix step2 = getPositionVectorTransformation(targetStep, target, extent, time, exclusion);
                                     if (step2 != null) {
                                         /*
-                                         * MatrixSIS.multiply(MatrixSIS) is equivalent to AffineTransform.concatenate(…):
+                                         * MatrixSIS.multiply(Matrix) is equivalent to AffineTransform.concatenate(…):
                                          * First transform by the supplied transform and then transform the result
                                          * by the original transform.
                                          */
