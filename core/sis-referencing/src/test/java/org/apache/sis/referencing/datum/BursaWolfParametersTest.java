@@ -92,7 +92,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
         final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
         final MatrixSIS toED87  = getPositionVectorTransformation(bursaWolf).inverse();
         final MatrixSIS product = toWGS84.multiply(toED87);
-        assertTrue(Matrices.isIdentity(product, 1E-37));
+        assertTrue(product.isIdentity());
     }
 
     /**

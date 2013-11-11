@@ -47,6 +47,23 @@ class GeneralMatrix extends MatrixSIS {
     private static final long serialVersionUID = 8447482612423035360L;
 
     /**
+     * Threshold value relative to 1 ULP of the greatest magnitude of elements added in a sum.
+     * For example in a sum like {@code A + B + C + D}, if the greatest term in absolute value
+     * is {@code C}, then the threshold is <code>Math.ulp(C) * {@value}</code>.  If the sum is
+     * lower than that threshold, then the result is assumed to be zero.
+     *
+     * <p>Note that if we were using {@code double} arithmetic instead than double-double, then all results smaller
+     * than {@code Math.ulp(max)} would not be significant. Those cases could be caught by a {@code ZERO_THRESHOLD}
+     * value of 1.  On the other hand, if all the extra precision of double-double arithmetic was considered valid,
+     * then the {@code ZERO_THRESHOLD} value would be approximatively 1E-16.   In reality, the extra digits in our
+     * double-double arithmetic were usually guessed rather than provided, and the last digits are also subject to
+     * rounding errors anyway. So we put the threshold to some arbitrary mid-value, which may change in any future
+     * SIS version according experience gained. As long as the value is smaller than 1, it still more accurate than
+     * {@code double} arithmetic anyway.</p>
+     */
+    private static final double ZERO_THRESHOLD = 1E-14;
+
+    /**
      * All matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is <code>{@linkplain #numRow} * {@linkplain #numCol}</code>.
      *
@@ -514,6 +531,7 @@ class GeneralMatrix extends MatrixSIS {
         for (int k=0,j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 sum.clear();
+                double max = 0;
                 int iB = i;       // Index of values in a single column of B.
                 int iA = j * nc;  // Index of values in a single row of A.
                 final int nextRow = iA + nc;
@@ -523,6 +541,11 @@ class GeneralMatrix extends MatrixSIS {
                     sum.add(dot);
                     iB += numCol; // Move to next row of B.
                     iA++;         // Move to next column of A.
+                    final double value = Math.abs(dot.value);
+                    if (value > max) max = value;
+                }
+                if (Math.abs(sum.value) < Math.ulp(max) * ZERO_THRESHOLD) {
+                    sum.clear(); // Sum is not significant according double arithmetic.
                 }
                 sum.storeTo(elements, k++, errorOffset);
             }
