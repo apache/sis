@@ -229,9 +229,33 @@ class GeneralMatrix extends MatrixSIS {
     }
 
     /**
+     * Retrieves the value at the specified row and column of this matrix, wrapped in a {@code Number}
+     * or a {@link DoubleDouble} depending on available precision.
+     *
+     * @param row    The row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param column The column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @return       The current value at the given row and column.
+     */
+    @Override
+    public Number getNumber(int row, int column) {
+        if (row >= 0 && row < numRow && column >= 0 && column < numCol) {
+            int i = row * numCol + column;
+            final double value = elements[i];
+            i += numRow * numCol;
+            if (i < elements.length) {
+                return new DoubleDouble(value, elements[i]);
+            } else {
+                return value;
+            }
+        } else {
+            throw indexOutOfBounds(row, column);
+        }
+    }
+
+    /**
      * Retrieves the value at the specified row and column of this matrix.
      *
-     * @param row    The row index, from 0 inclusive to {@link #getNumRow() } exclusive.
+     * @param row    The row index, from 0 inclusive to {@link #getNumRow()} exclusive.
      * @param column The column index, from 0 inclusive to {@link #getNumCol()} exclusive.
      * @return       The current value at the given row and column.
      */

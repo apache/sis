@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Date;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
@@ -41,6 +42,13 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      * The conversion factor from arc-seconds to radians.
      */
     private static final double TO_RADIANS = Math.PI / (180 * 60 * 60);
+
+    /**
+     * Returns the parameters for the <cite>ED87 to WGS 84</cite> transformation (EPSG:1146).
+     */
+    private static BursaWolfParameters createForNorthSea() {
+        return new BursaWolfParameters(-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null, null);
+    }
 
     /**
      * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(Date)}
@@ -88,8 +96,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testGetPositionVectorTransformation")
     public void testProductOfInverse() throws NoninvertibleMatrixException {
-        final BursaWolfParameters bursaWolf = new BursaWolfParameters(
-                -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null, null);
+        final BursaWolfParameters bursaWolf = createForNorthSea();
         final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
         final MatrixSIS toED87  = getPositionVectorTransformation(bursaWolf).inverse();
         final MatrixSIS product = toWGS84.multiply(toED87);
@@ -97,12 +104,23 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     }
 
     /**
+     * Tests the {@link BursaWolfParameters#BursaWolfParameters(Matrix, double, GeodeticDatum, Extent)} constructor.
+     */
+    @Test
+    @DependsOnMethod("testGetPositionVectorTransformation")
+    public void testCreateFromPositionVectorTransformation() {
+        final BursaWolfParameters bursaWolf = createForNorthSea();
+        final Matrix matrix = bursaWolf.getPositionVectorTransformation(null);
+        final BursaWolfParameters actual = new BursaWolfParameters(matrix, 1E-10, null, null);
+        assertEquals(bursaWolf, actual);
+    }
+
+    /**
      * Tests the string representation of <cite>ED87 to WGS 84</cite> parameters (EPSG:1146).
      */
     @Test
     public void testToString() {
-        final BursaWolfParameters bursaWolf = new BursaWolfParameters(
-                -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null, null);
+        final BursaWolfParameters bursaWolf = createForNorthSea();
         assertEquals("TOWGS84[-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143]", bursaWolf.toString());
     }
 
@@ -111,8 +129,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final BursaWolfParameters bursaWolf = new BursaWolfParameters(
-                -82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null, null);
+        final BursaWolfParameters bursaWolf = createForNorthSea();
         assertSerializedEquals(bursaWolf);
     }
 }
