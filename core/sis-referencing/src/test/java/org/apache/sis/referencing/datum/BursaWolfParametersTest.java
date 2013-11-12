@@ -91,7 +91,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
         bursaWolf.rZ = 0.554;
         bursaWolf.dS = 0.219;
         final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
-        final MatrixSIS toWGS72 = getPositionVectorTransformation(bursaWolf).inverse();
+        final MatrixSIS toWGS72 = toWGS84.inverse();
         final MatrixSIS source  = Matrices.create(4, 1, new double[] {3657660.66, 255768.55, 5201382.11, 1});
         final MatrixSIS target  = Matrices.create(4, 1, new double[] {3657660.78, 255778.43, 5201387.75, 1});
         assertMatrixEquals("toWGS84", target, toWGS84.multiply(source), 0.01);
@@ -116,7 +116,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     }
 
     /**
-     * Tests the {@link BursaWolfParameters#setPositionVectorTransformation(Matrix, double)} constructor.
+     * Tests the {@link BursaWolfParameters#setPositionVectorTransformation(Matrix, double)} method.
      * This is an internal consistency test.
      */
     @Test

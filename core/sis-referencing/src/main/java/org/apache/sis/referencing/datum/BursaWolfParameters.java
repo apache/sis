@@ -126,7 +126,7 @@ import java.util.Objects;
  * </math></p>
  * </tr></td></table>
  *
- * The numerical fields in this {@code BursaWolfParameters} class uses the EPSG abbreviations
+ * The numerical fields in this {@code BursaWolfParameters} class use the EPSG abbreviations
  * with 4 additional constraints compared to the EPSG definitions:
  *
  * <ul>
@@ -198,19 +198,19 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     public double tZ;
 
     /**
-     * X-axis rotation in arc seconds (EPSG:8608), sign following the <cite>Position Vector</cite> convention.
+     * X-axis rotation in arc-seconds (EPSG:8608), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ex"}.
      */
     public double rX;
 
     /**
-     * Y-axis rotation in arc seconds (EPSG:8609), sign following the <cite>Position Vector</cite> convention.
+     * Y-axis rotation in arc-seconds (EPSG:8609), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ey"}.
      */
     public double rY;
 
     /**
-     * Z-axis rotation in arc seconds (EPSG:8610), sign following the <cite>Position Vector</cite> convention.
+     * Z-axis rotation in arc-seconds (EPSG:8610), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ez"}.
      */
     public double rZ;
@@ -268,7 +268,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     /**
      * Verifies parameters validity after initialization.
      */
-    final void verify() {
+    void verify() {
         ensureFinite("tX", tX);
         ensureFinite("tY", tY);
         ensureFinite("tZ", tZ);
@@ -280,9 +280,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
 
     /**
      * Returns the target datum for this set of parameters, or {@code null} if unspecified.
-     * This is usually the WGS 84 datum, but other targets are allowed. We recommend the target datum
-     * to have a world-wide {@linkplain DefaultGeodeticDatum#getDomainOfValidity() domain of validity},
-     * but this is not enforced.
+     * This is usually the WGS 84 datum, but other targets are allowed.
      *
      * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
      * instance.</p>
@@ -307,24 +305,53 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
-     * Returns {@code true} if this Bursa-Wolf parameters performs no operation.
-     * This is true when all parameters are set to zero.
+     * Returns {@code true} if a transformation built from this set of parameters would perform no operation.
+     * This is true when the value of all parameters is zero.
      *
      * @return {@code true} if the parameters describe no operation.
      */
     public boolean isIdentity() {
-        return tX == 0 && tY == 0 && tZ == 0 &&
-               rX == 0 && rY == 0 && rZ == 0 &&
-               dS == 0;
+        return tX == 0 && tY == 0 && tZ == 0 && isTranslation();
     }
 
     /**
-     * Returns {@code true} if this Bursa-Wolf parameters contains only translation terms.
+     * Returns {@code true} if a transformation built from this set of parameters would perform only a translation.
      *
-     * @return {@code true} if the parameters describe to a translation only.
+     * @return {@code true} if the parameters describe a translation only.
      */
     public boolean isTranslation() {
         return rX == 0 && rY == 0 && rZ == 0 && dS == 0;
+    }
+
+    /**
+     * Returns the elapsed time from the {@linkplain TimeDependentBWP#getTimeReference() reference time}
+     * to the given date, in millennium. If this {@code BursaWolfParameters} is not time-dependent, then
+     * returns {@code null}.
+     */
+    DoubleDouble period(final Date time) {
+        return null;
+    }
+
+    /**
+     * Returns the parameter at the given index. If this {@code BursaWolfParameters} is time-dependent,
+     * then the returned value shall be corrected for the given period.
+     *
+     * @param index  0 for {@code tX}, 1 for {@code tY}, <i>etc.</i> in {@code TOWGS84[…]} order.
+     * @param period The value computed by {@link #period(Date)}, or {@code null}.
+     */
+    DoubleDouble param(final int index, final DoubleDouble period) {
+        final double p;
+        switch (index) {
+            case 0: p = tX; break;
+            case 1: p = tY; break;
+            case 2: p = tZ; break;
+            case 3: p = rX; break;
+            case 4: p = rY; break;
+            case 5: p = rZ; break;
+            case 6: p = dS; break;
+            default: throw new AssertionError(index);
+        }
+        return new DoubleDouble(p);
     }
 
     /**
@@ -350,7 +377,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * Some transformations use parameters that vary with time (e.g. operation method EPSG:1053).
      * Users can optionally specify a date for which the transformation is desired.
      * For transformations that do not depends on time, this date is ignored and can be null.
-     * For time-dependent transformations, {@code null} values default to the transformation's reference time.
+     * For time-dependent transformations, {@code null} values default to the transformation's
+     * {@linkplain TimeDependentBWP#getTimeReference() reference time}.
      *
      * {@section Inverse transformation}
      * The inverse transformation can be approximated by reversing the sign of the 7 parameters before to use them
@@ -366,7 +394,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum, Extent)
      */
     public Matrix getPositionVectorTransformation(final Date time) {
-        if (isTranslation()) {
+        final DoubleDouble period = period(time);
+        if (period == null && isTranslation()) {
             final Matrix4 matrix = new Matrix4();
             matrix.m03 = tX;
             matrix.m13 = tY;
@@ -378,21 +407,21 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
          * translation terms. If we have rotation or scale terms, then use double-double arithmetic.
          */
         final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
-        final DoubleDouble S = new DoubleDouble(dS);
+        final DoubleDouble S = param(6, period);
         S.divide(PPM, 0);
         S.add(1, 0);        // S = 1 + dS / PPM;
         RS.multiply(S);     // RS = toRadians(1″) * S;
-        final DoubleDouble  X = new DoubleDouble(rX); X.multiply(RS);
-        final DoubleDouble  Y = new DoubleDouble(rY); Y.multiply(RS);
-        final DoubleDouble  Z = new DoubleDouble(rZ); Z.multiply(RS);
-        final DoubleDouble mX = new DoubleDouble( X); mX.negate();
-        final DoubleDouble mY = new DoubleDouble( Y); mY.negate();
-        final DoubleDouble mZ = new DoubleDouble( Z); mZ.negate();
+        final DoubleDouble  X = param(3, period); X.multiply(RS);
+        final DoubleDouble  Y = param(4, period); Y.multiply(RS);
+        final DoubleDouble  Z = param(5, period); Z.multiply(RS);
+        final DoubleDouble mX = new DoubleDouble(X); mX.negate();
+        final DoubleDouble mY = new DoubleDouble(Y); mY.negate();
+        final DoubleDouble mZ = new DoubleDouble(Z); mZ.negate();
         final Integer       O = 0; // Fetch Integer instance only once.
         return Matrices.create(4, 4, new Number[] {
-                 S,  mZ,   Y,  Double.valueOf(tX),
-                 Z,   S,  mX,  Double.valueOf(tY),
-                mY,   X,   S,  Double.valueOf(tZ),
+                 S,  mZ,   Y,  param(0, period),
+                 Z,   S,  mX,  param(1, period),
+                mY,   X,   S,  param(2, period),
                  O,   O,   O,  1});
     }
 
@@ -518,7 +547,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      */
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof BursaWolfParameters) {
+        if (object != null && object.getClass() == getClass()) {
             final BursaWolfParameters that = (BursaWolfParameters) object;
             return Numerics.equals(this.tX, that.tX) &&
                    Numerics.equals(this.tY, that.tY) &&
