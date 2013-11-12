@@ -41,6 +41,7 @@ import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 
 // Related to JDK7
 import java.util.Objects;
@@ -184,6 +185,13 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         this.primeMeridian = primeMeridian;
         bursaWolf = CollectionsExt.nonEmpty(CollectionsExt.nonNullArraySet(
                 BURSA_WOLF_KEY, properties.get(BURSA_WOLF_KEY), EMPTY_ARRAY));
+        for (int i=0; i<bursaWolf.length; i++) {
+            BursaWolfParameters param = bursaWolf[i];
+            ensureNonNullElement("bursaWolf", i, param);
+            param = param.clone();
+            param.verify();
+            bursaWolf[i] = param;
+        }
     }
 
     /**
@@ -247,7 +255,14 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @return The Bursa-Wolf parameters, or an empty array if none.
      */
     public BursaWolfParameters[] getBursaWolfParameters() {
-        return (bursaWolf != null) ? bursaWolf.clone() : EMPTY_ARRAY;
+        if (bursaWolf == null) {
+            return null;
+        }
+        final BursaWolfParameters[] copy = bursaWolf.clone();
+        for (int i=0; i<copy.length; i++) {
+            copy[i] = copy[i].clone();
+        }
+        return copy;
     }
 
     /**

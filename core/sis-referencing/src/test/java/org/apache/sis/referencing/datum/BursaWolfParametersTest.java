@@ -47,7 +47,16 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      * Returns the parameters for the <cite>ED87 to WGS 84</cite> transformation (EPSG:1146).
      */
     private static BursaWolfParameters createForNorthSea() {
-        return new BursaWolfParameters(-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143, null, null);
+        final BursaWolfParameters bursaWolf = new BursaWolfParameters(null, null);
+        bursaWolf.tX =  -82.981;
+        bursaWolf.tY =  -99.719;
+        bursaWolf.tZ = -110.709;
+        bursaWolf.rX =   -0.5076;
+        bursaWolf.rY =    0.1503;
+        bursaWolf.rZ =    0.3898;
+        bursaWolf.dS =   -0.3143;
+        bursaWolf.verify();
+        return bursaWolf;
     }
 
     /**
@@ -77,7 +86,10 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      */
     @Test
     public void testGetPositionVectorTransformation() throws NoninvertibleMatrixException {
-        final BursaWolfParameters bursaWolf = new BursaWolfParameters(0, 0, 4.5, 0, 0, 0.554, 0.219, null, null);
+        final BursaWolfParameters bursaWolf = new BursaWolfParameters(null, null);
+        bursaWolf.tZ = 4.5;
+        bursaWolf.rZ = 0.554;
+        bursaWolf.dS = 0.219;
         final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
         final MatrixSIS toWGS72 = getPositionVectorTransformation(bursaWolf).inverse();
         final MatrixSIS source  = Matrices.create(4, 1, new double[] {3657660.66, 255768.55, 5201382.11, 1});
@@ -104,14 +116,16 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     }
 
     /**
-     * Tests the {@link BursaWolfParameters#BursaWolfParameters(Matrix, double, GeodeticDatum, Extent)} constructor.
+     * Tests the {@link BursaWolfParameters#setPositionVectorTransformation(Matrix, double)} constructor.
+     * This is an internal consistency test.
      */
     @Test
     @DependsOnMethod("testGetPositionVectorTransformation")
-    public void testCreateFromPositionVectorTransformation() {
+    public void testSetPositionVectorTransformation() {
         final BursaWolfParameters bursaWolf = createForNorthSea();
         final Matrix matrix = bursaWolf.getPositionVectorTransformation(null);
-        final BursaWolfParameters actual = new BursaWolfParameters(matrix, 1E-10, null, null);
+        final BursaWolfParameters actual = new BursaWolfParameters(null, null);
+        actual.setPositionVectorTransformation(matrix, 1E-10);
         assertEquals(bursaWolf, actual);
     }
 
