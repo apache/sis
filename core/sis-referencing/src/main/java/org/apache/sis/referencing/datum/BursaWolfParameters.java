@@ -32,10 +32,10 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.IdentifiedObjects;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.getNumber;
 
 // Related to JDK7
 import java.util.Objects;
@@ -182,11 +182,6 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     static final double PPM = 1E+6;
 
     /**
-     * The conversion factor from arc-seconds to radians.
-     */
-    private static final double TO_RADIANS = PI / (180 * 60 * 60);
-
-    /**
      * X-axis translation in metres (EPSG:8605).
      * The legacy OGC parameter name is {@code "dx"}.
      */
@@ -298,7 +293,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     }
 
     /**
-     * Creates Bursa-Wolf parameters from the given matrix.
+     * Creates Bursa-Wolf parameters from the given <cite>Position Vector transformation</cite> matrix.
      * The matrix shall comply to the following constraints:
      *
      * <ul>
@@ -308,7 +303,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * </ul>
      *
      * @param  matrix The matrix to fit as a Bursa-Wolf construct.
-     * @param  tolerance The tolerance error for the antisymmetric matrix test. Should be a small number like {@code 1E-8}.
+     * @param  tolerance The tolerance error for the skew-symmetric matrix test, in units of PPM or arc-seconds (e.g. 1E-8).
      * @param  targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
      * @param  domainOfValidity Area or region in which a coordinate transformation based on those Bursa-Wolf parameters
      *         is valid, or {@code null} is unspecified.
@@ -328,30 +323,57 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
         if (!Matrices.isAffine(matrix)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NotAnAffineTransform));
         }
+        /*
+         * Translation terms, taken "as-is".
+         */
         tX = matrix.getElement(0,3);
         tY = matrix.getElement(1,3);
         tZ = matrix.getElement(2,3);
-        final double S = (matrix.getElement(0,0) +
-                          matrix.getElement(1,1) +
-                          matrix.getElement(2,2)) / 3;
-        final double RS = TO_RADIANS * S;
-        dS = (S-1) * PPM;
+        /*
+         * Scale factor: take the average of elements on the diagonal. All those
+         * elements should have the same value, but we tolerate slight deviation
+         * (this will be verified later).
+         */
+        final DoubleDouble S = new DoubleDouble(getNumber(matrix, 0,0));
+        S.add(getNumber(matrix, 1,1));
+        S.add(getNumber(matrix, 2,2));
+        S.divide(3, 0);
+        /*
+         * Computes: RS = S * toRadians(1″)
+         *           dS = (S-1) * PPM
+         */
+        final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
+        RS.multiply(S);
+        S.add(-1, 0);
+        S.multiply(PPM, 0);
+        dS = S.value;
+        /*
+         * Rotation terms. Each rotation terms appear twice, with one value being the negative of the other value.
+         * We verify this skew symmetric aspect in the loop. We also opportunistically verify that the scale terms
+         * are uniform.
+         */
         double rX=0, rY=0, rZ=0;
         for (int j=0; j < SIZE-1; j++) {
             if (!(abs((matrix.getElement(j,j) - 1)*PPM - dS) <= tolerance)) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.NonUniformScale));
             }
             for (int i = j+1; i < SIZE-1; i++) {
-                final double elt1 = matrix.getElement(j,i) / RS;
-                final double elt2 = matrix.getElement(i,j) / RS;
-                if (!(abs(elt1 + elt2) <= tolerance)) { // We expect elt1 ≈ -elt2
+                S.setFrom(RS);
+                S.inverseDivide(getNumber(matrix, j,i)); // Negative rotation term.
+                double value = S.value;
+                double error = S.error;
+                S.setFrom(RS);
+                S.inverseDivide(getNumber(matrix, i,j)); // Positive rotation term.
+                if (!(abs(value + S.value) <= tolerance)) { // We expect r1 ≈ -r2
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.NotASkewSymmetricMatrix));
                 }
-                final double elt = 0.5 * (elt2 - elt1);
+                S.subtract(value, error);
+                S.multiply(0.5, 0);
+                value = S.value; // Average of the two rotation terms.
                 switch (j*SIZE + i) {
-                    case 1: rZ =  elt; break;
-                    case 2: rY = -elt; break;
-                    case 6: rX =  elt; break;
+                    case 1: rZ =  value; break;
+                    case 2: rY = -value; break;
+                    case 6: rX =  value; break;
                 }
             }
         }
