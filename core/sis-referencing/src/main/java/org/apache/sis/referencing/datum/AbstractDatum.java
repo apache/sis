@@ -128,8 +128,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
-     *   <tr colspan="3">
-     *     <th>Defined in parent class (reminder)</th>
+     *   <tr>
+     *     <th colspan="3">Defined in parent class (reminder)</th>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>

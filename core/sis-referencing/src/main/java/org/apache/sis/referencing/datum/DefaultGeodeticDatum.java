@@ -168,8 +168,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *     <td>{@link BursaWolfParameters} or {@code BursaWolfParameters[]}</td>
      *     <td>{@link #getBursaWolfParameters()}</td>
      *   </tr>
-     *   <tr colspan="3">
-     *     <th>Defined in parent classes (reminder)</th>
+     *   <tr>
+     *     <th colspan="3">Defined in parent classes (reminder)</th>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
