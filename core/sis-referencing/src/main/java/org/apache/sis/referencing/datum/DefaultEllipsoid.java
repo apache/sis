@@ -543,24 +543,25 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
 
     /**
      * Returns the orthodromic distance between two geographic coordinates.
-     * The orthodromic distance is the shortest distance between two points on a sphere's surface.
+     * The orthodromic distance is the shortest distance between two points on a ellipsoid's surface.
      * The orthodromic path is always on a great circle.
-     * This is different from the <cite>loxodromic distance</cite>, which is a
-     * longer distance on a path with a constant direction on the compass.
      *
-     * @param  x1 Longitude of first  point (in decimal degrees).
-     * @param  y1 Latitude  of first  point (in decimal degrees).
-     * @param  x2 Longitude of second point (in decimal degrees).
-     * @param  y2 Latitude  of second point (in decimal degrees).
+     * {@note Orthodromic distances anre different than the <cite>loxodromic distance</cite>.
+     *        The later is a longer distance on a path with a constant direction on the compass.}
+     *
+     * @param  λ1 Longitude of first  point (in decimal degrees).
+     * @param  φ1 Latitude  of first  point (in decimal degrees).
+     * @param  λ2 Longitude of second point (in decimal degrees).
+     * @param  φ2 Latitude  of second point (in decimal degrees).
      * @return The orthodromic distance (in the units of this ellipsoid's axis).
      *
      * @see org.apache.sis.referencing.GeodeticCalculator
      */
-    public double orthodromicDistance(double x1, double y1, double x2, double y2) {
-        x1 = toRadians(x1);
-        y1 = toRadians(y1);
-        x2 = toRadians(x2);
-        y2 = toRadians(y2);
+    public double orthodromicDistance(double λ1, double φ1, double λ2, double φ2) {
+        λ1 = toRadians(λ1);
+        φ1 = toRadians(φ1);
+        λ2 = toRadians(λ2);
+        φ2 = toRadians(φ2);
         /*
          * Solution of the geodetic inverse problem after T.Vincenty.
          * Modified Rainsford's method with Helmert's elliptical terms.
@@ -579,15 +580,15 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         final double F = 1 / getInverseFlattening();
         final double R = 1 - F;
 
-        double tu1 = R * tan(y1);
-        double tu2 = R * tan(y2);
+        double tu1 = R * tan(φ1);
+        double tu2 = R * tan(φ2);
         double cu1 = 1 / sqrt(tu1*tu1 + 1);
         double cu2 = 1 / sqrt(tu2*tu2 + 1);
         double su1 = cu1 * tu1;
         double s   = cu1 * cu2;
         double baz =   s * tu2;
         double faz = baz * tu1;
-        double x   =  x2 - x1;
+        double x   =  λ2 - λ1;
         for (int i=0; i<MAX_ITERATIONS; i++) {
             final double sx = sin(x);
             final double cx = cos(x);
@@ -606,7 +607,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             double c = ((-3*c2a+4)*F + 4) * c2a * F/16;
             double d = x;
             x = ((e*cy*c+cz)*sy*c + y) * SA;
-            x = (1-c)*x*F + x2-x1;
+            x = (1-c)*x*F + λ2-λ1;
 
             if (abs(d-x) <= EPS) {
                 x = sqrt((1/(R*R) - 1) * c2a + 1) + 1;
@@ -622,20 +623,20 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         }
         // No convergence. It may be because coordinate points
         // are equals or because they are at antipodes.
-        if (abs(x1-x2) <= COMPARISON_THRESHOLD && abs(y1-y2) <= COMPARISON_THRESHOLD) {
+        if (abs(λ1-λ2) <= COMPARISON_THRESHOLD && abs(φ1-φ2) <= COMPARISON_THRESHOLD) {
             return 0; // Coordinate points are equals
         }
-        if (abs(y1) <= COMPARISON_THRESHOLD && abs(y2) <= COMPARISON_THRESHOLD) {
-            return abs(x1-x2) * getSemiMajorAxis(); // Points are on the equator.
+        if (abs(φ1) <= COMPARISON_THRESHOLD && abs(φ2) <= COMPARISON_THRESHOLD) {
+            return abs(λ1-λ2) * getSemiMajorAxis(); // Points are on the equator.
         }
         // At least one input ordinate is NaN.
-        if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+        if (isNaN(λ1) || isNaN(φ1) || isNaN(λ2) || isNaN(φ2)) {
             return NaN;
         }
         // Other cases: no solution for this algorithm.
         throw new ArithmeticException(Errors.format(Errors.Keys.NoConvergenceForPoints_2,
-                  new DirectPosition2D(toDegrees(x1), toDegrees(y1)),
-                  new DirectPosition2D(toDegrees(x2), toDegrees(y2))));
+                  new DirectPosition2D(toDegrees(λ1), toDegrees(φ1)),
+                  new DirectPosition2D(toDegrees(λ2), toDegrees(φ2))));
     }
 
     /**
