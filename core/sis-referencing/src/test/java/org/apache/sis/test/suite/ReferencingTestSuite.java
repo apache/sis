@@ -50,6 +50,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.AbstractReferenceSystemTest.class,
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
     org.apache.sis.referencing.datum.TimeDependentBWPTest.class,
+    org.apache.sis.referencing.datum.DefaultEllipsoidTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,

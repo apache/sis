@@ -168,7 +168,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *   </tr>
      *   <tr>
      *     <td>{@value #BURSA_WOLF_KEY}</td>
-     *     <td>{@link BursaWolfParameters} or {@code BursaWolfParameters[]}</td>
+     *     <td>{@link BursaWolfParameters} (optionally as array)</td>
      *     <td>{@link #getBursaWolfParameters()}</td>
      *   </tr>
      *   <tr>
