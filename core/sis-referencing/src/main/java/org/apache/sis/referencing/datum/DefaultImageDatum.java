@@ -58,6 +58,55 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     /**
      * Creates an image datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
+     * The following table is a reminder of main (not all) properties:
+     *
+     * <table class="sis">
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link String} or {@link ReferenceIdentifier}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *     <td>{@link CharSequence}, {@link GenericName} or an array of those</td>
+     *     <td>{@link #getAlias()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link ReferenceIdentifier} or <code>{@linkplain ReferenceIdentifier}[]</code></td>
+     *     <td>{@link #getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
+     *     <td>{@link String} or {@link InternationalString}</td>
+     *     <td>{@link #getRemarks()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link #getAnchorPoint()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
+     *     <td>{@link Date}</td>
+     *     <td>{@link #getRealizationEpoch()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@link Extent}</td>
+     *     <td>{@link #getDomainOfValidity()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link #getScope()}</td>
+     *   </tr>
+     * </table>
      *
      * @param properties  The properties to be given to the identified object.
      * @param pixelInCell The way the image grid is associated with the image data attributes.

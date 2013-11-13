@@ -174,11 +174,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
-     *     <td>{@link CharSequence}, {@link GenericName} or an array of those</td>
-     *     <td>{@link #getAlias()}</td>
-     *   </tr>
-     *   <tr>
      *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
      *     <td>{@link String} or {@link Citation}</td>
      *     <td>{@link NamedIdentifier#getAuthority()} on the {@linkplain #getName() name}</td>
@@ -197,6 +192,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     <td>{@value org.opengis.referencing.ReferenceIdentifier#VERSION_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link NamedIdentifier#getVersion()} on the {@linkplain #getName() name}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *     <td>{@link CharSequence}, {@link GenericName} or an array of those</td>
+     *     <td>{@link #getAlias()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>

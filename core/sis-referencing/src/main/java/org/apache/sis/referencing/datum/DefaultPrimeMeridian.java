@@ -96,9 +96,37 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     private final Unit<Angle> angularUnit;
 
     /**
-     * Creates a prime meridian from the given properties. The properties map is given
-     * unchanged to the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
-     * super-class constructor}.
+     * Creates a prime meridian from the given properties. The properties map is given unchanged to the
+     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
+     * The following table is a reminder of main (not all) properties:
+     *
+     * <table class="sis">
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link String} or {@link ReferenceIdentifier}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *     <td>{@link CharSequence}, {@link GenericName} or an array of those</td>
+     *     <td>{@link #getAlias()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link ReferenceIdentifier} or <code>{@linkplain ReferenceIdentifier}[]</code></td>
+     *     <td>{@link #getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
+     *     <td>{@link String} or {@link InternationalString}</td>
+     *     <td>{@link #getRemarks()}</td>
+     *   </tr>
+     * </table>
      *
      * @param properties          The properties to be given to the identified object.
      * @param greenwichLongitude  The longitude value relative to the Greenwich Meridian.
