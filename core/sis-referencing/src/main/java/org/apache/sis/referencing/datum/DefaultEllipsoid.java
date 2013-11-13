@@ -180,8 +180,37 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Creates a new ellipsoid using the specified axis length.
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
+     * The following table is a reminder of main (not all) properties:
      *
-     * @param  properties       The properties to be given to the identified object.
+     * <table class="sis">
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link String} or {@link ReferenceIdentifier}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *     <td>{@link CharSequence}, {@link GenericName} or an array of those</td>
+     *     <td>{@link #getAlias()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link ReferenceIdentifier} or <code>{@linkplain ReferenceIdentifier}[]</code></td>
+     *     <td>{@link #getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
+     *     <td>{@link String} or {@link InternationalString}</td>
+     *     <td>{@link #getRemarks()}</td>
+     *   </tr>
+     * </table>
+     *
+     * @param properties        The properties to be given to the identified object.
      * @param semiMajorAxis     The equatorial radius.
      * @param semiMinorAxis     The polar radius.
      * @param inverseFlattening The inverse of the flattening value.

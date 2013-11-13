@@ -32,7 +32,7 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * The {@link #tX tX}, {@link #tY tY}, {@link #tZ tZ}, {@link #rX rX}, {@link #rY rY}, {@link #rZ rZ}
  * and {@link #dS dS} parameters inherited from the parent class are values at a point in time given
  * by {@link #getTimeReference()}. Those values vary at a rate given by the parameters listed in the
- * table below:
+ * table below (codes, names and abbreviations are from the EPSG database):
  *
  * <table class="compact"><tr><td>
  * <table class="sis">
