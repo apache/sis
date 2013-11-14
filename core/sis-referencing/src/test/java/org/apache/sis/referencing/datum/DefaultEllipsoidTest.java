@@ -19,8 +19,8 @@ package org.apache.sis.referencing.datum;
 import java.util.Random;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.referencing.GeodeticObjects;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.test.mock.GeodeticDatumMock;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
@@ -69,7 +69,7 @@ public final strictfp class DefaultEllipsoidTest extends TestCase {
      */
     @Test
     public void testOrthodromicDistance() {
-        final DefaultEllipsoid e = (DefaultEllipsoid) GeodeticObjects.NAD27.ellipsoid(); // Clark 1866
+        final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.NAD27.getEllipsoid()); // Clark 1866
         assertEquals("Nautical mile at equator",    1842.78, e.orthodromicDistance(0,    -HM,   0,    +HM), 0.01);
         assertEquals("Nautical mile at North pole", 1861.67, e.orthodromicDistance(0,  90-HM*2, 0,  90   ), 0.02);
         assertEquals("Nautical mile at South pole", 1861.67, e.orthodromicDistance(0, -90+HM*2, 0, -90   ), 0.02);
@@ -92,15 +92,15 @@ public final strictfp class DefaultEllipsoidTest extends TestCase {
     @Test
     @DependsOnMethod("testOrthodromicDistance")
     public void testOrthodromicDistanceOnSphere() {
-        final DefaultEllipsoid s = (DefaultEllipsoid) GeodeticObjects.SPHERE.ellipsoid();
-        assertInstanceOf("SPHERE", Sphere.class, s);
         /*
-         * Creates an instance of DefaultEllipsoid with the same properties than s.
-         * The 's' and 'e' instances will use different formulas for orthodromic distances, which we will compare.
+         * Creates instance of DefaultEllipsoid and Sphere with the same properties.
+         * Those instances will use different formulas for orthodromic distances, which we will compare.
          */
-        final double radius = s.getSemiMajorAxis();
-        final DefaultEllipsoid e = new DefaultEllipsoid(IdentifiedObjects.getProperties(s),
-                radius, radius, Double.POSITIVE_INFINITY, false, s.getAxisUnit());
+        final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.SPHERE.getEllipsoid());
+        final double radius = e.getSemiMajorAxis();
+        final Sphere s = new Sphere(IdentifiedObjects.getProperties(e), radius, false, e.getAxisUnit());
+        assertTrue(e.isSphere());
+        assertTrue(s.isSphere());
         /*
          * Test parallel segments of increasing length at random positions on the equator.
          */
@@ -141,7 +141,12 @@ public final strictfp class DefaultEllipsoidTest extends TestCase {
      */
     @Test
     public void testAuthalicRadius() {
-        assertEquals("SPHERE", 6371007, ((DefaultEllipsoid) GeodeticObjects.SPHERE.ellipsoid()).getAuthalicRadius(), 0.0);
-        assertEquals("NAD83",  6371007, ((DefaultEllipsoid) GeodeticObjects.NAD83 .ellipsoid()).getAuthalicRadius(), 0.2);
+        final DefaultEllipsoid sphere = DefaultEllipsoid.castOrCopy(GeodeticDatumMock.SPHERE.getEllipsoid());
+        final DefaultEllipsoid GRS80  = DefaultEllipsoid.castOrCopy(GeodeticDatumMock.NAD83 .getEllipsoid());
+        assertInstanceOf("SPHERE", Sphere.class, sphere);
+        assertTrue  ("SPHERE", sphere.isSphere());
+        assertFalse ("GRS80",  GRS80 .isSphere());
+        assertEquals("SPHERE", 6371007, sphere.getAuthalicRadius(), 0.0);
+        assertEquals("GRS80",  6371007, GRS80 .getAuthalicRadius(), 0.2);
     }
 }
