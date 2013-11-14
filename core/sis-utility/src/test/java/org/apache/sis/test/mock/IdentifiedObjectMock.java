@@ -16,35 +16,54 @@
  */
 package org.apache.sis.test.mock;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
-import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
-import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
 
 
 /**
  * A dummy implementation of {@link IdentifiedObject} with minimal XML (un)marshalling capability.
+ * This object can also be its own identifier, with a {@linkplain #getCode() code} defined in the
+ * {@code "test"} {@linkplain #getCodeSpace() codespace}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
+@SuppressWarnings("serial")
 @XmlRootElement(name = "IO_IdentifiedObject")
-public final strictfp class IdentifiedObjectMock implements IdentifiedObject {
+public strictfp class IdentifiedObjectMock implements IdentifiedObject, ReferenceIdentifier, Serializable {
+    /**
+     * The object name to be returned by {@link #getCode()}.
+     */
+    private String code;
+
     /**
      * The alias to (un)marshal to XML
      */
     @XmlElement
     @XmlJavaTypeAdapter(GO_GenericName.class)
     public GenericName alias;
+
+    /**
+     * Returns all properties defined in this object,
+     * for the convenience of {@link #equals(Object)} and {@link #hashCode()}.
+     */
+    Object[] properties() {
+        return new Object[] {code, alias};
+    }
 
     /**
      * Creates an initially empty identified object.
@@ -54,7 +73,17 @@ public final strictfp class IdentifiedObjectMock implements IdentifiedObject {
     }
 
     /**
-     * Creates an initially empty identified object of the given alias.
+     * Creates an identified object of the given name.
+     * Callers are free to assign new value to the {@link #alias} field directly.
+     *
+     * @param code The initial {@link #getCode()} value, or {@code null} if none.
+     */
+    public IdentifiedObjectMock(final String code) {
+        this.code = code;
+    }
+
+    /**
+     * Creates an identified object of the given alias.
      * Callers are free to assign new value to the {@link #alias} field directly.
      *
      * @param alias The initial {@link #alias} value (can be {@code null}).
@@ -64,22 +93,62 @@ public final strictfp class IdentifiedObjectMock implements IdentifiedObject {
     }
 
     /**
-     * Returns the name (currently null).
+     * Returns the object name, or {@code null} if none.
      *
-     * @return The name of this object.
+     * @return The name of this object, or {@code null} if none.
      */
     @Override
-    public ReferenceIdentifier getName() {
+    public final ReferenceIdentifier getName() {
+        return (code != null) ? this : null;
+    }
+
+    /**
+     * Returns the code supplied at construction time, or {@code null} if none.
+     *
+     * @return The object code, or {@code null}.
+     */
+    @Override
+    public final String getCode() {
+        return code;
+    }
+
+    /**
+     * Returns the codespace, which is fixed to {@code "test"}.
+     *
+     * @return {@code "test"}.
+     */
+    @Override
+    public final String getCodeSpace() {
+        return "test";
+    }
+
+    /**
+     * Returns the identifier version ({@code null} for now).
+     *
+     * @return The identifier version.
+     */
+    @Override
+    public final String getVersion() {
         return null;
     }
 
     /**
-     * Returns {@link #alias} in an unmodifiable collection.
+     * Returns the authority that define the object ({@code null} for now).
      *
-     * @return {@link #alias} singleton.
+     * @return The defining authority.
      */
     @Override
-    public Collection<GenericName> getAlias() {
+    public final Citation getAuthority() {
+        return null;
+    }
+
+    /**
+     * Returns {@link #alias} in an unmodifiable collection, or an empty collection if the alias is null.
+     *
+     * @return {@link #alias} singleton or an empty collection.
+     */
+    @Override
+    public final Collection<GenericName> getAlias() {
         return (alias != null) ? Collections.singleton(alias) : Collections.<GenericName>emptySet();
     }
 
@@ -89,7 +158,7 @@ public final strictfp class IdentifiedObjectMock implements IdentifiedObject {
      * @return The identifiers of this object.
      */
     @Override
-    public Set<ReferenceIdentifier> getIdentifiers() {
+    public final Set<ReferenceIdentifier> getIdentifiers() {
         return null;
     }
 
@@ -99,7 +168,7 @@ public final strictfp class IdentifiedObjectMock implements IdentifiedObject {
      * @return The remarks associated to this object.
      */
     @Override
-    public InternationalString getRemarks() {
+    public final InternationalString getRemarks() {
         return null;
     }
 
@@ -110,7 +179,39 @@ public final strictfp class IdentifiedObjectMock implements IdentifiedObject {
      * @throws UnsupportedOperationException If there is no WKT representation.
      */
     @Override
-    public String toWKT() throws UnsupportedOperationException {
+    public final String toWKT() throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns a string representation for debugging purpose.
+     */
+    @Override
+    public final String toString() {
+        return getClass().getSimpleName() + '[' + code + ']';
+    }
+
+    /**
+     * Returns a hash code value for this object.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public final int hashCode() {
+        return Arrays.hashCode(properties());
+    }
+
+    /**
+     * Compares this object with the given object for equality.
+     *
+     * @param  object The other object, or {@code null}.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public final boolean equals(final Object object) {
+        if (object != null && object.getClass() == getClass()) {
+            return Arrays.equals(properties(), ((IdentifiedObjectMock) object).properties());
+        }
+        return false;
     }
 }

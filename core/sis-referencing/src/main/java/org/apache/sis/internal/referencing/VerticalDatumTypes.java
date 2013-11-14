@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.referencing;
 
-import org.opengis.referencing.datum.Datum;
 import org.opengis.util.CodeList;
+import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.StringBuilders;
@@ -114,16 +114,16 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * Guesses the type of the given datum using its name or identifiers. This is sometime needed
      * after XML unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
      *
-     * <p>This method uses heuristic rules and may be changed in any future SIS version. If the type can not be
-     * determined, default on the ellipsoidal type since it will usually implies no additional calculation.</p>
+     * <p>This method uses heuristic rules and may be changed in any future SIS version.
+     * If the type can not be determined, default on {@link VerticalDatumType#OTHER_SURFACE}.</p>
      *
      * @param  datum The datum for which to guess a type.
-     * @return A datum type, or {@link #ELLIPSOIDAL} if none can be guessed.
+     * @return A datum type, or {@link VerticalDatumType#OTHER_SURFACE} if none can be guessed.
      */
-    public static VerticalDatumType guess(final Datum datum) {
+    public static VerticalDatumType guess(final VerticalDatum datum) {
         final VerticalDatumType type = CodeList.valueOf(VerticalDatumType.class,
                 new VerticalDatumTypes(IdentifiedObjects.getName(datum, null)));
-        return (type != null) ? type : ELLIPSOIDAL;
+        return (type != null) ? type : VerticalDatumType.OTHER_SURFACE;
     }
 
     /**
@@ -144,7 +144,7 @@ public final class VerticalDatumTypes implements CodeList.Filter {
         datum = new StringBuilder(length);
         for (int i=0; i<length;) {
             final int c = name.codePointAt(i);
-            datum.appendCodePoint(Character.toUpperCase(i));
+            datum.appendCodePoint(Character.toUpperCase(c));
             i += Character.charCount(c);
         }
         StringBuilders.toASCII(datum);

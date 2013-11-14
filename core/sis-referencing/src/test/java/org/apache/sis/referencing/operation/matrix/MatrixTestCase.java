@@ -171,6 +171,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
                 final double e = expected.get(j,i);
                 final double a = actual.getElement(j,i);
                 assertEquals(name, e, a, tolerance);
+                assertEquals(name, e, actual.getNumber(j,i).doubleValue(), tolerance);
                 if (tolerance != STRICT && statistics != null) {
                     synchronized (statistics) {
                         statistics.accept(StrictMath.abs(e - a));
