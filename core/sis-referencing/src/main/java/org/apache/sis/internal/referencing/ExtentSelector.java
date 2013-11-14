@@ -96,14 +96,4 @@ public final class ExtentSelector<T> {
     public T best() {
         return best;
     }
-
-    /**
-     * Returns the area of the largest intersection between the extents given to {@link #evaluate(Extent, Object)}
-     * and the area of interest.
-     *
-     * @return Area of the largest intersection (m²), or 0.
-     */
-    public double largestArea() {
-        return largestArea;
-    }
 }

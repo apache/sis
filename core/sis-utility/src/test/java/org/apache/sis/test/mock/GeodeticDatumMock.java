@@ -35,6 +35,7 @@ import org.opengis.referencing.datum.PrimeMeridian;
  * @version 0.4
  * @module
  */
+@SuppressWarnings("serial")
 public final strictfp class GeodeticDatumMock extends IdentifiedObjectMock implements GeodeticDatum, Ellipsoid {
     /**
      * The "World Geodetic System 1984" datum.
@@ -92,6 +93,14 @@ public final strictfp class GeodeticDatumMock extends IdentifiedObjectMock imple
         this.semiMinorAxis     = semiMinorAxis;
         this.inverseFlattening = inverseFlattening;
         this.isIvfDefinitive   = isIvfDefinitive;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Object[] properties() {
+        return new Object[] {getCode(), alias, semiMajorAxis, semiMinorAxis, inverseFlattening, isIvfDefinitive};
     }
 
     @Override public PrimeMeridian        getPrimeMeridian()      {return PrimeMeridianMock.GREENWICH;}

@@ -16,9 +16,11 @@
  */
 package org.apache.sis.test.mock;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -40,8 +42,9 @@ import org.apache.sis.internal.jaxb.gco.GO_GenericName;
  * @version 0.4
  * @module
  */
+@SuppressWarnings("serial")
 @XmlRootElement(name = "IO_IdentifiedObject")
-public strictfp class IdentifiedObjectMock implements IdentifiedObject, ReferenceIdentifier {
+public strictfp class IdentifiedObjectMock implements IdentifiedObject, ReferenceIdentifier, Serializable {
     /**
      * The object name to be returned by {@link #getCode()}.
      */
@@ -53,6 +56,14 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Referenc
     @XmlElement
     @XmlJavaTypeAdapter(GO_GenericName.class)
     public GenericName alias;
+
+    /**
+     * Returns all properties defined in this object,
+     * for the convenience of {@link #equals(Object)} and {@link #hashCode()}.
+     */
+    Object[] properties() {
+        return new Object[] {code, alias};
+    }
 
     /**
      * Creates an initially empty identified object.
@@ -170,5 +181,37 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Referenc
     @Override
     public final String toWKT() throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns a string representation for debugging purpose.
+     */
+    @Override
+    public final String toString() {
+        return getClass().getSimpleName() + '[' + code + ']';
+    }
+
+    /**
+     * Returns a hash code value for this object.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public final int hashCode() {
+        return Arrays.hashCode(properties());
+    }
+
+    /**
+     * Compares this object with the given object for equality.
+     *
+     * @param  object The other object, or {@code null}.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public final boolean equals(final Object object) {
+        if (object != null && object.getClass() == getClass()) {
+            return Arrays.equals(properties(), ((IdentifiedObjectMock) object).properties());
+        }
+        return false;
     }
 }

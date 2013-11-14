@@ -30,6 +30,7 @@ import org.opengis.referencing.datum.PrimeMeridian;
  * @version 0.4
  * @module
  */
+@SuppressWarnings("serial")
 public final strictfp class PrimeMeridianMock extends IdentifiedObjectMock implements PrimeMeridian {
     /**
      * A mock for the Greenwich prime meridian.

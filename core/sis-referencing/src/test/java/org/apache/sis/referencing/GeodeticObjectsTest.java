@@ -17,8 +17,12 @@
 package org.apache.sis.referencing;
 
 import java.util.Date;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.test.Validators;
+import org.apache.sis.test.mock.GeodeticDatumMock;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -34,11 +38,48 @@ import static org.apache.sis.test.TestUtilities.*;
  * @version 0.4
  * @module
  */
+@DependsOn({
+  org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class,
+  org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class
+})
 public final strictfp class GeodeticObjectsTest extends TestCase {
     /**
      * Length of a day in milliseconds.
      */
     private static final double DAY_LENGTH = 24 * 60 * 60 * 1000;
+
+    /**
+     * Compares the {@link GeodeticDatumMock} constants with the {@link GeodeticObjects} ones.
+     * This is more a {@code GeodeticDatumMock} test than a {@code GeodeticObjects} one, but can
+     * hardly be defined elsewhere since we need some reference objects for comparing the values.
+     */
+    @Test
+    public void testGeodeticDatumMocks() {
+        final GeodeticDatum[] mocks = new GeodeticDatum[] {
+            GeodeticDatumMock.WGS84,
+            GeodeticDatumMock.WGS72,
+            GeodeticDatumMock.NAD83,
+            GeodeticDatumMock.NAD27,
+            GeodeticDatumMock.SPHERE
+        };
+        final GeodeticObjects[] enums = new GeodeticObjects[] {
+            GeodeticObjects.WGS84,
+            GeodeticObjects.WGS72,
+            GeodeticObjects.NAD83,
+            GeodeticObjects.NAD27,
+            GeodeticObjects.SPHERE
+        };
+        assertEquals(mocks.length, enums.length);
+        for (int i=0; i<mocks.length; i++) {
+            final Ellipsoid mock = mocks[i].getEllipsoid();
+            final Ellipsoid ref  = enums[i].ellipsoid();
+            assertEquals("semiMajorAxis",     ref.getSemiMajorAxis(),     mock.getSemiMajorAxis(), 0);
+            assertEquals("semiMinorAxis",     ref.getSemiMinorAxis(),     mock.getSemiMinorAxis(), 0);
+            assertEquals("inverseFlattening", ref.getInverseFlattening(), mock.getInverseFlattening(), 1E-11);
+            assertEquals("isIvfDefinitive",   ref.isIvfDefinitive(),      mock.isIvfDefinitive());
+            assertEquals("isSphere",          ref.isSphere(),             mock.isSphere());
+        }
+    }
 
     /**
      * Verifies the epoch values of temporal enumeration compared to the Julian epoch.
