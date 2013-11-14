@@ -18,6 +18,9 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Date;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
@@ -44,10 +47,25 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     private static final double TO_RADIANS = Math.PI / (180 * 60 * 60);
 
     /**
-     * Returns the parameters for the <cite>ED87 to WGS 84</cite> transformation (EPSG:1146).
+     * Returns the parameters for the <cite>WGS 72 to WGS 84 (2)</cite> transformation (EPSG:1238).
+     * Area of validity is the World.
      */
-    private static BursaWolfParameters createForNorthSea() {
-        final BursaWolfParameters bursaWolf = new BursaWolfParameters(null, null);
+    static BursaWolfParameters createWGS72_to_WGS84() {
+        final BursaWolfParameters bursaWolf = new BursaWolfParameters(null, Extents.WORLD);
+        bursaWolf.tZ = 4.5;
+        bursaWolf.rZ = 0.554;
+        bursaWolf.dS = 0.219;
+        bursaWolf.verify();
+        return bursaWolf;
+    }
+
+    /**
+     * Returns the parameters for the <cite>ED87 to WGS 84 (1)</cite> transformation (EPSG:1146).
+     * Area of validity is the North Sea: 5.05°W to 11.13°E in longitude and 51.04°N to 62.0°N in latitude.
+     */
+    static BursaWolfParameters createED87_to_WGS84() {
+        final BursaWolfParameters bursaWolf = new BursaWolfParameters(null, new DefaultExtent("Europe - North Sea",
+                new DefaultGeographicBoundingBox(-5.05, 11.13, 51.04, 62.0), null, null));
         bursaWolf.tX =  -82.981;
         bursaWolf.tY =  -99.719;
         bursaWolf.tZ = -110.709;
@@ -86,10 +104,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      */
     @Test
     public void testGetPositionVectorTransformation() throws NoninvertibleMatrixException {
-        final BursaWolfParameters bursaWolf = new BursaWolfParameters(null, null);
-        bursaWolf.tZ = 4.5;
-        bursaWolf.rZ = 0.554;
-        bursaWolf.dS = 0.219;
+        final BursaWolfParameters bursaWolf = createWGS72_to_WGS84();
         final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
         final MatrixSIS toWGS72 = toWGS84.inverse();
         final MatrixSIS source  = Matrices.create(4, 1, new double[] {3657660.66, 255768.55, 5201382.11, 1});
@@ -108,7 +123,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testGetPositionVectorTransformation")
     public void testProductOfInverse() throws NoninvertibleMatrixException {
-        final BursaWolfParameters bursaWolf = createForNorthSea();
+        final BursaWolfParameters bursaWolf = createED87_to_WGS84();
         final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
         final MatrixSIS toED87  = getPositionVectorTransformation(bursaWolf).inverse();
         final MatrixSIS product = toWGS84.multiply(toED87);
@@ -122,9 +137,10 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testGetPositionVectorTransformation")
     public void testSetPositionVectorTransformation() {
-        final BursaWolfParameters bursaWolf = createForNorthSea();
+        final BursaWolfParameters bursaWolf = createED87_to_WGS84();
         final Matrix matrix = bursaWolf.getPositionVectorTransformation(null);
-        final BursaWolfParameters actual = new BursaWolfParameters(null, null);
+        final BursaWolfParameters actual = new BursaWolfParameters(
+                bursaWolf.getTargetDatum(), bursaWolf.getDomainOfValidity());
         actual.setPositionVectorTransformation(matrix, 1E-10);
         assertEquals(bursaWolf, actual);
     }
@@ -134,7 +150,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      */
     @Test
     public void testToString() {
-        final BursaWolfParameters bursaWolf = createForNorthSea();
+        final BursaWolfParameters bursaWolf = createED87_to_WGS84();
         assertEquals("TOWGS84[-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143]", bursaWolf.toString());
     }
 
@@ -143,7 +159,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final BursaWolfParameters bursaWolf = createForNorthSea();
+        final BursaWolfParameters bursaWolf = createED87_to_WGS84();
         assertSerializedEquals(bursaWolf);
     }
 }

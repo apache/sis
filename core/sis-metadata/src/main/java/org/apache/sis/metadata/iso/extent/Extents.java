@@ -149,7 +149,7 @@ public final class Extents extends Static {
      * However this may change in any future SIS version.</p>
      *
      * @param  box The geographic bounding box for which to compute the area, or {@code null}.
-     * @return An estimation of the geographic area in the given bounding box,
+     * @return An estimation of the area in the given bounding box (m²),
      *         or {@linkplain Double#NaN NaN} if the given box was null.
      *
      * @since 0.4
