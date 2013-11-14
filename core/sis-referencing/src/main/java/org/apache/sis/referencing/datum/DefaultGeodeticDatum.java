@@ -17,9 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Date;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -27,15 +25,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
+import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
@@ -304,7 +301,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      */
     public BursaWolfParameters[] getBursaWolfParameters() {
         if (bursaWolf == null) {
-            return null;
+            return EMPTY_ARRAY;
         }
         final BursaWolfParameters[] copy = bursaWolf.clone();
         for (int i=0; i<copy.length; i++) {
@@ -314,22 +311,28 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Returns a direct reference to the {@link #bursaWolf} of the given datum if it exists,
-     * or {@code null} otherwise. This method does not clone the array - do not modify!
-     */
-    private static BursaWolfParameters[] bursaWolf(final GeodeticDatum datum) {
-        return (datum instanceof DefaultGeodeticDatum) ? ((DefaultGeodeticDatum) datum).bursaWolf : null;
-    }
-
-    /**
      * Returns the position vector transformation (geocentric domain) to the specified datum.
-     * If no transformation path is found, then this method returns {@code null}.
-     * If non-null, then the transformation is represented by an affine transform
-     * which can be applied on <strong>geocentric</strong> coordinates.
+     * This method performs the search in the following order:
      *
-     * {@note This is identified in the EPSG database as operation method 1033 -
-     *        <cite>Position Vector transformation (geocentric domain)</cite>, or 1053 -
-     *        <cite>Time-dependent Position Vector transformation</cite>.}
+     * <ul>
+     *   <li>If this {@code GeodeticDatum} contains {@code BursaWolfParameters} having the given
+     *       {@linkplain BursaWolfParameters#getTargetDatum() target datum} (ignoring metadata),
+     *       then the matrix will be built from those parameters.</li>
+     *   <li>Otherwise if the other datum contains {@code BursaWolfParameters} having this datum
+     *       as their target (ignoring metadata), then the matrix will be built from those parameters
+     *       and {@linkplain MatrixSIS#inverse() inverted}.</li>
+     *   <li>Otherwise this method returns {@code null}.</li>
+     * </ul>
+     *
+     * If more than one {@code BursaWolfParameters} instance is found in any of the above steps, then the one having
+     * the largest intersection between their {@linkplain BursaWolfParameters#getDomainOfValidity() domain of validity}
+     * and the given extent will be selected. If more than one instance have the same intersection, then the first
+     * occurrence is selected.
+     *
+     * <p>If non-null, then the transformation is represented by an affine transform which can be applied on
+     * <strong>geocentric</strong> coordinates. This is identified in the EPSG database as operation method
+     * 1033 - <cite>Position Vector transformation (geocentric domain)</cite>, or
+     * 1053 - <cite>Time-dependent Position Vector transformation</cite>.</p>
      *
      * @param  targetDatum The target datum.
      * @param  extent The geographic and temporal extent where the transformation is valid, or {@code null}.
@@ -339,91 +342,47 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      */
     public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum, final Extent extent) {
         ensureNonNull("targetDatum", targetDatum);
-        return getPositionVectorTransformation(this, targetDatum, Extents.getGeographicBoundingBox(extent), null, null);
-    }
-
-    /**
-     * Returns a matrix that can be used to define a transformation to the specified datum.
-     * If no transformation path is found, then this method returns {@code null}.
-     *
-     * @param  source The source datum, or {@code null}.
-     * @param  target The target datum, or {@code null}.
-     * @param  extent The geographic extent where the transformation is desired, or {@code null} if unspecified.
-     * @param  time   Date for which the transformation is desired, or {@code null} is unspecified.
-     * @param  exclusion The set of datum to exclude from the search, or {@code null}.
-     *         This is used in order to avoid never-ending recursivity.
-     * @return An affine transform from {@code source} to {@code target}, or {@code null} if none.
-     */
-    private static Matrix getPositionVectorTransformation(final GeodeticDatum source, final GeodeticDatum target,
-            final GeographicBoundingBox extent, final Date time, Set<GeodeticDatum> exclusion)
-    {
-        final BursaWolfParameters[] sourceParam = bursaWolf(source);
-        if (sourceParam != null) {
-            for (final BursaWolfParameters candidate : sourceParam) {
-                if (deepEquals(target, candidate.getTargetDatum(), ComparisonMode.IGNORE_METADATA)) {
-                    return candidate.getPositionVectorTransformation(time);
-                }
-            }
+        final ExtentSelector<BursaWolfParameters> selector = new ExtentSelector<>(extent);
+        Date time = null; // TODO
+        /*
+         * Search in the BursaWolfParameters associated to this instance.
+         */
+        BursaWolfParameters candidate = select(targetDatum, selector);
+        if (candidate != null) {
+            return candidate.getPositionVectorTransformation(time);
         }
         /*
-         * No transformation found to the specified target datum.
-         * Search if a transform exists in the opposite direction.
+         * Search in the BursaWolfParameters associated to the other instance, if any.
          */
-        final BursaWolfParameters[] targetParam = bursaWolf(target);
-        if (targetParam != null) {
-            for (final BursaWolfParameters candidate : targetParam) {
-                if (deepEquals(source, candidate.getTargetDatum(), ComparisonMode.IGNORE_METADATA)) try {
-                    return MatrixSIS.castOrCopy(candidate.getPositionVectorTransformation(time)).inverse();
-                } catch (NoninvertibleMatrixException e) {
-                    /*
-                     * Should never happen because BursaWolfParameters.getPositionVectorTransformation(Date)
-                     * is defined in such a way that matrix should always be invertible. If it happen anyway,
-                     * search for an other BursaWolfParameters instance. If none are found, returning 'null'
-                     * is allowed by this method's contract.
-                     */
-                    Logging.unexpectedException(DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
-                }
-            }
-        }
-        /*
-         * No direct tranformation found. Search for a path through some intermediate datum.
-         * First, search if there is some BursaWolfParameters for the same target in both
-         * 'source' and 'target' datum. If such an intermediate is found, ask for a path as below:
-         *
-         *    source   →   [common datum]   →   target
-         */
-        if (sourceParam != null && targetParam != null) {
-            for (int i=0; i<sourceParam.length; i++) {
-                final GeodeticDatum sourceStep = sourceParam[i].getTargetDatum();
-                for (int j=0; j<targetParam.length; j++) {
-                    final GeodeticDatum targetStep = targetParam[j].getTargetDatum();
-                    if (deepEquals(sourceStep, targetStep, ComparisonMode.IGNORE_METADATA)) {
-                        if (exclusion == null) {
-                            exclusion = new HashSet<>();
-                        }
-                        if (exclusion.add(source)) {
-                            if (exclusion.add(target)) {
-                                final Matrix step1 = getPositionVectorTransformation(source, sourceStep, extent, time, exclusion);
-                                if (step1 != null) {
-                                    final Matrix step2 = getPositionVectorTransformation(targetStep, target, extent, time, exclusion);
-                                    if (step2 != null) {
-                                        /*
-                                         * MatrixSIS.multiply(Matrix) is equivalent to AffineTransform.concatenate(…):
-                                         * First transform by the supplied transform and then transform the result
-                                         * by the original transform.
-                                         */
-                                        return MatrixSIS.castOrCopy(step2).multiply(step1);
-                                    }
-                                }
-                                exclusion.remove(target);
-                            }
-                            exclusion.remove(source);
-                        }
-                    }
-                }
+        if (targetDatum instanceof DefaultGeodeticDatum) {
+            candidate = ((DefaultGeodeticDatum) targetDatum).select(this, selector);
+            if (candidate != null) try {
+                return MatrixSIS.castOrCopy(candidate.getPositionVectorTransformation(time)).inverse();
+            } catch (NoninvertibleMatrixException e) {
+                /*
+                 * Should never happen because BursaWolfParameters.getPositionVectorTransformation(Date)
+                 * is defined in such a way that matrix should always be invertible. If it happen anyway,
+                 * returning 'null' is allowed by this method's contract.
+                 */
+                Logging.unexpectedException(DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the best parameters matching the given criteria, or {@code null} if none.
+     */
+    private BursaWolfParameters select(final GeodeticDatum targetDatum, final ExtentSelector<BursaWolfParameters> selector) {
+        if (bursaWolf == null) {
+            return null;
+        }
+        for (final BursaWolfParameters candidate : bursaWolf) {
+            if (deepEquals(targetDatum, candidate.getTargetDatum(), ComparisonMode.IGNORE_METADATA)) {
+                selector.evaluate(candidate.getDomainOfValidity(), candidate);
+            }
+        }
+        return selector.best();
     }
 
     /**
