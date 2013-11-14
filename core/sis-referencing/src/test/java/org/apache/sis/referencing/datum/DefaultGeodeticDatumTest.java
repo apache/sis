@@ -18,16 +18,20 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Locale;
+import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.mock.GeodeticDatumMock.*;
 
 
@@ -42,9 +46,49 @@ import static org.apache.sis.test.mock.GeodeticDatumMock.*;
 @DependsOn({DefaultEllipsoidTest.class, BursaWolfParametersTest.class})
 public final strictfp class DefaultGeodeticDatumTest extends TestCase {
     /**
+     * Tests the creation and serialization of a {@link DefaultGeodeticDatum}.
+     */
+    @Test
+    public void testCreateAndSerialize() {
+        final Map<String,Object> properties = new HashMap<>();
+        assertNull(properties.put(DefaultEllipsoid.NAME_KEY, "Asteroid"));
+        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(properties, 1200, 1000, SI.METRE);
+
+        properties.clear();
+        assertNull(properties.put(DefaultEllipsoid.NAME_KEY, "Somewhere"));
+        final DefaultPrimeMeridian primeMeridian = new DefaultPrimeMeridian(properties, 12, NonSI.DEGREE_ANGLE);
+
+        properties.clear();
+        assertNull(properties.put("name",       "This is a name"));
+        assertNull(properties.put("scope",      "This is a scope"));
+        assertNull(properties.put("scope_fr",   "Valide pour tel usage"));
+        assertNull(properties.put("remarks",    "There is remarks"));
+        assertNull(properties.put("remarks_fr", "Voici des remarques"));
+        assertNull(properties.put("remarks_ja", "注です。"));
+        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(properties, ellipsoid, primeMeridian);
+
+        compare(datum);
+        compare(assertSerializedEquals(datum));
+    }
+
+    /**
+     * Compares the properties of the given datum objects with the properties set by the
+     * {@link #testCreateAndSerialize()} method.
+     */
+    private static void compare(final DefaultGeodeticDatum datum) {
+        assertEquals("name",       "This is a name",        datum.getName   ().getCode());
+        assertEquals("scope",      "This is a scope",       datum.getScope  ().toString(Locale.ROOT));
+        assertEquals("scope_fr",   "Valide pour tel usage", datum.getScope  ().toString(Locale.FRENCH));
+        assertEquals("remarks",    "There is remarks",      datum.getRemarks().toString(Locale.ROOT));
+        assertEquals("remarks_fr", "Voici des remarques",   datum.getRemarks().toString(Locale.FRENCH));
+        assertEquals("remarks_ja", "注です。",                datum.getRemarks().toString(Locale.JAPANESE));
+    }
+
+    /**
      * Tests {@link DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum, Extent)}.
      */
     @Test
+    @DependsOnMethod("testCreateAndSerialize")
     public void testGetPositionVectorTransformation() {
         final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put(DefaultGeodeticDatum.NAME_KEY, "Invalid dummy datum"));
