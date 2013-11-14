@@ -17,11 +17,12 @@
 
 /**
  * Suites for all SIS tests in dependency order.
- * This package contains exactly one {@code TestSuite} class for each module.
+ * Each module will typically provide one {@code FooTestSuite} class in this class,
+ * where {@code Foo} is the module name.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 package org.apache.sis.test.suite;
