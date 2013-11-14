@@ -322,6 +322,24 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
+     * Inverts in-place the transformation by inverting the sign of all numerical parameters.
+     * The {@linkplain #getPositionVectorTransformation(Date) position vector transformation} matrix
+     * created from inverted Bursa-Wolf parameters will be <strong>approximatively</strong> equals
+     * to the {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse() inverse}
+     * of the matrix created from the original parameters. The equality holds approximatively only
+     * because the parameter values are very small (parts per millions and arc-seconds).
+     */
+    public void invert() {
+        tX = -tX;
+        tY = -tY;
+        tZ = -tZ;
+        rX = -rX;
+        rY = -rY;
+        rZ = -rZ;
+        dS = -dS;
+    }
+
+    /**
      * Returns the elapsed time from the {@linkplain TimeDependentBWP#getTimeReference() reference time}
      * to the given date, in millennium. If this {@code BursaWolfParameters} is not time-dependent, then
      * returns {@code null}.

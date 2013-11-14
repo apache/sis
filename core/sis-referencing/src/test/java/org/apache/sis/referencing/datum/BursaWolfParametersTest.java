@@ -115,6 +115,21 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     }
 
     /**
+     * Tests the {@link BursaWolfParameters#setPositionVectorTransformation(Matrix, double)} method.
+     * This is an internal consistency test.
+     */
+    @Test
+    @DependsOnMethod("testGetPositionVectorTransformation")
+    public void testSetPositionVectorTransformation() {
+        final BursaWolfParameters bursaWolf = createED87_to_WGS84();
+        final Matrix matrix = bursaWolf.getPositionVectorTransformation(null);
+        final BursaWolfParameters actual = new BursaWolfParameters(
+                bursaWolf.getTargetDatum(), bursaWolf.getDomainOfValidity());
+        actual.setPositionVectorTransformation(matrix, 1E-10);
+        assertEquals(bursaWolf, actual);
+    }
+
+    /**
      * Multiplies the <cite>ED87 to WGS 84</cite> parameters (EPSG:1146) transformation by its inverse and
      * verifies that the result is very close to the identity matrix, thanks to the double-double arithmetic.
      * This is an internal consistency test.
@@ -132,18 +147,18 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     }
 
     /**
-     * Tests the {@link BursaWolfParameters#setPositionVectorTransformation(Matrix, double)} method.
-     * This is an internal consistency test.
+     * Tests {@link BursaWolfParameters#invert()}.
+     *
+     * @throws NoninvertibleMatrixException Should never happen.
      */
     @Test
-    @DependsOnMethod("testGetPositionVectorTransformation")
-    public void testSetPositionVectorTransformation() {
+    @DependsOnMethod("testProductOfInverse")
+    public void testInvert() throws NoninvertibleMatrixException {
         final BursaWolfParameters bursaWolf = createED87_to_WGS84();
-        final Matrix matrix = bursaWolf.getPositionVectorTransformation(null);
-        final BursaWolfParameters actual = new BursaWolfParameters(
-                bursaWolf.getTargetDatum(), bursaWolf.getDomainOfValidity());
-        actual.setPositionVectorTransformation(matrix, 1E-10);
-        assertEquals(bursaWolf, actual);
+        final Matrix original = getPositionVectorTransformation(bursaWolf).inverse();
+        bursaWolf.invert();
+        final Matrix inverse = getPositionVectorTransformation(bursaWolf);
+        assertMatrixEquals("invert", original, inverse, 0.001);
     }
 
     /**

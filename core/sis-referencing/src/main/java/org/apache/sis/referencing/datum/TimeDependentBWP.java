@@ -220,6 +220,21 @@ public class TimeDependentBWP extends BursaWolfParameters {
      * {@inheritDoc}
      */
     @Override
+    public void invert() {
+        super.invert();
+        dtX = -dtX;
+        dtY = -dtY;
+        dtZ = -dtZ;
+        drX = -drX;
+        drY = -drY;
+        drZ = -drZ;
+        ddS = -ddS;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean equals(final Object object) {
         if (super.equals(object)) {
             final TimeDependentBWP that = (TimeDependentBWP) object;

@@ -24,6 +24,7 @@ import javax.measure.unit.NonSI;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.test.Validators;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.test.DependsOnMethod;
@@ -67,15 +68,16 @@ public final strictfp class DefaultGeodeticDatumTest extends TestCase {
         assertNull(properties.put("remarks_ja", "注です。"));
         final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(properties, ellipsoid, primeMeridian);
 
-        compare(datum);
-        compare(assertSerializedEquals(datum));
+        validate(datum);
+        validate(assertSerializedEquals(datum));
     }
 
     /**
      * Compares the properties of the given datum objects with the properties set by the
      * {@link #testCreateAndSerialize()} method.
      */
-    private static void compare(final DefaultGeodeticDatum datum) {
+    private static void validate(final DefaultGeodeticDatum datum) {
+        Validators.validate(datum);
         assertEquals("name",       "This is a name",        datum.getName   ().getCode());
         assertEquals("scope",      "This is a scope",       datum.getScope  ().toString(Locale.ROOT));
         assertEquals("scope_fr",   "Valide pour tel usage", datum.getScope  ().toString(Locale.FRENCH));
@@ -116,14 +118,21 @@ public final strictfp class DefaultGeodeticDatumTest extends TestCase {
         assertNull("No BursaWolfParameters for NAD83", matrix);
         matrix = datum.getPositionVectorTransformation(WGS84, extent);
         assertNotNull("BursaWolfParameters for WGS84", matrix);
-        checkTransformationSignature(local, matrix);
+        checkTransformationSignature(local, matrix, 0);
         /*
          * Expand the area of interest to something greater than North Sea, and test again.
          */
         areaOfInterest.setWestBoundLongitude(-8);
         matrix = datum.getPositionVectorTransformation(WGS84, extent);
         assertNotNull("BursaWolfParameters for WGS84", matrix);
-        checkTransformationSignature(global, matrix);
+        checkTransformationSignature(global, matrix, 0);
+        /*
+         * Search in the reverse direction.
+         */
+        final DefaultGeodeticDatum targetDatum = new DefaultGeodeticDatum(WGS84);
+        matrix = targetDatum.getPositionVectorTransformation(datum, extent);
+        global.invert(); // Expected result is the inverse.
+        checkTransformationSignature(global, matrix, 1E-6);
     }
 
     /**
@@ -132,9 +141,11 @@ public final strictfp class DefaultGeodeticDatumTest extends TestCase {
      * which should have been copied verbatim from the {@code BursaWolfParameters} to the matrix.
      * Other terms in the matrix are modified compared to the {@code BursaWolfParameters} ones.
      */
-    private static void checkTransformationSignature(final BursaWolfParameters expected, final Matrix actual) {
-        assertEquals("tX", expected.tX, actual.getElement(0, 3), 0);
-        assertEquals("tY", expected.tY, actual.getElement(1, 3), 0);
-        assertEquals("tZ", expected.tZ, actual.getElement(2, 3), 0);
+    private static void checkTransformationSignature(final BursaWolfParameters expected, final Matrix actual,
+            final double tolerance)
+    {
+        assertEquals("tX", expected.tX, actual.getElement(0, 3), tolerance);
+        assertEquals("tY", expected.tY, actual.getElement(1, 3), tolerance);
+        assertEquals("tZ", expected.tZ, actual.getElement(2, 3), tolerance);
     }
 }
