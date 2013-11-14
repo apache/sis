@@ -41,6 +41,8 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.matrix.MatricesTest.class,
     org.apache.sis.referencing.operation.matrix.AffineTransforms2DTest.class,
 
+    org.apache.sis.internal.referencing.FormulasTest.class,
+    org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.io.wkt.ConventionTest.class,
     org.apache.sis.io.wkt.SymbolsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
@@ -48,6 +50,12 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
     org.apache.sis.referencing.AbstractReferenceSystemTest.class,
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
+    org.apache.sis.referencing.datum.TimeDependentBWPTest.class,
+    org.apache.sis.referencing.datum.DefaultEllipsoidTest.class,
+    org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class,
+    org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class,
+    org.apache.sis.referencing.StandardDefinitionsTest.class,
+    org.apache.sis.referencing.GeodeticObjectsTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,

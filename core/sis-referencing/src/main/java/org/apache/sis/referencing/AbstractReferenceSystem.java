@@ -18,8 +18,10 @@ package org.apache.sis.referencing;
 
 import java.util.Map;
 import javax.xml.bind.annotation.XmlElement;
+import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Immutable;
@@ -111,6 +113,29 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getScope}</td>
+     *   </tr>
+     *   <tr>
+     *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link #getAlias()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link #getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link #getRemarks()}</td>
      *   </tr>
      * </table>
      *

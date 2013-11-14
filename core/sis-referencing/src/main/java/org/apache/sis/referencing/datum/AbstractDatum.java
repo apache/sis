@@ -21,9 +21,11 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.io.wkt.Formatter;
@@ -128,6 +130,29 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
+     *   <tr>
+     *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link #getAlias()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link #getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link #getRemarks()}</td>
+     *   </tr>
      * </table>
      *
      * @param properties The properties to be given to the identified object.
@@ -198,10 +223,9 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Returns the region or timeframe in which this reference system is valid,
-     * or {@code null} if unspecified.
+     * Returns the region or timeframe in which this datum is valid, or {@code null} if unspecified.
      *
-     * @return Area or region or timeframe in which this (coordinate) reference system is valid, or {@code null}.
+     * @return Area or region or timeframe in which this datum is valid, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */

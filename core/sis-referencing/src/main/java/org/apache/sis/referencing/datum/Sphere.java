@@ -83,27 +83,18 @@ final class Sphere extends DefaultEllipsoid {
      * The orthodromic distance is the shortest distance between two points
      * on a sphere's surface. The orthodromic path is always on a great circle.
      *
-     * @param  x1 Longitude of first point (in decimal degrees).
-     * @param  y1 Latitude of first point (in decimal degrees).
-     * @param  x2 Longitude of second point (in decimal degrees).
-     * @param  y2 Latitude of second point (in decimal degrees).
+     * @param  λ1 Longitude of first point (in decimal degrees).
+     * @param  φ1 Latitude of first point (in decimal degrees).
+     * @param  λ2 Longitude of second point (in decimal degrees).
+     * @param  φ2 Latitude of second point (in decimal degrees).
      * @return The orthodromic distance (in the units of this ellipsoid's axis).
      */
     @Override
-    public double orthodromicDistance(double x1, double y1, double x2, double y2) {
-        /*
-         * The calculation of orthodromic distance on an ellipsoidal surface is complex,
-         * subject to rounding errors and has no solution near the poles. In some situation
-         * we use a calculation based on a spherical shape of the earth.  A Fortran program
-         * which calculates orthodromic distances on an ellipsoidal surface can be downloaded
-         * from the NOAA site:
-         *
-         *            ftp://ftp.ngs.noaa.gov/pub/pcsoft/for_inv.3d/source/
-         */
-        y1 = toRadians(y1);
-        y2 = toRadians(y2);
-        final double dx = toRadians(abs(x2-x1) % 360);
-        double rho = sin(y1)*sin(y2) + cos(y1)*cos(y2)*cos(dx);
+    public double orthodromicDistance(double λ1, double φ1, double λ2, double φ2) {
+        φ1 = toRadians(φ1);
+        φ2 = toRadians(φ2);
+        final double dx = toRadians(abs(λ2-λ1) % 360);
+        double rho = sin(φ1)*sin(φ2) + cos(φ1)*cos(φ2)*cos(dx);
         assert abs(rho) < 1.0000001 : rho;
         if (rho > +1) rho = +1; // Catch rounding error.
         if (rho < -1) rho = -1; // Catch rounding error.
