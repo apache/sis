@@ -32,6 +32,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.Logging;
@@ -325,39 +326,40 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * </ul>
      *
      * If more than one {@code BursaWolfParameters} instance is found in any of the above steps, then the one having
-     * the largest intersection between their {@linkplain BursaWolfParameters#getDomainOfValidity() domain of validity}
+     * the largest intersection between its {@linkplain BursaWolfParameters#getDomainOfValidity() domain of validity}
      * and the given extent will be selected. If more than one instance have the same intersection, then the first
      * occurrence is selected.
      *
-     * <p>If non-null, then the transformation is represented by an affine transform which can be applied on
-     * <strong>geocentric</strong> coordinates. This is identified in the EPSG database as operation method
-     * 1033 - <cite>Position Vector transformation (geocentric domain)</cite>, or
-     * 1053 - <cite>Time-dependent Position Vector transformation</cite>.</p>
+     * <p>If the given extent contains a {@linkplain org.opengis.metadata.extent.TemporalExtent temporal extent},
+     * then the instant located midway between start and end time will be taken as the date where to evaluate the
+     * Bursa-Wolf parameters. This apply only to {@linkplain TimeDependentBWP time-dependent parameters}.</p>
+     *
+     * <p>If the returned matrix is non-null, then the transformation is represented by an affine transform which can be
+     * applied on <strong>geocentric</strong> coordinates. This is identified in the EPSG database as operation method
+     * 1033 – <cite>Position Vector transformation (geocentric domain)</cite>, or
+     * 1053 – <cite>Time-dependent Position Vector transformation</cite>.</p>
      *
      * @param  targetDatum The target datum.
-     * @param  extent The geographic and temporal extent where the transformation is valid, or {@code null}.
+     * @param  areaOfInterest The geographic and temporal extent where the transformation should be valid, or {@code null}.
      * @return An affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
      *
      * @see BursaWolfParameters#getPositionVectorTransformation(Date)
      */
-    public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum, final Extent extent) {
+    public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum, final Extent areaOfInterest) {
         ensureNonNull("targetDatum", targetDatum);
-        final ExtentSelector<BursaWolfParameters> selector = new ExtentSelector<>(extent);
-        Date time = null; // TODO
-        /*
-         * Search in the BursaWolfParameters associated to this instance.
-         */
+        final ExtentSelector<BursaWolfParameters> selector = new ExtentSelector<>(areaOfInterest);
         BursaWolfParameters candidate = select(targetDatum, selector);
         if (candidate != null) {
-            return candidate.getPositionVectorTransformation(time);
+            return createTransformation(candidate, areaOfInterest);
         }
         /*
-         * Search in the BursaWolfParameters associated to the other instance, if any.
+         * Found no suitable BursaWolfParameters associated to this instance.
+         * Search in the BursaWolfParameters associated to the other instance.
          */
         if (targetDatum instanceof DefaultGeodeticDatum) {
             candidate = ((DefaultGeodeticDatum) targetDatum).select(this, selector);
             if (candidate != null) try {
-                return MatrixSIS.castOrCopy(candidate.getPositionVectorTransformation(time)).inverse();
+                return MatrixSIS.castOrCopy(createTransformation(candidate, areaOfInterest)).inverse();
             } catch (NoninvertibleMatrixException e) {
                 /*
                  * Should never happen because BursaWolfParameters.getPositionVectorTransformation(Date)
@@ -368,6 +370,20 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
             }
         }
         return null;
+    }
+
+    /**
+     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(Date)} for a date calculated from
+     * the temporal elements on the given extent.  This method chooses an instant located midway between the
+     * start and end time.
+     */
+    private static Matrix createTransformation(final BursaWolfParameters bursaWolf, final Extent areaOfInterest) {
+        /*
+         * Implementation note: we know that we do not need to compute an instant if the parameters is
+         * not a subclass of BursaWolfParameters. This optimisation covers the vast majority of cases.
+         */
+        return bursaWolf.getPositionVectorTransformation(bursaWolf.getClass() != BursaWolfParameters.class ?
+                Extents.getDate(areaOfInterest, 0.5) : null); // 0.5 is for choosing midway instant.
     }
 
     /**
