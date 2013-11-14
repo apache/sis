@@ -125,6 +125,28 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Retrieves the value at the specified row and column of this matrix, wrapped in a {@code Number}.
+     * The {@code Number} type depends on the matrix accuracy.
+     *
+     * @param row    The row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param column The column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @return       The current value at the given row and column.
+     */
+    public Number getNumber(int row, int column) {
+        return getElement(row, column);
+    }
+
+    /**
+     * Retrieves the value at the specified row and column of this matrix.
+     *
+     * @param row    The row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param column The column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @return       The current value at the given row and column.
+     */
+    @Override
+    public abstract double getElement(int row, int column);
+
+    /**
      * Returns a copy of all matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *

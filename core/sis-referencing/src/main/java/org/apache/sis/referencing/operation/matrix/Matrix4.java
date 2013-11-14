@@ -27,10 +27,10 @@ import org.apache.sis.math.MathFunctions;
  * The matrix members are:
  *
  * <blockquote><pre> ┌                 ┐
- * │ {@link #m00} {@link #m01} {@link #m02} {@link #m03} │
- * │ {@link #m10} {@link #m11} {@link #m12} {@link #m13} │
- * │ {@link #m20} {@link #m21} {@link #m22} {@link #m23} │
- * │ {@link #m30} {@link #m31} {@link #m32} {@link #m33} │
+ * │ {@linkplain #m00} {@linkplain #m01} {@linkplain #m02} {@linkplain #m03} │
+ * │ {@linkplain #m10} {@linkplain #m11} {@linkplain #m12} {@linkplain #m13} │
+ * │ {@linkplain #m20} {@linkplain #m21} {@linkplain #m22} {@linkplain #m23} │
+ * │ {@linkplain #m30} {@linkplain #m31} {@linkplain #m32} {@linkplain #m33} │
  * └                 ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

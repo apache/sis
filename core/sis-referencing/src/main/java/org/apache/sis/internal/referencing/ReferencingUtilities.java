@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.referencing;
 
+import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.util.Static;
 
 
@@ -38,5 +40,20 @@ public final class ReferencingUtilities extends Static {
     private ReferencingUtilities() {
     }
 
-    // TODO: methods to be ported from Geotk later.
+    /**
+     * Retrieves the value at the specified row and column of the given matrix, wrapped in a {@code Number}.
+     * The {@code Number} type depends on the matrix accuracy.
+     *
+     * @param matrix The matrix from which to get the number.
+     * @param row    The row index, from 0 inclusive to {@link Matrix#getNumRow()} exclusive.
+     * @param column The column index, from 0 inclusive to {@link Matrix#getNumCol()} exclusive.
+     * @return       The current value at the given row and column.
+     */
+    public static Number getNumber(final Matrix matrix, final int row, final int column) {
+        if (matrix instanceof MatrixSIS) {
+            return ((MatrixSIS) matrix).getNumber(row, column);
+        } else {
+            return matrix.getElement(row, column);
+        }
+    }
 }
