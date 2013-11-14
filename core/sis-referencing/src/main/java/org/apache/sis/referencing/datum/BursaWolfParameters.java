@@ -226,10 +226,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     public double dS;
 
     /**
-     * The target datum for this set of parameters, or {@code null} if unspecified.
-     * This is usually the WGS 84 datum, but other targets are allowed. We recommend the target datum
-     * to have a world-wide {@linkplain DefaultGeodeticDatum#getDomainOfValidity() domain of validity},
-     * but this is not enforced.
+     * The target datum for this set of parameters.
+     * This is usually the WGS 84 datum, but other targets are allowed.
      *
      * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
      * instance.</p>
@@ -256,11 +254,12 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * <p>Alternatively, numerical fields can also be initialized by a call to
      * {@link #setPositionVectorTransformation(Matrix, double)}.</p>
      *
-     * @param targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
+     * @param targetDatum The target datum (usually WGS 84) for this set of parameters.
      * @param domainOfValidity Area or region in which a coordinate transformation based on those Bursa-Wolf parameters
      *        is valid, or {@code null} is unspecified.
      */
     public BursaWolfParameters(final GeodeticDatum targetDatum, final Extent domainOfValidity) {
+        ensureNonNull("targetDatum", targetDatum);
         this.targetDatum = targetDatum;
         this.domainOfValidity = domainOfValidity;
     }
@@ -279,13 +278,13 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
-     * Returns the target datum for this set of parameters, or {@code null} if unspecified.
+     * Returns the target datum for this set of parameters.
      * This is usually the WGS 84 datum, but other targets are allowed.
      *
      * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
      * instance.</p>
      *
-     * @return The target datum for this set of parameters, or {@code null} if unspecified.
+     * @return The target datum for this set of parameters.
      */
     public GeodeticDatum getTargetDatum() {
         return targetDatum;
@@ -299,9 +298,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * @return {@code true} if the given datum is equal to WGS84 for computational purpose.
      */
     final boolean isToWGS84() {
-        return (targetDatum == null) ||
-                (IdentifiedObjects.nameMatches(targetDatum, "WGS 84") ||
-                 IdentifiedObjects.nameMatches(targetDatum, "WGS84"));
+        return IdentifiedObjects.nameMatches(targetDatum, "WGS 84") ||
+               IdentifiedObjects.nameMatches(targetDatum, "WGS84");
     }
 
     /**
@@ -508,10 +506,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
 
     /**
      * Returns the region or timeframe in which a coordinate transformation based on those Bursa-Wolf parameters is
-     * valid, or {@code null} if unspecified. If an extent was specified at {@linkplain #BursaWolfParameters(double,
-     * double, double, double, double, double, double, GeodeticDatum, Extent) construction time}, then that extent
-     * is returned. Otherwise if a non-null target datum was specified, then the datum domain of validity is returned.
-     * Otherwise this method returns {@code null}.
+     * valid, or {@code null} if unspecified. If an extent was specified at construction time, then that extent is
+     * returned. Otherwise the datum domain of validity (which may be {@code null}) is returned.
      *
      * @return Area or region or timeframe in which the coordinate transformation is valid, or {@code null}.
      *

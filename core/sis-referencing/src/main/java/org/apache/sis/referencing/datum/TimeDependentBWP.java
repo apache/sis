@@ -117,7 +117,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
      * All numerical parameters are initialized to 0, which correspond to an identity transform.
      * Callers can assign numerical values to the public fields of interest after construction.
      *
-     * @param targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
+     * @param targetDatum The target datum (usually WGS 84) for this set of parameters.
      * @param domainOfValidity Area or region in which a coordinate transformation based on those Bursa-Wolf parameters
      *        is valid, or {@code null} is unspecified.
      * @param timeReference The reference epoch for time-dependent parameters.
