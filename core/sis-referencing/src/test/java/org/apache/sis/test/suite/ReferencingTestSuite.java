@@ -54,6 +54,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.datum.DefaultEllipsoidTest.class,
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class,
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class,
+    org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.GeodeticObjectsTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,

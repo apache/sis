@@ -220,7 +220,7 @@ public enum GeodeticObjects {
     /**
      * The EPSG code of the ellipsoid.
      */
-    private final short ellipsoid;
+    final short ellipsoid;
 
     /**
      * The cached object. This is initially {@code null}, then set to various kind of objects depending
