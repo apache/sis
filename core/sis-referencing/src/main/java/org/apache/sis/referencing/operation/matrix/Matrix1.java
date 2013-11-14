@@ -26,7 +26,7 @@ import org.apache.sis.internal.util.Numerics;
  * The matrix member is:
  *
  * <blockquote><pre> ┌     ┐
- * │ {@link #m00} │
+ * │ {@linkplain #m00} │
  * └     ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

@@ -59,7 +59,7 @@ import org.apache.sis.math.DecimalFunctions;
  * @version 0.4
  * @module
  *
- * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Double-double arithmetic</a>
+ * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
  */
 public final class DoubleDouble extends Number {
     /**
@@ -199,8 +199,22 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Creates a new value initialized to the given number. If the given number is an
+     * instance of {@code DoubleDouble}, then its error term will be taken in account.
+     *
+     * @param otherValue The initial value.
+     */
+    public DoubleDouble(final Number otherValue) {
+        value = otherValue.doubleValue();
+        error = (otherValue instanceof DoubleDouble) ? ((DoubleDouble) otherValue).error : errorForWellKnownValue(value);
+    }
+
+    /**
      * Creates a new value initialized to the given value and an error term inferred by
      * {@link #errorForWellKnownValue(double)}.
+     *
+     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
+     * <code>{@linkplain #DoubleDouble(double, double) DoubleDouble}(otherValue, 0)</code> is more efficient.
      *
      * @param value The initial value.
      */
@@ -434,10 +448,41 @@ public final class DoubleDouble extends Number {
      *    add(other.value, other.error);
      * }
      *
-     * @param other The other value to add to this value.
+     * @param other The other value to add to this {@code DoubleDouble}.
      */
     public void add(final DoubleDouble other) {
         add(other.value, other.error);
+    }
+
+    /**
+     * Adds a {@code Number} value to this {@code DoubleDouble}. If the given number is an instance
+     * of {@code DoubleDouble}, then its error term will be taken in account.
+     *
+     * @param other The other value to add to this {@code DoubleDouble}.
+     */
+    public void add(final Number other) {
+        if (other instanceof DoubleDouble) {
+            add((DoubleDouble) other);
+        } else {
+            add(other.doubleValue());
+        }
+    }
+
+    /**
+     * Adds a {@code double} value to this {@code DoubleDouble} with a default error term.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    add(otherValue, errorForWellKnownValue(otherValue));
+     * }
+     *
+     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
+     * <code>{@linkplain #add(double, double) add}(otherValue, 0)</code> is more efficient.
+     *
+     * @param otherValue The other value to add to this {@code DoubleDouble}.
+     */
+    public void add(final double otherValue) {
+        add(otherValue, errorForWellKnownValue(otherValue));
     }
 
     /**
@@ -522,6 +567,37 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Subtracts a {@code Number} from this {@code DoubleDouble}. If the given number is an instance
+     * of {@code DoubleDouble}, then its error term will be taken in account.
+     *
+     * @param other The other value to subtract from this {@code DoubleDouble}.
+     */
+    public void subtract(final Number other) {
+        if (other instanceof DoubleDouble) {
+            subtract((DoubleDouble) other);
+        } else {
+            subtract(other.doubleValue());
+        }
+    }
+
+    /**
+     * Subtracts a {@code double} from this {@code DoubleDouble} with a default error term.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    subtract(otherValue, errorForWellKnownValue(otherValue));
+     * }
+     *
+     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
+     * <code>{@linkplain #subtract(double, double) subtract}(otherValue, 0)</code> is more efficient.
+     *
+     * @param otherValue The other value to subtract from this {@code DoubleDouble}.
+     */
+    public void subtract(final double otherValue) {
+        subtract(otherValue, errorForWellKnownValue(otherValue));
+    }
+
+    /**
      * Subtracts an other double-double value from this {@code DoubleDouble}.
      * The result is stored in this instance.
      *
@@ -556,10 +632,41 @@ public final class DoubleDouble extends Number {
      *    multiply(other.value, other.error);
      * }
      *
-     * @param other The other value to add to this value.
+     * @param other The other value to multiply by this value.
      */
     public void multiply(final DoubleDouble other) {
         multiply(other.value, other.error);
+    }
+
+    /**
+     * Multiplies this {@code DoubleDouble} by a {@code Number}. If the given number is an instance
+     * of {@code DoubleDouble}, then its error term will be taken in account.
+     *
+     * @param other The other value to multiply by this {@code DoubleDouble}.
+     */
+    public void multiply(final Number other) {
+        if (other instanceof DoubleDouble) {
+            multiply((DoubleDouble) other);
+        } else {
+            multiply(other.doubleValue());
+        }
+    }
+
+    /**
+     * Multiplies this {@code DoubleDouble} by a {@code double} with a default error term.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    multiply(otherValue, errorForWellKnownValue(otherValue));
+     * }
+     *
+     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
+     * <code>{@linkplain #multiply(double, double) multiply}(otherValue, 0)</code> is more efficient.
+     *
+     * @param otherValue The other value to multiply by this {@code DoubleDouble}.
+     */
+    public void multiply(final double otherValue) {
+        multiply(otherValue, errorForWellKnownValue(otherValue));
     }
 
     /**
@@ -626,10 +733,41 @@ public final class DoubleDouble extends Number {
      *    divide(other.value, other.error);
      * }
      *
-     * @param other The other value to add to this value.
+     * @param other The other value to by which to divide this value.
      */
     public void divide(final DoubleDouble other) {
         divide(other.value, other.error);
+    }
+
+    /**
+     * Divides this {@code DoubleDouble} by a {@code Number}. If the given number is an instance
+     * of {@code DoubleDouble}, then its error term will be taken in account.
+     *
+     * @param other The other value by which to divide this {@code DoubleDouble}.
+     */
+    public void divide(final Number other) {
+        if (other instanceof DoubleDouble) {
+            divide((DoubleDouble) other);
+        } else {
+            divide(other.doubleValue());
+        }
+    }
+
+    /**
+     * Divides this {@code DoubleDouble} by a {@code double} with a default error term.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    divide(otherValue, errorForWellKnownValue(otherValue));
+     * }
+     *
+     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
+     * <code>{@linkplain #divide(double, double) divide}(otherValue, 0)</code> is more efficient.
+     *
+     * @param otherValue The other value by which to divide this {@code DoubleDouble}.
+     */
+    public void divide(final double otherValue) {
+        divide(otherValue, errorForWellKnownValue(otherValue));
     }
 
     /**
@@ -676,10 +814,41 @@ public final class DoubleDouble extends Number {
      *    inverseDivide(other.value, other.error);
      * }
      *
-     * @param other The other value to add to this value.
+     * @param other The other value to divide by this value.
      */
     public void inverseDivide(final DoubleDouble other) {
         inverseDivide(other.value, other.error);
+    }
+
+    /**
+     * Divides the given {@code Number} value by this {@code DoubleDouble}. If the given number
+     * is an instance of {@code DoubleDouble}, then its error term will be taken in account.
+     *
+     * @param other The other value to divide by this {@code DoubleDouble}.
+     */
+    public void inverseDivide(final Number other) {
+        if (other instanceof DoubleDouble) {
+            inverseDivide((DoubleDouble) other);
+        } else {
+            inverseDivide(other.doubleValue());
+        }
+    }
+
+    /**
+     * Divides the given {@code double} value by this {@code DoubleDouble} with a default error term.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    inverseDivide(numeratorValue, errorForWellKnownValue(numeratorValue));
+     * }
+     *
+     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
+     * <code>{@linkplain #inverseDivide(double, double) inverseDivide}(otherValue, 0)</code> is more efficient.
+     *
+     * @param numeratorValue The other value to divide by this {@code DoubleDouble}.
+     */
+    public void inverseDivide(final double numeratorValue) {
+        inverseDivide(numeratorValue, errorForWellKnownValue(numeratorValue));
     }
 
     /**

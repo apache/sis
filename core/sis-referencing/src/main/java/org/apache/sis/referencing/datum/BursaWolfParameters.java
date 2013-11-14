@@ -16,24 +16,25 @@
  */
 package org.apache.sis.referencing.datum;
 
+import java.util.Date;
 import java.util.Arrays;
 import java.io.Serializable;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.IdentifiedObjects;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.getNumber;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -41,8 +42,9 @@ import org.apache.sis.internal.jdk7.Objects;
 
 /**
  * Parameters for a geographic transformation between two datum.
- * For an explanation of Bursa-Wolf parameters purpose, see the <cite>Bursa-Wolf parameters</cite>
- * section of {@link DefaultGeodeticDatum} class javadoc.
+ * Bursa-Wolf parameters are also known as <cite>Helmert transformation parameters</cite>.
+ * For an explanation of their purpose, see the <cite>Bursa-Wolf parameters</cite> section
+ * of {@link DefaultGeodeticDatum} class javadoc.
  *
  * <p>The Bursa-Wolf parameters shall be applied to geocentric coordinates,
  * where the <var>X</var> axis points towards the Greenwich Prime Meridian,
@@ -124,7 +126,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * </math></p>
  * </tr></td></table>
  *
- * The numerical fields in this {@code BursaWolfParameters} class uses the EPSG abbreviations
+ * The numerical fields in this {@code BursaWolfParameters} class use the EPSG abbreviations
  * with 4 additional constraints compared to the EPSG definitions:
  *
  * <ul>
@@ -136,13 +138,27 @@ import org.apache.sis.internal.jdk7.Objects;
  *       The Position Vector convention is used by IAG and recommended by ISO 19111.</li>
  * </ul>
  *
- * {@section Target datum}
+ * {@section Source and target geodetic datum}
  * The <var>source datum</var> in above coordinates transformation is the {@link DefaultGeodeticDatum} instance
  * that contain this {@code BursaWolfParameters}. It can be any datum, including datum that are valid only locally.
- * But the {@linkplain #targetDatum target datum} is often fixed to WGS 84, since it is the target of the
- * {@code TOWGS84} element in <cite>Well Known Text</cite> (WKT) representations.
- * A different target may be specified at construction time, however users are encouraged to always specify a
- * target datum having a world-wide {@linkplain DefaultGeodeticDatum#getDomainOfValidity() domain of validity}.
+ * The <var>{@linkplain #getTargetDatum() target datum}</var> is specified at construction time and often fixed to
+ * WGS 84 for the needs of the {@code TOWGS84[…]} element in <cite>Well Known Text</cite> (WKT 1) representation.
+ *
+ * {@section When Bursa-Wolf parameters are used}
+ * {@code BursaWolfParameters} are used in three contexts:
+ * <ol>
+ *   <li>Created as a step while creating a {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation
+ *       coordinate operation} from the EPSG database.</li>
+ *   <li>Associated to a {@link DefaultGeodeticDatum} for the sole needs of the WKT 1 {@code TOWGS84[…]} element.
+ *       In this case, only Bursa-Wolf parameters having a WGS 84 {@linkplain #getTargetDatum() target datum} are
+ *       useful.</li>
+ *   <li>Specified at {@code DefaultGeodeticDatum} construction time for arbitrary target datum.
+ *       Apache SIS will ignore those Bursa-Wolf parameters, except as a fallback if no parameters
+ *       can been found in the EPSG database for a given pair of source and target CRS.</li>
+ * </ol>
+ *
+ * {@note In EPSG terminology, Apache SIS gives precedence to the <cite>late-binding</cite> approach
+ *        (case 1 above) over the <cite>early-binding</cite> approach (case 3 above).}
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
@@ -150,9 +166,9 @@ import org.apache.sis.internal.jdk7.Objects;
  * @module
  *
  * @see DefaultGeodeticDatum#getBursaWolfParameters()
+ * @see <a href="http://en.wikipedia.org/wiki/Helmert_transformation">Wikipedia: Helmert transformation</a>
  */
-@Immutable
-public class BursaWolfParameters extends FormattableObject implements Serializable {
+public class BursaWolfParameters extends FormattableObject implements Cloneable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -164,45 +180,40 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     static final double PPM = 1E+6;
 
     /**
-     * The conversion factor from arc-seconds to radians.
-     */
-    private static final double TO_RADIANS = PI / (180 * 60 * 60);
-
-    /**
      * X-axis translation in metres (EPSG:8605).
      * The legacy OGC parameter name is {@code "dx"}.
      */
-    public final double tX;
+    public double tX;
 
     /**
      * Y-axis translation in metres (EPSG:8606).
      * The legacy OGC parameter name is {@code "dy"}.
      */
-    public final double tY;
+    public double tY;
 
     /**
      * Z-axis translation in metres (EPSG:8607).
      * The legacy OGC parameter name is {@code "dz"}.
      */
-    public final double tZ;
+    public double tZ;
 
     /**
-     * X-axis rotation in arc seconds (EPSG:8608), sign following the <cite>Position Vector</cite> convention.
+     * X-axis rotation in arc-seconds (EPSG:8608), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ex"}.
      */
-    public final double rX;
+    public double rX;
 
     /**
-     * Y-axis rotation in arc seconds (EPSG:8609), sign following the <cite>Position Vector</cite> convention.
+     * Y-axis rotation in arc-seconds (EPSG:8609), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ey"}.
      */
-    public final double rY;
+    public double rY;
 
     /**
-     * Z-axis rotation in arc seconds (EPSG:8610), sign following the <cite>Position Vector</cite> convention.
+     * Z-axis rotation in arc-seconds (EPSG:8610), sign following the <cite>Position Vector</cite> convention.
      * The legacy OGC parameter name is {@code "ez"}.
      */
-    public final double rZ;
+    public double rZ;
 
     /**
      * The scale difference in parts per million (EPSG:8611).
@@ -212,50 +223,51 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      *           of 100.001 km in the target coordinate reference system, the scale difference is 1 ppm
      *           (the ratio being 1.000001).}
      */
-    public final double dS;
+    public double dS;
 
     /**
-     * The target datum for this set of parameters, or {@code null} if unspecified.
-     * This is usually the WGS 84 datum, but other targets are allowed. We recommend the target datum
-     * to have a world-wide {@linkplain DefaultGeodeticDatum#getDomainOfValidity() domain of validity},
-     * but this is not enforced.
+     * The target datum for this set of parameters.
+     * This is usually the WGS 84 datum, but other targets are allowed.
      *
      * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
      * instance.</p>
+     *
+     * @see #getTargetDatum()
      */
-    public final GeodeticDatum targetDatum;
+    private final GeodeticDatum targetDatum;
 
     /**
-     * Creates a new instance with the given parameters.
+     * Region or timeframe in which a coordinate transformation based on those Bursa-Wolf parameters is valid,
+     * or {@code null} if unspecified.
      *
-     * @param tX X-axis translation in metres.
-     * @param tY Y-axis translation in metres.
-     * @param tZ Z-axis translation in metres.
-     * @param rX X-axis rotation in arc seconds.
-     * @param rY Y-axis rotation in arc seconds.
-     * @param rZ Z-axis rotation in arc seconds.
-     * @param dS The scale difference in parts per million.
-     * @param targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
+     * @see #getDomainOfValidity()
      */
-    public BursaWolfParameters(final double tX, final double tY, final double tZ,
-                               final double rX, final double rY, final double rZ,
-                               final double dS, final GeodeticDatum targetDatum)
-    {
-        this.tX = tX;
-        this.tY = tY;
-        this.tZ = tZ;
-        this.rX = rX;
-        this.rY = rY;
-        this.rZ = rZ;
-        this.dS = dS;
+    private final Extent domainOfValidity;
+
+    /**
+     * Creates a new instance for the given target datum and domain of validity.
+     * All numerical parameters are initialized to 0, which correspond to an identity transform.
+     * Callers can assign numerical values to the public fields of interest after construction.
+     * For example, many coordinate transformations will provide values only for the translation
+     * terms ({@link #tX}, {@link #tY}, {@link #tZ}).
+     *
+     * <p>Alternatively, numerical fields can also be initialized by a call to
+     * {@link #setPositionVectorTransformation(Matrix, double)}.</p>
+     *
+     * @param targetDatum The target datum (usually WGS 84) for this set of parameters.
+     * @param domainOfValidity Area or region in which a coordinate transformation based on those Bursa-Wolf parameters
+     *        is valid, or {@code null} is unspecified.
+     */
+    public BursaWolfParameters(final GeodeticDatum targetDatum, final Extent domainOfValidity) {
+        ensureNonNull("targetDatum", targetDatum);
         this.targetDatum = targetDatum;
-        verify();
+        this.domainOfValidity = domainOfValidity;
     }
 
     /**
-     * Verifies parameters validity after construction.
+     * Verifies parameters validity after initialization.
      */
-    private void verify() {
+    void verify() {
         ensureFinite("tX", tX);
         ensureFinite("tY", tY);
         ensureFinite("tZ", tZ);
@@ -266,66 +278,16 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
     }
 
     /**
-     * Creates Bursa-Wolf parameters from the given matrix.
-     * The matrix shall comply to the following constraints:
+     * Returns the target datum for this set of parameters.
+     * This is usually the WGS 84 datum, but other targets are allowed.
      *
-     * <ul>
-     *   <li>The matrix shall be {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#isAffine() affine}.</li>
-     *   <li>The sub-matrix defined by {@code matrix} without the last row and last column shall be
-     *       <a href="http://en.wikipedia.org/wiki/Skew-symmetric_matrix">skew-symmetric</a> (a.k.a. antisymmetric).</li>
-     * </ul>
+     * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
+     * instance.</p>
      *
-     * @param  matrix The matrix to fit as a Bursa-Wolf construct.
-     * @param  tolerance The tolerance error for the antisymmetric matrix test. Should be a small number like {@code 1E-8}.
-     * @param  targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unspecified.
-     * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
-     *
-     * @see #getPositionVectorTransformation()
+     * @return The target datum for this set of parameters.
      */
-    public BursaWolfParameters(final Matrix matrix, final double tolerance, final GeodeticDatum targetDatum)
-            throws IllegalArgumentException
-    {
-        final int numRow = matrix.getNumRow();
-        final int numCol = matrix.getNumCol();
-        if (numRow != SIZE || numCol != SIZE) {
-            final Integer n = SIZE;
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedMatrixSize_4, n, n, numRow, numCol));
-        }
-        if (!Matrices.isAffine(matrix)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotAnAffineTransform));
-        }
-        tX = matrix.getElement(0,3);
-        tY = matrix.getElement(1,3);
-        tZ = matrix.getElement(2,3);
-        final double S = (matrix.getElement(0,0) +
-                          matrix.getElement(1,1) +
-                          matrix.getElement(2,2)) / 3;
-        final double RS = TO_RADIANS * S;
-        dS = (S-1) * PPM;
-        double rX=0, rY=0, rZ=0;
-        for (int j=0; j < SIZE-1; j++) {
-            if (!(abs((matrix.getElement(j,j) - 1)*PPM - dS) <= tolerance)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonUniformScale));
-            }
-            for (int i = j+1; i < SIZE-1; i++) {
-                final double elt1 = matrix.getElement(j,i) / RS;
-                final double elt2 = matrix.getElement(i,j) / RS;
-                if (!(abs(elt1 + elt2) <= tolerance)) { // We expect elt1 ≈ -elt2
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.NotASkewSymmetricMatrix));
-                }
-                final double elt = 0.5 * (elt2 - elt1);
-                switch (j*SIZE + i) {
-                    case 1: rZ =  elt; break;
-                    case 2: rY = -elt; break;
-                    case 6: rX =  elt; break;
-                }
-            }
-        }
-        this.rX = rX;
-        this.rY = rY;
-        this.rZ = rZ;
-        this.targetDatum = targetDatum;
-        verify();
+    public GeodeticDatum getTargetDatum() {
+        return targetDatum;
     }
 
     /**
@@ -336,35 +298,82 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * @return {@code true} if the given datum is equal to WGS84 for computational purpose.
      */
     final boolean isToWGS84() {
-        return (targetDatum == null) ||
-                (IdentifiedObjects.nameMatches(targetDatum, "WGS 84") ||
-                 IdentifiedObjects.nameMatches(targetDatum, "WGS84"));
+        return IdentifiedObjects.nameMatches(targetDatum, "WGS 84") ||
+               IdentifiedObjects.nameMatches(targetDatum, "WGS84");
     }
 
     /**
-     * Returns {@code true} if this Bursa-Wolf parameters performs no operation.
-     * This is true when all parameters are set to zero.
+     * Returns {@code true} if a transformation built from this set of parameters would perform no operation.
+     * This is true when the value of all parameters is zero.
      *
      * @return {@code true} if the parameters describe no operation.
      */
     public boolean isIdentity() {
-        return tX == 0 && tY == 0 && tZ == 0 &&
-               rX == 0 && rY == 0 && rZ == 0 &&
-               dS == 0;
+        return tX == 0 && tY == 0 && tZ == 0 && isTranslation();
     }
 
     /**
-     * Returns {@code true} if this Bursa-Wolf parameters contains only translation terms.
+     * Returns {@code true} if a transformation built from this set of parameters would perform only a translation.
      *
-     * @return {@code true} if the parameters describe to a translation only.
+     * @return {@code true} if the parameters describe a translation only.
      */
     public boolean isTranslation() {
         return rX == 0 && rY == 0 && rZ == 0 && dS == 0;
     }
 
     /**
+     * Inverts in-place the transformation by inverting the sign of all numerical parameters.
+     * The {@linkplain #getPositionVectorTransformation(Date) position vector transformation} matrix
+     * created from inverted Bursa-Wolf parameters will be <strong>approximatively</strong> equals
+     * to the {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse() inverse}
+     * of the matrix created from the original parameters. The equality holds approximatively only
+     * because the parameter values are very small (parts per millions and arc-seconds).
+     */
+    public void invert() {
+        tX = -tX;
+        tY = -tY;
+        tZ = -tZ;
+        rX = -rX;
+        rY = -rY;
+        rZ = -rZ;
+        dS = -dS;
+    }
+
+    /**
+     * Returns the elapsed time from the {@linkplain TimeDependentBWP#getTimeReference() reference time}
+     * to the given date, in millennium. If this {@code BursaWolfParameters} is not time-dependent, then
+     * returns {@code null}.
+     */
+    DoubleDouble period(final Date time) {
+        return null;
+    }
+
+    /**
+     * Returns the parameter at the given index. If this {@code BursaWolfParameters} is time-dependent,
+     * then the returned value shall be corrected for the given period.
+     *
+     * @param index  0 for {@code tX}, 1 for {@code tY}, <i>etc.</i> in {@code TOWGS84[…]} order.
+     * @param period The value computed by {@link #period(Date)}, or {@code null}.
+     */
+    DoubleDouble param(final int index, final DoubleDouble period) {
+        final double p;
+        switch (index) {
+            case 0: p = tX; break;
+            case 1: p = tY; break;
+            case 2: p = tZ; break;
+            case 3: p = rX; break;
+            case 4: p = rY; break;
+            case 5: p = rZ; break;
+            case 6: p = dS; break;
+            default: throw new AssertionError(index);
+        }
+        return new DoubleDouble(p);
+    }
+
+    /**
      * Returns the position vector transformation (geocentric domain) as an affine transform.
-     * The formula is as below, where {@code R} is a conversion factor from arc-seconds to radians:
+     * For transformations that do not depend on time, the formula is as below where {@code R}
+     * is a conversion factor from arc-seconds to radians:
      *
      * <blockquote><pre> R = toRadians(1″)
      * S = 1 + {@linkplain #dS}/1000000
@@ -377,6 +386,15 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      *
      * This affine transform can be applied on <strong>geocentric</strong> coordinates.
      * This is identified as operation method 1033 in the EPSG database.
+     * Those geocentric coordinates are typically converted from geographic coordinates
+     * in the region or timeframe given by {@link #getDomainOfValidity()}.
+     *
+     * {@section Time-dependent transformation}
+     * Some transformations use parameters that vary with time (e.g. operation method EPSG:1053).
+     * Users can optionally specify a date for which the transformation is desired.
+     * For transformations that do not depends on time, this date is ignored and can be null.
+     * For time-dependent transformations, {@code null} values default to the transformation's
+     * {@linkplain TimeDependentBWP#getTimeReference() reference time}.
      *
      * {@section Inverse transformation}
      * The inverse transformation can be approximated by reversing the sign of the 7 parameters before to use them
@@ -386,12 +404,14 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * that concatenation of transformations <var>A</var> → <var>B</var> followed by <var>B</var> → <var>A</var>
      * gives back the identity transform.
      *
-     * @return An affine transform in geocentric space created from this Bursa-Wolf parameters.
+     * @param  time Date for which the transformation is desired, or {@code null} for the transformation's reference time.
+     * @return An affine transform in geocentric space created from this Bursa-Wolf parameters and the given time.
      *
-     * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum)
+     * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum, Extent)
      */
-    public Matrix getPositionVectorTransformation() {
-        if (isTranslation()) {
+    public Matrix getPositionVectorTransformation(final Date time) {
+        final DoubleDouble period = period(time);
+        if (period == null && isTranslation()) {
             final Matrix4 matrix = new Matrix4();
             matrix.m03 = tX;
             matrix.m13 = tY;
@@ -403,22 +423,134 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
          * translation terms. If we have rotation or scale terms, then use double-double arithmetic.
          */
         final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
-        final DoubleDouble S = new DoubleDouble(dS);
+        final DoubleDouble S = param(6, period);
         S.divide(PPM, 0);
         S.add(1, 0);        // S = 1 + dS / PPM;
         RS.multiply(S);     // RS = toRadians(1″) * S;
-        final DoubleDouble  X = new DoubleDouble(rX); X.multiply(RS);
-        final DoubleDouble  Y = new DoubleDouble(rY); Y.multiply(RS);
-        final DoubleDouble  Z = new DoubleDouble(rZ); Z.multiply(RS);
-        final DoubleDouble mX = new DoubleDouble( X); mX.negate();
-        final DoubleDouble mY = new DoubleDouble( Y); mY.negate();
-        final DoubleDouble mZ = new DoubleDouble( Z); mZ.negate();
+        final DoubleDouble  X = param(3, period); X.multiply(RS);
+        final DoubleDouble  Y = param(4, period); Y.multiply(RS);
+        final DoubleDouble  Z = param(5, period); Z.multiply(RS);
+        final DoubleDouble mX = new DoubleDouble(X); mX.negate();
+        final DoubleDouble mY = new DoubleDouble(Y); mY.negate();
+        final DoubleDouble mZ = new DoubleDouble(Z); mZ.negate();
         final Integer       O = 0; // Fetch Integer instance only once.
         return Matrices.create(4, 4, new Number[] {
-                 S,  mZ,   Y,  Double.valueOf(tX),
-                 Z,   S,  mX,  Double.valueOf(tY),
-                mY,   X,   S,  Double.valueOf(tZ),
+                 S,  mZ,   Y,  param(0, period),
+                 Z,   S,  mX,  param(1, period),
+                mY,   X,   S,  param(2, period),
                  O,   O,   O,  1});
+    }
+
+    /**
+     * Sets all Bursa-Wolf parameters from the given <cite>Position Vector transformation</cite> matrix.
+     * The matrix shall comply to the following constraints:
+     *
+     * <ul>
+     *   <li>The matrix shall be {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#isAffine() affine}.</li>
+     *   <li>The sub-matrix defined by {@code matrix} without the last row and last column shall be
+     *       <a href="http://en.wikipedia.org/wiki/Skew-symmetric_matrix">skew-symmetric</a> (a.k.a. antisymmetric).</li>
+     * </ul>
+     *
+     * @param  matrix The matrix from which to get Bursa-Wolf parameters.
+     * @param  tolerance The tolerance error for the skew-symmetric matrix test, in units of PPM or arc-seconds (e.g. 1E-8).
+     * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
+     *
+     * @see #getPositionVectorTransformation(Date)
+     */
+    public void setPositionVectorTransformation(final Matrix matrix, final double tolerance) throws IllegalArgumentException {
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        if (numRow != SIZE || numCol != SIZE) {
+            final Integer n = SIZE;
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedMatrixSize_4, n, n, numRow, numCol));
+        }
+        if (!Matrices.isAffine(matrix)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotAnAffineTransform));
+        }
+        /*
+         * Translation terms, taken "as-is".
+         */
+        tX = matrix.getElement(0,3);
+        tY = matrix.getElement(1,3);
+        tZ = matrix.getElement(2,3);
+        /*
+         * Scale factor: take the average of elements on the diagonal. All those
+         * elements should have the same value, but we tolerate slight deviation
+         * (this will be verified later).
+         */
+        final DoubleDouble S = new DoubleDouble(getNumber(matrix, 0,0));
+        S.add(getNumber(matrix, 1,1));
+        S.add(getNumber(matrix, 2,2));
+        S.divide(3, 0);
+        /*
+         * Computes: RS = S * toRadians(1″)
+         *           dS = (S-1) * PPM
+         */
+        final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
+        RS.multiply(S);
+        S.add(-1, 0);
+        S.multiply(PPM, 0);
+        dS = S.value;
+        /*
+         * Rotation terms. Each rotation terms appear twice, with one value being the negative of the other value.
+         * We verify this skew symmetric aspect in the loop. We also opportunistically verify that the scale terms
+         * are uniform.
+         */
+        for (int j=0; j < SIZE-1; j++) {
+            if (!(abs((matrix.getElement(j,j) - 1)*PPM - dS) <= tolerance)) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonUniformScale));
+            }
+            for (int i = j+1; i < SIZE-1; i++) {
+                S.setFrom(RS);
+                S.inverseDivide(getNumber(matrix, j,i)); // Negative rotation term.
+                double value = S.value;
+                double error = S.error;
+                S.setFrom(RS);
+                S.inverseDivide(getNumber(matrix, i,j)); // Positive rotation term.
+                if (!(abs(value + S.value) <= tolerance)) { // We expect r1 ≈ -r2
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.NotASkewSymmetricMatrix));
+                }
+                S.subtract(value, error);
+                S.multiply(0.5, 0);
+                value = S.value; // Average of the two rotation terms.
+                switch (j*SIZE + i) {
+                    case 1: rZ =  value; break;
+                    case 2: rY = -value; break;
+                    case 6: rX =  value; break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the region or timeframe in which a coordinate transformation based on those Bursa-Wolf parameters is
+     * valid, or {@code null} if unspecified. If an extent was specified at construction time, then that extent is
+     * returned. Otherwise the datum domain of validity (which may be {@code null}) is returned.
+     *
+     * @return Area or region or timeframe in which the coordinate transformation is valid, or {@code null}.
+     *
+     * @see org.apache.sis.metadata.iso.extent.DefaultExtent
+     */
+    public Extent getDomainOfValidity() {
+        if (domainOfValidity == null && targetDatum != null) {
+            return targetDatum.getDomainOfValidity();
+        }
+        return domainOfValidity;
+    }
+
+    /**
+     * Returns a copy of this object.
+     *
+     * @return A copy of all parameters.
+     */
+    @Override
+    public BursaWolfParameters clone() {
+        try {
+            return (BursaWolfParameters) super.clone();
+        }  catch (CloneNotSupportedException exception) {
+            // Should not happen, since we are cloneable.
+            throw new AssertionError(exception);
+        }
     }
 
     /**
@@ -429,7 +561,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      */
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof BursaWolfParameters) {
+        if (object != null && object.getClass() == getClass()) {
             final BursaWolfParameters that = (BursaWolfParameters) object;
             return Numerics.equals(this.tX, that.tX) &&
                    Numerics.equals(this.tY, that.tY) &&
@@ -438,7 +570,8 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
                    Numerics.equals(this.rY, that.rY) &&
                    Numerics.equals(this.rZ, that.rZ) &&
                    Numerics.equals(this.dS, that.dS) &&
-                    Objects.equals(this.targetDatum, that.targetDatum);
+                    Objects.equals(this.targetDatum, that.targetDatum) &&
+                    Objects.equals(this.domainOfValidity, that.domainOfValidity);
         }
         return false;
     }
@@ -461,7 +594,7 @@ public class BursaWolfParameters extends FormattableObject implements Serializab
      * <blockquote><code>TOWGS84[{@linkplain #tX}, {@linkplain #tY}, {@linkplain #tZ}, {@linkplain #rX},
      * {@linkplain #rY}, {@linkplain #rZ}, {@linkplain #dS}]</code></blockquote>
      *
-     * The element name is {@code "TOWGS84"} in the common case where the {@linkplain #targetDatum target datum}
+     * The element name is {@code "TOWGS84"} in the common case where the {@linkplain #getTargetDatum() target datum}
      * is WGS 84. For other targets, the element name will be derived from the datum name.
      *
      * @param  formatter The formatter to use.

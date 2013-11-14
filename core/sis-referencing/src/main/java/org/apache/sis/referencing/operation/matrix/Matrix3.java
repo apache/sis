@@ -27,9 +27,9 @@ import org.apache.sis.math.MathFunctions;
  * The matrix members are:
  *
  * <blockquote><pre> ┌             ┐
- * │ {@link #m00} {@link #m01} {@link #m02} │
- * │ {@link #m10} {@link #m11} {@link #m12} │
- * │ {@link #m20} {@link #m21} {@link #m22} │
+ * │ {@linkplain #m00} {@linkplain #m01} {@linkplain #m02} │
+ * │ {@linkplain #m10} {@linkplain #m11} {@linkplain #m12} │
+ * │ {@linkplain #m20} {@linkplain #m21} {@linkplain #m22} │
  * └             ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

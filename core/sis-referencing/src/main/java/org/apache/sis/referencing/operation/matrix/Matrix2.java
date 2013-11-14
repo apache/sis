@@ -26,8 +26,8 @@ import org.apache.sis.internal.util.Numerics;
  * The matrix members are:
  *
  * <blockquote><pre> ┌         ┐
- * │ {@link #m00} {@link #m01} │
- * │ {@link #m10} {@link #m11} │
+ * │ {@linkplain #m00} {@linkplain #m01} │
+ * │ {@linkplain #m10} {@linkplain #m11} │
  * └         ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

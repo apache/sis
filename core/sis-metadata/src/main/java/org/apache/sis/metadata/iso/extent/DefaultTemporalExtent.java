@@ -150,8 +150,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *              or {@code false} for the end time.
      * @return The requested time as a Java date, or {@code null} if none.
      */
-    private Date getTime(final boolean begin) {
-        final TemporalPrimitive extent = this.extent;
+    static Date getTime(final TemporalPrimitive extent, final boolean begin) {
         final Instant instant;
         if (extent instanceof Instant) {
             instant = (Instant) extent;
@@ -170,7 +169,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @return The start time, or {@code null} if none.
      */
     public Date getStartTime() {
-        return getTime(true);
+        return getTime(extent, true);
     }
 
     /**
@@ -180,7 +179,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @return The end time, or {@code null} if none.
      */
     public Date getEndTime() {
-        return getTime(false);
+        return getTime(extent, false);
     }
 
     /**

@@ -23,6 +23,9 @@ import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.util.Numerics;
@@ -96,9 +99,37 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     private final Unit<Angle> angularUnit;
 
     /**
-     * Creates a prime meridian from the given properties. The properties map is given
-     * unchanged to the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
-     * super-class constructor}.
+     * Creates a prime meridian from the given properties. The properties map is given unchanged to the
+     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
+     * The following table is a reminder of main (not all) properties:
+     *
+     * <table class="sis">
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link #getAlias()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link #getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link #getRemarks()}</td>
+     *   </tr>
+     * </table>
      *
      * @param properties          The properties to be given to the identified object.
      * @param greenwichLongitude  The longitude value relative to the Greenwich Meridian.
