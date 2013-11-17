@@ -178,15 +178,14 @@ public class Formatter {
     private int margin;
 
     /**
-     * {@code true} if a new line were requested during the execution of {@link #append(Formattable)}.
-     * This is used to determine if the next {@code UNIT} and {@code AUTHORITY} elements shall appear
-     * on a new line.
+     * {@code true} if a new line were requested during the execution of {@link #append(FormattableObject)}.
+     * This is used to determine if the next {@code UNIT} and {@code AUTHORITY} elements shall appear on a new line.
      */
     private boolean requestNewLine;
 
     /**
      * {@code true} if the last formatted element was invalid WKT. This field is for internal use only.
-     * It is reset to {@code false} after the invalid part has been processed by {@link #append(Formattable)}.
+     * It is reset to {@code false} after the invalid part has been processed by {@link #append(FormattableObject)}.
      */
     private boolean wasInvalidWKT;
 
@@ -393,14 +392,14 @@ public class Formatter {
     }
 
     /**
-     * Appends the given {@code Formattable} object.
+     * Appends the given {@code FormattableObject}.
      * This method will automatically append the keyword (e.g. {@code "GEOCS"}), the name and the authority code,
      * and will invoke <code>formattable.{@linkplain FormattableObject#formatTo(Formatter) formatTo}(this)</code>
      * for completing the inner part of the WKT.
      *
      * @param object The formattable object to append to the WKT, or {@code null} if none.
      */
-    public void append(final Formattable object) {
+    public void append(final FormattableObject object) {
         if (object == null) {
             return;
         }
@@ -492,9 +491,8 @@ public class Formatter {
      */
     public void append(final IdentifiedObject object) {
         if (object != null) {
-            append((object instanceof Formattable)
-                    ? (Formattable) object
-                    : AbstractIdentifiedObject.castOrCopy(object));
+            append(object instanceof FormattableObject ? (FormattableObject) object :
+                   AbstractIdentifiedObject.castOrCopy(object));
         }
     }
 
@@ -505,11 +503,11 @@ public class Formatter {
      */
     public void append(final MathTransform transform) {
         if (transform != null) {
-            if (transform instanceof Formattable) {
-                append((Formattable) transform);
+            if (transform instanceof FormattableObject) {
+                append((FormattableObject) transform);
             } else {
                 throw new UnformattableObjectException(Errors.format(
-                        Errors.Keys.IllegalClass_2, Formattable.class, transform.getClass()));
+                        Errors.Keys.IllegalClass_2, FormattableObject.class, transform.getClass()));
             }
         }
     }

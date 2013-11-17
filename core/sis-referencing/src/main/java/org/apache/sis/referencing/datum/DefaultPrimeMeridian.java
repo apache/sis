@@ -288,8 +288,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * @return The WKT element name, which is {@code "PRIMEM"}.
      */
     @Override
-    @SuppressWarnings("fallthrough")
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         /*
          * If the PrimeMeridian is written inside a "GEOGCS", then OGC say that it must be
          * written in the unit of the enclosing geographic coordinate system. Otherwise,
