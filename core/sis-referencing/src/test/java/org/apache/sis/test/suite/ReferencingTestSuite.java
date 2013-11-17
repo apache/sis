@@ -52,6 +52,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
     org.apache.sis.referencing.datum.TimeDependentBWPTest.class,
     org.apache.sis.referencing.datum.DefaultEllipsoidTest.class,
+    org.apache.sis.referencing.datum.DefaultPrimeMeridianTest.class,
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class,
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class,
     org.apache.sis.referencing.StandardDefinitionsTest.class,

@@ -23,7 +23,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.referencing.Assert.*;
 import static java.util.Collections.singletonMap;
 
 
@@ -62,5 +62,18 @@ public final strictfp class DefaultVerticalDatumTest extends TestCase {
                 singletonMap(DefaultVerticalDatum.NAME_KEY, name), VerticalDatumType.OTHER_SURFACE);
         typeField.set(datum, null);
         return datum.getVerticalDatumType();
+    }
+
+    /**
+     * Tests {@link DefaultVerticalDatum#toWKT()}.
+     */
+    @Test
+    public void testToWKT() {
+        DefaultVerticalDatum datum;
+        datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Geoidal"), VerticalDatumType.GEOIDAL);
+        assertWktEquals(datum, "VERT_DATUM[“Geoidal”, 2005]");
+
+        datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Ellipsoidal"), VerticalDatumTypes.ELLIPSOIDAL);
+        assertWktEquals(datum, "VERT_DATUM[“Ellipsoidal”, 2002]");
     }
 }
