@@ -25,6 +25,7 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
@@ -38,7 +39,7 @@ import static java.lang.StrictMath.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public strictfp class Assert extends org.apache.sis.test.Assert {
@@ -280,6 +281,24 @@ public strictfp class Assert extends org.apache.sis.test.Assert {
             }
             assertEquals(0, n); // Opportunist check of this assert method.
             assertFalse("e1.contains(" + pos + ')', e1.contains(pos));
+        }
+    }
+
+    /**
+     * Asserts that the WKT of the given object is equal to the expected one. If the given string contains
+     * {@code '“'} and {@code '”'} characters (for easier reading), then those characters will be replaced
+     * by "ordinary" quote characters ({@code '"'}).
+     *
+     * @param object The object to format in <cite>Well Known Text</cite> format.
+     * @param expected The expected text, or {@code null} if {@code object} is expected to be null.
+     */
+    public static void assertWktEquals(final IdentifiedObject object, String expected) {
+        if (expected == null) {
+            assertNull(object);
+        } else {
+            assertNotNull(object);
+            expected = expected.replace('“', '"').replace('”', '"');
+            assertMultilinesEquals(object.getName().getCode(), expected, object.toWKT());
         }
     }
 }

@@ -32,7 +32,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.referencing.Assert.*;
 import static org.apache.sis.test.mock.GeodeticDatumMock.*;
 
 
@@ -44,7 +44,11 @@ import static org.apache.sis.test.mock.GeodeticDatumMock.*;
  * @version 0.4
  * @module
  */
-@DependsOn({DefaultEllipsoidTest.class, BursaWolfParametersTest.class})
+@DependsOn({
+  DefaultPrimeMeridianTest.class,
+  DefaultEllipsoidTest.class,
+  BursaWolfParametersTest.class
+})
 public final strictfp class DefaultGeodeticDatumTest extends TestCase {
     /**
      * Tests the creation and serialization of a {@link DefaultGeodeticDatum}.
@@ -147,5 +151,16 @@ public final strictfp class DefaultGeodeticDatumTest extends TestCase {
         assertEquals("tX", expected.tX, actual.getElement(0, 3), tolerance);
         assertEquals("tY", expected.tY, actual.getElement(1, 3), tolerance);
         assertEquals("tZ", expected.tZ, actual.getElement(2, 3), tolerance);
+    }
+
+    /**
+     * Tests {@link DefaultEllipsoid#toWKT()}.
+     */
+    @Test
+    public void testToWKT() {
+        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
+        assertWktEquals(datum,
+                "DATUM[“WGS84”,\n" +
+                "  SPHEROID[“WGS84”, 6378137.0, 298.257223563]]");
     }
 }
