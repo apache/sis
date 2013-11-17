@@ -46,6 +46,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 
 
 /**
@@ -491,11 +492,9 @@ public class Formatter {
      */
     public void append(final IdentifiedObject object) {
         if (object != null) {
-            if (object instanceof Formattable) {
-                append((Formattable) object);
-            } else {
-                throw unsupported(object);
-            }
+            append((object instanceof Formattable)
+                    ? (Formattable) object
+                    : AbstractIdentifiedObject.castOrCopy(object));
         }
     }
 
@@ -509,20 +508,10 @@ public class Formatter {
             if (transform instanceof Formattable) {
                 append((Formattable) transform);
             } else {
-                throw unsupported(transform);
+                throw new UnformattableObjectException(Errors.format(
+                        Errors.Keys.IllegalClass_2, Formattable.class, transform.getClass()));
             }
         }
-    }
-
-    /**
-     * Invoked when an object is not a supported implementation.
-     *
-     * @param object The object of unknown type.
-     * @return The exception to be thrown.
-     */
-    private static UnformattableObjectException unsupported(final Object object) {
-        return new UnformattableObjectException(Errors.format(
-                Errors.Keys.IllegalClass_2, Formattable.class, object.getClass()));
     }
 
     /**
