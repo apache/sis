@@ -434,6 +434,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                             Arrays.equals(this.bursaWolf,     that.bursaWolf);
                 }
                 default: {
+                    if (!(object instanceof GeodeticDatum)) break;
                     final GeodeticDatum that = (GeodeticDatum) object;
                     return deepEquals(getEllipsoid(),     that.getEllipsoid(),     mode) &&
                            deepEquals(getPrimeMeridian(), that.getPrimeMeridian(), mode);
