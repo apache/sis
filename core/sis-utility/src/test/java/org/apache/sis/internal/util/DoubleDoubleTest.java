@@ -50,16 +50,17 @@ public final strictfp class DoubleDoubleTest extends TestCase {
 
     /**
      * The tolerance factor (as a multiplicand) for the addition and subtraction operations.
+     * This is a tolerance factor in units of {@link DoubleDouble#value} ULP. Results smaller
+     * than 1 ULP of {@link DoubleDouble#error} will be clamped.
      */
-    private static final double ADD_TOLERANCE_FACTOR = 1;
+    private static final double ADD_TOLERANCE_FACTOR = 1E-17;
 
     /**
      * The tolerance factor (as a multiplicand) for the multiplication and division operations.
-     * This is a tolerance factor in units of {@link DoubleDouble#error} ULP, so even a "scary"
-     * factor like 1E+5 should be very small compared to the {@link DoubleDouble#value}.
-     * This is the worst case error found empirically - most errors are smaller than that.
+     * This is a tolerance factor in units of {@link DoubleDouble#value} ULP. Results smaller
+     * than 1 ULP of {@link DoubleDouble#error} will be clamped.
      */
-    private static final double PRODUCT_TOLERANCE_FACTOR = 100000;
+    private static final double PRODUCT_TOLERANCE_FACTOR = 1E-15;
 
     /**
      * Tolerance threshold for strict comparisons of floating point values.
@@ -118,7 +119,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     private static void assertExtendedEquals(final BigDecimal expected, final DoubleDouble actual, final double ef) {
         final BigDecimal value = toBigDecimal(actual);
         final double delta = abs(expected.subtract(value).doubleValue());
-        final double threshold = ulp(actual.error) * ef;
+        final double threshold = max(ulp(actual.error), ulp(actual.value) * ef);
         if (!(delta <= threshold)) { // Use ! for catching NaN values.
             fail("Arithmetic error:\n" +
                  "  Expected:   " + expected  + '\n' +
