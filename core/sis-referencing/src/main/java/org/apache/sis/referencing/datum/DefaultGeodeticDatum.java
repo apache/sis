@@ -39,6 +39,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.FormattableObject;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -434,6 +435,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                             Arrays.equals(this.bursaWolf,     that.bursaWolf);
                 }
                 default: {
+                    if (!(object instanceof GeodeticDatum)) break;
                     final GeodeticDatum that = (GeodeticDatum) object;
                     return deepEquals(getEllipsoid(),     that.getEllipsoid(),     mode) &&
                            deepEquals(getPrimeMeridian(), that.getPrimeMeridian(), mode);
@@ -470,10 +472,11 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @return The WKT element name, which is {@code "DATUM"}.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         // Do NOT invokes the super-class method, because
         // horizontal datum do not write the datum type.
-        formatter.append(ellipsoid);
+        formatter.append(ellipsoid instanceof FormattableObject ? (FormattableObject) ellipsoid :
+                         DefaultEllipsoid.castOrCopy(ellipsoid));
         if (bursaWolf != null) {
             for (final BursaWolfParameters candidate : bursaWolf) {
                 if (candidate.isToWGS84()) {

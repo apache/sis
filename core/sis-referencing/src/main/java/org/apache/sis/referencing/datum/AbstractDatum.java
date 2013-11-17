@@ -183,6 +183,37 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
+     * Returns a SIS datum implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is is an instance of
+     *       {@link org.opengis.referencing.datum.GeodeticDatum},
+     *       {@link org.opengis.referencing.datum.VerticalDatum},
+     *       {@link org.opengis.referencing.datum.TemporalDatum},
+     *       {@link org.opengis.referencing.datum.EngineeringDatum} or
+     *       {@link org.opengis.referencing.datum.ImageDatum},
+     *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
+     *       Note that if the given object implements more than one of the above-cited interfaces,
+     *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code AbstractDatum}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code AbstractDatum} instance is created using the
+     *       {@linkplain #AbstractDatum(Datum) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       properties contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static AbstractDatum castOrCopy(final Datum object) {
+        return SubTypes.castOrCopy(object);
+    }
+
+    /**
      * Returns a description of the point(s) used to anchor the datum to the Earth.
      * Also known as the "origin", especially for Engineering and Image Datums.
      *
@@ -349,7 +380,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @return The WKT element name.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         formatter.append(getLegacyDatumType());
         return Classes.getShortClassName(this);
     }

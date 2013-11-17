@@ -290,6 +290,35 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
+     * Returns a SIS identified object implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is is an instance of
+     *       {@link org.opengis.referencing.datum.Datum},
+     *       {@link org.opengis.referencing.datum.Ellipsoid} or
+     *       {@link org.opengis.referencing.datum.PrimeMeridian},
+     *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
+     *       Note that if the given object implements more than one of the above-cited interfaces,
+     *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code AbstractIdentifiedObject}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code AbstractIdentifiedObject} instance is created using the
+     *       {@linkplain #AbstractIdentifiedObject(IdentifiedObject) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       properties contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static AbstractIdentifiedObject castOrCopy(final IdentifiedObject object) {
+        return SubTypes.castOrCopy(object);
+    }
+
+    /**
      * The {@code gml:id}, which is mandatory. The current implementation searches for the first identifier,
      * regardless its authority. If no identifier is found, then the name is used.
      * If no name is found (which should not occur for valid objects), then this method returns {@code null}.
@@ -525,7 +554,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                 }
             }
         } else {
-            if (mode == ComparisonMode.STRICT) { // Same classes was required for this mode.
+            if (mode == ComparisonMode.STRICT) { // Same class was required for this mode.
                 return false;
             }
             if (!(object instanceof IdentifiedObject)) {

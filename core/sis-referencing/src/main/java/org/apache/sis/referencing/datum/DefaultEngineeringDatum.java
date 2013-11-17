@@ -176,7 +176,7 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * @return The WKT element name, which is {@code "LOCAL_DATUM"}.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         return "LOCAL_DATUM";
     }
