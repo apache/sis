@@ -380,7 +380,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @return The WKT element name.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         formatter.append(getLegacyDatumType());
         return Classes.getShortClassName(this);
     }

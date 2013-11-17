@@ -27,7 +27,9 @@ import org.apache.sis.internal.util.X364;
 
 /**
  * Base class for objects that can be formatted as <cite>Well Known Text</cite> (WKT).
- * Almost every Apache SIS implementations of referencing objects extend this class.
+ * {@link WKTFormat} checks for this interface at formatting time for each element to format.
+ * When a {@code FormattableObject} element is found, its {@link #formatTo(Formatter)} method
+ * is invoked for allowing the element to control its formatting.
  *
  * <p>This class provides two methods for getting a default <cite>Well Known Text</cite>
  * representation of this object:</p>
@@ -52,7 +54,7 @@ import org.apache.sis.internal.util.X364;
  * @version 0.4
  * @module
  */
-public class FormattableObject implements Formattable {
+public class FormattableObject {
     /**
      * The formatter for the {@link #toWKT()} and {@link #toString()} methods.
      * Formatters are not thread-safe, consequently we need a different instance for each thread.
@@ -169,17 +171,31 @@ public class FormattableObject implements Formattable {
     }
 
     /**
-     * {@inheritDoc}
+     * Formats the inner part of this <cite>Well Known Text</cite> (WKT) element into the given formatter.
+     * This method is automatically invoked by {@link WKTFormat} when a formattable element is found.
+     *
+     * <p>Element keyword and {@linkplain org.apache.sis.referencing.IdentifiedObjects#getIdentifierCode
+     * authority code} shall not be formatted here. For example if this formattable element is for a
+     * {@code GEOGCS} element, then this method shall write the content starting at the insertion point
+     * shows below:</p>
+     *
+     * {@preformat text
+     *     GEOGCS["WGS 84", AUTHORITY["EPSG","4326"]]
+     *                    ↑
+     *            (insertion point)
+     * }
      *
      * The default implementation declares that this object produces an invalid WKT.
      * Subclasses shall override this method for proper WKT formatting and shall <strong>not</strong>
      * invoke {@code super.formatTo(formatter)} if they can use a standard WKT syntax.
      *
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return The WKT element keyword (e.g. {@code "GEOGCS"}).
+     *
      * @see #toWKT()
      * @see #toString()
      */
-    @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         Class<?> type = getClass();
         for (final Class<?> candidate : type.getInterfaces()) {
             final String name = candidate.getName();

@@ -715,7 +715,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @return The WKT element name, which is {@code "SPHEROID"}.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         final double ivf = getInverseFlattening();
         formatter.append(getAxisUnit().getConverterTo(SI.METRE).convert(getSemiMajorAxis()));
         formatter.append(isInfinite(ivf) ? 0 : ivf);
