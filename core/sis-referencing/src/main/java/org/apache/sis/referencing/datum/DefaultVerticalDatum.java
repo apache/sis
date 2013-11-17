@@ -293,7 +293,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * @return The WKT element name, which is {@code "VERT_DATUM"}.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         return "VERT_DATUM";
     }

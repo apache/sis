@@ -601,7 +601,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * @return The WKT element name, usually {@code "TOWGS84"}.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         formatter.append(tX);
         formatter.append(tY);
         formatter.append(tZ);

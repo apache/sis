@@ -224,7 +224,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * @return The WKT element name.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.append(pixelInCell);
         formatter.setInvalidWKT("ImageDatum");
