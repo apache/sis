@@ -254,20 +254,17 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final DefaultVerticalDatum that = (DefaultVerticalDatum) object;
-                    return Objects.equals(this.type(), that.type());
-                }
-                default: {
-                    if (!(object instanceof VerticalDatum)) break;
-                    final VerticalDatum that = (VerticalDatum) object;
-                    return Objects.equals(getVerticalDatumType(), that.getVerticalDatumType());
-                }
+        if (!(object instanceof VerticalDatum && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                return Objects.equals(type(), ((DefaultVerticalDatum) object).type());
+            }
+            default: {
+                return Objects.equals(getVerticalDatumType(), ((VerticalDatum) object).getVerticalDatumType());
             }
         }
-        return false;
     }
 
     /**
