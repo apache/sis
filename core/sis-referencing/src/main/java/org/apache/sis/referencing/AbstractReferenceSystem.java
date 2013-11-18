@@ -186,26 +186,25 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final AbstractReferenceSystem that = (AbstractReferenceSystem) object;
-                    return Objects.equals(domainOfValidity, that.domainOfValidity) &&
-                           Objects.equals(scope,            that.scope);
-                }
-                case BY_CONTRACT: {
-                    if (!(object instanceof ReferenceSystem)) break;
-                    final ReferenceSystem that = (ReferenceSystem) object;
-                    return deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
-                           deepEquals(getScope(),            that.getScope(), mode);
-                }
-                default: {
-                    // Domain of validity and scope are metadata, so they can be ignored.
-                    return (object instanceof ReferenceSystem);
-                }
+        if (!(object instanceof ReferenceSystem && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                final AbstractReferenceSystem that = (AbstractReferenceSystem) object;
+                return Objects.equals(domainOfValidity, that.domainOfValidity) &&
+                       Objects.equals(scope,            that.scope);
+            }
+            case BY_CONTRACT: {
+                final ReferenceSystem that = (ReferenceSystem) object;
+                return deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
+                       deepEquals(getScope(),            that.getScope(), mode);
+            }
+            default: {
+                // Domain of validity and scope are metadata, so they can be ignored.
+                return true;
             }
         }
-        return false;
     }
 
     /**

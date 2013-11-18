@@ -175,20 +175,17 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final DefaultImageDatum that = (DefaultImageDatum) object;
-                    return Objects.equals(this.pixelInCell, that.pixelInCell);
-                }
-                default: {
-                    if (!(object instanceof ImageDatum)) break;
-                    final ImageDatum that = (ImageDatum) object;
-                    return Objects.equals(getPixelInCell(), that.getPixelInCell());
-                }
+        if (!(object instanceof ImageDatum && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                return Objects.equals(pixelInCell, ((DefaultImageDatum) object).pixelInCell);
+            }
+            default: {
+                return Objects.equals(getPixelInCell(), ((ImageDatum) object).getPixelInCell());
             }
         }
-        return false;
     }
 
     /**

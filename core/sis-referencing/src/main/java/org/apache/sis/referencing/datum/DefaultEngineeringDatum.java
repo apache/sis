@@ -151,7 +151,7 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
         if (object == this) {
             return true; // Slight optimization.
         }
-        return  (object instanceof EngineeringDatum) && super.equals(object, mode);
+        return (object instanceof EngineeringDatum) && super.equals(object, mode);
     }
 
     /**

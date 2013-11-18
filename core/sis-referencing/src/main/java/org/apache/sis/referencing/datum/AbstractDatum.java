@@ -301,38 +301,36 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final AbstractDatum that = (AbstractDatum) object;
-                    return this.realizationEpoch == that.realizationEpoch &&
-                           Objects.equals(this.domainOfValidity, that.domainOfValidity) &&
-                           Objects.equals(this.anchorPoint,      that.anchorPoint) &&
-                           Objects.equals(this.scope,            that.scope);
-                }
-                case BY_CONTRACT: {
-                    if (!(object instanceof Datum)) break;
-                    final Datum that = (Datum) object;
-                    return deepEquals(getRealizationEpoch(), that.getRealizationEpoch(), mode) &&
-                           deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
-                           deepEquals(getAnchorPoint(),      that.getAnchorPoint(),      mode) &&
-                           deepEquals(getScope(),            that.getScope(),            mode);
-                }
-                default: {
-                    /*
-                     * Tests for name, since datum with different name have completely
-                     * different meaning. We don't perform this comparison if the user
-                     * asked for metadata comparison, because in such case the names
-                     * have already been compared by the subclass.
-                     */
-                    if (!(object instanceof Datum)) break;
-                    final Datum that = (Datum) object;
-                    return nameMatches(that. getName().getCode()) ||
-                           IdentifiedObjects.nameMatches(that, getName().getCode());
-                }
+        if (!(object instanceof Datum && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                final AbstractDatum that = (AbstractDatum) object;
+                return this.realizationEpoch == that.realizationEpoch &&
+                       Objects.equals(this.domainOfValidity, that.domainOfValidity) &&
+                       Objects.equals(this.anchorPoint,      that.anchorPoint) &&
+                       Objects.equals(this.scope,            that.scope);
+            }
+            case BY_CONTRACT: {
+                final Datum that = (Datum) object;
+                return deepEquals(getRealizationEpoch(), that.getRealizationEpoch(), mode) &&
+                       deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
+                       deepEquals(getAnchorPoint(),      that.getAnchorPoint(),      mode) &&
+                       deepEquals(getScope(),            that.getScope(),            mode);
+            }
+            default: {
+                /*
+                 * Tests for name, since datum with different name have completely
+                 * different meaning. We don't perform this comparison if the user
+                 * asked for metadata comparison, because in such case the names
+                 * have already been compared by the subclass.
+                 */
+                final Datum that = (Datum) object;
+                return nameMatches(that. getName().getCode()) ||
+                       IdentifiedObjects.nameMatches(that, getName().getCode());
             }
         }
-        return false;
     }
 
     /**

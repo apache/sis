@@ -227,33 +227,31 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final DefaultPrimeMeridian that = (DefaultPrimeMeridian) object;
-                    return Numerics.equals(this.greenwichLongitude, that.greenwichLongitude) &&
-                            Objects.equals(this.angularUnit,        that.angularUnit);
-                }
-                case BY_CONTRACT: {
-                    if (!(object instanceof PrimeMeridian)) break;
-                    final PrimeMeridian that = (PrimeMeridian) object;
-                    return Numerics.equals(getGreenwichLongitude(), that.getGreenwichLongitude()) &&
-                            Objects.equals(getAngularUnit(),        that.getAngularUnit());
-                }
-                default: {
-                    if (!(object instanceof PrimeMeridian)) break;
-                    final DefaultPrimeMeridian that = castOrCopy((PrimeMeridian) object);
-                    return Numerics.epsilonEqual(this.getGreenwichLongitude(NonSI.DEGREE_ANGLE),
-                                                 that.getGreenwichLongitude(NonSI.DEGREE_ANGLE), mode);
-                    /*
-                     * Note: if mode==IGNORE_METADATA, we relax the unit check because EPSG uses
-                     *       sexagesimal degrees for the Greenwich meridian. Requirying the same
-                     *       unit prevent Geodetic.isWGS84(...) method to recognize EPSG's WGS84.
-                     */
-                }
+        if (!(object instanceof PrimeMeridian && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                final DefaultPrimeMeridian that = (DefaultPrimeMeridian) object;
+                return Numerics.equals(this.greenwichLongitude, that.greenwichLongitude) &&
+                        Objects.equals(this.angularUnit,        that.angularUnit);
+            }
+            case BY_CONTRACT: {
+                final PrimeMeridian that = (PrimeMeridian) object;
+                return Numerics.equals(getGreenwichLongitude(), that.getGreenwichLongitude()) &&
+                        Objects.equals(getAngularUnit(),        that.getAngularUnit());
+            }
+            default: {
+                final DefaultPrimeMeridian that = castOrCopy((PrimeMeridian) object);
+                return Numerics.epsilonEqual(this.getGreenwichLongitude(NonSI.DEGREE_ANGLE),
+                                             that.getGreenwichLongitude(NonSI.DEGREE_ANGLE), mode);
+                /*
+                 * Note: if mode==IGNORE_METADATA, we relax the unit check because EPSG uses
+                 *       sexagesimal degrees for the Greenwich meridian. Requirying the same
+                 *       unit prevent Geodetic.isWGS84(...) method to recognize EPSG's WGS84.
+                 */
             }
         }
-        return false;
     }
 
     /**

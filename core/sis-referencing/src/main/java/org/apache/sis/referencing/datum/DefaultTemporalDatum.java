@@ -198,20 +198,17 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final DefaultTemporalDatum that = (DefaultTemporalDatum) object;
-                    return this.origin == that.origin;
-                }
-                default: {
-                    if (!(object instanceof TemporalDatum)) break;
-                    final TemporalDatum that = (TemporalDatum) object;
-                    return Objects.equals(getOrigin(), that.getOrigin());
-                }
+        if (!(object instanceof TemporalDatum && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                return origin == ((DefaultTemporalDatum) object).origin;
+            }
+            default: {
+                return Objects.equals(getOrigin(), ((TemporalDatum) object).getOrigin());
             }
         }
-        return false;
     }
 
     /**

@@ -649,38 +649,41 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @return {@code true} if both objects are equal.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object, mode)) {
-            if (mode == ComparisonMode.STRICT) {
+        if (!(object instanceof Ellipsoid && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
                 final DefaultEllipsoid that = (DefaultEllipsoid) object;
                 return ivfDefinitive == that.ivfDefinitive &&
                        Numerics.equals(this.semiMajorAxis,     that.semiMajorAxis)     &&
                        Numerics.equals(this.semiMinorAxis,     that.semiMinorAxis)     &&
                        Numerics.equals(this.inverseFlattening, that.inverseFlattening) &&
                         Objects.equals(this.unit,              that.unit);
-            } else {
-                if (object instanceof Ellipsoid) {
-                    final Ellipsoid that = (Ellipsoid) object;
-                    if (mode == ComparisonMode.BY_CONTRACT) {
-                        /*
-                         * isIvfDefinitive has no incidence on calculation using ellipsoid parameters,
-                         * so we consider it as metadata that can be ignored in IGNORE_METADATA mode.
-                         */
-                        if (isIvfDefinitive() != that.isIvfDefinitive()) {
-                            return false;
-                        }
-                    }
-                    return epsilonEqual(getSemiMajorAxis(),     that.getSemiMajorAxis(),     mode) &&
-                           epsilonEqual(getSemiMinorAxis(),     that.getSemiMinorAxis(),     mode) &&
-                           epsilonEqual(getInverseFlattening(), that.getInverseFlattening(), mode) &&
-                           Objects.equals(getAxisUnit(),        that.getAxisUnit());
+            }
+            case BY_CONTRACT: {
+                /*
+                 * isIvfDefinitive has no incidence on calculation using ellipsoid parameters,
+                 * so we consider it as metadata that can be ignored in IGNORE_METADATA mode.
+                 */
+                if (isIvfDefinitive() != ((Ellipsoid) object).isIvfDefinitive()) {
+                    return false;
                 }
+                // Fall through
+            }
+            default: {
+                final Ellipsoid that = (Ellipsoid) object;
+                return epsilonEqual(getSemiMajorAxis(),     that.getSemiMajorAxis(),     mode) &&
+                       epsilonEqual(getSemiMinorAxis(),     that.getSemiMinorAxis(),     mode) &&
+                       epsilonEqual(getInverseFlattening(), that.getInverseFlattening(), mode) &&
+                       Objects.equals(getAxisUnit(),        that.getAxisUnit());
             }
         }
-        return false;
     }
 
     /**
