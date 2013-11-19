@@ -255,46 +255,6 @@ public enum GeodeticObjects {
     }
 
     /**
-     * Returns the prime meridian associated to this geodetic object.
-     * The following table summarizes the prime meridians known to this class,
-     * together with an enumeration value that can be used for fetching that prime meridian:
-     *
-     * <blockquote><table class="sis">
-     *   <tr><th>Name or alias</th> <th>Enum</th>           <th>EPSG</th></tr>
-     *   <tr><td>Greenwich</td>     <td>{@link #WGS84}</td> <td>8901</td></tr>
-     * </table></blockquote>
-     *
-     * @return The prime meridian associated to this constant.
-     *
-     * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
-     * @see DatumAuthorityFactory#createPrimeMeridian(String)
-     */
-    public PrimeMeridian primeMeridian() {
-        PrimeMeridian object = primeMeridian(cached);
-        if (object == null) {
-            synchronized (this) {
-                object = primeMeridian(cached);
-                if (object == null) {
-                    if (this != WGS84) {
-                        object = WGS84.primeMeridian(); // Share the same instance for all constants.
-                    } else {
-                        final DatumAuthorityFactory factory = StandardObjects.datumFactory();
-                        if (factory != null) try {
-                            cached = object = factory.createPrimeMeridian(StandardDefinitions.GREENWICH);
-                            return object;
-                        } catch (FactoryException e) {
-                            StandardObjects.failure(this, "primeMeridian", e);
-                        }
-                        object = StandardDefinitions.primeMeridian();
-                    }
-                    cached = object;
-                }
-            }
-        }
-        return object;
-    }
-
-    /**
      * Returns the ellipsoid associated to this geodetic object.
      * The following table summarizes the ellipsoids known to this class,
      * together with an enumeration value that can be used for fetching that ellipsoid:
@@ -340,19 +300,43 @@ public enum GeodeticObjects {
     }
 
     /**
-     * Returns the prime meridian associated to the given object, or {@code null} if none.
+     * Returns the prime meridian associated to this geodetic object.
+     * The following table summarizes the prime meridians known to this class,
+     * together with an enumeration value that can be used for fetching that prime meridian:
+     *
+     * <blockquote><table class="sis">
+     *   <tr><th>Name or alias</th> <th>Enum</th>           <th>EPSG</th></tr>
+     *   <tr><td>Greenwich</td>     <td>{@link #WGS84}</td> <td>8901</td></tr>
+     * </table></blockquote>
+     *
+     * @return The prime meridian associated to this constant.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
+     * @see DatumAuthorityFactory#createPrimeMeridian(String)
      */
-    private static PrimeMeridian primeMeridian(final IdentifiedObject object) {
-        if (object instanceof PrimeMeridian) {
-            return (PrimeMeridian) object;
+    public PrimeMeridian primeMeridian() {
+        PrimeMeridian object = primeMeridian(cached);
+        if (object == null) {
+            synchronized (this) {
+                object = primeMeridian(cached);
+                if (object == null) {
+                    if (this != WGS84) {
+                        object = WGS84.primeMeridian(); // Share the same instance for all constants.
+                    } else {
+                        final DatumAuthorityFactory factory = StandardObjects.datumFactory();
+                        if (factory != null) try {
+                            cached = object = factory.createPrimeMeridian(StandardDefinitions.GREENWICH);
+                            return object;
+                        } catch (FactoryException e) {
+                            StandardObjects.failure(this, "primeMeridian", e);
+                        }
+                        object = StandardDefinitions.primeMeridian();
+                    }
+                    cached = object;
+                }
+            }
         }
-        if (object instanceof GeodeticDatum) {
-            return ((GeodeticDatum) object).getPrimeMeridian();
-        }
-        if (object instanceof GeodeticCRS) {
-            return ((GeodeticCRS) object).getDatum().getPrimeMeridian();
-        }
-        return null;
+        return object;
     }
 
     /**
@@ -367,6 +351,22 @@ public enum GeodeticObjects {
         }
         if (object instanceof GeodeticCRS) {
             return ((GeodeticCRS) object).getDatum().getEllipsoid();
+        }
+        return null;
+    }
+
+    /**
+     * Returns the prime meridian associated to the given object, or {@code null} if none.
+     */
+    private static PrimeMeridian primeMeridian(final IdentifiedObject object) {
+        if (object instanceof PrimeMeridian) {
+            return (PrimeMeridian) object;
+        }
+        if (object instanceof GeodeticDatum) {
+            return ((GeodeticDatum) object).getPrimeMeridian();
+        }
+        if (object instanceof GeodeticCRS) {
+            return ((GeodeticCRS) object).getDatum().getPrimeMeridian();
         }
         return null;
     }
