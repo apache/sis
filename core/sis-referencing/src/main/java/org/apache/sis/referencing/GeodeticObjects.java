@@ -104,7 +104,7 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    WGS84((short) 7030),
+    WGS84((short) 7030, (short) 6326),
 
     /**
      * World Geodetic System 1972.
@@ -120,7 +120,7 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    WGS72((short) 7043),
+    WGS72((short) 7043, (short) 6322),
 
     /**
      * European Terrestrial Reference System 1989.
@@ -142,7 +142,7 @@ public enum GeodeticObjects {
      *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses the NAD83 datum,
      *        while the <code>"IGNF:MILLER"</code> authority code uses the GRS80 datum.}
      */
-    ETRS89((short) 7019),
+    ETRS89((short) 7019, (short) 6258),
 
     /**
      * North American Datum 1983.
@@ -165,7 +165,7 @@ public enum GeodeticObjects {
      *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses the NAD83 datum,
      *        while the <code>"IGNF:MILLER"</code> authority code uses the GRS80 datum.}
      */
-    NAD83((short) 7019),
+    NAD83((short) 7019, (short) 6269),
 
     /**
      * North American Datum 1927.
@@ -181,7 +181,7 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    NAD27((short) 7008),
+    NAD27((short) 7008, (short) 6267),
 
     /**
      * European Datum 1950.
@@ -197,7 +197,7 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    ED50((short) 7022),
+    ED50((short) 7022, (short) 6230),
 
     /**
      * Unspecified datum based upon the GRS 1980 Authalic Sphere. Spheres use a simpler algorithm for
@@ -215,12 +215,17 @@ public enum GeodeticObjects {
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */
-    SPHERE((short) 7048);
+    SPHERE((short) 7048, (short) 6047);
 
     /**
      * The EPSG code of the ellipsoid.
      */
     final short ellipsoid;
+
+    /**
+     * The EPSG code of the datum.
+     */
+    final short datum;
 
     /**
      * The cached object. This is initially {@code null}, then set to various kind of objects depending
@@ -231,12 +236,13 @@ public enum GeodeticObjects {
 
     /**
      * Creates a new constant for the given EPSG or SIS codes.
-     * By convention, SIS codes are negative.
      *
      * @param ellipsoid The EPSG code for the ellipsoid.
+     * @param datum     The EPSG code for the datum.
      */
-    private GeodeticObjects(final short ellipsoid) {
+    private GeodeticObjects(final short ellipsoid, final short datum) {
         this.ellipsoid = ellipsoid;
+        this.datum     = datum;
     }
 
     /**
@@ -252,6 +258,48 @@ public enum GeodeticObjects {
      */
     synchronized void clear() {
         cached = null;
+    }
+
+    /**
+     * Returns the geodetic datum associated to this geodetic object.
+     * The following table summarizes the datums known to this class,
+     * together with an enumeration value that can be used for fetching that datum:
+     *
+     * <blockquote><table class="sis">
+     *   <tr><th>Name or alias</th>                                     <th>Enum</th>            <th>EPSG</th></tr>
+     *   <tr><td>European Datum 1950</td>                               <td>{@link #ED50}</td>   <td>6230</td></tr>
+     *   <tr><td>European Terrestrial Reference System 1989</td>        <td>{@link #ETRS89}</td> <td>6258</td></tr>
+     *   <tr><td>North American Datum 1927</td>                         <td>{@link #NAD27}</td>  <td>6267</td></tr>
+     *   <tr><td>North American Datum 1983</td>                         <td>{@link #NAD83}</td>  <td>6269</td></tr>
+     *   <tr><td>Not specified (based on GRS 1980 Authalic Sphere)</td> <td>{@link #SPHERE}</td> <td>6047</td></tr>
+     *   <tr><td>World Geodetic System 1972</td>                        <td>{@link #WGS72}</td>  <td>6322</td></tr>
+     *   <tr><td>World Geodetic System 1984</td>                        <td>{@link #WGS84}</td>  <td>6326</td></tr>
+     * </table></blockquote>
+     *
+     * @return The geodetic datum associated to this constant.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
+     * @see DatumAuthorityFactory#createGeodeticDatum(String)
+     */
+    public GeodeticDatum datum() {
+        GeodeticDatum object = datum(cached);
+        if (object == null) {
+            synchronized (this) {
+                object = datum(cached);
+                if (object == null) {
+                    final DatumAuthorityFactory factory = StandardObjects.datumFactory();
+                    if (factory != null) try {
+                        cached = object = factory.createGeodeticDatum(String.valueOf(datum));
+                        return object;
+                    } catch (FactoryException e) {
+                        StandardObjects.failure(this, "datum", e);
+                    }
+                    object = StandardDefinitions.createGeodeticDatum(datum, ellipsoid(), primeMeridian());
+                    cached = object;
+                }
+            }
+        }
+        return object;
     }
 
     /**
@@ -340,19 +388,27 @@ public enum GeodeticObjects {
     }
 
     /**
+     * Returns the datum associated to the given object, or {@code null} if none.
+     */
+    private static GeodeticDatum datum(final IdentifiedObject object) {
+        if (object instanceof GeodeticDatum) {
+            return (GeodeticDatum) object;
+        }
+        if (object instanceof GeodeticCRS) {
+            return ((GeodeticCRS) object).getDatum();
+        }
+        return null;
+    }
+
+    /**
      * Returns the ellipsoid associated to the given object, or {@code null} if none.
      */
     private static Ellipsoid ellipsoid(final IdentifiedObject object) {
         if (object instanceof Ellipsoid) {
             return (Ellipsoid) object;
         }
-        if (object instanceof GeodeticDatum) {
-            return ((GeodeticDatum) object).getEllipsoid();
-        }
-        if (object instanceof GeodeticCRS) {
-            return ((GeodeticCRS) object).getDatum().getEllipsoid();
-        }
-        return null;
+        final GeodeticDatum datum = datum(object);
+        return (datum != null) ? datum.getEllipsoid() : null;
     }
 
     /**
@@ -362,13 +418,8 @@ public enum GeodeticObjects {
         if (object instanceof PrimeMeridian) {
             return (PrimeMeridian) object;
         }
-        if (object instanceof GeodeticDatum) {
-            return ((GeodeticDatum) object).getPrimeMeridian();
-        }
-        if (object instanceof GeodeticCRS) {
-            return ((GeodeticCRS) object).getDatum().getPrimeMeridian();
-        }
-        return null;
+        final GeodeticDatum datum = datum(object);
+        return (datum != null) ? datum.getPrimeMeridian() : null;
     }
 
 
