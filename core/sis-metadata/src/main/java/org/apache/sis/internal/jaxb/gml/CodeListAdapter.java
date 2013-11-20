@@ -41,23 +41,6 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
     }
 
     /**
-     * Forces the initialization of the given code list class, since some
-     * calls to {@link CodeList#valueOf} are done whereas the constructor
-     * has not already been called.
-     *
-     * @param <T>  The code list type.
-     * @param type The code list class to initialize.
-     */
-    protected static <T extends CodeList<T>> void ensureClassLoaded(final Class<T> type) {
-        final String name = type.getName();
-        try {
-            Class.forName(name, true, type.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            throw new TypeNotPresentException(name, ex); // Should never happen.
-        }
-    }
-
-    /**
      * Returns the class of code list wrapped by this adapter.
      *
      * @return The code list class.
