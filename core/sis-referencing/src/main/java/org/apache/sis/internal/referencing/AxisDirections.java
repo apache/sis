@@ -20,9 +20,11 @@ import java.util.Map;
 import java.util.HashMap;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.Static;
 
 import static org.opengis.referencing.cs.AxisDirection.*;
+import static org.apache.sis.util.CharSequences.*;
 
 // Related to JDK7
 import java.util.Objects;
@@ -173,5 +175,107 @@ public final class AxisDirections extends Static {
             }
         }
         return fallback;
+    }
+
+    /**
+     * Searches for a axis direction having the given name in the specified list of directions.
+     * This method compares the given name with the name of each {@code AxisDirection} in a lenient way:
+     *
+     * <ul>
+     *   <li>Comparisons are case-insensitive.</li>
+     *   <li>Any character which is not a letter or a digit is ignored. For example {@code "NorthEast"},
+     *       {@code "North-East"} and {@code "NORTH_EAST"} are considered equivalent.</li>
+     *   <li>This method accepts abbreviations as well, for example if the given {@code name} is {@code "W"},
+     *       then it will be considered equivalent to {@code "WEST"}.</li>
+     * </ul>
+     *
+     * @param  name The name of the axis direction to search.
+     * @param  directions The list of axis directions in which to search.
+     * @return The first axis direction having a name matching the given one, or {@code null} if none.
+     */
+    public static AxisDirection find(final String name, final AxisDirection[] directions) {
+        for (final AxisDirection candidate : directions) {
+            final String identifier = candidate.name();
+            if (equalsFiltered(name, identifier, Characters.Filter.LETTERS_AND_DIGITS, true)
+                    || isAcronymForWords(name, identifier))
+            {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Searches pre-defined {@link AxisDirection} for a given name. This method searches for a match in the set
+     * of known axis directions as returned by {@link AxisDirections#values()}, plus a few special cases like
+     * "<cite>Geocentre &gt; equator/90°E</cite>". The later are used in the EPSG database for geocentric CRS.
+     *
+     * <p>This method does not know about {@link DirectionAlongMeridian}. The later is a parser which may create
+     * new directions, while this method searches only in a set of predefined directions and never create new ones.</p>
+     *
+     * @param  name The name of the axis direction to search.
+     * @return The first axis direction having a name matching the given one, or {@code null} if none.
+     */
+    public static AxisDirection valueOf(String name) {
+        name = trimWhitespaces(name.replace('_', ' '));
+        final AxisDirection[] directions = AxisDirection.values();
+        AxisDirection candidate = find(name, directions);
+        if (candidate == null) {
+            /*
+             * No match found when using the pre-defined axis name. Searches among
+             * the set of geocentric directions. Expected directions are:
+             *
+             *    Geocentre > equator/PM      or    Geocentre > equator/0°E
+             *    Geocentre > equator/90dE    or    Geocentre > equator/90°E
+             *    Geocentre > north pole
+             */
+            int d = name.indexOf('>');
+            if (d >= 0 && equalsIgnoreCase(name, 0, skipTrailingWhitespaces(name, 0, d), "Geocentre")) {
+                final int length = name.length();
+                d = skipLeadingWhitespaces(name, d+1, length);
+                int s = name.indexOf('/', d);
+                if (s < 0) {
+                    if (equalsIgnoreCase(name, d, length, "north pole")) {
+                        return GEOCENTRIC_Z; // "Geocentre > north pole"
+                    }
+                } else if (equalsIgnoreCase(name, d, skipTrailingWhitespaces(name, d, s), "equator")) {
+                    s = skipLeadingWhitespaces(name, s+1, length);
+                    if (equalsIgnoreCase(name, s, length, "PM")) {
+                        return GEOCENTRIC_X; // "Geocentre > equator/PM"
+                    }
+                    /*
+                     * At this point, the name may be "Geocentre > equator/0°E",
+                     * "Geocentre > equator/90°E" or "Geocentre > equator/90dE".
+                     * Parse the number, limiting the scan to 6 characters for
+                     * avoiding a NumberFormatException.
+                     */
+                    final int stopAt = Math.min(s + 6, length);
+                    for (int i=s; i<stopAt; i++) {
+                        final char c = name.charAt(i);
+                        if (c < '0' || c > '9') {
+                            if (i == s) break;
+                            final int n = Integer.parseInt(name.substring(s, i));
+                            i = skipLeadingWhitespaces(name, i, length);
+                            if (equalsIgnoreCase(name, i, length, "°E") || equalsIgnoreCase(name, i, length, "dE")) {
+                                switch (n) {
+                                    case  0: return GEOCENTRIC_X; // "Geocentre > equator/0°E"
+                                    case 90: return GEOCENTRIC_Y; // "Geocentre > equator/90°E"
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return candidate;
+    }
+
+    /**
+     * Returns {@code true} if the given sub-sequence is equal to the given keyword, ignoring case.
+     */
+    private static boolean equalsIgnoreCase(final String name, final int lower, final int upper, final String keyword) {
+        final int length = upper - lower;
+        return (length == keyword.length()) && name.regionMatches(true, lower, keyword, 0, length);
     }
 }
