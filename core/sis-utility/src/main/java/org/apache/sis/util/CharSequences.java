@@ -1561,8 +1561,8 @@ cmp:    while (ia < lga) {
     }
 
     /**
-     * Returns {@code true} if the given texts are equal, optionally ignoring case and filtered-out
-     * characters. This method is sometime used for comparing identifiers in a lenient way.
+     * Returns {@code true} if the given texts are equal, optionally ignoring case and filtered-out characters.
+     * This method is sometime used for comparing identifiers in a lenient way.
      *
      * <p><b>Example:</b> the following call compares the two strings ignoring case and any
      * characters which are not {@linkplain Character#isLetterOrDigit(int) letter or digit}.
@@ -1570,7 +1570,7 @@ cmp:    while (ia < lga) {
      * ignored:</p>
      *
      * {@preformat java
-     *     assert equals("WGS84", "WGS_84", Characters.Filter.LETTERS_AND_DIGITS, true) == true;
+     *     assert equalsFiltered("WGS84", "WGS_84", Characters.Filter.LETTERS_AND_DIGITS, true) == true;
      * }
      *
      * @param  s1 The first string to compare, or {@code null}.

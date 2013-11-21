@@ -43,6 +43,7 @@ import org.junit.BeforeClass;
 
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
+    org.apache.sis.internal.referencing.AxisDirectionsTest.class,
     org.apache.sis.io.wkt.ConventionTest.class,
     org.apache.sis.io.wkt.SymbolsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
@@ -55,7 +56,6 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.datum.DefaultPrimeMeridianTest.class,
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class,
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class,
-    org.apache.sis.referencing.cs.DirectionsTest.class,
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.GeodeticObjectsTest.class,
 
