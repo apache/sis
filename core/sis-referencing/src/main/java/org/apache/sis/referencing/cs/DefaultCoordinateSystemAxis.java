@@ -465,7 +465,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Compares the specified object with this axis for equality, with optional comparison of units.
      * Units shall always be compared (they are not just metadata), except in the particular case of
      * {@link CoordinateSystems#axisColinearWith}, which is used as a first step toward units conversions
-     * through {@link CoordinateSystems#swapAndScaleAxis}.
+     * through {@link CoordinateSystems#swapAndScaleAxes}.
      */
     final boolean equals(final DefaultCoordinateSystemAxis that,
                          final boolean compareMetadata, final boolean compareUnit)

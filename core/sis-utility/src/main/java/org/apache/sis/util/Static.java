@@ -43,6 +43,10 @@ package org.apache.sis.util;
  * <tr><th colspan="2" class="hsep">Mathematics and units of measurement</th></tr>
  * <tr><td>{@link org.apache.sis.math.MathFunctions}</td>
  *     <td>Additions to the {@link java.lang.Math} methods.</td></tr>
+ * <tr><td>{@link org.apache.sis.math.DecimalFunctions}</td>
+ *     <td>Mathematical methods related to base 10 representation of numbers.</td></tr>
+ * <tr><td>{@link org.apache.sis.referencing.operation.matrix.Matrices}</td>
+ *     <td>Creates and compares {@link org.opengis.referencing.operation.Matrix} objects</td></tr>
  * <tr><td>{@link org.apache.sis.measure.Units}</td>
  *     <td>Get a {@linkplain javax.measure.unit.Unit unit} from a symbol or EPSG code,
  *         and test if a unit is angular, linear or temporal.</td></tr>
@@ -50,13 +54,18 @@ package org.apache.sis.util;
  * <tr><th colspan="2" class="hsep">OGC/ISO objects (metadata, referencing, geometries)</th></tr>
  * <tr><td>{@link org.apache.sis.util.iso.Types}</td>
  *     <td>Provide UML identifier and description for GeoAPI types.</td></tr>
+ * <tr><td>{@link org.apache.sis.metadata.iso.citation.Citations}</td>
+ *     <td>Pre-defined {@link org.opengis.metadata.citation.Citation}
+ *         and methods for comparing against titles or identifiers.</td></tr>
  * <tr><td>{@link org.apache.sis.metadata.iso.extent.Extents}</td>
  *     <td>Extract information from {@link org.opengis.metadata.extent.Extent} objects.</td></tr>
  * <tr><td>{@link org.apache.sis.geometry.Envelopes}</td>
- *     <td>Parse, format and transform {@linkplain org.opengis.geometry.Envelope envelopes}.</td></tr>
+ *     <td>Parse, format and transform {@link org.opengis.geometry.Envelope} objects.</td></tr>
  * <tr><td>{@link org.apache.sis.referencing.IdentifiedObjects}</td>
  *     <td>Handle names, identifiers or properties of
- *         {@linkplain org.opengis.referencing.IdentifiedObject identified objects}.</td></tr>
+ *         {@link org.opengis.referencing.IdentifiedObject}s.</td></tr>
+ * <tr><td>{@link org.apache.sis.referencing.cs.CoordinateSystems}</td>
+ *     <td>Creates transforms between {@link org.opengis.referencing.cs.CoordinateSystem}s.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
  * <tr><td>{@link org.apache.sis.io.IO}</td>

@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.matrix;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -321,6 +322,7 @@ public final class Matrices extends Static {
      *
      * @see #createTransform(AxisDirection[], AxisDirection[])
      * @see #createTransform(Envelope, AxisDirection[], Envelope, AxisDirection[])
+     * @see org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)
      */
     public static MatrixSIS createTransform(final Envelope srcEnvelope, final Envelope dstEnvelope) {
         ArgumentChecks.ensureNonNull("srcEnvelope", srcEnvelope);
@@ -398,6 +400,7 @@ public final class Matrices extends Static {
      *
      * @see #createTransform(Envelope, Envelope)
      * @see #createTransform(Envelope, AxisDirection[], Envelope, AxisDirection[])
+     * @see org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)
      */
     public static MatrixSIS createTransform(final AxisDirection[] srcAxes, final AxisDirection[] dstAxes) {
         ArgumentChecks.ensureNonNull("srcAxes", srcAxes);
@@ -461,6 +464,7 @@ public final class Matrices extends Static {
      *
      * @see #createTransform(Envelope, Envelope)
      * @see #createTransform(AxisDirection[], AxisDirection[])
+     * @see org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)
      */
     public static MatrixSIS createTransform(final Envelope srcEnvelope, final AxisDirection[] srcAxes,
                                             final Envelope dstEnvelope, final AxisDirection[] dstAxes)
