@@ -32,7 +32,9 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 
+import static java.util.Collections.singletonMap;
 import static javax.measure.unit.NonSI.DEGREE_ANGLE;
+import static org.opengis.referencing.cs.CoordinateSystemAxis.NAME_KEY;
 
 
 /**
@@ -210,9 +212,9 @@ public enum Convention {
      * in metres, where the "Other" axis is toward prime meridian.
      */
     private static final DefaultCartesianCS LEGACY = new DefaultCartesianCS("Legacy",
-            new DefaultCoordinateSystemAxis("X", AxisDirection.OTHER, SI.METRE),
-            new DefaultCoordinateSystemAxis("Y", AxisDirection.EAST,  SI.METRE),
-            new DefaultCoordinateSystemAxis("Z", AxisDirection.NORTH, SI.METRE));
+            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Geocentric X"), "X", AxisDirection.OTHER, SI.METRE),
+            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Geocentric Y"), "Y", AxisDirection.EAST,  SI.METRE),
+            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Geocentric Z"), "Z", AxisDirection.NORTH, SI.METRE));
 
     /**
      * If non-null, forces {@code PRIMEM} and {@code PARAMETER} angular units to this field

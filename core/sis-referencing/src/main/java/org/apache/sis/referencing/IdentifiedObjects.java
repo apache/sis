@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.Collection;
 
 import org.opengis.util.NameSpace;
-import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
