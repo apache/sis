@@ -51,6 +51,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.LocalesTest.class,
     org.apache.sis.util.resources.LoaderTest.class,
     org.apache.sis.util.resources.IndexedResourceBundleTest.class,
+    org.apache.sis.util.ArgumentChecksTest.class, // Uses resources.
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.util.logging.WarningListenersTest.class,
     org.apache.sis.util.logging.MonolineFormatterTest.class,

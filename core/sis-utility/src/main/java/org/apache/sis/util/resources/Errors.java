@@ -226,6 +226,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalArgumentValue_2 = 14;
 
         /**
+         * Coordinate system of class ‘{0}’ can not have axis in the {1} direction.
+         */
+        public static final int IllegalAxisDirection_2 = 128;
+
+        /**
          * Illegal bits pattern: {0}.
          */
         public static final int IllegalBitsPattern_1 = 16;
@@ -274,6 +279,16 @@ public final class Errors extends IndexedResourceBundle {
          * Value {1} for “{0}” is not a valid Unicode code point.
          */
         public static final int IllegalUnicodeCodePoint_2 = 112;
+
+        /**
+         * Unit of measurement “{1}” is not valid for “{0}” values.
+         */
+        public static final int IllegalUnitFor_2 = 129;
+
+        /**
+         * Incompatible coordinate system types.
+         */
+        public static final int IncompatibleCoordinateSystemTypes = 130;
 
         /**
          * Property “{0}” has an incompatible value.
@@ -464,6 +479,11 @@ public final class Errors extends IndexedResourceBundle {
          * Transform is not invertible.
          */
         public static final int NonInvertibleTransform = 83;
+
+        /**
+         * Unit conversion from “{0}” to “{1}” is non-linear.
+         */
+        public static final int NonLinearUnitConversion_2 = 131;
 
         /**
          * “{0}” is not a linear unit.
