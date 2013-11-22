@@ -16,11 +16,19 @@
  */
 
 /**
- * {@linkplain org.apache.sis.referencing.datum.AbstractDatum Datum} implementations. An explanation
- * for this package is provided in the {@linkplain org.opengis.referencing.datum OpenGIS® javadoc}.
+ * Relationship of a {@code CoordinateSystem} (an abstract mathematical entity) to the earth or other system.
+ * An explanation for this package is provided in the {@linkplain org.opengis.referencing.datum OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * <p>Some worthy methods defined in this package are:</p>
+ * <p>The root class in this package is {@link org.apache.sis.referencing.datum.AbstractDatum}.
+ * Various subclasses are defined for various kinds of relationship to the Earth or time
+ * ({@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic},
+ *  {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum vertical},
+ *  {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum temporal}),
+ * or to platforms (mobile or not)
+ * ({@linkplain org.apache.sis.referencing.datum.DefaultEngineeringDatum engineering},
+ *  {@linkplain org.apache.sis.referencing.datum.DefaultImageDatum image}).
+ * Some worthy methods defined in this package are:</p>
  * <ul>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#orthodromicDistance(double, double, double, double)}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPositionVectorTransformation

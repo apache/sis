@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation} implementation.
+ * Reference to the data or service (citation, responsible party, contact information).
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.citation OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *

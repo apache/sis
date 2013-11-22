@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints Constraints} implementation.
+ * Information about legal and security constraints placed on data.
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.constraint OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *

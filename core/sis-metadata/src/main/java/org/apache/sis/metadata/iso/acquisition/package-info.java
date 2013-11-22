@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition} implementation.
+ * Information about the measuring instruments, the platform carrying them, and the mission to which the data contributes.
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.acquisition OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
