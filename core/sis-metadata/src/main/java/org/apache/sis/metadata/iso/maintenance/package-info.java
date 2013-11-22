@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultMaintenanceInformation Maintenance information} implementation.
+ * Information about the frequency and scope of data updates.
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.maintenance OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *

@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.opengis.referencing.operation.Matrix} implementations for spatio-temporal referencing.
+ * Matrix implementations for spatio-temporal referencing.
  * Matrices can be of arbitrary size, but the most common ones in the context of geospatial coordinate operations
  * are not greater than 5×5 (number of spatio-temporal dimensions + 1).
  * This package differs from other matrix packages by:
