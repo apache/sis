@@ -63,9 +63,10 @@ package org.apache.sis.util;
  *     <td>Parse, format and transform {@link org.opengis.geometry.Envelope} objects.</td></tr>
  * <tr><td>{@link org.apache.sis.referencing.IdentifiedObjects}</td>
  *     <td>Handle names, identifiers or properties of
- *         {@link org.opengis.referencing.IdentifiedObject}s.</td></tr>
+ *         {@link org.opengis.referencing.IdentifiedObject} instances.</td></tr>
  * <tr><td>{@link org.apache.sis.referencing.cs.CoordinateSystems}</td>
- *     <td>Creates transforms between {@link org.opengis.referencing.cs.CoordinateSystem}s.</td></tr>
+ *     <td>Parses axis names and creates transforms between {@link org.opengis.referencing.cs.CoordinateSystem}
+ *         instances.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
  * <tr><td>{@link org.apache.sis.io.IO}</td>

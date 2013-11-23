@@ -32,14 +32,22 @@ import org.apache.sis.util.Immutable;
  * the coordinate system contains a single straight coordinate axis. All axes shall have the
  * same linear unit of measure.
  *
- * <table class="sis">
- * <tr><th>Used with CRS type(s)</th></tr>
- * <tr><td>
- *   {@linkplain org.geotoolkit.referencing.crs.DefaultGeocentricCRS  Geocentric},
- *   {@linkplain org.geotoolkit.referencing.crs.DefaultProjectedCRS   Projected},
- *   {@linkplain org.geotoolkit.referencing.crs.DefaultEngineeringCRS Engineering},
- *   {@linkplain org.geotoolkit.referencing.crs.DefaultImageCRS       Image}
- * </td></tr></table>
+ * <table class="sis"><tr>
+ *   <th>Used with CRS types</th>
+ *   <th>Permitted axis names</th>
+ * </tr><tr>
+ *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultGeocentricCRS Geocentric}</td>
+ *   <td>“Geocentric X”, “Geocentric Y”, “Geocentric Z”</td>
+ * </tr><tr>
+ *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultProjectedCRS Projected}</td>
+ *   <td>“Easting” or “Westing”, “Northing” or “Southing”</td>
+ * </tr><tr>
+ *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultEngineeringCRS Engineering}</td>
+ *   <td>(unspecified)</td>
+ * </tr><tr>
+ *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultImageCRS Image}</td>
+ *   <td>(unspecified)</td>
+ * </tr></table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
@@ -53,6 +61,7 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      */
     private static final long serialVersionUID = -6182037957705712945L;
 
+    @Deprecated
     public static final DefaultCartesianCS GEOCENTRIC = null; // TODO: Not supported yet.
 
     /**
@@ -74,6 +83,35 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * Constructs a two-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
+     * The following table is a reminder of main (not all) properties:
+     *
+     * <table class="sis">
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link #getAlias()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link #getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getRemarks()}</td>
+     *   </tr>
+     * </table>
      *
      * @param properties The properties to be given to the identified object.
      * @param axis0 The first axis.

@@ -124,7 +124,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
-     *     <td>{@link Extent}</td>
+     *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>

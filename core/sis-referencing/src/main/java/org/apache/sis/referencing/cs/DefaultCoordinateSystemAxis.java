@@ -55,13 +55,10 @@ import java.util.Objects;
  * {@section Axis names}
  * In some case, the axis name is constrained by ISO 19111 depending on the
  * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system} type.
- * These constraints are identified in the javadoc by "<cite>ISO 19111 name is...</cite>" sentences.
- * This constraint works in two directions; for example the names "<cite>geodetic latitude</cite>" and
+ * This constraint works in two directions. For example the names "<cite>geodetic latitude</cite>" and
  * "<cite>geodetic longitude</cite>" shall be used to designate the coordinate axis names associated
- * with a {@linkplain org.opengis.referencing.crs.GeographicCRS geographic coordinate reference system}.
- * Conversely, these names shall not be used in any other context.
- * See the GeoAPI {@linkplain org.opengis.referencing.cs#AxisNames axis name constraints} section
- * for more information.
+ * with a {@link org.opengis.referencing.crs.GeographicCRS}. Conversely, these names shall not be used
+ * in any other context. See the GeoAPI {@link CoordinateSystemAxis} javadoc for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
