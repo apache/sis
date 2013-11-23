@@ -26,6 +26,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Immutable;
+import org.apache.sis.util.ComparisonMode;
 
 
 /**
@@ -147,5 +148,22 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
     final boolean isCompatibleUnit(final AxisDirection direction, final Unit<?> unit) {
         return Units.isLinear(unit) || Unit.ONE.equals(unit);
         // Note: this condition is also coded in PredefinedCS.rightHanded(AffineCS).
+    }
+
+    /**
+     * Compares this coordinate system with the specified object for equality.
+     *
+     * @param  object The object to compare to {@code this}.
+     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
+     *         relevant to transformations.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true; // Slight optimization.
+        }
+        return (object instanceof AffineCS) && super.equals(object, mode);
     }
 }
