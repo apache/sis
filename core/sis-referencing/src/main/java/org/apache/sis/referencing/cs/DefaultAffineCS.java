@@ -17,25 +17,23 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
+import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
+import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.Immutable;
 
 
 /**
- * A 1-, 2-, or 3-dimensional Cartesian coordinate system. The position of points are relative
- * to orthogonal straight axes in the 2- and 3-dimensional cases. In the 1-dimensional case,
- * the coordinate system contains a single straight coordinate axis. All axes shall have the
- * same linear unit of measure.
+ * A 2- or 3-dimensional coordinate system with straight axes that are not necessarily orthogonal.
  *
  * <table class="sis">
  * <tr><th>Used with CRS type(s)</th></tr>
  * <tr><td>
- *   {@linkplain org.geotoolkit.referencing.crs.DefaultGeocentricCRS  Geocentric},
- *   {@linkplain org.geotoolkit.referencing.crs.DefaultProjectedCRS   Projected},
  *   {@linkplain org.geotoolkit.referencing.crs.DefaultEngineeringCRS Engineering},
  *   {@linkplain org.geotoolkit.referencing.crs.DefaultImageCRS       Image}
  * </td></tr></table>
@@ -46,27 +44,18 @@ import org.apache.sis.util.Immutable;
  * @module
  */
 @Immutable
-public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
+public class DefaultAffineCS extends AbstractCS implements AffineCS {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -6182037957705712945L;
-
-    public static final DefaultCartesianCS GEOCENTRIC = null; // TODO: Not supported yet.
+    private static final long serialVersionUID = 7977674229369042440L;
 
     /**
-     * Constructs a one-dimensional coordinate system from a set of properties.
-     * The properties map is given unchanged to the
-     * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
-     *
-     * @param properties The properties to be given to the identified object.
-     * @param axis The axis.
+     * Constructs a coordinate system of arbitrary dimension. This constructor is
+     * not public because {@code AffineCS} are restricted to 2 and 3 dimensions.
      */
-    public DefaultCartesianCS(final Map<String,?>   properties,
-                              final CoordinateSystemAxis axis)
-    {
-        super(properties, new CoordinateSystemAxis[] {axis});
-        ensurePerpendicularAxis();
+    DefaultAffineCS(final Map<String,?> properties, final CoordinateSystemAxis[] axis) {
+        super(properties, axis);
     }
 
     /**
@@ -78,31 +67,28 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * @param axis0 The first axis.
      * @param axis1 The second axis.
      */
-    public DefaultCartesianCS(final Map<String,?>   properties,
-                              final CoordinateSystemAxis axis0,
-                              final CoordinateSystemAxis axis1)
+    public DefaultAffineCS(final Map<String,?>   properties,
+                           final CoordinateSystemAxis axis0,
+                           final CoordinateSystemAxis axis1)
     {
         super(properties, axis0, axis1);
-        ensurePerpendicularAxis();
     }
 
     /**
      * Constructs a three-dimensional coordinate system from a set of properties.
-     * The properties map is given unchanged to the
-     * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
+     * The properties map is given unchanged to the superclass constructor.
      *
      * @param properties The properties to be given to the identified object.
      * @param axis0 The first axis.
      * @param axis1 The second axis.
      * @param axis2 The third axis.
      */
-    public DefaultCartesianCS(final Map<String,?>   properties,
-                              final CoordinateSystemAxis axis0,
-                              final CoordinateSystemAxis axis1,
-                              final CoordinateSystemAxis axis2)
+    public DefaultAffineCS(final Map<String,?>   properties,
+                           final CoordinateSystemAxis axis0,
+                           final CoordinateSystemAxis axis1,
+                           final CoordinateSystemAxis axis2)
     {
         super(properties, axis0, axis1, axis2);
-        ensurePerpendicularAxis();
     }
 
     /**
@@ -114,11 +100,10 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      *
      * @param cs The coordinate system to copy.
      *
-     * @see #castOrCopy(CartesianCS)
+     * @see #castOrCopy(AffineCS)
      */
-    protected DefaultCartesianCS(final CartesianCS cs) {
+    protected DefaultAffineCS(final AffineCS cs) {
         super(cs);
-        ensurePerpendicularAxis();
     }
 
     /**
@@ -128,30 +113,39 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
      * attribute values of the given object.
      *
+     * <p>This method checks for the {@link CartesianCS} sub-interface. If that interface is found,
+     * then this method delegates to the corresponding {@code castOrCopy} static method.</p>
+     *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultCartesianCS castOrCopy(final CartesianCS object) {
-        return (object == null) || (object instanceof DefaultCartesianCS)
-                ? (DefaultCartesianCS) object : new DefaultCartesianCS(object);
+    public static DefaultAffineCS castOrCopy(final AffineCS object) {
+        if (object instanceof CartesianCS) {
+            return DefaultCartesianCS.castOrCopy((CartesianCS) object);
+        }
+        return (object == null) || (object instanceof DefaultAffineCS)
+                ? (DefaultAffineCS) object : new DefaultAffineCS(object);
     }
 
     /**
-     * Ensures that all axes are perpendicular.
+     * Returns {@code true} if the given axis direction is allowed for this coordinate system.
+     * The default implementation accepts all directions except temporal ones
+     * (i.e. {@link AxisDirection#FUTURE FUTURE} and {@link AxisDirection#PAST PAST}).
      */
-    private void ensurePerpendicularAxis() throws IllegalArgumentException {
-        final int dimension = getDimension();
-        for (int i=0; i<dimension; i++) {
-            final AxisDirection axis0 = getAxis(i).getDirection();
-            for (int j=i; ++j<dimension;) {
-                final AxisDirection axis1 = getAxis(j).getDirection();
-                final double angle = CoordinateSystems.angle(axis0, axis1); // May be NaN, which we accept.
-                if (Math.abs(Math.abs(angle) - 90) > Formulas.ANGULAR_TOLERANCE) {
-                    throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.NonPerpendicularDirections_2, axis0, axis1));
-                }
-            }
-        }
+    @Override
+    final boolean isCompatibleDirection(final AxisDirection direction) {
+        return !AxisDirection.FUTURE.equals(AxisDirections.absolute(direction));
+    }
+
+    /**
+     * Returns {@code true} if the given unit is compatible with {@linkplain SI#METRE metres}.
+     * In addition, this method also accepts {@link Unit#ONE}, which is used for coordinates in a grid.
+     * This method is invoked at construction time for checking units compatibility.
+     */
+    @Override
+    final boolean isCompatibleUnit(final AxisDirection direction, final Unit<?> unit) {
+        return Units.isLinear(unit) || Unit.ONE.equals(unit);
+        // Note: this condition is also coded in PredefinedCS.rightHanded(AffineCS).
     }
 }

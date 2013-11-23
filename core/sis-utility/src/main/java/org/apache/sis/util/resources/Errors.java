@@ -491,6 +491,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NonLinearUnit_1 = 47;
 
         /**
+         * Axis directions {0} and {1} are not perpendicular.
+         */
+        public static final int NonPerpendicularDirections_2 = 132;
+
+        /**
          * “{0}” is not a scale unit.
          */
         public static final int NonScaleUnit_1 = 48;

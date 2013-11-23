@@ -31,12 +31,14 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
 // Related to JDK7
 import java.util.Objects;
 
 
 /**
- * Utility methods working on {@link CoordinateSystem} objects.
+ * Utility methods working on {@link CoordinateSystem} objects and their axes.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
@@ -45,9 +47,75 @@ import java.util.Objects;
  */
 public final class CoordinateSystems extends Static {
     /**
+     * Number of directions from "North", "North-North-East", "North-East", etc.
+     */
+    static final int COMPASS_DIRECTION_COUNT = 16;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private CoordinateSystems() {
+    }
+
+    /**
+     * Returns the arithmetic (counterclockwise) angle from the first axis direction to the second direction,
+     * in decimal <strong>degrees</strong>. This method returns a value between -180° and +180°,
+     * or {@link Double#NaN NaN} if no angle can be computed.
+     *
+     * <p>A positive angle denotes a right-handed system, while a negative angle denotes a left-handed system.
+     * Example:</p>
+     *
+     * <ul>
+     *   <li>The angle from {@link AxisDirection#EAST EAST} to {@link AxisDirection#NORTH NORTH} is 90°</li>
+     *   <li>The angle from {@link AxisDirection#SOUTH SOUTH} to {@link AxisDirection#WEST WEST} is -90°</li>
+     *   <li>The angle from "<cite>North along 90° East</cite>" to "<cite>North along 0°</cite>" is 90°.</li>
+     * </ul>
+     *
+     * @param  source The source axis direction.
+     * @param  target The target axis direction.
+     * @return The arithmetic angle (in degrees) of the rotation to apply on a line pointing toward
+     *         the source direction in order to make it point toward the target direction, or
+     *         {@link Double#NaN} if this value can not be computed.
+     */
+    public static double angle(final AxisDirection source, final AxisDirection target) {
+        ensureNonNull("source", source);
+        ensureNonNull("target", target);
+        // Tests for NORTH, SOUTH, EAST, EAST-NORTH-EAST, etc. directions.
+        final int compass = getCompassAngle(source, target);
+        if (compass != Integer.MIN_VALUE) {
+            return compass * (360.0 / COMPASS_DIRECTION_COUNT);
+        }
+        // Tests for "South along 90 deg East", etc. directions.
+        final DirectionAlongMeridian src = DirectionAlongMeridian.parse(source);
+        if (src != null) {
+            final DirectionAlongMeridian tgt = DirectionAlongMeridian.parse(target);
+            if (tgt != null) {
+                return src.getAngle(tgt);
+            }
+        }
+        return Double.NaN;
+    }
+
+    /**
+     * Tests for angle on compass only (do not tests angle between direction along meridians).
+     * Returns {@link Integer#MIN_VALUE} if the angle can't be computed.
+     */
+    static int getCompassAngle(final AxisDirection source, final AxisDirection target) {
+        final int base = AxisDirection.NORTH.ordinal();
+        final int src  = source.ordinal() - base;
+        if (src >= 0 && src < COMPASS_DIRECTION_COUNT) {
+            int tgt = target.ordinal() - base;
+            if (tgt >= 0 && tgt < COMPASS_DIRECTION_COUNT) {
+                tgt = src - tgt;
+                if (tgt < -COMPASS_DIRECTION_COUNT/2) {
+                    tgt += COMPASS_DIRECTION_COUNT;
+                } else if (tgt > COMPASS_DIRECTION_COUNT/2) {
+                    tgt -= COMPASS_DIRECTION_COUNT;
+                }
+                return tgt;
+            }
+        }
+        return Integer.MIN_VALUE;
     }
 
     /**
