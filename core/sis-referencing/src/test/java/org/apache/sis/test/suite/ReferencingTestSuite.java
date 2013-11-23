@@ -57,6 +57,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class,
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class,
     org.apache.sis.referencing.cs.DirectionAlongMeridianTest.class,
+    org.apache.sis.referencing.cs.CoordinateSystemsTest.class,
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.GeodeticObjectsTest.class,
 

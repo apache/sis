@@ -127,12 +127,12 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
-     *     <td>{@link Date}</td>
+     *     <td>{@link java.util.Date}</td>
      *     <td>{@link #getRealizationEpoch()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
-     *     <td>{@link Extent}</td>
+     *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>

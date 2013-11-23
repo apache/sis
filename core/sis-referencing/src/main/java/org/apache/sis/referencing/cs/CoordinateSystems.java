@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Arrays;
-import java.util.NoSuchElementException;
 import javax.measure.unit.Unit;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.LinearConverter;
