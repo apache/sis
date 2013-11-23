@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import javax.measure.unit.Unit;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.LinearConverter;
@@ -27,7 +28,9 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
@@ -55,6 +58,47 @@ public final class CoordinateSystems extends Static {
      * Do not allow instantiation of this class.
      */
     private CoordinateSystems() {
+    }
+
+    /**
+     * Returns an axis direction code from the given direction name.
+     * Names are case-insensitive. They may be:
+     *
+     * <ul>
+     *   <li>Cardinal directions like "<cite>north</cite>" and "<cite>east</cite>".</li>
+     *   <li>Inter-cardinal directions "<cite>north-east</cite>" and "<cite>south-south-east</cite>",
+     *       using either {@code '-'}, {@code '_'} or spaces as separator between the cardinal points.</li>
+     *   <li>Directions from a pole like "<cite>South along 180 deg</cite>" and "<cite>South along 90° East</cite>",
+     *       using either the {@code "deg"} or {@code "°"} symbol.</li>
+     * </ul>
+     *
+     * @param  name The direction name (e.g. "north", "north-east", <i>etc.</i>).
+     * @return The axis direction for the given name.
+     * @throws NoSuchElementException if the given name is not a known axis direction.
+     */
+    public static AxisDirection directionOf(String name) throws NoSuchElementException {
+        ensureNonNull("direction", name);
+        name = CharSequences.trimWhitespaces(name);
+        AxisDirection candidate = AxisDirections.valueOf(name);
+        if (candidate != null) {
+            return candidate;
+        }
+        /*
+         * Some EPSG direction names are of the form "South along 180 deg". We check that the
+         * direction before "along" is valid and create a new axis direction if it is. We can
+         * not just replace "South along 180 deg" by "South" because the same CRS may use two
+         * of those directions. For example EPSG:32661 has the following axis direction:
+         *
+         * South along 180 deg
+         * South along 90 deg East
+         */
+        final DirectionAlongMeridian meridian = DirectionAlongMeridian.parse(name);
+        if (meridian != null) {
+            candidate = meridian.getDirection();
+            assert candidate == AxisDirections.valueOf(meridian.toString());
+            return candidate;
+        }
+        throw new NoSuchElementException(Errors.format(Errors.Keys.UnknownAxisDirection_1, name));
     }
 
     /**
