@@ -211,7 +211,7 @@ public enum Convention {
      * <var>{@linkplain DefaultCoordinateSystemAxis#NORTHING Northing}</var>
      * in metres, where the "Other" axis is toward prime meridian.
      */
-    private static final DefaultCartesianCS LEGACY = new DefaultCartesianCS("Legacy",
+    private static final DefaultCartesianCS LEGACY = new DefaultCartesianCS(singletonMap(NAME_KEY, "Legacy geocentric"),
             new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Geocentric X"), "X", AxisDirection.OTHER, SI.METRE),
             new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Geocentric Y"), "Y", AxisDirection.EAST,  SI.METRE),
             new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Geocentric Z"), "Z", AxisDirection.NORTH, SI.METRE));
