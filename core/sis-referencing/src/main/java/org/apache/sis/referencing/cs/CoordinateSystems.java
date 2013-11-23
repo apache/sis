@@ -74,10 +74,10 @@ public final class CoordinateSystems extends Static {
      *
      * @param  name The direction name (e.g. "north", "north-east", <i>etc.</i>).
      * @return The axis direction for the given name.
-     * @throws NoSuchElementException if the given name is not a known axis direction.
+     * @throws IllegalArgumentException if the given name is not a known axis direction.
      */
-    public static AxisDirection directionOf(String name) throws NoSuchElementException {
-        ensureNonNull("direction", name);
+    public static AxisDirection parseAxisDirection(String name) throws IllegalArgumentException {
+        ensureNonNull("name", name);
         name = CharSequences.trimWhitespaces(name);
         AxisDirection candidate = AxisDirections.valueOf(name);
         if (candidate != null) {
@@ -98,7 +98,7 @@ public final class CoordinateSystems extends Static {
             assert candidate == AxisDirections.valueOf(meridian.toString());
             return candidate;
         }
-        throw new NoSuchElementException(Errors.format(Errors.Keys.UnknownAxisDirection_1, name));
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownAxisDirection_1, name));
     }
 
     /**
