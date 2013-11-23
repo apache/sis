@@ -206,11 +206,11 @@ final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>
      * get (extracted from the EPSG database):
      *
      * <table class="sis">
-     *   <tr><td>North along 90 deg East,</td>  <td>North along 0 deg</td></tr>
-     *   <tr><td>North along 75 deg West,</td>  <td>North along 165 deg West</td></tr>
-     *   <tr><td>South along 90 deg West,</td>  <td>South along 0 deg</td></tr>
-     *   <tr><td>South along 180 deg,</td>      <td>South along 90 deg West</td></tr>
-     *   <tr><td>North along 130 deg West</td>  <td>North along 140 deg East</td></tr>
+     *   <tr><td>North along 90° East,</td>  <td>North along 0°</td></tr>
+     *   <tr><td>North along 75° West,</td>  <td>North along 165° West</td></tr>
+     *   <tr><td>South along 90° West,</td>  <td>South along 0°</td></tr>
+     *   <tr><td>South along 180°,</td>      <td>South along 90° West</td></tr>
+     *   <tr><td>North along 130° West</td>  <td>North along 140° East</td></tr>
      * </table>
      */
     @Override

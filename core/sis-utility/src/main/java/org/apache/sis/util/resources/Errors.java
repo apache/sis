@@ -626,6 +626,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnexpectedFileFormat_2 = 92;
 
         /**
+         * Axis direction “{0}” is unknown.
+         */
+        public static final int UnknownAxisDirection_1 = 133;
+
+        /**
          * Command “{0}” is not recognized.
          */
         public static final int UnknownCommand_1 = 102;
