@@ -159,11 +159,10 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     }
 
     /**
-     * Returns a SIS coordinate system implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * attribute values of the given object.
+     * Returns a SIS coordinate system implementation with the same values than the given arbitrary implementation.
+     * If the given object is {@code null}, then this method returns {@code null}.
+     * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
+     * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -198,7 +197,7 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override

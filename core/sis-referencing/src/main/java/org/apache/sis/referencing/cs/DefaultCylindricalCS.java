@@ -17,20 +17,17 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-import org.opengis.referencing.cs.AffineCS;
-import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.measure.Units;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Immutable;
 
 
 /**
- * A 2- or 3-dimensional coordinate system with straight axes that are not necessarily orthogonal.
+ * A 3-dimensional coordinate system consisting of a
+ * {@linkplain DefaultPolarCS polar coordinate system} extended by a straight perpendicular axis.
  *
  * <table class="sis"><tr>
  *   <th>Used with</th>
@@ -38,33 +35,24 @@ import org.apache.sis.util.ComparisonMode;
  * </tr><tr>
  *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
  *   <td>unspecified</td>
- * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultImageCRS Image CRS}</td>
- *   <td>unspecified</td>
  * </tr></table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
+ *
+ * @see DefaultPolarCS
  */
 @Immutable
-public class DefaultAffineCS extends AbstractCS implements AffineCS {
+public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7977674229369042440L;
+    private static final long serialVersionUID = -8290402732390917907L;
 
     /**
-     * Constructs a coordinate system of arbitrary dimension. This constructor is
-     * not public because {@code AffineCS} are restricted to 2 and 3 dimensions.
-     */
-    DefaultAffineCS(final Map<String,?> properties, final CoordinateSystemAxis[] axis) {
-        super(properties, axis);
-    }
-
-    /**
-     * Constructs a two-dimensional coordinate system from a set of properties.
+     * Constructs a three-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -97,30 +85,15 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
-     */
-    public DefaultAffineCS(final Map<String,?>   properties,
-                           final CoordinateSystemAxis axis0,
-                           final CoordinateSystemAxis axis1)
-    {
-        super(properties, axis0, axis1);
-    }
-
-    /**
-     * Constructs a three-dimensional coordinate system from a set of properties.
-     * The properties map is given unchanged to the superclass constructor.
-     *
-     * @param properties The properties to be given to the identified object.
+     * @param properties Set of properties. Should contains at least {@code "name"}.
      * @param axis0 The first axis.
      * @param axis1 The second axis.
      * @param axis2 The third axis.
      */
-    public DefaultAffineCS(final Map<String,?>   properties,
-                           final CoordinateSystemAxis axis0,
-                           final CoordinateSystemAxis axis1,
-                           final CoordinateSystemAxis axis2)
+    public DefaultCylindricalCS(final Map<String,?>   properties,
+                                final CoordinateSystemAxis axis0,
+                                final CoordinateSystemAxis axis1,
+                                final CoordinateSystemAxis axis2)
     {
         super(properties, axis0, axis1, axis2);
     }
@@ -134,9 +107,9 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      *
      * @param cs The coordinate system to copy.
      *
-     * @see #castOrCopy(AffineCS)
+     * @see #castOrCopy(CylindricalCS)
      */
-    protected DefaultAffineCS(final AffineCS cs) {
+    protected DefaultCylindricalCS(final CylindricalCS cs) {
         super(cs);
     }
 
@@ -146,40 +119,22 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * <p>This method checks for the {@link CartesianCS} sub-interface. If that interface is found,
-     * then this method delegates to the corresponding {@code castOrCopy} static method.</p>
-     *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultAffineCS castOrCopy(final AffineCS object) {
-        if (object instanceof CartesianCS) {
-            return DefaultCartesianCS.castOrCopy((CartesianCS) object);
-        }
-        return (object == null) || (object instanceof DefaultAffineCS)
-                ? (DefaultAffineCS) object : new DefaultAffineCS(object);
+    public static DefaultCylindricalCS castOrCopy(final CylindricalCS object) {
+        return (object == null) || (object instanceof DefaultCylindricalCS)
+                ? (DefaultCylindricalCS) object : new DefaultCylindricalCS(object);
     }
 
     /**
-     * Returns {@code true} if the given axis direction is allowed for this coordinate system.
-     * The default implementation accepts all directions except temporal ones
-     * (i.e. {@link AxisDirection#FUTURE FUTURE} and {@link AxisDirection#PAST PAST}).
+     * Returns {@code true} if the specified axis direction is allowed for this coordinate system.
+     * Current implementation accepts all directions except temporal ones.
      */
     @Override
     final boolean isCompatibleDirection(final AxisDirection direction) {
         return !AxisDirection.FUTURE.equals(AxisDirections.absolute(direction));
-    }
-
-    /**
-     * Returns {@code true} if the given unit is compatible with {@linkplain SI#METRE metres}.
-     * In addition, this method also accepts {@link Unit#ONE}, which is used for coordinates in a grid.
-     * This method is invoked at construction time for checking units compatibility.
-     */
-    @Override
-    final boolean isCompatibleUnit(final AxisDirection direction, final Unit<?> unit) {
-        return Units.isLinear(unit) || Unit.ONE.equals(unit);
-        // Note: this condition is also coded in PredefinedCS.rightHanded(AffineCS).
     }
 
     /**
@@ -196,6 +151,6 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
         if (object == this) {
             return true; // Slight optimization.
         }
-        return (object instanceof AffineCS) && super.equals(object, mode);
+        return (object instanceof CylindricalCS) && super.equals(object, mode);
     }
 }

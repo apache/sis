@@ -485,14 +485,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <ul>
      *   <li>The {@linkplain #getName() primary name}'s {@linkplain NamedIdentifier#getCode() code}
-     *       (ignoring {@linkplain NamedIdentifier#getCodeSpace() codespace}).</li>
+     *       (without {@linkplain NamedIdentifier#getCodeSpace() codespace}).</li>
      *   <li>Any {@linkplain #getAlias() alias}'s {@linkplain NamedIdentifier#tip() tip}
-     *       (ignoring {@linkplain NamedIdentifier#scope() scope} and namespace).</li>
+     *       (without {@linkplain NamedIdentifier#scope() scope} and namespace).</li>
      * </ul>
-     *
-     * {@note Namespaces or scopes are ignored because this method is typically invoked with either the value of an
-     *        other <code>IdentifiedObject.getName().getCode()</code>, or with the <cite>Well Known Text</cite> (WKT)
-     *        projection or parameter name.}
      *
      * The comparison ignores the following aspects:
      * <ul>
@@ -500,6 +496,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <li>Some Latin diacritical signs (e.g. {@code "Réunion"} and {@code "Reunion"} are considered equal).</li>
      *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
      *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
+     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of an other
+     *       <code>IdentifiedObject.getName().getCode()</code> or with the <cite>Well Known Text</cite> (WKT)
+     *       projection or parameter name.</li>
      * </ul>
      *
      * {@section Usage}
@@ -523,7 +522,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       Comparisons of coordinate system axis names} consider {@code "Lat"}, {@code "Latitude"} and
      *       {@code "Geodetic latitude"} as synonymous, and likewise for longitude.</li>
      *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
-     *       Comparisons of geodetic datum} ignore the {@code "D_"} prefix, if any.
+     *       Comparisons of geodetic datum names} ignore the {@code "D_"} prefix, if any.
      *       This prefix appears in ESRI datum name (e.g. {@code "D_WGS_1984"}).</li>
      * </ul>
      *
@@ -570,7 +569,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      *
      * @see #hashCode(ComparisonMode)
