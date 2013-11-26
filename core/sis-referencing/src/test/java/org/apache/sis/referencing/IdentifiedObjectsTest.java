@@ -24,6 +24,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.referencing.IdentifiedObjects.*;
 
 
 /**
@@ -36,38 +37,38 @@ import static org.junit.Assert.*;
  */
 public final strictfp class IdentifiedObjectsTest extends TestCase {
     /**
-     * Tests {@link IdentifiedObjects#nameMatches(IdentifiedObject, IdentifiedObject)}.
+     * Tests {@link IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)}.
      */
     @Test
-    public void testNameMatches() {
+    public void testIsHeuristicMatchForName() {
         final GenericName name = DefaultFactories.SIS_NAMES.createGenericName(null, "myScope", "myName");
         IdentifiedObjectMock object = new IdentifiedObjectMock("myCode ", name); // Intentional trailing space.
 
         // Test the code.
-        assertFalse(IdentifiedObjects.nameMatches(object, "other"));
-        assertTrue (IdentifiedObjects.nameMatches(object, "myCode"));
-        assertTrue (IdentifiedObjects.nameMatches(object, " my_code "));
-        assertFalse(IdentifiedObjects.nameMatches(object, "testmyCode"));
-        assertFalse(IdentifiedObjects.nameMatches(object, "other:myCode"));
-        assertFalse(IdentifiedObjects.nameMatches(object, "test"));
+        assertFalse(isHeuristicMatchForName(object, "other"));
+        assertTrue (isHeuristicMatchForName(object, "myCode"));
+        assertTrue (isHeuristicMatchForName(object, " my_code "));
+        assertFalse(isHeuristicMatchForName(object, "testmyCode"));
+        assertFalse(isHeuristicMatchForName(object, "other:myCode"));
+        assertFalse(isHeuristicMatchForName(object, "test"));
 
         // Test the alias.
-        assertTrue (IdentifiedObjects.nameMatches(object, "myName"));
-        assertTrue (IdentifiedObjects.nameMatches(object, " My_name "));
-        assertFalse(IdentifiedObjects.nameMatches(object, "myScope"));
-        assertFalse(IdentifiedObjects.nameMatches(object, "other:myName"));
-        assertFalse(IdentifiedObjects.nameMatches(object, "myScope:other"));
-        assertFalse(IdentifiedObjects.nameMatches(object, "other:myScope:myName"));
+        assertTrue (isHeuristicMatchForName(object, "myName"));
+        assertTrue (isHeuristicMatchForName(object, " My_name "));
+        assertFalse(isHeuristicMatchForName(object, "myScope"));
+        assertFalse(isHeuristicMatchForName(object, "other:myName"));
+        assertFalse(isHeuristicMatchForName(object, "myScope:other"));
+        assertFalse(isHeuristicMatchForName(object, "other:myScope:myName"));
 
         // Test non-letter and non-digits characters.
         object = new IdentifiedObjectMock("Mercator (1SP)", name);
-        assertTrue (IdentifiedObjects.nameMatches(object, "Mercator (1SP)"));
-        assertTrue (IdentifiedObjects.nameMatches(object, "Mercator_1SP"));
-        assertFalse(IdentifiedObjects.nameMatches(object, "Mercator_2SP"));
+        assertTrue (isHeuristicMatchForName(object, "Mercator (1SP)"));
+        assertTrue (isHeuristicMatchForName(object, "Mercator_1SP"));
+        assertFalse(isHeuristicMatchForName(object, "Mercator_2SP"));
 
         // Test diacritical signs
         object = new IdentifiedObjectMock("Réunion", name);
-        assertTrue (IdentifiedObjects.nameMatches(object, "Réunion"));
-        assertTrue (IdentifiedObjects.nameMatches(object, "Reunion"));
+        assertTrue (isHeuristicMatchForName(object, "Réunion"));
+        assertTrue (isHeuristicMatchForName(object, "Reunion"));
     }
 }

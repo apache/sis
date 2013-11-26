@@ -295,7 +295,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
      * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
      * This method performs the comparison documented in the
-     * {@linkplain AbstractIdentifiedObject#nameMatches(String) super-class},
+     * {@link AbstractIdentifiedObject#isHeuristicMatchForName(String) super-class},
      * with the following additional flexibility:
      *
      * <ul>
@@ -313,17 +313,17 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      */
     @Override
-    public boolean nameMatches(final String name) {
+    public boolean isHeuristicMatchForName(final String name) {
         if (name.startsWith((ESRI_PREFIX))) {
-            if (super.nameMatches(name.substring(ESRI_PREFIX.length()))) {
+            if (super.isHeuristicMatchForName(name.substring(ESRI_PREFIX.length()))) {
                 return true;
             }
         } else if (getName().getCode().startsWith(ESRI_PREFIX)) {
-            if (super.nameMatches(ESRI_PREFIX.concat(name))) {
+            if (super.isHeuristicMatchForName(ESRI_PREFIX.concat(name))) {
                 return true;
             }
         }
-        return super.nameMatches(name);
+        return super.isHeuristicMatchForName(name);
     }
 
     /**
@@ -367,8 +367,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                  * have already been compared by the subclass.
                  */
                 final Datum that = (Datum) object;
-                return nameMatches(that. getName().getCode()) ||
-                       IdentifiedObjects.nameMatches(that, getName().getCode());
+                return isHeuristicMatchForName(that. getName().getCode()) ||
+                       IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode());
             }
         }
     }

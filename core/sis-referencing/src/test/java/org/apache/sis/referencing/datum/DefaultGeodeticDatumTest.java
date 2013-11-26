@@ -91,17 +91,17 @@ public final strictfp class DefaultGeodeticDatumTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultGeodeticDatum#nameMatches(String)}.
+     * Tests {@link DefaultGeodeticDatum#isHeuristicMatchForName(String)}.
      */
     @Test
-    public void testNameMatches() {
+    public void testIsHeuristicMatchForName() {
         final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
-        assertFalse(datum.nameMatches("WGS72"));
-        assertTrue (datum.nameMatches("WGS84"));
-        assertTrue (datum.nameMatches("WGS 84"));
-        assertTrue (datum.nameMatches("WGS_84"));
-        assertTrue (datum.nameMatches("D_WGS_84"));
-        assertFalse(datum.nameMatches("E_WGS_84"));
+        assertFalse(datum.isHeuristicMatchForName("WGS72"));
+        assertTrue (datum.isHeuristicMatchForName("WGS84"));
+        assertTrue (datum.isHeuristicMatchForName("WGS 84"));
+        assertTrue (datum.isHeuristicMatchForName("WGS_84"));
+        assertTrue (datum.isHeuristicMatchForName("D_WGS_84"));
+        assertFalse(datum.isHeuristicMatchForName("E_WGS_84"));
     }
 
     /**

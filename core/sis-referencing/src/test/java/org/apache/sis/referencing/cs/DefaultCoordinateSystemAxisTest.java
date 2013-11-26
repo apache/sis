@@ -92,23 +92,23 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
     }
 
     /**
-     * Tests the {@link DefaultCoordinateSystemAxis#nameMatches(String)} method.
+     * Tests the {@link DefaultCoordinateSystemAxis#isHeuristicMatchForName(String)} method.
      */
     @Test
-    public void testNameMatches() {
-        assertTrue (LONGITUDE.nameMatches(GEODETIC_LONGITUDE.getName().getCode()));
-        assertFalse(LONGITUDE.nameMatches(GEODETIC_LATITUDE .getName().getCode()));
-        assertFalse(LONGITUDE.nameMatches(ALTITUDE          .getName().getCode()));
-        assertFalse(X        .nameMatches(LONGITUDE         .getName().getCode()));
-        assertFalse(X        .nameMatches(EASTING           .getName().getCode()));
-        assertFalse(X        .nameMatches(NORTHING          .getName().getCode()));
+    public void testIsHeuristicMatchForName() {
+        assertTrue (LONGITUDE.isHeuristicMatchForName(GEODETIC_LONGITUDE.getName().getCode()));
+        assertFalse(LONGITUDE.isHeuristicMatchForName(GEODETIC_LATITUDE .getName().getCode()));
+        assertFalse(LONGITUDE.isHeuristicMatchForName(ALTITUDE          .getName().getCode()));
+        assertFalse(X        .isHeuristicMatchForName(LONGITUDE         .getName().getCode()));
+        assertFalse(X        .isHeuristicMatchForName(EASTING           .getName().getCode()));
+        assertFalse(X        .isHeuristicMatchForName(NORTHING          .getName().getCode()));
     }
 
     /**
      * Tests the comparison of some axis, ignoring metadata.
      */
     @Test
-    @DependsOnMethod("testNameMatches")
+    @DependsOnMethod("testIsHeuristicMatchForName")
     public void testEqualsIgnoreMetadata() {
         assertFalse("X",         X        .equals(GEOCENTRIC_X,        ComparisonMode.IGNORE_METADATA));
         assertFalse("Longitude", LONGITUDE.equals(GEODETIC_LONGITUDE,  ComparisonMode.STRICT));
