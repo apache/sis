@@ -91,6 +91,20 @@ public final strictfp class DefaultGeodeticDatumTest extends TestCase {
     }
 
     /**
+     * Tests {@link DefaultGeodeticDatum#nameMatches(String)}.
+     */
+    @Test
+    public void testNameMatches() {
+        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
+        assertFalse(datum.nameMatches("WGS72"));
+        assertTrue (datum.nameMatches("WGS84"));
+        assertTrue (datum.nameMatches("WGS 84"));
+        assertTrue (datum.nameMatches("WGS_84"));
+        assertTrue (datum.nameMatches("D_WGS_84"));
+        assertFalse(datum.nameMatches("E_WGS_84"));
+    }
+
+    /**
      * Tests {@link DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum, Extent)}.
      */
     @Test

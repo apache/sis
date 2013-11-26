@@ -378,10 +378,10 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
-     * one {@linkplain #getAlias() alias} matches the specified string. This method performs
-     * all the search done by the {@linkplain AbstractIdentifiedObject#nameMatches(String)
-     * super-class}, with the addition of special processing for latitudes and longitudes:
+     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least one
+     * {@linkplain #getAlias() alias} "ends" with the specified string. This method performs the
+     * search documented in the {@linkplain AbstractIdentifiedObject#nameMatches(String) super-class},
+     * with the addition of special processing for latitudes and longitudes:
      *
      * <ul>
      *   <li>{@code "Lat"}, {@code "Latitude"}  and {@code "Geodetic latitude"}  are considered equivalent.</li>
