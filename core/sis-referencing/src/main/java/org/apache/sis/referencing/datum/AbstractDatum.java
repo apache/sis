@@ -71,6 +71,11 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     private static final long serialVersionUID = -4894180465652474930L;
 
     /**
+     * The prefix used by ESRI at the beginning of datum names.
+     */
+    private static final String ESRI_PREFIX = "D_";
+
+    /**
      * Description, possibly including coordinates, of the point or points used to anchor the datum
      * to the Earth. Also known as the "origin", especially for Engineering and Image Datums.
      */
@@ -284,6 +289,34 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     int getLegacyDatumType() {
         return 0;
+    }
+
+    /**
+     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least one
+     * {@linkplain #getAlias() alias} "ends" with the specified string. This method performs the
+     * search documented in the {@linkplain AbstractIdentifiedObject#nameMatches(String) super-class},
+     * with the addition of following rules:
+     *
+     * <ul>
+     *   <li>If the given name or this datum name starts with the {@code "D_"} prefix,
+     *       then the prefix is ignored. That prefix is used in ESRI datum names.</li>
+     * </ul>
+     *
+     * @param  name The name to compare.
+     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     */
+    @Override
+    public boolean nameMatches(final String name) {
+        if (name.startsWith((ESRI_PREFIX))) {
+            if (super.nameMatches(name.substring(ESRI_PREFIX.length()))) {
+                return true;
+            }
+        } else if (getName().getCode().startsWith(ESRI_PREFIX)) {
+            if (super.nameMatches(ESRI_PREFIX.concat(name))) {
+                return true;
+            }
+        }
+        return super.nameMatches(name);
     }
 
     /**
