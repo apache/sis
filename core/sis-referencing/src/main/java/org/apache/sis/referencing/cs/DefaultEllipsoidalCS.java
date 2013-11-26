@@ -17,21 +17,26 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import org.opengis.referencing.cs.CylindricalCS;
+import javax.measure.unit.Unit;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.Immutable;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.internal.referencing.AxisDirections;
 
 
 /**
- * A 3-dimensional coordinate system consisting of a
- * {@linkplain DefaultPolarCS polar coordinate system} extended by a straight perpendicular axis.
+ * A 2- or 3-dimensional coordinate system in which position is specified by geodetic latitude and longitude,
+ * and optionally by ellipsoidal height.
  *
  * <table class="sis"><tr>
  *   <th>Used with</th>
  *   <th>Permitted axis names</th>
+ * </tr><tr>
+ *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultGeocentricCRS Geographic CRS}</td>
+ *   <td>“Geodetic latitude”, “Geodetic longitude”, “Ellipsoidal height” (if 3D)</td>
  * </tr><tr>
  *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
  *   <td>unspecified</td>
@@ -41,18 +46,16 @@ import org.apache.sis.util.Immutable;
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
- *
- * @see DefaultPolarCS
  */
 @Immutable
-public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
+public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8290402732390917907L;
+    private static final long serialVersionUID = -1452492488902329211L;
 
     /**
-     * Constructs a three-dimensional coordinate system from a set of properties.
+     * Constructs a two-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -88,9 +91,25 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
      * @param properties The properties to be given to the identified object.
      * @param axis0 The first axis.
      * @param axis1 The second axis.
+     */
+    public DefaultEllipsoidalCS(final Map<String,?>   properties,
+                                final CoordinateSystemAxis axis0,
+                                final CoordinateSystemAxis axis1)
+    {
+        super(properties, axis0, axis1);
+    }
+
+    /**
+     * Constructs a three-dimensional coordinate system from a set of properties.
+     * The properties map is given unchanged to the
+     * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
+     *
+     * @param properties The properties to be given to the identified object.
+     * @param axis0 The first axis.
+     * @param axis1 The second axis.
      * @param axis2 The third axis.
      */
-    public DefaultCylindricalCS(final Map<String,?>   properties,
+    public DefaultEllipsoidalCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,
                                 final CoordinateSystemAxis axis1,
                                 final CoordinateSystemAxis axis2)
@@ -107,9 +126,9 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
      *
      * @param cs The coordinate system to copy.
      *
-     * @see #castOrCopy(CylindricalCS)
+     * @see #castOrCopy(EllipsoidalCS)
      */
-    protected DefaultCylindricalCS(final CylindricalCS cs) {
+    protected DefaultEllipsoidalCS(final EllipsoidalCS cs) {
         super(cs);
     }
 
@@ -123,18 +142,38 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
      * @return A SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultCylindricalCS castOrCopy(final CylindricalCS object) {
-        return (object == null) || (object instanceof DefaultCylindricalCS)
-                ? (DefaultCylindricalCS) object : new DefaultCylindricalCS(object);
+    public static DefaultEllipsoidalCS castOrCopy(final EllipsoidalCS object) {
+        return (object == null) || (object instanceof DefaultEllipsoidalCS)
+                ? (DefaultEllipsoidalCS) object : new DefaultEllipsoidalCS(object);
     }
 
     /**
      * Returns {@code true} if the specified axis direction is allowed for this coordinate system.
-     * Current implementation accepts all directions except temporal ones.
+     * The current implementation accepts only the following directions:
+     * {@link AxisDirection#NORTH NORTH}, {@link AxisDirection#SOUTH SOUTH},
+     * {@link AxisDirection#EAST  EAST},  {@link AxisDirection#WEST  WEST},
+     * {@link AxisDirection#UP    UP} and {@link AxisDirection#DOWN  DOWN}.
      */
     @Override
-    final boolean isCompatibleDirection(final AxisDirection direction) {
-        return !AxisDirection.FUTURE.equals(AxisDirections.absolute(direction));
+    final boolean isCompatibleDirection(AxisDirection direction) {
+        direction = AxisDirections.absolute(direction);
+        return AxisDirection.NORTH.equals(direction) ||
+               AxisDirection.EAST .equals(direction) ||
+               AxisDirection.UP   .equals(direction);
+    }
+
+    /**
+     * Returns {@code true} if the specified unit is an angular units, or a linear one in the
+     * special case of height. This method is invoked at construction time for checking units
+     * compatibility.
+     */
+    @Override
+    final boolean isCompatibleUnit(AxisDirection direction, final Unit<?> unit) {
+        direction = AxisDirections.absolute(direction);
+        if (AxisDirection.UP.equals(direction)) {
+            return Units.isLinear(unit);
+        }
+        return Units.isAngular(unit);
     }
 
     /**
@@ -151,6 +190,6 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
         if (object == this) {
             return true; // Slight optimization.
         }
-        return (object instanceof CylindricalCS) && super.equals(object, mode);
+        return (object instanceof EllipsoidalCS) && super.equals(object, mode);
     }
 }
