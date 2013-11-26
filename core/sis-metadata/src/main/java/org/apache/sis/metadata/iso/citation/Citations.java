@@ -187,8 +187,7 @@ public final class Citations extends Static {
         if (title == null || ((title = CharSequences.trimWhitespaces(title)).isEmpty())) {
             return null;
         }
-        for (int i=0; i<AUTHORITIES.length; i++) {
-            final Citation citation = AUTHORITIES[i];
+        for (final Citation citation : AUTHORITIES) {
             if (titleMatches(citation, title)) {
                 return citation;
             }
@@ -289,12 +288,15 @@ public final class Citations extends Static {
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
      *
-     * This method searches in alternate titles as a fallback because ISO specification said
-     * that those titles are often used for abbreviations.
+     * {@note This method searches in alternate titles as a fallback because ISO specification said
+     *        that those titles are often used for abbreviations.}
+     *
+     * This method ignores leading and trailing whitespaces of every character sequences.
+     * Null references, empty character sequences and sequences of whitespaces only are ignored.
      *
      * @param  citation The citation for which to get the identifier, or {@code null}.
-     * @return An identifier for the given citation, or {@code null} if the given citation is null
-     *         or does not declare any identifier or title.
+     * @return A non-empty identifier for the given citation without leading or trailing whitespaces,
+     *         or {@code null} if the given citation is null or does not declare any identifier or title.
      */
     public static String getIdentifier(final Citation citation) {
         return org.apache.sis.internal.util.Citations.getIdentifier(citation);

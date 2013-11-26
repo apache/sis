@@ -257,12 +257,15 @@ public final class Citations extends Static {
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
      *
-     * This method searches in alternate titles as a fallback because ISO specification said
-     * that those titles are often used for abbreviations.
+     * {@note This method searches in alternate titles as a fallback because ISO specification said
+     *        that those titles are often used for abbreviations.}
+     *
+     * This method ignores leading and trailing whitespaces of every character sequences.
+     * Null references, empty character sequences and sequences of whitespaces only are ignored.
      *
      * @param  citation The citation for which to get the identifier, or {@code null}.
-     * @return An identifier for the given citation, or {@code null} if the given citation is null
-     *         or does not declare any identifier or title.
+     * @return A non-empty identifier for the given citation without leading or trailing whitespaces,
+     *         or {@code null} if the given citation is null or does not declare any identifier or title.
      */
     public static String getIdentifier(final Citation citation) {
         boolean isUnicode = false; // Whether 'identifier' is a Unicode identifier.
@@ -291,7 +294,7 @@ public final class Citations extends Static {
              * often used for abbreviations.
              */
             if (identifier == null) {
-                identifier = toString(citation.getTitle());
+                identifier = toString(citation.getTitle()); // Whitepaces removed by toString(…).
                 if (identifier != null) {
                     if (identifier.isEmpty()) {
                         identifier = null;

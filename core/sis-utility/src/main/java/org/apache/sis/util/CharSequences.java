@@ -1573,8 +1573,8 @@ cmp:    while (ia < lga) {
      *     assert equalsFiltered("WGS84", "WGS_84", Characters.Filter.LETTERS_AND_DIGITS, true) == true;
      * }
      *
-     * @param  s1 The first string to compare, or {@code null}.
-     * @param  s2 The second string to compare, or {@code null}.
+     * @param  s1 The first characters sequence to compare, or {@code null}.
+     * @param  s2 The second characters sequence to compare, or {@code null}.
      * @param  filter The subset of characters to compare, or {@code null} for comparing all characters.
      * @param  ignoreCase {@code true} for comparing cases, or {@code false} for requiring exact match.
      * @return {@code true} if or if both arguments are {@code null} or if the two given texts are equal,
@@ -1594,10 +1594,10 @@ cmp:    while (ia < lga) {
         }
         final int lg1 = s1.length();
         final int lg2 = s2.length();
-        int i2 = 0, n;
-        for (int i1=0; i1<lg1; i1+=n) {
+        int i1 = 0, i2 = 0;
+        while (i1 < lg1) {
             int c1 = codePointAt(s1, i1);
-            n = charCount(c1);
+            final int n = charCount(c1);
             if (filter.contains(c1)) {
                 // Fetch the next significant character from the second string.
                 int c2;
@@ -1614,6 +1614,7 @@ cmp:    while (ia < lga) {
                     return false;
                 }
             }
+            i1 += n;
         }
         while (i2 < lg2) {
             final int s = codePointAt(s2, i2);
