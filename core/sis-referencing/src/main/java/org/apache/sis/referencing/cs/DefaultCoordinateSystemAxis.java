@@ -18,6 +18,7 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Locale;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
@@ -50,7 +51,7 @@ import java.util.Objects;
 
 
 /**
- * Definition of a coordinate system axis. This is used to label axes and indicate their orientation.
+ * Coordinate system axis name, direction, unit and range of values.
  *
  * {@section Axis names}
  * In some case, the axis name is constrained by ISO 19111 depending on the
@@ -407,8 +408,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * generic. We test them only in the 'equals' method, which has the extra-safety
          * of units comparison (so less risk to treat incompatible axes as equivalent).
          */
-        final Object type = ALIASES.get(trimWhitespaces(name).toLowerCase());
-        return (type != null) && (type == ALIASES.get(trimWhitespaces(getName().getCode()).toLowerCase()));
+        final Object type = ALIASES.get(trimWhitespaces(name).toLowerCase(Locale.US)); // Our ALIASES are in English.
+        return (type != null) && (type == ALIASES.get(trimWhitespaces(getName().getCode()).toLowerCase(Locale.US)));
     }
 
     /**
@@ -500,8 +501,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             if (!nameMatches(thatName)) {
                 /*
                  * The above test checked for special cases ("Lat" / "Lon" aliases, etc.).
-                 * The next line may not, but is tested anyway in case the user overridden
-                 * the 'that.nameMatches(...)' method.
+                 * The next line may repeat the same check, so we may have a partial waste
+                 * of CPU.   But we do it anyway for checking the 'that' aliases, and also
+                 * because the user may have overridden the 'that.nameMatches(...)' method.
                  */
                 final String thisName = getName().getCode();
                 if (!IdentifiedObjects.nameMatches(that, thisName)) {

@@ -479,15 +479,44 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
-     * one {@linkplain #getAlias() alias} matches the specified string.
-     * This method returns {@code true} if the given name is equal to one of the following names,
-     * regardless of any authority:
+     * one {@linkplain #getAlias() alias} "ends" with the specified string. More specifically
+     * this method returns {@code true} if the given {@code name} is equal, ignoring aspects
+     * documented below, to one of the following names:
      *
      * <ul>
-     *   <li>The {@linkplain #getName() primary name} of this object.</li>
-     *   <li>The {@linkplain org.opengis.util.GenericName#toFullyQualifiedName() fully qualified name} of an alias.</li>
-     *   <li>The {@linkplain org.opengis.util.ScopedName#tail() tail} of an alias.</li>
-     *   <li>The tail of the previous tail, recursively up to the {@linkplain org.opengis.util.ScopedName#tip() tip}.</li>
+     *   <li>The {@linkplain #getName() primary name}'s {@linkplain NamedIdentifier#getCode() code}
+     *       (ignoring {@linkplain NamedIdentifier#getCodeSpace() codespace}).</li>
+     *   <li>Any {@linkplain #getAlias() alias}'s {@linkplain NamedIdentifier#tip() tip}
+     *       (ignoring {@linkplain NamedIdentifier#scope() scope} and namespace).</li>
+     * </ul>
+     *
+     * The comparison ignores the following aspects:
+     * <ul>
+     *   <li>Lower/Upper cases</li>
+     *   <li>Some Latin diacritical signs (e.g. {@code "Réunion"} and {@code "Reunion"} are considered equal).</li>
+     *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
+     *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
+     * </ul>
+     *
+     * {@section Usage}
+     * This method is invoked by SIS when comparing in {@code IGNORE_METADATA} mode two objects that can be
+     * differentiated only by their name, like coordinate system axes, datum, parameters and operation methods.
+     * See {@link #equals(Object, ComparisonMode)} for more information.
+     *
+     * <p>This method is also invoked when searching a parameter or operation method for a given name.
+     * For example the same projection is known as {@code "Mercator (variant A)"} (the primary name according EPSG)
+     * and {@code "Mercator (1SP)"} (the legacy name prior EPSG 7.6). Since the later is still in frequent use, SIS
+     * accepts it as an alias of the <cite>Mercator (variant A)</cite> projection.</p>
+     *
+     * {@section Overriding by subclasses}
+     * Some subclasses relax further the comparison criterion:
+     * <ul>
+     *   <li>{@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#nameMatches(String) Comparisons
+     *       of coordinate system axis names} consider “Lat”, “Latitude” and “Geodetic latitude” as synonymous, and
+     *       likewise for longitude.</li>
+     *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#nameMatches(String) Comparisons
+     *       of geodetic datum} ignore the {@code "D_"} prefix, if any. This prefix appears in ESRI datum name
+     *       (e.g. {@code "D_WGS_1984"}).</li>
      * </ul>
      *
      * @param  name The name to compare with the object name or aliases.
@@ -515,12 +544,15 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </ul>
      *
      * {@section Exceptions to the above rules}
-     * Some subclasses (especially {@link org.apache.sis.referencing.datum.AbstractDatum}
-     * and {@link org.apache.sis.parameter.AbstractParameterDescriptor}) will test for the
-     * {@linkplain #getName() name}, since objects with different name have completely
-     * different meaning. For example nothing differentiate the {@code "semi_major"} and
-     * {@code "semi_minor"} parameters except the name. The name comparison may be loose
-     * however, i.e. we may accept a name matching an alias.
+     * Some subclasses (especially
+     * {@link org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis},
+     * {@link org.apache.sis.referencing.datum.AbstractDatum} and
+     * {@link org.apache.sis.parameter.AbstractParameterDescriptor}) will compare the
+     * {@linkplain #getName() name} even in {@code IGNORE_METADATA} mode,
+     * because objects of those types with different names have completely different meaning.
+     * For example nothing differentiate the {@code "semi_major"} and {@code "semi_minor"} parameters except the name.
+     * The name comparison may be lenient however, i.e. the rules may accept a name matching an alias.
+     * See {@link #nameMatches(String)} for more information.
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
