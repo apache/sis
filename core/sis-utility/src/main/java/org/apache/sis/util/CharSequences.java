@@ -951,7 +951,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  text The text to scan for Unicode characters to replace by ASCII characters,
      *         or {@code null}.
      * @return The given text with substitution applied, or {@code text} if no replacement
-     *         has been applied.
+     *         has been applied, or {@code null} if the given text was null.
      *
      * @see StringBuilders#toASCII(StringBuilder)
      */

@@ -27,10 +27,8 @@ import org.apache.sis.util.Immutable;
 
 
 /**
- * A 1-, 2-, or 3-dimensional Cartesian coordinate system. The position of points are relative
- * to orthogonal straight axes in the 2- and 3-dimensional cases. In the 1-dimensional case,
- * the coordinate system contains a single straight coordinate axis. All axes shall have the
- * same linear unit of measure.
+ * A 1-, 2-, or 3-dimensional Cartesian coordinate system with straight orthogonal axes.
+ * All axes shall have the same linear unit of measure.
  *
  * <table class="sis"><tr>
  *   <th>Used with</th>

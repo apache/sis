@@ -219,7 +219,7 @@ public final class StringBuilders extends Static {
                 if (r >= 0 && r<ASCII.length()) {
                     final char ac = ASCII.charAt(r);
                     if (buffer == null) {
-                        buffer = new StringBuilder(text);
+                        buffer = new StringBuilder(text.length()).append(text);
                         text = buffer;
                     }
                     // Nothing special do to about codepoint here, since 'c' is
