@@ -30,11 +30,11 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 
 import org.apache.sis.util.Static;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.CharSequences.equalsFiltered;
 import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 import static org.apache.sis.internal.util.Citations.iterator;
 import static org.apache.sis.internal.util.Citations.identifierMatches;
@@ -288,10 +288,12 @@ public final class IdentifiedObjects extends Static {
     }
 
     /**
-     * Returns {@code true} if either the {@linkplain AbstractIdentifiedObject#getName() primary name} or
-     * at least one {@linkplain AbstractIdentifiedObject#getAlias() alias} "ends" with the specified string.
-     * More specifically this method returns {@code true} if the given {@code name} is equal,
-     * ignoring aspects documented below, to one of the following names:
+     * Returns {@code true} if either the {@linkplain AbstractIdentifiedObject#getName() primary name} or at least
+     * one {@linkplain AbstractIdentifiedObject#getAlias() alias} matches the given string according heuristic rules.
+     * If the given object is an instance of {@link AbstractIdentifiedObject}, then this method delegates to its
+     * {@link AbstractIdentifiedObject#nameMatches(String) nameMatches(String)} method in order to leverage the
+     * additional rules implemented by sub-classes. Otherwise the fallback implementation returns {@code true}
+     * if the given {@code name} is equal, ignoring aspects documented below, to one of the following names:
      *
      * <ul>
      *   <li>The {@linkplain AbstractIdentifiedObject#getName() primary name}'s {@linkplain NamedIdentifier#getCode() code}
@@ -302,14 +304,11 @@ public final class IdentifiedObjects extends Static {
      *
      * The comparison ignores the following aspects:
      * <ul>
-     *   <li>Lower/Upper cases</li>
+     *   <li>Lower/upper cases.</li>
      *   <li>Some Latin diacritical signs (e.g. {@code "Réunion"} and {@code "Reunion"} are considered equal).</li>
      *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
      *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
      * </ul>
-     *
-     * If the given object is an instance of {@link AbstractIdentifiedObject}, then this method delegates
-     * to its {@code nameMatches(String)} method. Otherwise this method fallbacks on a generic algorithm.
      *
      * @param  object The object for which to check the name or alias.
      * @param  name The name to compare with the object name or aliases.
@@ -330,33 +329,40 @@ public final class IdentifiedObjects extends Static {
 
     /**
      * Returns {@code true} if the {@linkplain AbstractIdentifiedObject#getName() primary name} of the given object
-     * or one of the given alias matches the given name. The comparison ignores case, Some Latin diacritical signs
+     * or one of the given alias matches the given name. The comparison ignores case, some Latin diacritical signs
      * and any characters that are not letters or digits.
      *
-     * @param  object The object to check.
-     * @param  alias  The list of alias in {@code object} (may be {@code null}).
-     *                This method will never modify this list. Consequently, the
-     *                given list can be a direct reference to an internal list.
-     * @param  name   The name for which to check for equality.
+     * @param  object  The object to check.
+     * @param  aliases The list of alias in {@code object} (may be {@code null}).
+     *                 This method will never modify this list. Consequently, the
+     *                 given list can be a direct reference to an internal list.
+     * @param  name    The name for which to check for equality.
      * @return {@code true} if the primary name or at least one alias matches the given {@code name}.
      */
-    static boolean nameMatches(final IdentifiedObject object, final Collection<GenericName> alias, final String name) {
+    static boolean nameMatches(final IdentifiedObject object, final Collection<GenericName> aliases, CharSequence name) {
+        name = CharSequences.toASCII(name);
         final ReferenceIdentifier id = object.getName();
         if (id != null) { // Paranoiac check.
-            final String code = id.getCode();
+            final CharSequence code = CharSequences.toASCII(id.getCode());
             if (code != null) { // Paranoiac check.
-                if (equalsFiltered(name, code, LETTERS_AND_DIGITS, true)) {
+                if (CharSequences.equalsFiltered(name, code, LETTERS_AND_DIGITS, true)) {
                     return true;
                 }
             }
         }
-        if (alias != null) {
-            for (GenericName asName : alias) {
-                if (asName != null) { // Paranoiac check.
-                    asName = asName.tip();
-                    if (equalsFiltered(name, asName.toString(), LETTERS_AND_DIGITS, true)) {
+        if (aliases != null) {
+            for (final GenericName alias : aliases) {
+                if (alias != null) { // Paranoiac check.
+                    final CharSequence tip = CharSequences.toASCII(alias.tip().toString());
+                    if (CharSequences.equalsFiltered(name, tip, LETTERS_AND_DIGITS, true)) {
                         return true;
                     }
+                    /*
+                     * Note: a previous version compared also the scoped names. We removed that part,
+                     * because experience has shown that this method is used only for the "code" part
+                     * of an object name. If we really want to compare scoped name, it would probably
+                     * be better to take a GenericName argument instead than String.
+                     */
                 }
             }
         }

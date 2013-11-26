@@ -378,10 +378,11 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least one
-     * {@linkplain #getAlias() alias} "ends" with the specified string. This method performs the
-     * search documented in the {@linkplain AbstractIdentifiedObject#nameMatches(String) super-class},
-     * with the addition of special processing for latitudes and longitudes:
+     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
+     * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
+     * This method performs the comparison documented in the
+     * {@linkplain AbstractIdentifiedObject#nameMatches(String) super-class},
+     * with an additional flexibility for latitudes and longitudes:
      *
      * <ul>
      *   <li>{@code "Lat"}, {@code "Latitude"}  and {@code "Geodetic latitude"}  are considered equivalent.</li>
@@ -391,8 +392,13 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * The above special cases are needed in order to workaround a conflict in specifications:
      * ISO 19111 states explicitly that the latitude and longitude axis names shall be
      * "<cite>Geodetic latitude</cite>" and "<cite>Geodetic longitude</cite>", while the legacy
-     * OGC 01-009 (where the WKT format is defined) said that the default values shall be
+     * OGC 01-009 (where version 1 of the WKT format is defined) said that the default values shall be
      * "<cite>Lat</cite>" and "<cite>Lon</cite>".
+     *
+     * {@section Future evolutions}
+     * This method implements heuristic rules learned from experience while trying to provide inter-operability
+     * with different data producers. Those rules may be adjusted in any future SIS version according experience
+     * gained while working with more data producers.
      *
      * @param  name The name to compare.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.

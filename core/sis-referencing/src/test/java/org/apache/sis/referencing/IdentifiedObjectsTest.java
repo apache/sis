@@ -41,7 +41,7 @@ public final strictfp class IdentifiedObjectsTest extends TestCase {
     @Test
     public void testNameMatches() {
         final GenericName name = DefaultFactories.SIS_NAMES.createGenericName(null, "myScope", "myName");
-        final IdentifiedObjectMock object = new IdentifiedObjectMock("myCode ", name); // Intentional trailing space.
+        IdentifiedObjectMock object = new IdentifiedObjectMock("myCode ", name); // Intentional trailing space.
 
         // Test the code.
         assertFalse(IdentifiedObjects.nameMatches(object, "other"));
@@ -58,5 +58,16 @@ public final strictfp class IdentifiedObjectsTest extends TestCase {
         assertFalse(IdentifiedObjects.nameMatches(object, "other:myName"));
         assertFalse(IdentifiedObjects.nameMatches(object, "myScope:other"));
         assertFalse(IdentifiedObjects.nameMatches(object, "other:myScope:myName"));
+
+        // Test non-letter and non-digits characters.
+        object = new IdentifiedObjectMock("Mercator (1SP)", name);
+        assertTrue (IdentifiedObjects.nameMatches(object, "Mercator (1SP)"));
+        assertTrue (IdentifiedObjects.nameMatches(object, "Mercator_1SP"));
+        assertFalse(IdentifiedObjects.nameMatches(object, "Mercator_2SP"));
+
+        // Test diacritical signs
+        object = new IdentifiedObjectMock("Réunion", name);
+        assertTrue (IdentifiedObjects.nameMatches(object, "Réunion"));
+        assertTrue (IdentifiedObjects.nameMatches(object, "Reunion"));
     }
 }

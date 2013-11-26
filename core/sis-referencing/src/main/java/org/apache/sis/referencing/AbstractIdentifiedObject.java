@@ -479,9 +479,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
-     * one {@linkplain #getAlias() alias} "ends" with the specified string. More specifically
-     * this method returns {@code true} if the given {@code name} is equal, ignoring aspects
-     * documented below, to one of the following names:
+     * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
+     * The default implementation returns {@code true} if the given {@code name} is equal,
+     * ignoring aspects documented below, to one of the following names:
      *
      * <ul>
      *   <li>The {@linkplain #getName() primary name}'s {@linkplain NamedIdentifier#getCode() code}
@@ -490,17 +490,25 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       (ignoring {@linkplain NamedIdentifier#scope() scope} and namespace).</li>
      * </ul>
      *
+     * {@note Namespaces or scopes are ignored because this method is typically invoked with either the value of an
+     *        other <code>IdentifiedObject.getName().getCode()</code>, or with the <cite>Well Known Text</cite> (WKT)
+     *        projection or parameter name.}
+     *
      * The comparison ignores the following aspects:
      * <ul>
-     *   <li>Lower/Upper cases</li>
+     *   <li>Lower/upper cases.</li>
      *   <li>Some Latin diacritical signs (e.g. {@code "Réunion"} and {@code "Reunion"} are considered equal).</li>
      *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
      *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
      * </ul>
      *
      * {@section Usage}
-     * This method is invoked by SIS when comparing in {@code IGNORE_METADATA} mode two objects that can be
-     * differentiated only by their name, like coordinate system axes, datum, parameters and operation methods.
+     * This method is invoked by SIS when comparing in {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} mode
+     * two objects that can be differentiated only by some identifier (name or alias), like
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axes},
+     * {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum},
+     * {@linkplain org.apache.sis.parameter.AbstractParameterDescriptor parameters} and
+     * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod operation methods}.
      * See {@link #equals(Object, ComparisonMode)} for more information.
      *
      * <p>This method is also invoked when searching a parameter or operation method for a given name.
@@ -509,15 +517,20 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * accepts it as an alias of the <cite>Mercator (variant A)</cite> projection.</p>
      *
      * {@section Overriding by subclasses}
-     * Some subclasses relax further the comparison criterion:
+     * Some subclasses add more flexibility to the comparisons:
      * <ul>
-     *   <li>{@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#nameMatches(String) Comparisons
-     *       of coordinate system axis names} consider “Lat”, “Latitude” and “Geodetic latitude” as synonymous, and
-     *       likewise for longitude.</li>
+     *   <li>{@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#nameMatches(String) Comparisons of
+     *       coordinate system axis names} consider {@code "Lat"}, {@code "Latitude"} and {@code "Geodetic latitude"}
+     *       as synonymous, and likewise for longitude.</li>
      *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#nameMatches(String) Comparisons
      *       of geodetic datum} ignore the {@code "D_"} prefix, if any. This prefix appears in ESRI datum name
      *       (e.g. {@code "D_WGS_1984"}).</li>
      * </ul>
+     *
+     * {@section Future evolutions}
+     * This method implements heuristic rules learned from experience while trying to provide inter-operability
+     * with different data producers. Those rules may be adjusted in any future SIS version according experience
+     * gained while working with more data producers.
      *
      * @param  name The name to compare with the object name or aliases.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.

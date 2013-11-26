@@ -292,15 +292,22 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least one
-     * {@linkplain #getAlias() alias} "ends" with the specified string. This method performs the
-     * search documented in the {@linkplain AbstractIdentifiedObject#nameMatches(String) super-class},
-     * with the addition of following rules:
+     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
+     * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
+     * This method performs the comparison documented in the
+     * {@linkplain AbstractIdentifiedObject#nameMatches(String) super-class},
+     * with the following additional flexibility:
      *
      * <ul>
-     *   <li>If the given name or this datum name starts with the {@code "D_"} prefix,
-     *       then the prefix is ignored. That prefix is used in ESRI datum names.</li>
+     *   <li>The {@code "D_"} prefix, if presents in the given name or this datum name, is ignored.</li>
      * </ul>
+     *
+     * {@note The <code>"D_"</code> prefix is used in ESRI datum names.}
+     *
+     * {@section Future evolutions}
+     * This method implements heuristic rules learned from experience while trying to provide inter-operability
+     * with different data producers. Those rules may be adjusted in any future SIS version according experience
+     * gained while working with more data producers.
      *
      * @param  name The name to compare.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
