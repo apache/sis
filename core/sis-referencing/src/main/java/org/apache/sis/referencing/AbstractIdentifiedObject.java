@@ -519,12 +519,12 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * {@section Overriding by subclasses}
      * Some subclasses add more flexibility to the comparisons:
      * <ul>
-     *   <li>{@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#nameMatches(String) Comparisons of
-     *       coordinate system axis names} consider {@code "Lat"}, {@code "Latitude"} and {@code "Geodetic latitude"}
-     *       as synonymous, and likewise for longitude.</li>
-     *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#nameMatches(String) Comparisons
-     *       of geodetic datum} ignore the {@code "D_"} prefix, if any. This prefix appears in ESRI datum name
-     *       (e.g. {@code "D_WGS_1984"}).</li>
+     *   <li>{@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#isHeuristicMatchForName(String)
+     *       Comparisons of coordinate system axis names} consider {@code "Lat"}, {@code "Latitude"} and
+     *       {@code "Geodetic latitude"} as synonymous, and likewise for longitude.</li>
+     *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
+     *       Comparisons of geodetic datum} ignore the {@code "D_"} prefix, if any.
+     *       This prefix appears in ESRI datum name (e.g. {@code "D_WGS_1984"}).</li>
      * </ul>
      *
      * {@section Future evolutions}
@@ -535,10 +535,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @param  name The name to compare with the object name or aliases.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      *
-     * @see IdentifiedObjects#nameMatches(IdentifiedObject, String)
+     * @see IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)
      */
-    public boolean nameMatches(final String name) {
-        return IdentifiedObjects.nameMatches(this, alias, name);
+    public boolean isHeuristicMatchForName(final String name) {
+        return IdentifiedObjects.isHeuristicMatchForName(this, alias, name);
     }
 
     /**
@@ -565,7 +565,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * because objects of those types with different names have completely different meaning.
      * For example nothing differentiate the {@code "semi_major"} and {@code "semi_minor"} parameters except the name.
      * The name comparison may be lenient however, i.e. the rules may accept a name matching an alias.
-     * See {@link #nameMatches(String)} for more information.
+     * See {@link #isHeuristicMatchForName(String)} for more information.
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or

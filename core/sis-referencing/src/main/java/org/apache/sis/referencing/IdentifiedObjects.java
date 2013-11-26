@@ -291,9 +291,10 @@ public final class IdentifiedObjects extends Static {
      * Returns {@code true} if either the {@linkplain AbstractIdentifiedObject#getName() primary name} or at least
      * one {@linkplain AbstractIdentifiedObject#getAlias() alias} matches the given string according heuristic rules.
      * If the given object is an instance of {@link AbstractIdentifiedObject}, then this method delegates to its
-     * {@link AbstractIdentifiedObject#nameMatches(String) nameMatches(String)} method in order to leverage the
-     * additional rules implemented by sub-classes. Otherwise the fallback implementation returns {@code true}
-     * if the given {@code name} is equal, ignoring aspects documented below, to one of the following names:
+     * {@link AbstractIdentifiedObject#isHeuristicMatchForName(String) isHeuristicMatchForName(String)} method
+     * in order to leverage the additional rules implemented by sub-classes.
+     * Otherwise the fallback implementation returns {@code true} if the given {@code name} is equal,
+     * ignoring aspects documented below, to one of the following names:
      *
      * <ul>
      *   <li>The {@linkplain AbstractIdentifiedObject#getName() primary name}'s {@linkplain NamedIdentifier#getCode() code}
@@ -314,16 +315,16 @@ public final class IdentifiedObjects extends Static {
      * @param  name The name to compare with the object name or aliases.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      *
-     * @see AbstractIdentifiedObject#nameMatches(String)
+     * @see AbstractIdentifiedObject#isHeuristicMatchForName(String)
      */
-    public static boolean nameMatches(final IdentifiedObject object, final String name) {
+    public static boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
         if (object instanceof AbstractIdentifiedObject) {
             // DefaultCoordinateSystemAxis overrides this method.
             // We really need to delegate to the overridden method.
-            return ((AbstractIdentifiedObject) object).nameMatches(name);
+            return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
             ensureNonNull("object", object);
-            return nameMatches(object, object.getAlias(), name);
+            return isHeuristicMatchForName(object, object.getAlias(), name);
         }
     }
 
@@ -339,7 +340,9 @@ public final class IdentifiedObjects extends Static {
      * @param  name    The name for which to check for equality.
      * @return {@code true} if the primary name or at least one alias matches the given {@code name}.
      */
-    static boolean nameMatches(final IdentifiedObject object, final Collection<GenericName> aliases, CharSequence name) {
+    static boolean isHeuristicMatchForName(final IdentifiedObject object, final Collection<GenericName> aliases,
+            CharSequence name)
+    {
         name = CharSequences.toASCII(name);
         final ReferenceIdentifier id = object.getName();
         if (id != null) { // Paranoiac check.

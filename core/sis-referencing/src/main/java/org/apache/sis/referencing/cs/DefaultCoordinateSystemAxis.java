@@ -85,7 +85,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * <p>Keys in this map are names <strong>in lower cases</strong>.
      * Values are any object that allow us to differentiate latitude from longitude.</p>
      *
-     * @see #nameMatches(String)
+     * @see #isHeuristicMatchForName(String)
      */
     private static final Map<String,Object> ALIASES = new HashMap<>(12);
     static {
@@ -109,11 +109,11 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * map, because experience has shown that doing so cause a lot of undesirable side effects. The "x" abbreviation
      * is used for too many things ("Easting", "Westing", "Geocentric X", "Display right", "Display left") and likewise
      * for "y". Declaring them as aliases introduces confusion in many places. Instead, the "x" and "y" cases are
-     * handled in a special way by the {@code nameMatchesXY(…)} method.
+     * handled in a special way by the {@code isHeuristicMatchForNameXY(…)} method.
      *
      * <p>Names at even index are for "x" and names at odd index are for "y".</p>
      *
-     * @see #nameMatchesXY(String, String)
+     * @see #isHeuristicMatchForNameXY(String, String)
      */
     private static final String[] ALIASES_XY = {
         "Easting", "Northing",
@@ -381,7 +381,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
      * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
      * This method performs the comparison documented in the
-     * {@linkplain AbstractIdentifiedObject#nameMatches(String) super-class},
+     * {@link AbstractIdentifiedObject#isHeuristicMatchForName(String) super-class},
      * with an additional flexibility for latitudes and longitudes:
      *
      * <ul>
@@ -404,14 +404,14 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      */
     @Override
-    public boolean nameMatches(final String name) {
-        if (super.nameMatches(name)) {
+    public boolean isHeuristicMatchForName(final String name) {
+        if (super.isHeuristicMatchForName(name)) {
             return true;
         }
         /*
-         * The standard comparisons didn't worked. Check for the aliases. Note: we don't
-         * test for 'nameMatchesXY(...)' here because the "x" and "y" axis names are too
-         * generic. We test them only in the 'equals' method, which has the extra-safety
+         * The standard comparisons didn't worked. Check for the aliases. Note: we don't test
+         * for  'isHeuristicMatchForNameXY(...)'  here because the "x" and "y" axis names are
+         * too generic.  We test them only in the 'equals' method, which has the extra-safety
          * of units comparison (so less risk to treat incompatible axes as equivalent).
          */
         final Object type = ALIASES.get(trimWhitespaces(name).toLowerCase(Locale.US)); // Our ALIASES are in English.
@@ -428,7 +428,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @return {@code true} if the second name is equivalent to "x" or "y"
      *         (depending on the {@code xy} value), or {@code false} otherwise.
      */
-    private static boolean nameMatchesXY(String xy, String name) {
+    private static boolean isHeuristicMatchForNameXY(String xy, String name) {
         xy = trimWhitespaces(xy);
         if (xy.length() == 1) {
             int i = Character.toLowerCase(xy.charAt(0)) - 'x';
@@ -504,25 +504,28 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
              *       the 'equals' method in the superclass.
              */
             final String thatName = that.getName().getCode();
-            if (!nameMatches(thatName)) {
+            if (!isHeuristicMatchForName(thatName)) {
                 /*
                  * The above test checked for special cases ("Lat" / "Lon" aliases, etc.).
                  * The next line may repeat the same check, so we may have a partial waste
                  * of CPU.   But we do it anyway for checking the 'that' aliases, and also
-                 * because the user may have overridden the 'that.nameMatches(...)' method.
+                 * because the user may have overridden 'that.isHeuristicMatchForName(…)'.
                  */
                 final String thisName = getName().getCode();
-                if (!IdentifiedObjects.nameMatches(that, thisName)) {
+                if (!IdentifiedObjects.isHeuristicMatchForName(that, thisName)) {
                     /*
                      * For the needs of CoordinateSystems.axisColinearWith(...), we must stop here.
-                     * In addition it may be safer to not test 'nameMatchesXY' when we don't have
-                     * the extra-safety of units comparison, because "x" and "y" names are too generic.
+                     * In addition it may be safer to not test 'isHeuristicMatchForNameXY' when we
+                     * do not have the extra-safety of units comparison, because "x" and "y" names
+                     * are too generic.
                      */
                     if (!compareUnit) {
                         return false;
                     }
                     // Last chance: check for the special case of "x" and "y" axis names.
-                    if (!nameMatchesXY(thatName, thisName) && !nameMatchesXY(thisName, thatName)) {
+                    if (!isHeuristicMatchForNameXY(thatName, thisName) &&
+                        !isHeuristicMatchForNameXY(thisName, thatName))
+                    {
                         return false;
                     }
                 }
