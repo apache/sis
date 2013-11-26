@@ -210,12 +210,12 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
 
     /**
      * Returns the number of dimensions of this coordinate system.
-     * This is the number of axes.
+     * This is the number of axes given at construction time.
      *
      * @return The number of dimensions of this coordinate system.
      */
     @Override
-    public int getDimension() {
+    public final int getDimension() {
         return axes.length;
     }
 
@@ -227,7 +227,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @throws IndexOutOfBoundsException if {@code dimension} is out of bounds.
      */
     @Override
-    public CoordinateSystemAxis getAxis(final int dimension) throws IndexOutOfBoundsException {
+    public final CoordinateSystemAxis getAxis(final int dimension) throws IndexOutOfBoundsException {
         return axes[dimension];
     }
 
