@@ -78,6 +78,16 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     private final InternationalString scope;
 
     /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractReferenceSystem() {
+        domainOfValidity = null;
+        scope = null;
+    }
+
+    /**
      * Constructs a new reference system with the same values than the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.

@@ -173,7 +173,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     protected AbstractCS(final CoordinateSystem cs) {
         super(cs);
         if (cs instanceof AbstractCS) {
-            axes = ((AbstractCS) cs).axes;
+            axes = ((AbstractCS) cs).axes; // Share the array.
         } else {
             axes = new CoordinateSystemAxis[cs.getDimension()];
             for (int i=0; i<axes.length; i++) {

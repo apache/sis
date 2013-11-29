@@ -180,6 +180,17 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private Unit<Length> unit;
 
     /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultEllipsoid() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        // We need to let the DefaultEllipsoid fields unitialized
+        // because afterUnmarshal(…) will check for zero values.
+    }
+
+    /**
      * Creates a new ellipsoid using the specified axis length.
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
