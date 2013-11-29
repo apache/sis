@@ -16,7 +16,11 @@
  */
 package org.apache.sis.referencing.cs;
 
+import javax.measure.converter.ConversionException;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -24,8 +28,10 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static org.junit.Assert.*;
+import static java.util.Collections.singletonMap;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.referencing.cs.CoordinateSystems.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -153,5 +159,89 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
         assertNotNull(source, dir1);
         assertNotNull(target, dir2);
         assertEquals(expected, angle(dir1, dir2), STRICT);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} for (λ,φ) ↔ (φ,λ).
+     * This very common conversion is of critical importance to Apache SIS.
+     *
+     * @throws ConversionException Should not happen.
+     */
+    @Test
+    public void testSwapAndScaleAxes2D() throws ConversionException {
+        final CoordinateSystem λφ = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(λ,φ)"),
+                CommonAxes.GEODETIC_LONGITUDE,
+                CommonAxes.GEODETIC_LATITUDE);
+        final CoordinateSystem φλ = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(φ,λ)"),
+                CommonAxes.GEODETIC_LATITUDE,
+                CommonAxes.GEODETIC_LONGITUDE);
+        final Matrix expected = Matrices.create(3, 3, new double[] {
+                0, 1, 0,
+                1, 0, 0,
+                0, 0, 1});
+        assertTrue(swapAndScaleAxes(λφ, λφ).isIdentity());
+        assertTrue(swapAndScaleAxes(φλ, φλ).isIdentity());
+        assertMatrixEquals("(λ,φ) → (φ,λ)", expected, swapAndScaleAxes(λφ, φλ), STRICT);
+        assertMatrixEquals("(φ,λ) → (λ,φ)", expected, swapAndScaleAxes(φλ, λφ), STRICT);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} for (λ,φ,h) ↔ (φ,λ,h).
+     * This very common conversion is of critical importance to Apache SIS.
+     *
+     * @throws ConversionException Should not happen.
+     */
+    @Test
+    @DependsOnMethod("testSwapAndScaleAxes2D")
+    public void testSwapAndScaleAxes3D() throws ConversionException {
+        final CoordinateSystem λφh = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(λ,φ,h)"),
+                CommonAxes.GEODETIC_LONGITUDE,
+                CommonAxes.GEODETIC_LATITUDE,
+                CommonAxes.ELLIPSOIDAL_HEIGHT);
+        final CoordinateSystem φλh = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(φ,λ,h)"),
+                CommonAxes.GEODETIC_LATITUDE,
+                CommonAxes.GEODETIC_LONGITUDE,
+                CommonAxes.ELLIPSOIDAL_HEIGHT);
+        final Matrix expected = Matrices.create(4, 4, new double[] {
+                0, 1, 0, 0,
+                1, 0, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1});
+        assertTrue(swapAndScaleAxes(λφh, λφh).isIdentity());
+        assertTrue(swapAndScaleAxes(φλh, φλh).isIdentity());
+        assertMatrixEquals("(λ,φ,h) → (φ,λ,h)", expected, swapAndScaleAxes(λφh, φλh), STRICT);
+        assertMatrixEquals("(φ,λ,h) → (λ,φ,h)", expected, swapAndScaleAxes(φλh, λφh), STRICT);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)}
+     * with a more arbitrary case, which include unit conversions.
+     *
+     * @throws ConversionException Should not happen.
+     */
+    @Test
+    @DependsOnMethod("testSwapAndScaleAxes3D")
+    public void testSwapAndScaleAxes() throws ConversionException {
+        final CoordinateSystem hxy = new DefaultCartesianCS(singletonMap(NAME_KEY, "(h,x,y)"),
+                CommonAxes.HEIGHT_cm,
+                CommonAxes.EASTING,
+                CommonAxes.NORTHING);
+        final CoordinateSystem yxh = new DefaultCartesianCS(singletonMap(NAME_KEY, "(y,x,h)"),
+                CommonAxes.SOUTHING,
+                CommonAxes.EASTING,
+                CommonAxes.DEPTH);
+        assertTrue(swapAndScaleAxes(hxy, hxy).isIdentity());
+        assertTrue(swapAndScaleAxes(yxh, yxh).isIdentity());
+        assertMatrixEquals("(h,x,y) → (y,x,h)", Matrices.create(4, 4, new double[] {
+                0,    0,   -1,    0,
+                0,    1,    0,    0,
+               -0.01, 0,    0,    0,
+                0,    0,    0,    1}), swapAndScaleAxes(hxy, yxh), STRICT);
+
+        assertMatrixEquals("(y,x,h) → (h,x,y)", Matrices.create(4, 4, new double[] {
+                0,    0, -100,    0,
+                0,    1,    0,    0,
+               -1,    0,    0,    0,
+                0,    0,    0,    1}), swapAndScaleAxes(yxh, hxy), STRICT);
     }
 }

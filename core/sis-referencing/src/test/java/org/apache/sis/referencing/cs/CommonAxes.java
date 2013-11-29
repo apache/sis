@@ -130,6 +130,12 @@ public final strictfp class CommonAxes {
             AxisDirection.UP, Double.POSITIVE_INFINITY, SI.METRE);
 
     /**
+     * A height in centimetres, for {@link CoordinateSystemsTest} only.
+     */
+    static final DefaultCoordinateSystemAxis HEIGHT_cm = create("Height", "h",
+            AxisDirection.UP, Double.POSITIVE_INFINITY, SI.CENTIMETRE);
+
+    /**
      * The default axis for altitude values.
      * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#METRE metres}.
      * The abbreviation is lower case "<var>h</var>".
@@ -362,6 +368,18 @@ public final strictfp class CommonAxes {
      */
     public static final DefaultCoordinateSystemAxis SOUTHING = create("Southing", "S",
             AxisDirection.SOUTH, Double.POSITIVE_INFINITY, SI.METRE);
+
+    /**
+     * An axis with North-East orientation.
+     */
+    static final DefaultCoordinateSystemAxis NORTH_EAST = create("NORTH_EAST", "NE",
+            AxisDirection.NORTH_EAST, Double.POSITIVE_INFINITY, SI.METRE);
+
+    /**
+     * An axis with South-East orientation.
+     */
+    static final DefaultCoordinateSystemAxis SOUTH_EAST = create("SOUTH_EAST", "SE",
+            AxisDirection.SOUTH_EAST, Double.POSITIVE_INFINITY, SI.METRE);
 
     /**
      * A default axis for time values in a {@linkplain org.opengis.referencing.cs.TimeCS time CS}.
