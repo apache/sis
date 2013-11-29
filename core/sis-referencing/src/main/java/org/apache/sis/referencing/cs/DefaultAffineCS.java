@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -30,7 +29,7 @@ import org.apache.sis.util.ComparisonMode;
 
 
 /**
- * A 2- or 3-dimensional coordinate system with straight axes that are not necessarily orthogonal.
+ * A 2- or 3-dimensional coordinate system made of straight axes (not necessarily orthogonal).
  *
  * <table class="sis"><tr>
  *   <th>Used with</th>
@@ -162,24 +161,25 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
     }
 
     /**
-     * Returns {@code true} if the given axis direction is allowed for this coordinate system.
-     * The default implementation accepts all directions except temporal ones
-     * (i.e. {@link AxisDirection#FUTURE FUTURE} and {@link AxisDirection#PAST PAST}).
+     * Returns {@code VALID} if the given argument values are allowed for this coordinate system,
+     * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time.
+     *
+     * <p>The current implementation rejects all directions that are known to be non-spatial, not
+     * for grids and not for display. We conservatively accept all others axis directions because
+     * some of them are created from strings like "South along 90°E".</p>
+     *
+     * <p>This method accepts linear units, but also accepts the dimensionless units because the
+     * later are used for grid and display coordinates.</p>
      */
     @Override
-    final boolean isCompatibleDirection(final AxisDirection direction) {
-        return !AxisDirection.FUTURE.equals(AxisDirections.absolute(direction));
-    }
-
-    /**
-     * Returns {@code true} if the given unit is compatible with {@linkplain SI#METRE metres}.
-     * In addition, this method also accepts {@link Unit#ONE}, which is used for coordinates in a grid.
-     * This method is invoked at construction time for checking units compatibility.
-     */
-    @Override
-    final boolean isCompatibleUnit(final AxisDirection direction, final Unit<?> unit) {
-        return Units.isLinear(unit) || Unit.ONE.equals(unit);
-        // Note: this condition is also coded in PredefinedCS.rightHanded(AffineCS).
+    final int validateAxis(final AxisDirection direction, final Unit<?> unit) {
+        if (!AxisDirections.isSpatialOrCustom(direction, true)) {
+            return INVALID_DIRECTION;
+        }
+        if (!Units.isLinear(unit) && !Unit.ONE.equals(unit)) {
+            return INVALID_UNIT;
+        }
+        return VALID;
     }
 
     /**

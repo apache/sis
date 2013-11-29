@@ -21,15 +21,14 @@ import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.measure.Units;
-import org.apache.sis.util.Immutable;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Immutable;
+import org.apache.sis.measure.Units;
 
 
 /**
- * A 2- or 3-dimensional coordinate system in which position is specified by geodetic latitude and longitude,
- * and optionally by ellipsoidal height.
+ * A 2- or 3-dimensional coordinate system for geodetic latitude and longitude, optionally with ellipsoidal height.
  *
  * <table class="sis"><tr>
  *   <th>Used with</th>
@@ -148,32 +147,26 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     }
 
     /**
-     * Returns {@code true} if the specified axis direction is allowed for this coordinate system.
-     * The current implementation accepts only the following directions:
+     * Returns {@code VALID} if the given argument values are allowed for this coordinate system,
+     * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time.
+     *
+     * <p>The current implementation accepts only the following directions:
      * {@link AxisDirection#NORTH NORTH}, {@link AxisDirection#SOUTH SOUTH},
      * {@link AxisDirection#EAST  EAST},  {@link AxisDirection#WEST  WEST},
      * {@link AxisDirection#UP    UP} and {@link AxisDirection#DOWN  DOWN}.
+     * The units shall be angular, except the vertical ones which shall be linear.</p>
      */
     @Override
-    final boolean isCompatibleDirection(AxisDirection direction) {
+    final int validateAxis(AxisDirection direction, final Unit<?> unit) {
         direction = AxisDirections.absolute(direction);
-        return AxisDirection.NORTH.equals(direction) ||
-               AxisDirection.EAST .equals(direction) ||
-               AxisDirection.UP   .equals(direction);
-    }
-
-    /**
-     * Returns {@code true} if the specified unit is an angular units, or a linear one in the
-     * special case of height. This method is invoked at construction time for checking units
-     * compatibility.
-     */
-    @Override
-    final boolean isCompatibleUnit(AxisDirection direction, final Unit<?> unit) {
-        direction = AxisDirections.absolute(direction);
-        if (AxisDirection.UP.equals(direction)) {
-            return Units.isLinear(unit);
+        final boolean isVertical = AxisDirection.UP.equals(direction);
+        if (!isVertical && !AxisDirection.NORTH.equals(direction) && !AxisDirection.EAST.equals(direction)) {
+            return INVALID_DIRECTION;
         }
-        return Units.isAngular(unit);
+        if (!(isVertical ? Units.isLinear(unit) : Units.isAngular(unit))) {
+            return INVALID_UNIT;
+        }
+        return VALID;
     }
 
     /**

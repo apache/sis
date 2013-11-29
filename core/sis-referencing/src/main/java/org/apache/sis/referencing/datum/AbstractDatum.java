@@ -299,10 +299,9 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * with the following additional flexibility:
      *
      * <ul>
-     *   <li>The {@code "D_"} prefix, if presents in the given name or this datum name, is ignored.</li>
+     *   <li>The {@code "D_"} prefix (used in ESRI datum names), if presents in the given name or in this datum name,
+     *       is ignored.</li>
      * </ul>
-     *
-     * {@note The <code>"D_"</code> prefix is used in ESRI datum names.}
      *
      * {@section Future evolutions}
      * This method implements heuristic rules learned from experience while trying to provide inter-operability
