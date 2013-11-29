@@ -67,6 +67,11 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     private static final long serialVersionUID = 6757665252533744744L;
 
     /**
+     * Return value for {@link #validateAxis(AxisDirection, Unit)}
+     */
+    static final int VALID = 0, INVALID_DIRECTION = 1, INVALID_UNIT = 2;
+
+    /**
      * The sequence of axes for this coordinate system.
      */
     @XmlElement(name = "axis")
@@ -120,20 +125,22 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
             ensureNonNullElement("axes[#].name", i, name);
             final AxisDirection direction = axis.getDirection();
             ensureNonNullElement("axes[#].direction", i, direction);
+            final Unit<?> unit = axis.getUnit();
+            ensureNonNullElement("axes[#].unit", i, unit);
             /*
              * Ensures that axis direction and units are compatible with the
              * coordinate system to be created. For example CartesianCS will
-             * accepts only linear or dimensionless units.
+             * accept only linear or dimensionless units.
              */
-            if (!isCompatibleDirection(direction)) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.IllegalAxisDirection_2, getClass(), direction));
-            }
-            final Unit<?> unit = axis.getUnit();
-            ensureNonNullElement("axes[#].unit", i, unit);
-            if (!isCompatibleUnit(direction, unit)) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.IllegalUnitFor_2, name, unit));
+            switch (validateAxis(direction, unit)) {
+                case INVALID_DIRECTION: {
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.IllegalAxisDirection_2, getClass(), direction));
+                }
+                case INVALID_UNIT: {
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.IllegalUnitFor_2, name, unit));
+                }
             }
             /*
              * Ensures there is no axis along the same direction
@@ -176,36 +183,22 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Returns {@code true} if the specified axis direction is allowed for this coordinate system.
-     * This method is invoked at construction time for checking argument validity. The default implementation
-     * returns {@code true} for all axis directions. Subclasses will override this method in order to put more
-     * restrictions on allowed axis directions.
+     * Returns {@link #VALID} if the given argument values are allowed for an axis in this coordinate system,
+     * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time for checking
+     * argument validity. The default implementation returns {@code VALID} in all cases. Subclasses override
+     * this method in order to put more restrictions on allowed axis directions and check for compatibility
+     * with {@linkplain SI#METRE metre} or {@linkplain NonSI#DEGREE_ANGLE degree} units.
      *
-     * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depends
+     * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depend
      * on this object's state. This method is not in public API for that reason.</p>
      *
      * @param  direction The direction to test for compatibility.
-     * @return {@code true} if the given direction is compatible with this coordinate system.
-     */
-    boolean isCompatibleDirection(final AxisDirection direction) {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} is the specified unit is legal for the specified axis direction.
-     * This method is invoked at construction time for checking units compatibility. The default implementation
-     * returns {@code true} in all cases. Subclasses can override this method and check for compatibility with
-     * {@linkplain SI#METRE metre} or {@linkplain NonSI#DEGREE_ANGLE degree} units.
-     *
-     * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depends
-     * on this object's state. This method is not in public API for that reason.</p>
-     *
-     * @param  direction The direction of the axis having the given unit.
      * @param  unit The unit to test for compatibility.
-     * @return {@code true} if the given unit is compatible with this coordinate system.
+     * @return {@link #VALID} if the given direction and unit are compatible with this coordinate system,
+     *         {@link #DIRECTION} if the direction is invalid or {@link #UNIT} if the unit is invalid.
      */
-    boolean isCompatibleUnit(final AxisDirection direction, final Unit<?> unit) {
-        return true;
+    int validateAxis(final AxisDirection direction, final Unit<?> unit) {
+        return VALID;
     }
 
     /**
@@ -242,17 +235,18 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true; // Slight optimization.
-        }
-        if (!(object instanceof CoordinateSystem && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
             case STRICT: {
+                // No need to check the class - this check has been done by super.equals(…).
                 return Arrays.equals(axes, ((AbstractCS) object).axes);
             }
             default: {
+                if (!(object instanceof CoordinateSystem)) {
+                    return false;
+                }
                 final CoordinateSystem that = (CoordinateSystem) object;
                 final int dimension = getDimension();
                 if (dimension != that.getDimension()) {

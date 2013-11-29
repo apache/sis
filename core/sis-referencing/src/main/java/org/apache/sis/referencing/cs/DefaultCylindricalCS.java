@@ -17,16 +17,18 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
+import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Immutable;
+import org.apache.sis.measure.Units;
 
 
 /**
- * A 3-dimensional coordinate system consisting of a
+ * A 3-dimensional coordinate system made of a
  * {@linkplain DefaultPolarCS polar coordinate system} extended by a straight perpendicular axis.
  *
  * <table class="sis"><tr>
@@ -129,12 +131,22 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
     }
 
     /**
-     * Returns {@code true} if the specified axis direction is allowed for this coordinate system.
-     * Current implementation accepts all directions except temporal ones.
+     * Returns {@code VALID} if the given argument values are allowed for this coordinate system,
+     * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time.
+     *
+     * <p>The current implementation rejects all directions that are known to be non-spatial.
+     * We conservatively accept custom axis directions because some of them are created from
+     * strings like "South along 90°E".</p>
      */
     @Override
-    final boolean isCompatibleDirection(final AxisDirection direction) {
-        return !AxisDirection.FUTURE.equals(AxisDirections.absolute(direction));
+    final int validateAxis(final AxisDirection direction, final Unit<?> unit) {
+        if (!AxisDirections.isSpatialOrCustom(direction, false)) {
+            return INVALID_DIRECTION;
+        }
+        if (!Units.isLinear(unit)) {
+            return INVALID_UNIT;
+        }
+        return VALID;
     }
 
     /**
