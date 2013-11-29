@@ -36,6 +36,7 @@ import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.internal.jaxb.referencing.RS_Identifier;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Immutable;
@@ -122,6 +123,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see #getIdentifier()
      */
     @XmlElement
+    @XmlJavaTypeAdapter(RS_Identifier.class) // Not the same RS_Identifier than metadata.
     private final ReferenceIdentifier name;
 
     /**
@@ -155,6 +157,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The only possible outdated value is 0, which is okay.
      */
     private transient int hashCode;
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractIdentifiedObject() {
+        name        = null;
+        alias       = null;
+        identifiers = null;
+        remarks     = null;
+    }
 
     /**
      * Constructs an object from the given properties. Keys are strings from the table below.

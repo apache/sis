@@ -104,6 +104,19 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     private final InternationalString scope;
 
     /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractDatum() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        anchorPoint      = null;
+        realizationEpoch = Long.MIN_VALUE;
+        domainOfValidity = null;
+        scope            = null;
+    }
+
+    /**
      * Creates a datum from the given properties.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.

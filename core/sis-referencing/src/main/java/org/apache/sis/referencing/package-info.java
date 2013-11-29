@@ -70,4 +70,28 @@
  * @version 0.4
  * @module
  */
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
+    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD)
+})
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(RS_Identifier.class),
+    @XmlJavaTypeAdapter(StringAdapter.class),
+    @XmlJavaTypeAdapter(InternationalStringConverter.class)
+})
 package org.apache.sis.referencing;
+
+import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlNsForm;
+import javax.xml.bind.annotation.XmlSchema;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
+
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.gco.*;
+import org.apache.sis.internal.jaxb.metadata.*;
+import org.apache.sis.internal.jaxb.referencing.RS_Identifier;

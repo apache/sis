@@ -49,6 +49,14 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     private static final long serialVersionUID = 1498304918725248637L;
 
     /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultEngineeringDatum() {
+    }
+
+    /**
      * Creates an engineering datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:

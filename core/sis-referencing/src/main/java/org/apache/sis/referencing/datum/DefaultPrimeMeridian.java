@@ -99,6 +99,17 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     private final Unit<Angle> angularUnit;
 
     /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultPrimeMeridian() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        greenwichLongitude = Double.NaN;
+        angularUnit = null;
+    }
+
+    /**
      * Creates a prime meridian from the given properties. The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
