@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
@@ -64,6 +65,9 @@ import java.util.Objects;
  */
 @Immutable
 @XmlType(name="AbstractDatumType")
+@XmlSeeAlso(
+    DefaultGeodeticDatum.class
+)
 public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Serial number for inter-operability with different versions.

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.test;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.io.StringReader;
@@ -25,6 +27,8 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.xml.XML;
 import org.junit.After;
 
 import static org.junit.Assert.*;
@@ -41,12 +45,22 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see XMLComparator
  */
 public abstract strictfp class XMLTestCase extends TestCase {
+    /**
+     * A poll of configured {@link Marshaller} and {@link Unmarshaller} binded to the default set of classes.
+     * The locale is set to {@link Locale#UK} (the language of ISO standards) and the timezone is arbitrarily
+     * set to CET (Central European Time). We intentionally use a timezone different than UTC in order to have
+     * an error of one or two hours if a code fails to take timezone offset in account.
+     *
+     * <p>This field is initially {@code null} and created when first needed.</p>
+     */
+    private static MarshallerPool defaultPool;
+
     /**
      * The context containing locale, timezone, GML version and other information.
      * The context is initially {@code null} and can be created either explicitely,
@@ -66,6 +80,27 @@ public abstract strictfp class XMLTestCase extends TestCase {
      * Creates a new test case.
      */
     protected XMLTestCase() {
+    }
+
+    /**
+     * Returns the default XML (un)marshaller pool potentially shared by test methods in all sub-classes.
+     * The (un)marshallers locale is set to {@link Locale#UK} (the language of ISO standards) and their
+     * timezone is arbitrarily set to CET (<cite>Central European Time</cite>).
+     *
+     * {@note We intentionally use a timezone different than UTC in order to have an error of one or two hours
+     *        if a code fails to take timezone offset in account.}
+     *
+     * @return The shared (un)marshaller pool.
+     * @throws JAXBException If an error occurred while creating the JAXB marshaller.
+     */
+    protected static synchronized MarshallerPool getMarshallerPool() throws JAXBException {
+        if (defaultPool == null) {
+            final Map<String,Object> properties = new HashMap<>(4);
+            assertNull(properties.put(XML.LOCALE, Locale.UK));
+            assertNull(properties.put(XML.TIMEZONE, "CET"));
+            defaultPool = new MarshallerPool(properties);
+        }
+        return defaultPool;
     }
 
     /**

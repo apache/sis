@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -107,6 +108,12 @@ import java.util.Objects;
 @XmlType(name="IdentifiedObjectType", propOrder={
     "identifier",
     "name"
+})
+@XmlSeeAlso({
+    AbstractReferenceSystem.class,
+    org.apache.sis.referencing.datum.AbstractDatum.class,
+    org.apache.sis.referencing.datum.DefaultEllipsoid.class,
+    org.apache.sis.referencing.datum.DefaultPrimeMeridian.class
 })
 public class AbstractIdentifiedObject extends FormattableObject implements IdentifiedObject,
         LenientComparable, Deprecable, Serializable

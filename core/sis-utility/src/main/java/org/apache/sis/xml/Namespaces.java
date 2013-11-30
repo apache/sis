@@ -109,14 +109,16 @@ public final class Namespaces extends Static {
     /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "gml"}.
+     * The current version is 3.2, but this may change in any future SIS release.
      *
      * @category OGC
      */
-    public static final String GML = "http://www.opengis.net/gml";
+    public static final String GML = "http://www.opengis.net/gml/3.2";
 
     /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "csw"}.
+     * The current version is 2.0.2, but this may change in any future SIS release.
      *
      * @category OGC
      */

@@ -16,7 +16,8 @@
  */
 package org.apache.sis.referencing.datum;
 
-import org.apache.sis.test.TestCase;
+import javax.measure.unit.NonSI;
+import javax.xml.bind.JAXBException;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
@@ -31,7 +32,7 @@ import static org.apache.sis.test.mock.PrimeMeridianMock.GREENWICH;
  * @version 0.4
  * @module
  */
-public final strictfp class DefaultPrimeMeridianTest extends TestCase {
+public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
     /**
      * Tests {@link DefaultPrimeMeridian#toWKT()}.
      */
@@ -39,5 +40,17 @@ public final strictfp class DefaultPrimeMeridianTest extends TestCase {
     public void testToWKT() {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
         assertWktEquals(pm, "PRIMEM[“Greenwich”, 0.0]");
+    }
+
+    /**
+     * Tests unmarshalling.
+     *
+     * @throws JAXBException If an error occurred during unmarshalling.
+     */
+    @Test
+    public void testUnmarshall() throws JAXBException {
+        DefaultPrimeMeridian pm = unmarshall(DefaultPrimeMeridian.class, "Greenwich.xml");
+        assertEquals("greenwichLongitude", pm.getGreenwichLongitude(), 0, 0);
+//      assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
     }
 }

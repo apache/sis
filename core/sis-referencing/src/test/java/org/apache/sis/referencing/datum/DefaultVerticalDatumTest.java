@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
@@ -36,7 +35,7 @@ import static java.util.Collections.singletonMap;
  * @module
  */
 @DependsOn(org.apache.sis.internal.referencing.VerticalDatumTypesTest.class)
-public final strictfp class DefaultVerticalDatumTest extends TestCase {
+public final strictfp class DefaultVerticalDatumTest extends DatumTestCase {
     /**
      * Tests the {@link DefaultVerticalDatum#getVerticalDatumType()} method in a state
      * simulating unmarshalling of GML 3.2 document.

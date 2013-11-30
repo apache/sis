@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Collections;
@@ -34,8 +32,6 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.XMLTestCase;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -47,42 +43,12 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-3.17)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-121">GEOTK-121</a>
  */
 public final strictfp class CodeListMarshallingTest extends XMLTestCase {
-    /**
-     * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
-     */
-    private static MarshallerPool pool;
-
-    /**
-     * Creates the XML (un)marshaller pool to be shared by all test methods.
-     * The (un)marshallers locale and timezone will be set to fixed values.
-     *
-     * @throws JAXBException If an error occurred while creating the pool.
-     *
-     * @see #disposeMarshallerPool()
-     */
-    @BeforeClass
-    public static void createMarshallerPool() throws JAXBException {
-        final Map<String,Object> properties = new HashMap<>(4);
-        assertNull(properties.put(XML.LOCALE, Locale.FRANCE));
-        assertNull(properties.put(XML.TIMEZONE, "CET"));
-        pool = new MarshallerPool(properties);
-    }
-
-    /**
-     * Invoked by JUnit after the execution of every tests in order to dispose
-     * the {@link MarshallerPool} instance used internally by this class.
-     */
-    @AfterClass
-    public static void disposeMarshallerPool() {
-        pool = null;
-    }
-
     /**
      * Returns a XML string to use for testing purpose.
      *
@@ -140,6 +106,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
         final ResponsibleParty rp = (ResponsibleParty) XML.unmarshal(expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());
 
+        final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.setProperty(XML.SCHEMAS, Collections.singletonMap("gmd",
                 "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas")); // Intentionally omit trailing '/'.
@@ -155,6 +122,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testLocalization() throws JAXBException {
+        final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         /*
          * First, test using the French locale.
@@ -185,6 +153,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testExtraCodes() throws JAXBException {
+        final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         final DefaultDataIdentification id = new DefaultDataIdentification();
         id.setTopicCategories(Arrays.asList(
