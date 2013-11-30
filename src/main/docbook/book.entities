@@ -10,5 +10,5 @@
 <!ENTITY xmlns-gmd      "http://www.isotc211.org/2005/gmd">
 <!ENTITY xmlns-gmi      "http://www.isotc211.org/2005/gmi">
 <!ENTITY xmlns-gmx      "http://www.isotc211.org/2005/gmx">
-<!ENTITY xmlns-gml      "http://www.opengis.net/gml">
+<!ENTITY xmlns-gml      "http://www.opengis.net/gml/3.2">
 <!ENTITY xmlns-xlink    "http://www.w3.org/1999/xlink">

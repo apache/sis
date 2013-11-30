@@ -29,7 +29,6 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
@@ -49,7 +48,7 @@ import static org.apache.sis.test.mock.GeodeticDatumMock.*;
   DefaultEllipsoidTest.class,
   BursaWolfParametersTest.class
 })
-public final strictfp class DefaultGeodeticDatumTest extends TestCase {
+public final strictfp class DefaultGeodeticDatumTest extends DatumTestCase {
     /**
      * Tests the creation and serialization of a {@link DefaultGeodeticDatum}.
      */

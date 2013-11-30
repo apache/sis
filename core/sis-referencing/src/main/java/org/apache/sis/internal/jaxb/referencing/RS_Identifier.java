@@ -45,50 +45,57 @@ import org.apache.sis.util.StringBuilders;
  * @version 0.4
  * @module
  */
-public final class RS_Identifier extends XmlAdapter<RS_Identifier, ReferenceIdentifier> {
+public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, ReferenceIdentifier> {
     /**
-     * The identifier code.
-     *
-     * <p><b>Note:</b> GML (the target of this class) represents that code as an XML value, while
-     * {@link org.apache.sis.metadata.iso.ImmutableIdentifier} represents it as an XML element.</p>
+     * The wrapper for GML identifier marshalled as a code value with a codespace attribute.
+     * Defined in a separated class because JAXB does not allow usage of {@code XmlValue} in
+     * a class that inherit an other class.
      */
-    @XmlValue
-    private String code;
+    public static final class Value {
+        /**
+         * The identifier code.
+         *
+         * <p><b>Note:</b> GML (the target of this class) represents that code as an XML value, while
+         * {@link org.apache.sis.metadata.iso.ImmutableIdentifier} represents it as an XML element.</p>
+         */
+        @XmlValue
+        private String code;
 
-    /**
-     * The code space, which is often {@code "EPSG"} with the version in use.
-     *
-     * <p><b>Note:</b> GML (the target of this class) represents that code as an XML attribute, while
-     * {@link org.apache.sis.metadata.iso.ImmutableIdentifier} represents it as an XML element.</p>
-     */
-    @XmlAttribute
-    private String codeSpace;
+        /**
+         * The code space, which is often {@code "EPSG"} with the version in use.
+         *
+         * <p><b>Note:</b> GML (the target of this class) represents that code as an XML attribute, while
+         * {@link org.apache.sis.metadata.iso.ImmutableIdentifier} represents it as an XML element.</p>
+         */
+        @XmlAttribute
+        private String codeSpace;
 
-    /**
-     * Empty constructor for JAXB only.
-     */
-    public RS_Identifier() {
-    }
-
-    /**
-     * Creates a wrapper initialized to the values of the given identifier.
-     *
-     * @param identifier The identifier from which to get the values.
-     */
-    private RS_Identifier(final ReferenceIdentifier identifier) {
-        code      = identifier.getCode();
-        codeSpace = identifier.getCodeSpace();
-        if (codeSpace == null) {
-            codeSpace = "";
+        /**
+         * Empty constructor for JAXB only.
+         */
+        public Value() {
         }
-        String version = identifier.getVersion();
-        if (version != null) {
-            final StringBuilder buffer = new StringBuilder(codeSpace);
-            if (buffer.length() != 0) {
-                buffer.append('_');
+
+        /**
+         * Creates a wrapper initialized to the values of the given identifier.
+         *
+         * @param identifier The identifier from which to get the values.
+         */
+        Value(final ReferenceIdentifier identifier) {
+            code      = identifier.getCode();
+            codeSpace = identifier.getCodeSpace();
+            if (codeSpace == null) {
+                codeSpace = "";
             }
-            StringBuilders.remove(buffer.append('v').append(version), ".");
-            codeSpace = buffer.toString();
+            String version = identifier.getVersion();
+            if (version != null) {
+                final StringBuilder buffer = new StringBuilder(codeSpace);
+                if (buffer.length() != 0) {
+                    buffer.append('_');
+                }
+                StringBuilders.remove(buffer.append('v').append(version), ".");
+                codeSpace = buffer.toString();
+            }
         }
     }
 
@@ -100,7 +107,7 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier, ReferenceIden
      * @return An identifier which represents the value.
      */
     @Override
-    public ReferenceIdentifier unmarshal(final RS_Identifier value) {
+    public ReferenceIdentifier unmarshal(final Value value) {
         if (value != null) {
             final Citation authority = Citations.fromName(value.codeSpace); // May be null.
             return new ImmutableIdentifier(authority, Citations.getIdentifier(authority), value.code);
@@ -116,7 +123,7 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier, ReferenceIden
      * @return The adapter for the given metadata.
      */
     @Override
-    public RS_Identifier marshal(final ReferenceIdentifier value) {
-        return (value != null) ? new RS_Identifier(value) : null;
+    public Value marshal(final ReferenceIdentifier value) {
+        return (value != null) ? new Value(value) : null;
     }
 }
