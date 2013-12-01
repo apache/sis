@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.lang.reflect.Modifier;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.logging.Logging;
@@ -84,6 +85,7 @@ import static org.apache.sis.internal.jaxb.Context.isMarshalling;
  * @module
  */
 @ThreadSafe
+@XmlTransient
 public abstract class ModifiableMetadata extends AbstractMetadata implements Cloneable {
     /**
      * Initial capacity of lists and sets. We use a small value because those

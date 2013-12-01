@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.metadata.Identifier;
@@ -47,6 +48,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @module
  */
 @ThreadSafe
+@XmlTransient
 public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject, Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -93,6 +95,8 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * {@note Subclasses shall not override this method in a way that depends on the object state,
      *        since this method may be indirectly invoked by copy constructors (i.e. is may be
      *        invoked before this metadata object is fully constructed).}
+     *
+     * @return The metadata standard, which is {@linkplain MetadataStandard#ISO_19115 ISO 19115} by default.
      */
     @Override
     public MetadataStandard getStandard() {
