@@ -28,6 +28,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -89,14 +90,17 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
 
     /**
      * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
+     *
+     * <p>Consider this field as final. It is declared non-final only for JAXB unmarshalling.</p>
      */
-    @XmlElement(required = true)
-    private final double greenwichLongitude;
+    private double greenwichLongitude;
 
     /**
      * The angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
+     *
+     * <p>Consider this field as final. It is declared non-final only for JAXB unmarshalling.</p>
      */
-    private final Unit<Angle> angularUnit;
+    private Unit<Angle> angularUnit;
 
     /**
      * Constructs a new object in which every attributes are set to a null value.
@@ -105,8 +109,6 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      */
     private DefaultPrimeMeridian() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        greenwichLongitude = Double.NaN;
-        angularUnit = null;
     }
 
     /**
@@ -222,6 +224,22 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     @Override
     public Unit<Angle> getAngularUnit() {
         return angularUnit;
+    }
+
+    /**
+     * Invoked by JAXB for obtaining the Greenwich longitude to marshall together with its {@code "uom"} attribute.
+     */
+    @XmlElement(name = "greenwichLongitude", required = true)
+    private Measure getGreenwichMeasure() {
+        return new Measure(greenwichLongitude, angularUnit);
+    }
+
+    /**
+     * Invoked by JAXB for setting the Greenwich longitude and its unit of measurement.
+     */
+    private void setGreenwichMeasure(final Measure measure) {
+        greenwichLongitude = measure.value;
+        angularUnit = measure.getUnit(Angle.class);
     }
 
     /**

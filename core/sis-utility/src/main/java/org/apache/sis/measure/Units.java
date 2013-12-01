@@ -35,6 +35,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.URIParser;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -48,7 +49,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Units extends Static {
@@ -130,7 +131,7 @@ public final class Units extends Static {
                 final Object value;
                 try {
                     value = field.get(null);
-                } catch (ReflectiveOperationException e) {
+                } catch (IllegalAccessException e) {
                     // Should not happen since we asked only for public static constants.
                     throw new AssertionError(e);
                 }
@@ -397,8 +398,8 @@ public final class Units extends Static {
      *
      * {@section Parsing authority codes}
      * As a special case, if the given {@code uom} arguments is of the form {@code "EPSG:####"}
-     * (ignoring case and whitespaces), then {@code "####"} is parsed as an integer and forwarded
-     * to the {@link #valueOfEPSG(int)} method.
+     * or {@code "urn:ogc:def:uom:EPSG:####"} (ignoring case and whitespaces), then {@code "####"}
+     * is parsed as an integer and forwarded to the {@link #valueOfEPSG(int)} method.
      *
      * {@section NetCDF unit symbols}
      * The attributes in NetCDF files often merge the axis direction with the angular unit,
@@ -422,15 +423,23 @@ public final class Units extends Static {
          * Check for authority codes (currently only EPSG, but more could be added later).
          * If the unit is not an authority code (which is the most common case), then we
          * will check for hard-coded unit symbols.
+         *
+         * URIParser.codeOf(…) returns 'uom' directly (provided that whitespaces were already trimmed)
+         * if no ':' character were found, in which case the string is assumed to be the code directly.
+         * This is the intended behavior for AuthorityFactory, but in the particular case of this method
+         * we want to try to parse as a xpointer before to give up.
          */
-        int s = uom.indexOf(':');
-        if (s >= 0) {
-            final String authority = (String) trimWhitespaces(uom, 0, s);
-            if (authority.equalsIgnoreCase("EPSG")) try {
-                return valueOfEPSG(Integer.parseInt((String) trimWhitespaces(uom, s+1, length)));
+        if (isURI(uom)) {
+            String code = URIParser.codeOf("uom", "EPSG", uom);
+            if (code != null && code != uom) try { // Really identity check, see above comment.
+                return valueOfEPSG(Integer.parseInt(code));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.IllegalArgumentValue_2, "uom", uom), e);
+            }
+            code = URIParser.xpointer("uom", uom);
+            if (code != null) {
+                uom = code;
             }
         }
         /*
@@ -445,7 +454,7 @@ public final class Units extends Static {
             }
             String prefix = uom;
             boolean isTemperature = false;
-            s = Math.max(uom.lastIndexOf(' '), uom.lastIndexOf('_'));
+            final int s = Math.max(uom.lastIndexOf(' '), uom.lastIndexOf('_'));
             if (s >= 1) {
                 final String suffix = (String) trimWhitespaces(uom, s+1, length);
                 if (ArraysExt.containsIgnoreCase(DEGREE_SUFFIXES, suffix) || (isTemperature = isCelsius(suffix))) {
@@ -510,6 +519,23 @@ public final class Units extends Static {
      */
     private static boolean isCelsius(final String uom) {
         return uom.equalsIgnoreCase("Celsius") || uom.equalsIgnoreCase("Celcius");
+    }
+
+    /**
+     * Returns {@code true} if the given unit seems to be an URI. Example:
+     * <ul>
+     *   <li>{@code "urn:ogc:def:uom:EPSG::9102"}</li>
+     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"}</li>
+     * </ul>
+     */
+    private static boolean isURI(final String uom) {
+        for (int i=uom.length(); --i>=0;) {
+            final char c = uom.charAt(i);
+            if (c == ':' || c == '#') {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

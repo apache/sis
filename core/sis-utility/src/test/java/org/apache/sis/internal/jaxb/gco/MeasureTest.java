@@ -47,12 +47,12 @@ public final strictfp class MeasureTest extends TestCase {
         assertEquals("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])", measure.getUOM());
 
         measure.unit = null;
-        measure.setUOM("../uom/ML_gmxUom.xsd#xpointer(//*[@gml:id='deg'])");
+        measure.setUOM("../uom/ML_gmxUom.xml#xpointer(//*[@gml:id='deg'])");
         assertEquals(NonSI.DEGREE_ANGLE, measure.unit);
         assertEquals("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='deg'])", measure.getUOM());
 
         measure.unit = null;
-        measure.setUOM("http://my.big.org/units/kg");
+        measure.setUOM("gmxUom.xml#kg"); // Not really an existing unit in 'gmxUom'.
         assertEquals(SI.KILOGRAM, measure.unit);
         assertEquals("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='kg'])", measure.getUOM());
     }

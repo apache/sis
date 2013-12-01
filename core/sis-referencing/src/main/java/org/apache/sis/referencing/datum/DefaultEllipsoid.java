@@ -401,15 +401,20 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Sets the semi-major axis value.
      * This method is invoked by JAXB at unmarshalling time only.
      *
+     * @throws ConversionException If semi-major and semi-minor axes use inconsistent units
+     *         and we can not convert from one to the other.
+     *
      * @see #setSecondDefiningParameter(SecondDefiningParameter)
      * @see #afterUnmarshal(Object, Object)
      */
-    private void setSemiMajorAxisMeasure(final Measure uom) {
+    private void setSemiMajorAxisMeasure(final Measure measure) throws ConversionException {
         if (semiMajorAxis != 0) {
             warnDuplicated("semiMajorAxis");
         } else {
-            semiMajorAxis = uom.value;
-            unit = uom.unit.asType(Length.class);
+            final Unit<Length> uom = unit; // In case semi-minor were defined before semi-major.
+            semiMajorAxis = measure.value;
+            unit = measure.getUnit(Length.class);
+            harmonizeAxisUnits(uom);
         }
     }
 
@@ -496,6 +501,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * value or the semi minor axis value, according to what have been defined in the
      * second defining parameter given. This is for JAXB unmarshalling process only.
      *
+     * @throws ConversionException If semi-major and semi-minor axes use inconsistent units
+     *         and we can not convert from one to the other.
+     *
      * @see #setSemiMajorAxisMeasure(Measure)
      * @see #afterUnmarshal(Object, Object)
      */
@@ -512,22 +520,29 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                     ivfDefinitive = true;
                     return;
                 }
-            } else {
-                final Unit<?> uom = measure.unit;
-                if (uom != null) {
-                    if (unit != null) {
-                        value = uom.getConverterToAny(unit).convert(value);
-                    } else {
-                        unit = uom.asType(Length.class);
-                    }
+            } else if (semiMinorAxis == 0) {
+                semiMinorAxis = value;
+                ivfDefinitive = false;
+                if (unit == null) {
+                    unit = measure.getUnit(Length.class);
+                } else {
+                    harmonizeAxisUnits(measure.unit);
                 }
-                if (semiMinorAxis == 0) {
-                    semiMinorAxis = value;
-                    ivfDefinitive = false;
-                    return;
-                }
+                return;
             }
             warnDuplicated("secondDefiningParameter");
+        }
+    }
+
+    /**
+     * Ensures that the semi-minor axis uses the same unit than the semi-major one.
+     *
+     * @throws ConversionException If semi-major and semi-minor axes use inconsistent units
+     *         and we can not convert from one to the other.
+     */
+    private void harmonizeAxisUnits(final Unit<?> uom) throws ConversionException {
+        if (uom != null && uom != unit) {
+            semiMinorAxis = uom.getConverterToAny(unit).convert(semiMinorAxis);
         }
     }
 

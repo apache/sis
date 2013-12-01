@@ -19,6 +19,7 @@ package org.apache.sis.measure;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Quantity;
 import javax.measure.converter.UnitConverter;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.*;
 
@@ -45,9 +46,10 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  */
+@DependsOn(org.apache.sis.internal.util.URIParserTest.class)
 public final strictfp class UnitsTest extends TestCase {
     /**
      * Compares two values for equality.
@@ -260,7 +262,7 @@ public final strictfp class UnitsTest extends TestCase {
     }
 
     /**
-     * Tests {@link Units#valueOfEPSG(int)}.
+     * Tests {@link Units#valueOfEPSG(int)} and {@link Units#valueOf(String)} with a {@code "EPSG:####"} syntax.
      */
     @Test
     public void testValueOfEPSG() {
@@ -268,5 +270,8 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(DEGREE_ANGLE, valueOfEPSG(9102));
         assertSame(METRE,        valueOf("EPSG:9001"));
         assertSame(DEGREE_ANGLE, valueOf(" epsg : 9102"));
+        assertSame(DEGREE_ANGLE, valueOf("urn:ogc:def:uom:EPSG::9102"));
+        assertSame(METRE,        valueOf("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+        assertSame(METRE,        valueOf("gmxUom.xml#m"));
     }
 }

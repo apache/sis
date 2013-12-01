@@ -46,11 +46,13 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
      * Tests unmarshalling.
      *
      * @throws JAXBException If an error occurred during unmarshalling.
+     *
+     * @see <a href="http://epsg-registry.org/export.htm?gml=urn:ogc:def:meridian:EPSG::8901">GML export of EPSG:8901</a>
      */
     @Test
     public void testUnmarshall() throws JAXBException {
         DefaultPrimeMeridian pm = unmarshall(DefaultPrimeMeridian.class, "Greenwich.xml");
         assertEquals("greenwichLongitude", pm.getGreenwichLongitude(), 0, 0);
-//      assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
+        assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
     }
 }
