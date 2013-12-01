@@ -48,9 +48,13 @@ public final class GO_Distance extends XmlAdapter<GO_Distance, Double> {
     }
 
     /**
-     * Constructs an adapter for the given value.
+     * Constructs an adapter for the given value before marshalling.
      *
      * @param value The value.
+     *
+     * @todo The unit of measurement is fixed to metres for now because we do not have this information
+     *       in current metadata interface. This will need to be revisited in a future SIS version if we
+     *       replace the Double type by some quantity type.
      */
     private GO_Distance(final Double value) {
         distance = new Measure(value, SI.METRE);

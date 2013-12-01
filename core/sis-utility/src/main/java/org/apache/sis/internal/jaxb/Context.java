@@ -204,8 +204,9 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns the locale to use for marshalling, or {@code null} if no locale were explicitly
-     * specified.
+     * Returns the locale to use for marshalling, or {@code null} if no locale were explicitly specified.
+     *
+     * @return The locale in the context of current (un)marshalling process.
      */
     @Override
     public final Locale getLocale() {
@@ -213,8 +214,9 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns the timezone to use for marshalling, or {@code null} if none were explicitely
-     * specified.
+     * Returns the timezone to use for marshalling, or {@code null} if none were explicitely specified.
+     *
+     * @return The timezone in the context of current (un)marshalling process.
      */
     @Override
     public final TimeZone getTimeZone() {
@@ -224,6 +226,8 @@ public final class Context extends MarshalContext {
     /**
      * Returns the schema version of the XML document being (un)marshalled.
      * See the super-class javadoc for the list of prefix that we shall support.
+     *
+     * @return The version in the context of current (un)marshalling process.
      */
     @Override
     public final Version getVersion(final String prefix) {
