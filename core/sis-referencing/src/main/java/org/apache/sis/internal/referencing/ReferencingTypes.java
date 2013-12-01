@@ -36,6 +36,23 @@ public final class ReferencingTypes extends TypeRegistration {
      */
     @Override
     public void getTypes(final Collection<Class<?>> addTo) {
+        if (exists(addTo)) return;
         addTo.add(AbstractIdentifiedObject.class);
+    }
+
+    /**
+     * Temporary workaround for avoiding a conflict between SIS and Geotk JAXB annotations.
+     * To be removed after we finished the port of Geotk referencing module to Apache SIS.
+     *
+     * @deprecated To be removed after sis-referencing completion.
+     */
+    @Deprecated
+    private static boolean exists(final Collection<Class<?>> addTo) {
+        for (final Class<?> type : addTo) {
+            if (org.opengis.referencing.crs.CoordinateReferenceSystem.class.isAssignableFrom(type)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
