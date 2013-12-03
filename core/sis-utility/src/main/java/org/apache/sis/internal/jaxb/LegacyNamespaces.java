@@ -20,6 +20,8 @@ package org.apache.sis.internal.jaxb;
 /**
  * Legacy XML namespaces.
  * This class is hopefully temporary, if we can find a way to share the same Java classes between different versions.
+ * If such better way is found, then every classes, methods and fields having a JAXB annotation using this namespace
+ * should be deleted.
  *
  * @author  Guilhem Legal (Geomatys)
  * @since   0.4
