@@ -23,6 +23,7 @@ import org.opengis.temporal.Instant;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.XmlUtilities;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.util.resources.Errors;
@@ -35,7 +36,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> {
@@ -67,10 +68,23 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
 
     /**
      * Returns the GeoAPI interface which is bound by this adapter.
+     *
+     * @return {@code TemporalPrimitive.class}
      */
     @Override
     protected Class<TemporalPrimitive> getBoundType() {
         return TemporalPrimitive.class;
+    }
+
+    /**
+     * Returns {@code true} if the user asked to format a GML 3.2 document, or {@code false} for GML 3.1 or older.
+     * The only difference managed by this class is the namespace.
+     *
+     * <p>This method will be removed in a future SIS version if we find a better way to support evolution
+     * of GML schemas.</p>
+     */
+    private static boolean isGML32() {
+        return Context.isGMLVersion(Context.current(), GMLAdapter.GML_3_2);
     }
 
     /**
@@ -81,10 +95,26 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      */
     @XmlElement(name = "TimePeriod")
     public TimePeriod getTimePeriod() {
-        if (!skip()) {
+        if (!skip() && isGML32()) {
             final TemporalPrimitive metadata = this.metadata;
             if (metadata instanceof Period) {
                 return new TimePeriod((Period) metadata);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Same as {@link #getTimePeriod()}, but using the GML 3.1 namespace.
+     *
+     * @return The time period, or {@code null}.
+     */
+    @XmlElement(name = "TimePeriod", namespace = LegacyNamespaces.GML)
+    public TimePeriod31 getTimePeriod31() {
+        if (!skip() && !isGML32()) {
+            final TemporalPrimitive metadata = this.metadata;
+            if (metadata instanceof Period) {
+                return new TimePeriod31((Period) metadata);
             }
         }
         return null;
@@ -98,7 +128,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      */
     @XmlElement(name = "TimeInstant")
     public TimeInstant getTimeInstant() {
-        if (!skip()) {
+        if (!skip() && isGML32()) {
             final TemporalPrimitive metadata = this.metadata;
             if (metadata instanceof Instant) {
                 return new TimeInstant((Instant) metadata);
@@ -108,10 +138,26 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
     }
 
     /**
+     * Same as {@link #getTimeInstant()}, but using the GML 3.1 namespace.
+     *
+     * @return The time instant, or {@code null}.
+     */
+    @XmlElement(name = "TimeInstant", namespace = LegacyNamespaces.GML)
+    public TimeInstant31 getTimeInstant31() {
+        if (!skip() && !isGML32()) {
+            final TemporalPrimitive metadata = this.metadata;
+            if (metadata instanceof Instant) {
+                return new TimeInstant31((Instant) metadata);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Sets the value from the {@link TimePeriod}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param period The adapter to set.
+     * @param period The wrapper to set.
      */
     public void setTimePeriod(final TimePeriod period) {
         metadata = null; // Cleaned first in case of failure.
@@ -139,10 +185,25 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
     }
 
     /**
+     * Same as {@link #setTimePeriod(TimePeriod)}, but using the GML 3.1 namespace.
+     *
+     * @param period The wrapper to set.
+     */
+    public void setTimePeriod31(final TimePeriod31 period) {
+        TimePeriod c = null;
+        if (period != null) {
+            c = new TimePeriod();
+            c.begin = period.begin;
+            c.end   = period.end;
+        }
+        setTimePeriod(c);
+    }
+
+    /**
      * Sets the value from the {@link TimeInstant}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param instant The adapter to set.
+     * @param instant The wrapper to set.
      */
     public void setTimeInstant(final TimeInstant instant) {
         metadata = null; // Cleaned first in case of failure.
@@ -155,6 +216,20 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
                 warningOccured("setTimeInstant", e);
             }
         }
+    }
+
+    /**
+     * Same as {@link #setTimeInstant(TimeInstant)}, but using the GML 3.1 namespace.
+     *
+     * @param instant The wrapper to set.
+     */
+    public void setTimeInstant31(final TimeInstant31 instant) {
+        TimeInstant c = null;
+        if (instant != null) {
+            c = new TimeInstant();
+            c.timePosition = instant.timePosition;
+        }
+        setTimeInstant(c);
     }
 
     /**
