@@ -20,6 +20,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Workaround;
 
@@ -31,7 +32,7 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-3.15)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @XmlRegistry
@@ -39,17 +40,20 @@ public class ObjectFactory {
     /**
      * The qualified name of {@code <AbstractGeometry>}.
      */
-    protected static final QName AbstractGeometry_QNAME = new QName(Namespaces.GML, "AbstractGeometry");
+    protected static final QName AbstractGeometry_QNAME   = new QName(Namespaces.GML, "AbstractGeometry"),
+                                 AbstractGeometry31_QNAME = new QName(LegacyNamespaces.GML, "AbstractGeometry");
 
     /**
      * The qualified name of {@code <AbstractGML>}.
      */
-    protected static final QName AbstractGML_QNAME = new QName(Namespaces.GML, "AbstractGML");
+    protected static final QName AbstractGML_QNAME   = new QName(Namespaces.GML, "AbstractGML"),
+                                 AbstractGML31_QNAME = new QName(LegacyNamespaces.GML, "AbstractGML");
 
     /**
      * The qualified name of {@code <AbstractObject>}.
      */
-    protected static final QName AbstractObject_QNAME = new QName(Namespaces.GML, "AbstractObject");
+    protected static final QName AbstractObject_QNAME   = new QName(Namespaces.GML, "AbstractObject"),
+                                 AbstractObject31_QNAME = new QName(LegacyNamespaces.GML, "AbstractObject");
 
     /**
      * Creates an instance of {@code JAXBElement<Object>}}.
@@ -57,9 +61,20 @@ public class ObjectFactory {
      * @param  value The {@code Object} value to wrap.
      * @return The wrapped value.
      */
-    @XmlElementDecl(name = "AbstractObject")
+    @XmlElementDecl(name = "AbstractObject", namespace = Namespaces.GML)
     public JAXBElement<Object> createObject(final Object value) {
         return new JAXBElement<>(AbstractObject_QNAME, Object.class, null, value);
+    }
+
+    /**
+     * A {@link #createObject(Object)} version for the legacy GML namespace.
+     *
+     * @param  value The {@code Object} value to wrap.
+     * @return The wrapped value in the legacy namespace.
+     */
+    @XmlElementDecl(name = "AbstractObject", namespace = LegacyNamespaces.GML)
+    public JAXBElement<Object> createObject31(final Object value) {
+        return new JAXBElement<>(AbstractObject31_QNAME, Object.class, null, value);
     }
 
     /**
@@ -73,10 +88,26 @@ public class ObjectFactory {
      */
     @Workaround(library = "JAXB", version = "2.1")
     @XmlElementDecl(name = "AbstractGML",
+            namespace = Namespaces.GML,
             substitutionHeadName = "AbstractObject",
             substitutionHeadNamespace = Namespaces.GML) // Not necessary according javadoc, but appears to be in practice (JAXB 2.1 bug?)
     public JAXBElement<Object> createAbstractGML(final Object value) {
         return new JAXBElement<>(AbstractGML_QNAME, Object.class, null, value);
+    }
+
+    /**
+     * A {@link #createAbstractGML(Object)} version for the legacy GML namespace.
+     *
+     * @param  value The GML {@code AbstractGMLType} value to wrap.
+     * @return The wrapped value in the legacy namespace.
+     */
+    @Workaround(library = "JAXB", version = "2.1")
+    @XmlElementDecl(name = "AbstractGML",
+            namespace = LegacyNamespaces.GML,
+            substitutionHeadName = "AbstractObject",
+            substitutionHeadNamespace = LegacyNamespaces.GML) // Not necessary according javadoc, but appears to be in practice (JAXB 2.1 bug?)
+    public JAXBElement<Object> createAbstractGML31(final Object value) {
+        return new JAXBElement<>(AbstractGML31_QNAME, Object.class, null, value);
     }
 
     /**
@@ -90,9 +121,25 @@ public class ObjectFactory {
      */
     @Workaround(library = "JAXB", version = "2.1")
     @XmlElementDecl(name = "AbstractGeometry",
+            namespace = Namespaces.GML,
             substitutionHeadName = "AbstractGML",
             substitutionHeadNamespace = Namespaces.GML) // Not necessary according javadoc, but appears to be in practice (JAXB 2.1 bug?)
     public JAXBElement<Object> createAbstractGeometry(final Object value) {
         return new JAXBElement<>(AbstractGeometry_QNAME, Object.class, null, value);
+    }
+
+    /**
+     * A {@link #createAbstractGeometry(Object)} version for the legacy GML namespace.
+     *
+     * @param  value The {@code AbstractGeometryType} value to wrap.
+     * @return The wrapped value in the legacy namespace.
+     */
+    @Workaround(library = "JAXB", version = "2.1")
+    @XmlElementDecl(name = "AbstractGeometry",
+            namespace = LegacyNamespaces.GML,
+            substitutionHeadName = "AbstractGML",
+            substitutionHeadNamespace = LegacyNamespaces.GML) // Not necessary according javadoc, but appears to be in practice (JAXB 2.1 bug?)
+    public JAXBElement<Object> createAbstractGeometry31(final Object value) {
+        return new JAXBElement<>(AbstractGeometry31_QNAME, Object.class, null, value);
     }
 }
