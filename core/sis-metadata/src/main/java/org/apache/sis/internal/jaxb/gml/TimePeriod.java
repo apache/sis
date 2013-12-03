@@ -88,6 +88,8 @@ public final class TimePeriod extends GMLAdapter {
 
     /**
      * Returns a string representation for debugging and formatting error message.
+     *
+     * @return A string representation of this time period.
      */
     @Override
     public String toString() {
