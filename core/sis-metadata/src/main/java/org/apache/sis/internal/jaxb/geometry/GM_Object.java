@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.geometry.Geometry;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
@@ -45,6 +46,13 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
     protected JAXBElement<? extends Geometry> geometry;
 
     /**
+     * Same as {@link #geometry}, but using GML 3.1 namespace.
+     * This is hopefully a temporary patch.
+     */
+    @XmlElementRef(name = "AbstractGeometry", namespace = LegacyNamespaces.GML, type = JAXBElement.class)
+    protected JAXBElement<? extends Geometry> geometry31;
+
+    /**
      * Empty constructor for JAXB and subclasses only.
      */
     public GM_Object() {
@@ -59,7 +67,16 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
      */
     @Override
     public final Geometry unmarshal(final GM_Object value) {
-        return (value != null) ? value.geometry.getValue() : null;
+        if (value != null) {
+            JAXBElement<? extends Geometry> g = value.geometry;
+            if (g == null) {
+                g = value.geometry31;
+            }
+            if (g != null) {
+                return g.getValue();
+            }
+        }
+        return null;
     }
 
     /**
