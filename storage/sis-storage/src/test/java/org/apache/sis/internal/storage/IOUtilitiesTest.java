@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -180,7 +181,7 @@ public final strictfp class IOUtilitiesTest extends TestCase {
         assertEquals("Path with space.", new File("/Users/name/Map with spaces.png"),
                 IOUtilities.toFile(new URL("file:/Users/name/Map with spaces.png"), encoding));
         assertEquals("Path with + sign.", new File("/Users/name/++t--++est.shp"),
-                IOUtilities.toFile(new URL("file:/Users/name/++t--++est.shp".replace("+", plus)), encoding));
+                IOUtilities.toFile(new URL(CharSequences.replace("file:/Users/name/++t--++est.shp", "+", plus).toString()), encoding));
     }
 
     /**

@@ -109,7 +109,7 @@ public final class Namespaces extends Static {
     /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "gml"}.
-     * The current version is 3.2, but this may change in any future SIS release.
+     * The current version is 3.2 (ISO 19136), but this may change in any future SIS release.
      *
      * @category OGC
      */

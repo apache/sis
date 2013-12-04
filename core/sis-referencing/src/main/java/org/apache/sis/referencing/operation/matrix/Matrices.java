@@ -923,7 +923,7 @@ public final class Matrices extends Static {
                      */
                     int s = element.lastIndexOf('.');
                     if (s < 0) {
-                        element = element.replace("Infinity", "∞");
+                        element = CharSequences.replace(element, "Infinity", "∞").toString();
                         width = spacing + element.length();
                         widthBeforeFraction[i] = (byte) Math.max(widthBeforeFraction[i], width);
                     } else {

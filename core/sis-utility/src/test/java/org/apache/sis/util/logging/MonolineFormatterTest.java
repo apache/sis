@@ -59,8 +59,9 @@ public final strictfp class MonolineFormatterTest extends TestCase {
      */
     private static String localize(final Level level, final String expected) {
         final String label = level.getLocalizedName();
-        return expected.replace(level.getName(), label)
-                .replace("\t", CharSequences.spaces(MonolineFormatter.levelWidth(null) - label.length()));
+        CharSequence text = CharSequences.replace(expected, level.getName(), label);
+        text = CharSequences.replace(text, "\t", CharSequences.spaces(MonolineFormatter.levelWidth(null) - label.length()));
+        return text.toString();
     }
 
     /**

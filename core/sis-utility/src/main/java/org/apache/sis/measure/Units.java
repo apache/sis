@@ -16,10 +16,6 @@
  */
 package org.apache.sis.measure;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -72,78 +68,12 @@ public final class Units extends Static {
     public static final Unit<Duration> MILLISECOND = SI.MetricPrefix.MILLI(SI.SECOND);
 
     /**
-     * Pseudo-unit for sexagesimal degree. Numbers in this pseudo-unit have the following format:
-     *
-     * <cite>sign - degrees - decimal point - minutes (two digits) - integer seconds (two digits) -
-     * fraction of seconds (any precision)</cite>.
-     *
-     * Using this unit is loosely equivalent to formatting decimal degrees with the
-     * {@code "D.MMSSs"} {@link AngleFormat} pattern.
-     *
-     * <p>This unit is non-linear and not practical for computation. Consequently, it should be
-     * avoided as much as possible. This pseudo-unit is defined only because extensively used in
-     * the EPSG database (code 9110).</p>
-     *
-     * <p>This unit does not have an easily readable symbol because of the
-     * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
-     */
-    static final Unit<Angle> SEXAGESIMAL_DMS = NonSI.DEGREE_ANGLE.transform(
-            SexagesimalConverter.FRACTIONAL.inverse()).asType(Angle.class);//.alternate("D.MS");
-
-    /**
-     * Pseudo-unit for degree - minute - second.
-     * Numbers in this pseudo-unit have the following format:
-     *
-     * <cite>signed degrees (integer) - arc-minutes (integer) - arc-seconds
-     * (real, any precision)</cite>.
-     *
-     * Using this unit is loosely equivalent to formatting decimal degrees with the
-     * {@code "DMMSS.s"} {@link AngleFormat} pattern.
-     *
-     * <p>This unit is non-linear and not practical for computation. Consequently, it should be
-     * avoided as much as possible. This pseudo-unit is defined only because extensively used in
-     * EPSG database (code 9107).</p>
-     *
-     * <p>This unit does not have an easily readable symbol because of the
-     * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
-     */
-    static final Unit<Angle> DEGREE_MINUTE_SECOND = NonSI.DEGREE_ANGLE.transform(
-            SexagesimalConverter.INTEGER.inverse()).asType(Angle.class);//.alternate("DMS");
-
-    /**
      * Parts per million.
      *
      * <p>This unit does not have an easily readable symbol because of the
      * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
      */
     public static final Unit<Dimensionless> PPM = Unit.ONE.times(1E-6);//.alternate("ppm");
-
-    /**
-     * A few units commonly used in GIS.
-     */
-    private static final Map<Unit<?>,Unit<?>> COMMONS = new HashMap<>(48);
-    static {
-        COMMONS.put(PPM, PPM);
-        boolean nonSI = false;
-        do for (final Field field : (nonSI ? NonSI.class : SI.class).getFields()) {
-            final int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
-                final Object value;
-                try {
-                    value = field.get(null);
-                } catch (IllegalAccessException e) {
-                    // Should not happen since we asked only for public static constants.
-                    throw new AssertionError(e);
-                }
-                if (value instanceof Unit<?>) {
-                    final Unit<?> unit = (Unit<?>) value;
-                    if (isLinear(unit) || isAngular(unit) || isScale(unit)) {
-                        COMMONS.put(unit, unit);
-                    }
-                }
-            }
-        } while ((nonSI = !nonSI) == true);
-    }
 
     /**
      * Returns {@code true} if the given unit is a linear unit.
@@ -328,23 +258,7 @@ public final class Units extends Static {
                 unit = unit.times(factor);
             }
         }
-        return canonicalize(unit);
-    }
-
-    /**
-     * Returns a unique instance of the given units if possible, or the units unchanged otherwise.
-     *
-     * @param  <A>    The quantity measured by the unit.
-     * @param  unit   The unit to canonicalize.
-     * @return A unit equivalents to the given unit, canonicalized if possible.
-     */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    private static <A extends Quantity> Unit<A> canonicalize(final Unit<A> unit) {
-        final Unit<?> candidate = COMMONS.get(unit);
-        if (candidate != null) {
-            return (Unit) candidate;
-        }
-        return unit;
+        return UnitsMap.canonicalize(unit);
     }
 
     /**
@@ -495,7 +409,7 @@ public final class Units extends Static {
             // Provides a better error message than the default JSR-275 0.9.4 implementation.
             throw Exceptions.setMessage(e, Errors.format(Errors.Keys.IllegalArgumentValue_2, "uom", uom), true);
         }
-        return canonicalize(unit);
+        return UnitsMap.canonicalize(unit);
     }
 
     /**
@@ -607,15 +521,28 @@ public final class Units extends Static {
             case 9103: return NonSI.MINUTE_ANGLE;
             case 9104: return NonSI.SECOND_ANGLE;
             case 9105: return NonSI.GRADE;
-            case 9107: return Units.DEGREE_MINUTE_SECOND;
-            case 9108: return Units.DEGREE_MINUTE_SECOND;
+            case 9107: // Fall through
+            case 9108: return SexagesimalConverter.DMS_SCALED;
             case 9109: return SI.MetricPrefix.MICRO(SI.RADIAN);
-            case 9111: // Sexagesimal DM: use DMS.
-            case 9110: return Units.SEXAGESIMAL_DMS;
+            case 9111: return SexagesimalConverter.DM;
+            case 9110: return SexagesimalConverter.DMS;
             case 9203: // Fall through
             case 9201: return Unit .ONE;
             case 9202: return Units.PPM;
             default:   return null;
         }
+    }
+
+    /**
+     * Returns the EPSG code of the given units, or {@code null} if unknown.
+     * This method is the converse of {@link #valueOfEPSG(int)}.
+     *
+     * @param  unit The unit for which to get the EPSG code.
+     * @return The EPSG code of the given units, or {@code null} if unknown.
+     *
+     * @since 0.4
+     */
+    public static Integer getEpsgCode(final Unit<?> unit) {
+        return UnitsMap.EPSG_CODES.get(unit);
     }
 }

@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -62,9 +63,6 @@ import org.apache.sis.util.resources.Errors;
  * @module
  *
  * @see org.apache.sis.measure.Measure
- *
- * @todo We should annotate {@link org.apache.sis.measure.Measure} directly
- *       if we can find some way to use {@code @XmlValue} with that class.
  */
 public final class Measure {
     /**
@@ -77,6 +75,12 @@ public final class Measure {
      * The unit of measure.
      */
     public Unit<?> unit;
+
+    /**
+     * {@code true} if the units shall be formatted as {@code xpointer}.
+     * If {@code false} (the default), then this class will try to format the units using the GML syntax.
+     */
+    boolean asXPointer;
 
     /**
      * Default empty constructor for JAXB. The value is initialized to NaN,
@@ -101,7 +105,13 @@ public final class Measure {
     /**
      * Constructs a string representation of the units as defined in the ISO-19103 standard.
      * This method is invoked during XML marshalling. For example in the units are "metre",
-     * then this method returns:
+     * then this method returns one of the following strings, in preference order:
+     *
+     * {@preformat text
+     *     urn:ogc:def:uom:EPSG::9001
+     * }
+     *
+     * or
      *
      * {@preformat text
      *     http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
@@ -119,16 +129,20 @@ public final class Measure {
     @XmlAttribute(required = true)
     public String getUOM() {
         final Unit<?> unit = this.unit;
-        final String symbol;
         if (unit == null || unit.equals(Unit.ONE)) {
-            symbol = "";
-        } else if (unit.equals(NonSI.PIXEL)) {
-            symbol = "pixel";
-        } else {
-            symbol = Context.schema(Context.current(), "gmd", CodeListProxy.DEFAULT_SCHEMA)
-                    .append("resources/uom/gmxUom.xml#xpointer(//*[@gml:id='").append(unit).append("'])").toString();
+            return "";
         }
-        return symbol;
+        if (unit.equals(NonSI.PIXEL)) {
+            return "pixel"; // TODO: maybe not the most appropriate unit.
+        }
+        if (!asXPointer) {
+            final Integer code = Units.getEpsgCode(unit);
+            if (code != null) {
+                return "urn:ogc:def:uom:EPSG::" + code;
+            }
+        }
+        return Context.schema(Context.current(), "gmd", CodeListProxy.DEFAULT_SCHEMA)
+                .append("resources/uom/gmxUom.xml#xpointer(//*[@gml:id='").append(unit).append("'])").toString();
     }
 
     /**

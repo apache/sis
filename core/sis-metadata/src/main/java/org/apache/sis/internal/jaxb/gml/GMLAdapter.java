@@ -18,6 +18,7 @@ package org.apache.sis.internal.jaxb.gml;
 
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierMap;
@@ -39,6 +40,7 @@ import org.apache.sis.xml.IdentifiedObject;
  * @version 0.4
  * @module
  */
+@XmlTransient
 public abstract class GMLAdapter {
     /**
      * A GML version suitable for calls to {@link org.apache.sis.internal.jaxb.Context#isGMLVersion}.

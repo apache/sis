@@ -31,7 +31,7 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.XML;
 import org.junit.After;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -132,15 +132,31 @@ public abstract strictfp class XMLTestCase extends TestCase {
     }
 
     /**
+     * Marshals the given object using the {@linkplain #getMarshallerPool() test marshaller pool}.
+     *
+     * @param  object The object to marshal.
+     * @return The marshalled object.
+     * @throws JAXBException If an error occurred while marshalling the object.
+     */
+    protected final String marshal(final Object object) throws JAXBException {
+        final MarshallerPool pool = getMarshallerPool();
+        final Marshaller marshaller = pool.acquireMarshaller();
+        final String xml = marshal(marshaller, object);
+        pool.recycle(marshaller);
+        return xml;
+    }
+
+    /**
      * Marshals the given object using the given marshaler.
      *
      * @param  marshaller The marshaller to use.
-     * @param  object     The object to marshal, or {@code null}.
-     * @return The marshalled object, or {@code null} if and only if the given {@code object} was null.
+     * @param  object The object to marshal.
+     * @return The marshalled object.
      * @throws JAXBException If an error occurred while marshalling the object.
      */
     protected final String marshal(final Marshaller marshaller, final Object object) throws JAXBException {
         ArgumentChecks.ensureNonNull("marshaller", marshaller);
+        ArgumentChecks.ensureNonNull("object", object);
         if (buffer == null) {
             buffer = new StringWriter();
         }
@@ -150,15 +166,34 @@ public abstract strictfp class XMLTestCase extends TestCase {
     }
 
     /**
+     * Unmarshals the given object using the {@linkplain #getMarshallerPool() test marshaller pool}.
+     *
+     * @param  <T>  Compile-time type of {@code type} argument.
+     * @param  type The expected type of the unmarshalled object.
+     * @param  xml  The XML representation of the object to unmarshal.
+     * @return The unmarshalled object.
+     * @throws JAXBException If an error occurred while unmarshalling the XML.
+     */
+    protected final <T> T unmarshal(final Class<T> type, final String xml) throws JAXBException {
+        final MarshallerPool pool = getMarshallerPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final Object object = unmarshal(unmarshaller, xml);
+        pool.recycle(unmarshaller);
+        assertInstanceOf("unmarshal", type, object);
+        return type.cast(object);
+    }
+
+    /**
      * Unmarshals the given XML using the given unmarshaler.
      *
      * @param  unmarshaller The unmarshaller to use.
-     * @param  xml The XML representation of the object to unmarshal, or {@code null}.
-     * @return The unmarshalled object, or {@code null} if and only if the given {@code xml} was null.
+     * @param  xml The XML representation of the object to unmarshal.
+     * @return The unmarshalled object.
      * @throws JAXBException If an error occurred while unmarshalling the XML.
      */
     protected final Object unmarshal(final Unmarshaller unmarshaller, final String xml) throws JAXBException {
         ArgumentChecks.ensureNonNull("unmarshaller", unmarshaller);
+        ArgumentChecks.ensureNonNull("xml", xml);
         return unmarshaller.unmarshal(new StringReader(xml));
     }
 }

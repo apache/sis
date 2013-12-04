@@ -86,7 +86,7 @@ public final class StringBuilders extends Static {
      * @throws IllegalArgumentException If the {@code toSearch} argument is empty.
      *
      * @see String#replace(char, char)
-     * @see String#replace(CharSequence, CharSequence)
+     * @see CharSequences#replace(CharSequence, String, String)
      * @see StringBuilder#replace(int, int, String)
      */
     public static void replace(final StringBuilder buffer, final String toSearch, final String replaceBy) {
