@@ -153,16 +153,13 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testExtraCodes() throws JAXBException {
-        final MarshallerPool pool = getMarshallerPool();
-        final Marshaller marshaller = pool.acquireMarshaller();
         final DefaultDataIdentification id = new DefaultDataIdentification();
         id.setTopicCategories(Arrays.asList(
                 TopicCategory.valueOf("oceans"), // New code
                 TopicCategory.valueOf("OCEANS"), // Existing code with UML id="oceans"
                 TopicCategory.valueOf("test"))); // New code
 
-        final String xml = marshal(marshaller, id);
-        pool.recycle(marshaller);
+        final String xml = marshal(id);
 
         // "OCEANS" is marshalled as "oceans" because is contains a UML id, which is lower-case.
         assertEquals(2, CharSequences.count(xml, "<gmd:MD_TopicCategoryCode>oceans</gmd:MD_TopicCategoryCode>"));

@@ -17,7 +17,11 @@
 package org.apache.sis.referencing.datum;
 
 import javax.measure.unit.NonSI;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.util.CharSequences;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
@@ -40,6 +44,49 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
     public void testToWKT() {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
         assertWktEquals(pm, "PRIMEM[“Greenwich”, 0.0]");
+    }
+
+    /**
+     * Compares the given XML representation of Greenwich prime meridian against the expected XML.
+     * The XML is expected to use the given GML namespace URI.
+     *
+     * @param namespace The expected GML namespace.
+     * @param actual XML representation of Greenwich prime meridian to test.
+     */
+    private static void assertGreenwichXmlEquals(final String namespace, final String actual) {
+        assertXmlEquals(CharSequences.replace(
+                "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +
+                "  <gml:name codeSpace=\"test\">Greenwich</gml:name>\n" +
+                "  <gml:greenwichLongitude uom=\"urn:ogc:def:uom:EPSG::9102\">0.0</gml:greenwichLongitude>\n" +
+                "</gml:PrimeMeridian>\n",
+                Namespaces.GML, namespace).toString(), actual, "xmlns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Tests marshalling in the default namespace.
+     *
+     * @throws JAXBException If an error occurred during marshalling.
+     */
+    @Test
+    public void testMarshall() throws JAXBException {
+        final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
+        assertGreenwichXmlEquals(Namespaces.GML, marshal(pm));
+    }
+
+    /**
+     * Tests marshalling in the GML 3.1 namespace.
+     *
+     * @throws JAXBException If an error occurred during marshalling.
+     */
+    @Test
+    @org.junit.Ignore
+    public void testMarshallGML31() throws JAXBException {
+        final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
+        final MarshallerPool pool = getMarshallerPool();
+        final Marshaller marshaller = pool.acquireMarshaller();
+        final String xml = marshal(marshaller, pm);
+        pool.recycle(marshaller);
+        assertGreenwichXmlEquals("http://www.opengis.net/gml", marshal(pm));
     }
 
     /**

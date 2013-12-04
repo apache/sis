@@ -87,6 +87,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.iso.DefaultNameFactoryTest.class,
 
     // Measurements and formatting.
+    org.apache.sis.measure.SexagesimalConverterTest.class,
     org.apache.sis.measure.UnitsTest.class,
     org.apache.sis.measure.RangeTest.class,
     org.apache.sis.measure.DateRangeTest.class,

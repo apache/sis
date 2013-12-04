@@ -58,6 +58,7 @@ public final class GO_Distance extends XmlAdapter<GO_Distance, Double> {
      */
     private GO_Distance(final Double value) {
         distance = new Measure(value, SI.METRE);
+        distance.asXPointer = true;
     }
 
     /**

@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.nio.CharBuffer;
 
 import static java.lang.Character.*;
-import static org.apache.sis.util.StringBuilders.replace;
 
 
 /**
@@ -950,7 +949,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @param  text The text to scan for Unicode characters to replace by ASCII characters,
      *         or {@code null}.
-     * @return The given text with substitution applied, or {@code text} if no replacement
+     * @return The given text with substitutions applied, or {@code text} if no replacement
      *         has been applied, or {@code null} if the given text was null.
      *
      * @see StringBuilders#toASCII(StringBuilder)
@@ -1250,16 +1249,16 @@ searchWordBreak:    while (true) {
                 return ((String) identifier).replace('_', '-');
             }
             buffer = new StringBuilder(identifier);
-            replace(buffer, '_', '-');
+            StringBuilders.replace(buffer, '_', '-');
         } else {
             buffer = (StringBuilder) camelCaseToWords(identifier, true);
             final int length = buffer.length();
             if (length != 0) {
-                replace(buffer, '_', ' ');
+                StringBuilders.replace(buffer, '_', ' ');
                 final int c = buffer.codePointAt(0);
                 final int up = toUpperCase(c);
                 if (c != up) {
-                    replace(buffer, 0, charCount(c), toChars(up));
+                    StringBuilders.replace(buffer, 0, charCount(c), toChars(up));
                 }
             }
         }
@@ -1317,7 +1316,7 @@ searchWordBreak:    while (true) {
                     final int c = buffer.codePointAt(pos);
                     final int low = toLowerCase(c);
                     if (c != low) {
-                        replace(buffer, pos, pos + charCount(c), toChars(low));
+                        StringBuilders.replace(buffer, pos, pos + charCount(c), toChars(low));
                     }
                 }
                 last = i;
@@ -1386,7 +1385,7 @@ searchWordBreak:    while (true) {
                     final int c = buffer.codePointAt(0);
                     final int up = toUpperCase(c);
                     if (c != up) {
-                        replace(buffer, 0, charCount(c), toChars(up));
+                        StringBuilders.replace(buffer, 0, charCount(c), toChars(up));
                     }
                 }
                 if (!equals(text, buffer)) {
@@ -1964,9 +1963,53 @@ cmp:    while (ia < lga) {
     }
 
     /**
+     * Replaces all occurrences of a given string in the given character sequence. If no occurrence of
+     * {@code toSearch} is found in the given text, then this method returns the {@code text} unchanged.
+     * Otherwise this method returns a new character sequence with all occurrences replaced by {@code replaceBy}.
+     *
+     * <p>This method is similar to {@link String#replace(CharSequence, CharSequence)} except for the following:</p>
+     * <ul>
+     *   <li>This method accepts arbitrary {@code CharSequence} objects.</li>
+     *   <li>This method <strong>does not use regular expression</strong>.
+     *       The {@code toSearch} value is searched verbatim.</li>
+     * </ul>
+     *
+     * @param  text      The character sequence in which to perform the replacements, or {@code null}.
+     * @param  toSearch  The string to replace.
+     * @param  replaceBy The replacement for the searched string.
+     * @return The given text with replacements applied, or {@code text} if no replacement has been applied,
+     *         or {@code null} if the given text was null
+     *
+     * @see String#replace(char, char)
+     * @see StringBuilders#replace(StringBuilder, String, String)
+     * @see String#replace(CharSequence, CharSequence)
+     *
+     * @since 0.4
+     */
+    public static CharSequence replace(final CharSequence text, final CharSequence toSearch, final CharSequence replaceBy) {
+        ArgumentChecks.ensureNonEmpty("toSearch",  toSearch);
+        ArgumentChecks.ensureNonNull ("replaceBy", replaceBy);
+        if (text != null && !toSearch.equals(replaceBy)) {
+            final int length = text.length();
+            int i = indexOf(text, toSearch, 0, length);
+            if (i >= 0) {
+                int p = 0;
+                final int sl = toSearch.length();
+                final StringBuilder buffer = new StringBuilder(length + (replaceBy.length() - sl));
+                do {
+                    buffer.append(text, p, i).append(replaceBy);
+                    i = indexOf(text, toSearch, p = i + sl, length);
+                } while (i >= 0);
+                return buffer.append(text, p, length);
+            }
+        }
+        return text;
+    }
+
+    /**
      * Copies a sequence of characters in the given {@code char[]} array.
      *
-     * @param src       The character sequences from which to copy characters.
+     * @param src       The characters sequence from which to copy characters.
      * @param srcOffset Index of the first character from {@code src} to copy.
      * @param dst       The array where to copy the characters.
      * @param dstOffset Index where to write the first character in {@code dst}.
