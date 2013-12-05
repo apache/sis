@@ -19,8 +19,9 @@ package org.apache.sis.internal.system;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
-import java.io.Writer;
+import java.io.BufferedOutputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
@@ -60,12 +61,13 @@ public final class XMLOutputFactory extends Static {
      * Creates a new writer for the given file.
      *
      * @param  out Where to write to.
+     * @param  encoding The document encoding (usually {@code "UTF-8"}).
      * @return The writer.
      * @throws XMLStreamException If the writer can not be created.
      */
-    public static XMLStreamWriter createXMLStreamWriter(final File out) throws XMLStreamException {
+    public static XMLStreamWriter createXMLStreamWriter(final File out, String encoding) throws XMLStreamException {
         try {
-            return FACTORY.createXMLStreamWriter(new FileOutputStream(out));
+            return FACTORY.createXMLStreamWriter(new BufferedOutputStream(new FileOutputStream(out)), encoding);
         } catch (FileNotFoundException e) {
             throw new XMLStreamException(Errors.format(Errors.Keys.CanNotOpen_1, out), e);
         }
@@ -75,11 +77,12 @@ public final class XMLOutputFactory extends Static {
      * Creates a new writer for the given stream.
      *
      * @param  out Where to write to.
+     * @param  encoding The document encoding (usually {@code "UTF-8"}).
      * @return The writer.
      * @throws XMLStreamException If the writer can not be created.
      */
-    public static XMLStreamWriter createXMLStreamWriter(final OutputStream out) throws XMLStreamException {
-        return FACTORY.createXMLStreamWriter(out);
+    public static XMLStreamWriter createXMLStreamWriter(OutputStream out, String encoding) throws XMLStreamException {
+        return FACTORY.createXMLStreamWriter(out, encoding);
     }
 
     /**
