@@ -85,6 +85,13 @@ public final class Context extends MarshalContext {
     public static final int SUBSTITUTE_MIMETYPE = 16;
 
     /**
+     * The bit flag for disabling usage of {@link org.apache.sis.xml.FilteredNamespaces}.
+     *
+     * @see org.apache.sis.internal.jaxb.LegacyNamespaces#DISABLE_NAMESPACE_REPLACEMENTS
+     */
+    public static final int DISABLE_NAMESPACE_REPLACEMENTS = 32;
+
+    /**
      * The thread-local context. Elements are created in the constructor, and removed in a
      * {@code finally} block by the {@link #finish()} method. This {@code ThreadLocal} shall
      * not contain any value when no (un)marshalling is in progress.

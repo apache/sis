@@ -38,17 +38,24 @@ public final class LegacyNamespaces {
 
     /**
      * The {@value} URL, which was used for all GML versions before 3.2.
+     * This URL should not be used in JAXB annotations, even if the annotated element is really for that
+     * legacy GML version. Instead, namespace replacements are applied on-the-fly at marshalling time.
      */
     public static final String GML = "http://www.opengis.net/gml";
 
     /**
      * A copy of {@link #GML} used only in JAXB annotations.
-     * We use a separated constants in order to make easier to remove every uses of this namespace in
+     * We use a separated constant in order to make easier to remove every uses of this namespace in
      * all JAXB annotations if we can find a way to share the same Java classes between different versions.
      * If such better way is found, then every classes, methods and fields using this constant should be deleted.
      */
     @Deprecated
     public static final String GML_IN_JAXB = GML;
+
+    /**
+     * A non-public (un)marshaller property for disabling usage of {@link org.apache.sis.xml.FilteredNamespaces}.
+     */
+    public static final String DISABLE_NAMESPACE_REPLACEMENTS = "org.apache.sis.xml.disableNamespaceReplacements";
 
     /**
      * Do not allow instantiation of this class.

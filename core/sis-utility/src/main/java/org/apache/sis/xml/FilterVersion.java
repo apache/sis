@@ -25,6 +25,8 @@ import static java.util.Collections.singletonMap;
 /**
  * The target version of standards for {@link FilteredNamespaces}.
  *
+ * See {@link FilteredNamespaces} for more information.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
