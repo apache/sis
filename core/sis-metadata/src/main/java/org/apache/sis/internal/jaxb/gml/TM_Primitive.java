@@ -84,7 +84,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * of GML schemas.</p>
      */
     private static boolean isGML32() {
-        return Context.isGMLVersion(Context.current(), GMLAdapter.GML_3_2);
+        return Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2);
     }
 
     /**
@@ -109,7 +109,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      *
      * @return The time period, or {@code null}.
      */
-    @XmlElement(name = "TimePeriod", namespace = LegacyNamespaces.GML)
+    @Deprecated
+    @XmlElement(name = "TimePeriod", namespace = LegacyNamespaces.GML_IN_JAXB)
     public TimePeriod31 getTimePeriod31() {
         if (!skip() && !isGML32()) {
             final TemporalPrimitive metadata = this.metadata;
@@ -142,7 +143,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      *
      * @return The time instant, or {@code null}.
      */
-    @XmlElement(name = "TimeInstant", namespace = LegacyNamespaces.GML)
+    @Deprecated
+    @XmlElement(name = "TimeInstant", namespace = LegacyNamespaces.GML_IN_JAXB)
     public TimeInstant31 getTimeInstant31() {
         if (!skip() && !isGML32()) {
             final TemporalPrimitive metadata = this.metadata;

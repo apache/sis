@@ -16,23 +16,39 @@
  */
 package org.apache.sis.internal.jaxb;
 
+import org.apache.sis.util.Version;
+
 
 /**
- * Legacy XML namespaces.
- * This class is hopefully temporary, if we can find a way to share the same Java classes between different versions.
- * If such better way is found, then every classes, methods and fields having a JAXB annotation using this namespace
- * should be deleted.
+ * Legacy XML namespaces, and {@link Version} constants for identifying when those namespaces were used.
  *
  * @author  Guilhem Legal (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.xml.Namespaces
  */
 public final class LegacyNamespaces {
+    /**
+     * Miscellaneous version constants.
+     */
+    public static final Version VERSION_3_0 = new Version("3.0"),
+                                VERSION_3_2 = new Version("3.2");
+
     /**
      * The {@value} URL, which was used for all GML versions before 3.2.
      */
     public static final String GML = "http://www.opengis.net/gml";
+
+    /**
+     * A copy of {@link #GML} used only in JAXB annotations.
+     * We use a separated constants in order to make easier to remove every uses of this namespace in
+     * all JAXB annotations if we can find a way to share the same Java classes between different versions.
+     * If such better way is found, then every classes, methods and fields using this constant should be deleted.
+     */
+    @Deprecated
+    public static final String GML_IN_JAXB = GML;
 
     /**
      * Do not allow instantiation of this class.

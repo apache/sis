@@ -120,6 +120,8 @@ abstract class Pooled {
     /**
      * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
      * If null, then the latest version is assumed.
+     *
+     * @see #getGMLVersion()
      */
     private Version gmlVersion;
 
@@ -229,6 +231,14 @@ abstract class Pooled {
      * @throws JAXBException If an error occurred while restoring a property.
      */
     protected abstract void reset(final Object key, final Object value) throws JAXBException;
+
+    /**
+     * Returns the GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
+     * If null, then the latest version is assumed.
+     */
+    final Version getGMLVersion() {
+        return gmlVersion;
+    }
 
     /**
      * Returns {@code true} if the initial property is already saved for the given key.

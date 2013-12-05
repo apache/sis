@@ -244,6 +244,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      *         value if it is higher, or 0 if they are equal.
      */
     public int compareTo(final Version other, final int limit) {
+        ArgumentChecks.ensureNonNull ("other", other);
         ArgumentChecks.ensurePositive("limit", limit);
         for (int i=0; i<limit; i++) {
             final Comparable<?> v1 =  this.getComponent(i);

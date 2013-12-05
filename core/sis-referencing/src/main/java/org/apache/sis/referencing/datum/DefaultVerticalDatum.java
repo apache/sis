@@ -29,7 +29,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.gml.GMLAdapter;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -234,14 +234,14 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * This element was present in GML 3.0 and 3.1, but has been removed from GML 3.2.
      */
     @XmlElement(name = "verticalDatumType")
-    private VerticalDatumType getMarshalled() {
-        return (Context.isGMLVersion(Context.current(), GMLAdapter.GML_3_2)) ? null : getVerticalDatumType();
+    private VerticalDatumType getTypeElement() {
+        return Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2) ? null : getVerticalDatumType();
     }
 
     /**
      * Invoked by JAXB only. The vertical datum type is set only if it has not already been specified.
      */
-    private void setMarshalled(final VerticalDatumType t) {
+    private void setTypeElement(final VerticalDatumType t) {
         if (type != null) {
             throw new IllegalStateException();
         }
