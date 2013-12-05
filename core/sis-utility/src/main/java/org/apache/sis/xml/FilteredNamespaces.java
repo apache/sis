@@ -55,6 +55,8 @@ import javax.xml.namespace.NamespaceContext;
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see <a href="http://issues.apache.org/jira/browse/SIS-152">SIS-152</a>
  */
 final class FilteredNamespaces implements NamespaceContext {
     /**
