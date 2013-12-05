@@ -36,6 +36,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
@@ -188,14 +189,6 @@ abstract class Pooled {
     }
 
     /**
-     * Returns the initial value of {@link Context#bitMasks}. Shall be 0 if this object is
-     * an unmarshaller, or {@link Context#MARSHALLING} if it is an {@link Unmarshaller}.
-     */
-    private int initialBitMasks() {
-        return (this instanceof Marshaller) ? Context.MARSHALLING : 0;
-    }
-
-    /**
      * Releases resources and resets the (un)marshaller to its initial state.
      * This method is invoked by {@link MarshallerPool} just before to push a
      * (un)marshaller in the pool after its usage.
@@ -208,7 +201,7 @@ abstract class Pooled {
             reset(entry.getKey(), entry.getValue());
         }
         initialProperties.clear();
-        bitMasks        = initialBitMasks();
+        bitMasks        = template.bitMasks;
         locale          = template.locale;
         timezone        = template.timezone;
         schemas         = template.schemas;
@@ -217,6 +210,9 @@ abstract class Pooled {
         converter       = template.converter;
         warningListener = template.warningListener;
         resetTime       = System.nanoTime();
+        if (this instanceof Marshaller) {
+            bitMasks |= Context.MARSHALLING;
+        }
     }
 
     /**
@@ -238,6 +234,13 @@ abstract class Pooled {
      */
     final Version getGMLVersion() {
         return gmlVersion;
+    }
+
+    /**
+     * Returns {@code true} if the given {@link Context} bit is set.
+     */
+    final boolean isFlagSet(final int mask) {
+        return (bitMasks & mask) != 0;
     }
 
     /**
@@ -329,25 +332,34 @@ abstract class Pooled {
                     return;
                 }
                 case XML.STRING_SUBSTITUTES: {
-                    int mask = initialBitMasks();
+                    bitMasks &= ~(Context.SUBSTITUTE_LANGUAGE |
+                                  Context.SUBSTITUTE_COUNTRY  |
+                                  Context.SUBSTITUTE_FILENAME |
+                                  Context.SUBSTITUTE_MIMETYPE);
                     if (value != null) {
                         for (final CharSequence substitute : (CharSequence[]) value) {
                             if (CharSequences.equalsIgnoreCase(substitute, "language")) {
-                                mask |= Context.SUBSTITUTE_LANGUAGE;
+                                bitMasks |= Context.SUBSTITUTE_LANGUAGE;
                             } else if (CharSequences.equalsIgnoreCase(substitute, "country")) {
-                                mask |= Context.SUBSTITUTE_COUNTRY;
+                                bitMasks |= Context.SUBSTITUTE_COUNTRY;
                             } else if (CharSequences.equalsIgnoreCase(substitute, "filename")) {
-                                mask |= Context.SUBSTITUTE_FILENAME;
+                                bitMasks |= Context.SUBSTITUTE_FILENAME;
                             } else if (CharSequences.equalsIgnoreCase(substitute, "mimetype")) {
-                                mask |= Context.SUBSTITUTE_MIMETYPE;
+                                bitMasks |= Context.SUBSTITUTE_MIMETYPE;
                             }
                         }
                     }
-                    bitMasks = mask;
                     return;
                 }
                 case XML.WARNING_LISTENER: {
                     warningListener = (WarningListener<?>) value;
+                    return;
+                }
+                case LegacyNamespaces.DISABLE_NAMESPACE_REPLACEMENTS: {
+                    bitMasks &= ~Context.DISABLE_NAMESPACE_REPLACEMENTS;
+                    if ((Boolean) value) {
+                        bitMasks |= Context.DISABLE_NAMESPACE_REPLACEMENTS;
+                    }
                     return;
                 }
             }
@@ -389,6 +401,9 @@ abstract class Pooled {
                 if ((bitMasks & Context.SUBSTITUTE_FILENAME) != 0) substitutes[n++] = "filename";
                 if ((bitMasks & Context.SUBSTITUTE_MIMETYPE) != 0) substitutes[n++] = "mimetype";
                 return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
+            }
+            case LegacyNamespaces.DISABLE_NAMESPACE_REPLACEMENTS: {
+                return (bitMasks & Context.DISABLE_NAMESPACE_REPLACEMENTS) != 0;
             }
             default: {
                 return getStandardProperty(convertPropertyKey(name));

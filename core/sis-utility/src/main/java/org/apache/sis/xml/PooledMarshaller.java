@@ -112,8 +112,10 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     private FilterVersion getFilterVersion() {
         final Version gmlVersion = getGMLVersion();
-        if (gmlVersion != null && gmlVersion.compareTo(LegacyNamespaces.VERSION_3_2, 2) < 0) {
-            return FilterVersion.GML31;
+        if (gmlVersion != null && !isFlagSet(Context.DISABLE_NAMESPACE_REPLACEMENTS)) {
+            if (gmlVersion.compareTo(LegacyNamespaces.VERSION_3_2, 2) < 0) {
+                return FilterVersion.GML31;
+            }
         }
         return null;
     }

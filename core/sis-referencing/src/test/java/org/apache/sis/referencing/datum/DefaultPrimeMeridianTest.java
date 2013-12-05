@@ -24,6 +24,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
@@ -81,6 +82,7 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
      * @throws JAXBException If an error occurred during marshalling.
      */
     @Test
+    @DependsOnMethod("testMarshall")
     public void testMarshallGML31() throws JAXBException {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
         final MarshallerPool pool = getMarshallerPool();

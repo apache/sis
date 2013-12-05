@@ -26,6 +26,8 @@ import javax.xml.namespace.NamespaceContext;
  * at marshalling time. This class forwards every method calls to the wrapped {@link XMLStreamWriter},
  * with all {@code namespaceURI} arguments filtered before to be delegated.
  *
+ * See {@link FilteredNamespaces} for more information.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
