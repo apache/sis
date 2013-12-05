@@ -26,7 +26,7 @@ import org.opengis.temporal.Period;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
-import static org.apache.sis.internal.jaxb.gml.GMLAdapter.GML_3_0;
+import static org.apache.sis.internal.jaxb.LegacyNamespaces.VERSION_3_0;
 
 
 /**
@@ -39,7 +39,8 @@ import static org.apache.sis.internal.jaxb.gml.GMLAdapter.GML_3_0;
  * @version 0.4
  * @module
  */
-@XmlRootElement(name="TimePeriod", namespace = LegacyNamespaces.GML)
+@Deprecated
+@XmlRootElement(name="TimePeriod", namespace = LegacyNamespaces.GML_IN_JAXB)
 @XmlType(propOrder = {
     "begin",
     "end"
@@ -49,8 +50,8 @@ public final class TimePeriod31 extends GMLAdapter {
      * Same as {@link TimePeriod#begin}, but using GML 3.1 namespace.
      */
     @XmlElements({
-        @XmlElement(type=TimePeriodBound.GML3.class, name="beginPosition", namespace = LegacyNamespaces.GML),
-        @XmlElement(type=Bound.class, name="begin", namespace = LegacyNamespaces.GML)
+        @XmlElement(type=TimePeriodBound.GML3.class, name="beginPosition", namespace = LegacyNamespaces.GML_IN_JAXB),
+        @XmlElement(type=Bound.class, name="begin", namespace = LegacyNamespaces.GML_IN_JAXB)
     })
     TimePeriodBound begin;
 
@@ -58,8 +59,8 @@ public final class TimePeriod31 extends GMLAdapter {
      * Same as {@link TimePeriod#end}, but using GML 3.1 namespace.
      */
     @XmlElements({
-        @XmlElement(type=TimePeriodBound.GML3.class, name="endPosition", namespace = LegacyNamespaces.GML),
-        @XmlElement(type=Bound.class, name="end", namespace = LegacyNamespaces.GML)
+        @XmlElement(type=TimePeriodBound.GML3.class, name="endPosition", namespace = LegacyNamespaces.GML_IN_JAXB),
+        @XmlElement(type=Bound.class, name="end", namespace = LegacyNamespaces.GML_IN_JAXB)
     })
     TimePeriodBound end;
 
@@ -77,7 +78,7 @@ public final class TimePeriod31 extends GMLAdapter {
     public TimePeriod31(final Period period) {
         super(period);
         if (period != null) {
-            if (Context.isGMLVersion(Context.current(), GML_3_0)) {
+            if (Context.isGMLVersion(Context.current(), VERSION_3_0)) {
                 begin = new TimePeriodBound.GML3(period.getBeginning(), "before");
                 end   = new TimePeriodBound.GML3(period.getEnding(), "after");
             } else {
@@ -97,11 +98,12 @@ public final class TimePeriod31 extends GMLAdapter {
      * @version 0.4
      * @module
      */
+    @Deprecated
     private static final class Bound extends TimePeriodBound {
         /**
          * Same as {@link TimePeriodBound.GML2#timeInstant}, but using GML 3.1 namespace.
          */
-        @XmlElement(name = "TimeInstant", namespace = LegacyNamespaces.GML)
+        @XmlElement(name = "TimeInstant", namespace = LegacyNamespaces.GML_IN_JAXB)
         public TimeInstant timeInstant;
 
         /**

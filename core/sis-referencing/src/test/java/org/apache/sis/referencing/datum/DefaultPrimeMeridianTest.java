@@ -19,9 +19,11 @@ package org.apache.sis.referencing.datum;
 import javax.measure.unit.NonSI;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
+import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
@@ -79,14 +81,14 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
      * @throws JAXBException If an error occurred during marshalling.
      */
     @Test
-    @org.junit.Ignore
     public void testMarshallGML31() throws JAXBException {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
         final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.setProperty(XML.GML_VERSION, LegacyNamespaces.VERSION_3_0);
         final String xml = marshal(marshaller, pm);
         pool.recycle(marshaller);
-        assertGreenwichXmlEquals("http://www.opengis.net/gml", marshal(pm));
+        assertGreenwichXmlEquals(LegacyNamespaces.GML, xml);
     }
 
     /**

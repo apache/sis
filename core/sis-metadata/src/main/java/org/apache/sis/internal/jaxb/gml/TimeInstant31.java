@@ -33,12 +33,13 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  * @version 0.4
  * @module
  */
-@XmlRootElement(name="TimeInstant", namespace = LegacyNamespaces.GML)
+@Deprecated
+@XmlRootElement(name="TimeInstant", namespace = LegacyNamespaces.GML_IN_JAXB)
 public final class TimeInstant31 extends GMLAdapter {
     /**
      * Same as {@link TimeInstant#timePosition}, but using GML 3.1 namespace.
      */
-    @XmlElement(namespace = LegacyNamespaces.GML)
+    @XmlElement(namespace = LegacyNamespaces.GML_IN_JAXB)
     public XMLGregorianCalendar timePosition;
 
     /**

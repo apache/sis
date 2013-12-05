@@ -19,7 +19,6 @@ package org.apache.sis.internal.jaxb.gml;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
-import org.apache.sis.util.Version;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
@@ -42,12 +41,6 @@ import org.apache.sis.xml.IdentifiedObject;
  */
 @XmlTransient
 public abstract class GMLAdapter {
-    /**
-     * A GML version suitable for calls to {@link org.apache.sis.internal.jaxb.Context#isGMLVersion}.
-     */
-    public static final Version GML_3_0 = new Version("3.0"),
-                                GML_3_2 = new Version("3.2");
-
     /**
      * The period identifier, or {@code null} if undefined.
      * This element is part of GML 3.1.1 specification.

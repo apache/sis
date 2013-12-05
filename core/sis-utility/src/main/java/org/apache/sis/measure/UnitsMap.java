@@ -53,8 +53,9 @@ final class UnitsMap extends Static {
      */
     static final Map<Unit<?>,Integer> EPSG_CODES = new HashMap<>(20);
     static {
-        final int[] codes = {9001, 9002, 9030, 9036, 9101, 9102, 9103, 9104, 9105, 9108, 9109, 9111, 9110, 9201, 9202};
-        for (final int code : codes) {
+        final byte[] codes = {1, 2, 30, 36, 101, 102, 103, 104, 105, 108, 109, 111, 110, (byte) 201, (byte) 202};
+        for (final byte c : codes) {
+            final int code = 9000 + (c & 0xFF);
             EPSG_CODES.put(Units.valueOfEPSG(code), code);
         }
     }

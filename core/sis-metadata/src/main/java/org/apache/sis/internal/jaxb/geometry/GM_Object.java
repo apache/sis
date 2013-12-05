@@ -49,7 +49,8 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
      * Same as {@link #geometry}, but using GML 3.1 namespace.
      * This is hopefully a temporary patch.
      */
-    @XmlElementRef(name = "AbstractGeometry", namespace = LegacyNamespaces.GML, type = JAXBElement.class)
+    @Deprecated
+    @XmlElementRef(name = "AbstractGeometry", namespace = LegacyNamespaces.GML_IN_JAXB, type = JAXBElement.class)
     protected JAXBElement<? extends Geometry> geometry31;
 
     /**
