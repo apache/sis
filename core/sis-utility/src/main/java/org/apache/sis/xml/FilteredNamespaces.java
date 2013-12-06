@@ -65,40 +65,61 @@ final class FilteredNamespaces implements NamespaceContext {
      * @see javax.xml.stream.XMLStreamReader#getNamespaceContext()
      * @see javax.xml.stream.XMLStreamWriter#getNamespaceContext()
      */
-    final NamespaceContext delegate;
+    private final NamespaceContext context;
 
     /**
-     * The URIs to replace, as a copy of the {@link FilterVersion#replacements} reference.
+     * The URI replacements to apply when going from the wrapped context to the filtered context.
+     *
+     * @see FilterVersion#toView
      */
-    private final Map<String,String> replacements;
+    private final Map<String,String> toView;
 
     /**
-     * The converse of {@link #replacements}, as a copy of the {@link FilterVersion#toDelegate} reference.
+     * The URI replacements to apply when going from the filtered context to the wrapped context.
+     * This map is the converse of {@link #toView}.
+     *
+     * @see FilterVersion#toImpl
      */
-    private final Map<String,String> toDelegate;
+    private final Map<String,String> toImpl;
 
     /**
      * Creates a new namespaces filter for the given target version.
      */
-    FilteredNamespaces(final NamespaceContext delegate, final FilterVersion version) {
-        this.delegate     = delegate;
-        this.replacements = version.replacements;
-        this.toDelegate   = version.toDelegate;
+    FilteredNamespaces(final NamespaceContext context, final FilterVersion version, final boolean inverse) {
+        this.context = context;
+        if (!inverse) {
+            toView = version.toView;
+            toImpl = version.toImpl;
+        } else {
+            toView = version.toImpl;
+            toImpl = version.toView;
+        }
+    }
+
+    /**
+     * Wraps this {@code FilteredNamespaces} in a new instance performing the inverse of the replacements
+     * specified by the given version.
+     */
+    NamespaceContext inverse(final FilterVersion version) {
+        if (toView == version.toView && toImpl == version.toImpl) {
+            return this;
+        }
+        return new FilteredNamespaces(this, version, true);
     }
 
     /**
      * Returns the URI to make visible to the user of this filter.
      */
-    private String replacement(final String uri) {
-        final String replacement = replacements.get(uri);
+    private String toView(final String uri) {
+        final String replacement = toView.get(uri);
         return (replacement != null) ? replacement : uri;
     }
 
     /**
-     * Returns the URI used by the {@linkplain #delegate}.
+     * Returns the URI used by the {@linkplain #context}.
      */
-    private String toDelegate(final String uri) {
-        final String replacement = toDelegate.get(uri);
+    private String toImpl(final String uri) {
+        final String replacement = toImpl.get(uri);
         return (replacement != null) ? replacement : uri;
     }
 
@@ -107,7 +128,7 @@ final class FilteredNamespaces implements NamespaceContext {
      */
     @Override
     public String getNamespaceURI(final String prefix) {
-        return toDelegate(delegate.getNamespaceURI(prefix));
+        return toView(context.getNamespaceURI(prefix));
     }
 
     /**
@@ -115,7 +136,7 @@ final class FilteredNamespaces implements NamespaceContext {
      */
     @Override
     public String getPrefix(final String namespaceURI) {
-        return delegate.getPrefix(replacement(namespaceURI));
+        return context.getPrefix(toImpl(namespaceURI));
     }
 
     /**
@@ -123,6 +144,6 @@ final class FilteredNamespaces implements NamespaceContext {
      */
     @Override
     public Iterator<String> getPrefixes(final String namespaceURI) {
-        return delegate.getPrefixes(replacement(namespaceURI));
+        return context.getPrefixes(toImpl(namespaceURI));
     }
 }

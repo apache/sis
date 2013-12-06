@@ -40,18 +40,20 @@ import org.apache.sis.internal.jaxb.Context;
 
 /**
  * Wraps a {@link Unmarshaller} in order to have some control on the modifications applied on it.
- * This wrapper serves two purpose:
+ * This wrapper serves three purposes:
  *
  * <ul>
  *   <li>Save properties before modification, in order to restore them to their original values
  *       when the unmarshaller is recycled.</li>
  *   <li>Constructs a SIS {@link Context} object on unmarshalling, in order to give
  *       additional information to the SIS object being unmarshalled.</li>
+ *   <li>Wraps the input stream in a {@link FilteredStreamReader} if the document GML version
+ *       in not the SIS native GML version.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @Decorator(Unmarshaller.class)

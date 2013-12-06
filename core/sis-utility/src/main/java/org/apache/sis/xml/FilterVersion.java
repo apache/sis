@@ -39,22 +39,27 @@ enum FilterVersion {
     GML31(Namespaces.GML, LegacyNamespaces.GML);
 
     /**
-     * The URIs to replace. Keys are the old URIs, and values are the new URIs to use instead of the old one.
-     * This map must be immutable.
+     * The URI replacements to apply when going from the "real" data producer (JAXB marshaller)
+     * to the filtered reader/writer. Keys are the actual URIs as declared in SIS implementation,
+     * and values are the URIs read or to write instead of the actual ones.
+     *
+     * @see FilteredNamespaces#toView
      */
-    final Map<String,String> replacements;
+    final Map<String,String> toView;
 
     /**
-     * The converse of {@link #replacements}. Keys are the new URIs, and values are the old URIs which are
-     * replaced by the new ones. This map is inferred from {@link #replacements} and must be immutable.
+     * The URI replacements to apply when going from the filtered reader/writer to the "real"
+     * data consumer (JAXB unmarshaller). This map is the converse of {@link #toView}.
+     *
+     * @see FilteredNamespaces#toImpl
      */
-    final Map<String,String> toDelegate;
+    final Map<String,String> toImpl;
 
     /**
      * Creates a new enum for replacing only one namespace.
      */
-    private FilterVersion(final String from, final String to) {
-        this.replacements = singletonMap(from, to);
-        this.toDelegate   = singletonMap(to, from);
+    private FilterVersion(final String impl, final String view) {
+        this.toView = singletonMap(impl, view);
+        this.toImpl = singletonMap(view, impl);
     }
 }
