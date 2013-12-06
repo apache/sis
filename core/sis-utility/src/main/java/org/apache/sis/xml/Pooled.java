@@ -119,6 +119,22 @@ abstract class Pooled {
     private Map<String,String> schemas;
 
     /**
+     * Whether {@link FilteredNamespaces} shall be used of not. Values can be:
+     *
+     * <ul>
+     *   <li>0 for the default behavior, which is apply namespace replacements only if the {@link XML#GML_VERSION}
+     *       property is set to an older value than the one supported natively by SIS.</li>
+     *   <li>1 for forcing namespace replacements at unmarshalling time. This is useful for reading a XML document
+     *       of unknown GML version.</li>
+     *   <li>2 for disabling namespace replacements. XML (un)marshalling will use the namespaces URI supported
+     *       natively by SIS as declared in JAXB annotations. This is sometime useful for debugging purpose.</li>
+     * </ul>
+     *
+     * @see LegacyNamespaces#APPLY_NAMESPACE_REPLACEMENTS
+     */
+    private byte applyNamespaceReplacements;
+
+    /**
      * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
      * If null, then the latest version is assumed.
      *
@@ -238,10 +254,24 @@ abstract class Pooled {
      * @see FilteredNamespaces
      */
     final FilterVersion getFilterVersion() {
-        if (gmlVersion != null && (bitMasks & Context.DISABLE_NAMESPACE_REPLACEMENTS) == 0) {
-            if (gmlVersion.compareTo(LegacyNamespaces.VERSION_3_2, 2) < 0) {
-                return FilterVersion.GML31;
+        switch (applyNamespaceReplacements) {
+            case 0: {
+                // Apply namespace replacements only for older versions than the one supported natively by SIS.
+                if (gmlVersion != null) {
+                    if (gmlVersion.compareTo(LegacyNamespaces.VERSION_3_2, 2) < 0) {
+                        return FilterVersion.GML31;
+                    }
+                }
+                break;
             }
+            case 1: {
+                // Force namespace replacements at unmarshalling time (illegal for marshalling).
+                if ((bitMasks & Context.MARSHALLING) == 0) {
+                    return FilterVersion.ALL;
+                }
+                break;
+            }
+            // case 2: disable namespace replacements.
         }
         return null;
     }
@@ -358,10 +388,10 @@ abstract class Pooled {
                     warningListener = (WarningListener<?>) value;
                     return;
                 }
-                case LegacyNamespaces.DISABLE_NAMESPACE_REPLACEMENTS: {
-                    bitMasks &= ~Context.DISABLE_NAMESPACE_REPLACEMENTS;
-                    if ((Boolean) value) {
-                        bitMasks |= Context.DISABLE_NAMESPACE_REPLACEMENTS;
+                case LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS: {
+                    applyNamespaceReplacements = 0;
+                    if (value != null) {
+                        applyNamespaceReplacements = ((Boolean) value) ? (byte) 1 : (byte) 2;
                     }
                     return;
                 }
@@ -405,8 +435,12 @@ abstract class Pooled {
                 if ((bitMasks & Context.SUBSTITUTE_MIMETYPE) != 0) substitutes[n++] = "mimetype";
                 return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
             }
-            case LegacyNamespaces.DISABLE_NAMESPACE_REPLACEMENTS: {
-                return (bitMasks & Context.DISABLE_NAMESPACE_REPLACEMENTS) != 0;
+            case LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS: {
+                switch (applyNamespaceReplacements) {
+                    case 1:  return Boolean.TRUE;
+                    case 2:  return Boolean.FALSE;
+                    default: return null;
+                }
             }
             default: {
                 return getStandardProperty(convertPropertyKey(name));

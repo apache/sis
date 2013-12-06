@@ -39,6 +39,12 @@ enum FilterVersion {
     GML31(Namespaces.GML, LegacyNamespaces.GML);
 
     /**
+     * Apply all known namespace replacements. This can be used only at unmarshalling time,
+     * for replacing all namespaces by the namespaces declared in Apache SIS JAXB annotations.
+     */
+    static FilterVersion ALL = GML31;
+
+    /**
      * The URI replacements to apply when going from the "real" data producer (JAXB marshaller)
      * to the filtered reader/writer. Keys are the actual URIs as declared in SIS implementation,
      * and values are the URIs read or to write instead of the actual ones.
