@@ -21,13 +21,11 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.geometry.Geometry;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
- * JAXB adapter for {@link Geometry}, in order to integrate the value in an element
- * complying with OGC/ISO standard. The geometry values are covered by a {@code gml:**}
- * element
+ * JAXB adapter for {@link Geometry}, in order to integrate the value in an element complying with OGC/ISO standard.
+ * The geometry element names are usually prefixed by {@code gml:}.
  *
  * <p>The default implementation does almost nothing. The geometry objects will <strong>not</strong>
  * create the expected {@link JAXBElement} type. This class is only a hook to be extended by more
@@ -46,14 +44,6 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
     protected JAXBElement<? extends Geometry> geometry;
 
     /**
-     * Same as {@link #geometry}, but using GML 3.1 namespace.
-     * This is hopefully a temporary patch.
-     */
-    @Deprecated
-    @XmlElementRef(name = "AbstractGeometry", namespace = LegacyNamespaces.GML_IN_JAXB, type = JAXBElement.class)
-    protected JAXBElement<? extends Geometry> geometry31;
-
-    /**
      * Empty constructor for JAXB and subclasses only.
      */
     public GM_Object() {
@@ -69,10 +59,7 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
     @Override
     public final Geometry unmarshal(final GM_Object value) {
         if (value != null) {
-            JAXBElement<? extends Geometry> g = value.geometry;
-            if (g == null) {
-                g = value.geometry31;
-            }
+            final JAXBElement<? extends Geometry> g = value.geometry;
             if (g != null) {
                 return g.getValue();
             }
