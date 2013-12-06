@@ -55,44 +55,48 @@ final class FilteredStreamWriter implements XMLStreamWriter {
     /**
      * Returns the URI to write in the XML document.
      */
-    private String replacement(final String uri) {
-        final String replacement = version.replacements.get(uri);
+    private String toView(final String uri) {
+        final String replacement = version.toView.get(uri);
         return (replacement != null) ? replacement : uri;
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeStartElement(String localName) throws XMLStreamException {
+    public void writeStartElement(final String localName) throws XMLStreamException {
         out.writeStartElement(localName);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void writeStartElement(String namespaceURI, String localName) throws XMLStreamException {
-        out.writeStartElement(replacement(namespaceURI), localName);
+    public void writeStartElement(final String namespaceURI, final String localName) throws XMLStreamException {
+        out.writeStartElement(toView(namespaceURI), localName);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void writeStartElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
-        out.writeStartElement(prefix, localName, replacement(namespaceURI));
+    public void writeStartElement(final String prefix, final String localName, final String namespaceURI)
+            throws XMLStreamException
+    {
+        out.writeStartElement(prefix, localName, toView(namespaceURI));
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void writeEmptyElement(String namespaceURI, String localName) throws XMLStreamException {
-        out.writeEmptyElement(replacement(namespaceURI), localName);
+    public void writeEmptyElement(final String namespaceURI, final String localName) throws XMLStreamException {
+        out.writeEmptyElement(toView(namespaceURI), localName);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void writeEmptyElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
-        out.writeEmptyElement(prefix, localName, replacement(namespaceURI));
+    public void writeEmptyElement(final String prefix, final String localName, final String namespaceURI)
+            throws XMLStreamException
+    {
+        out.writeEmptyElement(prefix, localName, toView(namespaceURI));
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeEmptyElement(String localName) throws XMLStreamException {
+    public void writeEmptyElement(final String localName) throws XMLStreamException {
         out.writeEmptyElement(localName);
     }
 
@@ -122,67 +126,71 @@ final class FilteredStreamWriter implements XMLStreamWriter {
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeAttribute(String localName, String value) throws XMLStreamException {
+    public void writeAttribute(final String localName, final String value) throws XMLStreamException {
         out.writeAttribute(localName, value);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void writeAttribute(String prefix, String namespaceURI, String localName, String value) throws XMLStreamException {
-        out.writeAttribute(prefix, replacement(namespaceURI), localName, value);
+    public void writeAttribute(final String prefix, final String namespaceURI,final  String localName,
+            final String value) throws XMLStreamException
+    {
+        out.writeAttribute(prefix, toView(namespaceURI), localName, value);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void writeAttribute(String namespaceURI, String localName, String value) throws XMLStreamException {
-        out.writeAttribute(replacement(namespaceURI), localName, value);
+    public void writeAttribute(final String namespaceURI, final String localName, final String value)
+            throws XMLStreamException
+    {
+        out.writeAttribute(toView(namespaceURI), localName, value);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void writeNamespace(String prefix, String namespaceURI) throws XMLStreamException {
-        out.writeNamespace(prefix, replacement(namespaceURI));
+    public void writeNamespace(final String prefix, final String namespaceURI) throws XMLStreamException {
+        out.writeNamespace(prefix, toView(namespaceURI));
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void writeDefaultNamespace(String namespaceURI) throws XMLStreamException {
-        out.writeDefaultNamespace(replacement(namespaceURI));
+    public void writeDefaultNamespace(final String namespaceURI) throws XMLStreamException {
+        out.writeDefaultNamespace(toView(namespaceURI));
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeComment(String data) throws XMLStreamException {
+    public void writeComment(final String data) throws XMLStreamException {
         out.writeComment(data);
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeProcessingInstruction(String target) throws XMLStreamException {
+    public void writeProcessingInstruction(final String target) throws XMLStreamException {
         out.writeProcessingInstruction(target);
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeProcessingInstruction(String target, String data) throws XMLStreamException {
+    public void writeProcessingInstruction(final String target, final String data) throws XMLStreamException {
         out.writeProcessingInstruction(target, data);
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeCData(String data) throws XMLStreamException {
+    public void writeCData(final String data) throws XMLStreamException {
         out.writeCData(data);
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeDTD(String dtd) throws XMLStreamException {
+    public void writeDTD(final String dtd) throws XMLStreamException {
         out.writeDTD(dtd);
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeEntityRef(String name) throws XMLStreamException {
+    public void writeEntityRef(final String name) throws XMLStreamException {
         out.writeEntityRef(name);
     }
 
@@ -194,53 +202,53 @@ final class FilteredStreamWriter implements XMLStreamWriter {
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeStartDocument(String version) throws XMLStreamException {
+    public void writeStartDocument(final String version) throws XMLStreamException {
         out.writeStartDocument(version);
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeStartDocument(String encoding, String version) throws XMLStreamException {
+    public void writeStartDocument(final String encoding, final String version) throws XMLStreamException {
         out.writeStartDocument(encoding, version);
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeCharacters(String text) throws XMLStreamException {
+    public void writeCharacters(final String text) throws XMLStreamException {
         out.writeCharacters(text);
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public void writeCharacters(char[] text, int start, int len) throws XMLStreamException {
+    public void writeCharacters(final char[] text, final int start, final int len) throws XMLStreamException {
         out.writeCharacters(text, start, len);
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public String getPrefix(String uri) throws XMLStreamException {
-        return out.getPrefix(replacement(uri));
+    public String getPrefix(final String uri) throws XMLStreamException {
+        return out.getPrefix(toView(uri));
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void setPrefix(String prefix, String uri) throws XMLStreamException {
-        out.setPrefix(prefix, replacement(uri));
+    public void setPrefix(final String prefix, final String uri) throws XMLStreamException {
+        out.setPrefix(prefix, toView(uri));
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
-    public void setDefaultNamespace(String uri) throws XMLStreamException {
-        out.setDefaultNamespace(replacement(uri));
+    public void setDefaultNamespace(final String uri) throws XMLStreamException {
+        out.setDefaultNamespace(toView(uri));
     }
 
     /** Unwraps the original context and forwards the call. */
     @Override
     public void setNamespaceContext(NamespaceContext context) throws XMLStreamException {
         if (context instanceof FilteredNamespaces) {
-            context = ((FilteredNamespaces) context).delegate;
+            context = ((FilteredNamespaces) context).inverse(version);
         } else {
-            context = new FilteredNamespaces(context, version);
+            context = new FilteredNamespaces(context, version, true);
         }
         out.setNamespaceContext(context);
     }
@@ -248,12 +256,12 @@ final class FilteredStreamWriter implements XMLStreamWriter {
     /** Returns the context of the underlying writer wrapped in a filter that convert the namespaces on the fly. */
     @Override
     public NamespaceContext getNamespaceContext() {
-        return new FilteredNamespaces(out.getNamespaceContext(), version);
+        return new FilteredNamespaces(out.getNamespaceContext(), version, false);
     }
 
     /** Forwards the call verbatim. */
     @Override
-    public Object getProperty(String name) throws IllegalArgumentException {
+    public Object getProperty(final String name) throws IllegalArgumentException {
         return out.getProperty(name);
     }
 }

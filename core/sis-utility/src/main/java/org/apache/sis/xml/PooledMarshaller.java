@@ -19,6 +19,9 @@ package org.apache.sis.xml;
 import java.io.File;
 import java.io.Writer;
 import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.PropertyException;
@@ -140,11 +143,13 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * than the one supported natively by SIS, i.e. when {@link #getFilterVersion()} returns
      * a non-null value.
      *
+     * @param object  The object to marshall.
+     * @param output  The writer create by SIS (<b>not</b> the writer given by the user).
      * @param version Identify the namespace substitutions to perform.
      * @param close   Whether to close the writer after marshalling.
      */
-    private void marshal(final Object object, XMLStreamWriter output, final FilterVersion version,
-            final boolean close) throws XMLStreamException, JAXBException
+    private void marshal(final Object object, XMLStreamWriter output, final FilterVersion version)
+            throws XMLStreamException, JAXBException
     {
         output = new FilteredStreamWriter(output, version);
         final Context context = begin();
@@ -153,11 +158,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
         } finally {
             context.finish();
         }
-        if (close) {
-            output.close();
-        } else {
-            output.flush();
-        }
+        output.close(); // Despite its name, this method does not close the underlying output stream.
     }
 
     /**
@@ -167,7 +168,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final Result output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version, false);
+            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -188,7 +189,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final OutputStream output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output, getEncoding()), version, false);
+            marshal(object, XMLOutputFactory.createXMLStreamWriter(output, getEncoding()), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -209,8 +210,10 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final File output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output, getEncoding()), version, true);
-        } catch (XMLStreamException e) {
+            try (OutputStream s = new BufferedOutputStream(new FileOutputStream(output))) {
+                marshal(object, XMLOutputFactory.createXMLStreamWriter(s, getEncoding()), version);
+            }
+        } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
@@ -230,7 +233,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final Writer output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version, false);
+            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -251,7 +254,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final ContentHandler output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version, false);
+            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -272,7 +275,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final Node output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version, false);
+            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -290,20 +293,16 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Delegates the marshalling to the wrapped marshaller.
      */
     @Override
-    public void marshal(final Object object, final XMLStreamWriter output) throws JAXBException {
+    public void marshal(final Object object, XMLStreamWriter output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
-        if (version != null) try {
-            marshal(object, output, version, false);
-        } catch (XMLStreamException e) {
-            throw new JAXBException(e);
-        } else {
-            // Marshalling to the default GML version.
-            final Context context = begin();
-            try {
-                marshaller.marshal(object, output);
-            } finally {
-                context.finish();
-            }
+        if (version != null) {
+            output = new FilteredStreamWriter(output, version);
+        }
+        final Context context = begin();
+        try {
+            marshaller.marshal(object, output);
+        } finally {
+            context.finish();
         }
     }
 
@@ -314,7 +313,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final XMLEventWriter output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version, false);
+            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
