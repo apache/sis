@@ -18,7 +18,9 @@ package org.apache.sis.referencing.datum;
 
 import javax.measure.unit.NonSI;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
@@ -41,28 +43,37 @@ import static org.apache.sis.test.mock.PrimeMeridianMock.GREENWICH;
  */
 public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
     /**
+     * Asserts the the given prime meridian is the Greenwich one.
+     */
+    private static void assertIsGreenwich(final PrimeMeridian meridian) {
+        assertEquals("name", "Greenwich", meridian.getName().getCode());
+        assertEquals("greenwichLongitude", 0, meridian.getGreenwichLongitude(), 0);
+        assertEquals("", NonSI.DEGREE_ANGLE, meridian.getAngularUnit());
+    }
+
+    /**
      * Tests {@link DefaultPrimeMeridian#toWKT()}.
      */
     @Test
     public void testToWKT() {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
+        assertIsGreenwich(pm);
         assertWktEquals(pm, "PRIMEM[“Greenwich”, 0.0]");
     }
 
     /**
-     * Compares the given XML representation of Greenwich prime meridian against the expected XML.
-     * The XML is expected to use the given GML namespace URI.
+     * Returns a XML representation of Greenwich prime meridian using the given GML namespace URI.
      *
-     * @param namespace The expected GML namespace.
-     * @param actual XML representation of Greenwich prime meridian to test.
+     * @param  namespace The GML namespace.
+     * @return XML representation of Greenwich prime meridian.
      */
-    private static void assertGreenwichXmlEquals(final String namespace, final String actual) {
-        assertXmlEquals(CharSequences.replace(
+    private static String getGreenwichXml(final String namespace) {
+        return CharSequences.replace(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:name codeSpace=\"test\">Greenwich</gml:name>\n" +
                 "  <gml:greenwichLongitude uom=\"urn:ogc:def:uom:EPSG::9102\">0.0</gml:greenwichLongitude>\n" +
                 "</gml:PrimeMeridian>\n",
-                Namespaces.GML, namespace).toString(), actual, "xmlns:*", "xsi:schemaLocation");
+                Namespaces.GML, namespace).toString();
     }
 
     /**
@@ -73,7 +84,7 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
     @Test
     public void testMarshall() throws JAXBException {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
-        assertGreenwichXmlEquals(Namespaces.GML, marshal(pm));
+        assertXmlEquals(getGreenwichXml(Namespaces.GML), marshal(pm), "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -90,7 +101,7 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
         marshaller.setProperty(XML.GML_VERSION, LegacyNamespaces.VERSION_3_0);
         final String xml = marshal(marshaller, pm);
         pool.recycle(marshaller);
-        assertGreenwichXmlEquals(LegacyNamespaces.GML, xml);
+        assertXmlEquals(getGreenwichXml(LegacyNamespaces.GML), xml, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -103,7 +114,22 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
     @Test
     public void testUnmarshall() throws JAXBException {
         DefaultPrimeMeridian pm = unmarshall(DefaultPrimeMeridian.class, "Greenwich.xml");
-        assertEquals("greenwichLongitude", pm.getGreenwichLongitude(), 0, 0);
-        assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
+        assertIsGreenwich(pm);
+    }
+
+    /**
+     * Tests marshalling in the GML 3.1 namespace.
+     *
+     * @throws JAXBException If an error occurred during marshalling.
+     */
+    @Test
+    @DependsOnMethod("testUnmarshall")
+    public void testUnarshallGML31() throws JAXBException {
+        final MarshallerPool pool = getMarshallerPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        unmarshaller.setProperty(XML.GML_VERSION, LegacyNamespaces.VERSION_3_0);
+        PrimeMeridian pm = (PrimeMeridian) unmarshal(unmarshaller, getGreenwichXml(LegacyNamespaces.GML));
+        pool.recycle(unmarshaller);
+        assertIsGreenwich(pm);
     }
 }

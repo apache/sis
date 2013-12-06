@@ -44,7 +44,7 @@ final class FilteredStreamReader extends StreamReaderDelegate {
     /**
      * Creates a new filter for the given version of the standards.
      */
-    private FilteredStreamReader(final XMLStreamReader in, final FilterVersion version) {
+    FilteredStreamReader(final XMLStreamReader in, final FilterVersion version) {
         super(in);
         this.version = version;
     }
