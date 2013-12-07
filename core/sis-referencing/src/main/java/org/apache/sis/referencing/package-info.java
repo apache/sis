@@ -16,13 +16,14 @@
  */
 
 /**
- * {@linkplain org.apache.sis.referencing.AbstractReferenceSystem Reference system} implementations.
+ * Base classes for reference systems used for general positioning.
  * An explanation for this package is provided in the {@linkplain org.opengis.referencing OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * <p>This package provides implementations for general positioning, coordinate reference systems (CRS),
- * and coordinate transformations. Coordinates can have any number of dimensions. So this implementation
- * can handle 2D and 3D coordinates, as well as 4D, 5D, <i>etc.</i></p>
+ * <p>The most commonly used kinds of Reference Systems in Apache SIS are the <cite>Coordinate Reference Systems</cite>
+ * (CRS), which handle coordinates of arbitrary dimensions. The SIS implementations can handle 2D and 3D coordinates,
+ * as well as 4D, 5D, <i>etc</i>. An other less-frequently used kind of Reference System uses labels instead, as in
+ * postal address. This package is the root for both kinds, with an emphasis on the one for coordinates.</p>
  *
  * {@section Fetching geodetic object instances}
  * Geodetic objects can be instantiated either directly by specifying all information to a factory method
@@ -69,4 +70,28 @@
  * @version 0.4
  * @module
  */
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
+    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD)
+})
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(RS_Identifier.class),
+    @XmlJavaTypeAdapter(StringAdapter.class),
+    @XmlJavaTypeAdapter(InternationalStringConverter.class)
+})
 package org.apache.sis.referencing;
+
+import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlNsForm;
+import javax.xml.bind.annotation.XmlSchema;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
+
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.gco.*;
+import org.apache.sis.internal.jaxb.metadata.*;
+import org.apache.sis.internal.jaxb.referencing.RS_Identifier;

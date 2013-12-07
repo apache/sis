@@ -49,11 +49,13 @@ public abstract class TypeRegistration {
     /**
      * The JAXB context, or {@code null} if not yet created or if the classpath changed.
      */
-    private static volatile Reference<JAXBContext> context;
+    private static Reference<JAXBContext> context;
     static {
         SystemListener.add(new SystemListener(Modules.UTILITIES) {
             @Override protected void classpathChanged() {
-                context = null;
+                synchronized (TypeRegistration.class) {
+                    context = null;
+                }
             }
         });
     }

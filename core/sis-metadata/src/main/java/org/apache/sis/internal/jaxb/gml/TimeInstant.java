@@ -97,6 +97,8 @@ public final class TimeInstant extends GMLAdapter {
 
     /**
      * Returns a string representation for debugging and formatting error message.
+     *
+     * @return A string representation of this time instant.
      */
     @Override
     public String toString() {

@@ -20,7 +20,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.measure.unit.Unit;
 import org.opengis.referencing.datum.Ellipsoid;
-import org.apache.sis.measure.Units;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.Measure;
 
@@ -74,7 +73,6 @@ public final class SecondDefiningParameter {
                 measure = new Measure(ellipsoid.getInverseFlattening(), Unit.ONE);
             } else {
                 measure = new Measure(ellipsoid.getSemiMinorAxis(), ellipsoid.getAxisUnit());
-                Units.ensureLinear(measure.unit);
             }
         }
     }
@@ -100,12 +98,13 @@ public final class SecondDefiningParameter {
 
     /**
      * Sets the semi-minor axis value. This is invoked by JAXB for unmarshalling.
+     * The unit of measurement (if any) shall be linear, but we do not verify that now.
+     * This will be verified by {@code DefaultEllipsoid.setSecondDefiningParameter(…)}.
      *
      * @param measure The semi-minor axis value.
      */
     public void setSemiMinorAxis(final Measure measure) {
         this.measure = measure;
-        Units.ensureLinear(measure.unit);
     }
 
     /**

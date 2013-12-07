@@ -22,12 +22,13 @@ import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Length;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
@@ -57,20 +58,49 @@ final class StandardDefinitions {
     }
 
     /**
-     * Creates the Greenwich prime meridian. This is the only prime meridian supported by SIS convenience shortcuts.
-     * If an other prime meridian is desired, the EPSG database shall be used.
+     * Returns a map of properties for the given EPSG code, name and alias.
+     *
+     * @param  code  The EPSG code.
+     * @param  name  The object name.
+     * @param  alias The alias, or {@code null} if none.
+     * @return The map of properties to give to constructors or factory methods.
      */
-    static PrimeMeridian primeMeridian() {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
-        properties.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, "Greenwich")); // Name is fixed by ISO 19111.
-        properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, GREENWICH));
-        return new DefaultPrimeMeridian(properties, 0, NonSI.DEGREE_ANGLE);
+    private static Map<String,Object> properties(final short code, final String name, final String alias) {
+        final Map<String,Object> map = new HashMap<String,Object>(8);
+        map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
+        map.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, name));
+        map.put(ALIAS_KEY, alias); // May be null, which is okay.
+        return map;
+    }
+
+    /**
+     * Creates a geodetic datum from hard-coded values for the given code.
+     *
+     * @param  code      The EPSG code.
+     * @param  ellipsoid The datum ellipsoid.
+     * @param  meridian  The datum prime meridian.
+     * @return The geodetic datum for the given code.
+     */
+    static GeodeticDatum createGeodeticDatum(final short code, final Ellipsoid ellipsoid, final PrimeMeridian meridian) {
+        final String name;
+        final String alias;
+        switch (code) {
+            case 6326: name = "World Geodetic System 1984";                        alias = "WGS 84"; break;
+            case 6322: name = "World Geodetic System 1972";                        alias = "WGS 72"; break;
+            case 6258: name = "European Terrestrial Reference System 1989";        alias = "ETRS89"; break;
+            case 6269: name = "North American Datum 1983";                         alias = "NAD83";  break;
+            case 6267: name = "North American Datum 1927";                         alias = "NAD27";  break;
+            case 6230: name = "European Datum 1950";                               alias = "ED50";   break;
+            case 6047: name = "Not specified (based on GRS 1980 Authalic Sphere)"; alias = null;     break;
+            default:   throw new AssertionError(code);
+        }
+        return new DefaultGeodeticDatum(properties(code, name, alias), ellipsoid, meridian);
     }
 
     /**
      * Creates an ellipsoid from hard-coded values for the given code.
      *
-     * @param  code The EPSG or SIS code.
+     * @param  code The EPSG code.
      * @return The ellipsoid for the given code.
      */
     static Ellipsoid createEllipsoid(final short code) {
@@ -89,19 +119,22 @@ final class StandardDefinitions {
             case 7048: name  = "GRS 1980 Authalic Sphere"; ivfDefinitive = false;  semiMajorAxis = other = AUTHALIC_RADIUS;          break;
             default:   throw new AssertionError(code);
         }
-        final Map<String,Object> map = new HashMap<String,Object>(8);
-        final Citation authority;
-        if (code >= 0) {
-            map.put(IDENTIFIERS_KEY, new NamedIdentifier(authority = Citations.EPSG, String.valueOf(code)));
-        } else {
-            authority = Citations.SIS;
-        }
-        map.put(NAME_KEY, new NamedIdentifier(authority, name));
-        map.put(ALIAS_KEY, alias); // May be null, which is okay.
+        final Map<String,Object> map = properties(code, name, alias);
         if (ivfDefinitive) {
             return DefaultEllipsoid.createFlattenedSphere(map, semiMajorAxis, other, unit);
         } else {
             return DefaultEllipsoid.createEllipsoid(map, semiMajorAxis, other, unit);
         }
+    }
+
+    /**
+     * Creates the Greenwich prime meridian. This is the only prime meridian supported by SIS convenience shortcuts.
+     * If an other prime meridian is desired, the EPSG database shall be used.
+     */
+    static PrimeMeridian primeMeridian() {
+        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        properties.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, "Greenwich")); // Name is fixed by ISO 19111.
+        properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, GREENWICH));
+        return new DefaultPrimeMeridian(properties, 0, NonSI.DEGREE_ANGLE);
     }
 }

@@ -170,25 +170,21 @@ public final class Citations extends Static {
      * Returns a citation of the given name. The method makes the following choice:
      *
      * <ul>
-     *   <li>If the given title is {@code null} or empty (ignoring spaces), then this method
-     *       returns {@code null}.</li>
+     *   <li>If the given title is {@code null} or empty (ignoring spaces), then this method returns {@code null}.</li>
      *   <li>Otherwise if the given name matches a {@linkplain Citation#getTitle() title} or an
      *       {@linkplain Citation#getAlternateTitles() alternate titles} of one of the pre-defined
-     *       constants ({@link #EPSG}, {@link #GEOTIFF}, <i>etc.</i>), then that constant
-     *       is returned.</li>
+     *       constants ({@link #EPSG}, {@link #GEOTIFF}, <i>etc.</i>), then that constant is returned.</li>
      *   <li>Otherwise, a new citation is created with the specified name as the title.</li>
      * </ul>
      *
      * @param  title The citation title (or alternate title), or {@code null}.
-     * @return A citation using the specified name, or {@code null} if the given title is null
-     *         or empty.
+     * @return A citation using the specified name, or {@code null} if the given title is null or empty.
      */
     public static Citation fromName(String title) {
         if (title == null || ((title = CharSequences.trimWhitespaces(title)).isEmpty())) {
             return null;
         }
-        for (int i=0; i<AUTHORITIES.length; i++) {
-            final Citation citation = AUTHORITIES[i];
+        for (final Citation citation : AUTHORITIES) {
             if (titleMatches(citation, title)) {
                 return citation;
             }
@@ -289,12 +285,15 @@ public final class Citations extends Static {
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
      *
-     * This method searches in alternate titles as a fallback because ISO specification said
-     * that those titles are often used for abbreviations.
+     * {@note This method searches in alternate titles as a fallback because ISO specification said
+     *        that those titles are often used for abbreviations.}
+     *
+     * This method ignores leading and trailing whitespaces of every character sequences.
+     * Null references, empty character sequences and sequences of whitespaces only are ignored.
      *
      * @param  citation The citation for which to get the identifier, or {@code null}.
-     * @return An identifier for the given citation, or {@code null} if the given citation is null
-     *         or does not declare any identifier or title.
+     * @return A non-empty identifier for the given citation without leading or trailing whitespaces,
+     *         or {@code null} if the given citation is null or does not declare any identifier or title.
      */
     public static String getIdentifier(final Citation citation) {
         return org.apache.sis.internal.util.Citations.getIdentifier(citation);

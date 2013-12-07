@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation Content information} implementation.
+ * Description of the dataset content.
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.content OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *

@@ -31,7 +31,7 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-3.15)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @XmlRegistry
@@ -39,17 +39,17 @@ public class ObjectFactory {
     /**
      * The qualified name of {@code <AbstractGeometry>}.
      */
-    protected static final QName AbstractGeometry_QNAME = new QName(Namespaces.GML, "AbstractGeometry");
+    protected static final QName AbstractGeometry_QNAME   = new QName(Namespaces.GML, "AbstractGeometry");
 
     /**
      * The qualified name of {@code <AbstractGML>}.
      */
-    protected static final QName AbstractGML_QNAME = new QName(Namespaces.GML, "AbstractGML");
+    protected static final QName AbstractGML_QNAME   = new QName(Namespaces.GML, "AbstractGML");
 
     /**
      * The qualified name of {@code <AbstractObject>}.
      */
-    protected static final QName AbstractObject_QNAME = new QName(Namespaces.GML, "AbstractObject");
+    protected static final QName AbstractObject_QNAME   = new QName(Namespaces.GML, "AbstractObject");
 
     /**
      * Creates an instance of {@code JAXBElement<Object>}}.
@@ -57,7 +57,7 @@ public class ObjectFactory {
      * @param  value The {@code Object} value to wrap.
      * @return The wrapped value.
      */
-    @XmlElementDecl(name = "AbstractObject")
+    @XmlElementDecl(name = "AbstractObject", namespace = Namespaces.GML)
     public JAXBElement<Object> createObject(final Object value) {
         return new JAXBElement<Object>(AbstractObject_QNAME, Object.class, null, value);
     }
@@ -73,6 +73,7 @@ public class ObjectFactory {
      */
     @Workaround(library = "JAXB", version = "2.1")
     @XmlElementDecl(name = "AbstractGML",
+            namespace = Namespaces.GML,
             substitutionHeadName = "AbstractObject",
             substitutionHeadNamespace = Namespaces.GML) // Not necessary according javadoc, but appears to be in practice (JAXB 2.1 bug?)
     public JAXBElement<Object> createAbstractGML(final Object value) {
@@ -90,6 +91,7 @@ public class ObjectFactory {
      */
     @Workaround(library = "JAXB", version = "2.1")
     @XmlElementDecl(name = "AbstractGeometry",
+            namespace = Namespaces.GML,
             substitutionHeadName = "AbstractGML",
             substitutionHeadNamespace = Namespaces.GML) // Not necessary according javadoc, but appears to be in practice (JAXB 2.1 bug?)
     public JAXBElement<Object> createAbstractGeometry(final Object value) {

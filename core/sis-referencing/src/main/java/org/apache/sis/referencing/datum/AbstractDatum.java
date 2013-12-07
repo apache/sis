@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
@@ -64,11 +65,19 @@ import org.apache.sis.internal.jdk7.Objects;
  */
 @Immutable
 @XmlType(name="AbstractDatumType")
+@XmlSeeAlso(
+    DefaultGeodeticDatum.class
+)
 public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -4894180465652474930L;
+
+    /**
+     * The prefix used by ESRI at the beginning of datum names.
+     */
+    private static final String ESRI_PREFIX = "D_";
 
     /**
      * Description, possibly including coordinates, of the point or points used to anchor the datum
@@ -97,6 +106,19 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @XmlElement
     private final InternationalString scope;
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractDatum() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        anchorPoint      = null;
+        realizationEpoch = Long.MIN_VALUE;
+        domainOfValidity = null;
+        scope            = null;
+    }
 
     /**
      * Creates a datum from the given properties.
@@ -287,6 +309,40 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
+     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
+     * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
+     * This method performs the comparison documented in the
+     * {@link AbstractIdentifiedObject#isHeuristicMatchForName(String) super-class},
+     * with the following additional flexibility:
+     *
+     * <ul>
+     *   <li>The {@code "D_"} prefix (used in ESRI datum names), if presents in the given name or in this datum name,
+     *       is ignored.</li>
+     * </ul>
+     *
+     * {@section Future evolutions}
+     * This method implements heuristic rules learned from experience while trying to provide inter-operability
+     * with different data producers. Those rules may be adjusted in any future SIS version according experience
+     * gained while working with more data producers.
+     *
+     * @param  name The name to compare.
+     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     */
+    @Override
+    public boolean isHeuristicMatchForName(final String name) {
+        if (name.startsWith((ESRI_PREFIX))) {
+            if (super.isHeuristicMatchForName(name.substring(ESRI_PREFIX.length()))) {
+                return true;
+            }
+        } else if (getName().getCode().startsWith(ESRI_PREFIX)) {
+            if (super.isHeuristicMatchForName(ESRI_PREFIX.concat(name))) {
+                return true;
+            }
+        }
+        return super.isHeuristicMatchForName(name);
+    }
+
+    /**
      * Compares the specified object with this datum for equality.
      * If the {@code mode} argument value is {@link ComparisonMode#STRICT STRICT} or
      * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties are compared including the
@@ -296,43 +352,41 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final AbstractDatum that = (AbstractDatum) object;
-                    return this.realizationEpoch == that.realizationEpoch &&
-                           Objects.equals(this.domainOfValidity, that.domainOfValidity) &&
-                           Objects.equals(this.anchorPoint,      that.anchorPoint) &&
-                           Objects.equals(this.scope,            that.scope);
-                }
-                case BY_CONTRACT: {
-                    if (!(object instanceof Datum)) break;
-                    final Datum that = (Datum) object;
-                    return deepEquals(getRealizationEpoch(), that.getRealizationEpoch(), mode) &&
-                           deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
-                           deepEquals(getAnchorPoint(),      that.getAnchorPoint(),      mode) &&
-                           deepEquals(getScope(),            that.getScope(),            mode);
-                }
-                default: {
-                    /*
-                     * Tests for name, since datum with different name have completely
-                     * different meaning. We don't perform this comparison if the user
-                     * asked for metadata comparison, because in such case the names
-                     * have already been compared by the subclass.
-                     */
-                    if (!(object instanceof Datum)) break;
-                    final Datum that = (Datum) object;
-                    return nameMatches(that. getName().getCode()) ||
-                           IdentifiedObjects.nameMatches(that, getName().getCode());
-                }
+        if (!(object instanceof Datum && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                final AbstractDatum that = (AbstractDatum) object;
+                return this.realizationEpoch == that.realizationEpoch &&
+                       Objects.equals(this.domainOfValidity, that.domainOfValidity) &&
+                       Objects.equals(this.anchorPoint,      that.anchorPoint) &&
+                       Objects.equals(this.scope,            that.scope);
+            }
+            case BY_CONTRACT: {
+                final Datum that = (Datum) object;
+                return deepEquals(getRealizationEpoch(), that.getRealizationEpoch(), mode) &&
+                       deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
+                       deepEquals(getAnchorPoint(),      that.getAnchorPoint(),      mode) &&
+                       deepEquals(getScope(),            that.getScope(),            mode);
+            }
+            default: {
+                /*
+                 * Tests for name, since datum with different name have completely
+                 * different meaning. We don't perform this comparison if the user
+                 * asked for metadata comparison, because in such case the names
+                 * have already been compared by the subclass.
+                 */
+                final Datum that = (Datum) object;
+                return isHeuristicMatchForName(that. getName().getCode()) ||
+                       IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode());
             }
         }
-        return false;
     }
 
     /**
