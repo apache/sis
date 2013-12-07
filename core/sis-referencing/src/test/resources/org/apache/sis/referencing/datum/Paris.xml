@@ -23,7 +23,8 @@
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/datums.xsd">
 
-  <gml:identifier codeSpace="OGP">urn:ogc:def:meridian:EPSG::8901</gml:identifier>
-  <gml:name>Greenwich</gml:name>
-  <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9102">0</gml:greenwichLongitude>
+  <gml:identifier codeSpace="OGP">urn:ogc:def:meridian:EPSG::8903</gml:identifier>
+  <gml:name>Paris</gml:name>
+  <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9105">2.5969213</gml:greenwichLongitude>
+  <gml:remarks>Equivalent to 2°20′14.025″.</gml:remarks>
 </gml:PrimeMeridian>

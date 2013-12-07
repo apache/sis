@@ -37,7 +37,7 @@ import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.jaxb.referencing.RS_Identifier;
+import org.apache.sis.internal.jaxb.referencing.RS_IdentifierSingleton;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Immutable;
@@ -106,8 +106,9 @@ import java.util.Objects;
 @Immutable
 @ThreadSafe
 @XmlType(name="IdentifiedObjectType", propOrder={
-    "identifier",
-    "name"
+    "identifiers",
+    "name",
+    "remarks"
 })
 @XmlSeeAlso({
     AbstractReferenceSystem.class,
@@ -127,10 +128,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The name for this object or code. Should never be {@code null}.
      *
      * @see #getName()
-     * @see #getIdentifier()
      */
     @XmlElement
-    @XmlJavaTypeAdapter(RS_Identifier.class) // Not the same RS_Identifier than metadata.
     private final ReferenceIdentifier name;
 
     /**
@@ -148,13 +147,15 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * "no identifiers" because we may get both on unmarshalling.</p>
      *
      * @see #getIdentifiers()
-     * @see #getIdentifier()
      */
+    @XmlElement(name = "identifier")
+    @XmlJavaTypeAdapter(RS_IdentifierSingleton.class)
     private final Set<ReferenceIdentifier> identifiers;
 
     /**
      * Comments on or information about this object, or {@code null} if none.
      */
+    @XmlElement(name = "remarks")
     private final InternationalString remarks;
 
     /**
@@ -437,18 +438,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     @Override
     public Set<ReferenceIdentifier> getIdentifiers() {
         return nonNull(identifiers); // Needs to be null-safe because we may have a null value on unmarshalling.
-    }
-
-    /**
-     * Returns the first identifier found, or {@code null} if none.
-     * This method is invoked by JAXB at marshalling time.
-     *
-     * @see #name
-     */
-    @XmlElement(name = "identifier")
-    final ReferenceIdentifier getIdentifier() {
-        final Iterator<ReferenceIdentifier> it = iterator(identifiers);
-        return (it != null && it.hasNext()) ? it.next() : null;
     }
 
     /**

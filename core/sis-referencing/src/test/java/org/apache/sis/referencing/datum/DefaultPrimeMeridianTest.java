@@ -20,13 +20,13 @@ import javax.measure.unit.NonSI;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
-import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
@@ -41,23 +41,15 @@ import static org.apache.sis.test.mock.PrimeMeridianMock.GREENWICH;
  * @version 0.4
  * @module
  */
+@DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
 public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
-    /**
-     * Asserts the the given prime meridian is the Greenwich one.
-     */
-    private static void assertIsGreenwich(final PrimeMeridian meridian) {
-        assertEquals("name", "Greenwich", meridian.getName().getCode());
-        assertEquals("greenwichLongitude", 0, meridian.getGreenwichLongitude(), 0);
-        assertEquals("", NonSI.DEGREE_ANGLE, meridian.getAngularUnit());
-    }
-
     /**
      * Tests {@link DefaultPrimeMeridian#toWKT()}.
      */
     @Test
     public void testToWKT() {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
-        assertIsGreenwich(pm);
+        assertIsGreenwichMeridian(pm);
         assertWktEquals(pm, "PRIMEM[“Greenwich”, 0.0]");
     }
 
@@ -113,14 +105,14 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
      */
     @Test
     public void testUnmarshall() throws JAXBException {
-        DefaultPrimeMeridian pm = unmarshall(DefaultPrimeMeridian.class, "Greenwich.xml");
-        assertIsGreenwich(pm);
+        final DefaultPrimeMeridian pm = unmarshall(DefaultPrimeMeridian.class, "Greenwich.xml");
+        assertIsGreenwichMeridian(pm);
     }
 
     /**
      * Tests marshalling in the GML 3.1 namespace.
      *
-     * @throws JAXBException If an error occurred during marshalling.
+     * @throws JAXBException If an error occurred during unmarshalling.
      */
     @Test
     @DependsOnMethod("testUnmarshall")
@@ -128,8 +120,33 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
         final MarshallerPool pool = getMarshallerPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         unmarshaller.setProperty(XML.GML_VERSION, LegacyNamespaces.VERSION_3_0);
-        PrimeMeridian pm = (PrimeMeridian) unmarshal(unmarshaller, getGreenwichXml(LegacyNamespaces.GML));
+        final DefaultPrimeMeridian pm = (DefaultPrimeMeridian)
+                unmarshal(unmarshaller, getGreenwichXml(LegacyNamespaces.GML));
         pool.recycle(unmarshaller);
-        assertIsGreenwich(pm);
+        assertIsGreenwichMeridian(pm);
+    }
+
+    /**
+     * Tests unmarshalling of Paris prime meridian.
+     *
+     * @throws JAXBException If an error occurred during unmarshalling.
+     */
+    @Test
+    @DependsOnMethod({"testUnmarshall", "testMarshall"})
+    public void testParisMeridian() throws JAXBException {
+        final DefaultPrimeMeridian pm = unmarshall(DefaultPrimeMeridian.class, "Paris.xml");
+        assertIsParisMeridian(pm);
+        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(NonSI.DEGREE_ANGLE), 1E-12);
+        assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
+        assertNull("name.codeSpace", pm.getName().getCodeSpace());
+        assertWktEquals(pm, "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“OGP”, “urn:ogc:def:meridian:EPSG::8903”]]");
+        assertXmlEquals(
+                "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +
+                "  <gml:identifier codeSpace=\"OGP\">urn:ogc:def:meridian:EPSG::8903</gml:identifier>" +
+                "  <gml:name>Paris</gml:name>\n" +
+                "  <gml:remarks>Equivalent to 2°20′14.025″.</gml:remarks>\n" +
+                "  <gml:greenwichLongitude uom=\"urn:ogc:def:uom:EPSG::9105\">2.5969213</gml:greenwichLongitude>\n" +
+                "</gml:PrimeMeridian>\n",
+                marshal(pm), "xmlns:*", "xsi:schemaLocation");
     }
 }
