@@ -78,6 +78,16 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     private final InternationalString scope;
 
     /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractReferenceSystem() {
+        domainOfValidity = null;
+        scope = null;
+    }
+
+    /**
      * Constructs a new reference system with the same values than the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
@@ -181,31 +191,30 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final AbstractReferenceSystem that = (AbstractReferenceSystem) object;
-                    return Objects.equals(domainOfValidity, that.domainOfValidity) &&
-                           Objects.equals(scope,            that.scope);
-                }
-                case BY_CONTRACT: {
-                    if (!(object instanceof ReferenceSystem)) break;
-                    final ReferenceSystem that = (ReferenceSystem) object;
-                    return deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
-                           deepEquals(getScope(),            that.getScope(), mode);
-                }
-                default: {
-                    // Domain of validity and scope are metadata, so they can be ignored.
-                    return (object instanceof ReferenceSystem);
-                }
+        if (!(object instanceof ReferenceSystem && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                final AbstractReferenceSystem that = (AbstractReferenceSystem) object;
+                return Objects.equals(domainOfValidity, that.domainOfValidity) &&
+                       Objects.equals(scope,            that.scope);
+            }
+            case BY_CONTRACT: {
+                final ReferenceSystem that = (ReferenceSystem) object;
+                return deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
+                       deepEquals(getScope(),            that.getScope(), mode);
+            }
+            default: {
+                // Domain of validity and scope are metadata, so they can be ignored.
+                return true;
             }
         }
-        return false;
     }
 
     /**

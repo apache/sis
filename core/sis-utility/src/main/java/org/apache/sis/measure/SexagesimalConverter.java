@@ -18,7 +18,9 @@ package org.apache.sis.measure;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.io.ObjectStreamException;
+import javax.measure.unit.Unit;
+import javax.measure.unit.NonSI;
+import javax.measure.quantity.Angle;
 import javax.measure.converter.UnitConverter;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
@@ -56,21 +58,73 @@ class SexagesimalConverter extends UnitConverter { // Intentionally not final.
     static final double EPS = 1E-10;
 
     /**
-     * The converter for DMS units.
+     * Pseudo-unit for sexagesimal degree. Numbers in this pseudo-unit have the following format:
+     *
+     * <cite>sign - degrees - decimal point - minutes (two digits) - fraction of minutes (any precision)</cite>.
+     *
+     * Using this unit is loosely equivalent to formatting decimal degrees with the
+     * {@code "D.MMm"} {@link AngleFormat} pattern.
+     *
+     * <p>This unit is non-linear and not practical for computation. Consequently, it should be
+     * avoided as much as possible. This pseudo-unit is defined only because used in the EPSG
+     * database (code 9111).</p>
+     *
+     * <p>This unit does not have an easily readable symbol because of the
+     * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
      */
-    static final SexagesimalConverter INTEGER = new SexagesimalConverter(1);
+    static final Unit<Angle> DM = NonSI.DEGREE_ANGLE.transform(
+            new SexagesimalConverter(false, 100).inverse()).asType(Angle.class);//.alternate("D.M");
 
     /**
-     * The converter for D.MS units.
+     * Pseudo-unit for sexagesimal degree. Numbers in this pseudo-unit have the following format:
+     *
+     * <cite>sign - degrees - decimal point - minutes (two digits) - integer seconds (two digits) -
+     * fraction of seconds (any precision)</cite>.
+     *
+     * Using this unit is loosely equivalent to formatting decimal degrees with the
+     * {@code "D.MMSSs"} {@link AngleFormat} pattern.
+     *
+     * <p>This unit is non-linear and not practical for computation. Consequently, it should be
+     * avoided as much as possible. This pseudo-unit is defined only because extensively used in
+     * the EPSG database (code 9110).</p>
+     *
+     * <p>This unit does not have an easily readable symbol because of the
+     * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
      */
-    static final SexagesimalConverter FRACTIONAL = new SexagesimalConverter(10000);
+    static final Unit<Angle> DMS = NonSI.DEGREE_ANGLE.transform(
+            new SexagesimalConverter(true, 10000).inverse()).asType(Angle.class);//.alternate("D.MS");
+
+    /**
+     * Pseudo-unit for degree - minute - second.
+     * Numbers in this pseudo-unit have the following format:
+     *
+     * <cite>signed degrees (integer) - arc-minutes (integer) - arc-seconds
+     * (real, any precision)</cite>.
+     *
+     * Using this unit is loosely equivalent to formatting decimal degrees with the
+     * {@code "DMMSS.s"} {@link AngleFormat} pattern.
+     *
+     * <p>This unit is non-linear and not practical for computation. Consequently, it should be
+     * avoided as much as possible. This pseudo-unit is defined only because extensively used in
+     * EPSG database (code 9107).</p>
+     *
+     * <p>This unit does not have an easily readable symbol because of the
+     * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
+     */
+    static final Unit<Angle> DMS_SCALED = NonSI.DEGREE_ANGLE.transform(
+            new SexagesimalConverter(true, 1).inverse()).asType(Angle.class);//.alternate("DMS");
+
+    /**
+     * {@code true} if the seconds field is present.
+     */
+    final boolean hasSeconds;
 
     /**
      * The value to divide DMS unit by.
      * For "degree minute second" (EPSG code 9107), this is 1.
      * For "sexagesimal degree" (EPSG code 9110), this is 10000.
      */
-    final int divider;
+    final double divider;
 
     /**
      * The inverse of this converter.
@@ -80,22 +134,25 @@ class SexagesimalConverter extends UnitConverter { // Intentionally not final.
     /**
      * Constructs a converter for sexagesimal units.
      *
+     * @param hasSeconds {@code true} if the seconds field is present.
      * @param divider The value to divide DMS unit by.
      *        For "degree minute second" (EPSG code 9107), this is 1.
      *        For "sexagesimal degree" (EPSG code 9110), this is 10000.
      */
-    private SexagesimalConverter(final int divider) {
-        this.divider = divider;
-        this.inverse = new Inverse(this);
+    private SexagesimalConverter(final boolean hasSeconds, final double divider) {
+        this.hasSeconds = hasSeconds;
+        this.divider    = divider;
+        this.inverse    = new Inverse(this);
     }
 
     /**
      * Constructs a converter for sexagesimal units.
      * This constructor is for {@link Inverse} usage only.
      */
-    private SexagesimalConverter(final int divider, final UnitConverter inverse) {
-        this.divider = divider;
-        this.inverse = inverse;
+    private SexagesimalConverter(final SexagesimalConverter inverse) {
+        this.hasSeconds = inverse.hasSeconds;
+        this.divider    = inverse.divider;
+        this.inverse    = inverse;
     }
 
     /**
@@ -111,11 +168,16 @@ class SexagesimalConverter extends UnitConverter { // Intentionally not final.
      */
     @Override
     public double convert(double angle) {
-        final double deg,min,sec;  deg = truncate(angle);
-        angle = (angle-deg)*60;    min = truncate(angle);
-        angle = (angle-min)*60;    sec = truncate(angle);
-        angle -= sec; // The remainer (fraction of seconds)
-        return (((deg*100 + min)*100 + sec) + angle) / divider;
+        final double deg = truncate(angle);
+        angle = (angle - deg) * 60;
+        if (hasSeconds) {
+            final double min = truncate(angle);
+            angle  = (angle - min) * 60; // Secondes
+            angle += (deg*100 + min)*100;
+        } else {
+            angle += deg * 100;
+        }
+        return angle / divider;
     }
 
     /**
@@ -141,27 +203,8 @@ class SexagesimalConverter extends UnitConverter { // Intentionally not final.
      * Returns a hash value for this converter.
      */
     @Override
-    public int hashCode() {
-        return divider ^ (int) serialVersionUID;
-    }
-
-    /**
-     * On deserialization, returns an existing instance.
-     */
-    protected final Object readResolve() throws ObjectStreamException {
-        UnitConverter candidate = INTEGER;
-        for (int i=0; i<4; i++) {
-            switch (i) {
-                case 0:  break; // Do nothing since candidate is already set to INTEGER.
-                case 1:  // Fallthrough
-                case 3:  candidate = candidate.inverse(); break;
-                case 2:  candidate = FRACTIONAL; break;
-            }
-            if (equals(candidate)) {
-                return candidate;
-            }
-        }
-        return this;
+    public final int hashCode() {
+        return ((int) divider) ^ getClass().hashCode();
     }
 
     /**
@@ -178,7 +221,7 @@ class SexagesimalConverter extends UnitConverter { // Intentionally not final.
          * Constructs a converter.
          */
         public Inverse(final SexagesimalConverter inverse) {
-            super(inverse.divider, inverse);
+            super(inverse);
         }
 
         /**
@@ -189,9 +232,16 @@ class SexagesimalConverter extends UnitConverter { // Intentionally not final.
         @Override
         public double convert(final double angle) throws IllegalArgumentException {
             double deg,min,sec;
-            sec = angle * divider;
-            deg = truncate(sec/10000); sec -= 10000*deg;
-            min = truncate(sec/  100); sec -=   100*min;
+            if (hasSeconds) {
+                sec = angle * divider;
+                deg = truncate(sec/10000); sec -= 10000*deg;
+                min = truncate(sec/  100); sec -=   100*min;
+            } else {
+                sec = 0;
+                min = angle * divider;
+                deg = truncate(min / 100);
+                min -= deg * 100;
+            }
             if (min <= -60 || min >= 60) {  // Do not enter for NaN
                 if (Math.abs(Math.abs(min) - 100) <= (EPS * 100)) {
                     if (min >= 0) deg++; else deg--;
@@ -221,14 +271,6 @@ class SexagesimalConverter extends UnitConverter { // Intentionally not final.
          */
         private static IllegalArgumentException illegalField(final double value, final double field, final int unit) {
             return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentField_4, "angle", value, unit, field));
-        }
-
-        /**
-         * Returns a hash value for this converter.
-         */
-        @Override
-        public int hashCode() {
-            return divider ^ (int) serialVersionUID;
         }
     }
 }

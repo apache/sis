@@ -16,18 +16,16 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import java.io.File;
-import java.net.URI;
 import java.net.URISyntaxException;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
+import javax.measure.quantity.Quantity;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.xml.ValueConverter;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -38,16 +36,33 @@ import org.apache.sis.util.resources.Errors;
  * because that{@code Measure} extends {@link Number} and we are not allowed to use the
  * {@code @XmlValue} annotation on a class that extends an other class.</p>
  *
+ * {@section XML marshalling}
+ * Measures are used in different ways by the ISO 19115 (Metadata) and GML standards.
+ * The former expresses some measurements with an object of XML type {@code gco:Distance}
+ * (as a substitution for XML type {@code gco:Measure}):
+ *
+ * {@preformat xml
+ *   <gmd:distance>
+ *     <gco:Distance uom=\"http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>
+ *   </gmd:distance>
+ * }
+ *
+ * while GML will rather use a a syntax like below:
+ *
+ * {@preformat xml
+ *   <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9001">6378137</gml:semiMajorAxis>
+ * }
+ *
+ * Both have a value of type {@code xsd:double} and a {@code uom} attribute (without namespace)
+ * of type {@code gml:UomIdentifier}. Those two informations are represented by this class.
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see org.apache.sis.measure.Measure
- *
- * @todo We should annotate {@link org.apache.sis.measure.Measure} directly
- *       if we can find some way to use {@code @XmlValue} with that class.
  */
 public final class Measure {
     /**
@@ -60,6 +75,12 @@ public final class Measure {
      * The unit of measure.
      */
     public Unit<?> unit;
+
+    /**
+     * {@code true} if the units shall be formatted as {@code xpointer}.
+     * If {@code false} (the default), then this class will try to format the units using the GML syntax.
+     */
+    boolean asXPointer;
 
     /**
      * Default empty constructor for JAXB. The value is initialized to NaN,
@@ -84,79 +105,77 @@ public final class Measure {
     /**
      * Constructs a string representation of the units as defined in the ISO-19103 standard.
      * This method is invoked during XML marshalling. For example in the units are "metre",
-     * then this method returns:
+     * then this method returns one of the following strings, in preference order:
+     *
+     * {@preformat text
+     *     urn:ogc:def:uom:EPSG::9001
+     * }
+     *
+     * or
      *
      * {@preformat text
      *     http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
      * }
      *
      * @return The string representation of the unit of measure.
+     *
+     * @todo The file on schemas.opengis.net is <code>gmxUom.xml</code>, but the file on standards.iso.org
+     *       and eden.ign.fr is <code>ML_gmxUom.xml</code>. Is there some rule allowing us to know which
+     *       filename to use?
+     *
+     * @todo Strictly speaking, the above URL should be used only for "m", "deg" and "rad" units because they
+     *       are the only ones defined in the <code>gmxUom.xml</code> file. What should we do for other units?
      */
     @XmlAttribute(required = true)
     public String getUOM() {
         final Unit<?> unit = this.unit;
-        final String symbol;
         if (unit == null || unit.equals(Unit.ONE)) {
-            symbol = "";
-        } else if (unit.equals(NonSI.PIXEL)) {
-            symbol = "pixel";
-        } else {
-            symbol = Context.schema(Context.current(), "gmd", CodeListProxy.DEFAULT_SCHEMA)
-                    .append("resources/uom/gmxUom.xml#xpointer(//*[@gml:id='").append(unit).append("'])").toString();
+            return "";
         }
-        return symbol;
+        if (unit.equals(NonSI.PIXEL)) {
+            return "pixel"; // TODO: maybe not the most appropriate unit.
+        }
+        if (!asXPointer) {
+            final Integer code = Units.getEpsgCode(unit);
+            if (code != null) {
+                return "urn:ogc:def:uom:EPSG::" + code;
+            }
+        }
+        return Context.schema(Context.current(), "gmd", CodeListProxy.DEFAULT_SCHEMA)
+                .append("resources/uom/gmxUom.xml#xpointer(//*[@gml:id='").append(unit).append("'])").toString();
     }
 
     /**
-     * Sets the unit of measure. This method is invoked by JAXB at unmarshalling time,
-     * and can be invoked only once.
+     * Sets the unit of measure. This method is invoked by JAXB at unmarshalling time.
      *
      * @param uom The unit of measure as a string.
      * @throws URISyntaxException If the {@code uom} looks like a URI, but can not be parsed.
      */
     public void setUOM(String uom) throws URISyntaxException {
-        if (uom == null || (uom = CharSequences.trimWhitespaces(uom)).isEmpty()) {
-            unit = null;
-            return;
-        }
-        /*
-         * Try to guess if the UOM is a URN or URL. We looks for character that are usually
-         * part of URI but not part of unit symbols, for example ':'. We can not search for
-         * '/' and '.' since they are part of UCUM representation.
-         */
         final Context context = Context.current();
-        final ValueConverter converter = Context.converter(context);
-        if (uom.indexOf(':') >= 0) {
-            final URI uri = converter.toURI(context, uom);
-            String part = uri.getFragment();
-            if (part != null) {
-                uom = part;
-                int i = uom.lastIndexOf("@gml:id=");
-                if (i >= 0) {
-                    i += 8; // 8 is the length of "@gml:id="
-                    for (final int length=uom.length(); i<length;) {
-                        final int c = uom.codePointAt(i);
-                        if (!Character.isWhitespace(c)) {
-                            if (c == '\'') i++;
-                            break;
-                        }
-                        i += Character.charCount(c);
-                    }
-                    final int stop = uom.lastIndexOf('\'');
-                    uom = CharSequences.trimWhitespaces((stop > i) ? uom.substring(i, stop) : uom.substring(i));
-                }
-            } else if ((part = uri.getPath()) != null) {
-                uom = new File(part).getName();
-            }
-        }
-        unit = converter.toUnit(context, uom);
+        unit = Context.converter(context).toUnit(context, uom);
     }
 
     /**
-     * Sets the unit to the given value, with a warning logged if the user specified an other unit.
+     * Returns {@link #unit} as a unit compatible with the given quantity.
+     *
+     * @todo For now, this method does not format useful error message in case of missing unit or wrong unit type.
+     *       We define this method merely as a placeholder for future improvement in error handling.
+     *
+     * @param  <Q>  Compile-time type of the {@code type} argument.
+     * @param  type The quantity for the desired unit.
+     * @return A unit compatible with the given type.
+     */
+    public <Q extends Quantity> Unit<Q> getUnit(final Class<Q> type) {
+        return unit.asType(type);
+    }
+
+    /**
+     * Sets the unit to the given value, with a warning logged if the user specified a unit
+     * different than the previous {@link #unit} value.
      *
      * {@example Some users wrongly assign the "m" unit to <code>Ellipsoid.inverseFlattening</code>.
-     *           The SIS adapter force the unit to <code>Unit.ONE</code>, but we want to let the user
+     *           The SIS adapter forces the unit to <code>Unit.ONE</code>, but we want to let the user
      *           know that he probably did something wrong.}
      *
      * @param newUnit The new unit (can not be null).

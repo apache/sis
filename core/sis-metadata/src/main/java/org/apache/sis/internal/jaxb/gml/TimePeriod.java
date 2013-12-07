@@ -23,6 +23,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.temporal.Period;
 import org.apache.sis.internal.jaxb.Context;
 
+import static org.apache.sis.internal.jaxb.LegacyNamespaces.VERSION_3_0;
+
 
 /**
  * The adapter for {@code "TimePeriod"}. This is an attribute of {@link TM_Primitive}.
@@ -76,7 +78,7 @@ public final class TimePeriod extends GMLAdapter {
     public TimePeriod(final Period period) {
         super(period);
         if (period != null) {
-            if (Context.isGMLVersion(Context.current(), GML_3_0)) {
+            if (Context.isGMLVersion(Context.current(), VERSION_3_0)) {
                 begin = new TimePeriodBound.GML3(period.getBeginning(), "before");
                 end   = new TimePeriodBound.GML3(period.getEnding(), "after");
             } else {
@@ -88,6 +90,8 @@ public final class TimePeriod extends GMLAdapter {
 
     /**
      * Returns a string representation for debugging and formatting error message.
+     *
+     * @return A string representation of this time period.
      */
     @Override
     public String toString() {

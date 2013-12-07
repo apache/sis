@@ -92,6 +92,9 @@
       <fileset dir="${project.root}/core/sis-metadata/src/test/resources">
         <include name="**/*.xml"/>
       </fileset>
+      <fileset dir="${project.root}/core/sis-referencing/src/test/resources">
+        <include name="**/*.xml"/>
+      </fileset>
     </copy>
     <copy todir="${build.test.classes.dir}">
       <fileset dir="${project.root}/storage/sis-shapefile/src/test/resources">

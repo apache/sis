@@ -86,9 +86,11 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Referenc
      * Creates an identified object of the given alias.
      * Callers are free to assign new value to the {@link #alias} field directly.
      *
-     * @param alias The initial {@link #alias} value (can be {@code null}).
+     * @param code  The initial {@link #getCode()} value, or {@code null} if none.
+     * @param alias The initial {@link #alias} value, or {@code null} if none.
      */
-    public IdentifiedObjectMock(final GenericName alias) {
+    public IdentifiedObjectMock(final String code, final GenericName alias) {
+        this.code  = code;
         this.alias = alias;
     }
 

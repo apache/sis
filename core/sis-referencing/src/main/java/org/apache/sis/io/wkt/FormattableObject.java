@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.io.Console;
 import java.io.PrintWriter;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
@@ -54,6 +55,7 @@ import org.apache.sis.internal.util.X364;
  * @version 0.4
  * @module
  */
+@XmlTransient
 public class FormattableObject {
     /**
      * The formatter for the {@link #toWKT()} and {@link #toString()} methods.

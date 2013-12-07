@@ -51,6 +51,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.LocalesTest.class,
     org.apache.sis.util.resources.LoaderTest.class,
     org.apache.sis.util.resources.IndexedResourceBundleTest.class,
+    org.apache.sis.util.ArgumentChecksTest.class, // Uses resources.
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.util.logging.WarningListenersTest.class,
     org.apache.sis.util.logging.MonolineFormatterTest.class,
@@ -77,6 +78,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.util.CollectionsExtTest.class,
 
     // GeoAPI most basic types.
+    org.apache.sis.internal.util.URIParserTest.class,
     org.apache.sis.util.iso.TypesTest.class,
     org.apache.sis.util.iso.SimpleInternationalStringTest.class,
     org.apache.sis.util.iso.DefaultInternationalStringTest.class,
@@ -85,6 +87,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.iso.DefaultNameFactoryTest.class,
 
     // Measurements and formatting.
+    org.apache.sis.measure.SexagesimalConverterTest.class,
     org.apache.sis.measure.UnitsTest.class,
     org.apache.sis.measure.RangeTest.class,
     org.apache.sis.measure.DateRangeTest.class,

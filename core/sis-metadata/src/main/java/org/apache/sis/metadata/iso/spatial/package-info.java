@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.spatial.AbstractSpatialRepresentation Spatial representation} implementation.
+ * Information about the mechanisms (grid or vector) used to represent spatial data.
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.spatial OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *

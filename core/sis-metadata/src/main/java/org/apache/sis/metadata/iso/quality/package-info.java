@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality Data quality} implementation.
+ * Information about data quality, accuracy and consistency of a dataset.
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.quality OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
