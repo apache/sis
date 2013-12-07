@@ -23,8 +23,6 @@ import java.util.Iterator;
 import java.util.Collection;
 
 import org.opengis.util.NameSpace;
-import org.opengis.util.LocalName;
-import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -32,11 +30,12 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 
 import org.apache.sis.util.Static;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.CharSequences.trimWhitespaces;
+import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 import static org.apache.sis.internal.util.Citations.iterator;
 import static org.apache.sis.internal.util.Citations.identifierMatches;
 
@@ -289,83 +288,87 @@ public final class IdentifiedObjects extends Static {
     }
 
     /**
-     * Returns {@code true} if either the {@linkplain IdentifiedObject#getName() primary name} or
-     * at least one {@linkplain IdentifiedObject#getAlias() alias} matches the specified string.
-     * This method returns {@code true} if the given name is equal to one of the following names,
-     * regardless of any authority:
+     * Returns {@code true} if either the {@linkplain AbstractIdentifiedObject#getName() primary name} or at least
+     * one {@linkplain AbstractIdentifiedObject#getAlias() alias} matches the given string according heuristic rules.
+     * If the given object is an instance of {@link AbstractIdentifiedObject}, then this method delegates to its
+     * {@link AbstractIdentifiedObject#isHeuristicMatchForName(String) isHeuristicMatchForName(String)} method
+     * in order to leverage the additional rules implemented by sub-classes.
+     * Otherwise the fallback implementation returns {@code true} if the given {@code name} is equal,
+     * ignoring aspects documented below, to one of the following names:
      *
      * <ul>
-     *   <li>The {@linkplain IdentifiedObject#getName() primary name} of the object.</li>
-     *   <li>The {@linkplain GenericName#toFullyQualifiedName() fully qualified name} of an alias.</li>
-     *   <li>The {@linkplain ScopedName#tail() tail} of an alias.</li>
-     *   <li>The tail of the previous tail, recursively up to the {@linkplain ScopedName#tip() tip}.</li>
+     *   <li>The {@linkplain AbstractIdentifiedObject#getName() primary name}'s {@linkplain NamedIdentifier#getCode() code}
+     *       (without {@linkplain NamedIdentifier#getCodeSpace() codespace}).</li>
+     *   <li>Any {@linkplain AbstractIdentifiedObject#getAlias() alias}'s {@linkplain NamedIdentifier#tip() tip}
+     *       (without {@linkplain NamedIdentifier#scope() scope} and namespace).</li>
      * </ul>
      *
-     * If the given object is an instance of {@link AbstractIdentifiedObject}, then this method delegates
-     * to its {@code nameMatches(String)} method. Otherwise this method fallbacks on a generic algorithm.
+     * The comparison ignores the following aspects:
+     * <ul>
+     *   <li>Lower/upper cases.</li>
+     *   <li>Some Latin diacritical signs (e.g. {@code "Réunion"} and {@code "Reunion"} are considered equal).</li>
+     *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
+     *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
+     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of an other
+     *       <code>IdentifiedObject.getName().getCode()</code> or with the <cite>Well Known Text</cite> (WKT)
+     *       projection or parameter name.</li>
+     * </ul>
      *
      * @param  object The object for which to check the name or alias.
      * @param  name The name to compare with the object name or aliases.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      *
-     * @see AbstractIdentifiedObject#nameMatches(String)
+     * @see AbstractIdentifiedObject#isHeuristicMatchForName(String)
      */
-    public static boolean nameMatches(final IdentifiedObject object, final String name) {
+    public static boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
         if (object instanceof AbstractIdentifiedObject) {
             // DefaultCoordinateSystemAxis overrides this method.
             // We really need to delegate to the overridden method.
-            return ((AbstractIdentifiedObject) object).nameMatches(name);
+            return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
             ensureNonNull("object", object);
-            return nameMatches(object, object.getAlias(), name);
+            return isHeuristicMatchForName(object, object.getAlias(), name);
         }
     }
 
     /**
-     * Returns {@code true} if the {@linkplain IdentifiedObject#getName() primary name} of an
-     * object matches the primary name or one {@linkplain IdentifiedObject#getAlias() alias}
-     * of the other object.
+     * Returns {@code true} if the {@linkplain AbstractIdentifiedObject#getName() primary name} of the given object
+     * or one of the given alias matches the given name. The comparison ignores case, some Latin diacritical signs
+     * and any characters that are not letters or digits.
      *
-     * @param  o1 The first object to compare by name.
-     * @param  o2 The second object to compare by name.
-     * @return {@code true} if both objects have a common name.
-     */
-    public static boolean nameMatches(final IdentifiedObject o1, final IdentifiedObject o2) {
-        ensureNonNull("o1", o1);
-        ensureNonNull("o2", o2);
-        return nameMatches(o1, o2.getName().getCode()) ||
-               nameMatches(o2, o1.getName().getCode());
-    }
-
-    /**
-     * Returns {@code true} if the {@linkplain #getName() primary name} of the given object
-     * or one of the given alias matches the given name.
-     *
-     * @param  object The object to check.
-     * @param  alias  The list of alias in {@code object} (may be {@code null}).
-     *                This method will never modify this list. Consequently, the
-     *                given list can be a direct reference to an internal list.
-     * @param  name   The name for which to check for equality.
+     * @param  object  The object to check.
+     * @param  aliases The list of alias in {@code object} (may be {@code null}).
+     *                 This method will never modify this list. Consequently, the
+     *                 given list can be a direct reference to an internal list.
+     * @param  name    The name for which to check for equality.
      * @return {@code true} if the primary name or at least one alias matches the given {@code name}.
      */
-    static boolean nameMatches(final IdentifiedObject object, final Collection<GenericName> alias, String name) {
-        name = trimWhitespaces(name);
-        if (name.equalsIgnoreCase(trimWhitespaces(object.getName().getCode()))) {
-            return true;
+    static boolean isHeuristicMatchForName(final IdentifiedObject object, final Collection<GenericName> aliases,
+            CharSequence name)
+    {
+        name = CharSequences.toASCII(name);
+        final ReferenceIdentifier id = object.getName();
+        if (id != null) { // Paranoiac check.
+            final CharSequence code = CharSequences.toASCII(id.getCode());
+            if (code != null) { // Paranoiac check.
+                if (CharSequences.equalsFiltered(name, code, LETTERS_AND_DIGITS, true)) {
+                    return true;
+                }
+            }
         }
-        if (alias != null) {
-            for (GenericName asName : alias) {
-                if (asName != null) { // Paranoiac check.
-                    asName = asName.toFullyQualifiedName();
-                    while (asName != null) {
-                        if (name.equalsIgnoreCase(trimWhitespaces(asName.toString()))) {
-                            return true;
-                        }
-                        if (!(asName instanceof ScopedName)) {
-                            break;
-                        }
-                        asName = ((ScopedName) asName).tail();
+        if (aliases != null) {
+            for (final GenericName alias : aliases) {
+                if (alias != null) { // Paranoiac check.
+                    final CharSequence tip = CharSequences.toASCII(alias.tip().toString());
+                    if (CharSequences.equalsFiltered(name, tip, LETTERS_AND_DIGITS, true)) {
+                        return true;
                     }
+                    /*
+                     * Note: a previous version compared also the scoped names. We removed that part,
+                     * because experience has shown that this method is used only for the "code" part
+                     * of an object name. If we really want to compare scoped name, it would probably
+                     * be better to take a GenericName argument instead than String.
+                     */
                 }
             }
         }

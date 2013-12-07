@@ -18,6 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.xml.bind.annotation.XmlTransient;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.collection.TreeTable;
@@ -73,6 +74,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @see MetadataStandard
  */
+@XmlTransient
 public abstract class AbstractMetadata implements LenientComparable {
     /**
      * The logger for messages related to metadata implementations.

@@ -29,7 +29,6 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
@@ -49,7 +48,7 @@ import static org.apache.sis.test.mock.GeodeticDatumMock.*;
   DefaultEllipsoidTest.class,
   BursaWolfParametersTest.class
 })
-public final strictfp class DefaultGeodeticDatumTest extends TestCase {
+public final strictfp class DefaultGeodeticDatumTest extends DatumTestCase {
     /**
      * Tests the creation and serialization of a {@link DefaultGeodeticDatum}.
      */
@@ -88,6 +87,20 @@ public final strictfp class DefaultGeodeticDatumTest extends TestCase {
         assertEquals("remarks",    "There is remarks",      datum.getRemarks().toString(Locale.ROOT));
         assertEquals("remarks_fr", "Voici des remarques",   datum.getRemarks().toString(Locale.FRENCH));
         assertEquals("remarks_ja", "注です。",                datum.getRemarks().toString(Locale.JAPANESE));
+    }
+
+    /**
+     * Tests {@link DefaultGeodeticDatum#isHeuristicMatchForName(String)}.
+     */
+    @Test
+    public void testIsHeuristicMatchForName() {
+        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
+        assertFalse(datum.isHeuristicMatchForName("WGS72"));
+        assertTrue (datum.isHeuristicMatchForName("WGS84"));
+        assertTrue (datum.isHeuristicMatchForName("WGS 84"));
+        assertTrue (datum.isHeuristicMatchForName("WGS_84"));
+        assertTrue (datum.isHeuristicMatchForName("D_WGS_84"));
+        assertFalse(datum.isHeuristicMatchForName("E_WGS_84"));
     }
 
     /**

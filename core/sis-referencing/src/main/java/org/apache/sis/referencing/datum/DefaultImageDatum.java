@@ -59,6 +59,15 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     private final PixelInCell pixelInCell;
 
     /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultImageDatum() {
+        pixelInCell = null;
+    }
+
+    /**
      * Creates an image datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -96,12 +105,12 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
-     *     <td>{@link Date}</td>
+     *     <td>{@link java.util.Date}</td>
      *     <td>{@link #getRealizationEpoch()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
-     *     <td>{@link Extent}</td>
+     *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
@@ -167,7 +176,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -175,20 +184,17 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final DefaultImageDatum that = (DefaultImageDatum) object;
-                    return Objects.equals(this.pixelInCell, that.pixelInCell);
-                }
-                default: {
-                    if (!(object instanceof ImageDatum)) break;
-                    final ImageDatum that = (ImageDatum) object;
-                    return Objects.equals(getPixelInCell(), that.getPixelInCell());
-                }
+        if (!(object instanceof ImageDatum && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                return Objects.equals(pixelInCell, ((DefaultImageDatum) object).pixelInCell);
+            }
+            default: {
+                return Objects.equals(getPixelInCell(), ((ImageDatum) object).getPixelInCell());
             }
         }
-        return false;
     }
 
     /**

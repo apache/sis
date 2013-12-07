@@ -16,10 +16,9 @@
  */
 
 /**
- * <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
- * Known Text</cite> (WKT)</a> parsing and formatting. This package provides the internal mechanism used
- * by SIS implementation. Most users do not need to know about it, except if they want to customize the
- * parsing process or the WKT output. For example this package allows to:
+ * <cite>Well Known Text</cite> (WKT) parsing and formatting.
+ * This package provides the internal mechanism used by SIS implementation. Most users do not need to know about it,
+ * except if they want to customize the parsing process or the WKT output. For example this package allows to:
  *
  * <ul>
  *   <li>{@linkplain org.apache.sis.io.wkt.WKTFormat#setConvention Format the parameters using the names

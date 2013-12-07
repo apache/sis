@@ -21,7 +21,6 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.test.mock.GeodeticDatumMock;
-import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -40,7 +39,7 @@ import static org.apache.sis.referencing.Assert.*;
  * @module
  */
 @DependsOn(org.apache.sis.internal.referencing.FormulasTest.class)
-public final strictfp class DefaultEllipsoidTest extends TestCase {
+public final strictfp class DefaultEllipsoidTest extends DatumTestCase {
     /**
      * Half of a minute of angle, in degrees.
      */

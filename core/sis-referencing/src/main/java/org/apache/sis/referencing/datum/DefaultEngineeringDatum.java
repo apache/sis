@@ -49,6 +49,14 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     private static final long serialVersionUID = 1498304918725248637L;
 
     /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultEngineeringDatum() {
+    }
+
+    /**
      * Creates an engineering datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -86,12 +94,12 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
-     *     <td>{@link Date}</td>
+     *     <td>{@link java.util.Date}</td>
      *     <td>{@link #getRealizationEpoch()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
-     *     <td>{@link Extent}</td>
+     *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
@@ -143,7 +151,7 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -151,7 +159,7 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
         if (object == this) {
             return true; // Slight optimization.
         }
-        return  (object instanceof EngineeringDatum) && super.equals(object, mode);
+        return (object instanceof EngineeringDatum) && super.equals(object, mode);
     }
 
     /**

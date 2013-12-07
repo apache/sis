@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.distribution.DefaultDistribution Distribution} implementation.
+ * Information about the options for obtaining a resource (data or service).
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.distribution OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *

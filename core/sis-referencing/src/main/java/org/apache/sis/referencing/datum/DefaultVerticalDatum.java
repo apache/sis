@@ -29,7 +29,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.gml.GMLAdapter;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -90,6 +90,14 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     private VerticalDatumType type;
 
     /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultVerticalDatum() {
+    }
+
+    /**
      * Creates a vertical datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -127,12 +135,12 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
-     *     <td>{@link Date}</td>
+     *     <td>{@link java.util.Date}</td>
      *     <td>{@link #getRealizationEpoch()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
-     *     <td>{@link Extent}</td>
+     *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
@@ -226,14 +234,14 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * This element was present in GML 3.0 and 3.1, but has been removed from GML 3.2.
      */
     @XmlElement(name = "verticalDatumType")
-    private VerticalDatumType getMarshalled() {
-        return (Context.isGMLVersion(Context.current(), GMLAdapter.GML_3_2)) ? null : getVerticalDatumType();
+    private VerticalDatumType getTypeElement() {
+        return Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2) ? null : getVerticalDatumType();
     }
 
     /**
      * Invoked by JAXB only. The vertical datum type is set only if it has not already been specified.
      */
-    private void setMarshalled(final VerticalDatumType t) {
+    private void setTypeElement(final VerticalDatumType t) {
         if (type != null) {
             throw new IllegalStateException();
         }
@@ -246,7 +254,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -254,20 +262,17 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final DefaultVerticalDatum that = (DefaultVerticalDatum) object;
-                    return Objects.equals(this.type(), that.type());
-                }
-                default: {
-                    if (!(object instanceof VerticalDatum)) break;
-                    final VerticalDatum that = (VerticalDatum) object;
-                    return Objects.equals(getVerticalDatumType(), that.getVerticalDatumType());
-                }
+        if (!(object instanceof VerticalDatum && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                return Objects.equals(type(), ((DefaultVerticalDatum) object).type());
+            }
+            default: {
+                return Objects.equals(getVerticalDatumType(), ((VerticalDatum) object).getVerticalDatumType());
             }
         }
-        return false;
     }
 
     /**

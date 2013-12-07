@@ -28,6 +28,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -89,14 +90,26 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
 
     /**
      * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
+     *
+     * <p>Consider this field as final. It is declared non-final only for JAXB unmarshalling.</p>
      */
-    @XmlElement(required = true)
-    private final double greenwichLongitude;
+    private double greenwichLongitude;
 
     /**
      * The angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
+     *
+     * <p>Consider this field as final. It is declared non-final only for JAXB unmarshalling.</p>
      */
-    private final Unit<Angle> angularUnit;
+    private Unit<Angle> angularUnit;
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultPrimeMeridian() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+    }
 
     /**
      * Creates a prime meridian from the given properties. The properties map is given unchanged to the
@@ -214,12 +227,28 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
+     * Invoked by JAXB for obtaining the Greenwich longitude to marshall together with its {@code "uom"} attribute.
+     */
+    @XmlElement(name = "greenwichLongitude", required = true)
+    private Measure getGreenwichMeasure() {
+        return new Measure(greenwichLongitude, angularUnit);
+    }
+
+    /**
+     * Invoked by JAXB for setting the Greenwich longitude and its unit of measurement.
+     */
+    private void setGreenwichMeasure(final Measure measure) {
+        greenwichLongitude = measure.value;
+        angularUnit = measure.getUnit(Angle.class);
+    }
+
+    /**
      * Compares this prime meridian with the specified object for equality.
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -227,33 +256,31 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final DefaultPrimeMeridian that = (DefaultPrimeMeridian) object;
-                    return Numerics.equals(this.greenwichLongitude, that.greenwichLongitude) &&
-                            Objects.equals(this.angularUnit,        that.angularUnit);
-                }
-                case BY_CONTRACT: {
-                    if (!(object instanceof PrimeMeridian)) break;
-                    final PrimeMeridian that = (PrimeMeridian) object;
-                    return Numerics.equals(getGreenwichLongitude(), that.getGreenwichLongitude()) &&
-                            Objects.equals(getAngularUnit(),        that.getAngularUnit());
-                }
-                default: {
-                    if (!(object instanceof PrimeMeridian)) break;
-                    final DefaultPrimeMeridian that = castOrCopy((PrimeMeridian) object);
-                    return Numerics.epsilonEqual(this.getGreenwichLongitude(NonSI.DEGREE_ANGLE),
-                                                 that.getGreenwichLongitude(NonSI.DEGREE_ANGLE), mode);
-                    /*
-                     * Note: if mode==IGNORE_METADATA, we relax the unit check because EPSG uses
-                     *       sexagesimal degrees for the Greenwich meridian. Requirying the same
-                     *       unit prevent Geodetic.isWGS84(...) method to recognize EPSG's WGS84.
-                     */
-                }
+        if (!(object instanceof PrimeMeridian && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                final DefaultPrimeMeridian that = (DefaultPrimeMeridian) object;
+                return Numerics.equals(this.greenwichLongitude, that.greenwichLongitude) &&
+                        Objects.equals(this.angularUnit,        that.angularUnit);
+            }
+            case BY_CONTRACT: {
+                final PrimeMeridian that = (PrimeMeridian) object;
+                return Numerics.equals(getGreenwichLongitude(), that.getGreenwichLongitude()) &&
+                        Objects.equals(getAngularUnit(),        that.getAngularUnit());
+            }
+            default: {
+                final DefaultPrimeMeridian that = castOrCopy((PrimeMeridian) object);
+                return Numerics.epsilonEqual(this.getGreenwichLongitude(NonSI.DEGREE_ANGLE),
+                                             that.getGreenwichLongitude(NonSI.DEGREE_ANGLE), mode);
+                /*
+                 * Note: if mode==IGNORE_METADATA, we relax the unit check because EPSG uses
+                 *       sexagesimal degrees for the Greenwich meridian. Requirying the same
+                 *       unit prevent Geodetic.isWGS84(...) method to recognize EPSG's WGS84.
+                 */
             }
         }
-        return false;
     }
 
     /**
