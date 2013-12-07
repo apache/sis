@@ -84,9 +84,6 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, Referen
         Value(final ReferenceIdentifier identifier) {
             code      = identifier.getCode();
             codeSpace = identifier.getCodeSpace();
-            if (codeSpace == null) {
-                codeSpace = "";
-            }
             String version = identifier.getVersion();
             if (version != null) {
                 final StringBuilder buffer = new StringBuilder(codeSpace);
@@ -96,6 +93,14 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, Referen
                 StringBuilders.remove(buffer.append('v').append(version), ".");
                 codeSpace = buffer.toString();
             }
+        }
+
+        /**
+         * Returns the identifier for this value. This method is the converse of the constructor.
+         */
+        ReferenceIdentifier getIdentifier() {
+            final Citation authority = Citations.fromName(codeSpace); // May be null.
+            return new ImmutableIdentifier(authority, Citations.getIdentifier(authority), code);
         }
     }
 
@@ -108,11 +113,7 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, Referen
      */
     @Override
     public ReferenceIdentifier unmarshal(final Value value) {
-        if (value != null) {
-            final Citation authority = Citations.fromName(value.codeSpace); // May be null.
-            return new ImmutableIdentifier(authority, Citations.getIdentifier(authority), value.code);
-        }
-        return null;
+        return (value != null) ? value.getIdentifier() : null;
     }
 
     /**

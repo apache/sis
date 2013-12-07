@@ -57,7 +57,6 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
         assertNull  ("version",                           object.getName().getVersion());
         assertTrue  ("aliases",                           object.getAlias().isEmpty());
         assertTrue  ("identifiers",                       object.getIdentifiers().isEmpty());
-        assertNull  ("identifier",                        object.getIdentifier());
         assertEquals("ID",         "Thisisaname",         object.getID());
         assertEquals("remarks",    "There is remarks",    object.getRemarks().toString(Locale.ENGLISH));
         assertEquals("remarks_fr", "Voici des remarques", object.getRemarks().toString(Locale.FRENCH));
@@ -90,7 +89,6 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
 
         assertEquals("name",        "WGS 84",                     object.getName().getCode());
         assertEquals("identifiers", "[EPSG:4326, EPSG:IgnoreMe]", object.getIdentifiers().toString());
-        assertEquals("identifier",  "EPSG:4326",                  object.getIdentifier().toString());
         assertEquals("ID",          "EPSG4326",                   object.getID());
     }
 

@@ -19,6 +19,8 @@ package org.apache.sis.referencing.datum;
 import java.net.URL;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
+import javax.measure.unit.NonSI;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.XMLTestCase;
 
@@ -38,6 +40,24 @@ abstract strictfp class DatumTestCase extends XMLTestCase {
      * Creates a new test case.
      */
     DatumTestCase() {
+    }
+
+    /**
+     * Asserts the the given prime meridian is the Greenwich one.
+     */
+    static void assertIsGreenwichMeridian(final PrimeMeridian meridian) {
+        assertEquals("name", "Greenwich", meridian.getName().getCode());
+        assertEquals("greenwichLongitude", 0, meridian.getGreenwichLongitude(), 0);
+        assertEquals("angularUnit", NonSI.DEGREE_ANGLE, meridian.getAngularUnit());
+    }
+
+    /**
+     * Asserts the the given prime meridian is the Paris one.
+     */
+    static void assertIsParisMeridian(final PrimeMeridian meridian) {
+        assertEquals("name", "Paris", meridian.getName().getCode());
+        assertEquals("greenwichLongitude", 2.5969213, meridian.getGreenwichLongitude(), 0);
+        assertEquals("angularUnit", NonSI.GRADE, meridian.getAngularUnit());
     }
 
     /**
