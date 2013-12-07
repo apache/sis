@@ -52,6 +52,8 @@ public abstract class TimePeriodBound {
 
     /**
      * Returns a string representation of this bound for debugging purpose.
+     *
+     * @return A string representation of the time currently set.
      */
     @Override
     public String toString() {

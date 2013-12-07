@@ -17,10 +17,9 @@
 package org.apache.sis.measure;
 
 import javax.measure.unit.Unit;
-import javax.measure.quantity.Quantity;
-import javax.measure.converter.UnitConverter;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.*;
+import org.junit.Test;
 
 import static javax.measure.unit.Unit.ONE;
 import static javax.measure.unit.SI.CELSIUS;
@@ -36,6 +35,7 @@ import static javax.measure.unit.NonSI.DAY;
 import static javax.measure.unit.NonSI.SPHERE;
 import static javax.measure.unit.NonSI.ATMOSPHERE;
 import static javax.measure.unit.NonSI.NAUTICAL_MILE;
+import static org.apache.sis.measure.SexagesimalConverter.*;
 import static org.apache.sis.measure.Units.*;
 import static org.apache.sis.test.Assert.*;
 
@@ -45,32 +45,21 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  */
+@DependsOn({
+    SexagesimalConverterTest.class,
+    org.apache.sis.internal.util.URIParserTest.class
+})
 public final strictfp class UnitsTest extends TestCase {
     /**
-     * Compares two values for equality.
-     */
-    private static <Q extends Quantity> void checkConversion(
-            final double expected, final Unit<Q> unitExpected,
-            final double actual,   final Unit<Q> unitActual)
-    {
-        UnitConverter converter = unitActual.getConverterTo(unitExpected);
-        assertEquals(expected, converter.convert(actual), 1E-6);
-        converter = converter.inverse();
-        assertEquals(actual, converter.convert(expected), 1E-6);
-    }
-
-    /**
-     * Checks the conversions using {@link Units#SEXAGESIMAL_DMS}.
+     * Sanity check of {@link UnitsMap}. This test fail if at least one code in the
+     * {@link UnitsMap#EPSG_CODES} static initializer is invalid.
      */
     @Test
-    public void testSexagesimal() {
-        checkConversion(10.00, DEGREE_ANGLE, 10.0000, SEXAGESIMAL_DMS);
-        checkConversion(10.01, DEGREE_ANGLE, 10.0036, SEXAGESIMAL_DMS);
-        checkConversion(10.50, DEGREE_ANGLE, 10.3000, SEXAGESIMAL_DMS);
-        checkConversion(10.99, DEGREE_ANGLE, 10.5924, SEXAGESIMAL_DMS);
+    public void testUnitsMap() {
+        assertFalse(UnitsMap.EPSG_CODES.containsKey(null));
     }
 
     /**
@@ -82,8 +71,8 @@ public final strictfp class UnitsTest extends TestCase {
     @Test
     public void testSerialization() {
         assertEquals(DEGREE_ANGLE,         assertSerializedEquals(DEGREE_ANGLE));
-        assertEquals(SEXAGESIMAL_DMS,      assertSerializedEquals(SEXAGESIMAL_DMS));
-        assertEquals(DEGREE_MINUTE_SECOND, assertSerializedEquals(DEGREE_MINUTE_SECOND));
+        assertEquals(DMS,      assertSerializedEquals(DMS));
+        assertEquals(DMS_SCALED, assertSerializedEquals(DMS_SCALED));
         assertEquals(PPM,                  assertSerializedEquals(PPM));
     }
 
@@ -110,8 +99,8 @@ public final strictfp class UnitsTest extends TestCase {
         // Additional units
         assertFalse(isTemporal(PPM));
         assertTrue (isTemporal(MILLISECOND));
-        assertFalse(isTemporal(SEXAGESIMAL_DMS));
-        assertFalse(isTemporal(DEGREE_MINUTE_SECOND));
+        assertFalse(isTemporal(DMS));
+        assertFalse(isTemporal(DMS_SCALED));
     }
 
     /**
@@ -137,8 +126,8 @@ public final strictfp class UnitsTest extends TestCase {
         // Additional units
         assertFalse(isLinear(PPM));
         assertFalse(isLinear(MILLISECOND));
-        assertFalse(isLinear(SEXAGESIMAL_DMS));
-        assertFalse(isLinear(DEGREE_MINUTE_SECOND));
+        assertFalse(isLinear(DMS));
+        assertFalse(isLinear(DMS_SCALED));
     }
 
     /**
@@ -164,8 +153,8 @@ public final strictfp class UnitsTest extends TestCase {
         // Additional units
         assertFalse(isAngular(PPM));
         assertFalse(isAngular(MILLISECOND));
-        assertTrue (isAngular(SEXAGESIMAL_DMS));
-        assertTrue (isAngular(DEGREE_MINUTE_SECOND));
+        assertTrue (isAngular(DMS));
+        assertTrue (isAngular(DMS_SCALED));
     }
 
     /**
@@ -191,8 +180,8 @@ public final strictfp class UnitsTest extends TestCase {
         // Additional units
         assertTrue (isScale(PPM));
         assertFalse(isScale(MILLISECOND));
-        assertFalse(isScale(SEXAGESIMAL_DMS));
-        assertFalse(isScale(DEGREE_MINUTE_SECOND));
+        assertFalse(isScale(DMS));
+        assertFalse(isScale(DMS_SCALED));
     }
 
     /**
@@ -260,7 +249,7 @@ public final strictfp class UnitsTest extends TestCase {
     }
 
     /**
-     * Tests {@link Units#valueOfEPSG(int)}.
+     * Tests {@link Units#valueOfEPSG(int)} and {@link Units#valueOf(String)} with a {@code "EPSG:####"} syntax.
      */
     @Test
     public void testValueOfEPSG() {
@@ -268,5 +257,18 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(DEGREE_ANGLE, valueOfEPSG(9102));
         assertSame(METRE,        valueOf("EPSG:9001"));
         assertSame(DEGREE_ANGLE, valueOf(" epsg : 9102"));
+        assertSame(DEGREE_ANGLE, valueOf("urn:ogc:def:uom:EPSG::9102"));
+        assertSame(METRE,        valueOf("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+        assertSame(METRE,        valueOf("gmxUom.xml#m"));
+    }
+
+    /**
+     * Tests {@link Units#getEpsgCode(Unit)}.
+     */
+    @Test
+    public void testGetEpsgCode() {
+        assertEquals(Integer.valueOf(9001), getEpsgCode(METRE));
+        assertEquals(Integer.valueOf(9102), getEpsgCode(DEGREE_ANGLE));
+        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS));
     }
 }

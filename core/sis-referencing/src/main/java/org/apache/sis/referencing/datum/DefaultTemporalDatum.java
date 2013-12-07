@@ -24,6 +24,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.TemporalDatum;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Immutable;
 
@@ -77,9 +78,20 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     private static final long serialVersionUID = 3357241732140076884L;
 
     /**
-     * The date and time origin of this temporal datum.
+     * The date and time origin of this temporal datum, or {@link Long#MIN_VALUE} if none.
+     * This information is mandatory, but SIS is tolerant to missing value is case a XML
+     * fragment was incomplete.
      */
     private final long origin;
+
+    /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultTemporalDatum() {
+        origin = Long.MIN_VALUE;
+    }
 
     /**
      * Creates a temporal datum from the given properties. The properties map is given
@@ -124,7 +136,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
-     *     <td>{@link Extent}</td>
+     *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
@@ -156,7 +168,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     protected DefaultTemporalDatum(final TemporalDatum datum) {
         super(datum);
-        origin = datum.getOrigin().getTime();
+        origin = MetadataUtilities.toMilliseconds(datum.getOrigin());
     }
 
     /**
@@ -181,7 +193,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     @Override
     public Date getOrigin() {
-        return new Date(origin);
+        return MetadataUtilities.toDate(origin);
     }
 
     /**
@@ -190,7 +202,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -198,20 +210,17 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final DefaultTemporalDatum that = (DefaultTemporalDatum) object;
-                    return this.origin == that.origin;
-                }
-                default: {
-                    if (!(object instanceof TemporalDatum)) break;
-                    final TemporalDatum that = (TemporalDatum) object;
-                    return Objects.equals(getOrigin(), that.getOrigin());
-                }
+        if (!(object instanceof TemporalDatum && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                return origin == ((DefaultTemporalDatum) object).origin;
+            }
+            default: {
+                return Objects.equals(getOrigin(), ((TemporalDatum) object).getOrigin());
             }
         }
-        return false;
     }
 
     /**

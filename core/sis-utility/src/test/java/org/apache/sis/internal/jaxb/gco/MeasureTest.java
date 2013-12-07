@@ -44,15 +44,21 @@ public final strictfp class MeasureTest extends TestCase {
         final Measure measure = new Measure();
         measure.setUOM("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#m");
         assertEquals(SI.METRE, measure.unit);
+        assertEquals("urn:ogc:def:uom:EPSG::9001", measure.getUOM());
+        measure.asXPointer = true;
         assertEquals("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])", measure.getUOM());
 
         measure.unit = null;
-        measure.setUOM("../uom/ML_gmxUom.xsd#xpointer(//*[@gml:id='deg'])");
+        measure.asXPointer = false;
+        measure.setUOM("../uom/ML_gmxUom.xml#xpointer(//*[@gml:id='deg'])");
         assertEquals(NonSI.DEGREE_ANGLE, measure.unit);
+        assertEquals("urn:ogc:def:uom:EPSG::9102", measure.getUOM());
+        measure.asXPointer = true;
         assertEquals("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='deg'])", measure.getUOM());
 
         measure.unit = null;
-        measure.setUOM("http://my.big.org/units/kg");
+        measure.asXPointer = true;
+        measure.setUOM("gmxUom.xml#kg"); // Not really an existing unit in 'gmxUom'.
         assertEquals(SI.KILOGRAM, measure.unit);
         assertEquals("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='kg'])", measure.getUOM());
     }

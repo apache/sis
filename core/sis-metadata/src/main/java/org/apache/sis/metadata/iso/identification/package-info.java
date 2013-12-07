@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification Identification} implementation.
+ * Information to uniquely identify the data or service.
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.identification OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *

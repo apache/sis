@@ -154,6 +154,17 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     private final BursaWolfParameters[] bursaWolf;
 
     /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultGeodeticDatum() {
+        ellipsoid     = null;
+        primeMeridian = null;
+        bursaWolf     = null;
+    }
+
+    /**
      * Creates a geodetic datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      * In addition to the properties documented in the parent constructor,
@@ -418,7 +429,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -426,33 +437,32 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object, mode)) {
-            switch (mode) {
-                case STRICT: {
-                    final DefaultGeodeticDatum that = (DefaultGeodeticDatum) object;
-                    return Objects.equals(this.ellipsoid,     that.ellipsoid)     &&
-                           Objects.equals(this.primeMeridian, that.primeMeridian) &&
-                            Arrays.equals(this.bursaWolf,     that.bursaWolf);
-                }
-                default: {
-                    if (!(object instanceof GeodeticDatum)) break;
-                    final GeodeticDatum that = (GeodeticDatum) object;
-                    return deepEquals(getEllipsoid(),     that.getEllipsoid(),     mode) &&
-                           deepEquals(getPrimeMeridian(), that.getPrimeMeridian(), mode);
-                    /*
-                     * HACK: We do not consider Bursa-Wolf parameters as a non-metadata field.
-                     *       This is needed in order to get equalsIgnoreMetadata(...) to returns
-                     *       'true' when comparing the WGS84 constant in this class with a WKT
-                     *       DATUM element with a TOWGS84[0,0,0,0,0,0,0] element. Furthermore,
-                     *       the Bursa-Wolf parameters are not part of ISO 19111 specification.
-                     *       We don't want two CRS to be considered as different because one has
-                     *       more of those transformation informations (which is nice, but doesn't
-                     *       change the CRS itself).
-                     */
-                }
+        if (!(object instanceof GeodeticDatum && super.equals(object, mode))) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                final DefaultGeodeticDatum that = (DefaultGeodeticDatum) object;
+                return Objects.equals(this.ellipsoid,     that.ellipsoid)     &&
+                       Objects.equals(this.primeMeridian, that.primeMeridian) &&
+                        Arrays.equals(this.bursaWolf,     that.bursaWolf);
+            }
+            default: {
+                final GeodeticDatum that = (GeodeticDatum) object;
+                return deepEquals(getEllipsoid(),     that.getEllipsoid(),     mode) &&
+                       deepEquals(getPrimeMeridian(), that.getPrimeMeridian(), mode);
+                /*
+                 * HACK: We do not consider Bursa-Wolf parameters as a non-metadata field.
+                 *       This is needed in order to get equalsIgnoreMetadata(...) to returns
+                 *       'true' when comparing the WGS84 constant in this class with a WKT
+                 *       DATUM element with a TOWGS84[0,0,0,0,0,0,0] element. Furthermore,
+                 *       the Bursa-Wolf parameters are not part of ISO 19111 specification.
+                 *       We don't want two CRS to be considered as different because one has
+                 *       more of those transformation informations (which is nice, but doesn't
+                 *       change the CRS itself).
+                 */
             }
         }
-        return false;
     }
 
     /**

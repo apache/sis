@@ -16,13 +16,9 @@
  */
 package org.apache.sis.xml;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Locale;
 import java.net.URL;
 import java.io.IOException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -36,8 +32,6 @@ import org.apache.sis.metadata.iso.quality.AbstractElement;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -59,42 +53,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(FreeTextMarshallingTest.class)
 public final strictfp class MetadataMarshallingTest extends XMLTestCase {
     /**
-     * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
-     */
-    private static MarshallerPool pool;
-
-    /**
-     * Creates the XML (un)marshaller pool to be shared by all test methods.
-     * The (un)marshallers locale and timezone will be set to fixed values.
-     *
-     * @throws JAXBException If an error occurred while creating the pool.
-     *
-     * @see #disposeMarshallerPool()
-     */
-    @BeforeClass
-    public static void createMarshallerPool() throws JAXBException {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
-        assertNull(properties.put(XML.LOCALE, Locale.ENGLISH));
-        assertNull(properties.put(XML.TIMEZONE, "CET"));
-        pool = new MarshallerPool(properties);
-    }
-
-    /**
-     * Invoked by JUnit after the execution of every tests in order to dispose
-     * the {@link MarshallerPool} instance used internally by this class.
-     */
-    @AfterClass
-    public static void disposeMarshallerPool() {
-        pool = null;
-    }
-
-    /**
      * Returns the URL to the XML file of the given name.
      *
      * @param  filename The name of the XML file.
      * @return The URL to the given XML file.
      */
-    private URL getResource(final String filename) {
+    private static URL getResource(final String filename) {
         final URL resource = MetadataMarshallingTest.class.getResource(filename);
         assertNotNull(filename, resource);
         return resource;
@@ -136,10 +100,8 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testPositionalAccuracy() throws IOException, JAXBException {
-        final Marshaller   marshaller   = pool.acquireMarshaller();
-        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-        final URL          resource     = getResource("PositionalAccuracy.xml");
-        final Object       metadata     = XML.unmarshal(resource);
+        final URL    resource = getResource("PositionalAccuracy.xml");
+        final Object metadata = XML.unmarshal(resource);
         assertInstanceOf("PositionalAccuracy.xml", AbstractElement.class, metadata);
         final InternationalString nameOfMeasure = getSingleton(((AbstractElement) metadata).getNamesOfMeasure());
         /*
@@ -158,9 +120,7 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
         /*
          * Final comparison: ensure that we didn't lost any information.
          */
-        assertXmlEquals(resource, marshal(marshaller, metadata), "xmlns:*", "xsi:schemaLocation", "xsi:type");
-        pool.recycle(unmarshaller);
-        pool.recycle(marshaller);
+        assertXmlEquals(resource, marshal(metadata), "xmlns:*", "xsi:schemaLocation", "xsi:type");
     }
 
     /**
@@ -174,8 +134,6 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testProcessStep() throws IOException, JAXBException {
-        final Marshaller         marshaller   = pool.acquireMarshaller();
-        final Unmarshaller       unmarshaller = pool.acquireUnmarshaller();
         final DefaultProcessing  processing   = new DefaultProcessing();
         final DefaultProcessStep processStep  = new DefaultProcessStep("Some process step.");
         processing.setProcedureDescription(new SimpleInternationalString("Some procedure."));
@@ -183,15 +141,13 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
         /*
          * XML marshalling, and compare with the content of "ProcessStep.xml" file.
          */
-        final String xml = marshal(marshaller, processStep);
+        final String xml = marshal(processStep);
         assertTrue(xml.startsWith("<?xml"));
         assertXmlEquals(getResource("ProcessStep.xml"), xml, "xmlns:*", "xsi:schemaLocation");
         /*
          * Final comparison: ensure that we didn't lost any information.
          */
-        assertEquals(processStep, unmarshal(unmarshaller, xml));
-        pool.recycle(unmarshaller);
-        pool.recycle(marshaller);
+        assertEquals(processStep, unmarshal(DefaultProcessStep.class, xml));
     }
 
     /**
@@ -208,8 +164,6 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testExtent() throws IOException, JAXBException {
-        final Marshaller   marshaller   = pool.acquireMarshaller();
-        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(-99, -79, 14.9844, 31);
         bbox.getIdentifierMap().put(IdentifierSpace.ID, "bbox");
         final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
@@ -221,14 +175,12 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
         /*
          * XML marshalling, and compare with the content of "ProcessStep.xml" file.
          */
-        final String xml = marshal(marshaller, extent);
+        final String xml = marshal(extent);
         assertTrue(xml.startsWith("<?xml"));
         assertXmlEquals(getResource("Extent.xml"), xml, "xmlns:*", "xsi:schemaLocation");
         /*
          * Final comparison: ensure that we didn't lost any information.
          */
-        assertEquals(extent, unmarshal(unmarshaller, xml));
-        pool.recycle(unmarshaller);
-        pool.recycle(marshaller);
+        assertEquals(extent, unmarshal(DefaultExtent.class, xml));
     }
 }

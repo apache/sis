@@ -67,6 +67,11 @@ import org.apache.sis.internal.system.DefaultFactories;
  */
 public final class Types extends Static {
     /**
+     * The separator character between class name and attribute name in resource files.
+     */
+    private static final char SEPARATOR = '.';
+
+    /**
      * The types for ISO 19115 UML identifiers. The keys are UML identifiers. Values
      * are either class names as {@link String} objects, or the {@link Class} instances.
      * This map will be built only when first needed.
@@ -180,10 +185,10 @@ public final class Types extends Static {
      * results without the need of resource bundles. For better results, consider using
      * {@link #getCodeTitle(CodeList)} instead.
      *
-     * <p>The current heuristic implementation iterates over {@linkplain CodeList#names() all
-     * code names}, selects the longest one excluding the {@linkplain CodeList#name() field name}
-     * if possible, then {@linkplain CharSequences#camelCaseToSentence(CharSequence) makes a sentence}
-     * from that name. Examples:</p>
+     * <p>The current heuristic implementation iterates over {@linkplain CodeList#names() all code names},
+     * selects the longest one excluding the {@linkplain CodeList#name() field name} if possible, then
+     * {@linkplain CharSequences#camelCaseToSentence(CharSequence) makes a sentence} from that name.
+     * Examples:</p>
      *
      * <ul>
      *   <li>{@code getCodeLabel(AxisDirection.NORTH)} returns {@code "North"}.</li>
@@ -243,7 +248,7 @@ public final class Types extends Static {
         if (code != null) {
             final String resources = getResources(code.getClass().getName());
             if (resources != null) {
-                return new Description(resources, getListName(code) + '.' + getCodeName(code));
+                return new Description(resources, resourceKey(code));
             }
         }
         return null;
@@ -285,7 +290,7 @@ public final class Types extends Static {
             if (name != null) {
                 final String resources = getResources(type.getName());
                 if (resources != null) {
-                    return new Description(resources, name + '.' + property);
+                    return new Description(resources, name + SEPARATOR + property);
                 }
             }
         }
@@ -349,7 +354,7 @@ public final class Types extends Static {
          * Returns a fallback if no resource is found.
          */
         String fallback() {
-            return CharSequences.camelCaseToSentence(key.substring(key.lastIndexOf('.') + 1)).toString();
+            return CharSequences.camelCaseToSentence(key.substring(key.lastIndexOf(SEPARATOR) + 1)).toString();
         }
     }
 
@@ -382,7 +387,7 @@ public final class Types extends Static {
          * @param code The code list for which to create a title.
          */
         CodeTitle(final CodeList<?> code) {
-            super("org.opengis.metadata.CodeLists", getListName(code) + '.' + getCodeName(code));
+            super("org.opengis.metadata.CodeLists", resourceKey(code));
             this.code = code;
         }
 
@@ -408,6 +413,17 @@ public final class Types extends Static {
         }
         // Add more checks here (maybe in a loop) if there is more resource candidates.
         return null;
+    }
+
+    /**
+     * Returns the resource key for the given code list.
+     */
+    static String resourceKey(final CodeList<?> code) {
+        String key = getCodeName(code);
+        if (key.indexOf(SEPARATOR) < 0) {
+            key = getListName(code) + SEPARATOR + key;
+        }
+        return key;
     }
 
     /**

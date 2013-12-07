@@ -464,6 +464,17 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
+     * Tests the {@link CharSequences#replace(CharSequence, CharSequence, CharSequence)} method.
+     */
+    @Test
+    public void testReplace() {
+        final String text = "One apple, two orange oranges";
+        assertSame(text, replace(text, "pineapple", "orange"));
+        assertEquals("One orange, two orange oranges", replace(text, "apple", "orange").toString());
+        assertEquals("One apple, two apple apples",    replace(text, "orange", "apple").toString());
+    }
+
+    /**
      * Tests the {@link CharSequences#copyChars(CharSequence, int, char[], int, int)} method.
      */
     @Test

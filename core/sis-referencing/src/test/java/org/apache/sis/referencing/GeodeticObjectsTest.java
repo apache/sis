@@ -18,6 +18,9 @@ package org.apache.sis.referencing;
 
 import java.util.Date;
 import org.opengis.referencing.datum.TemporalDatum;
+import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.datum.VerticalDatumType;
+import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.opengis.test.Validators;
@@ -45,6 +48,26 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
      * Length of a day in milliseconds.
      */
     private static final double DAY_LENGTH = 24 * 60 * 60 * 1000;
+
+    /**
+     * Verifies the vertical datum enumeration.
+     */
+    @Test
+    public void testVertical() {
+        assertEquals(VerticalDatumType. BAROMETRIC,    type(GeodeticObjects.Vertical.BAROMETRIC));
+        assertEquals(VerticalDatumType. GEOIDAL,       type(GeodeticObjects.Vertical.GEOIDAL));
+        assertEquals(VerticalDatumTypes.ELLIPSOIDAL,   type(GeodeticObjects.Vertical.ELLIPSOIDAL));
+        assertEquals(VerticalDatumType. OTHER_SURFACE, type(GeodeticObjects.Vertical.OTHER_SURFACE));
+    }
+
+    /**
+     * Validates the datum of the given enumeration, then returns its datum type.
+     */
+    private static VerticalDatumType type(final GeodeticObjects.Vertical e) {
+        final VerticalDatum datum = e.datum();
+        Validators.validate(datum);
+        return datum.getVerticalDatumType();
+    }
 
     /**
      * Verifies the epoch values of temporal enumeration compared to the Julian epoch.

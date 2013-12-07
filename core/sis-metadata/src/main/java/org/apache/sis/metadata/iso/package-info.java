@@ -16,7 +16,7 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata} implementation.
+ * Root package for ISO 19115 metadata about resources (data or services).
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *

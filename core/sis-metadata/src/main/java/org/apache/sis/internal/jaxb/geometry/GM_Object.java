@@ -24,9 +24,8 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link Geometry}, in order to integrate the value in an element
- * complying with OGC/ISO standard. The geometry values are covered by a {@code gml:**}
- * element
+ * JAXB adapter for {@link Geometry}, in order to integrate the value in an element complying with OGC/ISO standard.
+ * The geometry element names are usually prefixed by {@code gml:}.
  *
  * <p>The default implementation does almost nothing. The geometry objects will <strong>not</strong>
  * create the expected {@link JAXBElement} type. This class is only a hook to be extended by more
@@ -59,7 +58,13 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
      */
     @Override
     public final Geometry unmarshal(final GM_Object value) {
-        return (value != null) ? value.geometry.getValue() : null;
+        if (value != null) {
+            final JAXBElement<? extends Geometry> g = value.geometry;
+            if (g != null) {
+                return g.getValue();
+            }
+        }
+        return null;
     }
 
     /**

@@ -37,6 +37,7 @@ import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 
@@ -246,8 +247,8 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
-        code    = property(properties, CODE_KEY,    String.class);
-        version = property(properties, VERSION_KEY, String.class);
+        code    = trimWhitespaces(property(properties, CODE_KEY,    String.class));
+        version = trimWhitespaces(property(properties, VERSION_KEY, String.class));
         remarks = Types.toInternationalString(properties, REMARKS_KEY);
         /*
          * Map String authority to one of the pre-defined constants (typically EPSG or OGC).
@@ -270,7 +271,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
         if (value == null && !properties.containsKey(CODESPACE_KEY)) {
             codeSpace = getCodeSpace(authority);
         } else if (value instanceof String) {
-            codeSpace = (String) value;
+            codeSpace = trimWhitespaces((String) value);
         } else {
             throw illegalPropertyType(CODESPACE_KEY, value);
         }
@@ -358,7 +359,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      * @see Citations#getIdentifier(Citation)
      */
     private static String getCodeSpace(final Citation authority) {
-        final String codeSpace = Citations.getIdentifier(authority);
+        final String codeSpace = Citations.getIdentifier(authority); // Whitespaces trimed by Citations.
         if (codeSpace != null) {
             final int length = codeSpace.length();
             if (length != 0) {
@@ -468,9 +469,8 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      * Returns a string representation of this identifier.
      * The default implementation returns a pseudo-WKT format.
      *
-     * {@note The <code>NamedIdentifier</code> subclass overrides this method with a different
-     *        behavior, in order to be compliant with the contract of the <code>GenericName</code>
-     *        interface.}
+     * {@note The <code>NamedIdentifier</code> subclass overrides this method with a different behavior,
+     *        in order to be compliant with the contract of the <code>GenericName</code> interface.}
      *
      * @see org.apache.sis.referencing.IdentifiedObjects#toString(Identifier)
      * @see org.apache.sis.referencing.NamedIdentifier#toString()

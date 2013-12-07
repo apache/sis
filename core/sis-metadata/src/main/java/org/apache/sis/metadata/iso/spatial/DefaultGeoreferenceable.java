@@ -30,9 +30,9 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * Grid with cells irregularly spaced in any given geographic/map projection coordinate
- * system, whose individual cells can be geolocated using geolocation information
- * supplied with the data but cannot be geolocated from the grid properties alone.
+ * Grid with cells irregularly spaced in any given geographic/map projection coordinate reference system.
+ * Individual cells can be geolocated using geolocation information supplied with the data but cannot be
+ * geolocated from the grid properties alone.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)

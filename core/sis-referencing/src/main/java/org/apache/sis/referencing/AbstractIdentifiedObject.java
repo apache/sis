@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -36,6 +37,7 @@ import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.internal.jaxb.referencing.RS_IdentifierSingleton;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Immutable;
@@ -104,8 +106,15 @@ import org.apache.sis.internal.jdk7.Objects;
 @Immutable
 @ThreadSafe
 @XmlType(name="IdentifiedObjectType", propOrder={
-    "identifier",
-    "name"
+    "identifiers",
+    "name",
+    "remarks"
+})
+@XmlSeeAlso({
+    AbstractReferenceSystem.class,
+    org.apache.sis.referencing.datum.AbstractDatum.class,
+    org.apache.sis.referencing.datum.DefaultEllipsoid.class,
+    org.apache.sis.referencing.datum.DefaultPrimeMeridian.class
 })
 public class AbstractIdentifiedObject extends FormattableObject implements IdentifiedObject,
         LenientComparable, Deprecable, Serializable
@@ -119,7 +128,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The name for this object or code. Should never be {@code null}.
      *
      * @see #getName()
-     * @see #getIdentifier()
      */
     @XmlElement
     private final ReferenceIdentifier name;
@@ -139,13 +147,15 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * "no identifiers" because we may get both on unmarshalling.</p>
      *
      * @see #getIdentifiers()
-     * @see #getIdentifier()
      */
+    @XmlElement(name = "identifier")
+    @XmlJavaTypeAdapter(RS_IdentifierSingleton.class)
     private final Set<ReferenceIdentifier> identifiers;
 
     /**
      * Comments on or information about this object, or {@code null} if none.
      */
+    @XmlElement(name = "remarks")
     private final InternationalString remarks;
 
     /**
@@ -155,6 +165,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The only possible outdated value is 0, which is okay.
      */
     private transient int hashCode;
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractIdentifiedObject() {
+        name        = null;
+        alias       = null;
+        identifiers = null;
+        remarks     = null;
+    }
 
     /**
      * Constructs an object from the given properties. Keys are strings from the table below.
@@ -419,18 +441,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Returns the first identifier found, or {@code null} if none.
-     * This method is invoked by JAXB at marshalling time.
-     *
-     * @see #name
-     */
-    @XmlElement(name = "identifier")
-    final ReferenceIdentifier getIdentifier() {
-        final Iterator<ReferenceIdentifier> it = iterator(identifiers);
-        return (it != null && it.hasNext()) ? it.next() : null;
-    }
-
-    /**
      * Returns comments on or information about this object, including data source information.
      *
      * @return The remarks, or {@code null} if none.
@@ -479,24 +489,65 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
-     * one {@linkplain #getAlias() alias} matches the specified string.
-     * This method returns {@code true} if the given name is equal to one of the following names,
-     * regardless of any authority:
+     * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
+     * The default implementation returns {@code true} if the given {@code name} is equal,
+     * ignoring aspects documented below, to one of the following names:
      *
      * <ul>
-     *   <li>The {@linkplain #getName() primary name} of this object.</li>
-     *   <li>The {@linkplain org.opengis.util.GenericName#toFullyQualifiedName() fully qualified name} of an alias.</li>
-     *   <li>The {@linkplain org.opengis.util.ScopedName#tail() tail} of an alias.</li>
-     *   <li>The tail of the previous tail, recursively up to the {@linkplain org.opengis.util.ScopedName#tip() tip}.</li>
+     *   <li>The {@linkplain #getName() primary name}'s {@linkplain NamedIdentifier#getCode() code}
+     *       (without {@linkplain NamedIdentifier#getCodeSpace() codespace}).</li>
+     *   <li>Any {@linkplain #getAlias() alias}'s {@linkplain NamedIdentifier#tip() tip}
+     *       (without {@linkplain NamedIdentifier#scope() scope} and namespace).</li>
      * </ul>
+     *
+     * The comparison ignores the following aspects:
+     * <ul>
+     *   <li>Lower/upper cases.</li>
+     *   <li>Some Latin diacritical signs (e.g. {@code "Réunion"} and {@code "Reunion"} are considered equal).</li>
+     *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
+     *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
+     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of an other
+     *       <code>IdentifiedObject.getName().getCode()</code> or with the <cite>Well Known Text</cite> (WKT)
+     *       projection or parameter name.</li>
+     * </ul>
+     *
+     * {@section Usage}
+     * This method is invoked by SIS when comparing in {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} mode
+     * two objects that can be differentiated only by some identifier (name or alias), like
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axes},
+     * {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum},
+     * {@linkplain org.apache.sis.parameter.AbstractParameterDescriptor parameters} and
+     * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod operation methods}.
+     * See {@link #equals(Object, ComparisonMode)} for more information.
+     *
+     * <p>This method is also invoked when searching a parameter or operation method for a given name.
+     * For example the same projection is known as {@code "Mercator (variant A)"} (the primary name according EPSG)
+     * and {@code "Mercator (1SP)"} (the legacy name prior EPSG 7.6). Since the later is still in frequent use, SIS
+     * accepts it as an alias of the <cite>Mercator (variant A)</cite> projection.</p>
+     *
+     * {@section Overriding by subclasses}
+     * Some subclasses add more flexibility to the comparisons:
+     * <ul>
+     *   <li>{@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#isHeuristicMatchForName(String)
+     *       Comparisons of coordinate system axis names} consider {@code "Lat"}, {@code "Latitude"} and
+     *       {@code "Geodetic latitude"} as synonymous, and likewise for longitude.</li>
+     *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
+     *       Comparisons of geodetic datum names} ignore the {@code "D_"} prefix, if any.
+     *       This prefix appears in ESRI datum name (e.g. {@code "D_WGS_1984"}).</li>
+     * </ul>
+     *
+     * {@section Future evolutions}
+     * This method implements heuristic rules learned from experience while trying to provide inter-operability
+     * with different data producers. Those rules may be adjusted in any future SIS version according experience
+     * gained while working with more data producers.
      *
      * @param  name The name to compare with the object name or aliases.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      *
-     * @see IdentifiedObjects#nameMatches(IdentifiedObject, String)
+     * @see IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)
      */
-    public boolean nameMatches(final String name) {
-        return IdentifiedObjects.nameMatches(this, alias, name);
+    public boolean isHeuristicMatchForName(final String name) {
+        return IdentifiedObjects.isHeuristicMatchForName(this, alias, name);
     }
 
     /**
@@ -515,17 +566,20 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </ul>
      *
      * {@section Exceptions to the above rules}
-     * Some subclasses (especially {@link org.apache.sis.referencing.datum.AbstractDatum}
-     * and {@link org.apache.sis.parameter.AbstractParameterDescriptor}) will test for the
-     * {@linkplain #getName() name}, since objects with different name have completely
-     * different meaning. For example nothing differentiate the {@code "semi_major"} and
-     * {@code "semi_minor"} parameters except the name. The name comparison may be loose
-     * however, i.e. we may accept a name matching an alias.
+     * Some subclasses (especially
+     * {@link org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis},
+     * {@link org.apache.sis.referencing.datum.AbstractDatum} and
+     * {@link org.apache.sis.parameter.AbstractParameterDescriptor}) will compare the
+     * {@linkplain #getName() name} even in {@code IGNORE_METADATA} mode,
+     * because objects of those types with different names have completely different meaning.
+     * For example nothing differentiate the {@code "semi_major"} and {@code "semi_minor"} parameters except the name.
+     * The name comparison may be lenient however, i.e. the rules may accept a name matching an alias.
+     * See {@link #isHeuristicMatchForName(String)} for more information.
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      *
      * @see #hashCode(ComparisonMode)
