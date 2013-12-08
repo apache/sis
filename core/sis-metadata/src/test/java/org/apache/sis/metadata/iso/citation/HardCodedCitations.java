@@ -87,6 +87,21 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
+     * The <a href="http://www.ogp.org.uk">International Association of Oil & Gas Producers</a> organization.
+     * This organization is responsible for maintainance of {@link #EPSG} database.
+     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "OGP"
+     * (according ISO 19115, alternate titles often contain abbreviations).
+     */
+    public static final DefaultCitation OGP;
+    static {
+        final DefaultCitation c = new DefaultCitation("International Association of Oil & Gas Producers");
+        c.setAlternateTitles(singleton(new SimpleInternationalString("OGP")));
+        c.getIdentifiers().add(new DefaultIdentifier("OGP"));
+        c.freeze();
+        OGP = c;
+    }
+
+    /**
      * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> authority.
      * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is
      * "EPSG" (according ISO 19115, alternate titles often contain abbreviations). In
