@@ -34,6 +34,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.CodeList;
@@ -463,20 +464,26 @@ public class Formatter {
          */
         final Identifier identifier = getIdentifier(info);
         if (identifier != null && !AUTHORITY_EXCLUDE.isInstance(info)) {
-            final Citation authority = identifier.getAuthority();
-            if (authority != null) {
-                final String title = Citations.getIdentifier(authority);
-                if (title != null) {
-                    appendSeparator(requestNewLine);
-                    buffer.append("AUTHORITY").appendCodePoint(open);
-                    quote(title);
-                    final String code = identifier.getCode();
-                    if (code != null) {
-                        buffer.append(symbols.getSeparator());
-                        quote(code);
-                    }
-                    buffer.appendCodePoint(close);
+            String codeSpace = null;
+            if (identifier instanceof ReferenceIdentifier) {
+                codeSpace = ((ReferenceIdentifier) identifier).getCodeSpace();
+            }
+            if (codeSpace == null) {
+                final Citation authority = identifier.getAuthority();
+                if (authority != null) {
+                    codeSpace = Citations.getIdentifier(authority);
                 }
+            }
+            if (codeSpace != null) {
+                appendSeparator(requestNewLine);
+                buffer.append("AUTHORITY").appendCodePoint(open);
+                quote(codeSpace);
+                final String code = identifier.getCode();
+                if (code != null) {
+                    buffer.append(symbols.getSeparator());
+                    quote(code);
+                }
+                buffer.appendCodePoint(close);
             }
         }
         buffer.appendCodePoint(close);

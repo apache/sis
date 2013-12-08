@@ -37,7 +37,10 @@ import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
  * @version 0.4
  * @module
  */
-@DependsOn({IdentifiedObjectsTest.class, NamedIdentifierTest.class})
+@DependsOn({
+    IdentifiedObjectsTest.class, NamedIdentifierTest.class,
+    org.apache.sis.internal.jaxb.referencing.RS_IdentifierTest.class
+})
 public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     /**
      * Tests the {@link AbstractIdentifiedObject#AbstractIdentifiedObject(Map)} constructor.

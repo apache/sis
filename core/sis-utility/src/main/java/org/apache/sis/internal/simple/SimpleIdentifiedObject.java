@@ -26,6 +26,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
@@ -243,7 +244,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
         }
         buffer.append(code).append('"');
         if (authority != null) {
-            buffer.append(", AUTHORITY[\"").append(authority.getTitle()).append("\"]");
+            buffer.append(", AUTHORITY[\"").append(Citations.getIdentifier(authority)).append("\"]");
         }
         if (deprecated) {
             buffer.append(", DEPRECATED");

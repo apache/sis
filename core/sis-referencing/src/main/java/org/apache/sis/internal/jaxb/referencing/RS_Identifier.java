@@ -23,20 +23,42 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.util.StringBuilders;
+import org.apache.sis.internal.util.URIParser;
 
 
 /**
  * JAXB adapter mapping the GeoAPI {@link ReferenceIdentifier} to an implementation class that can
  * be marshalled. See the package documentation for more information about JAXB and interfaces.
  *
- * <p>The XML produced by this adapter uses the GML syntax. The {@link RS_IdentifierCode} class
- * performs a similar mapping, but in which only the code (without codespace) is marshalled.</p>
- *
  * <p>Note that a class of the same name is defined in the {@link org.apache.sis.internal.jaxb.metadata}
  * package, which serve the same purpose (wrapping exactly the same interface) but using the ISO 19139
  * syntax instead. The ISO 19139 syntax represents the code and codespace as XML elements, while in this
  * GML representation the code is a XML value and the codespace is a XML attribute.</p>
+ *
+ * {@section Marshalling}
+ * Identifiers are typically marshalled as below:
+ *
+ * {@preformat xml
+ *   <gml:identifier codeSpace="EPSG">4326</gml:identifier>
+ * }
+ *
+ * If the {@code ReferenceIdentifier} to marshal contains a {@linkplain ReferenceIdentifier#getVersion() version},
+ * then this adapter concatenates the version to the codespace in a "URI-like" way like below:
+ *
+ * {@preformat xml
+ *   <gml:identifier codeSpace="EPSG:8.3">4326</gml:identifier>
+ * }
+ *
+ * {@section Unmarshalling}
+ * Some data producers put a URN instead than a simple code value, as in the example below:
+ *
+ * {@preformat xml
+ *   <gml:identifier codeSpace="OGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
+ * }
+ *
+ * In such case this class takes the codespace as the {@linkplain ReferenceIdentifier#getAuthority() authority}
+ * ("OGP" in above example), and the 3 last URI elements are parsed as the codespace, version (optional) and
+ * code values respectively.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
@@ -59,7 +81,7 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, Referen
          * {@link org.apache.sis.metadata.iso.ImmutableIdentifier} represents it as an XML element.</p>
          */
         @XmlValue
-        private String code;
+        String code;
 
         /**
          * The code space, which is often {@code "EPSG"} with the version in use.
@@ -68,7 +90,7 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, Referen
          * {@link org.apache.sis.metadata.iso.ImmutableIdentifier} represents it as an XML element.</p>
          */
         @XmlAttribute
-        private String codeSpace;
+        String codeSpace;
 
         /**
          * Empty constructor for JAXB only.
@@ -78,6 +100,9 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, Referen
 
         /**
          * Creates a wrapper initialized to the values of the given identifier.
+         * Version number, if presents, will be appended after the codespace with a semicolon separator.
+         * The {@link #getIdentifier()} method shall be able to perform the opposite operation (split the
+         * above in separated codespace and version attributes).
          *
          * @param identifier The identifier from which to get the values.
          */
@@ -86,21 +111,42 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, Referen
             codeSpace = identifier.getCodeSpace();
             String version = identifier.getVersion();
             if (version != null) {
-                final StringBuilder buffer = new StringBuilder(codeSpace);
-                if (buffer.length() != 0) {
-                    buffer.append('_');
+                final StringBuilder buffer = new StringBuilder();
+                if (codeSpace != null) {
+                    buffer.append(codeSpace);
                 }
-                StringBuilders.remove(buffer.append('v').append(version), ".");
-                codeSpace = buffer.toString();
+                codeSpace = buffer.append(URIParser.SEPARATOR).append(version).toString();
             }
         }
 
         /**
          * Returns the identifier for this value. This method is the converse of the constructor.
+         * If the {@link #codeSpace} contains a semicolon, then the part after the last semicolon
+         * will be taken as the authority version number. This is for consistency with what the
+         * constructor does.
          */
         ReferenceIdentifier getIdentifier() {
-            final Citation authority = Citations.fromName(codeSpace); // May be null.
-            return new ImmutableIdentifier(authority, Citations.getIdentifier(authority), code);
+            String c = code;
+            if (c == null) {
+                return null;
+            }
+            Citation authority = null;
+            String version = null, cs = codeSpace;
+            final URIParser parsed = URIParser.parse(c);
+            if (parsed != null) {
+                authority = Citations.fromName(cs); // May be null.
+                cs        = parsed.authority;
+                version   = parsed.version;
+                c         = parsed.code;
+            } else if (cs != null) {
+                final int s = cs.lastIndexOf(URIParser.SEPARATOR);
+                if (s >= 0) {
+                    version = cs.substring(s+1);
+                    cs = cs.substring(0, s);
+                }
+                authority = Citations.fromName(cs);
+            }
+            return new ImmutableIdentifier(authority, cs, c, version, null);
         }
     }
 
