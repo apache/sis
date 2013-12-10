@@ -259,7 +259,7 @@ abstract class Pooled {
             case 0: {
                 // Apply namespace replacements only for older versions than the one supported natively by SIS.
                 if (gmlVersion != null) {
-                    if (gmlVersion.compareTo(LegacyNamespaces.VERSION_3_2, 2) < 0) {
+                    if (gmlVersion.compareTo(LegacyNamespaces.VERSION_3_2_1, 2) < 0) {
                         return FilterVersion.GML31;
                     }
                 }
