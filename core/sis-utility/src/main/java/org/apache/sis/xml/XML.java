@@ -147,10 +147,11 @@ public final class XML extends Static {
 
     /**
      * Specifies the GML version of the document to be marshalled or unmarshalled.
-     * The GML version may affect the set of XML elements to be marshalled.
-     * Newer versions typically have more elements, but not always.
-     * For example in {@code gml:VerticalDatum}, the {@code gml:verticalDatumType} property
-     * presents in GML 3.0 and 3.1 has been removed in GML 3.2.
+     * The GML version may affect the set of XML elements to be marshalled and their namespaces.
+     *
+     * {@note Newer versions typically have more elements, but not always.
+     * For example in <code>gml:VerticalDatum</code>, the <code>gml:verticalDatumType</code> property
+     * presents in GML 3.0 and 3.1 has been removed in GML 3.2.}
      *
      * <p>The value can be {@link String} or {@link Version} objects.
      * If no version is specified, then the most recent GML version is assumed.</p>
