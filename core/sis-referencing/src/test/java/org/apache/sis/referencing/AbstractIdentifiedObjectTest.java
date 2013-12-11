@@ -16,16 +16,21 @@
  */
 package org.apache.sis.referencing;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Collections;
 import org.opengis.test.Validators;
+import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
 
 
@@ -47,22 +52,39 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      */
     @Test
     public void testCreateFromMap() {
-        final Map<String,Object> properties = new HashMap<>(10);
-        assertNull(properties.put("name",       "This is a name"));
-        assertNull(properties.put("remarks",    "There is remarks"));
-        assertNull(properties.put("remarks_fr", "Voici des remarques"));
+        final Map<String,Object> properties = new HashMap<>(8);
+        assertNull(properties.put("name",       "GRS 1980"));
+        assertNull(properties.put("codespace",  "EPSG"));
+        assertNull(properties.put("version",    "8.3"));
+        assertNull(properties.put("alias",      "International 1979"));//7019
+        assertNull(properties.put("remarks",    "Adopted by IUGG 1979 Canberra"));
+        assertNull(properties.put("remarks_fr", "Adopté par IUGG 1979 Canberra"));
+        validate(new AbstractIdentifiedObject(properties), Collections.<ReferenceIdentifier>emptySet(), "GRS1980");
+        /*
+         * Adds an identifier. This should change the choice made by AbstractIdentifiedObject.getID().
+         */
+        final ReferenceIdentifier identifier = new ImmutableIdentifier(null, "EPSG", "4326");
+        assertNull(properties.put("identifiers", identifier));
+        validate(new AbstractIdentifiedObject(properties), Collections.singleton(identifier), "EPSG4326");
+    }
 
-        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties);
+    /**
+     * Validates the given object created by {@link #testCreateFromMap()}.
+     */
+    private static void validate(final AbstractIdentifiedObject object,
+            final Set<ReferenceIdentifier> identifiers, final String gmlID)
+    {
         Validators.validate(object);
-
-        assertEquals("name",       "This is a name",      object.getName().getCode());
-        assertNull  ("codeSpace",                         object.getName().getCodeSpace());
-        assertNull  ("version",                           object.getName().getVersion());
-        assertTrue  ("aliases",                           object.getAlias().isEmpty());
-        assertTrue  ("identifiers",                       object.getIdentifiers().isEmpty());
-        assertEquals("ID",         "Thisisaname",         object.getID());
-        assertEquals("remarks",    "There is remarks",    object.getRemarks().toString(Locale.ENGLISH));
-        assertEquals("remarks_fr", "Voici des remarques", object.getRemarks().toString(Locale.FRENCH));
+        final ReferenceIdentifier name = object.getName();
+        assertEquals("name",        "GRS 1980",                      name.getCode());
+        assertEquals("codespace",   "EPSG",                          name.getCodeSpace());
+        assertEquals("version",     "8.3",                           name.getVersion());
+        assertEquals("aliases",     "International 1979",            getSingleton(object.getAlias()).toString());
+        assertEquals("names",       Collections.singletonList(name), object.getNames());
+        assertEquals("identifiers", identifiers,                     object.getIdentifiers());
+        assertEquals("ID",          gmlID,                           object.getID());
+        assertEquals("remarks",     "Adopted by IUGG 1979 Canberra", object.getRemarks().toString(Locale.ENGLISH));
+        assertEquals("remarks_fr",  "Adopté par IUGG 1979 Canberra", object.getRemarks().toString(Locale.FRENCH));
     }
 
     /**
@@ -70,7 +92,6 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      *
      * <ul>
      *   <li>{@link AbstractIdentifiedObject#getIdentifiers()}</li>
-     *   <li>{@link AbstractIdentifiedObject#getIdentifier()}</li>
      *   <li>{@link AbstractIdentifiedObject#getID()}</li>
      * </ul>
      *

@@ -16,14 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.internal.util.URIParser;
 
 
 /**
@@ -67,89 +61,7 @@ import org.apache.sis.internal.util.URIParser;
  * @version 0.4
  * @module
  */
-public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, ReferenceIdentifier> {
-    /**
-     * The wrapper for GML identifier marshalled as a code value with a codespace attribute.
-     * Defined in a separated class because JAXB does not allow usage of {@code XmlValue} in
-     * a class that inherit an other class.
-     */
-    public static final class Value {
-        /**
-         * The identifier code.
-         *
-         * <p><b>Note:</b> GML (the target of this class) represents that code as an XML value, while
-         * {@link org.apache.sis.metadata.iso.ImmutableIdentifier} represents it as an XML element.</p>
-         */
-        @XmlValue
-        String code;
-
-        /**
-         * The code space, which is often {@code "EPSG"} with the version in use.
-         *
-         * <p><b>Note:</b> GML (the target of this class) represents that code as an XML attribute, while
-         * {@link org.apache.sis.metadata.iso.ImmutableIdentifier} represents it as an XML element.</p>
-         */
-        @XmlAttribute
-        String codeSpace;
-
-        /**
-         * Empty constructor for JAXB only.
-         */
-        public Value() {
-        }
-
-        /**
-         * Creates a wrapper initialized to the values of the given identifier.
-         * Version number, if presents, will be appended after the codespace with a semicolon separator.
-         * The {@link #getIdentifier()} method shall be able to perform the opposite operation (split the
-         * above in separated codespace and version attributes).
-         *
-         * @param identifier The identifier from which to get the values.
-         */
-        Value(final ReferenceIdentifier identifier) {
-            code      = identifier.getCode();
-            codeSpace = identifier.getCodeSpace();
-            String version = identifier.getVersion();
-            if (version != null) {
-                final StringBuilder buffer = new StringBuilder();
-                if (codeSpace != null) {
-                    buffer.append(codeSpace);
-                }
-                codeSpace = buffer.append(URIParser.SEPARATOR).append(version).toString();
-            }
-        }
-
-        /**
-         * Returns the identifier for this value. This method is the converse of the constructor.
-         * If the {@link #codeSpace} contains a semicolon, then the part after the last semicolon
-         * will be taken as the authority version number. This is for consistency with what the
-         * constructor does.
-         */
-        ReferenceIdentifier getIdentifier() {
-            String c = code;
-            if (c == null) {
-                return null;
-            }
-            Citation authority = null;
-            String version = null, cs = codeSpace;
-            final URIParser parsed = URIParser.parse(c);
-            if (parsed != null) {
-                authority = Citations.fromName(cs); // May be null.
-                cs        = parsed.authority;
-                version   = parsed.version;
-                c         = parsed.code;
-            } else if (cs != null) {
-                final int s = cs.lastIndexOf(URIParser.SEPARATOR);
-                if (s >= 0) {
-                    version = cs.substring(s+1);
-                    cs = cs.substring(0, s);
-                }
-                authority = Citations.fromName(cs);
-            }
-            return new ImmutableIdentifier(authority, cs, c, version, null);
-        }
-    }
-
+public final class RS_Identifier extends XmlAdapter<Code, ReferenceIdentifier> {
     /**
      * Substitutes the wrapper value read from an XML stream by the object which will
      * represents the identifier. JAXB calls automatically this method at unmarshalling time.
@@ -158,7 +70,7 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, Referen
      * @return An identifier which represents the value.
      */
     @Override
-    public ReferenceIdentifier unmarshal(final Value value) {
+    public ReferenceIdentifier unmarshal(final Code value) {
         return (value != null) ? value.getIdentifier() : null;
     }
 
@@ -170,7 +82,7 @@ public final class RS_Identifier extends XmlAdapter<RS_Identifier.Value, Referen
      * @return The adapter for the given metadata.
      */
     @Override
-    public Value marshal(final ReferenceIdentifier value) {
-        return (value != null) ? new Value(value) : null;
+    public Code marshal(final ReferenceIdentifier value) {
+        return (value != null) ? new Code(value) : null;
     }
 }

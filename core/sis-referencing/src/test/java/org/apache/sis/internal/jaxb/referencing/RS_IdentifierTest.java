@@ -42,7 +42,7 @@ public final strictfp class RS_IdentifierTest extends TestCase {
     @Test
     public void testSimple() {
         final ReferenceIdentifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326");
-        final RS_Identifier.Value value = new RS_Identifier.Value(id);
+        final Code value = new Code(id);
         assertEquals("codeSpace", "EPSG", value.codeSpace);
         assertEquals("code",      "4326", value.code);
         /*
@@ -63,7 +63,7 @@ public final strictfp class RS_IdentifierTest extends TestCase {
     @DependsOnMethod("testSimple")
     public void testWithVersion() {
         final ReferenceIdentifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326", "8.2", null);
-        final RS_Identifier.Value value = new RS_Identifier.Value(id);
+        final Code value = new Code(id);
         assertEquals("codeSpace", "EPSG:8.2", value.codeSpace);
         assertEquals("code",      "4326",     value.code);
         /*
@@ -85,7 +85,7 @@ public final strictfp class RS_IdentifierTest extends TestCase {
     @Test
     @DependsOnMethod("testWithVersion")
     public void testURN() {
-        final RS_Identifier.Value value = new RS_Identifier.Value();
+        final Code value = new Code();
         value.codeSpace = "OGP";
         value.code = "urn:ogc:def:crs:EPSG:8.2:4326";
         final ReferenceIdentifier actual = value.getIdentifier();

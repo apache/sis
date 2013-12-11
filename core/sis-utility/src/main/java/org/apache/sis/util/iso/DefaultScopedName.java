@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.ConcurrentModificationException;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -48,6 +49,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @module
  */
 @Immutable
+@XmlType(name = "ScopedName") // Actually 'gml:CodeType', but the later is used elsewhere.
 @XmlRootElement(name = "ScopedName")
 public class DefaultScopedName extends AbstractName implements ScopedName {
     /**

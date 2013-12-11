@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
@@ -32,8 +31,6 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.jaxb.metadata.CI_Citation;
-import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -76,7 +73,6 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      * @see #getCode()
      */
     @XmlElement(required = true)
-    @XmlJavaTypeAdapter(StringAdapter.class)
     private final String code;
 
     /**
@@ -86,7 +82,6 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      * @see #getCodeSpace()
      */
     @XmlElement(required = true)
-    @XmlJavaTypeAdapter(StringAdapter.class)
     private final String codeSpace;
 
     /**
@@ -96,7 +91,6 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      * @see #getAuthority()
      */
     @XmlElement(required = true)
-    @XmlJavaTypeAdapter(CI_Citation.class)
     private final Citation authority;
 
     /**
