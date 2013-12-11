@@ -43,6 +43,8 @@ public final class CI_Series extends PropertyType<CI_Series, Series> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Series.class}
      */
     @Override
     protected Class<Series> getBoundType() {
@@ -77,7 +79,7 @@ public final class CI_Series extends PropertyType<CI_Series, Series> {
      */
     @XmlElementRef
     public DefaultSeries getElement() {
-        return skip() ? null : DefaultSeries.castOrCopy(metadata);
+        return DefaultSeries.castOrCopy(metadata);
     }
 
     /**

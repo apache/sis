@@ -60,7 +60,7 @@ public class ReferenceResolver {
      *
      * <ul>
      *   <li>Implements the given {@code type} interface.</li>
-     *   <li>Implements the {@link IdentifiedObject} interface.</li>
+     *   <li>Implements the {@link NilObject} and {@link IdentifiedObject} interfaces from this package.</li>
      *   <li>{@link IdentifiedObject#getIdentifiers()} will return the given identifiers.</li>
      *   <li>{@link IdentifiedObject#getIdentifierMap()} will return a {@link java.util.Map}
      *       view over the given identifiers.</li>

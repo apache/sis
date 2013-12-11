@@ -53,6 +53,8 @@ public final class GO_Real extends PropertyType<GO_Real, Double> {
 
     /**
      * Returns the Java type which is bound by this adapter.
+     *
+     * @return {@code Double.class}
      */
     @Override
     protected Class<Double> getBoundType() {
@@ -79,7 +81,7 @@ public final class GO_Real extends PropertyType<GO_Real, Double> {
      */
     @XmlElement(name = "Real")
     public Double getElement() {
-        return skip() ? null : metadata;
+        return metadata;
     }
 
     /**

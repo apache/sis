@@ -43,6 +43,8 @@ public final class CI_Telephone extends PropertyType<CI_Telephone, Telephone> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Telephone.class}
      */
     @Override
     protected Class<Telephone> getBoundType() {
@@ -77,7 +79,7 @@ public final class CI_Telephone extends PropertyType<CI_Telephone, Telephone> {
      */
     @XmlElementRef
     public DefaultTelephone getElement() {
-        return skip() ? null : DefaultTelephone.castOrCopy(metadata);
+        return DefaultTelephone.castOrCopy(metadata);
     }
 
     /**

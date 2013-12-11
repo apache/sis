@@ -83,13 +83,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      */
     @XmlElement(name = "TimePeriod")
     public TimePeriod getTimePeriod() {
-        if (!skip()) {
-            final TemporalPrimitive metadata = this.metadata;
-            if (metadata instanceof Period) {
-                return new TimePeriod((Period) metadata);
-            }
-        }
-        return null;
+        final TemporalPrimitive metadata = this.metadata;
+        return (metadata instanceof Period) ? new TimePeriod((Period) metadata) : null;
     }
 
     /**
@@ -100,13 +95,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      */
     @XmlElement(name = "TimeInstant")
     public TimeInstant getTimeInstant() {
-        if (!skip()) {
-            final TemporalPrimitive metadata = this.metadata;
-            if (metadata instanceof Instant) {
-                return new TimeInstant((Instant) metadata);
-            }
-        }
-        return null;
+        final TemporalPrimitive metadata = this.metadata;
+        return (metadata instanceof Instant) ? new TimeInstant((Instant) metadata) : null;
     }
 
     /**

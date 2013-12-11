@@ -269,6 +269,8 @@ public class GO_CharacterString {
      * {@note Returning <code>null</code> is unusual and not a recommended practice.
      * But precedents exist (for example Swing <code>DefaultMutableTreeNode</code>)
      * and this class is not for public usage.}
+     *
+     * @return The text as a string (may be null).
      */
     @Override
     public final String toString() {

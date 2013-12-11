@@ -43,6 +43,8 @@ public final class MI_Instrument extends PropertyType<MI_Instrument, Instrument>
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Instrument.class}
      */
     @Override
     protected Class<Instrument> getBoundType() {
@@ -77,7 +79,7 @@ public final class MI_Instrument extends PropertyType<MI_Instrument, Instrument>
      */
     @XmlElementRef
     public DefaultInstrument getElement() {
-        return skip() ? null : DefaultInstrument.castOrCopy(metadata);
+        return DefaultInstrument.castOrCopy(metadata);
     }
 
     /**

@@ -43,6 +43,8 @@ public final class CI_Contact extends PropertyType<CI_Contact, Contact> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Contact.class}
      */
     @Override
     protected Class<Contact> getBoundType() {
@@ -77,7 +79,7 @@ public final class CI_Contact extends PropertyType<CI_Contact, Contact> {
      */
     @XmlElementRef
     public DefaultContact getElement() {
-        return skip() ? null : DefaultContact.castOrCopy(metadata);
+        return DefaultContact.castOrCopy(metadata);
     }
 
     /**

@@ -43,6 +43,8 @@ public final class MD_ScopeDescription extends PropertyType<MD_ScopeDescription,
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code ScopeDescription.class}
      */
     @Override
     protected Class<ScopeDescription> getBoundType() {
@@ -77,7 +79,7 @@ public final class MD_ScopeDescription extends PropertyType<MD_ScopeDescription,
      */
     @XmlElementRef
     public DefaultScopeDescription getElement() {
-        return skip() ? null : DefaultScopeDescription.castOrCopy(metadata);
+        return DefaultScopeDescription.castOrCopy(metadata);
     }
 
     /**
