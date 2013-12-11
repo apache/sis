@@ -40,12 +40,21 @@ import java.util.Objects;
 
 
 /**
- * An identification of a CRS object which is both an {@link Identifier} and a {@link GenericName}.
- * The main interface implemented by this class is {@link ReferenceIdentifier}.
- * However, this class also implements {@link GenericName} in order to make it possible to reuse
- * the same identifiers in the list of {@linkplain AbstractIdentifiedObject#getAlias() aliases}.
- * Casting an alias from {@code GenericName} to a {@code ReferenceIdentifier} gives access to more informations,
- * like the authority URL.
+ * An identification of a CRS object which is both a {@link ReferenceIdentifier} and a {@link GenericName}.
+ * This class implements both interfaces in order to allow usage of the same instance either as an object
+ * {@linkplain AbstractIdentifiedObject#getName() name} or {@linkplain AbstractIdentifiedObject#getAlias() alias}.
+ * This flexibility make easier to uses object's names in two different models:
+ *
+ * <ul>
+ *   <li>In the ISO 19111 model, objects have a single name of type {@code RS_Identifier} and an arbitrary amount
+ *       of aliases of type {@code GenericName}.</li>
+ *   <li>In the GML model, objects have an arbitrary amount of names of type {@code gml:CodeType},
+ *       but do not have any alias.</li>
+ * </ul>
+ *
+ * By using this {@code NamedIdentifier} class, users can declare supplemental object's names as
+ * {@linkplain AbstractIdentifiedObject#getAlias() aliases} and have those names used in contexts
+ * where {@code ReferenceIdentifier} instances are required, like GML marshalling time.
  *
  * {@section Name inference}
  * The generic name will be inferred from {@code ReferenceIdentifier} attributes.
