@@ -43,6 +43,8 @@ public final class MD_Constraints extends PropertyType<MD_Constraints, Constrain
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Constraints.class}
      */
     @Override
     protected Class<Constraints> getBoundType() {
@@ -77,7 +79,7 @@ public final class MD_Constraints extends PropertyType<MD_Constraints, Constrain
      */
     @XmlElementRef
     public DefaultConstraints getElement() {
-        return skip() ? null : DefaultConstraints.castOrCopy(metadata);
+        return DefaultConstraints.castOrCopy(metadata);
     }
 
     /**

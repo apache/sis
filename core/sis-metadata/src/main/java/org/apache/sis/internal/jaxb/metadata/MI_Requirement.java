@@ -43,6 +43,8 @@ public final class MI_Requirement extends PropertyType<MI_Requirement, Requireme
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Requirement.class}
      */
     @Override
     protected Class<Requirement> getBoundType() {
@@ -77,7 +79,7 @@ public final class MI_Requirement extends PropertyType<MI_Requirement, Requireme
      */
     @XmlElementRef
     public DefaultRequirement getElement() {
-        return skip() ? null : DefaultRequirement.castOrCopy(metadata);
+        return DefaultRequirement.castOrCopy(metadata);
     }
 
     /**

@@ -105,7 +105,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see XmlAdapter
@@ -114,7 +114,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
         extends XmlAdapter<ValueType,BoundType>
 {
     /**
-     * The wrapped GeoAPI metadata instance.
+     * The wrapped GeoAPI metadata instance, or {@code null} if the metadata shall not be marshalled.
+     * Metadata are not marshalled when replaced by {@code xlink:href} or {@code uuidref} attributes.
      */
     protected BoundType metadata;
 
@@ -140,8 +141,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
-     * Builds an adapter for the given primitive wrapper. This constructor checks for nil reasons
-     * only if {@code check} is {@code true}.
+     * Builds a {@code PropertyType} wrapper for the given primitive type wrapper.
+     * This constructor checks for nil reasons only if {@code check} is {@code true}.
      *
      * @param value The primitive type wrapper.
      * @param mayBeNil {@code true} if we should check for nil reasons.
@@ -152,31 +153,33 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             final Object property = PrimitiveTypeProperties.property(value);
             if (property instanceof NilReason) {
                 reference = property.toString();
+                metadata  = null;
             }
         }
     }
 
     /**
-     * Builds an adapter for the given GeoAPI interface. This constructor checks if the given metadata
+     * Builds a wrapper for the given GeoAPI interface. This constructor checks if the given metadata
      * implements the {@link NilObject} or {@link IdentifiedObject} interface. If the object implements
      * both of them (should not happen, but we never know), then the identifiers will have precedence.
      *
-     * @param metadata The interface to wrap.
+     * @param value The interface to wrap.
      */
-    protected PropertyType(final BoundType metadata) {
-        this.metadata = metadata;
+    protected PropertyType(final BoundType value) {
+        metadata = value;
         /*
          * Do not invoke NilReason.forObject(metadata) in order to avoid unnecessary synchronization.
          * Subclasses will use the PropertyType(BoundType, boolean) constructor instead when a check
          * for primitive type is required.
          */
-        if (metadata instanceof NilObject) {
-            final NilReason reason = ((NilObject) metadata).getNilReason();
+        if (value instanceof NilObject) {
+            final NilReason reason = ((NilObject) value).getNilReason();
             if (reason != null) {
                 reference = reason.toString();
+                metadata  = null;
             }
         }
-        if (metadata instanceof IdentifiedObject) {
+        if (value instanceof IdentifiedObject) {
             /*
              * Get the identifiers as full UUID or XLink objects. We do not use the more permissive methods
              * working with arbitrary strings -- e.g. map.get(IdentifierSpace.HREF) -- because we are going
@@ -197,7 +200,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
              * We do not try to parse UUID or XLink objects from String because it should be the job of
              * org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases.put(Citation, String).
              */
-            final IdentifierMap map = ((IdentifiedObject) metadata).getIdentifierMap();
+            final IdentifierMap map = ((IdentifiedObject) value).getIdentifierMap();
             XLink  link = map.getSpecialized(IdentifierSpace.XLINK);
             UUID   uuid = map.getSpecialized(IdentifierSpace.UUID);
             if (uuid != null || link != null) {
@@ -209,11 +212,20 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
                  * If not, forget them in order to avoid marshalling the identifiers twice (see the
                  * example in the above comment).
                  */
-                if (uuid != null && !resolver.canSubstituteByReference(context, type, metadata, uuid)) {
-                    uuid = null;
+                if (uuid != null) {
+                    if (resolver.canSubstituteByReference(context, type, value, uuid)) {
+                        metadata = null;
+                    } else {
+                        uuid = null;
+                    }
                 }
-                if (link != null && !resolver.canSubstituteByReference(context, type, metadata, link)) {
-                    link = null;
+                /*
+                 * There is no risk of duplication for 'xlink' because there is no such attribute in ISOMetadata.
+                 * So if the user does not allow us to omit the metadata object, we will still keep the xlink for
+                 * informative purpose.
+                 */
+                if (link != null && resolver.canSubstituteByReference(context, type, value, link)) {
+                    metadata = null;
                 }
                 if (uuid != null || link != null) {
                     reference = new ObjectReference(uuid, link);
@@ -284,18 +296,6 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
         if (!(reference instanceof ObjectReference)) {
             reference = nilReason;
         }
-    }
-
-    /**
-     * Returns {@code true} if the wrapped metadata should not be marshalled. It may be because
-     * a non-null "{@code uuidref}" attribute has been specified (in which case the UUID reference
-     * will be marshalled in place of the full metadata), or any other reason that may be added in
-     * future implementations.
-     *
-     * @return {@code true} if the wrapped metadata should not be marshalled.
-     */
-    protected final boolean skip() {
-        return reference != null;
     }
 
     /**

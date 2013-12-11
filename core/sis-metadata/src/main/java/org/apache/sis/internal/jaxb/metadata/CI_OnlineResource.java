@@ -43,6 +43,8 @@ public final class CI_OnlineResource extends PropertyType<CI_OnlineResource, Onl
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code OnlineResource.class}
      */
     @Override
     protected Class<OnlineResource> getBoundType() {
@@ -77,7 +79,7 @@ public final class CI_OnlineResource extends PropertyType<CI_OnlineResource, Onl
      */
     @XmlElementRef
     public DefaultOnlineResource getElement() {
-        return skip() ? null : DefaultOnlineResource.castOrCopy(metadata);
+        return DefaultOnlineResource.castOrCopy(metadata);
     }
 
     /**

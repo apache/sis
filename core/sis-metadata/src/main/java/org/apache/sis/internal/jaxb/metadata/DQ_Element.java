@@ -43,6 +43,8 @@ public final class DQ_Element extends PropertyType<DQ_Element, Element> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Element.class}
      */
     @Override
     protected Class<Element> getBoundType() {
@@ -77,7 +79,7 @@ public final class DQ_Element extends PropertyType<DQ_Element, Element> {
      */
     @XmlElementRef
     public AbstractElement getElement() {
-        return skip() ? null : AbstractElement.castOrCopy(metadata);
+        return AbstractElement.castOrCopy(metadata);
     }
 
     /**

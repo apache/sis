@@ -45,6 +45,8 @@ public final class MD_AggregateInformation extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code AggregateInformation.class}
      */
     @Override
     protected Class<AggregateInformation> getBoundType() {
@@ -79,7 +81,7 @@ public final class MD_AggregateInformation extends
      */
     @XmlElementRef
     public DefaultAggregateInformation getElement() {
-        return skip() ? null : DefaultAggregateInformation.castOrCopy(metadata);
+        return DefaultAggregateInformation.castOrCopy(metadata);
     }
 
     /**

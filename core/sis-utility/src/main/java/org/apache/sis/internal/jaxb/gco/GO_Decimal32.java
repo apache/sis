@@ -48,6 +48,8 @@ public final class GO_Decimal32 extends PropertyType<GO_Decimal32, Float> {
 
     /**
      * Returns the Java type which is bound by this adapter.
+     *
+     * @return {@code Float.class}
      */
     @Override
     protected Class<Float> getBoundType() {
@@ -74,7 +76,7 @@ public final class GO_Decimal32 extends PropertyType<GO_Decimal32, Float> {
      */
     @XmlElement(name = "Decimal")
     public Float getElement() {
-        return skip() ? null : metadata;
+        return metadata;
     }
 
     /**

@@ -43,6 +43,8 @@ public final class MX_DataFile extends PropertyType<MX_DataFile, DataFile> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code DataFile.class}
      */
     @Override
     protected Class<DataFile> getBoundType() {
@@ -77,7 +79,7 @@ public final class MX_DataFile extends PropertyType<MX_DataFile, DataFile> {
      */
     @XmlElementRef
     public DefaultDataFile getElement() {
-        return skip() ? null : DefaultDataFile.castOrCopy(metadata);
+        return DefaultDataFile.castOrCopy(metadata);
     }
 
     /**
