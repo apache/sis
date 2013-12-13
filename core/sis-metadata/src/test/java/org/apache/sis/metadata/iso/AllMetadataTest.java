@@ -39,12 +39,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn({
-    org.apache.sis.metadata.PropertyAccessorTest.class,
-    org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
-    org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
-    org.apache.sis.metadata.iso.quality.AbstractElementTest.class
-})
+@DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
 public final strictfp class AllMetadataTest extends MetadataTestCase {
     /**
      * A JUnit {@linkplain Rule rule} for listening to log events. This field is public

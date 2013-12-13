@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.xml;
+package org.apache.sis.metadata.iso;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -35,8 +35,8 @@ import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.xml.XML;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
  * @author  Damiano Albani (for code snippet on the mailing list)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.14)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class CustomMetadataTest extends XMLTestCase {
