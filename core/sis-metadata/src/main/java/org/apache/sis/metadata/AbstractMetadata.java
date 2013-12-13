@@ -19,6 +19,7 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlTransient;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.collection.TreeTable;
@@ -75,7 +76,7 @@ import org.apache.sis.util.logging.Logging;
  * @see MetadataStandard
  */
 @XmlTransient
-public abstract class AbstractMetadata implements LenientComparable {
+public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     /**
      * The logger for messages related to metadata implementations.
      */
@@ -125,8 +126,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      *   <li>An other metadata object containing only {@code null}, nil or empty properties.</li>
      * </ul>
      *
-     * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()}
-     * method.
+     * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()} method.
      *
      * {@section Note for implementors}
      * The default implementation uses Java reflection indirectly, by iterating over all entries
@@ -139,6 +139,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#isEmpty()
      */
+    @Override
     public boolean isEmpty() {
         return Pruner.isEmpty(this, false);
     }

@@ -24,6 +24,7 @@ import javax.measure.unit.Unit;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Numbers;
 
@@ -87,7 +88,7 @@ import java.util.Objects;
  * @see org.apache.sis.util.collection.RangeSet
  */
 @Immutable
-public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Serializable {
+public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -262,6 +263,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      *
      * @return {@code true} if this range is empty.
      */
+    @Override
     public final boolean isEmpty() {
         if (minValue == null || maxValue == null) {
             return false; // Unbounded: can't be empty.

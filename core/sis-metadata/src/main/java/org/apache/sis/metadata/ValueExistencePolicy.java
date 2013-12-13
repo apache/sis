@@ -150,6 +150,11 @@ public enum ValueExistencePolicy {
      * <p>This method intentionally does not inspect array or collection elements, since this method
      * is invoked from methods doing shallow copy or comparison. If we were inspecting elements,
      * we would need to add a check against infinite recursivity.</p>
+     *
+     * <p>This method does not check for the {@link org.apache.sis.util.Emptiable} interface because
+     * the {@code isEmpty()} method may be costly (for example {@link AbstractMetadata#isEmpty()}
+     * iterates over all the metadata tree). Instead, the check for {@code Emptiable} will be done
+     * explicitely by the caller when appropriate.</p>
      */
     static boolean isNullOrEmpty(final Object value) {
         if (value == null)                  return true;

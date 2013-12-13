@@ -255,6 +255,9 @@ public class Cache<K,V> extends AbstractMap<K,V> {
 
     /**
      * Returns {@code true} if this map contains the specified key.
+     *
+     * @param  key The key to check for existence.
+     * @return {@code true} if the given key still exist in this cache.
      */
     @Override
     public boolean containsKey(final Object key) {
@@ -846,6 +849,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * Returns the set of keys in this cache. The returned set is subjects to the same caution
      * than the ones documented in the {@link ConcurrentHashMap#keySet()} method.
+     *
+     * @return The set of keys in this cache.
      */
     @Override
     public Set<K> keySet() {
