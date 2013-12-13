@@ -43,6 +43,8 @@ public final class MI_GCP extends PropertyType<MI_GCP, GCP> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code GCP.class}
      */
     @Override
     protected Class<GCP> getBoundType() {
@@ -77,7 +79,7 @@ public final class MI_GCP extends PropertyType<MI_GCP, GCP> {
      */
     @XmlElementRef
     public DefaultGCP getElement() {
-        return skip() ? null : DefaultGCP.castOrCopy(metadata);
+        return DefaultGCP.castOrCopy(metadata);
     }
 
     /**

@@ -55,13 +55,15 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.FreeTextMarshallingTest.class,
     org.apache.sis.xml.NilReasonMarshallingTest.class,
     org.apache.sis.xml.AnchorMarshallingTest.class,
-    org.apache.sis.xml.ObjectReferenceMarshallingTest.class,
+    org.apache.sis.xml.UUIDMarshallingTest.class,
+    org.apache.sis.xml.XLinkMarshallingTest.class,
 
     // ISO implementations.
     org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
     org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,
     org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
+    org.apache.sis.metadata.iso.extent.DefaultExtentTest.class,
     org.apache.sis.metadata.iso.extent.ExtentsTest.class,
     org.apache.sis.metadata.iso.spatial.DefaultGeorectifiedTest.class,
     org.apache.sis.metadata.iso.identification.DefaultKeywordsTest.class,
@@ -70,13 +72,13 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.identification.DefaultBrowseGraphicTest.class,
     org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class,
     org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
+    org.apache.sis.metadata.iso.quality.AbstractPositionalAccuracyTest.class,
+    org.apache.sis.metadata.iso.lineage.DefaultLineageTest.class,
+    org.apache.sis.metadata.iso.lineage.DefaultProcessStepTest.class,
     org.apache.sis.metadata.iso.ImmutableIdentifierTest.class,
-    org.apache.sis.metadata.iso.AllMetadataTest.class,
-
-    // XML marshalling (integration tests).
-    org.apache.sis.xml.CustomMetadataTest.class,
-    org.apache.sis.xml.ImageryMarshallingTest.class,
-    org.apache.sis.xml.MetadataMarshallingTest.class
+    org.apache.sis.metadata.iso.DefaultMetadataTest.class,
+    org.apache.sis.metadata.iso.CustomMetadataTest.class,
+    org.apache.sis.metadata.iso.AllMetadataTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**

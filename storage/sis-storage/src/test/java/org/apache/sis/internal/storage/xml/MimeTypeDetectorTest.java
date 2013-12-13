@@ -19,7 +19,7 @@ package org.apache.sis.internal.storage.xml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import org.apache.sis.xml.MetadataMarshallingTest;
+import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -65,8 +65,7 @@ public final strictfp class MimeTypeDetectorTest extends TestCase {
     @Test
     @DependsOnMethod("testGMDFromString")
     public void testGMDFromInputStream() throws IOException {
-        final InputStream in = MetadataMarshallingTest.class.getResourceAsStream("Extent.xml");
-        assertNotNull("Can not read Extent.xml", in);
+        final InputStream in = DefaultExtentTest.getResource("Extent.xml").openStream();
         assertEquals('<', in.read());
         assertEquals('?', in.read());
         final MimeTypeDetector detector = new MimeTypeDetector() {

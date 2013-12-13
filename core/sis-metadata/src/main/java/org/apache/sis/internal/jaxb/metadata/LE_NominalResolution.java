@@ -43,6 +43,8 @@ public final class LE_NominalResolution extends PropertyType<LE_NominalResolutio
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code NominalResolution.class}
      */
     @Override
     protected Class<NominalResolution> getBoundType() {
@@ -77,7 +79,7 @@ public final class LE_NominalResolution extends PropertyType<LE_NominalResolutio
      */
     @XmlElementRef
     public DefaultNominalResolution getElement() {
-        return skip() ? null : DefaultNominalResolution.castOrCopy(metadata);
+        return DefaultNominalResolution.castOrCopy(metadata);
     }
 
     /**

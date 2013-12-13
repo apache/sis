@@ -45,6 +45,8 @@ public final class CI_ResponsibleParty extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code ResponsibleParty.class}
      */
     @Override
     protected Class<ResponsibleParty> getBoundType() {
@@ -79,7 +81,7 @@ public final class CI_ResponsibleParty extends
      */
     @XmlElementRef
     public DefaultResponsibleParty getElement() {
-        return skip() ? null : DefaultResponsibleParty.castOrCopy(metadata);
+        return DefaultResponsibleParty.castOrCopy(metadata);
     }
 
     /**

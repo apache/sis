@@ -43,6 +43,8 @@ public final class LE_Processing extends PropertyType<LE_Processing, Processing>
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Processing.class}
      */
     @Override
     protected Class<Processing> getBoundType() {
@@ -77,7 +79,7 @@ public final class LE_Processing extends PropertyType<LE_Processing, Processing>
      */
     @XmlElementRef
     public DefaultProcessing getElement() {
-        return skip() ? null : DefaultProcessing.castOrCopy(metadata);
+        return DefaultProcessing.castOrCopy(metadata);
     }
 
     /**

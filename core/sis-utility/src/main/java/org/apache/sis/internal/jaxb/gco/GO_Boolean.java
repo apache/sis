@@ -49,6 +49,8 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
 
     /**
      * Returns the Java type which is bound by this adapter.
+     *
+     * @return {@code Boolean.class}
      */
     @Override
     protected Class<Boolean> getBoundType() {
@@ -75,7 +77,7 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
      */
     @XmlElement(name = "Boolean")
     public Boolean getElement() {
-        return skip() ? null : metadata;
+        return metadata;
     }
 
     /**

@@ -45,6 +45,8 @@ public final class EX_GeographicBoundingBox extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code GeographicBoundingBox.class}
      */
     @Override
     protected Class<GeographicBoundingBox> getBoundType() {
@@ -79,7 +81,7 @@ public final class EX_GeographicBoundingBox extends
      */
     @XmlElementRef
     public DefaultGeographicBoundingBox getElement() {
-        return skip() ? null : DefaultGeographicBoundingBox.castOrCopy(metadata);
+        return DefaultGeographicBoundingBox.castOrCopy(metadata);
     }
 
     /**

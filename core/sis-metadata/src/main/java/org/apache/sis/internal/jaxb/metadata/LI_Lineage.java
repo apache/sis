@@ -43,6 +43,8 @@ public final class LI_Lineage extends PropertyType<LI_Lineage, Lineage> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Lineage.class}
      */
     @Override
     protected Class<Lineage> getBoundType() {
@@ -77,7 +79,7 @@ public final class LI_Lineage extends PropertyType<LI_Lineage, Lineage> {
      */
     @XmlElementRef
     public DefaultLineage getElement() {
-        return skip() ? null : DefaultLineage.castOrCopy(metadata);
+        return DefaultLineage.castOrCopy(metadata);
     }
 
     /**

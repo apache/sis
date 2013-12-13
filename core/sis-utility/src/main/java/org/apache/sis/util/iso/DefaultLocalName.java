@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Locale;
 import java.io.ObjectStreamException;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -58,6 +59,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @module
  */
 @Immutable
+@XmlType(name = "LocalName") // Actually 'gml:CodeType', but the later is used elsewhere.
 @XmlRootElement(name = "LocalName")
 public class DefaultLocalName extends AbstractName implements LocalName {
     /**

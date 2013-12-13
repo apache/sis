@@ -79,7 +79,7 @@ public final class CD_PrimeMeridian extends PropertyType<CD_PrimeMeridian, Prime
      */
     @XmlElement(name = "Ellipsoid")
     public DefaultPrimeMeridian getElement() {
-        return skip() ? null : DefaultPrimeMeridian.castOrCopy(metadata);
+        return DefaultPrimeMeridian.castOrCopy(metadata);
     }
 
     /**

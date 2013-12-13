@@ -48,6 +48,8 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Identifier.class}
      */
     @Override
     protected Class<Identifier> getBoundType() {
@@ -82,7 +84,6 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      */
     @XmlElementRef
     public DefaultIdentifier getElement() {
-        if (skip()) return null;
         final Identifier metadata = this.metadata;
         if (metadata instanceof ReferenceIdentifier) {
             return null;
@@ -108,11 +109,9 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      */
     @XmlElement(name = "RS_Identifier")
     public ImmutableIdentifier getReferenceIdentifier() {
-        if (!skip()) {
-            final Identifier metadata = this.metadata;
-            if (metadata instanceof ReferenceIdentifier) {
-                return ImmutableIdentifier.castOrCopy((ReferenceIdentifier) metadata);
-            }
+        final Identifier metadata = this.metadata;
+        if (metadata instanceof ReferenceIdentifier) {
+            return ImmutableIdentifier.castOrCopy((ReferenceIdentifier) metadata);
         }
         return null;
     }

@@ -643,7 +643,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         }
         // 'excludeEmpty' must use the same criterion than trimWhitespaces(…).
         final boolean excludeEmpty = isWhitespace(separator);
-        CharSequence[] strings = new CharSequence[4];
+        CharSequence[] strings = (text instanceof String) ? new String[4] : new CharSequence[4];
         final int length = text.length();
         int count = 0, last  = 0, i = 0;
         while ((i = indexOf(text, separator, i, length)) >= 0) {

@@ -122,7 +122,7 @@ abstract class Pooled {
      * Whether {@link FilteredNamespaces} shall be used of not. Values can be:
      *
      * <ul>
-     *   <li>0 for the default behavior, which is apply namespace replacements only if the {@link XML#GML_VERSION}
+     *   <li>0 for the default behavior, which applies namespace replacements only if the {@link XML#GML_VERSION}
      *       property is set to an older value than the one supported natively by SIS.</li>
      *   <li>1 for forcing namespace replacements at unmarshalling time. This is useful for reading a XML document
      *       of unknown GML version.</li>
@@ -132,7 +132,7 @@ abstract class Pooled {
      *
      * @see LegacyNamespaces#APPLY_NAMESPACE_REPLACEMENTS
      */
-    private byte applyNamespaceReplacements;
+    private byte xmlnsReplaceCode;
 
     /**
      * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
@@ -217,15 +217,16 @@ abstract class Pooled {
             reset(entry.getKey(), entry.getValue());
         }
         initialProperties.clear();
-        bitMasks        = template.bitMasks;
-        locale          = template.locale;
-        timezone        = template.timezone;
-        schemas         = template.schemas;
-        gmlVersion      = template.gmlVersion;
-        resolver        = template.resolver;
-        converter       = template.converter;
-        warningListener = template.warningListener;
-        resetTime       = System.nanoTime();
+        bitMasks         = template.bitMasks;
+        locale           = template.locale;
+        timezone         = template.timezone;
+        schemas          = template.schemas;
+        xmlnsReplaceCode = template.xmlnsReplaceCode;
+        gmlVersion       = template.gmlVersion;
+        resolver         = template.resolver;
+        converter        = template.converter;
+        warningListener  = template.warningListener;
+        resetTime        = System.nanoTime();
         if (this instanceof Marshaller) {
             bitMasks |= Context.MARSHALLING;
         }
@@ -254,11 +255,11 @@ abstract class Pooled {
      * @see FilteredNamespaces
      */
     final FilterVersion getFilterVersion() {
-        switch (applyNamespaceReplacements) {
+        switch (xmlnsReplaceCode) {
             case 0: {
                 // Apply namespace replacements only for older versions than the one supported natively by SIS.
                 if (gmlVersion != null) {
-                    if (gmlVersion.compareTo(LegacyNamespaces.VERSION_3_2, 2) < 0) {
+                    if (gmlVersion.compareTo(LegacyNamespaces.VERSION_3_2_1, 2) < 0) {
                         return FilterVersion.GML31;
                     }
                 }
@@ -389,9 +390,9 @@ abstract class Pooled {
                     return;
                 }
                 if (name.equals(LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS)) {
-                    applyNamespaceReplacements = 0;
+                    xmlnsReplaceCode = 0;
                     if (value != null) {
-                        applyNamespaceReplacements = ((Boolean) value) ? (byte) 1 : (byte) 2;
+                        xmlnsReplaceCode = ((Boolean) value) ? (byte) 1 : (byte) 2;
                     }
                     return;
                 }
@@ -436,7 +437,7 @@ abstract class Pooled {
                 return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
             }
             if (name.equals(LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS)) {
-                switch (applyNamespaceReplacements) {
+                switch (xmlnsReplaceCode) {
                     case 1:  return Boolean.TRUE;
                     case 2:  return Boolean.FALSE;
                     default: return null;

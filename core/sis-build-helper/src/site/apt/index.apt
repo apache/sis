@@ -51,7 +51,7 @@ Building Apache SIS
 |                      | <<<java>>>, <<<xml>>>, <<<sql>>>, <<<wkt>>>, <<<text>>>, <<<math>>> or <<<shell>>>.       |
 *----------------------+-------------------------------------------------------------------------------------------+
 | <<<\{@scmUrl\}>>>    | An inline taglet for a URL to the source code repository. The only word inside the taglet |
-|                      | shall be <<<gmd-data>>>.                                                                  |
+|                      | shall be <<<metadata>>> or <<<referencing>>>.                                             |
 *----------------------+-------------------------------------------------------------------------------------------+
 | <<<\{@section\}>>>   | An inline taglet for the title of a new section in the javadoc.                           |
 *----------------------+-------------------------------------------------------------------------------------------+

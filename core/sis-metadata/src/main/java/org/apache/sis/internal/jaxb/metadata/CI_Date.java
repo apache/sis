@@ -43,6 +43,8 @@ public final class CI_Date extends PropertyType<CI_Date, CitationDate> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code CitationDate.class}
      */
     @Override
     protected Class<CitationDate> getBoundType() {
@@ -77,7 +79,7 @@ public final class CI_Date extends PropertyType<CI_Date, CitationDate> {
      */
     @XmlElementRef
     public DefaultCitationDate getElement() {
-        return skip() ? null : DefaultCitationDate.castOrCopy(metadata);
+        return DefaultCitationDate.castOrCopy(metadata);
     }
 
     /**

@@ -87,14 +87,14 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      */
     @XmlElement(name = "TM_PeriodDuration")
     public Duration getElement() {
-        if (!skip()) try {
+        final PeriodDuration metadata = this.metadata;
+        if (metadata != null) try {
             /*
              * Get the DatatypeFactory first because if not available, then we don't need to parse
              * the calendar fields. This has the side effect of not validating the calendar fields
              * syntax (which should be integer values), but maybe this is what the user wants.
              */
             final DatatypeFactory factory = XmlUtilities.getDatatypeFactory();
-            final PeriodDuration metadata = this.metadata;
             InternationalString value;
             BigInteger years = null;
             if ((value = metadata.getYears()) != null) {
