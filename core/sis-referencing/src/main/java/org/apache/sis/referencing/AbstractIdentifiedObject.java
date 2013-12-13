@@ -107,7 +107,7 @@ import org.apache.sis.internal.jdk7.Objects;
 @ThreadSafe
 @XmlType(name="IdentifiedObjectType", propOrder={
     "identifiers",
-    "names",
+    "name", // This is 'names' on the JDK7 branch.
     "remarks"
 })
 @XmlSeeAlso({
@@ -127,23 +127,25 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     /**
      * The name for this object or code. Shall never be {@code null}.
      *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setNames(Collection)}</p>
+     * <p><b>Difference between JDK6 and JDK7 branches:</b> in the JDK6 branch, this field is annotated directly.
+     * In the JDK7 branch, a {@code getNames()} method is annotated instead in order to marshal name and aliases
+     * in a single list, because GML does that way. We couldn't keep the getter/setter methods pair in the JDK6
+     * branch because JAXB 2.1.10 does not invoke the setter, while JAXB 2.2.4-2 does as expected. The price is
+     * that aliases are lost on the JDK6 branch, while they are present on the JDK7 branch.</p>
      *
      * @see #getName()
-     * @see #getNames()
      */
-    private ReferenceIdentifier name;
+    @XmlElement(name = "name")
+    private final ReferenceIdentifier name;
 
     /**
      * An alternative name by which this object is identified, or {@code null} if none.
      * We must be prepared to handle either null or an empty set for "no alias" because
      * we may get both on unmarshalling.
      *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setNames(Collection)}</p>
+     * <p><b>Difference between JDK6 and JDK7 branches:</b> See comment for {@link #name}.</p>
      */
-    private Collection<GenericName> alias;
+    private final Collection<GenericName> alias;
 
     /**
      * An identifier which references elsewhere the object's defining information.
@@ -178,6 +180,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     AbstractIdentifiedObject() {
+        name        = null;
+        alias       = null;
         identifiers = null;
         remarks     = null;
     }
@@ -416,44 +420,22 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         return name;
     }
 
-    /**
-     * Returns the {@link #name} and all aliases which are also instance of {@lik ReferenceIdentifier}.
-     * The later happen often in SIS implementation since many aliases are instance of {@link NamedIdentifier}.
+    /* -----------------------------------------------------------------------
+     *              DIFFERENCE BETWEEN THE JDK6 AND JDK7 BRANCHES
+     * -----------------------------------------------------------------------
+     * The JDK7 branch provides two private methods here:
+     *
+     *    - Collection<ReferenceIdentifier> getNames();
+     *    - void setNames(Collection<ReferenceIdentifier> names);
+     *
+     * The getter is annotated with @XmlElement(name = "name"), which replace
+     * the annotation on this.name field. The intend is to merge the primary
+     * name and aliases in a single list, because GML is specified that way.
+     * However JAXB 2.1.10 in JDK 1.6.0_65 does not invoke the setter method
+     * while JAXB 2.2.4-2 in 1.7.0_25 does. Because of this bug, we annotate
+     * the field instead in the JDK6 branch. The consequence is that aliases
+     * are lost.
      */
-    @XmlElement(name = "name")
-    final Collection<ReferenceIdentifier> getNames() {
-        // Unconditionally creates a modifiable list because some JAXB implementations modify it.
-        final Collection<ReferenceIdentifier> names = new ArrayList<ReferenceIdentifier>(nonNull(alias).size() + 1);
-        names.add(name);
-        if (alias != null) {
-            for (final GenericName c : alias) {
-                if (c != name && (c instanceof ReferenceIdentifier)) {
-                    names.add((ReferenceIdentifier) c);
-                }
-            }
-        }
-        return names;
-    }
-
-    /**
-     * Sets the first element as the {@link #name} and all remaining elements as {@link #alias}.
-     * This method is invoked by JAXB at unmarshalling time. It should not be invoked anymore
-     * after the object has been made available to the user.
-     */
-    private void setNames(final Collection<ReferenceIdentifier> names) {
-        if (names != null) {
-            final Iterator<ReferenceIdentifier> it = names.iterator();
-            if (it.hasNext()) {
-                name = it.next();
-                if (it.hasNext()) {
-                    alias = new ArrayList<GenericName>(4); // There is generally few aliases.
-                    do {
-                        alias.add(new NamedIdentifier(it.next()));
-                    } while (it.hasNext());
-                }
-            }
-        }
-    }
 
     /**
      * Returns alternative names by which this object is identified.
