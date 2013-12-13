@@ -29,17 +29,17 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests the XML marshalling of object having {@code xlink} or {@code uuid} attributes.
+ * Tests the XML marshalling of object having {@code uuid} or {@code uuidref} attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
  */
 @DependsOn(NilReasonMarshallingTest.class)
-public final strictfp class ObjectReferenceMarshallingTest extends XMLTestCase {
+public final strictfp class UUIDMarshallingTest extends XMLTestCase {
     /**
      * A random UUID for the tests in this class.
      */
@@ -50,8 +50,7 @@ public final strictfp class ObjectReferenceMarshallingTest extends XMLTestCase {
      */
     private static final String IDENTIFIED_XML =
             "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
-                            " xmlns:gco=\""   + Namespaces.GCO + '"' +
-                            " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+                            " xmlns:gco=\""   + Namespaces.GCO + "\">\n" +
             "  <gmd:title>\n" +
             "    <gco:CharacterString>My data</gco:CharacterString>\n" +
             "  </gmd:title>\n" +
@@ -69,9 +68,8 @@ public final strictfp class ObjectReferenceMarshallingTest extends XMLTestCase {
      * This XML declares the method body anyway, which is kind of contradictory with usage of reference.
      */
     private static final String REFERENCED_XML_WITH_BODY =
-            "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD   + '"' +
-                            " xmlns:gco=\""   + Namespaces.GCO   + '"' +
-                            " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+            "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
+                            " xmlns:gco=\""   + Namespaces.GCO + "\">\n" +
             "  <gmd:title>\n" +
             "    <gco:CharacterString>My data</gco:CharacterString>\n" +
             "  </gmd:title>\n" +
@@ -88,9 +86,8 @@ public final strictfp class ObjectReferenceMarshallingTest extends XMLTestCase {
      * A XML with a {@code uuidref} identifier in the {@code <gmd:series>} element.
      */
     private static final String REFERENCED_XML =
-            "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD   + '"' +
-                            " xmlns:gco=\""   + Namespaces.GCO   + '"' +
-                            " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+            "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
+                            " xmlns:gco=\""   + Namespaces.GCO + "\">\n" +
             "  <gmd:title>\n" +
             "    <gco:CharacterString>My data</gco:CharacterString>\n" +
             "  </gmd:title>\n" +
