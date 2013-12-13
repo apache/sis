@@ -43,6 +43,8 @@ public final class LE_ProcessStepReport extends PropertyType<LE_ProcessStepRepor
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code ProcessStepReport.class}
      */
     @Override
     protected Class<ProcessStepReport> getBoundType() {
@@ -77,7 +79,7 @@ public final class LE_ProcessStepReport extends PropertyType<LE_ProcessStepRepor
      */
     @XmlElementRef
     public DefaultProcessStepReport getElement() {
-        return skip() ? null : DefaultProcessStepReport.castOrCopy(metadata);
+        return DefaultProcessStepReport.castOrCopy(metadata);
     }
 
     /**

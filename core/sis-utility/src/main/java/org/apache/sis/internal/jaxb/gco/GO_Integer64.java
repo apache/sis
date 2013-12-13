@@ -48,6 +48,8 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
 
     /**
      * Returns the Java type which is bound by this adapter.
+     *
+     * @return {@code Long.class}
      */
     @Override
     protected Class<Long> getBoundType() {
@@ -74,7 +76,7 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      */
     @XmlElement(name = "Integer")
     public Long getElement() {
-        return skip() ? null : metadata;
+        return metadata;
     }
 
     /**

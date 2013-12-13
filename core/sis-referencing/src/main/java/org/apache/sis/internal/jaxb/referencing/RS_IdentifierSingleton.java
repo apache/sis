@@ -34,7 +34,7 @@ import static java.util.Collections.singleton;
  * @version 0.4
  * @module
  */
-public final class RS_IdentifierSingleton extends XmlAdapter<RS_Identifier.Value, Set<ReferenceIdentifier>> {
+public final class RS_IdentifierSingleton extends XmlAdapter<Code, Set<ReferenceIdentifier>> {
     /**
      * Substitutes the wrapper value read from an XML stream by the object which will
      * represents the identifier. JAXB calls automatically this method at unmarshalling time.
@@ -43,7 +43,7 @@ public final class RS_IdentifierSingleton extends XmlAdapter<RS_Identifier.Value
      * @return An identifier which represents the value.
      */
     @Override
-    public Set<ReferenceIdentifier> unmarshal(final RS_Identifier.Value value) {
+    public Set<ReferenceIdentifier> unmarshal(final Code value) {
         return (value != null) ? singleton(value.getIdentifier()) : null;
     }
 
@@ -55,11 +55,11 @@ public final class RS_IdentifierSingleton extends XmlAdapter<RS_Identifier.Value
      * @return The adapter for the given metadata.
      */
     @Override
-    public RS_Identifier.Value marshal(final Set<ReferenceIdentifier> value) {
+    public Code marshal(final Set<ReferenceIdentifier> value) {
         if (value != null) {
             final Iterator<ReferenceIdentifier> it = value.iterator();
             if (it.hasNext()) {
-                return new RS_Identifier.Value(it.next());
+                return new Code(it.next());
             }
         }
         return null;

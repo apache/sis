@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -50,7 +51,6 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.internal.util.Citations.iterator;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
@@ -107,7 +107,7 @@ import org.apache.sis.internal.jdk7.Objects;
 @ThreadSafe
 @XmlType(name="IdentifiedObjectType", propOrder={
     "identifiers",
-    "name",
+    "names",
     "remarks"
 })
 @XmlSeeAlso({
@@ -125,19 +125,25 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private static final long serialVersionUID = -5173281694258483264L;
 
     /**
-     * The name for this object or code. Should never be {@code null}.
+     * The name for this object or code. Shall never be {@code null}.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setNames(Collection)}</p>
      *
      * @see #getName()
+     * @see #getNames()
      */
-    @XmlElement
-    private final ReferenceIdentifier name;
+    private ReferenceIdentifier name;
 
     /**
      * An alternative name by which this object is identified, or {@code null} if none.
      * We must be prepared to handle either null or an empty set for "no alias" because
      * we may get both on unmarshalling.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setNames(Collection)}</p>
      */
-    private final Collection<GenericName> alias;
+    private Collection<GenericName> alias;
 
     /**
      * An identifier which references elsewhere the object's defining information.
@@ -172,8 +178,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     AbstractIdentifiedObject() {
-        name        = null;
-        alias       = null;
         identifiers = null;
         remarks     = null;
     }
@@ -361,35 +365,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
          * We will iterate over the identifiers first. Only after the iteration is over,
          * if we found no suitable ID, then we will use the primary name as a last resort.
          */
-        Iterator<ReferenceIdentifier> it = iterator(identifiers);
-        do {
-            final ReferenceIdentifier identifier;
-            if (it != null && it.hasNext()) {
-                identifier = it.next();
-            } else {
-                it = null;
-                identifier = name;
-            }
-            if (identifier != null) {
-                boolean codeSpace = true;
-                do { // Executed exactly twice: once for codespace, then once for code.
-                    final String part = codeSpace ? identifier.getCodeSpace() : identifier.getCode();
-                    if (part != null) {
-                        /*
-                         * Found a codespace (in the first iteration) or a code (in the second iteration).
-                         * Append to the buffer only the characters that are valid for a Unicode identifier.
-                         */
-                        for (int i=0; i<part.length();) {
-                            final int c = part.codePointAt(i);
-                            if (id.length() == 0 ? Character.isUnicodeIdentifierStart(c)
-                                                 : Character.isUnicodeIdentifierPart(c))
-                            {
-                                id.appendCodePoint(c);
-                            }
-                            i += Character.charCount(c);
-                        }
-                    }
-                } while ((codeSpace = !codeSpace) == false);
+        if (identifiers != null) {
+            for (final ReferenceIdentifier identifier : identifiers) {
+                appendID(id, identifier.getCodeSpace());
+                appendID(id, identifier.getCode());
                 if (id.length() != 0) {
                     /*
                      * TODO: If we want to check for ID uniqueness or any other condition before to accept the ID,
@@ -399,8 +378,30 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                     return id.toString();
                 }
             }
-        } while (it != null);
-        return null;
+        }
+        // In last ressort, append code without codespace since the name are often verbose.
+        appendID(id, name.getCode());
+        if (id.length() == 0) {
+            return null;
+        }
+        return id.toString();
+    }
+
+    /**
+     * Appends only the characters that are valid for a Unicode identifier.
+     */
+    private static void appendID(final StringBuilder buffer, final String text) {
+        if (text != null) {
+            for (int i=0; i<text.length();) {
+                final int c = text.codePointAt(i);
+                if (buffer.length() == 0 ? Character.isUnicodeIdentifierStart(c)
+                                         : Character.isUnicodeIdentifierPart(c))
+                {
+                    buffer.appendCodePoint(c);
+                }
+                i += Character.charCount(c);
+            }
+        }
     }
 
     /**
@@ -413,6 +414,45 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     @Override
     public ReferenceIdentifier getName() {
         return name;
+    }
+
+    /**
+     * Returns the {@link #name} and all aliases which are also instance of {@lik ReferenceIdentifier}.
+     * The later happen often in SIS implementation since many aliases are instance of {@link NamedIdentifier}.
+     */
+    @XmlElement(name = "name")
+    final Collection<ReferenceIdentifier> getNames() {
+        // Unconditionally creates a modifiable list because some JAXB implementations modify it.
+        final Collection<ReferenceIdentifier> names = new ArrayList<ReferenceIdentifier>(nonNull(alias).size() + 1);
+        names.add(name);
+        if (alias != null) {
+            for (final GenericName c : alias) {
+                if (c != name && (c instanceof ReferenceIdentifier)) {
+                    names.add((ReferenceIdentifier) c);
+                }
+            }
+        }
+        return names;
+    }
+
+    /**
+     * Sets the first element as the {@link #name} and all remaining elements as {@link #alias}.
+     * This method is invoked by JAXB at unmarshalling time. It should not be invoked anymore
+     * after the object has been made available to the user.
+     */
+    private void setNames(final Collection<ReferenceIdentifier> names) {
+        if (names != null) {
+            final Iterator<ReferenceIdentifier> it = names.iterator();
+            if (it.hasNext()) {
+                name = it.next();
+                if (it.hasNext()) {
+                    alias = new ArrayList<GenericName>(4); // There is generally few aliases.
+                    do {
+                        alias.add(new NamedIdentifier(it.next()));
+                    } while (it.hasNext());
+                }
+            }
+        }
     }
 
     /**
@@ -618,17 +658,17 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         switch (mode) {
             case STRICT: {
                 final AbstractIdentifiedObject that = (AbstractIdentifiedObject) object;
-                return Objects.equals(        name,                 that.name)         &&
-                       Objects.equals(nonNull(alias),       nonNull(that.alias))       &&
-                       Objects.equals(nonNull(identifiers), nonNull(that.identifiers)) &&
-                       Objects.equals(        remarks,              that.remarks);
+                return Objects.equals(name, that.name) &&
+                       nonNull(alias).equals(nonNull(that.alias)) &&
+                       nonNull(identifiers).equals(nonNull(that.identifiers)) &&
+                       Objects.equals(remarks, that.remarks);
             }
             case BY_CONTRACT: {
                 final IdentifiedObject that = (IdentifiedObject) object;
-                return deepEquals(        getName(),                 that.getName(),         mode) &&
-                       deepEquals(nonNull(getAlias()),       nonNull(that.getAlias()),       mode) &&
-                       deepEquals(nonNull(getIdentifiers()), nonNull(that.getIdentifiers()), mode) &&
-                       deepEquals(        getRemarks(),              that.getRemarks(),      mode);
+                return deepEquals(getName(),        that.getName(),        mode) &&
+                       deepEquals(getAlias(),       that.getAlias(),       mode) &&
+                       deepEquals(getIdentifiers(), that.getIdentifiers(), mode) &&
+                       deepEquals(getRemarks(),     that.getRemarks(),     mode);
             }
             case IGNORE_METADATA:
             case APPROXIMATIVE:

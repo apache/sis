@@ -16,7 +16,11 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.Map;
+import java.util.Collections;
+
 import static org.apache.sis.util.CharSequences.*;
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -36,11 +40,11 @@ import static org.apache.sis.util.CharSequences.*;
  * {@section Components or URN}
  * URN begins with {@code "urn:ogc:def:"} (formerly {@code "urn:x-ogc:def:"}) followed by:
  * <ul>
- *   <li>an <cite>object type</cite></li>
- *   <li>an <cite>authority</cite></li>
- *   <li>an optional version number (often omitted)</li>
- *   <li>the code</li>
- *   <li>an arbitrary amount of parameters</li>
+ *   <li>an object {@linkplain #type}</li>
+ *   <li>an {@linkplain #authority}</li>
+ *   <li>an optional {@linkplain #version} number (often omitted)</li>
+ *   <li>the {@linkplain #code}</li>
+ *   <li>an arbitrary amount of {@linkplain #parameters}</li>
  * </ul>
  *
  * The <cite>object type</cite> can be:
@@ -97,23 +101,130 @@ public final class URIParser {
     /**
      * The URN separator.
      */
-    private static final char SEPARATOR = ':';
+    public static final char SEPARATOR = ':';
 
     /**
-     * A URL portion of HTTP URL for Coordinate Reference System identifiers.
-     * Portion starts after the protocol part, and finishes before the authority
+     * Server and path portions of HTTP URL for various types (currently {@code "crs"}).
+     * For each URL, value starts after the protocol part and finishes before the authority filename.
+     *
+     * <p>As of Apache SIS 0.4, this map has a single entry. However more entries may be added in future SIS versions.
+     * If new entries are added, then see the TODO comment in the {@link #codeForHTTP(String, String, String, int)}
+     * method.</p>
      */
-    private static final String SRS_PATH = "//www.opengis.net/gml/srs/";
-
-    /*
-     * Current version contains only static methods. However a future version may contain
-     * some fields like 'type', 'version' and 'authority' for storing the parsing result.
-     */
+    private static final Map<String,String> PATHS = Collections.singletonMap("crs", "//www.opengis.net/gml/srs/");
 
     /**
-     * Do not allow instantiation of this class.
+     * {@code true} if the URI is a {@code "http://www.opengis.net/gml/…"} URL, or
+     * {@code false} if the URI is a {@code "urn:ogc:def:…"} URN.
+     */
+    public boolean isHTTP;
+
+    /**
+     * The type part of a URI, or {@code null} if none (empty).
+     *
+     * {@example In the <code>"urn:ogc:def:crs:EPSG:8.2:4326"</code> URN, this is <code>"crs"</code>}.
+     */
+    public String type;
+
+    /**
+     * The authority part of a URI, or {@code null} if none (empty).
+     *
+     * {@example In the <code>"urn:ogc:def:crs:EPSG:8.2:4326"</code> URN, this is <code>"EPSG"</code>}.
+     */
+    public String authority;
+
+    /**
+     * The version part of a URI, or {@code null} if none (empty).
+     *
+     * {@example In the <code>"urn:ogc:def:crs:EPSG:8.2:4326"</code> URN, this is <code>"8.2"</code>}.
+     */
+    public String version;
+
+    /**
+     * The code part of a URI, or {@code null} if none (empty).
+     *
+     * {@example In the <code>"urn:ogc:def:crs:EPSG:8.2:4326"</code> URN, this is <code>"4326"</code>}.
+     */
+    public String code;
+
+    /**
+     * The parameters, or {@code null} if none.
+     *
+     * {@example In the <code>"urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"</code> URN,
+     *           this is <code>{"1", "-100", "45"}</code>}.
+     */
+    public String[] parameters;
+
+    /**
+     * For {@link #parse(String)} usage only.
      */
     private URIParser() {
+    }
+
+    /**
+     * Parses the given URI.
+     *
+     * @param  uri The URI to parse.
+     * @return The parse result, or {@code null} if the given URI is not recognized.
+     */
+    public static URIParser parse(final String uri) {
+        ensureNonNull("uri", uri);
+        URIParser result = null;
+        int upper = -1;
+        for (int p=0; p<=6; p++) {
+            final int lower = upper + 1;
+            upper = uri.indexOf(SEPARATOR, lower);
+            if (upper < 0) {
+                if (p != 6) {
+                    return null; // No more components.
+                }
+                upper = uri.length();
+            }
+            final String require;
+            switch (p) {
+                /*
+                 * Verifies that the 3 first components are ""urn:ogc:def:" without storing them.
+                 * In the particular case of second component, we also accept "x-ogc" in addition
+                 * to "ogc". The actual verification is performed after the 'switch' case.
+                 */
+                case 0: if (regionMatches("http", uri, lower, upper)) {
+                            result = new URIParser();
+                            return codeForHTTP(null, null, uri, upper+1, result) != null ? result : null;
+                        }
+                        require = "urn";   break;
+                case 1: if (regionMatches("ogc", uri, lower, upper)) continue;
+                        require = "x-ogc"; break;
+                case 2: require = "def";   break;
+                default: {
+                    /*
+                     * For all components after the first 3 ones, trim whitespaces and store non-empty values.
+                     */
+                    String value = trimWhitespaces(uri, lower, upper).toString();
+                    if (value.isEmpty()) {
+                        value = null;
+                    }
+                    switch (p) {
+                        case 3:  result = new URIParser();
+                                 result.type      = value; break;
+                        case 4:  result.authority = value; break;
+                        case 5:  result.version   = value; break;
+                        case 6:  result.code      = value; break;
+                        default: throw new AssertionError(p);
+                    }
+                    continue;
+                }
+            }
+            if (!regionMatches(require, uri, lower, upper)) {
+                return null;
+            }
+        }
+        /*
+         * Take every remaining components as parameters.
+         */
+        if (++upper < uri.length()) {
+            result.parameters = (String[]) split(uri.substring(upper), SEPARATOR);
+        }
+        return result;
     }
 
     /**
@@ -184,13 +295,16 @@ public final class URIParser {
      *   <li>The HTTP form (e.g. {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}).</li>
      * </ul>
      *
-     * @param  type      The expected object type (e.g. {@code "crs"}). See class javadoc for a list of types.
+     * @param  type      The expected object type (e.g. {@code "crs"}) in lower cases. See class javadoc for a list of types.
      * @param  authority The expected authority, typically {@code "epsg"}. See class javadoc for a list of authorities.
      * @param  uri       The URI to parse.
      * @return The code part of the given URI, or {@code null} if the codespace does not match the given type
      *         and authority, the code is empty, or the code is followed by parameters.
      */
     public static String codeOf(final String type, final String authority, final String uri) {
+        ensureNonNull("type",      type);
+        ensureNonNull("authority", authority);
+        ensureNonNull("uri",       uri);
         /*
          * Get the part before the first ':' character. If none, assume that the given URI is already the code.
          * Otherwise the part may be either "http" or "urn" protocol, or the given authority (typically "EPSG").
@@ -219,7 +333,7 @@ public final class URIParser {
             return null;
         }
         if (length == 4) {
-            return codeForHTTP(type, authority, uri, upper+1);
+            return codeForHTTP(type, authority, uri, upper+1, null);
         }
         /*
          * At this point we have determined that the protocol is URN. The next components after "urn"
@@ -256,28 +370,64 @@ public final class URIParser {
      *   <li>{@code crs} for Coordinate Reference System objects
      *       (example: {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"})</li>
      * </ul>
+     *
+     * @param type      The expected type in lower cases, or {@code null} for any.
+     * @param authority The expected authority, or {@code null} for any.
+     * @param url       The URL to parse.
+     * @param result    If non-null, store the type, authority and code in that object.
      */
-    private static String codeForHTTP(final String type, final String authority, final String url, int lower) {
-        if (type.equals("crs")) {
-            if (url.regionMatches(true, lower, SRS_PATH, 0, SRS_PATH.length())) {
-                lower += SRS_PATH.length();
-                if (url.regionMatches(true, lower, authority, 0, authority.length())) {
-                    lower += authority.length();
-                    int upper = url.length();
-                    if (lower < upper && url.charAt(lower) == '.') {
-                        // Ignore the extension (typically ".xml", but we accept anything).
-                        if ((lower = url.indexOf('#', lower+1)) >= 0) {
-                            lower = skipLeadingWhitespaces(url, lower+1, upper);
-                            upper = skipTrailingWhitespaces(url, lower, upper);
-                            if (lower < upper) {
-                                return url.substring(lower, upper);
-                            }
+    private static String codeForHTTP(final String type, String authority, final String url, int lower,
+            final URIParser result)
+    {
+        Map<String, String> paths = PATHS;
+        if (type != null) {
+            final String path = paths.get(type);
+            if (path == null) {
+                return null;
+            }
+            // TODO: For now do nothing since PATHS is a singleton. However if a future SIS version
+            //       defines more PATHS entries, then we should replace here the 'paths' reference by
+            //       a new Collection.singletonMap containing only the entry of interest.
+        }
+        for (final Map.Entry<String,String> entry : paths.entrySet()) {
+            final String path = entry.getValue();
+            if (url.regionMatches(true, lower, path, 0, path.length())) {
+                lower += path.length();
+                if (authority == null) {
+                    authority = url.substring(lower, skipIdentifierPart(url, lower));
+                } else if (!url.regionMatches(true, lower, authority, 0, authority.length())) {
+                    continue;
+                }
+                lower += authority.length();
+                int upper = url.length();
+                if (lower < upper && url.charAt(lower) == '.') {
+                    // Ignore the extension (typically ".xml", but we accept anything).
+                    if ((lower = url.indexOf('#', lower+1)) >= 0) {
+                        final String code = trimWhitespaces(url, lower+1, upper).toString();
+                        if (result != null) {
+                            result.isHTTP    = true;
+                            result.type      = entry.getKey();
+                            result.authority = authority;
+                            result.code      = code;
                         }
+                        return code;
                     }
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the index after the last identifier character.
+     */
+    private static int skipIdentifierPart(final String text, int i) {
+        while (i < text.length()) {
+            final int c = text.codePointAt(i);
+            if (!Character.isUnicodeIdentifierPart(c)) break;
+            i += Character.charCount(c);
+        }
+        return i;
     }
 
     /**
@@ -319,16 +469,61 @@ public final class URIParser {
                             if (c == '\'' || c == '"') {
                                 final int s = url.indexOf(c, ++i);
                                 if (s >= 0) {
-                                    return (String) trimWhitespaces(url, i, s);
+                                    return trimWhitespaces(url, i, s).toString();
                                 }
                             }
                         }
                     } else {
-                        return (String) trimWhitespaces(url, f+1, url.length());
+                        return trimWhitespaces(url, f+1, url.length()).toString();
                     }
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a URN representation of this URI.
+     *
+     * @return A URN representation of this URI.
+     */
+    public String toURN() {
+        final StringBuilder buffer = new StringBuilder("urn:ogc:def");
+        int n = 4;
+        if (parameters != null) {
+            n += parameters.length;
+        }
+        for (int p=0; p<n; p++) {
+            String component;
+            switch (p) {
+                case 0:  component = type;            break;
+                case 1:  component = authority;       break;
+                case 2:  component = version;         break;
+                case 3:  component = code;            break;
+                default: component = parameters[p-4]; break;
+            }
+            buffer.append(SEPARATOR);
+            if (component != null) {
+                buffer.append(component);
+            }
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Returns a string representation of this URI. If the URI were originally a HTTP URL,
+     * then this method format the URI as such. Otherwise this method returns {@link #toURN()}.
+     *
+     * @return The string representation of this URI.
+     */
+    @Override
+    public String toString() {
+        if (isHTTP) {
+            final String path = PATHS.get(type);
+            if (path != null) {
+                return "http:" + path + authority + ".xml#" + code;
+            }
+        }
+        return toURN();
     }
 }

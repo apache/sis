@@ -45,6 +45,8 @@ public final class MD_RangeDimension extends PropertyType<MD_RangeDimension, Ran
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code RangeDimension.class}
      */
     @Override
     protected Class<RangeDimension> getBoundType() {
@@ -79,7 +81,6 @@ public final class MD_RangeDimension extends PropertyType<MD_RangeDimension, Ran
      */
     @XmlElementRef
     public DefaultRangeDimension getElement() {
-        if (skip()) return null;
         final RangeDimension metadata = this.metadata;
         if (metadata instanceof Band) {
             return MI_Band.castOrCopy((Band) metadata);

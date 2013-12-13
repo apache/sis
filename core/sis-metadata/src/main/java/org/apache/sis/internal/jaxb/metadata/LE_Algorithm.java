@@ -44,6 +44,8 @@ public final class LE_Algorithm extends PropertyType<LE_Algorithm, Algorithm> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Algorithm.class}
      */
     @Override
     protected Class<Algorithm> getBoundType() {
@@ -78,7 +80,7 @@ public final class LE_Algorithm extends PropertyType<LE_Algorithm, Algorithm> {
      */
     @XmlElementRef
     public DefaultAlgorithm getElement() {
-        return skip() ? null : DefaultAlgorithm.castOrCopy(metadata);
+        return DefaultAlgorithm.castOrCopy(metadata);
     }
 
     /**

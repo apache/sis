@@ -43,6 +43,8 @@ public final class EX_TemporalExtent extends PropertyType<EX_TemporalExtent, Tem
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code TemporalExtent.class}
      */
     @Override
     protected Class<TemporalExtent> getBoundType() {
@@ -77,7 +79,7 @@ public final class EX_TemporalExtent extends PropertyType<EX_TemporalExtent, Tem
      */
     @XmlElementRef
     public DefaultTemporalExtent getElement() {
-        return skip() ? null : DefaultTemporalExtent.castOrCopy(metadata);
+        return DefaultTemporalExtent.castOrCopy(metadata);
     }
 
     /**

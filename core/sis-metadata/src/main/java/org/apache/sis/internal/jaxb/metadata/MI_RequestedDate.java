@@ -43,6 +43,8 @@ public final class MI_RequestedDate extends PropertyType<MI_RequestedDate, Reque
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code RequestedDate.class}
      */
     @Override
     protected Class<RequestedDate> getBoundType() {
@@ -77,7 +79,7 @@ public final class MI_RequestedDate extends PropertyType<MI_RequestedDate, Reque
      */
     @XmlElementRef
     public DefaultRequestedDate getElement() {
-        return skip() ? null : DefaultRequestedDate.castOrCopy(metadata);
+        return DefaultRequestedDate.castOrCopy(metadata);
     }
 
     /**

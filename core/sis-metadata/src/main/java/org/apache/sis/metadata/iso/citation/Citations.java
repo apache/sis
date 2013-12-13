@@ -58,6 +58,17 @@ public final class Citations extends Static {
     public static final Citation OGC = new SimpleCitation("OGC");
 
     /**
+     * The <a href="http://www.ogp.org.uk">International Association of Oil & Gas Producers</a> organization.
+     * This organization is responsible for maintainance of {@link #EPSG} database.
+     *
+     * @see #EPSG
+     * @category Organization
+     *
+     * @since 0.4
+     */
+    public static final Citation OGP = new SimpleCitation("OGP");
+
+    /**
      * The <a href="http://sis.apache.org">Apache SIS</a> project.
      *
      * @since 0.4
@@ -121,6 +132,7 @@ public final class Citations extends Static {
      * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system}
      * identifiers.
      *
+     * @see #OGP
      * @see #AUTO
      * @see #AUTO2
      * @see #CRS
@@ -157,7 +169,7 @@ public final class Citations extends Static {
      * List of citations declared in this class.
      */
     private static final Citation[] AUTHORITIES = {
-        ISO, OGC, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, EPSG, ISBN, ISSN
+        ISO, OGC, OGP, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, EPSG, ISBN, ISSN
     };
 
     /**

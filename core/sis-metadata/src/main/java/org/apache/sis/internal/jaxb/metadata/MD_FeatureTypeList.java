@@ -43,6 +43,8 @@ public final class MD_FeatureTypeList extends PropertyType<MD_FeatureTypeList, F
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code FeatureTypeList.class}
      */
     @Override
     protected Class<FeatureTypeList> getBoundType() {
@@ -77,7 +79,7 @@ public final class MD_FeatureTypeList extends PropertyType<MD_FeatureTypeList, F
      */
     @XmlElementRef
     public DefaultFeatureTypeList getElement() {
-        return skip() ? null : DefaultFeatureTypeList.castOrCopy(metadata);
+        return DefaultFeatureTypeList.castOrCopy(metadata);
     }
 
     /**

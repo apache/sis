@@ -43,6 +43,8 @@ public final class DQ_Scope extends PropertyType<DQ_Scope, Scope> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Scope.class}
      */
     @Override
     protected Class<Scope> getBoundType() {
@@ -77,7 +79,7 @@ public final class DQ_Scope extends PropertyType<DQ_Scope, Scope> {
      */
     @XmlElementRef
     public DefaultScope getElement() {
-        return skip() ? null : DefaultScope.castOrCopy(metadata);
+        return DefaultScope.castOrCopy(metadata);
     }
 
     /**

@@ -24,12 +24,13 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
 
 /**
  * The <code>@scmUrl</code> tag for inserting a URL to a file in the source code repository.
- * This tag shall contain a keyword, for example <code>{@scmUrl gmd-data}</code>.
+ * This tag shall contain a keyword, for example <code>{@scmUrl metadata}</code>.
  * Valid keywords are:
  *
  * <table class="sis>
- *   <tr><th>Keyword</th>   <th>path</th></tr>
- *   <tr><td>gmd-data</td>  <td>core/sis-metadata/src/test/resources/org/apache/sis/xml</td></tr>
+ *   <tr><th>Keyword</th>     <th>path</th></tr>
+ *   <tr><td>metadata</td>    <td>core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso</td></tr>
+ *   <tr><td>referencing</td> <td>core/sis-referencing/src/test/resources/org/apache/sis/referencing</td></tr>
  * </table>
  *
  * The URL never contain trailing <code>'/'</code> character.
@@ -78,8 +79,11 @@ public final class SourceRepositoryURL extends InlineTaglet {
         final StringBuilder url = new StringBuilder("http://svn.apache.org/repos/asf/sis/branches/JDK6");
         final String keyword = tag.text();
         /* switch (keyword) */ {
-            if (keyword.equals("gmd-data")) {
-                url.append("/core/sis-metadata/src/test/resources/org/apache/sis/xml");
+            if (keyword.equals("metadata")) {
+                url.append("/core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso");
+            }
+            else if (keyword.equals("referencing")) {
+                url.append("/core/sis-referencing/src/test/resources/org/apache/sis/referencing");
             }
             else {
                 ConfigurationImpl.getInstance().root.printWarning(tag.position(), "Unknown keyword: " + keyword);

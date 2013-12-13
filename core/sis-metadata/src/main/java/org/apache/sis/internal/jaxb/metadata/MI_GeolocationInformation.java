@@ -45,6 +45,8 @@ public final class MI_GeolocationInformation extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code GeolocationInformation.class}
      */
     @Override
     protected Class<GeolocationInformation> getBoundType() {
@@ -79,7 +81,7 @@ public final class MI_GeolocationInformation extends
      */
     @XmlElementRef
     public AbstractGeolocationInformation getElement() {
-        return skip() ? null : AbstractGeolocationInformation.castOrCopy(metadata);
+        return AbstractGeolocationInformation.castOrCopy(metadata);
     }
 
     /**

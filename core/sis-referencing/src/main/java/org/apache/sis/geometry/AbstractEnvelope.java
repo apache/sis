@@ -33,6 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -111,7 +112,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @version 0.3
  * @module
  */
-public abstract class AbstractEnvelope implements Envelope {
+public abstract class AbstractEnvelope implements Envelope, Emptiable {
     /**
      * An empty array of envelopes, to be returned by {@link #toSimpleEnvelopes()}
      * when en envelope is empty.
@@ -624,6 +625,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#isEmpty()
      * @see java.awt.geom.Rectangle2D#isEmpty()
      */
+    @Override
     public boolean isEmpty() {
         final int dimension = getDimension();
         if (dimension == 0) {

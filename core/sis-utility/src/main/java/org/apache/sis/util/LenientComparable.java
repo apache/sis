@@ -18,7 +18,7 @@ package org.apache.sis.util;
 
 
 /**
- * Indicates that this object can be compared for equality using different levels of strictness.
+ * Interfaces of classes for which instances can be compared for equality using different levels of strictness.
  * For example {@link org.opengis.referencing.operation.MathTransform} implementations can be
  * compared ignoring some properties (remarks, <i>etc.</i>) that are not relevant to the
  * coordinates calculation.

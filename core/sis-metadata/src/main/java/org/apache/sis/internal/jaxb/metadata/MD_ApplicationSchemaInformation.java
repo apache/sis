@@ -45,6 +45,8 @@ public final class MD_ApplicationSchemaInformation extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code ApplicationSchemaInformation.class}
      */
     @Override
     protected Class<ApplicationSchemaInformation> getBoundType() {
@@ -79,7 +81,7 @@ public final class MD_ApplicationSchemaInformation extends
      */
     @XmlElementRef
     public DefaultApplicationSchemaInformation getElement() {
-        return skip() ? null : DefaultApplicationSchemaInformation.castOrCopy(metadata);
+        return DefaultApplicationSchemaInformation.castOrCopy(metadata);
     }
 
     /**
