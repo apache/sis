@@ -27,6 +27,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.referencing.CRS;
 
 import static java.lang.Double.NaN;
@@ -106,7 +107,7 @@ import java.util.Objects;
  * @see GeneralEnvelope
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
  */
-public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneable {
+public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiable, Cloneable {
     /**
      * Serial number for inter-operability with different versions.
      */

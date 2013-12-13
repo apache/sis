@@ -61,6 +61,8 @@ public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable
 
     /**
      * Returns {@code true} since this set is always empty.
+     *
+     * @return {@code true}
      */
     @Override
     public boolean isEmpty() {
@@ -69,6 +71,8 @@ public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable
 
     /**
      * Returns {@code 0} since this set is always empty.
+     *
+     * @return 0
      */
     @Override
     public int size() {
@@ -77,6 +81,8 @@ public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable
 
     /**
      * Returns the empty iterator.
+     *
+     * @return Empty iterator.
      */
     @Override
     public Iterator<E> iterator() {
@@ -86,6 +92,9 @@ public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable
     /**
      * Unconditionally throws a {@link UnsupportedOperationException} with a message
      * saying which properties are mutually exclusive.
+     *
+     * @param  e Ignored.
+     * @return Never return.
      */
     @Override
     public boolean add(final E e) {

@@ -19,6 +19,7 @@ package org.apache.sis.xml;
 import java.util.UUID;
 import java.lang.reflect.Proxy;
 import org.opengis.metadata.Identifier;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
@@ -38,7 +39,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public class ReferenceResolver {
@@ -130,9 +131,13 @@ public class ReferenceResolver {
      * SIS can not know if the metadata shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
-     * <p>The default implementation conservatively returns {@code false} in every cases except for instances of
-     * {@link NilObject}, since the later exist only for carrying the {@code gco} and {@code xlink} attributes.
-     * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.</p>
+     * <p>The default implementation returns {@code true} in the following cases:</p>
+     * <ul>
+     *   <li>If {@code object} implements {@link NilObject}.</li>
+     *   <li>If {@code object} implements {@link Emptiable} and its {@code isEmpty()} method returns {@code true}.</li>
+     * </ul>
+     *
+     * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
@@ -144,7 +149,7 @@ public class ReferenceResolver {
      *         instead than marshalling the given metadata.
      */
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
-        return (object instanceof NilObject);
+        return (object instanceof NilObject) || (object instanceof Emptiable && ((Emptiable) object).isEmpty());
     }
 
     /**
@@ -154,9 +159,13 @@ public class ReferenceResolver {
      * SIS can not know if the metadata shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
-     * <p>The default implementation conservatively returns {@code false} in every cases except for instances of
-     * {@link NilObject}, since the later exist only for carrying the {@code gco} and {@code xlink} attributes.
-     * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.</p>
+     * <p>The default implementation returns {@code true} in the following cases:</p>
+     * <ul>
+     *   <li>If {@code object} implements {@link NilObject}.</li>
+     *   <li>If {@code object} implements {@link Emptiable} and its {@code isEmpty()} method returns {@code true}.</li>
+     * </ul>
+     *
+     * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
@@ -168,7 +177,7 @@ public class ReferenceResolver {
      *         instead than marshalling the given metadata.
      */
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final XLink link) {
-        return (object instanceof NilObject);
+        return (object instanceof NilObject) || (object instanceof Emptiable && ((Emptiable) object).isEmpty());
     }
 
     /**
