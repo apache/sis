@@ -493,7 +493,7 @@ public enum GeodeticObjects {
         /**
          * The resource keys for the name as one of the {@code Vocabulary.Keys} constants.
          */
-        private final int key;
+        private final short key;
 
         /**
          * The cached object. This is initially {@code null}, then set to various kind of objects depending
@@ -509,7 +509,7 @@ public enum GeodeticObjects {
          *        early class initialization. In particular, we do not want early dependency to the SIS-specific
          *        <code>VerticalDatumTypes.ELLIPSOIDAL</code> constant.}
          */
-        private Vertical(final int name) {
+        private Vertical(final short name) {
             this.key = name;
         }
 
@@ -637,7 +637,7 @@ public enum GeodeticObjects {
         /**
          * The resource keys for the name as one of the {@code Vocabulary.Keys} constants.
          */
-        private final int key;
+        private final short key;
 
         /**
          * The date and time origin of this temporal datum.
@@ -654,7 +654,7 @@ public enum GeodeticObjects {
         /**
          * Creates a new enumeration value of the given name with time counted since the given epoch.
          */
-        private Temporal(final int name, final long epoch) {
+        private Temporal(final short name, final long epoch) {
             this.key   = name;
             this.epoch = epoch;
         }

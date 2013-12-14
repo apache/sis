@@ -76,7 +76,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     /**
      * The Java modifiers applies on the key constants to be generated.
      */
-    private static final String KEY_MODIFIERS = "public static final int ";
+    private static final String KEY_MODIFIERS = "public static final short ";
 
     /**
      * Margin to write before the {@link #KEY_MODIFIERS}.

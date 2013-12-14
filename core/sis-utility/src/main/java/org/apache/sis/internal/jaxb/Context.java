@@ -420,7 +420,7 @@ public final class Context extends MarshalContext {
      * @param arguments The arguments to be given to {@code MessageFormat} for formatting the log message.
      */
     public static void warningOccured(final Context context, final Object source, final Class<?> classe, final String method,
-            final Class<? extends IndexedResourceBundle> resources, final int key, final Object... arguments)
+            final Class<? extends IndexedResourceBundle> resources, final short key, final Object... arguments)
     {
         final Locale locale = context != null ? context.getLocale() : null;
         final IndexedResourceBundle bundle;

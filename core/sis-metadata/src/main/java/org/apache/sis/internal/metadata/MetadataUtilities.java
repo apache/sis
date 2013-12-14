@@ -104,7 +104,7 @@ public final class MetadataUtilities extends Static {
      * @param  key       The key from the message resource bundle to use for creating a message.
      * @param  arguments The arguments to be used together with the key for building the message.
      */
-    public static void warning(final Class<?> caller, final String method, final int key, final Object... arguments) {
+    public static void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
         final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, key, arguments);
         record.setSourceClassName(caller.getCanonicalName());
         record.setSourceMethodName(method);
