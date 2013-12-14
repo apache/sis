@@ -76,7 +76,7 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
     @Test
     public void testMarshall() throws JAXBException {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
-        assertXmlEquals(getGreenwichXml(Namespaces.GML), marshal(pm), "xmlns:*", "xsi:schemaLocation");
+        assertXmlEquals(getGreenwichXml(Namespaces.GML), marshal(pm), "xmlns:*");
     }
 
     /**
@@ -147,6 +147,6 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
                 "  <gml:remarks>Equivalent to 2°20′14.025″.</gml:remarks>\n" +
                 "  <gml:greenwichLongitude uom=\"urn:ogc:def:uom:EPSG::9105\">2.5969213</gml:greenwichLongitude>\n" +
                 "</gml:PrimeMeridian>\n",
-                marshal(pm), "xmlns:*", "xsi:schemaLocation");
+                marshal(pm), "xmlns:*");
     }
 }
