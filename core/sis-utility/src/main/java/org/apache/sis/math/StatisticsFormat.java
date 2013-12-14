@@ -124,6 +124,8 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
 
     /**
      * Returns the kind of objects formatted by this class.
+     *
+     * @return {@code Statistics.class}
      */
     @Override
     public Class<Statistics> getValueType() {
@@ -186,6 +188,9 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
 
     /**
      * Not yet implemented.
+     *
+     * @return Currently never return.
+     * @throws ParseException Currently never thrown.
      */
     @Override
     public Statistics parse(CharSequence text, ParsePosition pos) throws ParseException {
@@ -357,7 +362,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * switch statements inside the {@link #format(Statistics[], Appendable)} method
      * (we define this static field close to the format methods for this purpose).
      */
-    private static final int[] KEYS = {
+    private static final short[] KEYS = {
         Vocabulary.Keys.NumberOfValues,
         Vocabulary.Keys.NumberOfNaN,
         Vocabulary.Keys.MinimumValue,

@@ -25,7 +25,6 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractInternationalString;
 
 // Related to JDK7
@@ -39,7 +38,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @Immutable
@@ -47,14 +46,19 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3910920973710535738L;
+    private static final long serialVersionUID = -3910920973710535739L;
 
     /**
-     * The key for the resource to fetch. A negative value means that the resource takes no
-     * argument, in which case the {@link #arguments} field shall be ignored. Negative key
-     * values are converted to positive values using the {@code ~} operator.
+     * The key for the resource to fetch.
      */
-    private transient int key;
+    private transient short key;
+
+    /**
+     * {@code true} if the key has arguments. If {@code false}, then the {@link #arguments}
+     * field shall be ignored. We can not rely on {@code null} arguments value because null
+     * may be a valid value.
+     */
+    private final boolean hasArguments;
 
     /**
      * The argument(s), or {@code null} if none. Note that the user may also really want to
@@ -68,10 +72,10 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      *
      * @param key The key for the resource to fetch.
      */
-    ResourceInternationalString(final int key) {
-        ArgumentChecks.ensurePositive("key", key);
-        this.key  = ~key;
-        arguments = null;
+    ResourceInternationalString(final short key) {
+        this.key     = key;
+        hasArguments = false;
+        arguments    = null;
     }
 
     /**
@@ -80,10 +84,10 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      * @param key The key for the resource to fetch.
      * @param The argument(s).
      */
-    ResourceInternationalString(final int key, final Object arguments) {
-        ArgumentChecks.ensurePositive("key", key);
-        this.key = key;
-        this.arguments = arguments;
+    ResourceInternationalString(final short key, final Object arguments) {
+        this.key          = key;
+        this.hasArguments = true;
+        this.arguments    = arguments;
     }
 
     /**
@@ -111,10 +115,9 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      * @throws MissingResourceException is the key given to the constructor is invalid.
      */
     @Override
-    public String toString(final Locale locale) throws MissingResourceException {
+    public final String toString(final Locale locale) throws MissingResourceException {
         final IndexedResourceBundle resources = getBundle(locale);
-        return (key < 0) ? resources.getString(~key)
-                         : resources.getString(key, arguments);
+        return hasArguments ? resources.getString(key, arguments) : resources.getString(key);
     }
 
     /**
@@ -124,12 +127,12 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      * @return {@code true} if the given object is equal to this string.
      */
     @Override
-    public boolean equals(final Object object) {
-        if (object != null && object.getClass() == getClass()) {
-            final ResourceInternationalString that = (ResourceInternationalString) object;
-            return this.key == that.key && Objects.equals(this.arguments, that.arguments);
+    public final boolean equals(final Object object) {
+        if (object == null || object.getClass() != getClass()) {
+            return false;
         }
-        return false;
+        final ResourceInternationalString that = (ResourceInternationalString) object;
+        return (key == that.key) && (hasArguments == that.hasArguments) && Objects.equals(arguments, that.arguments);
     }
 
     /**
@@ -138,7 +141,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      * @return A hash code value for this international text.
      */
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return getClass().hashCode() ^ (key + 31*Utilities.deepHashCode(arguments)) ^ (int) serialVersionUID;
     }
 
@@ -147,8 +150,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
-        out.writeUTF(getKeyConstants().getKeyName(key >= 0 ? key : ~key));
-        out.writeBoolean(key < 0);
+        out.writeUTF(getKeyConstants().getKeyName(key));
     }
 
     /**
@@ -162,9 +164,6 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
             InvalidObjectException e = new InvalidObjectException(cause.toString());
             e.initCause(cause);
             throw e;
-        }
-        if (in.readBoolean()) {
-            key = ~key;
         }
     }
 }

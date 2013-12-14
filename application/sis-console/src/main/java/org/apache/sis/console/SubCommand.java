@@ -264,7 +264,8 @@ abstract class SubCommand {
      */
     final boolean hasUnexpectedFileCount(final int min, final int max) {
         final int size = files.size();
-        final int expected, key;
+        final int expected;
+        final short key;
         if (size < min) {
             expected = min;
             key = Errors.Keys.TooFewArguments_2;

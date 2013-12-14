@@ -30,7 +30,7 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 class KeyConstants {
@@ -44,7 +44,7 @@ class KeyConstants {
      * inner class in some occasions.
      *
      * @see #getKeyNames()
-     * @see #getKeyName(int)
+     * @see #getKeyName(short)
      */
     private transient String[] keys;
 
@@ -76,8 +76,8 @@ class KeyConstants {
                 final Field[] fields = keysClass.getFields();
                 names = new String[fields.length];
                 for (final Field field : fields) {
-                    if (Modifier.isStatic(field.getModifiers()) && field.getType() == Integer.TYPE) {
-                        final int index = (Integer) field.get(null);
+                    if (Modifier.isStatic(field.getModifiers()) && field.getType() == Short.TYPE) {
+                        final int index = ((Short) field.get(null)) & 0xFFFF;
                         if (index >= length) {
                             length = index + 1;
                             if (length > names.length) {
@@ -88,7 +88,7 @@ class KeyConstants {
                         names[index] = field.getName();
                     }
                 }
-            } catch (ReflectiveOperationException e) {
+            } catch (IllegalAccessException e) {
                 names = CharSequences.EMPTY_ARRAY;
             }
             keys = ArraysExt.resize(names, length);
@@ -101,10 +101,11 @@ class KeyConstants {
      * index, format the index as a decimal number. Those decimal numbers are parsed by
      * our {@link IndexedResourceBundle#handleGetObject(String)} implementation.
      */
-    final String getKeyName(final int index) {
+    final String getKeyName(final short index) {
+        final int i = index & 0xFFFF;
         final String[] keys = getKeyNames();
-        if (index < keys.length) {
-            final String key = keys[index];
+        if (i < keys.length) {
+            final String key = keys[i];
             if (key != null) {
                 return key;
             }
@@ -115,7 +116,7 @@ class KeyConstants {
     /**
      * Returns the numerical value for the key of the given name.
      */
-    final int getKeyValue(final String name) throws NoSuchFieldException, IllegalAccessException {
-        return (Integer) keysClass.getField(name).get(null);
+    final short getKeyValue(final String name) throws NoSuchFieldException, IllegalAccessException {
+        return (Short) keysClass.getField(name).get(null);
     }
 }

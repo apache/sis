@@ -682,7 +682,7 @@ public final class MathFunctions extends Static {
         if (ordinal >= MIN_NAN_ORDINAL && ordinal <= MAX_NAN_ORDINAL) {
             return ordinal;
         }
-        final int resourceKey;
+        final short resourceKey;
         final Object obj;
         if (Float.isNaN(value)) {
             resourceKey = Errors.Keys.IllegalBitsPattern_1;
