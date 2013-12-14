@@ -274,6 +274,8 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
 
     /**
      * Returns a deep copy of this position.
+     *
+     * @return A copy of this direct position.
      */
     @Override
     public GeneralDirectPosition clone() {

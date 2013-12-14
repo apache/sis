@@ -45,6 +45,8 @@ public final class MD_DigitalTransferOptions extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code DigitalTransferOptions.class}
      */
     @Override
     protected Class<DigitalTransferOptions> getBoundType() {
@@ -79,7 +81,7 @@ public final class MD_DigitalTransferOptions extends
      */
     @XmlElementRef
     public DefaultDigitalTransferOptions getElement() {
-        return skip() ? null : DefaultDigitalTransferOptions.castOrCopy(metadata);
+        return DefaultDigitalTransferOptions.castOrCopy(metadata);
     }
 
     /**

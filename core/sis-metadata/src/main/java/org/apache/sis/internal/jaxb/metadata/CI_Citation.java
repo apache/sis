@@ -43,6 +43,8 @@ public final class CI_Citation extends PropertyType<CI_Citation, Citation> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Citation.class}
      */
     @Override
     protected Class<Citation> getBoundType() {
@@ -77,7 +79,7 @@ public final class CI_Citation extends PropertyType<CI_Citation, Citation> {
      */
     @XmlElementRef
     public DefaultCitation getElement() {
-        return skip() ? null : DefaultCitation.castOrCopy(metadata);
+        return DefaultCitation.castOrCopy(metadata);
     }
 
     /**

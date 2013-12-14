@@ -43,6 +43,8 @@ public final class DQ_DataQuality extends PropertyType<DQ_DataQuality, DataQuali
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code DataQuality.class}
      */
     @Override
     protected Class<DataQuality> getBoundType() {
@@ -77,7 +79,7 @@ public final class DQ_DataQuality extends PropertyType<DQ_DataQuality, DataQuali
      */
     @XmlElementRef
     public DefaultDataQuality getElement() {
-        return skip() ? null : DefaultDataQuality.castOrCopy(metadata);
+        return DefaultDataQuality.castOrCopy(metadata);
     }
 
     /**

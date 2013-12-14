@@ -59,6 +59,8 @@ public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType>
 
     /**
      * Returns the GeoAPI interface which is bound by this adapter.
+     *
+     * @return {@code RecordType.class}
      */
     @Override
     protected Class<RecordType> getBoundType() {
@@ -73,7 +75,7 @@ public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType>
      */
     @XmlElement(name = "RecordType")
     public DefaultRecordType getElement() {
-        return skip() ? null : DefaultRecordType.castOrCopy(metadata);
+        return DefaultRecordType.castOrCopy(metadata);
     }
 
     /**

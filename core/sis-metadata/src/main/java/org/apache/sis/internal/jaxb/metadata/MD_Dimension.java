@@ -43,6 +43,8 @@ public final class MD_Dimension extends PropertyType<MD_Dimension, Dimension> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Dimension.class}
      */
     @Override
     protected Class<Dimension> getBoundType() {
@@ -77,7 +79,7 @@ public final class MD_Dimension extends PropertyType<MD_Dimension, Dimension> {
      */
     @XmlElementRef
     public DefaultDimension getElement() {
-        return skip() ? null : DefaultDimension.castOrCopy(metadata);
+        return DefaultDimension.castOrCopy(metadata);
     }
 
     /**

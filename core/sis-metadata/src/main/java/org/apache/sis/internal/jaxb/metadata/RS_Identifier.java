@@ -48,6 +48,8 @@ public final class RS_Identifier extends PropertyType<RS_Identifier, ReferenceId
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code ReferenceIdentifier.class}
      */
     @Override
     protected Class<ReferenceIdentifier> getBoundType() {
@@ -82,9 +84,10 @@ public final class RS_Identifier extends PropertyType<RS_Identifier, ReferenceId
      */
     @XmlElementRef
     public ImmutableIdentifier getElement() {
-        if (skip()) return null;
         final ReferenceIdentifier metadata = this.metadata;
-        if (metadata instanceof ImmutableIdentifier) {
+        if (metadata == null) {
+            return null;
+        } else if (metadata instanceof ImmutableIdentifier) {
             return (ImmutableIdentifier) metadata;
         } else {
             return new ImmutableIdentifier(metadata);

@@ -43,6 +43,8 @@ public final class MD_Identification extends PropertyType<MD_Identification, Ide
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Identification.class}
      */
     @Override
     protected Class<Identification> getBoundType() {
@@ -77,7 +79,7 @@ public final class MD_Identification extends PropertyType<MD_Identification, Ide
      */
     @XmlElementRef
     public AbstractIdentification getElement() {
-        return skip() ? null : AbstractIdentification.castOrCopy(metadata);
+        return AbstractIdentification.castOrCopy(metadata);
     }
 
     /**

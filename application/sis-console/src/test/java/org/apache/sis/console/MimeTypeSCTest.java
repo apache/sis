@@ -17,7 +17,7 @@
 package org.apache.sis.console;
 
 import java.net.URL;
-import org.apache.sis.xml.MetadataMarshallingTest;
+import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -42,11 +42,11 @@ public final strictfp class MimeTypeSCTest extends TestCase {
      */
     @Test
     public void testWithMetadataXML() throws Exception {
-        final URL url = MetadataMarshallingTest.class.getResource("Extent.xml");
+        final URL url = DefaultExtentTest.getResource("Extent.xml");
         assertNotNull("Extent.xml", url);
         final MimeTypeSC test = new MimeTypeSC(0, SubCommand.TEST, url.toString());
         test.run();
         final String output = test.outputBuffer.toString().trim();
-        assertTrue(output, output.endsWith("org/apache/sis/xml/Extent.xml: application/vnd.iso.19139+xml"));
+        assertTrue(output, output.endsWith("org/apache/sis/metadata/iso/extent/Extent.xml: application/vnd.iso.19139+xml"));
     }
 }

@@ -43,6 +43,8 @@ public final class MI_Operation extends PropertyType<MI_Operation, Operation> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Operation.class}
      */
     @Override
     protected Class<Operation> getBoundType() {
@@ -77,7 +79,7 @@ public final class MI_Operation extends PropertyType<MI_Operation, Operation> {
      */
     @XmlElementRef
     public DefaultOperation getElement() {
-        return skip() ? null : DefaultOperation.castOrCopy(metadata);
+        return DefaultOperation.castOrCopy(metadata);
     }
 
     /**

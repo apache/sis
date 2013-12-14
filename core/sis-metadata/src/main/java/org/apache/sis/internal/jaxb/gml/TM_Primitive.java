@@ -23,7 +23,6 @@ import org.apache.sis.internal.geoapi.temporal.Instant;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.XmlUtilities;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.util.resources.Errors;
@@ -77,17 +76,6 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
     }
 
     /**
-     * Returns {@code true} if the user asked to format a GML 3.2 document, or {@code false} for GML 3.1 or older.
-     * The only difference managed by this class is the namespace.
-     *
-     * <p>This method will be removed in a future SIS version if we find a better way to support evolution
-     * of GML schemas.</p>
-     */
-    private static boolean isGML32() {
-        return Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2);
-    }
-
-    /**
      * Returns the {@code TimePeriod} generated from the metadata value.
      * This method is systematically called at marshalling-time by JAXB.
      *
@@ -95,13 +83,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      */
     @XmlElement(name = "TimePeriod")
     public TimePeriod getTimePeriod() {
-        if (!skip() && isGML32()) {
-            final TemporalPrimitive metadata = this.metadata;
-            if (metadata instanceof Period) {
-                return new TimePeriod((Period) metadata);
-            }
-        }
-        return null;
+        final TemporalPrimitive metadata = this.metadata;
+        return (metadata instanceof Period) ? new TimePeriod((Period) metadata) : null;
     }
 
     /**
@@ -112,13 +95,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      */
     @XmlElement(name = "TimeInstant")
     public TimeInstant getTimeInstant() {
-        if (!skip() && isGML32()) {
-            final TemporalPrimitive metadata = this.metadata;
-            if (metadata instanceof Instant) {
-                return new TimeInstant((Instant) metadata);
-            }
-        }
-        return null;
+        final TemporalPrimitive metadata = this.metadata;
+        return (metadata instanceof Instant) ? new TimeInstant((Instant) metadata) : null;
     }
 
     /**

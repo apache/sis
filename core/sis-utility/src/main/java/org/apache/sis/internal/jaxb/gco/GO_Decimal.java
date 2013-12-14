@@ -58,6 +58,8 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
 
     /**
      * Returns the Java type which is bound by this adapter.
+     *
+     * @return {@code Double.class}
      */
     @Override
     protected Class<Double> getBoundType() {
@@ -84,7 +86,7 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
      */
     @XmlElement(name = "Decimal")
     public Double getElement() {
-        return skip() ? null : metadata;
+        return metadata;
     }
 
     /**

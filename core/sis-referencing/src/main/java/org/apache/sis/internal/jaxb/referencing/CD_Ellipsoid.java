@@ -79,7 +79,7 @@ public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
      */
     @XmlElement(name = "Ellipsoid")
     public DefaultEllipsoid getElement() {
-        return skip() ? null : DefaultEllipsoid.castOrCopy(metadata);
+        return DefaultEllipsoid.castOrCopy(metadata);
     }
 
     /**

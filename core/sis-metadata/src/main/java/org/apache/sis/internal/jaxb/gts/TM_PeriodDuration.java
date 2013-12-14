@@ -87,7 +87,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      */
     @XmlElement(name = "TM_PeriodDuration")
     public Duration getElement() {
-        if (!skip() && metadata instanceof org.apache.sis.internal.geoapi.temporal.PeriodDuration) try {
+        if (metadata instanceof org.apache.sis.internal.geoapi.temporal.PeriodDuration) try {
             /*
              * Get the DatatypeFactory first because if not available, then we don't need to parse
              * the calendar fields. This has the side effect of not validating the calendar fields
