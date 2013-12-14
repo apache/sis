@@ -326,7 +326,7 @@ abstract class Pooled {
         try {
             switch (name) {
                 case XML.LOCALE: {
-                    locale = (value instanceof CharSequence) ? Locales.parse(value.toString()) : (Locale) value;
+                    locale = (value instanceof CharSequence) ? Locales.parseLanguage(value.toString(), 0) : (Locale) value;
                     return;
                 }
                 case XML.TIMEZONE: {

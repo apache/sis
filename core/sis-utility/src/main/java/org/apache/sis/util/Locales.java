@@ -45,7 +45,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Locales extends Static {
@@ -66,9 +66,7 @@ public final class Locales extends Static {
          * since we want to give precedence to references to the static constants.
          */
         try {
-            final Field[] fields = Locale.class.getFields();
-            for (int i=0; i<fields.length; i++) {
-                final Field field = fields[i];
+            for (final Field field : Locale.class.getFields()) {
                 if (Modifier.isStatic(field.getModifiers())) {
                     if (Locale.class.isAssignableFrom(field.getType())) {
                         final Locale toAdd = (Locale) field.get(null);
@@ -76,7 +74,7 @@ public final class Locales extends Static {
                     }
                 }
             }
-        } catch (ReflectiveOperationException exception) {
+        } catch (IllegalAccessException exception) {
             /*
              * Not a big deal if this operation fails (this is actually just an
              * optimization for reducing memory usage). Log a warning and stop.
@@ -134,8 +132,7 @@ public final class Locales extends Static {
         final Locale[] languages = getAvailableLanguages();
         Locale[] locales = Locale.getAvailableLocales();
         int count = 0;
-        for (int i=0; i<locales.length; i++) {
-            final Locale locale = locales[i];
+        for (final Locale locale : locales) {
             if (containsLanguage(languages, locale)) {
                 locales[count++] = unique(locale);
             }
@@ -164,7 +161,10 @@ public final class Locales extends Static {
      *
      * @param  locale The locale to use for formatting the strings to be returned.
      * @return String descriptions of available locales.
+     *
+     * @deprecated Not useful in practice, since we typically also need the original Locale object.
      */
+    @Deprecated // Remove for simplifiying the API.
     public String[] getAvailableLocales(final Locale locale) {
         final Locale[] locales = getAvailableLocales();
         final String[] display = new String[locales.length];
@@ -182,7 +182,10 @@ public final class Locales extends Static {
      *
      * @param  locales The locales from which to get the languages.
      * @return The languages, without country or variant information.
+     *
+     * @deprecated Users can easily perform this operation themselves, thus avoiding this class initialization.
      */
+    @Deprecated // Make this method private for simplifiying the API.
     public static Locale[] getLanguages(final Locale... locales) {
         final Set<String> codes = new LinkedHashSet<>(hashMapCapacity(locales.length));
         for (final Locale locale : locales) {
@@ -197,36 +200,37 @@ public final class Locales extends Static {
     }
 
     /**
-     * Parses the given locale. The string is the language code either as the 2 letters or the
-     * 3 letters ISO code. It can optionally be followed by the {@code '_'} character and the
-     * country code (again either as 2 or 3 letters), optionally followed by {@code '_'} and
-     * the variant.
-     *
-     * <p>This method can be used when the caller wants the same {@code Locale} constants no
-     * matter if the language and country codes use 2 or 3 letters. Apache SIS usually don't
-     * distinguish those two cases since ISO 19139 documents have to use the 3 letters codes
-     * anyway.</p>
+     * @deprecated Renamed as {@link #parseLanguage(String, int)}.
      *
      * @param  code The language code, which may be followed by country code.
      * @return The language for the given code (never {@code null}).
      * @throws IllegalArgumentException If the given code doesn't seem to be a valid locale.
-     *
-     * @see Locale#forLanguageTag(String)
      */
+    @Deprecated
     public static Locale parse(final String code) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("code", code);
-        return parse(code, 0);
+        return parseLanguage(code, 0);
     }
 
     /**
-     * Implementation of {@link #parse(String)} which start the parsing process from the given {@code fromIndex}.
+     * Parses the given language code. The given string can be either the 2 letters or the 3 letters ISO 639 code.
+     * It can optionally be followed by the {@code '_'} character and the country code (again either as 2 or 3 letters),
+     * optionally followed by {@code '_'} and the variant.
+     *
+     * <p>This method can be used when the caller wants the same {@code Locale} constants no matter if the language
+     * and country codes use 2 or 3 letters. This method tries to convert 3-letters codes to 2-letters code on a
+     * <cite>best effort</cite> basis.</p>
      *
      * @param  code The language code, which may be followed by country code.
      * @param  fromIndex Index of the first character to parse.
      * @return The language for the given code (never {@code null}).
      * @throws IllegalArgumentException If the given code doesn't seem to be a valid locale.
+     *
+     * @see Locale#forLanguageTag(String)
+     * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
      */
-    private static Locale parse(final String code, final int fromIndex) throws IllegalArgumentException {
+    public static Locale parseLanguage(final String code, final int fromIndex) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("code", code);
+        ArgumentChecks.ensurePositive("fromIndex", fromIndex);
         final String language, country, variant;
         int ci = code.indexOf('_', fromIndex);
         if (ci < 0) {
@@ -284,14 +288,13 @@ public final class Locales extends Static {
     }
 
     /**
-     * Parses the locale encoded in the suffix of a property key. This convenience method
+     * Parses the language encoded in the suffix of a property key. This convenience method
      * is used when a property in a {@link java.util.Map} may have many localized variants.
      * For example the {@code "remarks"} property may be defined by values associated to the
      * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales
      * respectively.
      *
-     * <p>This method infers the {@code Locale} from the property {@code key}
-     * with the following steps:</p>
+     * <p>This method infers the {@code Locale} from the property {@code key} with the following steps:</p>
      *
      * <ul>
      *   <li>If the given {@code key} is exactly equals to {@code prefix},
@@ -299,7 +302,7 @@ public final class Locales extends Static {
      *   <li>Otherwise if the given {@code key} does not start with the specified {@code prefix}
      *       followed by the {@code '_'} character, then this method returns {@code null}.</li>
      *   <li>Otherwise, the characters after the {@code '_'} are parsed as an ISO language
-     *       and country code by the {@link #parse(String)} method.</li>
+     *       and country code by the {@link #parseLanguage(String, int)} method.</li>
      * </ul>
      *
      * @param  prefix The prefix to skip at the beginning of the {@code key}.
@@ -308,7 +311,10 @@ public final class Locales extends Static {
      * @throws IllegalArgumentException if the locale after the prefix is an illegal code.
      *
      * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
+     *
+     * @deprecated Users can easily perform this operation themselves, thus avoiding this class initialization.
      */
+    @Deprecated
     public static Locale parseSuffix(final String prefix, final String key) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("prefix", prefix);
         if (key != null) { // Tolerance for Map that accept null keys.
@@ -318,7 +324,7 @@ public final class Locales extends Static {
                     return Locale.ROOT;
                 }
                 if (key.charAt(offset) == '_') {
-                    return parse(key, offset + 1);
+                    return parseLanguage(key, offset + 1);
                 }
             }
         }

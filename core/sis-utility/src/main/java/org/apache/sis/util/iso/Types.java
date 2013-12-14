@@ -567,20 +567,22 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns an international strings for the values in the given properties map, or {@code null} if none.
-     * If the given map is {@code null}, then this method returns {@code null}.
-     * Otherwise this method iterates over the entries having a key that starts with the specified prefix.
-     * For each such key:
+     * Returns an international string for the values in the given properties map, or {@code null} if none.
+     * This method is used when a property in a {@link java.util.Map} may have many localized variants.
+     * For example the given map may contains a {@code "remarks"} property defined by values associated to
+     * the {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.
+     *
+     * <p>If the given map is {@code null}, then this method returns {@code null}.
+     * Otherwise this method iterates over the entries having a key that starts with the specified prefix,
+     * followed by the {@code '_'} character. For each such key:</p>
      *
      * <ul>
-     *   <li>The part after the prefix is parsed as specified by the {@link Locales#parseSuffix(String, String)}
-     *       method.</li>
-     *   <li>If {@code parseSuffix(…)} returned a non-null locale, then the value for that locale is added in the
-     *       international string to be returned.</li>
+     *   <li>If the key is exactly equals to {@code prefix}, selects {@link Locale#ROOT}.</li>
+     *   <li>Otherwise the characters after {@code '_'} are parsed as an ISO language and country code
+     *       by the {@link Locales#parseLanguage(String, int)} method. Note that 3-letters codes are replaced
+     *       by their 2-letters counterparts on a <cite>best effort</cite> basis.</li>
+     *   <li>The value for the decoded locale is added in the international string to be returned.</li>
      * </ul>
-     *
-     * For example the given map may contains a {@code "remarks"} property defined by values associated to the
-     * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.
      *
      * @param  properties The map from which to get the string values for an international string, or {@code null}.
      * @param  prefix     The prefix of keys to use for creating the international string.
@@ -592,7 +594,7 @@ public final class Types extends Static {
      *           <li>or the value associated to that key is a not a {@link CharSequence}.</li>
      *         </ul>
      *
-     * @see Locales#parseSuffix(String, String)
+     * @see Locales#parseLanguage(String, int)
      * @see DefaultInternationalString#DefaultInternationalString(Map)
      *
      * @since 0.4
@@ -623,39 +625,43 @@ public final class Types extends Static {
         CharSequence i18n = null;
         Locale firstLocale = null;
         DefaultInternationalString dis = null;
-        final int length = prefix.length();
+        final int offset = prefix.length();
         for (final Map.Entry<String,?> entry : properties.entrySet()) {
             final String key = entry.getKey();
-            final Locale locale = Locales.parseSuffix(prefix, key);
-            if (locale == null) {
-                if (isSorted) {
-                    /*
-                     * If the map is sorted using natural ordering, we can stop as soon as we find a key which
-                     * is lexicographically greater than prefix + '_'. We check 'startsWith' last since the other
-                     * tests are cheaper and usually sufficient.
-                     */
-                    if (key.length() <= length || key.charAt(length) > '_' || !key.startsWith(prefix)) {
-                        break;
-                    }
-                }
+            if (key == null) {
+                continue; // Tolerance for Map that accept null keys.
+            }
+            if (!key.startsWith(prefix)) {
+                if (isSorted) break; // If the map is sorted, there is no need to check next entries.
+                continue;
+            }
+            final Locale locale;
+            if (key.length() == offset) {
+                locale = Locale.ROOT;
             } else {
-                final Object value = entry.getValue();
-                if (value != null) {
-                    if (!(value instanceof CharSequence)) {
-                        throw new IllegalArgumentException(Errors.format(
-                                Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                final char c = key.charAt(offset);
+                if (c != '_') {
+                    if (isSorted && c > '_') break;
+                    continue;
+                }
+                locale = Locales.parseLanguage(key, offset + 1);
+            }
+            final Object value = entry.getValue();
+            if (value != null) {
+                if (!(value instanceof CharSequence)) {
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                }
+                if (i18n == null) {
+                    i18n = (CharSequence) value;
+                    firstLocale = locale;
+                } else {
+                    if (dis == null) {
+                        dis = new DefaultInternationalString();
+                        dis.add(firstLocale, i18n);
+                        i18n = dis;
                     }
-                    if (i18n == null) {
-                        i18n = (CharSequence) value;
-                        firstLocale = locale;
-                    } else {
-                        if (dis == null) {
-                            dis = new DefaultInternationalString();
-                            dis.add(firstLocale, i18n);
-                            i18n = dis;
-                        }
-                        dis.add(locale, (CharSequence) value);
-                    }
+                    dis.add(locale, (CharSequence) value);
                 }
             }
         }

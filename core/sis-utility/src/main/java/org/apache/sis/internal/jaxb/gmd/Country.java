@@ -104,17 +104,12 @@ public final class Country extends GO_CharacterString {
                     return new Country(string);
                 }
             }
-            String codeSpace = null;
-            String value = null;
-            if (context != null) {
-                final Locale marshalLocale = context.getLocale();
-                if (marshalLocale != null) {
-                    codeSpace = Context.converter(context).toLanguageCode(context, locale);
-                    value = locale.getDisplayCountry(marshalLocale);
-                    if (value.isEmpty()) {
-                        value = null;
-                    }
-                }
+            final Locale marshalLocale = LanguageCode.marshalLocale(context);
+            String codeSpace = Context.converter(context).toLanguageCode(context, marshalLocale);
+            String value = locale.getDisplayCountry(marshalLocale);
+            if (value.isEmpty()) {
+                codeSpace = null;
+                value = null;
             }
             if (!codeListValue.isEmpty() || value != null) {
                 return new Country(context, codeListValue, codeSpace, value);
@@ -133,9 +128,10 @@ public final class Country extends GO_CharacterString {
      */
     public static Locale getLocale(final Country value) {
         if (value != null) {
+            final CodeListProxy proxy = value.proxy;
             String code = null;
-            if (value.proxy != null) {
-                code = value.proxy.codeListValue;
+            if (proxy != null) {
+                code = proxy.codeListValue;
             }
             // If the country was not specified as a code list,
             // look for a simple character string declaration.

@@ -249,7 +249,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         public Locale() {super(java.util.Locale.class);} // Instantiated by ServiceLoader.
 
         @Override java.util.Locale doConvert(String source) throws IllegalArgumentException {
-            return Locales.parse(source);
+            return Locales.parseLanguage(source, 0);
         }
     }
 
