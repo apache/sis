@@ -79,7 +79,7 @@ public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, Geode
      */
     @XmlElement(name = "GeodeticDatum")
     public DefaultGeodeticDatum getElement() {
-        return skip() ? null : DefaultGeodeticDatum.castOrCopy(metadata);
+        return DefaultGeodeticDatum.castOrCopy(metadata);
     }
 
     /**

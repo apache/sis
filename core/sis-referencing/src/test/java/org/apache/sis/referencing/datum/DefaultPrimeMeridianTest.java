@@ -139,10 +139,10 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(NonSI.DEGREE_ANGLE), 1E-12);
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
         assertNull("name.codeSpace", pm.getName().getCodeSpace());
-        assertWktEquals(pm, "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“OGP”, “urn:ogc:def:meridian:EPSG::8903”]]");
+        assertWktEquals(pm, "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]");
         assertXmlEquals(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +
-                "  <gml:identifier codeSpace=\"OGP\">urn:ogc:def:meridian:EPSG::8903</gml:identifier>" +
+                "  <gml:identifier codeSpace=\"EPSG\">8903</gml:identifier>" +
                 "  <gml:name>Paris</gml:name>\n" +
                 "  <gml:remarks>Equivalent to 2°20′14.025″.</gml:remarks>\n" +
                 "  <gml:greenwichLongitude uom=\"urn:ogc:def:uom:EPSG::9105\">2.5969213</gml:greenwichLongitude>\n" +

@@ -43,6 +43,8 @@ public final class MD_Keywords extends PropertyType<MD_Keywords, Keywords> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Keywords.class}
      */
     @Override
     protected Class<Keywords> getBoundType() {
@@ -77,7 +79,7 @@ public final class MD_Keywords extends PropertyType<MD_Keywords, Keywords> {
      */
     @XmlElementRef
     public DefaultKeywords getElement() {
-        return skip() ? null : DefaultKeywords.castOrCopy(metadata);
+        return DefaultKeywords.castOrCopy(metadata);
     }
 
     /**

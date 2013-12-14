@@ -45,6 +45,8 @@ public final class MD_StandardOrderProcess extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code StandardOrderProcess.class}
      */
     @Override
     protected Class<StandardOrderProcess> getBoundType() {
@@ -79,7 +81,7 @@ public final class MD_StandardOrderProcess extends
      */
     @XmlElementRef
     public DefaultStandardOrderProcess getElement() {
-        return skip() ? null : DefaultStandardOrderProcess.castOrCopy(metadata);
+        return DefaultStandardOrderProcess.castOrCopy(metadata);
     }
 
     /**

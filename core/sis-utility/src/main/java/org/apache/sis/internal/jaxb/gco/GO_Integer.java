@@ -51,6 +51,8 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
 
     /**
      * Returns the Java type which is bound by this adapter.
+     *
+     * @return {@code Integer.class}
      */
     @Override
     protected Class<Integer> getBoundType() {
@@ -77,7 +79,7 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
      */
     @XmlElement(name = "Integer")
     public Integer getElement() {
-        return skip() ? null : metadata;
+        return metadata;
     }
 
     /**

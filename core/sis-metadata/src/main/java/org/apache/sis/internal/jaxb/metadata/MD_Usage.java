@@ -43,6 +43,8 @@ public final class MD_Usage extends PropertyType<MD_Usage, Usage> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Usage.class}
      */
     @Override
     protected Class<Usage> getBoundType() {
@@ -77,7 +79,7 @@ public final class MD_Usage extends PropertyType<MD_Usage, Usage> {
      */
     @XmlElementRef
     public DefaultUsage getElement() {
-        return skip() ? null : DefaultUsage.castOrCopy(metadata);
+        return DefaultUsage.castOrCopy(metadata);
     }
 
     /**

@@ -24,7 +24,7 @@ import org.apache.sis.internal.converter.SystemRegistry;
 
 
 /**
- * Creates {@link ObjectConverter} instances, or uses them for creating collection views.
+ * Static methods for creating {@link ObjectConverter} instances or collection views based on converters.
  * Converters are created by the following methods:
  *
  * <ul>

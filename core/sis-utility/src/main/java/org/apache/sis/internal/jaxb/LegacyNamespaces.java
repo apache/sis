@@ -37,6 +37,13 @@ public final class LegacyNamespaces {
                                 VERSION_3_2 = new Version("3.2");
 
     /**
+     * First GML version of the new {@code xmlns}.
+     * GML 3.2.0 schemas are defined in the namespace {@code http://www.opengis.net/gml} whereas
+     * GML 3.2.1 schemas are defined in the namespace {@code http://www.opengis.net/gml/3.2}.
+     */
+    public static final Version VERSION_3_2_1 = new Version("3.2.1");
+
+    /**
      * The {@value} URL, which was used for all GML versions before 3.2.
      * This URL should not be used in JAXB annotations, even if the annotated element is really for that
      * legacy GML version. Instead, namespace replacements are applied on-the-fly at marshalling time.

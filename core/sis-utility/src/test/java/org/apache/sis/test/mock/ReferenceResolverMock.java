@@ -53,8 +53,8 @@ public final strictfp class ReferenceResolverMock extends ReferenceResolver {
      *     }
      * }
      *
-     * Alternatively, the {@code finally} block can be replaced by a call to {@code context.finish()}
-     * in a method annotated by {@link org.junit.After}.
+     * Alternatively, the {@code finally} block can be replaced by a call to {@code context.finish()} in a method
+     * annotated by {@link org.junit.After}. This is done automatically by {@link org.apache.sis.test.XMLTestCase}.
      *
      * @param  marshalling {@code true} for marshalling, or {@code false} for unmarshalling.
      * @return The (un)marshalling context.
@@ -66,6 +66,8 @@ public final strictfp class ReferenceResolverMock extends ReferenceResolver {
 
     /**
      * Unconditionally returns {@code true}.
+     *
+     * @return {@code true}.
      */
     @Override
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
@@ -74,6 +76,8 @@ public final strictfp class ReferenceResolverMock extends ReferenceResolver {
 
     /**
      * Unconditionally returns {@code true}.
+     *
+     * @return {@code true}.
      */
     @Override
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final XLink link) {

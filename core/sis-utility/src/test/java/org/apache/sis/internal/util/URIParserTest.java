@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -31,6 +32,71 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class URIParserTest extends TestCase {
+    /**
+     * Tests {@link URIParser#parse(String)} on {@code "urn:ogc:def:crs:EPSG:8.2:4326"}.
+     * This is a URN without parameters defined by EPSG.
+     */
+    @Test
+    public void testParse() {
+        assertNull(URIParser.parse("EPSG:4326"));
+
+        URIParser parsed = URIParser.parse(" urn:ogc:def: crs : EPSG: 8.2 :4326 ");
+        assertNotNull("URIParser", parsed);
+        assertEquals ("isHTTP",    false,   parsed.isHTTP);
+        assertEquals ("type",      "crs",   parsed.type);
+        assertEquals ("authority", "EPSG",  parsed.authority);
+        assertEquals ("version",   "8.2",   parsed.version);
+        assertEquals ("code",      "4326",  parsed.code);
+        assertNull   ("parameters",         parsed.parameters);
+        assertEquals ("toString()", "urn:ogc:def:crs:EPSG:8.2:4326", parsed.toString());
+
+        parsed = URIParser.parse("URN :X-OGC: Def:crs:EPSG::4326");
+        assertNotNull("URIParser", parsed);
+        assertEquals ("isHTTP",    false,   parsed.isHTTP);
+        assertEquals ("type",      "crs",   parsed.type);
+        assertEquals ("authority", "EPSG",  parsed.authority);
+        assertNull   ("version",            parsed.version);
+        assertEquals ("code",      "4326",  parsed.code);
+        assertNull   ("parameters",         parsed.parameters);
+        assertEquals ("toString()", "urn:ogc:def:crs:EPSG::4326", parsed.toString());
+    }
+
+    /**
+     * Tests {@link URIParser#parse(String)} on {@code "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"}.
+     * This is a URN with parameters defined in WMS specification.
+     */
+    @Test
+    @DependsOnMethod("testParse")
+    public void testParseWithParameters() {
+        final URIParser parsed = URIParser.parse("urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45");
+        assertNotNull("URIParser", parsed);
+        assertEquals ("isHTTP",    false,       parsed.isHTTP);
+        assertEquals ("type",      "crs",       parsed.type);
+        assertEquals ("authority", "OGC",       parsed.authority);
+        assertEquals ("version",   "1.3",       parsed.version);
+        assertEquals ("code",      "AUTO42003", parsed.code);
+        assertNotNull("parameters",             parsed.parameters);
+        assertArrayEquals("parameters", new String[] {"1", "-100", "45"}, parsed.parameters);
+        assertEquals("toString()", "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45", parsed.toString());
+    }
+
+    /**
+     * Tests {@link URIParser#parse(String)} on {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}.
+     */
+    @Test
+    @DependsOnMethod("testParse")
+    public void testParseHTTP() {
+        final URIParser parsed = URIParser.parse("http://www.opengis.net/gml/srs/epsg.xml#4326");
+        assertNotNull("URIParser", parsed);
+        assertEquals ("isHTTP",    true,   parsed.isHTTP);
+        assertEquals ("type",      "crs",  parsed.type);
+        assertEquals ("authority", "epsg", parsed.authority);
+        assertNull   ("version",           parsed.version);
+        assertEquals ("code",      "4326", parsed.code);
+        assertNull   ("parameters",        parsed.parameters);
+        assertEquals ("toString()", "http://www.opengis.net/gml/srs/epsg.xml#4326", parsed.toString());
+    }
+
     /**
      * Tests {@link URIParser#codeOf(String, String, String)} with URI like {@code "EPSG:4326"}.
      */

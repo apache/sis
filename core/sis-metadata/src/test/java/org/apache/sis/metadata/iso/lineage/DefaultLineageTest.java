@@ -14,30 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.xml;
+package org.apache.sis.metadata.iso.lineage;
 
 import java.util.Arrays;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.lineage.DefaultSource;
-import org.apache.sis.metadata.iso.lineage.DefaultLineage;
 import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.XML;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests the XML marshalling of objects in the {@code "gmi"} namespace that
- * GeoAPI merged with the object of same name in the {@code "gmd"} namespace.
+ * Tests {@link DefaultLineage}. This include testing the XML marshalling of objects in the
+ * {@code "gmi"} namespace that GeoAPI merged with the object of same name in the {@code "gmd"} namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.17)
- * @version 0.3
+ * @version 0.4
  * @module
  */
-public final strictfp class ImageryMarshallingTest extends XMLTestCase {
+public final strictfp class DefaultLineageTest extends XMLTestCase {
     /**
      * Tests the marshalling of an {@code "gmd:LI_Source"} element, which shall become
      * {@code "gmi:LE_Source"} when some ISO 19115-2 properties are defined.

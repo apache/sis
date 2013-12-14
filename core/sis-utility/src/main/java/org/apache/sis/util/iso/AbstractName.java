@@ -57,7 +57,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @version 0.3
  * @module
  */
-@XmlType(name = "GenericName")
+@XmlType(name = "GenericName") // Actually 'gml:CodeType', but the later is used elsewhere.
 public abstract class AbstractName implements GenericName, Serializable {
     /**
      * Serial number for inter-operability with different versions.

@@ -41,6 +41,8 @@ public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, R
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code ReferenceSystem.class}
      */
     @Override
     protected Class<ReferenceSystem> getBoundType() {
@@ -77,9 +79,10 @@ public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, R
      */
     @XmlElementRef
     public ReferenceSystemMetadata getElement() {
-        if (skip()) return null;
         final ReferenceSystem metadata = this.metadata;
-        if (metadata instanceof ReferenceSystemMetadata) {
+        if (metadata == null) {
+            return null;
+        } else if (metadata instanceof ReferenceSystemMetadata) {
             return (ReferenceSystemMetadata) metadata;
         } else {
             return new ReferenceSystemMetadata(metadata);

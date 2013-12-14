@@ -45,6 +45,8 @@ public final class MD_MetadataExtensionInformation extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code MetadataExtensionInformation.class}
      */
     @Override
     protected Class<MetadataExtensionInformation> getBoundType() {
@@ -79,7 +81,7 @@ public final class MD_MetadataExtensionInformation extends
      */
     @XmlElementRef
     public DefaultMetadataExtensionInformation getElement() {
-        return skip() ? null : DefaultMetadataExtensionInformation.castOrCopy(metadata);
+        return DefaultMetadataExtensionInformation.castOrCopy(metadata);
     }
 
     /**

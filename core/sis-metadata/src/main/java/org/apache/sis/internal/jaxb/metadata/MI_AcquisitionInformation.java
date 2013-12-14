@@ -45,6 +45,8 @@ public final class MI_AcquisitionInformation extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code AcquisitionInformation.class}
      */
     @Override
     protected Class<AcquisitionInformation> getBoundType() {
@@ -79,7 +81,7 @@ public final class MI_AcquisitionInformation extends
      */
     @XmlElementRef
     public DefaultAcquisitionInformation getElement() {
-        return skip() ? null : DefaultAcquisitionInformation.castOrCopy(metadata);
+        return DefaultAcquisitionInformation.castOrCopy(metadata);
     }
 
     /**

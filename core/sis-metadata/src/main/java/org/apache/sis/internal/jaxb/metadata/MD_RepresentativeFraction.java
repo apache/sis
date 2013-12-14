@@ -45,6 +45,8 @@ public final class MD_RepresentativeFraction extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code RepresentativeFraction.class}
      */
     @Override
     protected Class<RepresentativeFraction> getBoundType() {
@@ -79,7 +81,7 @@ public final class MD_RepresentativeFraction extends
      */
     @XmlElementRef
     public DefaultRepresentativeFraction getElement() {
-        return skip() ? null : DefaultRepresentativeFraction.castOrCopy(metadata);
+        return DefaultRepresentativeFraction.castOrCopy(metadata);
     }
 
     /**
