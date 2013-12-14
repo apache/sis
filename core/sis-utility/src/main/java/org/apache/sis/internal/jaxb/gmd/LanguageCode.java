@@ -102,11 +102,11 @@ public final class LanguageCode extends GO_CharacterString {
                     return new LanguageCode(string);
                 }
             }
-            final Locale marshalLocale = (context != null) ? context.getLocale() : null;
-            final String codeSpace = Context.converter(context).toLanguageCode(context, locale);
-            String value = (marshalLocale != null) ? locale.getDisplayLanguage(marshalLocale)
-                                                   : locale.getDisplayLanguage();
+            final Locale marshalLocale = marshalLocale(context);
+            String codeSpace = Context.converter(context).toLanguageCode(context, marshalLocale);
+            String value = locale.getDisplayLanguage(marshalLocale);
             if (value.isEmpty()) {
+                codeSpace = null;
                 value = null;
             }
             if (!codeListValue.isEmpty() || value != null) {
@@ -114,6 +114,19 @@ public final class LanguageCode extends GO_CharacterString {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the locale to use at marshalling time, or the default locale if unspecified.
+     */
+    static Locale marshalLocale(final Context context) {
+        if (context != null) {
+            final Locale marshalLocale = context.getLocale();
+            if (marshalLocale != null) {
+                return marshalLocale;
+            }
+        }
+        return Locale.getDefault(Locale.Category.DISPLAY);
     }
 
     /**

@@ -629,10 +629,12 @@ pathTree:   for (int j=0; ; j++) {
 
     /**
      * Returns the ISO language or country code for the given locale.
+     * Whether we use 2-letters or 3-letters code shall be consistent
+     * with {@link org.apache.sis.xml.ValueConverter}.
      */
     private static String getCode(final Locale locale, final boolean country) {
         try {
-            return country ? locale.getISO3Country() : locale.getISO3Language();
+            return country ? locale.getCountry() : locale.getISO3Language();
         } catch (MissingResourceException e) {
             Logging.recoverableException(About.class, "configuration", e);
             return null;

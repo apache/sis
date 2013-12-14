@@ -30,8 +30,8 @@ import org.apache.sis.internal.jaxb.Context;
 /**
  * Stores information about {@link CodeList}, in order to handle format defined in ISO-19139
  * about the {@code CodeList} tags. This object is wrapped by {@link CodeListAdapter} or, in
- * the spacial case of {@link Locale} type, by {@link CodeListLocaleAdapter}. It provides the
- * {@link #codeList} and {@link #codeListValue} attribute to be marshalled.
+ * the spacial case of {@link Locale} type, by {@link LanguageCode} or {@link Country}. This
+ * class provides the {@link #codeList} and {@link #codeListValue} attributes to be marshalled.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -40,9 +40,8 @@ import org.apache.sis.internal.jaxb.Context;
  * @module
  *
  * @see CodeListAdapter
- * @see CodeListLocaleAdapter
  */
-@XmlType(name = "CodeList", propOrder = { "codeSpace", "codeListValue", "codeList" })
+@XmlType(name = "CodeList", propOrder = { "codeList", "codeListValue", "codeSpace" })
 public final class CodeListProxy {
     /**
      * The default schema to be given to {@link Context#schema(Context, String, String)} (last argument).
@@ -122,7 +121,7 @@ public final class CodeListProxy {
     }
 
     /**
-     * Builds a {@link CodeList} as defined in ISO-19139 standard.
+     * Builds a value for {@link LanguageCode} and {@link Country} elements.
      *
      * @param context       The current (un)marshalling context, or {@code null} if none.
      * @param catalog       The file which defines the code list (for example {@code "ML_gmxCodelists.xml"}), without its path.
@@ -141,7 +140,7 @@ public final class CodeListProxy {
     }
 
     /**
-     * Builds a proxy instance of {@link CodeList}.
+     * Builds a value for {@link CodeListAdapter} elements.
      * This constructors stores the values that will be used for marshalling.
      *
      * @param context The current (un)marshalling context, or {@code null} if none.

@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.04)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(ArraysExtTest.class)
@@ -68,31 +68,32 @@ public final strictfp class LocalesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Locales#parse(String)} method.
+     * Tests the {@link Locales#parseLanguage(String, int)} method.
      */
     @Test
     @DependsOnMethod("testUnique")
-    public void testParse() {
-        assertSame(Locale.FRENCH,        Locales.parse("fr"));
-        assertSame(Locale.FRENCH,        Locales.parse("fra"));
-        assertSame(Locale.CANADA_FRENCH, Locales.parse("fr_CA"));
-        assertSame(Locale.CANADA_FRENCH, Locales.parse("fra_CA"));
-        assertSame(Locale.CANADA_FRENCH, Locales.parse("fr_CAN"));
-        assertSame(Locale.CANADA_FRENCH, Locales.parse("fra_CAN"));
-        assertSame(Locale.ENGLISH,       Locales.parse("en"));
+    public void testParseLanguage() {
+        assertSame(Locale.FRENCH,        Locales.parseLanguage("fr", 0));
+        assertSame(Locale.FRENCH,        Locales.parseLanguage("fra", 0));
+        assertSame(Locale.CANADA_FRENCH, Locales.parseLanguage("fr_CA", 0));
+        assertSame(Locale.CANADA_FRENCH, Locales.parseLanguage("fra_CA", 0));
+        assertSame(Locale.CANADA_FRENCH, Locales.parseLanguage("fr_CAN", 0));
+        assertSame(Locale.CANADA_FRENCH, Locales.parseLanguage("fra_CAN", 0));
+        assertSame(Locale.ENGLISH,       Locales.parseLanguage("en", 0));
 
-        assertEquals(new Locale("de", "DE"),        Locales.parse("de_DE"));
-        assertEquals(new Locale("",   "GB"),        Locales.parse("_GB"));
-        assertEquals(new Locale("en", "US", "WIN"), Locales.parse("en_US_WIN"));
-        assertEquals(new Locale("de", "", "POSIX"), Locales.parse("de__POSIX"));
-        assertEquals(new Locale("fr", "", "MAC"),   Locales.parse("fr__MAC"));
+        assertEquals(new Locale("de", "DE"),        Locales.parseLanguage("de_DE", 0));
+        assertEquals(new Locale("",   "GB"),        Locales.parseLanguage("_GB", 0));
+        assertEquals(new Locale("en", "US", "WIN"), Locales.parseLanguage("en_US_WIN", 0));
+        assertEquals(new Locale("de", "", "POSIX"), Locales.parseLanguage("de__POSIX", 0));
+        assertEquals(new Locale("fr", "", "MAC"),   Locales.parseLanguage("fr__MAC", 0));
     }
 
     /**
      * Tests the {@link Locales#parseSuffix(String, String)} method.
      */
     @Test
-    @DependsOnMethod("testParse")
+    @Deprecated
+    @DependsOnMethod("testParseLanguage")
     public void testParseSuffix() {
         assertSame(null,           Locales.parseSuffix("remarks", "remark"));
         assertSame(Locale.ROOT,    Locales.parseSuffix("remarks", "remarks"));

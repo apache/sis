@@ -45,7 +45,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.3
  * @module
  */
-public final strictfp class LanguageMarshallingTest extends XMLTestCase {
+public final strictfp class LanguageCodeTest extends XMLTestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      */

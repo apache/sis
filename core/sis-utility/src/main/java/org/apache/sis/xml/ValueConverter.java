@@ -63,7 +63,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public class ValueConverter {
@@ -111,13 +111,13 @@ public class ValueConverter {
     }
 
     /**
-     * Converts the given locale to a language code. For strict ISO 19139 compliance, the language
-     * code shall be a 3-letters ISO code as returned by {@link Locale#getISO3Language()}.
+     * Converts the given locale to a language code. For better ISO 19139 compliance, the language code
+     * should be a 3-letters ISO 639-2 code (e.g. {@code "jpn"} for {@linkplain Locale#JAPANESE Japanese}).
      * However those codes may not be available for every locales.
      *
-     * <p>The default implementation performs the following step:</p>
+     * <p>The default implementation performs the following steps:</p>
      * <ul>
-     *   <li>Try {@code value.getISO3Language()}:<ul>
+     *   <li>Try {@link Locale#getISO3Language()}</code>:<ul>
      *     <li>On success, return that value if non-empty, or {@code null} otherwise.</li>
      *     <li>If an exception has been thrown, then:<ul>
      *       <li>If {@link #exceptionOccured exceptionOccured(…)} return {@code true}, then
@@ -130,9 +130,8 @@ public class ValueConverter {
      *
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The locale to convert to a language code, or {@code null}.
-     * @return The language code, or {@code null} if the given value was null or does not contains
-     *         a language code.
-     * @throws MissingResourceException If there is no ISO 3-letters language code for the given locale.
+     * @return The language code, or {@code null} if the given value was null or does not contains a language code.
+     * @throws MissingResourceException If no language code can be found for the given locale.
      *
      * @see Locale#getISO3Language()
      * @see Locale#getLanguage()
@@ -156,43 +155,22 @@ public class ValueConverter {
     }
 
     /**
-     * Converts the given locale to a country code. For strict ISO 19139 compliance, the country
-     * code shall be a 3-letters ISO code as returned by {@link Locale#getISO3Country()}.
-     * However those codes may not be available for every locales.
+     * Converts the given locale to a country code. For better ISO 19139 compliance, the country code
+     * should be a 2-letters ISO 3166 code (e.g. {@code "JP"} for {@linkplain Locale#JAPAN Japan}).
      *
-     * <p>The default implementation performs the following step:</p>
-     * <ul>
-     *   <li>Try {@code value.getISO3Country()}:<ul>
-     *     <li>On success, return that value if non-empty, or {@code null} otherwise.</li>
-     *     <li>If an exception has been thrown, then:<ul>
-     *       <li>If {@link #exceptionOccured exceptionOccured(…)} return {@code true}, then
-     *           returns {@code value.getCountry()} if non-empty or {@code null} otherwise.</li>
-     *       <li>If {@code exceptionOccured(…)} returned {@code false} (which is the default
-     *           behavior), then let the exception propagate.</li>
-     *     </ul></li>
-     *   </ul></li>
-     * </ul>
+     * <p>The default implementation returns {@link Locale#getCountry()} if non-empty, or {@code null} otherwise.</p>
      *
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The locale to convert to a country code, or {@code null}.
-     * @return The country code, or {@code null} if the given value was null or does not contains
-     *         a country code.
-     * @throws MissingResourceException If there is no ISO 3-letters country code for the given locale.
+     * @return The country code, or {@code null} if the given value was null or does not contains a country code.
+     * @throws MissingResourceException If no country code can be found for the given locale.
      *
      * @see Locale#getISO3Country()
      * @see Locale#getCountry()
      */
     public String toCountryCode(final MarshalContext context, final Locale value) throws MissingResourceException {
         if (value != null) {
-            String code;
-            try {
-                code = value.getISO3Country();
-            } catch (MissingResourceException e) {
-                if (!exceptionOccured(context, value, Locale.class, String.class, e)) {
-                    throw e;
-                }
-                code = value.getCountry();
-            }
+            String code = value.getCountry();
             if (!code.isEmpty()) {
                 return code;
             }
@@ -211,11 +189,13 @@ public class ValueConverter {
      * @return The converted locale, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
      * @throws IllegalArgumentException If the given string can not be converted to a locale.
+     *
+     * @see Locales#parseLanguage(String, int)
      */
     public Locale toLocale(final MarshalContext context, String value) throws IllegalArgumentException {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
-            return Locales.parse(value);
+            return Locales.parseLanguage(value, 0);
         } catch (IllegalArgumentException e) {
             if (!exceptionOccured(context, value, String.class, Locale.class, e)) {
                 throw e;
