@@ -190,12 +190,12 @@ public class ValueConverter {
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
      * @throws IllegalArgumentException If the given string can not be converted to a locale.
      *
-     * @see Locales#parseLanguage(String, int)
+     * @see Locales#parse(String)
      */
     public Locale toLocale(final MarshalContext context, String value) throws IllegalArgumentException {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
-            return Locales.parseLanguage(value, 0);
+            return Locales.parse(value);
         } catch (IllegalArgumentException e) {
             if (!exceptionOccured(context, value, String.class, Locale.class, e)) {
                 throw e;
