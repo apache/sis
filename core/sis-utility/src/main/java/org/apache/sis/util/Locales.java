@@ -200,25 +200,34 @@ public final class Locales extends Static {
     }
 
     /**
-     * @deprecated Renamed as {@link #parseLanguage(String, int)}.
-     *
-     * @param  code The language code, which may be followed by country code.
-     * @return The language for the given code (never {@code null}).
-     * @throws IllegalArgumentException If the given code doesn't seem to be a valid locale.
-     */
-    @Deprecated
-    public static Locale parse(final String code) throws IllegalArgumentException {
-        return parseLanguage(code, 0);
-    }
-
-    /**
-     * Parses the given language code. The given string can be either the 2 letters or the 3 letters ISO 639 code.
-     * It can optionally be followed by the {@code '_'} character and the country code (again either as 2 or 3 letters),
-     * optionally followed by {@code '_'} and the variant.
+     * Parses the given language code, optionally followed by country code and variant. The given string can be either
+     * the 2 letters or the 3 letters ISO 639 code. It can optionally be followed by the {@code '_'} character and the
+     * country code (again either as 2 or 3 letters), optionally followed by {@code '_'} and the variant.
      *
      * <p>This method can be used when the caller wants the same {@code Locale} constants no matter if the language
      * and country codes use 2 or 3 letters. This method tries to convert 3-letters codes to 2-letters code on a
      * <cite>best effort</cite> basis.</p>
+     *
+     * @param  code The language code, optionally followed by country code and variant.
+     * @return The language for the given code (never {@code null}).
+     * @throws IllegalArgumentException If the given code doesn't seem to be a valid locale.
+     *
+     * @see Locale#forLanguageTag(String)
+     */
+    public static Locale parse(final String code) throws IllegalArgumentException {
+        return parse(code, 0);
+    }
+
+    /**
+     * Parses the given language code and optional complements (country, variant), starting at the given index.
+     * All characters before {@code fromIndex} are ignored. Characters from {@code fromIndex} to the end of the
+     * string are parsed as documented in the {@link #parse(String)} method. In particular, this method tries to
+     * convert 3-letters codes to 2-letters code on a <cite>best effort</cite> basis.
+     *
+     * {@example This method is useful when language codes are appended to a base property or resource name.
+     *           For example a dictionary may define the <code>"remarks"</code> property by values associated
+     *           to the <code>"remarks_en"</code> and <code>"remarks_fr"</code> keys, for English and French
+     *           locales respectively.}
      *
      * @param  code The language code, which may be followed by country code.
      * @param  fromIndex Index of the first character to parse.
@@ -228,7 +237,7 @@ public final class Locales extends Static {
      * @see Locale#forLanguageTag(String)
      * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
      */
-    public static Locale parseLanguage(final String code, final int fromIndex) throws IllegalArgumentException {
+    public static Locale parse(final String code, final int fromIndex) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("code", code);
         ArgumentChecks.ensurePositive("fromIndex", fromIndex);
         final String language, country, variant;
@@ -302,7 +311,7 @@ public final class Locales extends Static {
      *   <li>Otherwise if the given {@code key} does not start with the specified {@code prefix}
      *       followed by the {@code '_'} character, then this method returns {@code null}.</li>
      *   <li>Otherwise, the characters after the {@code '_'} are parsed as an ISO language
-     *       and country code by the {@link #parseLanguage(String, int)} method.</li>
+     *       and country code by the {@link #parse(String, int)} method.</li>
      * </ul>
      *
      * @param  prefix The prefix to skip at the beginning of the {@code key}.
@@ -324,7 +333,7 @@ public final class Locales extends Static {
                     return Locale.ROOT;
                 }
                 if (key.charAt(offset) == '_') {
-                    return parseLanguage(key, offset + 1);
+                    return parse(key, offset + 1);
                 }
             }
         }

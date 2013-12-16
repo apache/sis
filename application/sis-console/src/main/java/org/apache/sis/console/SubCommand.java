@@ -189,7 +189,7 @@ abstract class SubCommand {
         final boolean explicitEncoding;
         try {
             value = options.get(option = Option.LOCALE);
-            locale = (value != null) ? Locales.parseLanguage(value, 0) : Locale.getDefault(Locale.Category.DISPLAY);
+            locale = (value != null) ? Locales.parse(value) : Locale.getDefault(Locale.Category.DISPLAY);
 
             value = options.get(option = Option.TIMEZONE);
             timezone = (value != null) ? TimeZone.getTimeZone(value) : TimeZone.getDefault();

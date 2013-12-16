@@ -68,24 +68,24 @@ public final strictfp class LocalesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Locales#parseLanguage(String, int)} method.
+     * Tests the {@link Locales#parse(String)} method.
      */
     @Test
     @DependsOnMethod("testUnique")
     public void testParseLanguage() {
-        assertSame(Locale.FRENCH,        Locales.parseLanguage("fr", 0));
-        assertSame(Locale.FRENCH,        Locales.parseLanguage("fra", 0));
-        assertSame(Locale.CANADA_FRENCH, Locales.parseLanguage("fr_CA", 0));
-        assertSame(Locale.CANADA_FRENCH, Locales.parseLanguage("fra_CA", 0));
-        assertSame(Locale.CANADA_FRENCH, Locales.parseLanguage("fr_CAN", 0));
-        assertSame(Locale.CANADA_FRENCH, Locales.parseLanguage("fra_CAN", 0));
-        assertSame(Locale.ENGLISH,       Locales.parseLanguage("en", 0));
+        assertSame(Locale.FRENCH,        Locales.parse("fr"));
+        assertSame(Locale.FRENCH,        Locales.parse("fra"));
+        assertSame(Locale.CANADA_FRENCH, Locales.parse("fr_CA"));
+        assertSame(Locale.CANADA_FRENCH, Locales.parse("fra_CA"));
+        assertSame(Locale.CANADA_FRENCH, Locales.parse("fr_CAN"));
+        assertSame(Locale.CANADA_FRENCH, Locales.parse("fra_CAN"));
+        assertSame(Locale.ENGLISH,       Locales.parse("en"));
 
-        assertEquals(new Locale("de", "DE"),        Locales.parseLanguage("de_DE", 0));
-        assertEquals(new Locale("",   "GB"),        Locales.parseLanguage("_GB", 0));
-        assertEquals(new Locale("en", "US", "WIN"), Locales.parseLanguage("en_US_WIN", 0));
-        assertEquals(new Locale("de", "", "POSIX"), Locales.parseLanguage("de__POSIX", 0));
-        assertEquals(new Locale("fr", "", "MAC"),   Locales.parseLanguage("fr__MAC", 0));
+        assertEquals(new Locale("de", "DE"),        Locales.parse("de_DE"));
+        assertEquals(new Locale("",   "GB"),        Locales.parse("_GB"));
+        assertEquals(new Locale("en", "US", "WIN"), Locales.parse("en_US_WIN"));
+        assertEquals(new Locale("de", "", "POSIX"), Locales.parse("de__POSIX"));
+        assertEquals(new Locale("fr", "", "MAC"),   Locales.parse("fr__MAC"));
     }
 
     /**
