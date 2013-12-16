@@ -18,7 +18,6 @@ package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Locale;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.jaxb.Context;
 
 
@@ -28,14 +27,14 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * {@preformat xml
  *   <gmd:language>
- *     <gco:CharacterString>eng</gco:CharacterString>
+ *     <gmd:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
  *   </gmd:language>
  * }
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see LanguageCode
@@ -58,12 +57,7 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
     @Override
     public Locale unmarshal(final LanguageCode value) {
         final Context context = Context.current();
-        final Locale candidate = LanguageCode.getLocale(context, value, false);
-        if (candidate != null) {
-            return candidate;
-        }
-        final String text = StringAdapter.toString(value);
-        return (text != null) ? Context.converter(context).toLocale(context, text) : null;
+        return Context.converter(context).toLocale(context, value.getLanguage());
     }
 
     /**

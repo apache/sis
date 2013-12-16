@@ -19,12 +19,11 @@ package org.apache.sis.internal.jaxb.gmd;
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-
-import org.apache.sis.util.Locales;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -119,30 +118,41 @@ public final class Country extends GO_CharacterString {
     }
 
     /**
-     * Returns the locale for the given country (which may be null), or {@code null} if none.
+     * Returns the locale for the given language and country (which may be null), or {@code null} if none.
      *
-     * @param value The wrapper for this metadata value.
-     * @return A locale which represents the metadata value.
+     * @param  context The current (un)marshalling context, or {@code null} if none.
+     * @param  language The wrapper for the language value.
+     * @param  country  The wrapper for the country value.
+     * @return A locale which represents the language and country value.
      *
      * @see LanguageCode#getLocale(Context, LanguageCode, boolean)
      */
-    public static Locale getLocale(final Country value) {
-        if (value != null) {
-            final CodeListProxy proxy = value.proxy;
-            String code = null;
-            if (proxy != null) {
-                code = proxy.codeListValue;
-            }
-            // If the country was not specified as a code list,
-            // look for a simple character string declaration.
-            if (code == null) {
-                code = value.toString();
-            }
-            code = CharSequences.trimWhitespaces(code);
-            if (code != null && !code.isEmpty()) {
-                return Locales.unique(new Locale("", code));
+    public static Locale getLocale(final Context context, final LanguageCode language, final Country country) {
+        String code = null;
+        if (language != null) {
+            code = language.getLanguage();
+        }
+        if (country != null) {
+            final CodeListProxy proxy = country.proxy;
+            final String c = CharSequences.trimWhitespaces(proxy != null ? proxy.identifier() : country.toString());
+            if (c != null && !c.isEmpty()) {
+                if (code == null) {
+                    code = "";
+                }
+                int i = code.indexOf('_');
+                if (i < 0) {
+                    code = code + '_' + c;
+                } else {
+                    final int length = code.length();
+                    if (++i == code.length() || code.charAt(i) == '_') {
+                        code = new StringBuilder().append(code, 0, i).append(c).append(code, i, length).toString();
+                    } else if (!c.equals(CharSequences.token(code, i))) {
+                        Context.warningOccured(context, null, null, "unmarshal", Errors.class,
+                                Errors.Keys.IncompatiblePropertyValue_1, "country");
+                    }
+                }
             }
         }
-        return null;
+        return Context.converter(context).toLocale(context, code);
     }
 }

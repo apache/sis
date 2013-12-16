@@ -24,7 +24,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.identification.CharacterSet;
-import org.apache.sis.util.Locales;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmd.Country;
@@ -59,7 +58,7 @@ import org.apache.sis.internal.jaxb.gmd.LanguageCode;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see LanguageCode
@@ -158,11 +157,11 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     }
 
     /**
-     * Substitutes the locale by the adapter to be marshalled into an XML file
+     * Substitutes the locale by the wrapper to be marshalled into an XML file
      * or stream. JAXB calls automatically this method at marshalling time.
      *
      * @param value The locale value.
-     * @return The adapter for the locale value.
+     * @return The wrapper for the locale value.
      */
     @Override
     public PT_Locale marshal(final Locale value) {
@@ -170,10 +169,10 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     }
 
     /**
-     * Substitutes the adapter value read from a XML stream by the object which will
+     * Substitutes the wrapped value read from a XML stream by the object which will
      * contains the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param value The adapter for this metadata value.
+     * @param value The wrapper for this metadata value.
      * @return A locale which represents the metadata value.
      */
     @Override
@@ -181,18 +180,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
         if (value != null) {
             final Wrapper element = value.element;
             if (element != null) {
-                Locale language = LanguageCode.getLocale(Context.current(), element.languageCode, true);
-                Locale country  = Country.getLocale(element.country);
-                if (language == null) {
-                    language = country;
-                } else if (country != null) {
-                    // Merge the language and the country in a single Locale instance.
-                    final String c = country.getCountry();
-                    if (!c.equals(language.getCountry())) {
-                        language = Locales.unique(new Locale(language.getLanguage(), c));
-                    }
-                }
-                return language;
+                return Country.getLocale(Context.current(), element.languageCode, element.country);
             }
         }
         return null;

@@ -23,18 +23,18 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import org.opengis.metadata.identification.DataIdentification;
-import org.apache.sis.test.mock.DataIdentificationMock;
+import org.opengis.metadata.Metadata;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.mock.MetadataMock;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -42,10 +42,27 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class LanguageCodeTest extends XMLTestCase {
+    /**
+     * XML fragment using the {@code <gco:CharacterString>} construct.
+     */
+    private static final String CHARACTER_STRING = "<gco:CharacterString>jpn</gco:CharacterString>";
+
+    /**
+     * XML fragment using the {@code <gmd:LanguageCode>} construct without attributes.
+     */
+    private static final String LANGUAGE_CODE_WITHOUT_ATTRIBUTE = "<gmd:LanguageCode>jpn</gmd:LanguageCode>";
+
+    /**
+     * XML fragment using the {@code <gmd:LanguageCode>} construct with attributes.
+     */
+    private static final String LANGUAGE_CODE = "<gmd:LanguageCode" +
+            " codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/ML_gmxCodelists.xml#LanguageCode\"" +
+            " codeListValue=\"jpn\">Japanese</gmd:LanguageCode>";
+
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      */
@@ -64,7 +81,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
         final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(XML.LOCALE, Locale.UK));
         assertNull(properties.put(XML.TIMEZONE, "UTC"));
-        pool = new MarshallerPool(JAXBContext.newInstance(DataIdentificationMock.class), properties);
+        pool = new MarshallerPool(JAXBContext.newInstance(MetadataMock.class), properties);
     }
 
     /**
@@ -77,100 +94,131 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
     }
 
     /**
-     * Returns the XML of a data identification element. This method returns the following string,
-     * where the {@code <gco:CharacterString>} block is replaced by the more complex
-     * {@code <gmd:LanguageCode>} if the {@code languageCode} argument is {@code true}.
+     * Returns the XML of a metadata element. This method returns a string like below,
+     * where the {@code ${languageCode}} string is replaced by the given argument.
      *
      * {@preformat xml
-     *   <gmd:MD_DataIdentification>
+     *   <gmd:MD_Metadata>
      *     <gmd:language>
-     *       <gco:CharacterString>fra</gco:CharacterString>
+     *       ${languageCode}
      *     </gmd:language>
-     *   </gmd:MD_DataIdentification>
+     *   </gmd:MD_Metadata>
      * }
      *
-     * @param languageCode {@code true} for using the {@code gmd:LanguageCode} construct,
-     *        or false for using the {@code gco:CharacterString} construct.
+     * @param languageCode The XML fragment to write inside the {@code <gmd:language>} element.
      */
-    private static String getDataIdentificationXML(final boolean languageCode) {
-        final StringBuilder buffer = new StringBuilder(
-                "<gmd:MD_DataIdentification" +
-                " xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <gmd:language>\n");
-        if (languageCode) {
-            buffer.append("    <gmd:LanguageCode" +
-                    " codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/ML_gmxCodelists.xml#LanguageCode\"" +
-                    " codeListValue=\"fra\">French</gmd:LanguageCode>\n");
-        } else {
-            buffer.append("    <gco:CharacterString>fra</gco:CharacterString>\n");
-        }
-        buffer.append(
-                "  </gmd:language>\n" +
-                "</gmd:MD_DataIdentification>");
-        return buffer.toString();
+    private static String getMetadataXML(final String languageCode) {
+        return "<gmd:MD_Metadata" +
+               " xmlns:gmd=\"" + Namespaces.GMD + '"' +
+               " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+               "  <gmd:language>\n" +
+               "    " + languageCode + '\n' +
+               "  </gmd:language>\n" +
+               "</gmd:MD_Metadata>";
     }
 
     /**
-     * Tests the parsing of an XML using the {@code gmd:LanguageCode} construct.
+     * Tests marshalling of {@code <gmd:LanguageCode>}.
+     * The result shall be as documented in {@link #testLanguageCode()}.
      *
      * @throws JAXBException Should never happen.
+     *
+     * @see #testMarshallCharacterString()
      */
     @Test
-    public void testLanguageCode() throws JAXBException {
-        final Marshaller   marshaller   = pool.acquireMarshaller();
-        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-
-        final String xml = getDataIdentificationXML(true);
-        final DataIdentification id = (DataIdentification) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.FRENCH, getSingleton(id.getLanguages()));
-        /*
-         * Reformat and test against the original XML.
-         */
-        assertXmlEquals(xml, marshal(marshaller, id), "xmlns:*");
-        pool.recycle(unmarshaller);
+    public void testMarshallLanguageCode() throws JAXBException {
+        final MetadataMock metadata = new MetadataMock(Locale.JAPANESE);
+        final Marshaller marshaller = pool.acquireMarshaller();
+        assertNull(marshaller.getProperty(XML.STRING_SUBSTITUTES));
+        assertXmlEquals(getMetadataXML(LANGUAGE_CODE), marshal(marshaller, metadata), "xmlns:*");
         pool.recycle(marshaller);
     }
 
     /**
-     * Tests the parsing of an XML using the {@code gco:CharacterString} construct.
+     * Tests the unmarshalling using the {@code <gmd:LanguageCode>} construct. XML fragment:
+     *
+     * {@preformat xml
+     *   <gmd:MD_Metadata>
+     *     <gmd:language>
+     *       <gmd:LanguageCode codeList="(snip)/ML_gmxCodelists.xml#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
+     *     </gmd:language>
+     *   </gmd:MD_Metadata>
+     * }
+     *
+     * @throws JAXBException Should never happen.
+     *
+     * @see #testMarshallLanguageCode()
+     */
+    @Test
+    public void testLanguageCode() throws JAXBException {
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final String xml = getMetadataXML(LANGUAGE_CODE);
+        final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
+        assertEquals(Locale.JAPANESE, metadata.getLanguage());
+    }
+
+    /**
+     * Tests the unmarshalling using the {@code <gmd:LanguageCode>} construct without attributes.
+     * The adapter is expected to parse the element value. XML fragment:
+     *
+     * {@preformat xml
+     *   <gmd:MD_Metadata>
+     *     <gmd:language>
+     *       <gmd:LanguageCode>jpn</gmd:LanguageCode>
+     *     </gmd:language>
+     *   </gmd:MD_Metadata>
+     * }
+     *
+     * @throws JAXBException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testLanguageCode")
+    public void testLanguageCodeWithoutAttributes() throws JAXBException {
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final String xml = getMetadataXML(LANGUAGE_CODE_WITHOUT_ATTRIBUTE);
+        final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
+        assertEquals(Locale.JAPANESE, metadata.getLanguage());
+        pool.recycle(unmarshaller);
+    }
+
+    /**
+     * Tests marshalling of {@code <gco:CharacterString>}, which require explicit marshaller configuration.
+     * The result shall be as documented in {@link #testCharacterString()}.
+     *
+     * @throws JAXBException Should never happen.
+     *
+     * @see #testMarshallLanguageCode()
+     */
+    @Test
+    public void testMarshallCharacterString() throws JAXBException {
+        final MetadataMock metadata = new MetadataMock(Locale.JAPANESE);
+        final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.setProperty(XML.STRING_SUBSTITUTES, new String[] {"dummy","language","foo"});
+        assertArrayEquals(new String[] {"language"}, (String[]) marshaller.getProperty(XML.STRING_SUBSTITUTES));
+        assertXmlEquals(getMetadataXML(CHARACTER_STRING), marshal(marshaller, metadata), "xmlns:*");
+        pool.recycle(marshaller);
+    }
+
+    /**
+     * Tests the unmarshalling of an XML using the {@code gco:CharacterString} construct.
+     * XML fragment:
+     *
+     * {@preformat xml
+     *   <gmd:MD_Metadata>
+     *     <gmd:language>
+     *       <gco:CharacterString>jpn</gco:CharacterString>
+     *     </gmd:language>
+     *   </gmd:MD_Metadata>
+     * }
      *
      * @throws JAXBException Should never happen.
      */
     @Test
     public void testCharacterString() throws JAXBException {
-        final Marshaller   marshaller   = pool.acquireMarshaller();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-
-        final String xml = getDataIdentificationXML(false);
-        final DataIdentification id = (DataIdentification) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.FRENCH, getSingleton(id.getLanguages()));
-        /*
-         * Reformat and test against the expected XML.
-         */
-        assertXmlEquals(getDataIdentificationXML(true), marshal(marshaller, id), "xmlns:*");
+        final String xml = getMetadataXML(CHARACTER_STRING);
+        final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
+        assertEquals(Locale.JAPANESE, metadata.getLanguage());
         pool.recycle(unmarshaller);
-        pool.recycle(marshaller);
-    }
-
-    /**
-     * Tests the formatting of {@code <gco:CharacterString>}, which require explicit configuration.
-     *
-     * @throws JAXBException Should never happen.
-     */
-    @Test
-    public void testCharacterStringFormat() throws JAXBException {
-        final String inspire = getDataIdentificationXML(true);
-        final String simpler = getDataIdentificationXML(false);
-        final DataIdentificationMock id = new DataIdentificationMock(Locale.FRENCH);
-
-        final Marshaller marshaller = pool.acquireMarshaller();
-        assertNull(marshaller.getProperty(XML.STRING_SUBSTITUTES));
-        assertXmlEquals(inspire, marshal(marshaller, id), "xmlns:*");
-
-        marshaller.setProperty(XML.STRING_SUBSTITUTES, new String[] {"dummy","language","foo"});
-        assertArrayEquals(new String[] {"language"}, (String[]) marshaller.getProperty(XML.STRING_SUBSTITUTES));
-        assertXmlEquals(simpler, marshal(marshaller, id), "xmlns:*");
-        pool.recycle(marshaller);
     }
 }
