@@ -134,7 +134,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
             } catch (PropertyException | ClassCastException e) {
                 // Should never happen. But if it happen anyway, just let the
                 // characterEncoding unitialized: it will not be marshalled.
-                Context.warningOccured(Context.current(), marshaller, PT_Locale.class, "beforeMarshal", e, true);
+                Context.warningOccured(Context.current(), PT_Locale.class, "beforeMarshal", e, true);
                 return;
             }
             if (encoding != null) {
@@ -180,7 +180,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
         if (value != null) {
             final Wrapper element = value.element;
             if (element != null) {
-                return Country.getLocale(Context.current(), element.languageCode, element.country);
+                return Country.getLocale(Context.current(), element.languageCode, element.country, PT_Locale.class);
             }
         }
         return null;

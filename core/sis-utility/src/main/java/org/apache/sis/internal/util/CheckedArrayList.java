@@ -104,7 +104,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
             return false;
         }
         if (element != null) {
-            Context.warningOccured(context, source, source.getClass(), "add",
+            Context.warningOccured(context, source.getClass(), "add",
                     Errors.class, Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass());
         }
         return true;
@@ -146,8 +146,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     private List<E> ensureValidCollection(final Collection<? extends E> collection) throws IllegalArgumentException {
         int count = 0;
         final Object[] array = collection.toArray();
-        for (int i=0; i<array.length; i++) {
-            final Object element = array[i];
+        for (final Object element : array) {
             if (ensureValid((E) element)) {
                 array[count++] = element;
             }

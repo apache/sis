@@ -120,14 +120,17 @@ public final class Country extends GO_CharacterString {
     /**
      * Returns the locale for the given language and country (which may be null), or {@code null} if none.
      *
-     * @param  context The current (un)marshalling context, or {@code null} if none.
+     * @param  context  The current (un)marshalling context, or {@code null} if none.
      * @param  language The wrapper for the language value.
      * @param  country  The wrapper for the country value.
+     * @param  caller   The class which is invoking this method, used only in case of warning.
      * @return A locale which represents the language and country value.
      *
      * @see LanguageCode#getLocale(Context, LanguageCode, boolean)
      */
-    public static Locale getLocale(final Context context, final LanguageCode language, final Country country) {
+    public static Locale getLocale(final Context context, final LanguageCode language, final Country country,
+            final Class<?> caller)
+    {
         String code = null;
         if (language != null) {
             code = language.getLanguage();
@@ -147,7 +150,7 @@ public final class Country extends GO_CharacterString {
                     if (++i == code.length() || code.charAt(i) == '_') {
                         code = new StringBuilder().append(code, 0, i).append(c).append(code, i, length).toString();
                     } else if (!c.equals(CharSequences.token(code, i))) {
-                        Context.warningOccured(context, null, null, "unmarshal", Errors.class,
+                        Context.warningOccured(context, caller, "unmarshal", Errors.class,
                                 Errors.Keys.IncompatiblePropertyValue_1, "country");
                     }
                 }

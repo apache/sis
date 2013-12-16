@@ -182,7 +182,7 @@ public final class Measure {
      */
     public void setUnit(final Unit<?> newUnit) {
         if (unit != null && !unit.equals(newUnit)) {
-            Context.warningOccured(Context.current(), this, getClass(), "setUnit",
+            Context.warningOccured(Context.current(), getClass(), "setUnit",
                     Errors.class, Errors.Keys.IncompatiblePropertyValue_1, unit);
         }
         unit = newUnit;
