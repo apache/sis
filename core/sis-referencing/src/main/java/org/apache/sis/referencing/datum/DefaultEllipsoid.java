@@ -549,9 +549,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     /**
      * Emits a warning telling that the given element is repeated twice.
      */
-    private void warnDuplicated(final String element) {
+    private static void warnDuplicated(final String element) {
          // We cheat a bit for the "unmarshal" method name since there is not such method...
-        Context.warningOccured(Context.current(), this, DefaultEllipsoid.class, "unmarshal",
+        Context.warningOccured(Context.current(), DefaultEllipsoid.class, "unmarshal",
                 Errors.class, Errors.Keys.DuplicatedElement_1, element);
     }
 

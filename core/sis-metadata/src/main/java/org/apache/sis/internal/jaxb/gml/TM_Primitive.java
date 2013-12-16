@@ -118,7 +118,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
                      * TemporalPrimitive as the source class, since it is the closest we can get
                      * to a public API.
                      */
-                    Context.warningOccured(Context.current(), this, TemporalPrimitive.class, "setTimePeriod",
+                    Context.warningOccured(Context.current(), TemporalPrimitive.class, "setTimePeriod",
                             Errors.class, Errors.Keys.IllegalRange_2, begin, end);
                 } else try {
                     metadata = TemporalUtilities.createPeriod(begin, end);
@@ -162,7 +162,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * @param method The name of the method to declare in the log record.
      * @param e the exception.
      */
-    private void warningOccured(final String method, final Exception e) {
-        Context.warningOccured(Context.current(), this, TM_Primitive.class, method, e, true);
+    private static void warningOccured(final String method, final Exception e) {
+        Context.warningOccured(Context.current(), TM_Primitive.class, method, e, true);
     }
 }

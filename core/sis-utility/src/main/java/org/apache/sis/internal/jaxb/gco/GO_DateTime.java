@@ -61,12 +61,11 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     /**
      * Builds a wrapper for the given {@link Date}.
      *
-     * @param source The source for reporting errors.
      * @param date The date to marshal. Can not be {@code null}.
      * @param allowTime {@code true} for allowing the usage of {@code "DateTime"} field if
      *        applicable, or {@code false} for using the {@code "Date"} field in every cases.
      */
-    GO_DateTime(final XmlAdapter<GO_DateTime,?> source, final Date date, final boolean allowTime) {
+    GO_DateTime(final Date date, final boolean allowTime) {
         final Context context = Context.current();
         try {
             final XMLGregorianCalendar gc = XmlUtilities.toXML(context, date);
@@ -76,7 +75,7 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
                 dateTime = gc;
             }
         } catch (DatatypeConfigurationException e) {
-            Context.warningOccured(context, source, XmlAdapter.class, "marshal", e, true);
+            Context.warningOccured(context, XmlAdapter.class, "marshal", e, true);
         }
     }
 
@@ -110,6 +109,6 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
      */
     @Override
     public GO_DateTime marshal(final Date value) {
-        return (value != null) ? new GO_DateTime(this, value, true) : null;
+        return (value != null) ? new GO_DateTime(value, true) : null;
     }
 }

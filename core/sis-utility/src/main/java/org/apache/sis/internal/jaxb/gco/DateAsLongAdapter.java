@@ -70,7 +70,7 @@ public final class DateAsLongAdapter extends XmlAdapter<GO_DateTime, Long> {
         if (value != null) {
             final long time = value;
             if (time != Long.MIN_VALUE) {
-                return new GO_DateTime(this, new Date(time), false);
+                return new GO_DateTime(new Date(time), false);
             }
         }
         return new GO_DateTime();

@@ -164,7 +164,7 @@ public final class CodeListProxy {
                 value = ResourceBundle.getBundle("org.opengis.metadata.CodeLists",
                         locale, CodeList.class.getClassLoader()).getString(key);
             } catch (MissingResourceException e) {
-                Context.warningOccured(context, code, CodeListAdapter.class, "marshal", e, false);
+                Context.warningOccured(context, CodeListAdapter.class, "marshal", e, false);
             }
         }
         if (value != null) {
