@@ -19,7 +19,6 @@ package org.apache.sis.internal.jaxb.gmd;
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
@@ -43,7 +42,7 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @XmlType(name = "LanguageCode_PropertyType")
@@ -130,30 +129,33 @@ public final class LanguageCode extends GO_CharacterString {
     }
 
     /**
-     * Returns the locale for the given language (which may be null), or {@code null} if none.
+     * Returns the language, or {@code null} if none. The language is expected to
+     * be a 2- or 3-letters ISO 639 code, but this is not verified by this method.
      *
-     * @param context The current (un)marshalling context, or {@code null} if none.
-     * @param value The wrapper for this metadata value.
-     * @param useCharSequence Whatever this method should fallback on the
-     *        {@code gco:CharacterString} element if no value were specified for the
-     *        {@code gml:LanguageCode} element.
-     * @return A locale which represents the metadata value.
-     *
-     * @see Country#getLocale(Country)
+     * @return The language code
      */
-    public static Locale getLocale(final Context context, final LanguageCode value, final boolean useCharSequence) {
-        if (value != null) {
-            final CodeListProxy proxy = value.proxy;
-            if (proxy != null) {
-                final Locale locale = Context.converter(context).toLocale(context, proxy.codeListValue);
-                if (locale != null) {
-                    return locale;
-                }
-            }
-            if (useCharSequence) {
-                return Context.converter(context).toLocale(context, value.toString());
-            }
+    public String getLanguage() {
+        String code;
+        final CodeListProxy proxy = this.proxy;
+        if (proxy != null) {
+            /*
+             * <gmd:language>
+             *   <gmd:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
+             * </gmd:language>
+             */
+            code = proxy.identifier(); // May still be null.
+        } else {
+            /*
+             * <gmd:language>
+             *   <gco:CharacterString>jpn</gco:CharacterString>
+             * </gmd:language>
+             */
+            code = toString(); // May still be null.
         }
-        return null;
+        /*
+         * Do not trim whitespaces. We leave that decision to ValueConverter.
+         * The default implementation of ValueConverter does that.
+         */
+        return code;
     }
 }

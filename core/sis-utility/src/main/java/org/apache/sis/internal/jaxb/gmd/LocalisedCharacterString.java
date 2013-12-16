@@ -40,10 +40,11 @@ import java.util.Objects;
  */
 final class LocalisedCharacterString {
     /**
-     * A prefix to concatenate with the {@linkplain Locale#getISO3Language() language code}
-     * in order to get the attribute value specified in ISO-19139 for this elements.
+     * A prefix to concatenate with the {@linkplain Locale#getISO3Language() language code}.
+     * This is a hack for a common pattern found in the way locales are specified in ISO 19139 files.
+     * See <a href="https://issues.apache.org/jira/browse/SIS-137">SIS-137</a> for more information.
      */
-    private static final String LOCALE = "#locale-";
+    private static final String PREFIX = "#locale-";
 
     /**
      * The locale value for this string.
@@ -75,10 +76,10 @@ final class LocalisedCharacterString {
     }
 
     /**
-     * Returns the locale language, as specified by ISO-19139 for
-     * {@code <LocalisedCharacterString>} attribute.
+     * Returns the locale language for {@code <LocalisedCharacterString>} attribute.
      *
      * @return The current locale.
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-137">SIS-137</a>
      */
     @XmlAttribute(name = "locale", required = true)
     public String getLocale() {
@@ -86,7 +87,7 @@ final class LocalisedCharacterString {
             return null;
         }
         final Context context = Context.current();
-        return LOCALE.concat(Context.converter(context).toLanguageCode(context, locale));
+        return PREFIX.concat(Context.converter(context).toLanguageCode(context, locale));
     }
 
     /**
@@ -94,6 +95,7 @@ final class LocalisedCharacterString {
      * where {@code xxx} are the two or three letters representing the language.
      *
      * @param localeId The new locale.
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-137">SIS-137</a>
      */
     public void setLocale(final String localeId) {
         if (localeId != null) {
