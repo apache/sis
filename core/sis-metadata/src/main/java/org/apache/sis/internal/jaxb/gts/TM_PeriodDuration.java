@@ -73,6 +73,8 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
 
     /**
      * Returns the GeoAPI interface which is bound by this adapter.
+     *
+     * @return {@code PeriodDuration.class}
      */
     @Override
     protected Class<PeriodDuration> getBoundType() {
@@ -176,7 +178,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      * @param methodName The method name.
      * @param e The exception.
      */
-    private void warningOccured(final String methodName, final Exception e) {
-        Context.warningOccured(Context.current(), this, TM_PeriodDuration.class, methodName, e, true);
+    private static void warningOccured(final String methodName, final Exception e) {
+        Context.warningOccured(Context.current(), TM_PeriodDuration.class, methodName, e, true);
     }
 }

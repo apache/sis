@@ -56,7 +56,7 @@ public final class LocalizedParseException extends ParseException implements Loc
     /**
      * The resources key as one of the {@code Errors.Keys} constant.
      */
-    private final int key;
+    private final short key;
 
     /**
      * The arguments for the localization message.
@@ -72,7 +72,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      * @param arguments   The value of {@link #arguments(String, ParsePosition)}.
      * @param errorOffset The position where the error is found while parsing.
      */
-    public LocalizedParseException(final Locale locale, final int key, final Object[] arguments, final int errorOffset) {
+    public LocalizedParseException(final Locale locale, final short key, final Object[] arguments, final int errorOffset) {
         super(Errors.format(key, arguments), errorOffset);
         this.locale    = locale;
         this.arguments = arguments;
@@ -89,7 +89,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      * @param text        The full text that {@code Format} failed to parse.
      * @param errorOffset The position where the error is found while parsing.
      */
-    public LocalizedParseException(final Locale locale, final int key, final CharSequence text, final int errorOffset) {
+    public LocalizedParseException(final Locale locale, final short key, final CharSequence text, final int errorOffset) {
         this(locale, key, new Object[] {CharSequences.token(text, errorOffset)}, errorOffset);
     }
 
@@ -157,8 +157,8 @@ public final class LocalizedParseException extends ParseException implements Loc
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static int key(final Object[] arguments) {
-        final int key;
+    private static short key(final Object[] arguments) {
+        final short key;
         switch (arguments.length) {
             case 1: key = Errors.Keys.UnexpectedEndOfString_1;    break;
             case 2: key = Errors.Keys.UnparsableStringForClass_2; break;

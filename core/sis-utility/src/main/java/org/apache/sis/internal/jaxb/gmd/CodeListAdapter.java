@@ -46,8 +46,6 @@ import org.apache.sis.internal.jaxb.Context;
  * @since   0.3 (derived from geotk-2.5)
  * @version 0.3
  * @module
- *
- * @see CodeListLocaleAdapter
  */
 public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueType,BoundType>,
         BoundType extends CodeList<BoundType>> extends XmlAdapter<ValueType,BoundType>
@@ -64,8 +62,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
     }
 
     /**
-     * Creates a wrapper for a {@link CodeList}, in order to handle the format specified
-     * in ISO-19139.
+     * Creates a wrapper for a {@link CodeList}, in order to handle the format specified in ISO-19139.
      *
      * @param proxy The proxy version of {@link CodeList} to be marshalled.
      */

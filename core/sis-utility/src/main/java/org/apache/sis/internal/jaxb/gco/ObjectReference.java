@@ -148,7 +148,7 @@ final class ObjectReference {
         if (value != null) {
             final T previous = map.putSpecialized(authority, value);
             if (previous != null && !previous.equals(value)) {
-                Context.warningOccured(context, map, IdentifierMap.class, "putSpecialized",
+                Context.warningOccured(context, IdentifierMap.class, "putSpecialized",
                         Errors.class, Errors.Keys.InconsistentAttribute_2, authority.getName(), value);
                 map.putSpecialized(authority, previous);
             }

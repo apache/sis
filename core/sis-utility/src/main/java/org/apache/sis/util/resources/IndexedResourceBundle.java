@@ -51,8 +51,8 @@ import org.apache.sis.internal.jdk7.JDK7;
  * inner classes, with the side-effect of compile-time safety. Because integer constants are
  * inlined right into class files at compile time, the declarative classes is not loaded at run time.
  *
- * <p>Localized resources are fetched by calls to {@link #getString(int)}.
- * Arguments can optionally be provided by calls to {@link #getString(int, Object) getString(int, Object, ...)}.
+ * <p>Localized resources are fetched by calls to {@link #getString(short)}.
+ * Arguments can optionally be provided by calls to {@link #getString(short, Object) getString(short, Object, ...)}.
  * If arguments are present, then the string will be formatted using {@link MessageFormat},
  * completed by some special cases handled by this class. Roughly speaking:</p>
  *
@@ -107,7 +107,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * knowing its key allows us to avoid invoking the costly {@link MessageFormat#applyPattern}
      * method.
      */
-    private transient int lastKey;
+    private transient short lastKey;
 
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
@@ -336,9 +336,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     protected final Object handleGetObject(final String key) {
         // Synchronization performed by 'ensureLoaded'
         final String[] values = ensureLoaded(key);
-        int keyID;
+        short keyID;
         try {
-            keyID = Integer.parseInt(key);
+            keyID = Short.parseShort(key);
         } catch (NumberFormatException exception) {
             /*
              * Maybe the full key name has been specified instead. We do that for localized
@@ -418,7 +418,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getMenuLabel(final int key) throws MissingResourceException {
+    public final String getMenuLabel(final short key) throws MissingResourceException {
         return getString(key) + '…';
     }
 
@@ -430,7 +430,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getLabel(final int key) throws MissingResourceException {
+    public final String getLabel(final short key) throws MissingResourceException {
         return getString(key) + ": ";
     }
 
@@ -441,7 +441,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getString(final int key) throws MissingResourceException {
+    public final String getString(final short key) throws MissingResourceException {
         return getString(String.valueOf(key));
     }
 
@@ -466,11 +466,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @throws MissingResourceException If no object for the given key can be found.
      *
      * @see #getString(String)
-     * @see #getString(int,Object,Object)
-     * @see #getString(int,Object,Object,Object)
+     * @see #getString(short,Object,Object)
+     * @see #getString(short,Object,Object,Object)
      * @see MessageFormat
      */
-    public final String getString(final int key, final Object arg0) throws MissingResourceException {
+    public final String getString(final short key, final Object arg0) throws MissingResourceException {
         final String pattern = getString(key);
         final Object[] arguments = toArray(arg0);
         synchronized (this) {
@@ -510,7 +510,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getString(final int    key,
+    public final String getString(final short  key,
                                   final Object arg0,
                                   final Object arg1) throws MissingResourceException
     {
@@ -528,7 +528,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getString(final int    key,
+    public final String getString(final short  key,
                                   final Object arg0,
                                   final Object arg1,
                                   final Object arg2) throws MissingResourceException
@@ -548,7 +548,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getString(final int    key,
+    public final String getString(final short  key,
                                   final Object arg0,
                                   final Object arg1,
                                   final Object arg2,
@@ -570,7 +570,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getString(final int    key,
+    public final String getString(final short  key,
                                   final Object arg0,
                                   final Object arg1,
                                   final Object arg2,
@@ -587,7 +587,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  key   The resource key.
      * @return The log record.
      */
-    public final LogRecord getLogRecord(final Level level, final int key) {
+    public final LogRecord getLogRecord(final Level level, final short key) {
         final LogRecord record = new LogRecord(level, getKeyConstants().getKeyName(key));
         record.setResourceBundleName(getClass().getName());
         record.setResourceBundle(this);
@@ -602,7 +602,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  arg0  The parameter for the log message, which may be an array.
      * @return The log record.
      */
-    public final LogRecord getLogRecord(final Level level, final int key,
+    public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0)
     {
         final LogRecord record = getLogRecord(level, key);
@@ -619,7 +619,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  arg1  The second parameter.
      * @return The log record.
      */
-    public final LogRecord getLogRecord(final Level level, final int key,
+    public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0,
                                         final Object arg1)
     {
@@ -636,7 +636,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  arg2  The third parameter.
      * @return The log record.
      */
-    public final LogRecord getLogRecord(final Level level, final int key,
+    public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0,
                                         final Object arg1,
                                         final Object arg2)
@@ -655,7 +655,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  arg3  The fourth parameter.
      * @return The log record.
      */
-    public final LogRecord getLogRecord(final Level level, final int key,
+    public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0,
                                         final Object arg1,
                                         final Object arg2,

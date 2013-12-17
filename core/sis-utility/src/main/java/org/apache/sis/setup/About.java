@@ -129,12 +129,12 @@ public enum About {
     /**
      * The resource key for this section in the {@link Vocabulary} resources bundle.
      */
-    private final int resourceKey;
+    private final short resourceKey;
 
     /**
      * Creates a new section to be formatted using the given resource.
      */
-    private About(final int resourceKey) {
+    private About(final short resourceKey) {
         this.resourceKey = resourceKey;
     }
 
@@ -187,7 +187,7 @@ public enum About {
         TreeTable.Node section = null;
         About newSection = VERSIONS;
 fill:   for (int i=0; ; i++) {
-            int      nameKey  = 0;    // The Vocabulary.Key for 'name', used only if name is null.
+            short    nameKey  = 0;    // The Vocabulary.Key for 'name', used only if name is null.
             String   name     = null; // The value to put in the 'Name' column of the table.
             Object   value    = null; // The value to put in the 'Value' column of the table.
             String[] children = null; // Optional children to write below the node.
@@ -377,7 +377,7 @@ fill:   for (int i=0; ; i++) {
 pathTree:   for (int j=0; ; j++) {
                 TreeTable.Node directory = null;
                 final String home;
-                final int homeKey;
+                final short homeKey;
                 switch (j) {
                     case 0: home = javaHome; homeKey = Vocabulary.Keys.JavaHome; break;
                     case 1: home = userHome; homeKey = Vocabulary.Keys.UserHome; break;
@@ -631,10 +631,12 @@ pathTree:   for (int j=0; ; j++) {
 
     /**
      * Returns the ISO language or country code for the given locale.
+     * Whether we use 2-letters or 3-letters code shall be consistent
+     * with {@link org.apache.sis.xml.ValueConverter}.
      */
     private static String getCode(final Locale locale, final boolean country) {
         try {
-            return country ? locale.getISO3Country() : locale.getISO3Language();
+            return country ? locale.getCountry() : locale.getISO3Language();
         } catch (MissingResourceException e) {
             Logging.recoverableException(About.class, "configuration", e);
             return null;

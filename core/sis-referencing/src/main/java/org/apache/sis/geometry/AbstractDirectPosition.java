@@ -294,7 +294,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
             final char close = (c == '(') ? ')' : ']';
             final int pos = CharSequences.lastIndexOf(wkt, close, i, length);
             if (pos != --length) {
-                final int key;
+                final short key;
                 final Object[] args;
                 if (pos < 0) {
                     key  = Errors.Keys.NonEquilibratedParenthesis_2;
