@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.Schemas;
 
 
 /**
@@ -44,29 +45,24 @@ import org.apache.sis.internal.jaxb.Context;
 @XmlType(name = "CodeList", propOrder = { "codeList", "codeListValue", "codeSpace" })
 public final class CodeListProxy {
     /**
-     * The default schema to be given to {@link Context#schema(Context, String, String)} (last argument).
-     */
-    public static final String DEFAULT_SCHEMA = "http://schemas.opengis.net/iso/19139/20070417/";
-
-    /**
      * Returns the URL to a given code list in the given XML file.
-     * This method concatenates the base schema URL with the given file and identifier.
+     * This method concatenates the base schema URL with the given identifier.
      * Some examples of strings returned by this method are:
      *
      * <ul>
-     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/ML_gmxCodelists.xml#LanguageCode"}</li>
+     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"}</li>
      * </ul>
      *
      * @param  context    The current (un)marshalling context, or {@code null} if none.
-     * @param  file       The XML file, either {@code "gmxCodelists.xml"} or {@code "ML_gmxCodelists.xml"}.
      * @param  identifier The UML identifier of the code list.
      * @return The URL to the given code list in the given schema.
      */
-    private static String schema(final Context context, final String file, final String identifier) {
-        return Context.schema(context, "gmd", DEFAULT_SCHEMA).append("resources/Codelist/")
-                .append(file).append('#').append(identifier).toString();
+    private static String schema(final Context context, final String identifier) {
+        return Context.schema(context, "gmd", Schemas.METADATA_ROOT)
+                .append(Schemas.CODELISTS_PATH) // Future SIS version may switch between localized/unlocalized file.
+                .append('#').append(identifier).toString();
     }
 
     /**
@@ -124,16 +120,15 @@ public final class CodeListProxy {
      * Builds a value for {@link LanguageCode} and {@link Country} elements.
      *
      * @param context       The current (un)marshalling context, or {@code null} if none.
-     * @param catalog       The file which defines the code list (for example {@code "ML_gmxCodelists.xml"}), without its path.
-     * @param codeList      The {@code codeList} attribute, to be concatenated after the catalog name and the {@code "#"} symbol.
+     * @param codeList      The {@code codeList} attribute, to be concatenated after the {@code "#"} symbol.
      * @param codeListValue The {@code codeListValue} attribute, to be declared in the attribute.
      * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
-    CodeListProxy(final Context context, final String catalog,
-            final String codeList, final String codeListValue, final String codeSpace, final String value)
+    CodeListProxy(final Context context, final String codeList, final String codeListValue,
+            final String codeSpace, final String value)
     {
-        this.codeList      = schema(context, catalog, codeList);
+        this.codeList      = schema(context, codeList);
         this.codeListValue = codeListValue;
         this.codeSpace     = codeSpace;
         this.value         = value;
@@ -149,7 +144,7 @@ public final class CodeListProxy {
     CodeListProxy(final Context context, final CodeList<?> code) {
         final String classID = Types.getListName(code);
         final String fieldID = Types.getCodeName(code);
-        codeList = schema(context, "gmxCodelists.xml", classID);
+        codeList = schema(context, classID);
         /*
          * Get the localized name of the field identifier, if possible.
          * This code partially duplicates Types.getCodeTitle(CodeList).
