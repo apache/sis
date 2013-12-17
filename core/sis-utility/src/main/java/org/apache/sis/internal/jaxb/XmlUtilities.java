@@ -177,10 +177,21 @@ public final class XmlUtilities extends SystemListener {
     /**
      * Converts the given XML Gregorian calendar to a date.
      *
+     * @param  context The current (un)marshalling context, or {@code null} if none.
      * @param  xml The XML calendar to convert to a date, or {@code null}.
      * @return The date, or {@code null} if {@code xml} was null.
      */
-    public static Date toDate(final XMLGregorianCalendar xml) {
-        return (xml != null) ? xml.toGregorianCalendar().getTime() : null;
+    public static Date toDate(final Context context, final XMLGregorianCalendar xml) {
+        if (xml != null) {
+            final GregorianCalendar calendar =  xml.toGregorianCalendar();
+            if (context != null && xml.getTimezone() == FIELD_UNDEFINED) {
+                final TimeZone timezone = context.getTimeZone();
+                if (timezone != null) {
+                    calendar.setTimeZone(timezone);
+                }
+            }
+            return calendar.getTime();
+        }
+        return null;
     }
 }
