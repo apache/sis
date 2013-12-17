@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
+import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
@@ -57,7 +58,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     private static String getResponsiblePartyXML(final String baseURL) {
         return "<gmd:CI_ResponsibleParty xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
                "  <gmd:role>\n" +
-               "    <gmd:CI_RoleCode codeList=\"" + baseURL + "resources/Codelist/gmxCodelists.xml#CI_RoleCode\"" +
+               "    <gmd:CI_RoleCode codeList=\"" + baseURL + Schemas.CODELISTS_PATH + "#CI_RoleCode\"" +
                     " codeListValue=\"principalInvestigator\">" + "Principal investigator</gmd:CI_RoleCode>\n" +
                "  </gmd:role>\n" +
                "</gmd:CI_ResponsibleParty>";
@@ -71,7 +72,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     private static String getCitationXML(final String baseURL, final String language, final String value) {
         return "<gmd:CI_Date xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
                "  <gmd:dateType>\n" +
-               "    <gmd:CI_DateTypeCode codeList=\"" + baseURL + "resources/Codelist/gmxCodelists.xml#CI_DateTypeCode\"" +
+               "    <gmd:CI_DateTypeCode codeList=\"" + baseURL + Schemas.CODELISTS_PATH + "#CI_DateTypeCode\"" +
                     " codeListValue=\"creation\" codeSpace=\"" + language + "\">" + value + "</gmd:CI_DateTypeCode>\n" +
                "  </gmd:dateType>\n" +
                "</gmd:CI_Date>";
@@ -84,7 +85,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testDefaultURL() throws JAXBException {
-        final String expected = getResponsiblePartyXML("http://schemas.opengis.net/iso/19139/20070417/");
+        final String expected = getResponsiblePartyXML(Schemas.METADATA_ROOT);
         final ResponsibleParty rp = (ResponsibleParty) XML.unmarshal(expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());
         /*
@@ -102,7 +103,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testISO_URL() throws JAXBException {
-        final String expected = getResponsiblePartyXML("http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/");
+        final String expected = getResponsiblePartyXML(Schemas.ISO_19139_ROOT);
         final ResponsibleParty rp = (ResponsibleParty) XML.unmarshal(expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());
 
@@ -128,16 +129,16 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
          * First, test using the French locale.
          */
         marshaller.setProperty(XML.LOCALE, Locale.FRENCH);
-        String expected = getCitationXML("http://schemas.opengis.net/iso/19139/20070417/", "fra", "Création");
+        String expected = getCitationXML(Schemas.METADATA_ROOT, "fra", "Création");
         CitationDate ci = (CitationDate) XML.unmarshal(expected);
         assertEquals(DateType.CREATION, ci.getDateType());
         String actual = marshal(marshaller, ci);
         assertXmlEquals(expected, actual, "xmlns:*");
         /*
-         * Tests again using the Englisg locale.
+         * Tests again using the English locale.
          */
         marshaller.setProperty(XML.LOCALE, Locale.ENGLISH);
-        expected = getCitationXML("http://schemas.opengis.net/iso/19139/20070417/", "eng", "Creation");
+        expected = getCitationXML(Schemas.METADATA_ROOT, "eng", "Creation");
         ci = (CitationDate) XML.unmarshal(expected);
         assertEquals(DateType.CREATION, ci.getDateType());
         actual = marshal(marshaller, ci);

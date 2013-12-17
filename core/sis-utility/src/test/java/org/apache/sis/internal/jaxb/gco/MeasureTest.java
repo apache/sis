@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.gco;
 import java.net.URISyntaxException;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
+import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -46,7 +47,7 @@ public final strictfp class MeasureTest extends TestCase {
         assertEquals(SI.METRE, measure.unit);
         assertEquals("urn:ogc:def:uom:EPSG::9001", measure.getUOM());
         measure.asXPointer = true;
-        assertEquals("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])", measure.getUOM());
+        assertEquals(Schemas.METADATA_ROOT + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])", measure.getUOM());
 
         measure.unit = null;
         measure.asXPointer = false;
@@ -54,12 +55,12 @@ public final strictfp class MeasureTest extends TestCase {
         assertEquals(NonSI.DEGREE_ANGLE, measure.unit);
         assertEquals("urn:ogc:def:uom:EPSG::9102", measure.getUOM());
         measure.asXPointer = true;
-        assertEquals("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='deg'])", measure.getUOM());
+        assertEquals(Schemas.METADATA_ROOT + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='deg'])", measure.getUOM());
 
         measure.unit = null;
         measure.asXPointer = true;
         measure.setUOM("gmxUom.xml#kg"); // Not really an existing unit in 'gmxUom'.
         assertEquals(SI.KILOGRAM, measure.unit);
-        assertEquals("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='kg'])", measure.getUOM());
+        assertEquals(Schemas.METADATA_ROOT + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='kg'])", measure.getUOM());
     }
 }

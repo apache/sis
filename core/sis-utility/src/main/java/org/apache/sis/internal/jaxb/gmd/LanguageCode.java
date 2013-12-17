@@ -77,7 +77,7 @@ public final class LanguageCode extends GO_CharacterString {
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
     private LanguageCode(final Context context, final String codeListValue, final String codeSpace, final String value) {
-        proxy = new CodeListProxy(context, "ML_gmxCodelists.xml", "LanguageCode", codeListValue, codeSpace, value);
+        proxy = new CodeListProxy(context, "LanguageCode", codeListValue, codeSpace, value);
     }
 
     /**
@@ -89,8 +89,8 @@ public final class LanguageCode extends GO_CharacterString {
      *         or if its {@link Locale#getLanguage()} attribute is the empty string.
      */
     public static LanguageCode create(final Context context, final Locale locale) {
-        if (locale != null) {
-            final String codeListValue = Context.converter(context).toLanguageCode(context, locale);
+        final String codeListValue = Context.converter(context).toLanguageCode(context, locale);
+        if (codeListValue != null) {
             if (!codeListValue.isEmpty() && Context.isFlagSet(context, Context.SUBSTITUTE_LANGUAGE)) {
                 /*
                  * Marshal the locale as a <gco:CharacterString> instead than <LanguageCode>,

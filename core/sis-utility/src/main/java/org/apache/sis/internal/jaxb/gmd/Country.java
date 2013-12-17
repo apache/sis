@@ -71,7 +71,7 @@ public final class Country extends GO_CharacterString {
 
     /**
      * Builds a {@code <Country>} element.
-     * For private use by {@link #create(Context, Locale, CharSequenceAdapter)} only.
+     * For private use by {@link #create(Context, Locale)} only.
      *
      * @param context       The current (un)marshalling context, or {@code null} if none.
      * @param codeListValue The {@code codeListValue} attribute in the XML element.
@@ -79,7 +79,7 @@ public final class Country extends GO_CharacterString {
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
     private Country(final Context context, final String codeListValue, final String codeSpace, final String value) {
-        proxy = new CodeListProxy(context, "ML_gmxCodelists.xml", "Country", codeListValue, codeSpace, value);
+        proxy = new CodeListProxy(context, "Country", codeListValue, codeSpace, value);
     }
 
     /**
@@ -91,8 +91,8 @@ public final class Country extends GO_CharacterString {
      *         or if its {@link Locale#getCountry()} attribute is the empty string.
      */
     public static Country create(final Context context, final Locale locale) {
-        if (locale != null) {
-            final String codeListValue = Context.converter(context).toCountryCode(context, locale);
+        final String codeListValue = Context.converter(context).toCountryCode(context, locale);
+        if (codeListValue != null) {
             if (!codeListValue.isEmpty() && Context.isFlagSet(context, Context.SUBSTITUTE_COUNTRY)) {
                 /*
                  * Marshal the locale as a <gco:CharacterString> instead than <Country>,

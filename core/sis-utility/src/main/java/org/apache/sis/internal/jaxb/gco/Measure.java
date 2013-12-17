@@ -22,8 +22,8 @@ import javax.measure.unit.NonSI;
 import javax.measure.quantity.Quantity;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 
@@ -119,10 +119,6 @@ public final class Measure {
      *
      * @return The string representation of the unit of measure.
      *
-     * @todo The file on schemas.opengis.net is <code>gmxUom.xml</code>, but the file on standards.iso.org
-     *       and eden.ign.fr is <code>ML_gmxUom.xml</code>. Is there some rule allowing us to know which
-     *       filename to use?
-     *
      * @todo Strictly speaking, the above URL should be used only for "m", "deg" and "rad" units because they
      *       are the only ones defined in the <code>gmxUom.xml</code> file. What should we do for other units?
      */
@@ -141,8 +137,8 @@ public final class Measure {
                 return "urn:ogc:def:uom:EPSG::" + code;
             }
         }
-        return Context.schema(Context.current(), "gmd", CodeListProxy.DEFAULT_SCHEMA)
-                .append("resources/uom/gmxUom.xml#xpointer(//*[@gml:id='").append(unit).append("'])").toString();
+        return Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT).append(Schemas.UOM_PATH)
+                .append("#xpointer(//*[@gml:id='").append(unit).append("'])").toString();
     }
 
     /**

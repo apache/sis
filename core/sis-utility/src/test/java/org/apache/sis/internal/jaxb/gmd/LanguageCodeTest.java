@@ -27,6 +27,7 @@ import org.opengis.metadata.Metadata;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.mock.MetadataMock;
@@ -60,7 +61,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      * XML fragment using the {@code <gmd:LanguageCode>} construct with attributes.
      */
     private static final String LANGUAGE_CODE = "<gmd:LanguageCode" +
-            " codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/ML_gmxCodelists.xml#LanguageCode\"" +
+            " codeList=\"" + Schemas.METADATA_ROOT + Schemas.CODELISTS_PATH + "#LanguageCode\"" +
             " codeListValue=\"jpn\">Japanese</gmd:LanguageCode>";
 
     /**
@@ -140,7 +141,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      * {@preformat xml
      *   <gmd:MD_Metadata>
      *     <gmd:language>
-     *       <gmd:LanguageCode codeList="(snip)/ML_gmxCodelists.xml#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
+     *       <gmd:LanguageCode codeList="(snip)/gmxCodelists.xml#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
      *     </gmd:language>
      *   </gmd:MD_Metadata>
      * }
