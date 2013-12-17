@@ -88,7 +88,7 @@ public final class TimeInstant extends GMLAdapter {
                         return date;
                     }
                 } catch (DatatypeConfigurationException e) {
-                    Context.warningOccured(context, position, TimeInstant.class, "toXML", e, true);
+                    Context.warningOccured(context, TimeInstant.class, "toXML", e, true);
                 }
             }
         }

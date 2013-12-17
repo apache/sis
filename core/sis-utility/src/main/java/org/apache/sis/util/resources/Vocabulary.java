@@ -27,7 +27,7 @@ import org.opengis.util.InternationalString;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.2)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Vocabulary extends IndexedResourceBundle {
@@ -57,327 +57,327 @@ public final class Vocabulary extends IndexedResourceBundle {
         /**
          * Angle
          */
-        public static final int Angle = 9;
+        public static final short Angle = 0;
 
         /**
          * Degrees
          */
-        public static final int AngularDegrees = 10;
+        public static final short AngularDegrees = 1;
 
         /**
          * Minutes
          */
-        public static final int AngularMinutes = 11;
+        public static final short AngularMinutes = 2;
 
         /**
          * Seconds
          */
-        public static final int AngularSeconds = 12;
+        public static final short AngularSeconds = 3;
 
         /**
          * Attributes
          */
-        public static final int Attributes = 45;
+        public static final short Attributes = 4;
 
         /**
          * Barometric altitude
          */
-        public static final int BarometricAltitude = 60;
+        public static final short BarometricAltitude = 5;
 
         /**
          * Character encoding
          */
-        public static final int CharacterEncoding = 17;
+        public static final short CharacterEncoding = 6;
 
         /**
          * Classpath
          */
-        public static final int Classpath = 29;
+        public static final short Classpath = 7;
 
         /**
          * {0} code
          */
-        public static final int Code_1 = 21;
+        public static final short Code_1 = 8;
 
         /**
          * Commands
          */
-        public static final int Commands = 48;
+        public static final short Commands = 9;
 
         /**
          * Current date and time
          */
-        public static final int CurrentDateTime = 25;
+        public static final short CurrentDateTime = 10;
 
         /**
          * Current directory
          */
-        public static final int CurrentDirectory = 33;
+        public static final short CurrentDirectory = 11;
 
         /**
          * Cycle omitted
          */
-        public static final int CycleOmitted = 54;
+        public static final short CycleOmitted = 12;
 
         /**
          * Daylight time
          */
-        public static final int DaylightTime = 24;
+        public static final short DaylightTime = 13;
 
         /**
          * Destination
          */
-        public static final int Destination = 38;
+        public static final short Destination = 14;
 
         /**
          * Dimensions
          */
-        public static final int Dimensions = 46;
+        public static final short Dimensions = 15;
 
         /**
          * Directory
          */
-        public static final int Directory = 36;
+        public static final short Directory = 16;
 
         /**
          * Dublin Julian
          */
-        public static final int DublinJulian = 56;
+        public static final short DublinJulian = 17;
 
         /**
          * Ellipsoidal
          */
-        public static final int Ellipsoidal = 61;
+        public static final short Ellipsoidal = 18;
 
         /**
          * Geoidal
          */
-        public static final int Geoidal = 62;
+        public static final short Geoidal = 19;
 
         /**
          * Identifier
          */
-        public static final int Identifier = 42;
+        public static final short Identifier = 20;
 
         /**
          * Implementation
          */
-        public static final int Implementation = 52;
+        public static final short Implementation = 21;
 
         /**
          * Index
          */
-        public static final int Index = 44;
+        public static final short Index = 22;
 
         /**
          * Java extensions
          */
-        public static final int JavaExtensions = 26;
+        public static final short JavaExtensions = 23;
 
         /**
          * Java home directory
          */
-        public static final int JavaHome = 30;
+        public static final short JavaHome = 24;
 
         /**
          * Julian
          */
-        public static final int Julian = 57;
+        public static final short Julian = 25;
 
         /**
          * Latitude
          */
-        public static final int Latitude = 40;
+        public static final short Latitude = 26;
 
         /**
          * Libraries
          */
-        public static final int Libraries = 35;
+        public static final short Libraries = 27;
 
         /**
          * Local configuration
          */
-        public static final int LocalConfiguration = 14;
+        public static final short LocalConfiguration = 28;
 
         /**
          * Locale
          */
-        public static final int Locale = 18;
+        public static final short Locale = 29;
 
         /**
          * Localization
          */
-        public static final int Localization = 19;
+        public static final short Localization = 30;
 
         /**
          * Logging
          */
-        public static final int Logging = 51;
+        public static final short Logging = 31;
 
         /**
          * Longitude
          */
-        public static final int Longitude = 41;
+        public static final short Longitude = 32;
 
         /**
          * Maximum value
          */
-        public static final int MaximumValue = 5;
+        public static final short MaximumValue = 33;
 
         /**
          * Mean value
          */
-        public static final int MeanValue = 6;
+        public static final short MeanValue = 34;
 
         /**
          * Minimum value
          */
-        public static final int MinimumValue = 4;
+        public static final short MinimumValue = 35;
 
         /**
          * Modified Julian
          */
-        public static final int ModifiedJulian = 58;
+        public static final short ModifiedJulian = 36;
 
         /**
          * Name
          */
-        public static final int Name = 0;
+        public static final short Name = 37;
 
         /**
          * Number of ‘NaN’
          */
-        public static final int NumberOfNaN = 3;
+        public static final short NumberOfNaN = 38;
 
         /**
          * Number of values
          */
-        public static final int NumberOfValues = 2;
+        public static final short NumberOfValues = 39;
 
         /**
          * {0} ({1} of {2})
          */
-        public static final int Of_3 = 43;
+        public static final short Of_3 = 40;
 
         /**
          * Offset
          */
-        public static final int Offset = 22;
+        public static final short Offset = 41;
 
         /**
          * Operating system
          */
-        public static final int OperatingSystem = 16;
+        public static final short OperatingSystem = 42;
 
         /**
          * Options
          */
-        public static final int Options = 49;
+        public static final short Options = 43;
 
         /**
          * Other surface
          */
-        public static final int OtherSurface = 63;
+        public static final short OtherSurface = 44;
 
         /**
          * Others
          */
-        public static final int Others = 34;
+        public static final short Others = 45;
 
         /**
          * Paths
          */
-        public static final int Paths = 27;
+        public static final short Paths = 46;
 
         /**
          * Root
          */
-        public static final int Root = 28;
+        public static final short Root = 47;
 
         /**
          * Root Mean Square
          */
-        public static final int RootMeanSquare = 7;
+        public static final short RootMeanSquare = 48;
 
         /**
          * Scale
          */
-        public static final int Scale = 23;
+        public static final short Scale = 49;
 
         /**
          * Source
          */
-        public static final int Source = 39;
+        public static final short Source = 50;
 
         /**
          * Standard deviation
          */
-        public static final int StandardDeviation = 8;
+        public static final short StandardDeviation = 51;
 
         /**
          * Temporary files
          */
-        public static final int TemporaryFiles = 31;
+        public static final short TemporaryFiles = 52;
 
         /**
          * {0} time
          */
-        public static final int Time_1 = 64;
+        public static final short Time_1 = 53;
 
         /**
          * Timezone
          */
-        public static final int Timezone = 20;
+        public static final short Timezone = 54;
 
         /**
          * Truncated Julian
          */
-        public static final int TruncatedJulian = 59;
+        public static final short TruncatedJulian = 55;
 
         /**
          * Type
          */
-        public static final int Type = 1;
+        public static final short Type = 56;
 
         /**
          * Unavailable content.
          */
-        public static final int UnavailableContent = 53;
+        public static final short UnavailableContent = 57;
 
         /**
          * Untitled
          */
-        public static final int Untitled = 37;
+        public static final short Untitled = 58;
 
         /**
          * User home directory
          */
-        public static final int UserHome = 32;
+        public static final short UserHome = 59;
 
         /**
          * Value
          */
-        public static final int Value = 13;
+        public static final short Value = 60;
 
         /**
          * Variables
          */
-        public static final int Variables = 47;
+        public static final short Variables = 61;
 
         /**
          * {0} version {1}
          */
-        public static final int Version_2 = 50;
+        public static final short Version_2 = 62;
 
         /**
          * Versions
          */
-        public static final int Versions = 15;
+        public static final short Versions = 63;
 
         /**
          * World
          */
-        public static final int World = 55;
+        public static final short World = 64;
     }
 
     /**
@@ -416,7 +416,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @return The string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public static String format(final int key) throws MissingResourceException {
+    public static String format(final short key) throws MissingResourceException {
         return getResources(null).getString(key);
     }
 
@@ -426,8 +426,8 @@ public final class Vocabulary extends IndexedResourceBundle {
     private static final class International extends ResourceInternationalString {
         private static final long serialVersionUID = -5423999784169092823L;
 
-        International(int key)                   {super(key);}
-        International(int key, Object args)      {super(key, args);}
+        International(short key)                 {super(key);}
+        International(short key, Object args)    {super(key, args);}
         @Override KeyConstants getKeyConstants() {return Keys.INSTANCE;}
         @Override IndexedResourceBundle getBundle(final Locale locale) {
             return getResources(locale);
@@ -442,7 +442,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @param  key The key for the desired string.
      * @return An international string for the given key.
      */
-    public static InternationalString formatInternational(final int key) {
+    public static InternationalString formatInternational(final short key) {
         return new International(key);
     }
 
@@ -459,7 +459,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @param  arg Values to substitute to "{0}".
      * @return An international string for the given key.
      */
-    public static InternationalString formatInternational(final int key, final Object arg) {
+    public static InternationalString formatInternational(final short key, final Object arg) {
         return new International(key, arg);
     }
 
@@ -472,7 +472,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @param  args Values to substitute to "{0}", "{1}", <i>etc</i>.
      * @return An international string for the given key.
      */
-    public static InternationalString formatInternational(final int key, final Object... args) {
+    public static InternationalString formatInternational(final short key, final Object... args) {
         return new International(key, args);
     }
 }

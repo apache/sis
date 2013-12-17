@@ -58,6 +58,8 @@ public abstract strictfp class XMLTestCase extends TestCase {
      * an error of one or two hours if a code fails to take timezone offset in account.
      *
      * <p>This field is initially {@code null} and created when first needed.</p>
+     *
+     * @see #getMarshallerPool()
      */
     private static MarshallerPool defaultPool;
 

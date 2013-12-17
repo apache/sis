@@ -20,6 +20,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.LoggingWatcher;
+import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Rule;
@@ -135,7 +136,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
                 "<gmd:MD_Resolution xmlns:gmd=\"" + Namespaces.GMD + '"' +
                                   " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:distance>\n" +
-                "    <gco:Distance uom=\"http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
+                "    <gco:Distance uom=\"" + Schemas.METADATA_ROOT + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
                 "  </gmd:distance>\n" +
                 "</gmd:MD_Resolution>", xml, "xmlns:*");
         /*

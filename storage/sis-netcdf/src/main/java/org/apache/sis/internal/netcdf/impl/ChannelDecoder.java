@@ -252,7 +252,7 @@ public final class ChannelDecoder extends Decoder {
      *         one of the expected constants.
      */
     private static String tagName(final int tag) {
-        final int key;
+        final short key;
         switch (tag) {
             case DIMENSION: key = Vocabulary.Keys.Dimensions; break;
             case VARIABLE:  key = Vocabulary.Keys.Variables;  break;

@@ -55,8 +55,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
 
     /**
      * Set the marshalling context to a fixed locale and timezone before to create the
-     * JAXB wrappers for temporal objects. Callers shall invoke {@link #clearContext()}
-     * after this method.
+     * JAXB wrappers for temporal objects.
      */
     private void createContext() {
         createContext(true, Locale.FRANCE, "CET");
@@ -88,17 +87,6 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
     }
 
     /**
-     * Creates a new time instant for the given date.
-     */
-    private TimeInstant createTimeInstant(final String date) throws DatatypeConfigurationException {
-        final TimeInstant instant = new TimeInstant();
-        createContext();
-        instant.timePosition = XmlUtilities.toXML(context, date(date));
-        clearContext();
-        return instant;
-    }
-
-    /**
      * Tests time instant. The test is executed using an arbitrary locale and timezone.
      *
      * @throws JAXBException If an error occurred while marshalling.
@@ -106,10 +94,11 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      */
     @Test
     public void testTimeInstant() throws JAXBException, DatatypeConfigurationException {
+        createContext();
         final Marshaller   marshaller   = pool.acquireMarshaller();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-
-        final TimeInstant instant = createTimeInstant("1992-01-01 00:00:00");
+        final TimeInstant  instant      = new TimeInstant();
+        instant.timePosition = XmlUtilities.toXML(context, date("1992-01-01 00:00:00"));
         final String actual = marshal(marshaller, instant);
         assertXmlEquals(
                 "<gml:TimeInstant xmlns:gml=\"" + Namespaces.GML + "\">\n" +
@@ -117,7 +106,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
                 "</gml:TimeInstant>\n", actual, "xmlns:*");
 
         final TimeInstant test = (TimeInstant) unmarshal(unmarshaller, actual);
-        assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(test.timePosition)));
+        assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(context, test.timePosition)));
 
         pool.recycle(marshaller);
         pool.recycle(unmarshaller);
@@ -134,7 +123,6 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         createContext();
         final TimePeriodBound begin = new TimePeriodBound.GML2(new DummyInstant(date("1992-01-01 00:00:00")));
         final TimePeriodBound end   = new TimePeriodBound.GML2(new DummyInstant(date("2007-12-31 00:00:00")));
-        clearContext();
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:begin>\n" +
@@ -162,15 +150,15 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
     {
         final Marshaller   marshaller   = pool.acquireMarshaller();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-        final TimePeriod period = new TimePeriod();
+        final TimePeriod   period       = new TimePeriod();
         period.begin = begin;
         period.end   = end;
         final String actual = marshal(marshaller, period);
         assertXmlEquals(expected, actual, "xmlns:*");
         final TimePeriod test = (TimePeriod) unmarshal(unmarshaller, actual);
         if (verifyValues) {
-            assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(test.begin.calendar())));
-            assertEquals("2007-12-31 00:00:00", format(XmlUtilities.toDate(test.end  .calendar())));
+            assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(context, test.begin.calendar())));
+            assertEquals("2007-12-31 00:00:00", format(XmlUtilities.toDate(context, test.end  .calendar())));
         }
         pool.recycle(marshaller);
         pool.recycle(unmarshaller);
@@ -187,7 +175,6 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         createContext();
         final TimePeriodBound begin = new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 00:00:00")), "before");
         final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-31 00:00:00")), "after");
-        clearContext();
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition>1992-01-01T01:00:00+01:00</gml:beginPosition>\n" +
@@ -206,7 +193,6 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         createContext();
         final TimePeriodBound begin = new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 23:00:00")), "before");
         final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after");
-        clearContext();
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +
@@ -225,7 +211,6 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         createContext();
         final TimePeriodBound begin = new TimePeriodBound.GML3(null, "before");
         final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after");
-        clearContext();
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition indeterminatePosition=\"before\"/>\n" +
@@ -244,7 +229,6 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         createContext();
         final TimePeriodBound begin = new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 23:00:00")), "before");
         final TimePeriodBound end   = new TimePeriodBound.GML3(null, "after");
-        clearContext();
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +

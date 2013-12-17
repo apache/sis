@@ -95,6 +95,8 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
 
     /**
      * Returns the GeoAPI interface which is bound by this adapter.
+     *
+     * @return {@code VerticalCRS.class}
      */
     @Override
     protected final Class<VerticalCRS> getBoundType() {
@@ -114,7 +116,7 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
      */
     @XmlAnyElement(lax = true)
     public Object getElement() {
-        Context.warningOccured(Context.current(), metadata, SC_VerticalCRS.class, "getElement",
+        Context.warningOccured(Context.current(), SC_VerticalCRS.class, "getElement",
                 Errors.class, Errors.Keys.MissingRequiredModule_1, "sis-referencing");
         return null;
     }
