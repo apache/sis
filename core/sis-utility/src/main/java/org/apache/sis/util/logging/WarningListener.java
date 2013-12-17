@@ -68,7 +68,7 @@ public interface WarningListener<S> extends EventListener {
      * Applications do not need to log the warning, since logging will be done automatically if the emitter has
      * no registered warning listeners.</p>
      *
-     * @param source  The object that emitted a warning.
+     * @param source  The object that emitted a warning, or {@code null} if not available.
      * @param warning The warning message together with programmatic information.
      */
     void warningOccured(S source, LogRecord warning);

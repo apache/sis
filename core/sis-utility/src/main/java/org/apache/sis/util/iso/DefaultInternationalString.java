@@ -420,8 +420,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
             localeMap = Collections.singletonMap(Locales.unique(entry.getKey()), entry.getValue());
         } else {
             localeMap.clear();
-            for (int i=0; i<entries.length; i++) {
-                final Map.Entry<Locale,String> entry = entries[i];
+            for (final Map.Entry<Locale,String> entry : entries) {
                 localeMap.put(Locales.unique(entry.getKey()), entry.getValue());
             }
         }

@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.04)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(ArraysExtTest.class)
@@ -89,9 +89,23 @@ public final strictfp class LocalesTest extends TestCase {
     }
 
     /**
+     * Tests that {@link Locales#parse(String)} throw an exception if given an invalid argument.
+     */
+    @Test
+    public void testParseInvalid() {
+        try {
+            Locales.parse("orange_APPLE");
+            fail("Shall not parse invalid locale.");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("orange_APPLE"));
+        }
+    }
+
+    /**
      * Tests the {@link Locales#parseSuffix(String, String)} method.
      */
     @Test
+    @Deprecated
     @DependsOnMethod("testParse")
     public void testParseSuffix() {
         assertSame(null,           Locales.parseSuffix("remarks", "remark"));

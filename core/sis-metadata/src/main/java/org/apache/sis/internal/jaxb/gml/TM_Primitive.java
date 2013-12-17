@@ -108,8 +108,9 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
     public void setTimePeriod(final TimePeriod period) {
         metadata = null; // Cleaned first in case of failure.
         if (period != null) {
-            final Date begin = toDate(period.begin);
-            final Date end   = toDate(period.end);
+            final Context context = Context.current();
+            final Date begin = toDate(context, period.begin);
+            final Date end   = toDate(context, period.end);
             if (begin != null || end != null) {
                 if (begin != null && end != null && end.before(begin)) {
                     /*
@@ -118,7 +119,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
                      * TemporalPrimitive as the source class, since it is the closest we can get
                      * to a public API.
                      */
-                    Context.warningOccured(Context.current(), this, TemporalPrimitive.class, "setTimePeriod",
+                    Context.warningOccured(context, TemporalPrimitive.class, "setTimePeriod",
                             Errors.class, Errors.Keys.IllegalRange_2, begin, end);
                 } else try {
                     metadata = TemporalUtilities.createPeriod(begin, end);
@@ -139,7 +140,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
     public void setTimeInstant(final TimeInstant instant) {
         metadata = null; // Cleaned first in case of failure.
         if (instant != null) {
-            final Date position = XmlUtilities.toDate(instant.timePosition);
+            final Date position = XmlUtilities.toDate(Context.current(), instant.timePosition);
             if (position != null) try {
                 metadata = TemporalUtilities.createInstant(position);
                 instant.copyIdTo(metadata);
@@ -152,8 +153,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
     /**
      * Returns the date of the given bounds, or {@code null} if none.
      */
-    private static Date toDate(final TimePeriodBound bound) {
-        return (bound != null) ? XmlUtilities.toDate(bound.calendar()) : null;
+    private static Date toDate(final Context context, final TimePeriodBound bound) {
+        return (bound != null) ? XmlUtilities.toDate(context, bound.calendar()) : null;
     }
 
     /**
@@ -162,7 +163,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * @param method The name of the method to declare in the log record.
      * @param e the exception.
      */
-    private void warningOccured(final String method, final Exception e) {
-        Context.warningOccured(Context.current(), this, TM_Primitive.class, method, e, true);
+    private static void warningOccured(final String method, final Exception e) {
+        Context.warningOccured(Context.current(), TM_Primitive.class, method, e, true);
     }
 }

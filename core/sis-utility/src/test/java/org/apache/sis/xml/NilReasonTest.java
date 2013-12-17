@@ -24,7 +24,7 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.TestCase;
-import org.junit.*;
+import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 

@@ -182,7 +182,7 @@ public final class ArgumentChecks extends Static {
         if (value != null) {
             final Class<?> valueClass = value.getClass();
             if (!expectedType.isAssignableFrom(valueClass)) {
-                final int key;
+                final short key;
                 final Object[] args;
                 if (name != null) {
                     key = Errors.Keys.IllegalArgumentClass_3;

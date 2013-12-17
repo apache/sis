@@ -16,45 +16,44 @@
  */
 package org.apache.sis.test.mock;
 
+import java.util.Date;
 import java.util.Locale;
 import java.util.Collection;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.MetadataExtensionInformation;
+import org.opengis.metadata.ApplicationSchemaInformation;
+import org.opengis.metadata.PortrayalCatalogueReference;
+import org.opengis.metadata.acquisition.AcquisitionInformation;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
-import org.opengis.metadata.distribution.Format;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.identification.AggregateInformation;
-import org.opengis.metadata.identification.BrowseGraphic;
+import org.opengis.metadata.content.ContentInformation;
+import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.identification.CharacterSet;
-import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.metadata.identification.Keywords;
-import org.opengis.metadata.identification.Progress;
-import org.opengis.metadata.identification.Resolution;
-import org.opengis.metadata.identification.TopicCategory;
-import org.opengis.metadata.identification.Usage;
+import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
-import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.opengis.util.InternationalString;
-import org.apache.sis.xml.Namespaces;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.quality.DataQuality;
+import org.opengis.metadata.spatial.SpatialRepresentation;
+import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
- * A dummy implementation of {@link DataIdentification} with minimal XML (un)marshalling capability.
+ * A dummy implementation of {@link Metadata} with minimal XML (un)marshalling capability.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
+ * @since   0.4
+ * @version 0.4
  * @module
  */
-@XmlRootElement(name = "MD_DataIdentification", namespace = Namespaces.GMD)
-public final strictfp class DataIdentificationMock implements DataIdentification {
+@XmlRootElement(name = "MD_Metadata", namespace = Namespaces.GMD)
+public final strictfp class MetadataMock implements Metadata {
     /**
-     * The locale to (un)marshal as a language.
+     * The language used for documenting metadata.
      */
     @XmlElement(namespace = Namespaces.GMD)
     @XmlJavaTypeAdapter(LocaleAdapter.class)
@@ -64,7 +63,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * Creates an initially empty metadata.
      * This constructor is required by JAXB.
      */
-    public DataIdentificationMock() {
+    public MetadataMock() {
     }
 
     /**
@@ -73,18 +72,27 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      *
      * @param language The initial {@link #language} value (can be {@code null}).
      */
-    public DataIdentificationMock(final Locale language) {
+    public MetadataMock(final Locale language) {
         this.language = language;
     }
 
     /**
-     * Returns {@link #language} in an unmodifiable collection.
+     * Undefined property.
+     * @return {@code null}.
+     */
+    @Override
+    public String getFileIdentifier() {
+        return null;
+    }
+
+    /**
+     * Returns {@link #language}.
      *
-     * @return {@link #language} singleton.
+     * @return {@link #language}
      */
     @Override
-    public Collection<Locale> getLanguages() {
-        return (language != null) ? Collections.singleton(language) : Collections.<Locale>emptySet();
+    public Locale getLanguage() {
+        return language;
     }
 
     /**
@@ -92,7 +100,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {
+    public CharacterSet getCharacterSet() {
         return null;
     }
 
@@ -101,7 +109,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends Resolution> getSpatialResolutions() {
+    public String getParentIdentifier() {
         return null;
     }
 
@@ -110,7 +118,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<CharacterSet> getCharacterSets() {
+    public Collection<ScopeCode> getHierarchyLevels() {
         return null;
     }
 
@@ -119,7 +127,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<TopicCategory> getTopicCategories() {
+    public Collection<String> getHierarchyLevelNames() {
         return null;
     }
 
@@ -128,7 +136,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public InternationalString getEnvironmentDescription() {
+    public Collection<? extends ResponsibleParty> getContacts() {
         return null;
     }
 
@@ -137,7 +145,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends Extent> getExtents() {
+    public Date getDateStamp() {
         return null;
     }
 
@@ -146,7 +154,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public InternationalString getSupplementalInformation() {
+    public String getMetadataStandardName() {
         return null;
     }
 
@@ -155,7 +163,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Citation getCitation() {
+    public String getMetadataStandardVersion() {
         return null;
     }
 
@@ -164,7 +172,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public InternationalString getAbstract() {
+    public String getDataSetUri() {
         return null;
     }
 
@@ -173,7 +181,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public InternationalString getPurpose() {
+    public Collection<Locale> getLocales() {
         return null;
     }
 
@@ -182,7 +190,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<String> getCredits() {
+    public Collection<? extends SpatialRepresentation> getSpatialRepresentationInfo() {
         return null;
     }
 
@@ -191,7 +199,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<Progress> getStatus() {
+    public Collection<? extends ReferenceSystem> getReferenceSystemInfo() {
         return null;
     }
 
@@ -200,7 +208,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends ResponsibleParty> getPointOfContacts() {
+    public Collection<? extends MetadataExtensionInformation> getMetadataExtensionInfo() {
         return null;
     }
 
@@ -209,7 +217,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends MaintenanceInformation> getResourceMaintenances() {
+    public Collection<? extends Identification> getIdentificationInfo() {
         return null;
     }
 
@@ -218,7 +226,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends BrowseGraphic> getGraphicOverviews() {
+    public Collection<? extends ContentInformation> getContentInfo() {
         return null;
     }
 
@@ -227,7 +235,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends Format> getResourceFormats() {
+    public Distribution getDistributionInfo() {
         return null;
     }
 
@@ -236,7 +244,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends Keywords> getDescriptiveKeywords() {
+    public Collection<? extends DataQuality> getDataQualityInfo() {
         return null;
     }
 
@@ -245,7 +253,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends Usage> getResourceSpecificUsages() {
+    public Collection<? extends PortrayalCatalogueReference> getPortrayalCatalogueInfo() {
         return null;
     }
 
@@ -254,7 +262,7 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends Constraints> getResourceConstraints() {
+    public Collection<? extends Constraints> getMetadataConstraints() {
         return null;
     }
 
@@ -263,7 +271,25 @@ public final strictfp class DataIdentificationMock implements DataIdentification
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends AggregateInformation> getAggregationInfo() {
+    public Collection<? extends ApplicationSchemaInformation> getApplicationSchemaInfo() {
+        return null;
+    }
+
+    /**
+     * Undefined property.
+     * @return {@code null}.
+     */
+    @Override
+    public MaintenanceInformation getMetadataMaintenance() {
+        return null;
+    }
+
+    /**
+     * Undefined property.
+     * @return {@code null}.
+     */
+    @Override
+    public Collection<? extends AcquisitionInformation> getAcquisitionInformation() {
         return null;
     }
 }
