@@ -76,13 +76,16 @@ public class GO_CharacterString {
 
     /**
      * The XML element names for each possible {@link #type} values.
+     * Used for formatting error messages.
      */
-    private static final String[] NAMES = new String[4];
-    static {
-        NAMES[0]         = "CharacterString";
-        NAMES[MIME_TYPE] = "MimeFileType";
-        NAMES[FILENAME]  = "FileName";
-        NAMES[ANCHOR]    = "Anchor";
+    private static String nameOf(final byte type) {
+        switch (type) {
+            case 0:         return "CharacterString";
+            case MIME_TYPE: return "MimeFileType";
+            case FILENAME:  return "FileName";
+            case ANCHOR:    return "Anchor";
+            default:        throw new AssertionError(type);
+        }
     }
 
     /**
@@ -135,8 +138,8 @@ public class GO_CharacterString {
                 property  = type;
                 noset     = true;
             }
-            Context.warningOccured(Context.current(), value, getClass(), "setText",
-                    Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[discarded], NAMES[property]);
+            Context.warningOccured(Context.current(), getClass(), "setText", Messages.class,
+                    Messages.Keys.DiscardedExclusiveProperty_2, nameOf(discarded), nameOf(property));
             if (noset) {
                 return;
             }

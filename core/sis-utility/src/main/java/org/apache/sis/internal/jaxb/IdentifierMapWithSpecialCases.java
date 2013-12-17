@@ -215,7 +215,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
                 return (uri != null) ? uri.toString() : old;
             }
         }
-        SpecializedIdentifier.parseFailure(context, this, code, type, exception);
+        SpecializedIdentifier.parseFailure(context, code, type, exception);
         final String old = super.put(authority, code);
         return (old == null && removed != null) ? removed.toString() : old;
     }

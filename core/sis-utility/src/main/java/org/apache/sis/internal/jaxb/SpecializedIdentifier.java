@@ -92,13 +92,12 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * authorities declared in the {@link IdentifierSpace} interface. Otherwise a
      * plain {@link IdentifierMapEntry} is created.
      *
-     * @param source    The object to declare as the source in case of failure.
      * @param authority The authority, typically as one of the {@link IdentifierSpace} constants.
      * @param code      The identifier code to parse.
      *
      * @see IdentifierMapAdapter#put(Citation, String)
      */
-    static Identifier parse(final IdentifierMap source, final Citation authority, final String code) {
+    static Identifier parse(final Citation authority, final String code) {
         if (authority instanceof NonMarshalledAuthority) {
             final int ordinal = ((NonMarshalledAuthority) authority).ordinal;
             switch (ordinal) {
@@ -111,7 +110,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
                     try {
                         return new SpecializedIdentifier<UUID>(IdentifierSpace.UUID, converter.toUUID(context, code));
                     } catch (IllegalArgumentException e) {
-                        parseFailure(context, source, code, UUID.class, e);
+                        parseFailure(context, code, UUID.class, e);
                         break;
                     }
                 }
@@ -123,7 +122,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
                     try {
                         href = converter.toURI(context, code);
                     } catch (URISyntaxException e) {
-                        parseFailure(context, source, code, URI.class, e);
+                        parseFailure(context, code, URI.class, e);
                         break;
                     }
                     if (ordinal == NonMarshalledAuthority.HREF) {
@@ -147,20 +146,17 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * the public API by which this method has been invoked.</p>
      *
      * @param context The marshalling context, or {@code null} if none.
-     * @param source  The object to declare as the source of the warning.
      * @param value   The value that we failed to parse.
      * @param type    The target type of the parsing process.
      * @param cause   The exception that occurred during the parsing process.
      */
-    static void parseFailure(final Context context, final IdentifierMap source,
-            final String value, final Class<?> type, final Exception cause)
-    {
+    static void parseFailure(final Context context, final String value, final Class<?> type, final Exception cause) {
         final Messages resources = Messages.getResources(context != null ? context.getLocale() : null);
         final LogRecord record = resources.getLogRecord(Level.WARNING, Messages.Keys.UnparsableValueStoredAsText_2, type, value);
         record.setSourceClassName(IdentifierMap.class.getCanonicalName());
         record.setSourceMethodName("put");
         record.setThrown(cause);
-        Context.warningOccured(context, source, record);
+        Context.warningOccured(context, record);
     }
 
     /**

@@ -181,7 +181,6 @@ public abstract strictfp class TestCase {
      * @param success {@code true} if this method is invoked on build success,
      */
     static void flushOutput() {
-        randomSeed = 0;
         System.out.flush();
         System.err.flush();
         synchronized (buffer) { // This is the lock used by the 'out' PrintWriter.

@@ -453,9 +453,7 @@ public final class URIParser {
                  * relative instead than absolute.
                  */
                 int i = url.lastIndexOf('/', f-1) + 1;
-                if (regionMatches(   "gmxUom.xml", url, i, f) ||  // Name used on http://schemas.opengis.net
-                    regionMatches("ML_gmxUom.xml", url, i, f))    // Name used on http://standards.iso.org
-                {
+                if (regionMatches("gmxUom.xml", url, i, f) || regionMatches("ML_gmxUom.xml", url, i, f)) {
                     /*
                      * The fragment should typically be of the form "xpointer(//*[@gml:id='m'])".
                      * However sometime we found no "xpointer", but directly the unit instead.

@@ -201,7 +201,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
         /**
          * The resource key for the column header.
          */
-        private final transient int resourceKey;
+        private final transient short resourceKey;
 
         /**
          * Creates a new instance for a build-in constant.
@@ -210,7 +210,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
          * @param type   Base type of all values in the column identified by this instance.
          * @param header The resource key for the column header.
          */
-        Constant(final String field, final Class<V> type, final int header) {
+        Constant(final String field, final Class<V> type, final short header) {
             super(type);
             this.field       = field;
             this.resourceKey = header;
