@@ -72,7 +72,7 @@ public final strictfp class LocalesTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testUnique")
-    public void testParseLanguage() {
+    public void testParse() {
         assertSame(Locale.FRENCH,        Locales.parse("fr"));
         assertSame(Locale.FRENCH,        Locales.parse("fra"));
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fr_CA"));
@@ -89,11 +89,24 @@ public final strictfp class LocalesTest extends TestCase {
     }
 
     /**
+     * Tests that {@link Locales#parse(String)} throw an exception if given an invalid argument.
+     */
+    @Test
+    public void testParseInvalid() {
+        try {
+            Locales.parse("orange_APPLE");
+            fail("Shall not parse invalid locale.");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("orange_APPLE"));
+        }
+    }
+
+    /**
      * Tests the {@link Locales#parseSuffix(String, String)} method.
      */
     @Test
     @Deprecated
-    @DependsOnMethod("testParseLanguage")
+    @DependsOnMethod("testParse")
     public void testParseSuffix() {
         assertSame(null,           Locales.parseSuffix("remarks", "remark"));
         assertSame(Locale.ROOT,    Locales.parseSuffix("remarks", "remarks"));
