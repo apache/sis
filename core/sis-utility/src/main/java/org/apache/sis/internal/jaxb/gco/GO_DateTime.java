@@ -80,11 +80,11 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     }
 
     /**
-     * Returns the current date, or {@code null} if none. IF both fields are defined,
+     * Returns the current date, or {@code null} if none. If both fields are defined,
      * then {@link #dateTime} has precedence since it is assumed more accurate.
      */
     final Date getDate() {
-        return XmlUtilities.toDate(dateTime != null ? dateTime : date);
+        return XmlUtilities.toDate(Context.current(), dateTime != null ? dateTime : date);
     }
 
     /**
