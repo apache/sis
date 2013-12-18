@@ -314,8 +314,8 @@ filter: for (final Locale locale : locales) {
         language = (String) trimWhitespaces(code, fromIndex, p1);
         language = toISO2(language, LANGUAGE);
         country  = toISO2(country,  COUNTRY);
-        if (language.length() > 8 || !isAlpha(language) ||
-             country.length() > 3 || !isAlpha(country))
+        if (language.length() > 8 || !isAlphaNumeric(language) ||
+             country.length() > 3 || !isAlphaNumeric(country))
         {
             throw new RuntimeException( // IllformedLocaleException (indirectly) on the JDK7 branch.
                     Errors.format(Errors.Keys.IllegalLanguageCode_1, code.substring(fromIndex)));
@@ -324,12 +324,15 @@ filter: for (final Locale locale : locales) {
     }
 
     /**
-     * Returns {@code true} if the given text contains only Latin alphabetic characters.
+     * Returns {@code true} if the given text contains only Latin alphabetic or numeric characters.
+     * We use this method for simulating the check performed by {@code Locale.Builder} on JDK7. Our
+     * test is not as accurate as the JDK7 one however - we are more permissive. But it is not our
+     * intend to reproduce all the JDK7 syntax checks here.
      */
-    private static boolean isAlpha(final String text) {
+    private static boolean isAlphaNumeric(final String text) {
         for (int i=text.length(); --i>=0;) {
             final char c = text.charAt(i);
-            if (!(c >= 'A' && c <= 'Z') && !(c >= 'a' && c <= 'z')) {
+            if (!(c >= 'A' && c <= 'Z') && !(c >= 'a' && c <= 'z') && !(c >= '0' && c <= '9')) {
                 return false;
             }
         }
