@@ -247,7 +247,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         private static final long serialVersionUID = -794933131690043494L;
         public Locale() {super(java.util.Locale.class);} // Instantiated by ServiceLoader.
 
-        @Override java.util.Locale doConvert(String source) throws IllegalArgumentException {
+        @Override java.util.Locale doConvert(String source) {
             return Locales.parse(source);
         }
     }
