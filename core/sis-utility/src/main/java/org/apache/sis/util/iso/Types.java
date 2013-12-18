@@ -648,7 +648,13 @@ public final class Types extends Static {
                     if (isSorted && c > '_') break;
                     continue;
                 }
-                locale = Locales.parse(key, offset + 1);
+                final int s = offset + 1;
+                try {
+                    locale = Locales.parse(key, s);
+                } catch (RuntimeException e) { // IllformedLocaleException on the JDK7 branch.
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalLanguageCode_1,
+                            '(' + key.substring(0, s) + '）' + key.substring(s), e));
+                }
             }
             final Object value = entry.getValue();
             if (value != null) {

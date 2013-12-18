@@ -201,7 +201,7 @@ abstract class SubCommand {
             value = options.get(option = Option.COLORS);
             console = System.console();
             colors = (value != null) ? Option.COLORS.parseBoolean(value) : (console != null) && X364.isAnsiSupported();
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             final String name = option.name().toLowerCase(Locale.US);
             throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
         }
