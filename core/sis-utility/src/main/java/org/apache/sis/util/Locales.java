@@ -24,11 +24,10 @@ import java.util.TreeMap;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.MissingResourceException;
+import java.util.IllformedLocaleException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
@@ -257,11 +256,11 @@ filter: for (final Locale locale : locales) {
      *
      * @param  code The language code, optionally followed by country code and variant.
      * @return The language for the given code (never {@code null}).
-     * @throws IllegalArgumentException If the given code doesn't seem to be a valid locale.
+     * @throws IllformedLocaleException If the given code is not valid.
      *
      * @see Locale#forLanguageTag(String)
      */
-    public static Locale parse(final String code) throws IllegalArgumentException {
+    public static Locale parse(final String code) throws IllformedLocaleException {
         return parse(code, 0);
     }
 
@@ -279,40 +278,45 @@ filter: for (final Locale locale : locales) {
      * @param  code The language code, which may be followed by country code.
      * @param  fromIndex Index of the first character to parse.
      * @return The language for the given code (never {@code null}).
-     * @throws IllegalArgumentException If the given code doesn't seem to be a valid locale.
+     * @throws IllformedLocaleException If the given code is not valid.
      *
      * @see Locale#forLanguageTag(String)
      * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
      */
-    public static Locale parse(final String code, final int fromIndex) throws IllegalArgumentException {
+    public static Locale parse(final String code, final int fromIndex) throws IllformedLocaleException {
         ArgumentChecks.ensureNonNull("code", code);
         ArgumentChecks.ensurePositive("fromIndex", fromIndex);
-        boolean hasMore = false;
-        String language, country, variant;
-        int ci = code.indexOf('_', fromIndex);
-        if (ci < 0) {
-            language = (String) trimWhitespaces(code, fromIndex, code.length());
-            country  = "";
-            variant  = "";
+        int p1 = code.indexOf('_', fromIndex);
+        int i  = code.indexOf('-', fromIndex);
+        if (i >= 0 && (p1 < 0 || i < p1)) {
+            /*
+             * IETF BCP 47 language tag string. This syntax uses the '-' separator instead of '_'.
+             * Note that the '_' character is illegal for the language code, but is legal for the
+             * variant. Consequently we require the '-' character to appear before the first '_'.
+             */
+            return unique(new Locale.Builder().setLanguageTag(code).build());
+        }
+        /*
+         * Old syntax (e.g. "en_US"). Split in (language, country, variant) components,
+         * then convert the 3-letters codes to the 2-letters ones.
+         */
+        String language, country = "", variant = "";
+        if (p1 < 0) {
+            p1 = code.length();
         } else {
-            language = (String) trimWhitespaces(code, fromIndex, ci);
-            int vi = code.indexOf('_', ++ci);
-            if (vi < 0) {
-                country = (String) trimWhitespaces(code, ci, code.length());
-                variant = "";
+            final int s = p1 + 1;
+            int p2 = code.indexOf('_', s);
+            if (p2 < 0) {
+                p2 = code.length();
             } else {
-                country = (String) trimWhitespaces(code, ci, vi);
-                variant = (String) trimWhitespaces(code, ++vi, code.length());
-                hasMore = code.indexOf('_', vi) >= 0;
+                variant = (String) trimWhitespaces(code, p2+1, code.length());
             }
+            country = (String) trimWhitespaces(code, s, p2);
         }
-        if (hasMore || language.length() > 3 || country.length() > 3) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalLanguageCode_1,
-                    code.substring(fromIndex)));
-        }
+        language = (String) trimWhitespaces(code, fromIndex, p1);
         language = toISO2(language, LANGUAGE);
         country  = toISO2(country,  COUNTRY);
-        return unique(new Locale(language, country, variant));
+        return unique(new Locale.Builder().setLanguage(language).setRegion(country).setVariant(variant).build());
     }
 
     /**
@@ -336,14 +340,14 @@ filter: for (final Locale locale : locales) {
      * @param  prefix The prefix to skip at the beginning of the {@code key}.
      * @param  key    The property key from which to extract the locale, or {@code null}.
      * @return The locale encoded in the given key name, or {@code null} if the key has not been recognized.
-     * @throws IllegalArgumentException if the locale after the prefix is an illegal code.
+     * @throws IllformedLocaleException if the locale after the prefix is an illegal code.
      *
      * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
      *
      * @deprecated Users can easily perform this operation themselves, thus avoiding this class initialization.
      */
     @Deprecated
-    public static Locale parseSuffix(final String prefix, final String key) throws IllegalArgumentException {
+    public static Locale parseSuffix(final String prefix, final String key) throws IllformedLocaleException {
         ArgumentChecks.ensureNonNull("prefix", prefix);
         if (key != null) { // Tolerance for Map that accept null keys.
             if (key.startsWith(prefix)) {
@@ -418,8 +422,7 @@ filter: for (final Locale locale : locales) {
      * Otherwise returns the {@code locale} unchanged.
      *
      * @param  locale The locale to canonicalize.
-     * @return A unique instance of the given locale, or {@code locale} if
-     *         the given locale is not cached.
+     * @return A unique instance of the given locale, or {@code locale} if the given locale is not cached.
      */
     public static Locale unique(final Locale locale) {
         final Locale candidate = POOL.get(locale);

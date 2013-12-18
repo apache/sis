@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.ConcurrentModificationException;
+import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.TimeZone;
 import javax.xml.validation.Schema;
@@ -397,7 +398,7 @@ abstract class Pooled {
                     return;
                 }
             }
-        } catch (ClassCastException | IllegalArgumentException e) {
+        } catch (ClassCastException | IllformedLocaleException e) {
             throw new PropertyException(Errors.format(
                     Errors.Keys.IllegalPropertyClass_2, name, value.getClass()), e);
         }

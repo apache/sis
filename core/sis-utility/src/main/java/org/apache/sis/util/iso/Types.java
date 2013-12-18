@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.IllformedLocaleException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -644,7 +645,13 @@ public final class Types extends Static {
                     if (isSorted && c > '_') break;
                     continue;
                 }
-                locale = Locales.parse(key, offset + 1);
+                final int s = offset + 1;
+                try {
+                    locale = Locales.parse(key, s);
+                } catch (IllformedLocaleException e) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalLanguageCode_1,
+                            '(' + key.substring(0, s) + '）' + key.substring(s), e));
+                }
             }
             final Object value = entry.getValue();
             if (value != null) {
