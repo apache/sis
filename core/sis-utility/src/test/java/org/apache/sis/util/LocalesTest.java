@@ -81,11 +81,10 @@ public final strictfp class LocalesTest extends TestCase {
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fra_CAN"));
         assertSame(Locale.ENGLISH,       Locales.parse("en"));
 
-        assertEquals(new Locale("de", "DE"),        Locales.parse("de_DE"));
-        assertEquals(new Locale("",   "GB"),        Locales.parse("_GB"));
-        assertEquals(new Locale("en", "US", "WIN"), Locales.parse("en_US_WIN"));
-        assertEquals(new Locale("de", "", "POSIX"), Locales.parse("de__POSIX"));
-        assertEquals(new Locale("fr", "", "MAC"),   Locales.parse("fr__MAC"));
+        assertEquals(new Locale("de", "DE"),            Locales.parse("de_DE"));
+        assertEquals(new Locale("",   "GB"),            Locales.parse("_GB"));
+        assertEquals(new Locale("en", "US", "WINDOWS"), Locales.parse("en_US_WINDOWS"));
+        assertEquals(new Locale("de", "",   "POSIX"),   Locales.parse("de__POSIX"));
     }
 
     /**
@@ -96,8 +95,9 @@ public final strictfp class LocalesTest extends TestCase {
         try {
             Locales.parse("orange_APPLE");
             fail("Shall not parse invalid locale.");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("orange_APPLE"));
+        } catch (RuntimeException e) { // IllformedLocaleException on the JDK7 branch.
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("APPLE"));
         }
     }
 

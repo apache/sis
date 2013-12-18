@@ -397,7 +397,7 @@ abstract class Pooled {
                     return;
                 }
             }
-        } catch (RuntimeException e) { // (ClassCastException | IllegalArgumentException) on the JDK7 branch.
+        } catch (RuntimeException e) { // (ClassCastException | IllformedLocaleException) on the JDK7 branch.
             throw new PropertyException(Errors.format(
                     Errors.Keys.IllegalPropertyClass_2, name, value.getClass()), e);
         }
