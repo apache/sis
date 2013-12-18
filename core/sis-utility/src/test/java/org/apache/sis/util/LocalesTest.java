@@ -73,18 +73,30 @@ public final strictfp class LocalesTest extends TestCase {
     @Test
     @DependsOnMethod("testUnique")
     public void testParse() {
+        assertSame(Locale.ENGLISH,       Locales.parse("en"));
         assertSame(Locale.FRENCH,        Locales.parse("fr"));
         assertSame(Locale.FRENCH,        Locales.parse("fra"));
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fr_CA"));
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fra_CA"));
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fr_CAN"));
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fra_CAN"));
-        assertSame(Locale.ENGLISH,       Locales.parse("en"));
+        assertSame(Locale.JAPAN,         Locales.parse("ja_JP"));
 
         assertEquals(new Locale("de", "DE"),            Locales.parse("de_DE"));
         assertEquals(new Locale("",   "GB"),            Locales.parse("_GB"));
         assertEquals(new Locale("en", "US", "WINDOWS"), Locales.parse("en_US_WINDOWS"));
         assertEquals(new Locale("de", "",   "POSIX"),   Locales.parse("de__POSIX"));
+    }
+
+    /**
+     * Tests the {@link Locales#parse(String)} method with a IETF BCP 47 language tag string.
+     * This functionality is supported only on the JDK7 branch.
+     */
+    @Test
+    @org.junit.Ignore("Not supported on the JDK6 branch")
+    public void testParseIETF() {
+        assertEquals(Locale.JAPAN, Locales.parse("ja-JP"));
+        assertEquals(new Locale("en", "US", "POSIX"), Locales.parse("en-US-x-lvariant-POSIX"));
     }
 
     /**
