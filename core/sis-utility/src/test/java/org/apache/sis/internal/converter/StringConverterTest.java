@@ -71,11 +71,11 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     private static void tryUnconvertibleValue(final ObjectConverter<String,?> c) {
         try {
-            c.apply("Saturday");
+            c.apply("他の言葉");
             fail("Should not accept a text.");
         } catch (UnconvertibleObjectException e) {
             // This is the expected exception.
-            assertTrue(e.getMessage().contains("Saturday"));
+            assertTrue(e.getMessage().contains("他の言葉"));
         }
     }
 

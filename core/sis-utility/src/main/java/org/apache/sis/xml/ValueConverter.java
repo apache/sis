@@ -188,15 +188,16 @@ public class ValueConverter {
      * @param  value The string to convert to a locale, or {@code null}.
      * @return The converted locale, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllegalArgumentException If the given string can not be converted to a locale.
+     * @throws RuntimeException If the given string can not be converted to a locale
+     *         ({@code IllformedLocaleException} on the JDK7 branch).
      *
      * @see Locales#parse(String)
      */
-    public Locale toLocale(final MarshalContext context, String value) throws IllegalArgumentException {
+    public Locale toLocale(final MarshalContext context, String value) {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
             return Locales.parse(value);
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) { // IllformedLocaleException on the JDK7 branch.
             if (!exceptionOccured(context, value, String.class, Locale.class, e)) {
                 throw e;
             }
