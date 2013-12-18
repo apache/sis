@@ -21,6 +21,7 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.util.MissingResourceException;
+import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.UUID;
 import javax.measure.unit.Unit;
@@ -188,15 +189,15 @@ public class ValueConverter {
      * @param  value The string to convert to a locale, or {@code null}.
      * @return The converted locale, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllegalArgumentException If the given string can not be converted to a locale.
+     * @throws IllformedLocaleException If the given string can not be converted to a locale.
      *
      * @see Locales#parse(String)
      */
-    public Locale toLocale(final MarshalContext context, String value) throws IllegalArgumentException {
+    public Locale toLocale(final MarshalContext context, String value) throws IllformedLocaleException {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
             return Locales.parse(value);
-        } catch (IllegalArgumentException e) {
+        } catch (IllformedLocaleException e) {
             if (!exceptionOccured(context, value, String.class, Locale.class, e)) {
                 throw e;
             }
