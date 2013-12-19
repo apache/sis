@@ -18,13 +18,19 @@
   under the License.
 -->
 
-<gml:PrimeMeridian
+<gml:Ellipsoid
     xmlns:gml = "http://www.opengis.net/gml/3.2"
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/datums.xsd"
-    gml:id = "epsg-meridian-8901">
+    gml:id = "epsg-ellipsoid-7055">
 
-  <gml:identifier codeSpace="OGP">urn:ogc:def:meridian:EPSG::8901</gml:identifier>
-  <gml:name>Greenwich</gml:name>
-  <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9102">0</gml:greenwichLongitude>
-</gml:PrimeMeridian>
+  <gml:identifier codeSpace="OGP">urn:ogc:def:ellipsoid:EPSG::7055</gml:identifier>
+  <gml:name>Clarke 1880 (international foot)</gml:name>
+  <gml:remarks>Definition in feet assumed to be international foot.</gml:remarks>
+  <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9002">20926202</gml:semiMajorAxis>
+  <gml:secondDefiningParameter>
+    <gml:SecondDefiningParameter>
+      <gml:semiMinorAxis uom="urn:ogc:def:uom:EPSG::9002">20854895</gml:semiMinorAxis>
+    </gml:SecondDefiningParameter>
+  </gml:secondDefiningParameter>
+</gml:Ellipsoid>

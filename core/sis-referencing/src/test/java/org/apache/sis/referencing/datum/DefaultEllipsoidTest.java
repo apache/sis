@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Random;
+import javax.xml.bind.JAXBException;
+import javax.measure.unit.NonSI;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -156,5 +158,22 @@ public final strictfp class DefaultEllipsoidTest extends DatumTestCase {
     public void testToWKT() {
         final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
         assertWktEquals(e, "SPHEROID[“WGS84”, 6378137.0, 298.257223563]");
+    }
+
+    /**
+     * Tests unmarshalling and marshalling.
+     *
+     * @throws JAXBException If an error occurred during (un)marshalling.
+     */
+    @Test
+    public void testXML() throws JAXBException {
+        final DefaultEllipsoid ellipsoid = unmarshall(DefaultEllipsoid.class, "Clarke 1880.xml");
+        assertEquals("name", "Clarke 1880 (international foot)", ellipsoid.getName().getCode());
+        assertEquals("remarks", "Definition in feet assumed to be international foot.", ellipsoid.getRemarks().toString());
+        assertFalse ("isIvfDefinitive",                       ellipsoid.isIvfDefinitive());
+        assertEquals("semiMajorAxis",     20926202,           ellipsoid.getSemiMajorAxis(), 0);
+        assertEquals("semiMinorAxis",     20854895,           ellipsoid.getSemiMinorAxis(), 0);
+        assertEquals("inverseFlattening", 293.46630765562986, ellipsoid.getInverseFlattening(), 1E-12);
+        assertEquals("axisUnit",          NonSI.FOOT,         ellipsoid.getAxisUnit());
     }
 }
