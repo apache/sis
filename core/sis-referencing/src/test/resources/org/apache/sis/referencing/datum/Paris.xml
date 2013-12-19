@@ -21,10 +21,11 @@
 <gml:PrimeMeridian
     xmlns:gml = "http://www.opengis.net/gml/3.2"
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/datums.xsd">
+    xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/datums.xsd"
+    gml:id = "epsg-meridian-8903">
 
   <gml:identifier codeSpace="OGP">urn:ogc:def:meridian:EPSG::8903</gml:identifier>
   <gml:name>Paris</gml:name>
-  <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9105">2.5969213</gml:greenwichLongitude>
   <gml:remarks>Equivalent to 2°20′14.025″.</gml:remarks>
+  <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9105">2.5969213</gml:greenwichLongitude>
 </gml:PrimeMeridian>
