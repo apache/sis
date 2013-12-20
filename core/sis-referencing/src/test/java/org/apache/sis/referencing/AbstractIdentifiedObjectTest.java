@@ -56,16 +56,16 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
         assertNull(properties.put("name",       "GRS 1980"));
         assertNull(properties.put("codespace",  "EPSG"));
         assertNull(properties.put("version",    "8.3"));
-        assertNull(properties.put("alias",      "International 1979"));//7019
+        assertNull(properties.put("alias",      "International 1979"));
         assertNull(properties.put("remarks",    "Adopted by IUGG 1979 Canberra"));
         assertNull(properties.put("remarks_fr", "Adopté par IUGG 1979 Canberra"));
         validate(new AbstractIdentifiedObject(properties), Collections.<ReferenceIdentifier>emptySet(), "GRS1980");
         /*
          * Adds an identifier. This should change the choice made by AbstractIdentifiedObject.getID().
          */
-        final ReferenceIdentifier identifier = new ImmutableIdentifier(null, "EPSG", "4326");
+        final ReferenceIdentifier identifier = new ImmutableIdentifier(null, "EPSG", "7019");
         assertNull(properties.put("identifiers", identifier));
-        validate(new AbstractIdentifiedObject(properties), Collections.singleton(identifier), "EPSG4326");
+        validate(new AbstractIdentifiedObject(properties), Collections.singleton(identifier), "epsg-7019");
     }
 
     /**
@@ -113,7 +113,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
 
         assertEquals("name",        "WGS 84",                     object.getName().getCode());
         assertEquals("identifiers", "[EPSG:4326, EPSG:IgnoreMe]", object.getIdentifiers().toString());
-        assertEquals("ID",          "EPSG4326",                   object.getID());
+        assertEquals("ID",          "epsg-4326",                  object.getID());
     }
 
     /**

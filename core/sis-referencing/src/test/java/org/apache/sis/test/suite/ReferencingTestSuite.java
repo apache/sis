@@ -44,6 +44,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
+    org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
     org.apache.sis.io.wkt.ConventionTest.class,
     org.apache.sis.io.wkt.SymbolsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
