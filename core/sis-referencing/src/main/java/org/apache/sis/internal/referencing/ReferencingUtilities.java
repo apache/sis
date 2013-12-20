@@ -16,7 +16,12 @@
  */
 package org.apache.sis.internal.referencing;
 
-import org.opengis.referencing.operation.Matrix;
+import org.opengis.parameter.*;
+import org.opengis.referencing.*;
+import org.opengis.referencing.cs.*;
+import org.opengis.referencing.crs.*;
+import org.opengis.referencing.datum.*;
+import org.opengis.referencing.operation.*;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.util.Static;
 
@@ -34,6 +39,42 @@ import org.apache.sis.util.Static;
  * @module
  */
 public final class ReferencingUtilities extends Static {
+    /**
+     * Subtypes of {@link IdentifiedObject} for which a URN type is defined.
+     * For each interface at index <var>i</var>, the URN type is {@code URN_TYPES[i]}.
+     *
+     * <p>For performance reasons, most frequently used types should be first.</p>
+     */
+    private static final Class<?>[] TYPES = {
+        CoordinateReferenceSystem.class,
+        Datum.class,
+        Ellipsoid.class,
+        PrimeMeridian.class,
+        CoordinateSystem.class,
+        CoordinateSystemAxis.class,
+        CoordinateOperation.class,
+        OperationMethod.class,
+        ParameterDescriptor.class,
+        ReferenceSystem.class
+    };
+
+    /**
+     * The URN types for instances of {@link #TYPES}.
+     * See {@link URIParser} javadoc for a list of URN types.
+     */
+    private static final String[] URN_TYPES = {
+        "crs",
+        "datum",
+        "ellipsoid",
+        "meridian",
+        "cs",
+        "axis",
+        "coordinateOperation",
+        "method",
+        "parameter",
+        "referenceSystem"
+    };
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -55,5 +96,23 @@ public final class ReferencingUtilities extends Static {
         } else {
             return matrix.getElement(row, column);
         }
+    }
+
+    /**
+     * Returns the URN type for the given class, or {@code null} if unknown.
+     * See {@link URIParser} javadoc for a list of URN types.
+     *
+     * @param  type The class for which to get the URN type.
+     * @return The URN type, or {@code null} if unknown.
+     *
+     * @see org.apache.sis.internal.util.URIParser
+     */
+    public static String toURNType(final Class<?> type) {
+        for (int i=0; i<TYPES.length; i++) {
+            if (TYPES[i].isAssignableFrom(type)) {
+                return URN_TYPES[i];
+            }
+        }
+        return null;
     }
 }

@@ -38,6 +38,7 @@ import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.jaxb.referencing.RS_IdentifierSingleton;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
@@ -349,8 +350,15 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * regardless its authority. If no identifier is found, then the name is used.
      * If no name is found (which should not occur for valid objects), then this method returns {@code null}.
      *
-     * <p>When an identifier has been found, this method returns the concatenation of its code space with its code,
-     * <em>without separator</em>. For example this method may return {@code "EPSG4326"}, not {@code "EPSG:4326"}.</p>
+     * <p>If an identifier has been found, this method returns the concatenation of the following elements
+     * separated by hyphens:</p>
+     * <ul>
+     *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
+     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.URIParser})</li>
+     *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
+     * </ul>
+     *
+     * Example: {@code "epsg-crs-4326"}.
      *
      * <p>The returned ID needs to be unique only in the XML document being marshalled.
      * Consecutive invocations of this method do not need to return the same value,
@@ -367,9 +375,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
          */
         if (identifiers != null) {
             for (final ReferenceIdentifier identifier : identifiers) {
-                appendID(id, identifier.getCodeSpace());
-                appendID(id, identifier.getCode());
-                if (id.length() != 0) {
+                if (appendID(id, identifier.getCodeSpace(), true) | // Really |, not ||
+                    appendID(id, ReferencingUtilities.toURNType(getClass()), false) |
+                    appendID(id, identifier.getCode(), true))
+                {
                     /*
                      * TODO: If we want to check for ID uniqueness or any other condition before to accept the ID,
                      * we would do that here. If the ID is rejected, then we just need to clear the buffer and let
@@ -380,28 +389,35 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             }
         }
         // In last ressort, append code without codespace since the name are often verbose.
-        appendID(id, name.getCode());
-        if (id.length() == 0) {
-            return null;
-        }
-        return id.toString();
+        return appendID(id, name.getCode(), false) ? id.toString() : null;
     }
 
     /**
      * Appends only the characters that are valid for a Unicode identifier.
+     * If the buffer is non-empty and this method added at least one character,
+     * then a hyphen is inserted before the characters added by this method.
+     *
+     * @return {@code true} if at least one character has been added to the buffer.
      */
-    private static void appendID(final StringBuilder buffer, final String text) {
+    private static boolean appendID(final StringBuilder buffer, final String text, final boolean toLowerCase) {
+        boolean added = false;
         if (text != null) {
             for (int i=0; i<text.length();) {
                 final int c = text.codePointAt(i);
-                if (buffer.length() == 0 ? Character.isUnicodeIdentifierStart(c)
-                                         : Character.isUnicodeIdentifierPart(c))
+                final boolean isFirst = buffer.length() == 0;
+                if (isFirst ? Character.isUnicodeIdentifierStart(c)
+                            : Character.isUnicodeIdentifierPart(c))
                 {
-                    buffer.appendCodePoint(c);
+                    if (!isFirst && !added) {
+                        buffer.append('-');
+                    }
+                    buffer.appendCodePoint(toLowerCase ? Character.toLowerCase(c) : c);
+                    added = true;
                 }
                 i += Character.charCount(c);
             }
         }
+        return added;
     }
 
     /**
