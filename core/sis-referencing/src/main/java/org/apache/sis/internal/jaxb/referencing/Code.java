@@ -16,12 +16,12 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
-import javax.xml.bind.annotation.XmlType;
-import org.apache.sis.internal.util.URIParser;
+import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -79,7 +79,7 @@ public final class Code {
             if (codeSpace != null) {
                 buffer.append(codeSpace);
             }
-            codeSpace = buffer.append(URIParser.SEPARATOR).append(version).toString();
+            codeSpace = buffer.append(DefinitionURI.SEPARATOR).append(version).toString();
         }
     }
 
@@ -96,14 +96,14 @@ public final class Code {
         }
         Citation authority = null;
         String version = null, cs = codeSpace;
-        final URIParser parsed = URIParser.parse(c);
+        final DefinitionURI parsed = DefinitionURI.parse(c);
         if (parsed != null) {
             authority = Citations.fromName(cs); // May be null.
             cs        = parsed.authority;
             version   = parsed.version;
             c         = parsed.code;
         } else if (cs != null) {
-            final int s = cs.lastIndexOf(URIParser.SEPARATOR);
+            final int s = cs.lastIndexOf(DefinitionURI.SEPARATOR);
             if (s >= 0) {
                 version = cs.substring(s+1);
                 cs = cs.substring(0, s);

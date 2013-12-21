@@ -60,7 +60,7 @@ public final class ReferencingUtilities extends Static {
 
     /**
      * The URN types for instances of {@link #TYPES}.
-     * See {@link URIParser} javadoc for a list of URN types.
+     * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of URN types.
      */
     private static final String[] URN_TYPES = {
         "crs",
@@ -100,12 +100,12 @@ public final class ReferencingUtilities extends Static {
 
     /**
      * Returns the URN type for the given class, or {@code null} if unknown.
-     * See {@link URIParser} javadoc for a list of URN types.
+     * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of URN types.
      *
      * @param  type The class for which to get the URN type.
      * @return The URN type, or {@code null} if unknown.
      *
-     * @see org.apache.sis.internal.util.URIParser
+     * @see org.apache.sis.internal.util.DefinitionURI
      */
     public static String toURNType(final Class<?> type) {
         for (int i=0; i<TYPES.length; i++) {
