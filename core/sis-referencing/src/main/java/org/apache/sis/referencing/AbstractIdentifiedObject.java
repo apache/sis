@@ -39,7 +39,6 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.jaxb.referencing.RS_IdentifierSingleton;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Immutable;
@@ -55,6 +54,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
+import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
 
 // Related to JDK7
 import java.util.Objects;
@@ -107,7 +107,7 @@ import java.util.Objects;
 @Immutable
 @ThreadSafe
 @XmlType(name="IdentifiedObjectType", propOrder={
-    "identifiers",
+    "identifier",
     "names",
     "remarks"
 })
@@ -150,19 +150,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * An identifier which references elsewhere the object's defining information.
      * Alternatively an identifier by which this object can be referenced.
      *
-     * <p>We must be prepared to handle either null or an empty set for
-     * "no identifiers" because we may get both on unmarshalling.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setIdentifier(ReferenceIdentifier)}</p>
      *
      * @see #getIdentifiers()
+     * @see #getIdentifier()
      */
-    @XmlElement(name = "identifier")
-    @XmlJavaTypeAdapter(RS_IdentifierSingleton.class)
-    private final Set<ReferenceIdentifier> identifiers;
+    private Set<ReferenceIdentifier> identifiers;
 
     /**
      * Comments on or information about this object, or {@code null} if none.
      */
-    @XmlElement(name = "remarks")
+    @XmlElement
     private final InternationalString remarks;
 
     /**
@@ -354,7 +353,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * separated by hyphens:</p>
      * <ul>
      *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
-     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.URIParser})</li>
+     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.DefinitionURI})</li>
      *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
      * </ul>
      *
@@ -375,9 +374,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
          */
         if (identifiers != null) {
             for (final ReferenceIdentifier identifier : identifiers) {
-                if (appendID(id, identifier.getCodeSpace(), true) | // Really |, not ||
-                    appendID(id, ReferencingUtilities.toURNType(getClass()), false) |
-                    appendID(id, identifier.getCode(), true))
+                if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), true) | // Really |, not ||
+                    appendUnicodeIdentifier(id, '-', ReferencingUtilities.toURNType(getClass()), false) |
+                    appendUnicodeIdentifier(id, '-', identifier.getCode(), true))
                 {
                     /*
                      * TODO: If we want to check for ID uniqueness or any other condition before to accept the ID,
@@ -389,47 +388,61 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             }
         }
         // In last ressort, append code without codespace since the name are often verbose.
-        return appendID(id, name.getCode(), false) ? id.toString() : null;
+        return appendUnicodeIdentifier(id, '-', name.getCode(), false) ? id.toString() : null;
     }
 
     /**
-     * Appends only the characters that are valid for a Unicode identifier.
-     * If the buffer is non-empty and this method added at least one character,
-     * then a hyphen is inserted before the characters added by this method.
+     * Returns a single element from the {@code Set<ReferenceIdentifier>} collection, or {@code null} if none.
+     * We have to define this method because ISO 19111 defines the {@code identifiers} property as a collection
+     * while GML 3.2 defines it as a singleton.
      *
-     * @return {@code true} if at least one character has been added to the buffer.
+     * <p>This method searches for the following identifiers, in preference order:</p>
+     * <ul>
+     *   <li>The first identifier having a code that begin with {@code "urn:"}.</li>
+     *   <li>The first identifier having a code that begin with {@code "http:"}.</li>
+     *   <li>The first identifier, converted to the {@code "urn:} syntax if possible.</li>
+     * </ul>
      */
-    private static boolean appendID(final StringBuilder buffer, final String text, final boolean toLowerCase) {
-        boolean added = false;
-        if (text != null) {
-            for (int i=0; i<text.length();) {
-                final int c = text.codePointAt(i);
-                final boolean isFirst = buffer.length() == 0;
-                if (isFirst ? Character.isUnicodeIdentifierStart(c)
-                            : Character.isUnicodeIdentifierPart(c))
-                {
-                    if (!isFirst && !added) {
-                        buffer.append('-');
-                    }
-                    buffer.appendCodePoint(toLowerCase ? Character.toLowerCase(c) : c);
-                    added = true;
+    @XmlElement(name = "identifier")
+    final ReferenceIdentifier getIdentifier() {
+        if (identifiers != null) {
+            ReferenceIdentifier first = null, fallback = null;
+            for (final ReferenceIdentifier identifier : identifiers) {
+                final String code = identifier.getCode();
+                if (code == null) continue; // Paranoiac check.
+                if (code.regionMatches(true, 0, "urn:", 0, 4)) {
+                    return identifier;
                 }
-                i += Character.charCount(c);
+                if (fallback == null && code.regionMatches(true, 0, "http:", 0, 5)) {
+                    fallback = identifier;
+                }
+                if (first == null) {
+                    first = identifier;
+                }
+            }
+            if (fallback != null) {
+                return fallback;
+            }
+            /*
+             * If no "urn:" or "http:" form has been found, try to create a "urn:" form from the first identifier.
+             * For example "EPSG:4326" may be converted to "urn:ogc:def:crs:EPSG:8.2:4326". If the first identifier
+             * can not be converted to a "urn:" form, then it will be returned as-is.
+             */
+            if (first != null) {
+                // TODO: apply conversion here.
+                return first;
             }
         }
-        return added;
+        return null;
     }
 
     /**
-     * Returns the primary name by which this object is identified.
-     *
-     * @return The primary name.
-     *
-     * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
+     * Invoked by JAXB at unmarshalling time for setting the identifier.
      */
-    @Override
-    public ReferenceIdentifier getName() {
-        return name;
+    private void setIdentifier(final ReferenceIdentifier identifier) {
+        if (identifier != null) {
+            identifiers = Collections.singleton(identifier);
+        }
     }
 
     /**
@@ -469,6 +482,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                 }
             }
         }
+    }
+
+    /**
+     * Returns the primary name by which this object is identified.
+     *
+     * @return The primary name.
+     *
+     * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
+     */
+    @Override
+    public ReferenceIdentifier getName() {
+        return name;
     }
 
     /**

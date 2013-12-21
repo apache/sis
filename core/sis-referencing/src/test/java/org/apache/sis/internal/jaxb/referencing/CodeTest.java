@@ -28,16 +28,16 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link RS_Identifier}.
+ * Tests {@link Code}, which is used by {@link RS_Identifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
  */
-public final strictfp class RS_IdentifierTest extends TestCase {
+public final strictfp class CodeTest extends TestCase {
     /**
-     * Tests {@link RS_Identifier.Value} with {@code "EPSG:4326"}.
+     * Tests with {@code "EPSG:4326"}.
      */
     @Test
     public void testSimple() {
@@ -57,7 +57,7 @@ public final strictfp class RS_IdentifierTest extends TestCase {
     }
 
     /**
-     * Tests {@link RS_Identifier.Value} with {@code "EPSG:8.3:4326"}.
+     * Tests with {@code "EPSG:8.3:4326"}.
      */
     @Test
     @DependsOnMethod("testSimple")
@@ -78,8 +78,8 @@ public final strictfp class RS_IdentifierTest extends TestCase {
     }
 
     /**
-     * Tests {@link RS_Identifier.Value} with {@code "urn:ogc:def:crs:EPSG:8.2:4326"}.
-     * This test simulate the {@code RS_Identifier.Value} object state that we get after
+     * Tests with {@code "urn:ogc:def:crs:EPSG:8.2:4326"}.
+     * This test simulate the {@code Code} object state that we get after
      * XML unmarshalling of an object from the EPSG registry.
      */
     @Test

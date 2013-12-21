@@ -18,13 +18,15 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.Collections;
+import org.opengis.referencing.ReferenceIdentifier;
 
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
 
 
 /**
- * Utility methods for parsing OGC's URI (URN or URL). This is not a general-purpose parser.
+ * Utility methods for parsing OGC's URI (URN or URL) in the {@code "urn:ogc:def"} namespace.
  *
  * <p>For example, all the following URIs are for the same object:</p>
  * <ul>
@@ -97,7 +99,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
  * @see <a href="http://www.opengeospatial.org/ogcna">OGC Naming Authority</a>
  */
-public final class URIParser {
+public final class DefinitionURI {
     /**
      * The URN separator.
      */
@@ -158,7 +160,7 @@ public final class URIParser {
     /**
      * For {@link #parse(String)} usage only.
      */
-    private URIParser() {
+    private DefinitionURI() {
     }
 
     /**
@@ -167,9 +169,9 @@ public final class URIParser {
      * @param  uri The URI to parse.
      * @return The parse result, or {@code null} if the given URI is not recognized.
      */
-    public static URIParser parse(final String uri) {
+    public static DefinitionURI parse(final String uri) {
         ensureNonNull("uri", uri);
-        URIParser result = null;
+        DefinitionURI result = null;
         int upper = -1;
         for (int p=0; p<=6; p++) {
             final int lower = upper + 1;
@@ -188,7 +190,7 @@ public final class URIParser {
                  * to "ogc". The actual verification is performed after the 'switch' case.
                  */
                 case 0: if (regionMatches("http", uri, lower, upper)) {
-                            result = new URIParser();
+                            result = new DefinitionURI();
                             return codeForHTTP(null, null, uri, upper+1, result) != null ? result : null;
                         }
                         require = "urn";   break;
@@ -204,7 +206,7 @@ public final class URIParser {
                         value = null;
                     }
                     switch (p) {
-                        case 3:  result = new URIParser();
+                        case 3:  result = new DefinitionURI();
                                  result.type      = value; break;
                         case 4:  result.authority = value; break;
                         case 5:  result.version   = value; break;
@@ -237,7 +239,7 @@ public final class URIParser {
      * @param  upper     Index after the last character in {@code urn} to compare, ignoring whitespaces.
      * @return {@code true} if the given sub-region of {@code urn} match the given component.
      */
-    private static boolean regionMatches(final String component, final String urn, int lower, int upper) {
+    static boolean regionMatches(final String component, final String urn, int lower, int upper) {
         lower = skipLeadingWhitespaces (urn, lower, upper);
         upper = skipTrailingWhitespaces(urn, lower, upper);
         final int length = upper - lower;
@@ -377,7 +379,7 @@ public final class URIParser {
      * @param result    If non-null, store the type, authority and code in that object.
      */
     private static String codeForHTTP(final String type, String authority, final String url, int lower,
-            final URIParser result)
+            final DefinitionURI result)
     {
         Map<String, String> paths = PATHS;
         if (type != null) {
@@ -431,53 +433,27 @@ public final class URIParser {
     }
 
     /**
-     * Parses a URL which contains a pointer to a XML fragment.
-     * The current implementation recognizes the following types:
+     * Format a {@code "ogc:urn:def:"} identifier. The identifier code space, version and code are
+     * formatted in lower case, ignoring all characters that are not valid for a Unicode identifier.
      *
-     * <ul>
-     *   <li>{@code uom} for Unit Of Measurement (example:
-     *       {@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"})</li>
-     * </ul>
-     *
-     * @param  type The object type.
-     * @param  url  The URL to parse.
-     * @return The reference, or {@code null} if none.
+     * @param  type The object type, as one of the type documented in class javadoc.
+     * @param  identifier The identifier to format.
+     * @return The URN.
      */
-    public static String xpointer(final String type, final String url) {
-        if (type.equals("uom")) {
-            final int f = url.indexOf('#');
-            if (f >= 1) {
-                /*
-                 * For now we accept any path as long as it ends with the "gmxUom.xml" file
-                 * because resources may be hosted on different servers, or the path may be
-                 * relative instead than absolute.
-                 */
-                int i = url.lastIndexOf('/', f-1) + 1;
-                if (regionMatches("gmxUom.xml", url, i, f) || regionMatches("ML_gmxUom.xml", url, i, f)) {
-                    /*
-                     * The fragment should typically be of the form "xpointer(//*[@gml:id='m'])".
-                     * However sometime we found no "xpointer", but directly the unit instead.
-                     */
-                    i = url.indexOf('(', f+1);
-                    if (i >= 0 && regionMatches("xpointer", url, f+1, i)) {
-                        i = url.indexOf("@gml:id=", i+1);
-                        if (i >= 0) {
-                            i = skipLeadingWhitespaces(url, i+8, url.length()); // 8 is the length of "@gml:id="
-                            final int c = url.charAt(i);
-                            if (c == '\'' || c == '"') {
-                                final int s = url.indexOf(c, ++i);
-                                if (s >= 0) {
-                                    return trimWhitespaces(url, i, s).toString();
-                                }
-                            }
-                        }
-                    } else {
-                        return trimWhitespaces(url, f+1, url.length()).toString();
-                    }
-                }
+    public static String format(final String type, final ReferenceIdentifier identifier) {
+        final StringBuilder buffer = new StringBuilder("urn:ogc:def");
+        for (int p=0; p<4; p++) {
+            final String component;
+            switch (p) {
+                case 0:  component = type;                      break;
+                case 1:  component = identifier.getCodeSpace(); break;
+                case 2:  component = identifier.getVersion();   break;
+                case 3:  component = identifier.getCode();      break;
+                default: throw new AssertionError(p);
             }
+            appendUnicodeIdentifier(buffer.append(SEPARATOR), '\u0000', component, p != 0);
         }
-        return null;
+        return buffer.toString();
     }
 
     /**

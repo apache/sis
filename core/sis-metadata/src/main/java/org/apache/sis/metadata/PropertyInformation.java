@@ -113,8 +113,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
     private Object domainValue;
 
     /**
-     * Creates a new {@code PropertyInformation} instance from the annotations on the given
-     * getter method.
+     * Creates a new {@code PropertyInformation} instance from the annotations on the given getter method.
      *
      * @param  standard    The international standard that define the property, or {@code null} if none.
      * @param  property    The property name as defined by the international {@code standard}.
