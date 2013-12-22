@@ -175,5 +175,9 @@ public final strictfp class DefaultEllipsoidTest extends DatumTestCase {
         assertEquals("semiMinorAxis",     20854895,           ellipsoid.getSemiMinorAxis(), 0);
         assertEquals("inverseFlattening", 293.46630765562986, ellipsoid.getInverseFlattening(), 1E-12);
         assertEquals("axisUnit",          NonSI.FOOT,         ellipsoid.getAxisUnit());
+        /*
+         * Marshall and compare to the original file.
+         */
+        assertMarshalEqualsFile("Clarke 1880.xml", ellipsoid);
     }
 }

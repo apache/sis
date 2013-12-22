@@ -1964,7 +1964,8 @@ cmp:    while (ia < lga) {
 
     /**
      * Replaces all occurrences of a given string in the given character sequence. If no occurrence of
-     * {@code toSearch} is found in the given text, then this method returns the {@code text} unchanged.
+     * {@code toSearch} is found in the given text or if {@code toSearch} is equal to {@code replaceBy},
+     * then this method returns the {@code text} unchanged.
      * Otherwise this method returns a new character sequence with all occurrences replaced by {@code replaceBy}.
      *
      * <p>This method is similar to {@link String#replace(CharSequence, CharSequence)} except for the following:</p>
