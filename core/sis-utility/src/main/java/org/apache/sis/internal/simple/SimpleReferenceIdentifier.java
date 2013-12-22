@@ -18,7 +18,6 @@ package org.apache.sis.internal.simple;
 
 import java.io.Serializable;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.CharSequences;
@@ -34,12 +33,12 @@ import java.util.Objects;
 /**
  * An implementation of {@link ReferenceIdentifier} as a wrapper around a {@link Citation}.
  * {@code ReferenceIdentifier} is defined by the ISO 19111 standard and is implemented publicly
- * in the {@link org.apache.sis.referencing} package. This class is provided for non-referencing
- * code that need a lightweight version.
+ * in the {@link org.apache.sis.referencing} package. This class is provided for codes that do
+ * not depend on the {@code sis-referencing} module but still need a lightweight implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializable {
@@ -121,19 +120,15 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
 
     /**
      * Version identifier for the namespace, as specified by the code authority.
-     * When appropriate, the edition is identified by the effective date, coded
-     * using ISO 8601 date format.
+     * The default implementation returns {@code null}.
      *
-     * @return A version inferred from the authority given at construction time, or {@code null} if none.
+     * {@note <code>DefinitionURI.toURN(…)</code> requires this method to return <code>null</code>, because
+     *        the version number is expanded in the code using the <code>"urn:ogc:dec:…</code> syntax.}
+     *
+     * @return Version identifier for the namespace, or {@code null} if none.
      */
     @Override
     public String getVersion() {
-        if (authority != null) {
-            final InternationalString version = authority.getEdition();
-            if (version != null) {
-                return version.toString();
-            }
-        }
         return null;
     }
 

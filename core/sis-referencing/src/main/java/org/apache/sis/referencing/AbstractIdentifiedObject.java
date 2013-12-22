@@ -39,6 +39,7 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Immutable;
@@ -405,35 +406,32 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     @XmlElement(name = "identifier")
     final ReferenceIdentifier getIdentifier() {
+        ReferenceIdentifier fallback = null;
         if (identifiers != null) {
-            ReferenceIdentifier first = null, fallback = null;
+            boolean isHTTP = false;
             for (final ReferenceIdentifier identifier : identifiers) {
                 final String code = identifier.getCode();
                 if (code == null) continue; // Paranoiac check.
                 if (code.regionMatches(true, 0, "urn:", 0, 4)) {
                     return identifier;
                 }
-                if (fallback == null && code.regionMatches(true, 0, "http:", 0, 5)) {
-                    fallback = identifier;
+                if (!isHTTP) {
+                    isHTTP = code.regionMatches(true, 0, "http:", 0, 5);
+                    if (isHTTP || fallback == null) {
+                        fallback = identifier;
+                    }
                 }
-                if (first == null) {
-                    first = identifier;
-                }
-            }
-            if (fallback != null) {
-                return fallback;
             }
             /*
              * If no "urn:" or "http:" form has been found, try to create a "urn:" form from the first identifier.
              * For example "EPSG:4326" may be converted to "urn:ogc:def:crs:EPSG:8.2:4326". If the first identifier
              * can not be converted to a "urn:" form, then it will be returned as-is.
              */
-            if (first != null) {
-                // TODO: apply conversion here.
-                return first;
+            if (!isHTTP && fallback != null) {
+                fallback = DefinitionURI.toURN(ReferencingUtilities.toURNType(getClass()), fallback);
             }
         }
-        return null;
+        return fallback;
     }
 
     /**

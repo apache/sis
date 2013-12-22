@@ -25,6 +25,8 @@ import java.util.Collections;
 import org.opengis.test.Validators;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
+import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -94,7 +96,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      * This method compares the property values against the expected values.
      */
     @Test
-    public void testCreateFromMap() {
+    public void testWithoutIdentifier() {
         final Map<String,Object> properties = properties();
         validate(new AbstractIdentifiedObject(properties),
                  Collections.<ReferenceIdentifier>emptySet(), null, "GRS1980");
@@ -111,8 +113,8 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      * </ul>
      */
     @Test
-    @DependsOnMethod("testCreateFromMap")
-    public void testCreateWithSingleIdentifier() {
+    @DependsOnMethod("testWithoutIdentifier")
+    public void testWithSingleIdentifier() {
         final Map<String,Object> properties = properties();
         final ReferenceIdentifier identifier = new ImmutableIdentifier(null, "EPSG", "7019");
         assertNull(properties.put("identifiers", identifier));
@@ -126,8 +128,8 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      * than the {@link #testCreateWithSingleIdentifier()} one.
      */
     @Test
-    @DependsOnMethod("testCreateWithSingleIdentifier")
-    public void testCreateWithManyIdentifiers() {
+    @DependsOnMethod("testWithSingleIdentifier")
+    public void testWithManyIdentifiers() {
         final Map<String,Object> properties = properties();
         final Set<ReferenceIdentifier> identifiers = new LinkedHashSet<>(4);
         final ReferenceIdentifier identifier = new NamedIdentifier(EPSG, "7019");
@@ -138,10 +140,27 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     }
 
     /**
+     * Tests {@link AbstractIdentifiedObject#getIdentifier()} with a sub-type of {@code AbstractIdentifiedObject}.
+     * The use of a subtype will allow {@code getIdentifier()} to build a URN and {@code getId()} to know what to
+     * insert between {@code "epsg-"} and the code.
+     */
+    @Test
+    @DependsOnMethod("testWithManyIdentifiers")
+    public void testAsSubtype() {
+        final Map<String,Object> properties = properties();
+        final Set<ReferenceIdentifier> identifiers = new LinkedHashSet<>(4);
+        final ReferenceIdentifier identifier = new NamedIdentifier(EPSG, "6258");
+        assertTrue(identifiers.add(identifier));
+        assertNull(properties.put("identifiers", identifier));
+        validate(new AbstractDatum(properties), identifiers,
+                new SimpleReferenceIdentifier(EPSG, "urn:ogc:def:datum:EPSG::6258"), "epsg-datum-6258");
+    }
+
+    /**
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testCreateFromMap")
+    @DependsOnMethod("testWithoutIdentifier")
     public void testSerialization() {
         final Map<String,Object> properties = properties();
         final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties);
