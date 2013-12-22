@@ -39,7 +39,7 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Immutable;
@@ -375,9 +375,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
          */
         if (identifiers != null) {
             for (final ReferenceIdentifier identifier : identifiers) {
-                if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), true) | // Really |, not ||
-                    appendUnicodeIdentifier(id, '-', ReferencingUtilities.toURNType(getClass()), false) |
-                    appendUnicodeIdentifier(id, '-', identifier.getCode(), true))
+                if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) | // Really |, not ||
+                    appendUnicodeIdentifier(id, '-', ReferencingUtilities.toURNType(getClass()), ":", false) |
+                    appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
                 {
                     /*
                      * TODO: If we want to check for ID uniqueness or any other condition before to accept the ID,
@@ -386,10 +386,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                      */
                     return id.toString();
                 }
+                id.setLength(0); // Clear the buffer for an other try.
             }
         }
         // In last ressort, append code without codespace since the name are often verbose.
-        return appendUnicodeIdentifier(id, '-', name.getCode(), false) ? id.toString() : null;
+        return appendUnicodeIdentifier(id, '-', name.getCode(), ":", false) ? id.toString() : null;
     }
 
     /**
@@ -405,41 +406,19 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </ul>
      */
     @XmlElement(name = "identifier")
-    final ReferenceIdentifier getIdentifier() {
-        ReferenceIdentifier fallback = null;
-        if (identifiers != null) {
-            boolean isHTTP = false;
-            for (final ReferenceIdentifier identifier : identifiers) {
-                final String code = identifier.getCode();
-                if (code == null) continue; // Paranoiac check.
-                if (code.regionMatches(true, 0, "urn:", 0, 4)) {
-                    return identifier;
-                }
-                if (!isHTTP) {
-                    isHTTP = code.regionMatches(true, 0, "http:", 0, 5);
-                    if (isHTTP || fallback == null) {
-                        fallback = identifier;
-                    }
-                }
-            }
-            /*
-             * If no "urn:" or "http:" form has been found, try to create a "urn:" form from the first identifier.
-             * For example "EPSG:4326" may be converted to "urn:ogc:def:crs:EPSG:8.2:4326". If the first identifier
-             * can not be converted to a "urn:" form, then it will be returned as-is.
-             */
-            if (!isHTTP && fallback != null) {
-                fallback = DefinitionURI.toURN(ReferencingUtilities.toURNType(getClass()), fallback);
-            }
-        }
-        return fallback;
+    final Code getIdentifier() {
+        return Code.forIdentifiedObject(getClass(), identifiers);
     }
 
     /**
      * Invoked by JAXB at unmarshalling time for setting the identifier.
      */
-    private void setIdentifier(final ReferenceIdentifier identifier) {
+    private void setIdentifier(final Code identifier) {
         if (identifier != null) {
-            identifiers = Collections.singleton(identifier);
+            final ReferenceIdentifier id = identifier.getIdentifier();
+            if (id != null) {
+                identifiers = Collections.singleton(id);
+            }
         }
     }
 

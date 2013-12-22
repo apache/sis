@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
+import java.util.Collections;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -37,7 +39,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class CodeTest extends TestCase {
     /**
-     * Tests with {@code "EPSG:4326"}.
+     * Tests the {@link Code#Code(ReferenceIdentifier)} constructor with {@code "EPSG:4326"} identifier.
      */
     @Test
     public void testSimple() {
@@ -57,7 +59,7 @@ public final strictfp class CodeTest extends TestCase {
     }
 
     /**
-     * Tests with {@code "EPSG:8.3:4326"}.
+     * Tests the {@link Code#Code(ReferenceIdentifier)} constructor with {@code "EPSG:8.3:4326"} identifier.
      */
     @Test
     @DependsOnMethod("testSimple")
@@ -78,13 +80,26 @@ public final strictfp class CodeTest extends TestCase {
     }
 
     /**
-     * Tests with {@code "urn:ogc:def:crs:EPSG:8.2:4326"}.
+     * Tests {@link Code#forIdentifiedObject(Class, Iterable)}.
+     */
+    @Test
+    @DependsOnMethod("testWithVersion")
+    public void testForIdentifiedObject() {
+        final ReferenceIdentifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326", "8.2", null);
+        final Code value = Code.forIdentifiedObject(GeographicCRS.class, Collections.singleton(id));
+        assertNotNull(value);
+        assertEquals("codeSpace", "OGP", value.codeSpace);
+        assertEquals("code", "urn:ogc:def:crs:EPSG:8.2:4326", value.code);
+    }
+
+    /**
+     * Tests {@link Code#getIdentifier()} with {@code "urn:ogc:def:crs:EPSG:8.2:4326"}.
      * This test simulate the {@code Code} object state that we get after
      * XML unmarshalling of an object from the EPSG registry.
      */
     @Test
-    @DependsOnMethod("testWithVersion")
-    public void testURN() {
+    @DependsOnMethod("testForIdentifiedObject")
+    public void testGetIdentifier() {
         final Code value = new Code();
         value.codeSpace = "OGP";
         value.code = "urn:ogc:def:crs:EPSG:8.2:4326";

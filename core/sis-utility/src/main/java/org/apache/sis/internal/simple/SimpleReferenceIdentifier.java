@@ -17,6 +17,7 @@
 package org.apache.sis.internal.simple;
 
 import java.io.Serializable;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.Citations;
@@ -120,15 +121,19 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
 
     /**
      * Version identifier for the namespace, as specified by the code authority.
-     * The default implementation returns {@code null}.
+     * When appropriate, the edition is identified by the effective date, coded
+     * using ISO 8601 date format.
      *
-     * {@note <code>DefinitionURI.toURN(…)</code> requires this method to return <code>null</code>, because
-     *        the version number is expanded in the code using the <code>"urn:ogc:dec:…</code> syntax.}
-     *
-     * @return Version identifier for the namespace, or {@code null} if none.
+     * @return A version inferred from the authority given at construction time, or {@code null} if none.
      */
     @Override
     public String getVersion() {
+        if (authority != null) {
+            final InternationalString version = authority.getEdition();
+            if (version != null) {
+                return version.toString();
+            }
+        }
         return null;
     }
 
