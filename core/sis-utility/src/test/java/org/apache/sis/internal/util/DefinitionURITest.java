@@ -151,16 +151,7 @@ public final strictfp class DefinitionURITest extends TestCase {
      */
     @Test
     public void testToURN() {
-        final SimpleCitation ogp = new SimpleCitation("OGP");
-        @SuppressWarnings("serial")
-        final ReferenceIdentifier simple = new SimpleReferenceIdentifier(ogp, "4326") {
-            @Override public String getCodeSpace() {return "EPSG";}
-        };
-        final ReferenceIdentifier asURN = DefinitionURI.toURN("crs", simple);
-        assertNotSame(simple, asURN);
-        assertSame   (ogp,    asURN.getAuthority());
-        assertEquals ("OGP",  asURN.getCodeSpace());
-        assertNull   (        asURN.getVersion());
-        assertEquals ("urn:ogc:def:crs:EPSG::4326", asURN.getCode());
+        final ReferenceIdentifier identifier = new SimpleReferenceIdentifier(new SimpleCitation("EPSG"), "4326");
+        assertEquals("urn:ogc:def:crs:EPSG::4326", DefinitionURI.format("crs", identifier));
     }
 }

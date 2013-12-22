@@ -59,19 +59,20 @@ public final class Utilities extends Static {
      * @param  appendTo    The buffer where to append the valid characters.
      * @param  separator   The separator to append before the valid characters, or 0 if none.
      * @param  text        The text from which to get the valid character to append in the given buffer.
+     * @param  accepted    Additional characters to accept (e.g. {@code "-."}), or an empty string if none.
      * @param  toLowerCase {@code true} for converting the characters to lower case.
      * @return {@code true} if at least one character has been added to the buffer.
      */
-    public static boolean appendUnicodeIdentifier(final StringBuilder appendTo,
-            final char separator, final String text, final boolean toLowerCase)
+    public static boolean appendUnicodeIdentifier(final StringBuilder appendTo, final char separator,
+            final String text, final String accepted, final boolean toLowerCase)
     {
         boolean added = false;
         if (text != null) {
             for (int i=0; i<text.length();) {
                 final int c = text.codePointAt(i);
                 final boolean isFirst = appendTo.length() == 0;
-                if (isFirst ? Character.isUnicodeIdentifierStart(c)
-                            : Character.isUnicodeIdentifierPart(c))
+                if ((isFirst ? Character.isUnicodeIdentifierStart(c)
+                             : Character.isUnicodeIdentifierPart(c)) || accepted.indexOf(c) >= 0)
                 {
                     if (!isFirst && !added && separator != 0) {
                         appendTo.append(separator);

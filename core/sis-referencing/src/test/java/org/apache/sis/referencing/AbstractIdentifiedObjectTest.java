@@ -25,8 +25,8 @@ import java.util.Collections;
 import org.opengis.test.Validators;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
 import org.apache.sis.referencing.datum.AbstractDatum;
+import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -53,11 +53,13 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     /**
      * Creates a map of properties to be given to the {@link AbstractIdentifiedObject} constructor.
      * The values in the map are consistent with the values expected by the {@link #validate} method.
-     * The map does not contain any {@code "identifiers"} entry.
+     *
+     * @param identifier The value for the {@code "identifiers"} property.
      */
-    private static Map<String,Object> properties() {
+    private static Map<String,Object> properties(final Set<ReferenceIdentifier> identifiers) {
         final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put("name",       "GRS 1980"));
+        assertNull(properties.put("identifiers", identifiers.toArray(new ReferenceIdentifier[identifiers.size()])));
         assertNull(properties.put("codespace",  "EPSG"));
         assertNull(properties.put("version",    "8.3"));
         assertNull(properties.put("alias",      "International 1979"));
@@ -69,13 +71,13 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     /**
      * Validates the given object created by {@link #testCreateFromMap()}.
      *
-     * @param object      The object to validate.
-     * @param identifiers The expected value of {@link AbstractIdentifiedObject#getIdentifiers()}.
-     * @param identifier  The expected value of {@link AbstractIdentifiedObject#getIdentifier()}.
-     * @param gmlID       The expected value of {@link AbstractIdentifiedObject#getID()}.
+     * @param  object      The object to validate.
+     * @param  identifiers The expected value of {@link AbstractIdentifiedObject#getIdentifiers()}.
+     * @param  gmlID       The expected value of {@link AbstractIdentifiedObject#getID()}.
+     * @return The value of {@link AbstractIdentifiedObject#getIdentifier()}.
      */
-    private static void validate(final AbstractIdentifiedObject object, final Set<ReferenceIdentifier> identifiers,
-            final ReferenceIdentifier identifier, final String gmlID)
+    private static ReferenceIdentifier validate(final AbstractIdentifiedObject object,
+            final Set<ReferenceIdentifier> identifiers, final String gmlID)
     {
         Validators.validate(object);
         final ReferenceIdentifier name = object.getName();
@@ -85,10 +87,11 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
         assertEquals("aliases",     "International 1979",            getSingleton(object.getAlias()).toString());
         assertEquals("names",       Collections.singletonList(name), object.getNames());
         assertEquals("identifiers", identifiers,                     object.getIdentifiers());
-        assertEquals("identifier",  identifier,                      object.getIdentifier());
         assertEquals("ID",          gmlID,                           object.getID());
         assertEquals("remarks",     "Adopted by IUGG 1979 Canberra", object.getRemarks().toString(Locale.ENGLISH));
         assertEquals("remarks_fr",  "Adopté par IUGG 1979 Canberra", object.getRemarks().toString(Locale.FRENCH));
+        final Code code = object.getIdentifier();
+        return (code != null) ? code.getIdentifier() : null;
     }
 
     /**
@@ -97,9 +100,10 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      */
     @Test
     public void testWithoutIdentifier() {
-        final Map<String,Object> properties = properties();
-        validate(new AbstractIdentifiedObject(properties),
-                 Collections.<ReferenceIdentifier>emptySet(), null, "GRS1980");
+        final Set<ReferenceIdentifier> identifiers = Collections.<ReferenceIdentifier>emptySet();
+        final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
+        final ReferenceIdentifier      gmlId       = validate(object, identifiers, "GRS1980");
+        assertNull("gmlId", gmlId);
     }
 
     /**
@@ -115,11 +119,13 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithoutIdentifier")
     public void testWithSingleIdentifier() {
-        final Map<String,Object> properties = properties();
-        final ReferenceIdentifier identifier = new ImmutableIdentifier(null, "EPSG", "7019");
-        assertNull(properties.put("identifiers", identifier));
-        validate(new AbstractIdentifiedObject(properties),
-                 Collections.singleton(identifier), identifier, "epsg-7019");
+        final ReferenceIdentifier      identifier  = new ImmutableIdentifier(null, "EPSG", "7019");
+        final Set<ReferenceIdentifier> identifiers = Collections.singleton(identifier);
+        final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
+        final ReferenceIdentifier      gmlId       = validate(object, identifiers, "epsg-7019");
+        assertNotNull("gmlId",                   gmlId);
+        assertEquals ("gmlId.codespace", "EPSG", gmlId.getCodeSpace());
+        assertEquals ("gmlId.code",      "7019", gmlId.getCode());
     }
 
     /**
@@ -130,13 +136,14 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithSingleIdentifier")
     public void testWithManyIdentifiers() {
-        final Map<String,Object> properties = properties();
         final Set<ReferenceIdentifier> identifiers = new LinkedHashSet<>(4);
-        final ReferenceIdentifier identifier = new NamedIdentifier(EPSG, "7019");
-        assertTrue(identifiers.add(identifier));
+        assertTrue(identifiers.add(new NamedIdentifier(EPSG, "7019")));
         assertTrue(identifiers.add(new NamedIdentifier(EPSG, "IgnoreMe")));
-        assertNull(properties.put("identifiers", identifiers.toArray(new ReferenceIdentifier[2])));
-        validate(new AbstractIdentifiedObject(properties), identifiers, identifier, "epsg-7019");
+        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties(identifiers));
+        final ReferenceIdentifier      gmlId  = validate(object, identifiers, "epsg-7019");
+        assertNotNull("gmlId",                   gmlId);
+        assertEquals ("gmlId.codespace", "EPSG", gmlId.getCodeSpace());
+        assertEquals ("gmlId.code",      "7019", gmlId.getCode());
     }
 
     /**
@@ -147,13 +154,13 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithManyIdentifiers")
     public void testAsSubtype() {
-        final Map<String,Object> properties = properties();
-        final Set<ReferenceIdentifier> identifiers = new LinkedHashSet<>(4);
-        final ReferenceIdentifier identifier = new NamedIdentifier(EPSG, "6258");
-        assertTrue(identifiers.add(identifier));
-        assertNull(properties.put("identifiers", identifier));
-        validate(new AbstractDatum(properties), identifiers,
-                new SimpleReferenceIdentifier(EPSG, "urn:ogc:def:datum:EPSG::6258"), "epsg-datum-6258");
+        final ReferenceIdentifier      identifier  = new NamedIdentifier(EPSG, "7019");
+        final Set<ReferenceIdentifier> identifiers = Collections.singleton(identifier);
+        final AbstractIdentifiedObject object      = new AbstractDatum(properties(identifiers));
+        final ReferenceIdentifier      gmlId       = validate(object, identifiers, "epsg-datum-7019");
+        assertNotNull("gmlId",                   gmlId);
+        assertEquals ("gmlId.codespace", "EPSG", gmlId.getCodeSpace());
+        assertEquals ("gmlId.code",      "7019", gmlId.getCode());
     }
 
     /**
@@ -162,10 +169,10 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithoutIdentifier")
     public void testSerialization() {
-        final Map<String,Object> properties = properties();
-        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties);
-        final AbstractIdentifiedObject actual = assertSerializedEquals(object);
+        final Set<ReferenceIdentifier> identifiers = Collections.emptySet();
+        final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
+        final AbstractIdentifiedObject actual      = assertSerializedEquals(object);
         assertNotSame(object, actual);
-        validate(actual, Collections.<ReferenceIdentifier>emptySet(), null, "GRS1980");
+        assertNull("gmlId", validate(actual, identifiers, "GRS1980"));
     }
 }

@@ -19,7 +19,6 @@ package org.apache.sis.internal.util;
 import java.util.Map;
 import java.util.Collections;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
 
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -434,16 +433,15 @@ public final class DefinitionURI {
     }
 
     /**
-     * Returns an identifier for the same code and code space than the given identifier, but using
-     * the {@code "ogc:urn:def:"} syntax. The identifier code space, version and code are appended
-     * omitting any characters that are not valid for a Unicode identifier. If some information are
-     * missing in the given identifier, then this method returns that identifier as-is.
+     * Formats the given identifier using the {@code "ogc:urn:def:"} syntax. The identifier code space,
+     * version and code are appended omitting any characters that are not valid for a Unicode identifier.
+     * If some information are missing in the given identifier, then this method returns {@code null}.
      *
-     * @param  type The object type, as one of the type documented in class javadoc.
+     * @param  type The object type, as one of the type documented in class javadoc, or {@code null}.
      * @param  identifier The identifier to format.
-     * @return An identifier using the URN syntax, or the given identifier returned as-is.
+     * @return An identifier using the URN syntax, or {@code null} if an information is missing.
      */
-    public static ReferenceIdentifier toURN(final String type, final ReferenceIdentifier identifier) {
+    public static String format(final String type, final ReferenceIdentifier identifier) {
         final StringBuilder buffer = new StringBuilder("urn:ogc:def");
         for (int p=0; p<4; p++) {
             final String component;
@@ -454,15 +452,15 @@ public final class DefinitionURI {
                 case 3:  component = identifier.getCode();      break;
                 default: throw new AssertionError(p);
             }
-            if (!appendUnicodeIdentifier(buffer.append(SEPARATOR), '\u0000', component, false)) {
+            if (!appendUnicodeIdentifier(buffer.append(SEPARATOR), '\u0000', component, ".-", false)) {
                 // Only the version (p = 2) is optional. All other fields are mandatory.
                 // If no character has been added for a mandatory field, we can not build a URN.
                 if (p != 2) {
-                    return identifier;
+                    return null;
                 }
             }
         }
-        return new SimpleReferenceIdentifier(identifier.getAuthority(), buffer.toString());
+        return buffer.toString();
     }
 
     /**

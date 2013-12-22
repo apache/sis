@@ -175,24 +175,6 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
     }
 
     /**
-     * Version identifier for the namespace, as specified by the code authority.
-     * When appropriate, the edition is identified by the effective date, coded
-     * using ISO 8601 date format.
-     *
-     * @return A version inferred from the authority given at construction time, or {@code null} if none.
-     */
-    @Override
-    public String getVersion() {
-        if (authority != null) {
-            final InternationalString version = authority.getEdition();
-            if (version != null) {
-                return version.toString();
-            }
-        }
-        return super.getVersion();
-    }
-
-    /**
      * Unconditionally returns {@code null}.
      *
      * @deprecated This property was defined in the 2003 edition of ISO 19115,
