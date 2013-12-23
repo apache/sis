@@ -17,7 +17,6 @@
 package org.apache.sis.util.collection;
 
 import java.util.Iterator;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ObjectConverter;
 
 
@@ -34,7 +33,6 @@ import org.apache.sis.util.ObjectConverter;
  * @version 0.3
  * @module
  */
-@Decorator(Iterator.class)
 final class DerivedIterator<S,E> implements Iterator<E> {
     /**
      * The original iterator to wrap.

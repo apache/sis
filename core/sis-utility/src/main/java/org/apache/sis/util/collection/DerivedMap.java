@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.AbstractMap;
 import java.io.Serializable;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
@@ -66,7 +65,6 @@ import org.apache.sis.math.FunctionProperty;
  * @version 0.3
  * @module
  */
-@Decorator(Map.class)
 class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         ObjectConverter<Map.Entry<SK,SV>, Map.Entry<K,V>>, Serializable
 {

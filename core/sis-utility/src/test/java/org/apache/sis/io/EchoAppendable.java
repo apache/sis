@@ -17,7 +17,6 @@
 package org.apache.sis.io;
 
 import java.io.IOException;
-import org.apache.sis.util.Decorator;
 
 import static org.junit.Assert.*;
 
@@ -33,7 +32,6 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-@Decorator(Appendable.class)
 public class EchoAppendable extends Appender {
     /**
      * The echo writer.
