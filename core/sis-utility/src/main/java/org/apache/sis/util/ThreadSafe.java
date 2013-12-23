@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 
 
 /**
- * Identifies thread-safe SIS classes for documentation purpose only.
+ * Annotates thread-safe SIS classes for documentation purpose only.
  * Classes identified by this annotation can be shared by many threads without the need for external synchronization.
  * This property is not inherited - subclasses shall still document if they are thread-safe.
  *
