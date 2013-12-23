@@ -22,7 +22,6 @@ import java.util.List;
 import java.io.Flushable;
 import java.io.IOException;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -76,7 +75,6 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *
  * @see org.apache.sis.util.collection.TreeTableFormat
  */
-@Decorator(Appendable.class)
 public class TableAppender extends Appender implements Flushable {
     /**
      * A possible value for cell alignment. This specifies that the text is aligned

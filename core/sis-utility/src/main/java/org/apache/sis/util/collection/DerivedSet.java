@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.AbstractSet;
 import java.io.Serializable;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -62,7 +61,6 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  */
-@Decorator(Set.class)
 class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Serializable {
     /**
      * Serial number for inter-operability with different versions.

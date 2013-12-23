@@ -18,7 +18,6 @@ package org.apache.sis.io;
 
 import java.io.IOException;
 import java.io.CharConversionException;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
@@ -52,7 +51,6 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *
  * @see java.io.FilterWriter
  */
-@Decorator(Appendable.class)
 abstract class Appender implements Appendable {
     /**
      * The underlying character output stream or buffer.
