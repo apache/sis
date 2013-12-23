@@ -280,9 +280,9 @@ public class TableAppender extends Appender implements Flushable {
          */
         int boxCount = 0;
         final char[][] box = new char[BOX.length][];
-        for (int i=0; i<BOX.length; i++) {
-            if (BOX[i][9] == horizontalChar) {
-                box[boxCount++] = BOX[i];
+        for (final char[] row : BOX) {
+            if (row[9] == horizontalChar) {
+                box[boxCount++] = row;
             }
         }
         /*
@@ -416,6 +416,7 @@ public class TableAppender extends Appender implements Flushable {
      * </ul>
      *
      * @param  c Character to write.
+     * @return {@code this}.
      */
     @Override
     public TableAppender append(final char c) {
@@ -465,6 +466,7 @@ public class TableAppender extends Appender implements Flushable {
      * @param  sequence The character sequence to be written.
      * @param  start    Index from which to start reading characters.
      * @param  end      Index of the character following the last character to read.
+     * @return {@code this}.
      */
     @Override
     @SuppressWarnings("fallthrough")

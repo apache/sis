@@ -27,6 +27,28 @@ import org.apache.sis.util.ArgumentChecks;
 /**
  * Lists some namespaces URLs used by JAXB when (un)marshalling.
  *
+ * <p><strong>Warning: string constants in this class may change in any SIS version.</strong>
+ * Those constants are made available for applications who wish to use the same URLs than SIS
+ * in their own JAXB annotations. Note that applications using those constants will have their
+ * URLs determined by the SIS version available at compile-time, not runtime, because the
+ * {@code javac} compiler inlines string constants.</p>
+ *
+ * <p>The following table list the URLs, their usual prefix, and the SIS versions when each URL changed.</p>
+ * <table class="sis">
+ *   <tr><th>Prefix</th> <th>XML Namespace</th>   <th>Changes history</th></tr>
+ *   <tr><td>gco</td>    <td>{@value #GCO}</td>   <td></td></tr>
+ *   <tr><td>gfc</td>    <td>{@value #GFC}</td>   <td></td></tr>
+ *   <tr><td>gmd</td>    <td>{@value #GMD}</td>   <td></td></tr>
+ *   <tr><td>gmi</td>    <td>{@value #GMI}</td>   <td></td></tr>
+ *   <tr><td>srv</td>    <td>{@value #SRV}</td>   <td></td></tr>
+ *   <tr><td>gts</td>    <td>{@value #GTS}</td>   <td></td></tr>
+ *   <tr><td>gmx</td>    <td>{@value #GMX}</td>   <td></td></tr>
+ *   <tr><td>gml</td>    <td>{@value #GML}</td>   <td>0.4</td></tr>
+ *   <tr><td>csw</td>    <td>{@value #CSW}</td>   <td></td></tr>
+ *   <tr><td>xsi</td>    <td>{@value #XSI}</td>   <td></td></tr>
+ *   <tr><td>xlink</td>  <td>{@value #XLINK}</td> <td></td></tr>
+ * </table>
+ *
  * {@section Profiles}
  * Some countries or organizations define profiles of international standards, which may contain
  * country-specific extensions. The namespace of such extensions are usually defined in a separated
@@ -109,7 +131,13 @@ public final class Namespaces extends Static {
     /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "gml"}.
-     * The current version is 3.2 (ISO 19136), but this may change in any future SIS release.
+     * The 3.2 version is equivalent to ISO 19136.
+     *
+     * <p>History</p>
+     * <table class="sis">
+     *   <tr><th>SIS version</th> <th>URL</th></tr>
+     *   <tr><td>0.3</td>         <td>http://www.opengis.net/gml</td></tr>
+     * </table>
      *
      * @category OGC
      */
@@ -118,7 +146,6 @@ public final class Namespaces extends Static {
     /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "csw"}.
-     * The current version is 2.0.2, but this may change in any future SIS release.
      *
      * @category OGC
      */
@@ -126,6 +153,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "xsi"}.
      * This is also defined by {@link XMLConstants#W3C_XML_SCHEMA_INSTANCE_NS_URI}.
      *
      * @category W3C

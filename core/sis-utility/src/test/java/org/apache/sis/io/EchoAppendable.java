@@ -52,6 +52,8 @@ public class EchoAppendable extends Appender {
     /**
      * Writes a single character.
      *
+     * @param  c The character to append.
+     * @return {@code this}.
      * @throws IOException If an I/O error occurs.
      */
     @Override
@@ -65,6 +67,7 @@ public class EchoAppendable extends Appender {
      * Writes a character sequence.
      *
      * @param  sequence The character sequence to be written.
+     * @return {@code this}.
      * @throws IOException If an I/O error occurs.
      */
     @Override
@@ -80,6 +83,7 @@ public class EchoAppendable extends Appender {
      * @param  sequence The character sequence to be written.
      * @param  start    Index from which to start reading characters.
      * @param  end      Index of the character following the last character to read.
+     * @return {@code this}.
      * @throws IOException If an I/O error occurs.
      */
     @Override
