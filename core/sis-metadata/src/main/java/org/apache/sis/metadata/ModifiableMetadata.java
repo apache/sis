@@ -25,7 +25,6 @@ import java.util.NoSuchElementException;
 import java.lang.reflect.Modifier;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CodeListSet;
@@ -84,7 +83,6 @@ import static org.apache.sis.internal.jaxb.Context.isMarshalling;
  * @version 0.3
  * @module
  */
-@ThreadSafe
 @XmlTransient
 public abstract class ModifiableMetadata extends AbstractMetadata implements Cloneable {
     /**
