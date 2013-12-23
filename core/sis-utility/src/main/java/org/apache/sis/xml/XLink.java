@@ -25,7 +25,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
@@ -79,7 +78,6 @@ import java.util.Objects;
  * @see <a href="http://www.w3.org/TR/xlink/">XML Linking Language</a>
  * @see <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">OGC schema</a>
  */
-@ThreadSafe
 @XmlTransient
 public class XLink implements Serializable {
     /**
@@ -342,7 +340,7 @@ public class XLink implements Serializable {
      * @return The type of link, or {@code null}.
      */
     @XmlAttribute(name = "type", namespace = Namespaces.XLINK, required = true)
-    public synchronized Type getType() {
+    public Type getType() {
         if (type != Type.AUTO) {
             return type;
         }
@@ -380,7 +378,7 @@ public class XLink implements Serializable {
      *
      * @param type The new type of link, or {@code null} if none.
      */
-    public synchronized void setType(final Type type) {
+    public void setType(final Type type) {
         canWrite(0x1, "type", "type"); // We want a non-null value in all cases.
         if (type != null && (fieldMask() & ~type.fieldMask) != 0) {
             throw new IllegalStateException(Errors.format(Errors.Keys.InconsistentAttribute_2, "type", type.identifier()));
@@ -428,7 +426,7 @@ public class XLink implements Serializable {
      * @category locator
      */
     @XmlAttribute(name = "href", namespace = Namespaces.XLINK)
-    public synchronized URI getHRef() {
+    public URI getHRef() {
         return href;
     }
 
@@ -442,7 +440,7 @@ public class XLink implements Serializable {
      *
      * @category locator
      */
-    public synchronized void setHRef(final URI href) throws IllegalStateException {
+    public void setHRef(final URI href) throws IllegalStateException {
         canWrite(0x2, "href", href);
         this.href = href;
     }
@@ -455,7 +453,7 @@ public class XLink implements Serializable {
      * @category semantic
      */
     @XmlAttribute(name = "role", namespace = Namespaces.XLINK)
-    public synchronized URI getRole() {
+    public URI getRole() {
         return role;
     }
 
@@ -469,7 +467,7 @@ public class XLink implements Serializable {
      *
      * @category semantic
      */
-    public synchronized void setRole(final URI role) throws IllegalStateException {
+    public void setRole(final URI role) throws IllegalStateException {
         canWrite(0x4, "role", role);
         this.role = role;
     }
@@ -482,7 +480,7 @@ public class XLink implements Serializable {
      * @category semantic
      */
     @XmlAttribute(name = "arcrole", namespace = Namespaces.XLINK)
-    public synchronized URI getArcRole() {
+    public URI getArcRole() {
         return arcrole;
     }
 
@@ -496,7 +494,7 @@ public class XLink implements Serializable {
      *
      * @category semantic
      */
-    public synchronized void setArcRole(final URI arcrole) throws IllegalStateException {
+    public void setArcRole(final URI arcrole) throws IllegalStateException {
         canWrite(0x8, "arcrole", arcrole);
         this.arcrole = arcrole;
     }
@@ -509,7 +507,7 @@ public class XLink implements Serializable {
      * @category semantic
      */
     @XmlAttribute(name = "title", namespace = Namespaces.XLINK)
-    public synchronized InternationalString getTitle() {
+    public InternationalString getTitle() {
         return title;
     }
 
@@ -524,7 +522,7 @@ public class XLink implements Serializable {
      *
      * @category semantic
      */
-    public synchronized void setTitle(final InternationalString title) throws IllegalStateException {
+    public void setTitle(final InternationalString title) throws IllegalStateException {
         canWrite(0x10, "title", title);
         this.title = title;
     }
@@ -585,7 +583,7 @@ public class XLink implements Serializable {
      * @category behavior
      */
     @XmlAttribute(name = "show", namespace = Namespaces.XLINK)
-    public synchronized Show getShow() {
+    public Show getShow() {
         return show;
     }
 
@@ -599,7 +597,7 @@ public class XLink implements Serializable {
      *
      * @category behavior
      */
-    public synchronized void setShow(final Show show) throws IllegalStateException {
+    public void setShow(final Show show) throws IllegalStateException {
         canWrite(0x20, "show", show);
         this.show = show;
     }
@@ -656,7 +654,7 @@ public class XLink implements Serializable {
      * @category behavior
      */
     @XmlAttribute(name = "actuate", namespace = Namespaces.XLINK)
-    public synchronized Actuate getActuate() {
+    public Actuate getActuate() {
         return actuate;
     }
 
@@ -671,7 +669,7 @@ public class XLink implements Serializable {
      *
      * @category behavior
      */
-    public synchronized void setActuate(final Actuate actuate) throws IllegalStateException {
+    public void setActuate(final Actuate actuate) throws IllegalStateException {
         canWrite(0x40, "actuate", actuate);
         this.actuate = actuate;
     }
@@ -683,7 +681,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized String getLabel() {
+    public String getLabel() {
         return label;
     }
 
@@ -697,7 +695,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized void setLabel(final String label) throws IllegalStateException {
+    public void setLabel(final String label) throws IllegalStateException {
         canWrite(0x80, "label", label);
         this.label = label;
     }
@@ -710,7 +708,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized String getFrom() {
+    public String getFrom() {
         return from;
     }
 
@@ -725,7 +723,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized void setFrom(final String from) throws IllegalStateException {
+    public void setFrom(final String from) throws IllegalStateException {
         canWrite(0x100, "from", from);
         this.from = from;
     }
@@ -738,7 +736,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized String getTo() {
+    public String getTo() {
         return to;
     }
 
@@ -753,7 +751,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized void setTo(final String to) throws IllegalStateException {
+    public void setTo(final String to) throws IllegalStateException {
         canWrite(0x200, "to", to);
         this.to = to;
     }
@@ -764,7 +762,7 @@ public class XLink implements Serializable {
      *
      * <p>After the first call to this method, any subsequent calls have no effect.</p>
      */
-    public synchronized void freeze() {
+    public void freeze() {
         if (hashCode == 0) {
             hashCode = hash();
         }
@@ -776,7 +774,7 @@ public class XLink implements Serializable {
      * @param object The object to compare with this XLink.
      */
     @Override
-    public synchronized boolean equals(final Object object) {
+    public boolean equals(final Object object) {
         if (object == this) {
             return true;
         }
@@ -807,7 +805,7 @@ public class XLink implements Serializable {
      * Returns a hash code value for this XLink.
      */
     @Override
-    public synchronized int hashCode() {
+    public int hashCode() {
         int hash = hashCode;
         if (hash == 0) {
             hash = hash();
@@ -837,7 +835,7 @@ public class XLink implements Serializable {
      * }
      */
     @Override
-    public synchronized String toString() {
+    public String toString() {
         final StringBuilder buffer = new StringBuilder(64);
         buffer.append(Classes.getShortClassName(this)).append('[');
         append(buffer, "type",    getType());
