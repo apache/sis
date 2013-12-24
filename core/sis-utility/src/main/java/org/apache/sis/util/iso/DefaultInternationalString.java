@@ -30,7 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Locales;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -49,6 +48,10 @@ import java.util.Objects;
  * This behavior is a compromise between making constructions easier, and being suitable for
  * use in immutable objects.
  *
+ * {@section Thread safety}
+ * Instances of {@code DefaultInternationalString} are thread-safe. While those instances are not strictly immutable,
+ * SIS typically references them as if they were immutable because of their <cite>add-only</cite> behavior.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
@@ -56,7 +59,6 @@ import java.util.Objects;
  *
  * @see Types#toInternationalString(Map, String)
  */
-@ThreadSafe
 public class DefaultInternationalString extends AbstractInternationalString implements Serializable {
     /**
      * Serial number for inter-operability with different versions.

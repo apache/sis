@@ -36,7 +36,6 @@ import org.apache.sis.io.LineAppender;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Configuration;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Debug;
 
 
@@ -99,6 +98,11 @@ import org.apache.sis.util.Debug;
  *     java.util.logging.ConsoleHandler.level = FINE
  * }
  *
+ * {@section Thread safety}
+ * The same {@code MonolineFormatter} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
+ * from multiple threads.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.0)
  * @version 0.4
@@ -107,7 +111,6 @@ import org.apache.sis.util.Debug;
  * @see SimpleFormatter
  * @see Handler#setFormatter(Formatter)
  */
-@ThreadSafe
 public class MonolineFormatter extends Formatter {
     /** Do not format source class name.       */ private static final int NO_SOURCE    = 0;
     /** Format the source logger without base. */ private static final int LOGGER_SHORT = 1;

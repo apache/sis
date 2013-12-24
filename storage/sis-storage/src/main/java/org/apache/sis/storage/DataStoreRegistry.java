@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.ServiceLoader;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -33,12 +32,15 @@ import org.apache.sis.util.resources.Errors;
  * {@note This class is package-private for now in order to get more experience about what could be a good API.
  *        This class may become public in a future SIS version.}
  *
+ * {@section Thread safety}
+ * The same {@code DataStoreRegistry} instance can be safely used by many threads without synchronization
+ * on the part of the caller.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
  */
-@ThreadSafe
 final class DataStoreRegistry {
     /**
      * The loader to use for searching for {@link DataStoreProvider} implementations.

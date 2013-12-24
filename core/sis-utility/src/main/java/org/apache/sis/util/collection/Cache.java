@@ -28,7 +28,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.ref.SoftReference;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -139,7 +138,6 @@ import org.apache.sis.internal.jdk8.Supplier;
  * @version 0.4
  * @module
  */
-@ThreadSafe
 public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * The map that contains the cached values. If a value is under the process of being
@@ -862,6 +860,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * than the ones documented in the {@link ConcurrentHashMap#entrySet()} method, except that
      * it doesn't support removal of elements (including through the {@link Iterator#remove}
      * method call).
+     *
+     * @return A view of the entries contained in this map.
      */
     @Override
     public Set<Entry<K,V>> entrySet() {

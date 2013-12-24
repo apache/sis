@@ -103,6 +103,8 @@ public class NetcdfStore extends DataStore {
     /**
      * Returns a string representation of this NetCDF store for debugging purpose.
      * The content of the string returned by this method may change in any future SIS version.
+     *
+     * @return A string representation of this datastore for debugging purpose.
      */
     @Debug
     @Override
