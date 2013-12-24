@@ -23,7 +23,6 @@ import java.lang.reflect.Array;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
@@ -63,8 +62,12 @@ import java.util.Objects;
  *     }
  * }
  *
- * Thus, {@code WeakHashSet} can be used inside a factory to prevent creating duplicate
- * immutable objects.
+ * Thus, {@code WeakHashSet} can be used inside a factory to prevent creating duplicate immutable objects.
+ *
+ * {@section Thread safety}
+ * The same {@code WeakHashSet} instance can be safely used by many threads without synchronization on the part of
+ * the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
+ * then the caller can synchronize on {@code this}.
  *
  * @param <E> The type of elements in the set.
  *
@@ -75,7 +78,6 @@ import java.util.Objects;
  *
  * @see java.util.WeakHashMap
  */
-@ThreadSafe
 public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E> {
     /**
      * A weak reference to an element. This is an element in a linked list.

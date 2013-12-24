@@ -22,7 +22,6 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.io.InvalidObjectException;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.util.LocalizedParseException;
 
@@ -33,12 +32,16 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * than the {@link java.text} package because the former provide the best guarantees
  * to format all significant digits.
  *
+ * {@section Thread safety}
+ * The same {@linkplain #getInstance instance} can be safely used by many threads without synchronization
+ * on the part of the caller. Note that this is specific to {@code DefaultFormat} and generally not true
+ * for arbitrary {@code Format} classes.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-@ThreadSafe
 final class DefaultFormat extends Format {
     /**
      * For cross-version compatibility.

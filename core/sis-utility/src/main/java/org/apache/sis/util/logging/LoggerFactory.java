@@ -17,7 +17,6 @@
 package org.apache.sis.util.logging;
 
 import java.util.logging.Logger;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
 
@@ -38,6 +37,10 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * The {@link #getLogger(String)} method shall return some {@link Logger} subclass
  * (typically {@link LoggerAdapter}) which forwards directly all log methods to the other framework.
  *
+ * {@section Thread safety}
+ * This base class is safe for multi-threads usage. Subclasses registered in {@code META-INF/services/}
+ * shall make sure that any overridden methods remain safe to call from multiple threads.
+ *
  * @param <L> The type of loggers used for the implementation backend.
  *            This is the type used by external frameworks like Log4J.
  *
@@ -49,7 +52,6 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * @see Logging
  * @see LoggerAdapter
  */
-@ThreadSafe
 public abstract class LoggerFactory<L> {
     /**
      * The logger class. We ask for this information right at construction time in order to

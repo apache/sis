@@ -36,7 +36,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
@@ -76,12 +75,17 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *       XML marshalling.</li>
  * </ul>
  *
+ * {@section Thread safety}
+ * The same {@code PropertyAccessor} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses shall make sure that any overridden methods remain safe to call
+ * from multiple threads, because the same {@code PropertyAccessor} instances are typically used by many
+ * {@link ModifiableMetadata} instances.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
  * @module
  */
-@ThreadSafe
 class PropertyAccessor {
     /**
      * Getters shared between many instances of this class. Two different implementations

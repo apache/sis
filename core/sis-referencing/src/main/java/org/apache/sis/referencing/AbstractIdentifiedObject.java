@@ -42,8 +42,6 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.util.Immutable;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -100,13 +98,18 @@ import java.util.Objects;
  *       All other information are fetched from the database.</li>
  * </ul>
  *
+ * {@section Thread safety}
+ * This base class is immutable if the {@link Citation}, {@link ReferenceIdentifier}, {@link GenericName} and
+ * {@link InternationalString} instances given to the constructor are also immutable. Most SIS subclasses are
+ * immutable under the same conditions. This means that unless otherwise noted in the javadoc,
+ * {@code IdentifiedObject} instances created by SIS factories can be shared by many objects and passed between
+ * threads without synchronization.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
  * @module
  */
-@Immutable
-@ThreadSafe
 @XmlType(name="IdentifiedObjectType", propOrder={
     "identifier",
     "names",
