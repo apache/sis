@@ -25,7 +25,6 @@ import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Numbers;
 
 // Related to JDK7
@@ -75,6 +74,11 @@ import org.apache.sis.internal.jdk7.Objects;
  * numeric ranges can be associated to {@linkplain org.opengis.coverage.ContinuousCoverage
  * continuous coverages}.</p>
  *
+ * {@section Immutability and thread safety}
+ * This class and the {@link NumberRange} / {@link MeasurementRange} subclasses are immutable,
+ * and thus inherently thread-safe. Other subclasses may or may not be immutable, at implementation choice.
+ * But implementors are encouraged to make sure that all subclasses remain immutable for more predictable behavior.
+ *
  * @param <E> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
  * @author  Joe White
@@ -87,7 +91,6 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
  */
-@Immutable
 public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, Serializable {
     /**
      * For cross-version compatibility.

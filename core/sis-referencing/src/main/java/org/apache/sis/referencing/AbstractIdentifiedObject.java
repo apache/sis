@@ -38,11 +38,10 @@ import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.jaxb.referencing.RS_IdentifierSingleton;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.util.Immutable;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -54,6 +53,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
+import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -98,15 +98,20 @@ import org.apache.sis.internal.jdk7.Objects;
  *       All other information are fetched from the database.</li>
  * </ul>
  *
+ * {@section Immutability and thread safety}
+ * This base class is immutable if the {@link Citation}, {@link ReferenceIdentifier}, {@link GenericName} and
+ * {@link InternationalString} instances given to the constructor are also immutable. Most SIS subclasses and
+ * related classes are immutable under similar conditions. This means that unless otherwise noted in the javadoc,
+ * {@code IdentifiedObject} instances created using only SIS factories and static constants can be shared by many
+ * objects and passed between threads without synchronization.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
  * @module
  */
-@Immutable
-@ThreadSafe
 @XmlType(name="IdentifiedObjectType", propOrder={
-    "identifiers",
+    "identifier",
     "name", // This is 'names' on the JDK7 branch.
     "remarks"
 })
@@ -151,19 +156,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * An identifier which references elsewhere the object's defining information.
      * Alternatively an identifier by which this object can be referenced.
      *
-     * <p>We must be prepared to handle either null or an empty set for
-     * "no identifiers" because we may get both on unmarshalling.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setIdentifier(ReferenceIdentifier)}</p>
      *
      * @see #getIdentifiers()
+     * @see #getIdentifier()
      */
-    @XmlElement(name = "identifier")
-    @XmlJavaTypeAdapter(RS_IdentifierSingleton.class)
-    private final Set<ReferenceIdentifier> identifiers;
+    private Set<ReferenceIdentifier> identifiers;
 
     /**
      * Comments on or information about this object, or {@code null} if none.
      */
-    @XmlElement(name = "remarks")
+    @XmlElement
     private final InternationalString remarks;
 
     /**
@@ -353,8 +357,15 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * regardless its authority. If no identifier is found, then the name is used.
      * If no name is found (which should not occur for valid objects), then this method returns {@code null}.
      *
-     * <p>When an identifier has been found, this method returns the concatenation of its code space with its code,
-     * <em>without separator</em>. For example this method may return {@code "EPSG4326"}, not {@code "EPSG:4326"}.</p>
+     * <p>If an identifier has been found, this method returns the concatenation of the following elements
+     * separated by hyphens:</p>
+     * <ul>
+     *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
+     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.DefinitionURI})</li>
+     *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
+     * </ul>
+     *
+     * Example: {@code "epsg-crs-4326"}.
      *
      * <p>The returned ID needs to be unique only in the XML document being marshalled.
      * Consecutive invocations of this method do not need to return the same value,
@@ -371,9 +382,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
          */
         if (identifiers != null) {
             for (final ReferenceIdentifier identifier : identifiers) {
-                appendID(id, identifier.getCodeSpace());
-                appendID(id, identifier.getCode());
-                if (id.length() != 0) {
+                if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) | // Really |, not ||
+                    appendUnicodeIdentifier(id, '-', ReferencingUtilities.toURNType(getClass()), ":", false) |
+                    appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
+                {
                     /*
                      * TODO: If we want to check for ID uniqueness or any other condition before to accept the ID,
                      * we would do that here. If the ID is rejected, then we just need to clear the buffer and let
@@ -381,43 +393,40 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                      */
                     return id.toString();
                 }
+                id.setLength(0); // Clear the buffer for an other try.
             }
         }
         // In last ressort, append code without codespace since the name are often verbose.
-        appendID(id, name.getCode());
-        if (id.length() == 0) {
-            return null;
-        }
-        return id.toString();
+        return appendUnicodeIdentifier(id, '-', name.getCode(), ":", false) ? id.toString() : null;
     }
 
     /**
-     * Appends only the characters that are valid for a Unicode identifier.
+     * Returns a single element from the {@code Set<ReferenceIdentifier>} collection, or {@code null} if none.
+     * We have to define this method because ISO 19111 defines the {@code identifiers} property as a collection
+     * while GML 3.2 defines it as a singleton.
+     *
+     * <p>This method searches for the following identifiers, in preference order:</p>
+     * <ul>
+     *   <li>The first identifier having a code that begin with {@code "urn:"}.</li>
+     *   <li>The first identifier having a code that begin with {@code "http:"}.</li>
+     *   <li>The first identifier, converted to the {@code "urn:} syntax if possible.</li>
+     * </ul>
      */
-    private static void appendID(final StringBuilder buffer, final String text) {
-        if (text != null) {
-            for (int i=0; i<text.length();) {
-                final int c = text.codePointAt(i);
-                if (buffer.length() == 0 ? Character.isUnicodeIdentifierStart(c)
-                                         : Character.isUnicodeIdentifierPart(c))
-                {
-                    buffer.appendCodePoint(c);
-                }
-                i += Character.charCount(c);
+    @XmlElement(name = "identifier")
+    final Code getIdentifier() {
+        return Code.forIdentifiedObject(getClass(), identifiers);
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for setting the identifier.
+     */
+    private void setIdentifier(final Code identifier) {
+        if (identifier != null) {
+            final ReferenceIdentifier id = identifier.getIdentifier();
+            if (id != null) {
+                identifiers = Collections.singleton(id);
             }
         }
-    }
-
-    /**
-     * Returns the primary name by which this object is identified.
-     *
-     * @return The primary name.
-     *
-     * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
-     */
-    @Override
-    public ReferenceIdentifier getName() {
-        return name;
     }
 
     /* -----------------------------------------------------------------------
@@ -436,6 +445,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * the field instead in the JDK6 branch. The consequence is that aliases
      * are lost.
      */
+
+    /**
+     * Returns the primary name by which this object is identified.
+     *
+     * @return The primary name.
+     *
+     * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
+     */
+    @Override
+    public ReferenceIdentifier getName() {
+        return name;
+    }
 
     /**
      * Returns alternative names by which this object is identified.

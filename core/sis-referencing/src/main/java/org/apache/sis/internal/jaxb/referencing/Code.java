@@ -16,14 +16,16 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
-import javax.xml.bind.annotation.XmlType;
-import org.apache.sis.internal.util.URIParser;
+import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
+
+import static org.apache.sis.internal.referencing.ReferencingUtilities.toURNType;
 
 
 /**
@@ -57,9 +59,9 @@ public final class Code {
     String codeSpace;
 
     /**
-     * Empty constructor for JAXB only.
+     * Empty constructor for JAXB.
      */
-    public Code() {
+    Code() {
     }
 
     /**
@@ -79,7 +81,7 @@ public final class Code {
             if (codeSpace != null) {
                 buffer.append(codeSpace);
             }
-            codeSpace = buffer.append(URIParser.SEPARATOR).append(version).toString();
+            codeSpace = buffer.append(DefinitionURI.SEPARATOR).append(version).toString();
         }
     }
 
@@ -88,22 +90,24 @@ public final class Code {
      * If the {@link #codeSpace} contains a semicolon, then the part after the last semicolon
      * will be taken as the authority version number. This is for consistency with what the
      * constructor does.
+     *
+     * @return The identifier, or {@code null} if none.
      */
-    ReferenceIdentifier getIdentifier() {
+    public ReferenceIdentifier getIdentifier() {
         String c = code;
         if (c == null) {
             return null;
         }
         Citation authority = null;
         String version = null, cs = codeSpace;
-        final URIParser parsed = URIParser.parse(c);
+        final DefinitionURI parsed = DefinitionURI.parse(c);
         if (parsed != null) {
             authority = Citations.fromName(cs); // May be null.
             cs        = parsed.authority;
             version   = parsed.version;
             c         = parsed.code;
         } else if (cs != null) {
-            final int s = cs.lastIndexOf(URIParser.SEPARATOR);
+            final int s = cs.lastIndexOf(DefinitionURI.SEPARATOR);
             if (s >= 0) {
                 version = cs.substring(s+1);
                 cs = cs.substring(0, s);
@@ -111,5 +115,56 @@ public final class Code {
             authority = Citations.fromName(cs);
         }
         return new ImmutableIdentifier(authority, cs, c, version, null);
+    }
+
+    /**
+     * Returns a {@code <gml:identifier>} for the given identified object, or {@code null} if none.
+     * This method searches for the following identifiers, in preference order:
+     * <ul>
+     *   <li>The first identifier having a code that begin with {@code "urn:"}.</li>
+     *   <li>The first identifier having a code that begin with {@code "http:"}.</li>
+     *   <li>The first identifier, converted to the {@code "urn:} syntax if possible.</li>
+     * </ul>
+     *
+     * @param  type The type of the identified object.
+     * @param  identifiers The object identifiers, or {@code null} if none.
+     * @return The {@code <gml:identifier>} as a {@code Code} instance, or {@code null} if none.
+     */
+    public static Code forIdentifiedObject(final Class<?> type, final Iterable<? extends ReferenceIdentifier> identifiers) {
+        if (identifiers != null) {
+            boolean isHTTP = false;
+            ReferenceIdentifier fallback = null;
+            for (final ReferenceIdentifier identifier : identifiers) {
+                final String code = identifier.getCode();
+                if (code == null) continue; // Paranoiac check.
+                if (code.regionMatches(true, 0, "urn:", 0, 4)) {
+                    return new Code(identifier);
+                }
+                if (!isHTTP) {
+                    isHTTP = code.regionMatches(true, 0, "http:", 0, 5);
+                    if (isHTTP || fallback == null) {
+                        fallback = identifier;
+                    }
+                }
+            }
+            /*
+             * If no "urn:" or "http:" form has been found, try to create a "urn:" form from the first identifier.
+             * For example "EPSG:4326" may be converted to "urn:ogc:def:crs:EPSG:8.2:4326". If the first identifier
+             * can not be converted to a "urn:" form, then it will be returned as-is.
+             */
+            if (fallback != null) {
+                if (!isHTTP) {
+                    final String urn = DefinitionURI.format(toURNType(type), fallback);
+                    if (urn != null) {
+                        final Code code = new Code();
+                        code.codeSpace = Citations.getIdentifier(fallback.getAuthority());
+                        code.code = urn;
+                        return code;
+                    }
+                }
+                return new Code(fallback);
+            }
+        }
+        return null;
     }
 }

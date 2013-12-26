@@ -16,12 +16,13 @@
  */
 package org.apache.sis.measure;
 
-import org.apache.sis.util.Immutable;
-
 
 /**
  * A longitude angle in decimal degrees.
  * Positive longitudes are East, while negative longitudes are West.
+ *
+ * {@section Immutability and thread safety}
+ * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)
@@ -31,7 +32,6 @@ import org.apache.sis.util.Immutable;
  * @see Latitude
  * @see AngleFormat
  */
-@Immutable
 public final class Longitude extends Angle {
     /**
      * Serial number for inter-operability with different versions.

@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.EnumSet;
 import java.util.Set;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -33,12 +32,15 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * <p>The main purpose of this class is to support the conversion of
  * {@link org.opengis.util.InternationalString}.</p>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable, and thus inherently thread-safe,
+ * if the converter given to the constructor is also immutable.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.02)
  * @version 0.3
  * @module
  */
-@Immutable
 final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**
      * For cross-version compatibility.

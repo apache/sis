@@ -36,7 +36,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Version;
 
 
@@ -47,6 +46,10 @@ import org.apache.sis.util.Version;
  * on the classpath, then this class tries to instantiate a {@code NetcdfStore} backed by
  * the UCAR library.
  *
+ * {@section Thread safety}
+ * The same {@code NetcdfStoreProvider} instance can be safely used by many threads without synchronization on
+ * the part of the caller. However the {@link NetcdfStore} instances created by this factory are not thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.4
@@ -54,7 +57,6 @@ import org.apache.sis.util.Version;
  *
  * @see NetcdfStore
  */
-@ThreadSafe
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The MIME type for NetCDF files.
@@ -199,7 +201,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * Returns a {@link NetcdfStore} implementation associated with this provider.
      *
-     * @param storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
+     * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
+     * @return A data store implementation associated with this provider for the given storage.
+     * @throws DataStoreException If an error occurred while creating the data store instance.
      */
     @Override
     public DataStore open(final StorageConnector storage) throws DataStoreException {

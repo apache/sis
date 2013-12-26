@@ -20,7 +20,6 @@ import javax.measure.unit.Unit;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 
 // Related to JDK7
@@ -43,6 +42,11 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
  * </ul>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe.
+ * Subclasses may or may not be immutable, at implementation choice. But implementors are
+ * encouraged to make sure that subclasses remain immutable for more predictable behavior.
+ *
  * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
@@ -53,7 +57,6 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
  */
-@Immutable
 public class MeasurementRange<E extends Number & Comparable<? super E>> extends NumberRange<E> {
     /**
      * Serial number for inter-operability with different versions.

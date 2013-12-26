@@ -17,8 +17,8 @@
 package org.apache.sis.internal.simple;
 
 import java.io.Serializable;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.CharSequences;
@@ -34,12 +34,12 @@ import org.apache.sis.internal.jdk7.Objects;
 /**
  * An implementation of {@link ReferenceIdentifier} as a wrapper around a {@link Citation}.
  * {@code ReferenceIdentifier} is defined by the ISO 19111 standard and is implemented publicly
- * in the {@link org.apache.sis.referencing} package. This class is provided for non-referencing
- * code that need a lightweight version.
+ * in the {@link org.apache.sis.referencing} package. This class is provided for codes that do
+ * not depend on the {@code sis-referencing} module but still need a lightweight implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializable {
