@@ -33,7 +33,7 @@ import org.apache.sis.util.ArgumentChecks;
  * URLs determined by the SIS version available at compile-time, not runtime, because the
  * {@code javac} compiler inlines string constants.</p>
  *
- * <p>The following table list the URLs, their usual prefix, and the SIS versions when each URL changed.</p>
+ * <p>The following table lists the URLs, their usual prefix, and the SIS versions when each URL changed.</p>
  * <table class="sis">
  *   <tr><th>Prefix</th> <th>XML Namespace</th>   <th>Changes history</th></tr>
  *   <tr><td>gco</td>    <td>{@value #GCO}</td>   <td></td></tr>
