@@ -26,7 +26,6 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.internal.util.Numerics.hash;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -61,6 +60,11 @@ import java.util.Objects;
  *     TemporalDatum datum = GeodeticObjects.Temporal.JULIAN.datum();
  * }
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
+ * all components were created using only SIS factories and static constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
@@ -68,7 +72,6 @@ import java.util.Objects;
  *
  * @see org.apache.sis.referencing.GeodeticObjects.Temporal#datum()
  */
-@Immutable
 @XmlType(name = "TemporalDatumType")
 @XmlRootElement(name = "TemporalDatum")
 public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum {

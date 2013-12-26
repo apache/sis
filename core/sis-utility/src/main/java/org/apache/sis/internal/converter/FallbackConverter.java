@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
@@ -48,6 +47,10 @@ import org.apache.sis.util.Debug;
  * It is invoked when a new converter is {@linkplain ConverterRegistry#register(ObjectConverter)
  * registered} for the same source and target class than an existing converter.</p>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable, and thus inherently thread-safe,
+ * if the converters given to the static factory method are also immutable.
+ *
  * @param <S> The base type of source objects.
  * @param <T> The base type of converted objects.
  *
@@ -56,7 +59,6 @@ import org.apache.sis.util.Debug;
  * @version 0.3
  * @module
  */
-@Immutable
 final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.

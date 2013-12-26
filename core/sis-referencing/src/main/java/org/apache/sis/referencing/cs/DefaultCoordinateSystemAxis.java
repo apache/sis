@@ -37,7 +37,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
@@ -61,6 +60,11 @@ import java.util.Objects;
  * with a {@link org.opengis.referencing.crs.GeographicCRS}. Conversely, these names shall not be used
  * in any other context. See the GeoAPI {@link CoordinateSystemAxis} javadoc for more information.
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if all
+ * components were created using only SIS factories and static constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
@@ -69,7 +73,6 @@ import java.util.Objects;
  * @see AbstractCS
  * @see Unit
  */
-@Immutable
 public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implements CoordinateSystemAxis {
     /**
      * Serial number for inter-operability with different versions.

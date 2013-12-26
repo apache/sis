@@ -27,7 +27,6 @@ import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
@@ -48,10 +47,14 @@ import java.util.Objects;
  * This kind of identifier is primarily used for identification of
  * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} objects.
  *
- * {@note While <code>ImmutableIdentifier</code> objects are immutable, they may contain references to
- *        <code>Citation</code> and <code>InternationalString</code> objects which are not guaranteed
- *        to be immutable. For better safety, factory codes are encouraged to pass only immutable
- *        citations and immutable international strings to the constructors.}
+ *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
+ * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
+ * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#freeze()
+ * DefaultCitation.freeze()} before passing the arguments to the constructor.
+ * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads and do not change
+ * any public {@code ImmutableIdentifier} state.
  *
  *
  * {@section Text, URN and XML representations}
@@ -120,7 +123,6 @@ import java.util.Objects;
  *
  * @see DefaultIdentifier
  */
-@Immutable
 @XmlRootElement(name = "RS_Identifier")
 public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
     /**

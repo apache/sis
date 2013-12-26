@@ -23,7 +23,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.measure.Units;
 
 
@@ -43,12 +42,17 @@ import org.apache.sis.measure.Units;
  *   <td>unspecified</td>
  * </tr></table>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * and the {@link CoordinateSystemAxis} instances given to the constructor are also immutable. Unless otherwise
+ * noted in the javadoc, this condition holds if all components were created using only SIS factories and static
+ * constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */
-@Immutable
 public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
     /**
      * Serial number for inter-operability with different versions.

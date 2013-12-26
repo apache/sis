@@ -21,7 +21,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
-import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -39,12 +38,16 @@ import java.util.Objects;
  * the {@link #SimpleInternationalString(String)} constructor is okay. Otherwise use
  * the {@link Types#toInternationalString(CharSequence)} method.
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe.
+ * Subclasses may or may not be immutable, at implementation choice. But implementors are
+ * encouraged to make sure that subclasses remain immutable for more predictable behavior.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
  */
-@Immutable
 public class SimpleInternationalString extends AbstractInternationalString implements Serializable {
     /**
      * Serial number for inter-operability with different versions.

@@ -24,7 +24,6 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -49,12 +48,18 @@ import java.util.Objects;
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  *
+ * {@section Immutability and thread safety}
+ * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
+ * conditions. This means that unless otherwise noted in the javadoc, {@code ReferenceSystem} instances created using
+ * only SIS factories and static constants can be shared by many objects and passed between threads without
+ * synchronization.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.1)
  * @version 0.4
  * @module
  */
-@Immutable
 public class AbstractReferenceSystem extends AbstractIdentifiedObject implements ReferenceSystem {
     /**
      * Serial number for inter-operability with different versions.

@@ -26,7 +26,6 @@ import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -39,12 +38,16 @@ import java.util.Objects;
  * context only. For an image datum, the anchor point is usually either the centre of the image
  * or the corner of the image.
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
+ * all components were created using only SIS factories and static constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */
-@Immutable
 @XmlType(name = "ImageDatumType")
 @XmlRootElement(name = "ImageDatum")
 public class DefaultImageDatum extends AbstractDatum implements ImageDatum {

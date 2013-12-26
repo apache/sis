@@ -26,7 +26,6 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
@@ -67,6 +66,11 @@ import java.util.Objects;
  *     VerticalDatum datum = GeodeticObjects.Vertical.GEOID.datum();
  * }
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
+ * all components were created using only SIS factories and static constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
@@ -74,7 +78,6 @@ import java.util.Objects;
  *
  * @see org.apache.sis.referencing.GeodeticObjects.Vertical#datum()
  */
-@Immutable
 @XmlType(name = "VerticalDatumType")
 @XmlRootElement(name = "VerticalDatum")
 public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum {
