@@ -70,6 +70,7 @@
             <configuration>
               <portNames>
                 <portName>jettyPort</portName>
+                <portName>stopPort</portName>
               </portNames>
             </configuration>
           </execution>
@@ -79,7 +80,8 @@
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
         <configuration>
-          <webApp>${basedir}/target/sis-webapp-${project.version}.war</webApp>
+          <stopKey>stopJetty</stopKey>
+          <stopPort>${stopPort}</stopPort>
         </configuration>
         <executions>
           <execution>
@@ -107,6 +109,13 @@
                 </systemProperty>
               </systemProperties>
             </configuration>
+          </execution>
+          <execution>
+            <id>stop-jetty</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
