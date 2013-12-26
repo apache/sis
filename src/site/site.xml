@@ -41,6 +41,7 @@
     -->
     <links>
       <item name="Apache" href="http://www.apache.org"/>
+      <item name="SIS home" href="http://sis.apache.org"/>
       <item name="Open Geospatial Consortium (OGC)" href="http://www.opengeospatial.org"/>
       <item name="GeoAPI" href="http://www.geoapi.org"/>
       <item name="Javadoc" href="http://builds.apache.org/job/sis-jdk7/site/apidocs/index.html"/>
