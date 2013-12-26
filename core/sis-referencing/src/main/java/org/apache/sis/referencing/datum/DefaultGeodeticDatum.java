@@ -37,7 +37,6 @@ import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 
@@ -104,6 +103,12 @@ import org.apache.sis.internal.jdk7.Objects;
  *     GeodeticDatum datum = GeodeticObjects.WGS84.datum();
  * }
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
+ * the {@link Ellipsoid} and the {@link PrimeMeridian} given to the constructor are also immutable. Unless otherwise
+ * noted in the javadoc, this condition holds if all components were created using only SIS factories and static
+ * constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
@@ -113,7 +118,6 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see DefaultPrimeMeridian
  * @see org.apache.sis.referencing.GeodeticObjects#datum()
  */
-@Immutable
 @XmlType(name = "GeodeticDatumType", propOrder = {
     "primeMeridian",
     "ellipsoid"

@@ -20,7 +20,6 @@ import java.util.Map;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 import javax.xml.bind.annotation.XmlTransient;
-import org.apache.sis.util.Immutable;
 
 import static java.lang.Math.*;
 
@@ -29,12 +28,16 @@ import static java.lang.Math.*;
  * A ellipsoid which is spherical. This ellipsoid implements a faster
  * {@link #orthodromicDistance(double, double, double, double)} method.
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
+ * all components were created using only SIS factories and static constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */
-@Immutable
 @XmlTransient
 final class Sphere extends DefaultEllipsoid {
     /**

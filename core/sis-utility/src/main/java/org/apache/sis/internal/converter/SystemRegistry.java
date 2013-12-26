@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.ServiceLoader;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.system.SystemListener;
@@ -46,12 +45,14 @@ import org.apache.sis.internal.system.Modules;
  * of the above-cited heuristic rules. This differs from the {@link ConverterRegistry} behavior,
  * where only registered converters are used.
  *
+ * {@section Thread safety}
+ * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.02)
  * @version 0.3
  * @module
  */
-@ThreadSafe
 public final class SystemRegistry extends ConverterRegistry {
     /**
      * The default system-wide instance. This register is initialized with conversions between

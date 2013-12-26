@@ -28,7 +28,6 @@ import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -61,12 +60,16 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  *   <li>{@link #parseGenericName(NameSpace, CharSequence)}</li>
  * </ul>
  *
+ * {@section Thread safety}
+ * The same {@code DefaultNameFactory} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
+ * from multiple threads.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
  */
-@ThreadSafe
 public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**
      * Weak references to the name created by this factory.

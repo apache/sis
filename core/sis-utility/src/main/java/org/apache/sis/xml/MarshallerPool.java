@@ -25,7 +25,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
@@ -50,6 +49,11 @@ import org.apache.sis.util.ArgumentChecks;
  * The (un)marshallers created by this class can optionally by configured with the SIS-specific
  * properties defined in the {@link XML} class, in addition to JAXB standard properties.
  *
+ * {@section Thread safety}
+ * The same {@code MarshallerPool} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
+ * from multiple threads.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
@@ -58,7 +62,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see XML
  * @see <a href="http://jaxb.java.net/guide/Performance_and_thread_safety.html">JAXB Performance and thread-safety</a>
  */
-@ThreadSafe
 public class MarshallerPool {
     /**
      * The indentation string, fixed to 2 spaces instead of 4 because ISO/OGC XML are very verbose.

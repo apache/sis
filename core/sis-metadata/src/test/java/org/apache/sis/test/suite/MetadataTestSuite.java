@@ -76,6 +76,8 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.quality.AbstractPositionalAccuracyTest.class,
     org.apache.sis.metadata.iso.lineage.DefaultLineageTest.class,
     org.apache.sis.metadata.iso.lineage.DefaultProcessStepTest.class,
+    org.apache.sis.metadata.iso.constraint.DefaultLegalConstraintsTest.class,
+    org.apache.sis.metadata.iso.DefaultIdentifierTest.class,
     org.apache.sis.metadata.iso.ImmutableIdentifierTest.class,
     org.apache.sis.metadata.iso.DefaultMetadataTest.class,
     org.apache.sis.metadata.iso.CustomMetadataTest.class,

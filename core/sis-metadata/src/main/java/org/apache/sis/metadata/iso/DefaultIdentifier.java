@@ -25,6 +25,43 @@ import org.opengis.metadata.citation.Citation;
 
 /**
  * Value uniquely identifying an object within a namespace.
+ * One or more {@code Identifier} instances can be associated to some metadata objects like
+ * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation operation},
+ * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform platform},
+ * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument instrument},
+ * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEvent event},
+ * {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessing processing},
+ * {@linkplain org.apache.sis.metadata.iso.lineage.DefaultSource source},
+ * {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription image description},
+ * {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicDescription geographic description}
+ * and more.
+ *
+ * <p>Referencing objects like
+ * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axis},
+ * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum},
+ * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} and more
+ * rather use an {@code Identifier} sub-interface, namely {@link org.opengis.referencing.ReferenceIdentifier}.
+ * The later is implemented in SIS by {@link ImmutableIdentifier}, which is a class unrelated to the usual
+ * {@code org.apache.metadata} hierarchy because of the immutable nature of referencing objects.</p>
+ *
+ * {@section Text, URN and XML representations}
+ * The XML representation of {@link DefaultIdentifier} is similar to the {@link ImmutableIdentifier}
+ * one except for the {@code "MD_"} prefix. Example:
+ *
+ * {@preformat xml
+ *   <gmd:MD_Identifier>
+ *     <gmd:code>
+ *       <gco:CharacterString>4326</gco:CharacterString>
+ *     </gmd:code>
+ *     <gmd:authority>
+ *       <gmd:CI_Citation>
+ *         <gmd:title>
+ *           <gco:CharacterString>EPSG</gco:CharacterString>
+ *         </gmd:title>
+ *       </gmd:CI_Citation>
+ *     </gmd:authority>
+ *   </gmd:MD_Identifier>
+ * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)

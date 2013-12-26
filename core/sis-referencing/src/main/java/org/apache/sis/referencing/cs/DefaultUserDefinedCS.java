@@ -20,18 +20,22 @@ import java.util.Map;
 import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Immutable;
 
 
 /**
  * A 2- or 3-dimensional coordinate system for any combination of coordinate axes not covered by other CS types.
+ *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * and the {@link CoordinateSystemAxis} instances given to the constructor are also immutable. Unless otherwise
+ * noted in the javadoc, this condition holds if all components were created using only SIS factories and static
+ * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */
-@Immutable
 public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
     /**
      * Serial number for inter-operability with different versions.

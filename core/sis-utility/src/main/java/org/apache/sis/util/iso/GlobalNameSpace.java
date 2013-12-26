@@ -17,7 +17,6 @@
 package org.apache.sis.util.iso;
 
 import java.io.ObjectStreamException;
-import org.apache.sis.util.Immutable;
 
 
 /**
@@ -25,12 +24,14 @@ import org.apache.sis.util.Immutable;
  * any global namespace in public API since ISO 19103 does not define them and users should not
  * need to handle them explicitely.
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
-@Immutable
 final class GlobalNameSpace extends DefaultNameSpace {
     /**
      * For cross-version compatibility.

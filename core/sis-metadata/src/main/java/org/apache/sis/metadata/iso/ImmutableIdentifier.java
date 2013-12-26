@@ -26,7 +26,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Immutable;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
@@ -47,19 +47,83 @@ import org.apache.sis.internal.jdk7.Objects;
  * This kind of identifier is primarily used for identification of
  * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} objects.
  *
- * {@note While <code>ImmutableIdentifier</code> objects are immutable, they may contain references to
- *        <code>Citation</code> and <code>InternationalString</code> objects which are not guaranteed
- *        to be immutable. For better safety, factory codes are encouraged to pass only immutable
- *        citations and immutable international strings to the constructors.}
  *
- * @author Martin Desruisseaux (Geomatys)
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
+ * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
+ * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#freeze()
+ * DefaultCitation.freeze()} before passing the arguments to the constructor.
+ * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads and do not change
+ * any public {@code ImmutableIdentifier} state.
+ *
+ *
+ * {@section Text, URN and XML representations}
+ * Identifiers are represented in various ways depending on the context. In particular identifiers are
+ * marshalled differently depending on whether they appear in a metadata object or a referencing object.
+ * The following examples show an identifier for a Geographic Coordinate Reference System (CRS)
+ * identified by code 4326 in the "EPSG" code space:
+ *
+ * <ul><li><p><b><cite>Well Known Text</cite> (WKT) version 1</b></p>
+ * The WKT 1 format contains only the {@linkplain #getCodeSpace() code space} and the {@linkplain #getCode() code}.
+ * If there is no code space, then the {@linkplain #getAuthority() authority} abbreviation is used as a fallback.
+ * Example:
+ *
+ * {@preformat wkt
+ *   AUTHORITY["EPSG", "4326"]
+ * }
+ *
+ * </li><li><p><b><cite>Well Known Text</cite> (WKT) version 2</b></p>
+ * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code} and
+ * the {@linkplain #getVersion() version} if available. The WKT can optionally provides a {@code URI} element,
+ * which expresses the same information in a different way (the URN syntax is described in the next item below).
+ * Example:
+ *
+ * {@preformat wkt
+ *   ID["EPSG", 4326, URI["urn:ogc:def:crs:EPSG::4326"]]
+ * }
+ *
+ * </li><li><p><b>XML in referencing objects</b></p>
+ * The <cite>Definition identifier URNs in OGC namespace</cite> paper defines a syntax for identifiers commonly
+ * found in Geographic Markup Language (GML) documents. Example:
+ *
+ * {@preformat xml
+ *   <gml:identifier codeSpace="OGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
+ * }
+ *
+ * In Apache SIS, the GML {@code codeSpace} attribute - despite its name - is mapped to the identifier
+ * {@linkplain #getAuthority() authority}. The components of the URN value are mapped as below:
+ *
+ * <blockquote><code>
+ * urn:ogc:def:&lt;type&gt;:&lt;{@linkplain #getCodeSpace() codespace}&gt;:&lt;{@linkplain #getVersion() version}&gt;:&lt;{@linkplain #getCode() code}&gt;
+ * </code></blockquote>
+ *
+ * </li><li><p><b>XML in metadata objects</b></p>
+ * The XML representation of {@link ImmutableIdentifier} in a metadata is similar to the {@link DefaultIdentifier}
+ * one except for the {@code "RS_"} prefix:
+ *
+ * {@preformat xml
+ *   <gmd:RS_Identifier>
+ *     <gmd:code>
+ *       <gco:CharacterString>4326</gco:CharacterString>
+ *     </gmd:code>
+ *     <gmd:authority>
+ *       <gmd:CI_Citation>
+ *         <gmd:title>
+ *           <gco:CharacterString>EPSG</gco:CharacterString>
+ *         </gmd:title>
+ *       </gmd:CI_Citation>
+ *     </gmd:authority>
+ *   </gmd:RS_Identifier>
+ * }
+ * </li></ul>
+ *
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)
  * @version 0.4
  * @module
  *
  * @see DefaultIdentifier
  */
-@Immutable
 @XmlRootElement(name = "RS_Identifier")
 public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
     /**
@@ -461,6 +525,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
 
     /**
      * Returns a string representation of this identifier.
+     * The string representation is mostly for debugging purpose and may change in any future SIS version.
      * The default implementation returns a pseudo-WKT format.
      *
      * {@note The <code>NamedIdentifier</code> subclass overrides this method with a different behavior,
@@ -469,6 +534,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      * @see org.apache.sis.referencing.IdentifiedObjects#toString(Identifier)
      * @see org.apache.sis.referencing.NamedIdentifier#toString()
      */
+    @Debug
     @Override
     public String toString() {
         return SimpleIdentifiedObject.toString("IDENTIFIER", authority, codeSpace, code, isDeprecated());

@@ -21,7 +21,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.MemberName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.TypeName;
-import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -34,12 +33,17 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@link DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)}</li>
  * </ul>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe if the {@link NameSpace}, {@link CharSequence} and
+ * {@link TypeName} arguments given to the constructor are also immutable. Subclasses shall make sure that any
+ * overridden methods remain safe to call from multiple threads and do not change any public {@code MemberName}
+ * state.
+ *
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-3.17)
  * @version 0.3
  * @module
  */
-@Immutable
 @XmlRootElement(name = "MemberName")
 public class DefaultMemberName extends DefaultLocalName implements MemberName {
     /**

@@ -28,7 +28,6 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
@@ -38,10 +37,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * This class is final in order to ensure that the immutability contract can not be broken
  * (assuming not using <cite>Java Native Interface</cite> or reflections).
  *
- * {@note While <code>ImmutableEnvelope</code> objects are immutable, they contain references to
- *        <code>CoordinateReferenceSystem</code> objects which are not guaranteed to be immutable.
- *        For better safety, factory codes are encouraged to pass only immutable instances of
- *        coordinate reference systems to the constructors.}
+ * {@section Immutability and thread safety}
+ * This final class is immutable and thus inherently thread-safe if the {@link CoordinateReferenceSystem}
+ * instance given to the constructor is immutable. This is usually the case in Apache SIS.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -49,7 +47,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @version 0.3
  * @module
  */
-@Immutable
 public final class ImmutableEnvelope extends ArrayEnvelope implements Serializable {
     /**
      * For cross-version compatibility.

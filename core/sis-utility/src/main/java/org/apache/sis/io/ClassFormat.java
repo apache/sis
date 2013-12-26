@@ -20,19 +20,21 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.io.InvalidObjectException;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Classes;
 
 
 /**
  * Used by {@link CompoundFormat} for formatting the names of object of type {@link Class}.
  *
+ * {@section Thread safety}
+ * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
+ * Note that this is specific to {@code ClassFormat} and generally not true for arbitrary {@code Format} classes.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-@ThreadSafe
 final class ClassFormat extends Format {
     /**
      * For cross-version compatibility.

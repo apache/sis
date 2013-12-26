@@ -38,7 +38,6 @@ import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.system.XMLInputFactory;
 
@@ -61,7 +60,6 @@ import org.apache.sis.internal.system.XMLInputFactory;
  * @version 0.4
  * @module
  */
-@Decorator(Unmarshaller.class)
 final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     /**
      * The wrapper marshaller which does the real work.

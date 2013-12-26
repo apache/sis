@@ -63,6 +63,7 @@ import org.apache.sis.util.logging.Logging;
  * </tr>
  * </table>
  *
+ * {@section Thread safety}
  * Instances of this class are <strong>not</strong> synchronized for multi-threading.
  * Synchronization, if needed, is caller's responsibility. Note that synchronization locks
  * are not necessarily the metadata instances. For example an other common approach is to

@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
-import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -72,6 +71,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * international strings with the same functionality than this {@code ResourceInternationalString}.
  * See {@link org.apache.sis.util.resources} for more information.
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe if the bundles created by {@link #getBundle(Locale)}
+ * is also immutable. Subclasses may or may not be immutable, at implementation choice. But implementors are
+ * encouraged to make sure that subclasses remain immutable for more predictable behavior.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
@@ -80,7 +84,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @see ResourceBundle#getBundle(String, Locale)
  */
-@Immutable
 public class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**
      * Serial number for inter-operability with different versions.

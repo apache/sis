@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage;
 
-import org.apache.sis.util.ThreadSafe;
-
 
 /**
  * Provides information about a specific {@link DataStore} implementation.
@@ -42,7 +40,7 @@ import org.apache.sis.util.ThreadSafe;
  * where each line is the fully qualified name of the implementation class.
  * See {@link java.util.ServiceLoader} for more general discussion about this lookup mechanism.
  *
- * {@section Thread safety policy}
+ * {@section Thread safety}
  * All {@code DataStoreProvider} implementations shall be thread-safe.
  * However the {@code DataStore} instances created by the providers do not need to be thread-safe.
  *
@@ -51,7 +49,6 @@ import org.apache.sis.util.ThreadSafe;
  * @version 0.4
  * @module
  */
-@ThreadSafe
 public abstract class DataStoreProvider {
     /**
      * Creates a new provider.
@@ -123,7 +120,6 @@ public abstract class DataStoreProvider {
      *
      * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return A data store implementation associated with this provider for the given storage.
-     * @throws IllegalArgumentException If the set contains an invalid combination of options.
      * @throws DataStoreException If an error occurred while creating the data store instance.
      *
      * @see DataStores#open(Object)

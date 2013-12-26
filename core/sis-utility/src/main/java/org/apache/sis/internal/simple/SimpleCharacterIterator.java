@@ -18,7 +18,6 @@ package org.apache.sis.internal.simple;
 
 import java.io.Serializable;
 import java.text.CharacterIterator;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -31,7 +30,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @version 0.3
  * @module
  */
-@Decorator(CharSequence.class)
 public class SimpleCharacterIterator implements CharacterIterator, CharSequence, Serializable {
     /**
      * For cross-version compatibility.

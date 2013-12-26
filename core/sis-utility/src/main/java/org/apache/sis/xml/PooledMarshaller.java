@@ -35,7 +35,6 @@ import javax.xml.transform.Result;
 import javax.xml.validation.Schema;
 import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.system.XMLOutputFactory;
 
@@ -58,7 +57,6 @@ import org.apache.sis.internal.system.XMLOutputFactory;
  * @version 0.4
  * @module
  */
-@Decorator(Marshaller.class)
 final class PooledMarshaller extends Pooled implements Marshaller {
     /**
      * The wrapper marshaller which does the real work.

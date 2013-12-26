@@ -23,7 +23,6 @@ import java.util.AbstractSet;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.NoSuchElementException;
 import java.lang.ref.Reference;
-import org.apache.sis.util.ThreadSafe;
 
 
 /**
@@ -33,6 +32,9 @@ import org.apache.sis.util.ThreadSafe;
  * <p>This class is not needed for the normal working of {@link Cache}. it is used only if
  * the user wants to see the cache entries through the standard Java collection API.</p>
  *
+ * {@section Thread safety}
+ * This class is thread-safe if and only if the {@code Set} given to the constructor is thread-safe.
+ *
  * @param <K> The type of key objects.
  * @param <V> The type of value objects.
  *
@@ -41,7 +43,6 @@ import org.apache.sis.util.ThreadSafe;
  * @version 0.3
  * @module
  */
-@ThreadSafe // Assuming that the set given to the constructor is concurrent.
 final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
     /**
      * The set of entries in the {@link Cache#map}.
@@ -50,6 +51,8 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
 
     /**
      * Wraps the given set of entries of a {@link Cache#map}.
+     *
+     * @param entries The set of entries. Implementation shall support concurrency.
      */
     CacheEntries(final Set<Map.Entry<K,Object>> entries) {
         this.entries = entries;
