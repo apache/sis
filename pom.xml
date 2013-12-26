@@ -606,6 +606,24 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>2.7</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>index</report>
+              <report>summary</report>
+              <report>license</report>
+              <report>dependencies</report>
+              <report>dependency-info</report>
+              <report>dependency-convergence</report>
+              <report>issue-tracking</report>
+              <report>mailing-list</report>
+              <report>project-team</report>
+              <report>scm</report>
+              <report>cim</report>
+              <report>modules</report>
+            </reports>
+          </reportSet>
+        </reportSets>
       </plugin>
 
       <!-- Produce JavaDoc -->
@@ -727,9 +745,14 @@ Apache SIS is a free software, Java language library for developing geospatial a
 
       <!-- "Release Audit" report (checks license headers etc.) -->
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>rat-maven-plugin</artifactId>
-        <version>1.0-alpha-3</version>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.10</version>
+        <configuration>
+          <excludes>
+            <exclude>ide-project/**</exclude>
+          </excludes>
+        </configuration>
       </plugin>
 
       <!-- FindBugs Report. Checkstyle configuration instructions apply also to FindBugs:
