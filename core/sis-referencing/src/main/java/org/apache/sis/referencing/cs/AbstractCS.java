@@ -31,7 +31,6 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
@@ -51,6 +50,13 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * (e.g. in a {@code LOCAL_CS} element). In such exceptional situation, a plain {@code AbstractCS} object may be
  * instantiated.</p>
  *
+ * {@section Immutability and thread safety}
+ * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * and the {@link CoordinateSystemAxis} instances given to the constructor are also immutable. Most SIS subclasses and
+ * related classes are immutable under similar conditions. This means that unless otherwise noted in the javadoc,
+ * {@code CoordinateSystem} instances created using only SIS factories and static constants can be shared by many
+ * objects and passed between threads without synchronization.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
@@ -59,7 +65,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see DefaultCoordinateSystemAxis
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
-@Immutable
 public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSystem {
     /**
      * Serial number for inter-operability with different versions.

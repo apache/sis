@@ -17,7 +17,6 @@
 package org.apache.sis.measure;
 
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -61,6 +60,11 @@ import org.apache.sis.util.resources.Errors;
  * {@linkplain org.opengis.coverage.DiscreteCoverage discrete coverages}, the {@code NumberRange} class can
  * also be used with {@linkplain org.opengis.coverage.ContinuousCoverage continuous coverages}.
  *
+ * {@section Immutability and thread safety}
+ * This class and the {@link MeasurementRange} subclasses are immutable, and thus inherently thread-safe.
+ * Other subclasses may or may not be immutable, at implementation choice. But implementors are encouraged
+ * to make sure that all subclasses remain immutable for more predictable behavior.
+ *
  * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
@@ -73,7 +77,6 @@ import org.apache.sis.util.resources.Errors;
  * @see org.apache.sis.util.collection.RangeSet
  * @see <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">Wikipedia: Interval</a>
  */
-@Immutable
 public class NumberRange<E extends Number & Comparable<? super E>> extends Range<E> {
     /**
      * Serial number for inter-operability with different versions.

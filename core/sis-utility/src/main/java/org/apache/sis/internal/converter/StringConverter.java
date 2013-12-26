@@ -26,7 +26,6 @@ import java.nio.file.InvalidPathException;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -59,12 +58,14 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *    <tr><td>{@code "0"}     </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
  * </table>
  *
+ * {@section Immutability and thread safety}
+ * This base class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
  * @module
  */
-@Immutable
 abstract class StringConverter<T> extends SystemConverter<String, T> {
     /**
      * For cross-version compatibility.
@@ -149,7 +150,6 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
     /**
      * Converter from {@link String} to various kinds of {@link java.lang.Number}.
      */
-    @Immutable
     public static final class Number extends StringConverter<java.lang.Number> {
         private static final long serialVersionUID = 8356246549731207392L;
         public Number() {super(java.lang.Number.class);} // Instantiated by ServiceLoader.
@@ -330,7 +330,6 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * <p>Instances of this class are created by
      * {@link SystemRegistry#createConverter(Class, Class)}.</p>
      */
-    @Immutable
     static final class CodeList<T extends org.opengis.util.CodeList<T>> extends StringConverter<T> {
         /** For cross-version compatibility on serialization. */
         private static final long serialVersionUID = -6351669842222010105L;

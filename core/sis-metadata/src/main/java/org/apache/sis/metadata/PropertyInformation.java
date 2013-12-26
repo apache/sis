@@ -32,7 +32,6 @@ import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.logging.Logging;
 
@@ -48,6 +47,9 @@ import org.apache.sis.util.logging.Logging;
  *        for the property. If the information had a <code>contains(E)</code> method, it would
  *        return <code>true</code> if the given value is valid for that property.}
  *
+ * {@section Immutability and thread safety}
+ * This final class is immutable and thus thread-safe.
+ *
  * @param <E> The value type, either the method return type if not a collection,
  *            or the type of elements in the collection otherwise.
  *
@@ -60,7 +62,6 @@ import org.apache.sis.util.logging.Logging;
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
  * @see <a href="https://issues.apache.org/jira/browse/SIS-80">SIS-80</a>
  */
-@Immutable
 final class PropertyInformation<E> extends SimpleReferenceIdentifier
         implements ExtendedElementInformation, CheckedContainer<E>
 {

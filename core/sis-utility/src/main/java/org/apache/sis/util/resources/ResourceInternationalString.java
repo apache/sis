@@ -23,7 +23,6 @@ import java.io.InvalidObjectException;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.AbstractInternationalString;
 
@@ -36,12 +35,14 @@ import java.util.Objects;
  * {@link IndexedResourceBundle}. Compared to the public class, this specialization works
  * with integer resource keys and accepts arguments.
  *
+ * {@section Immutability and thread safety}
+ * This base class is immutable and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.4
  * @module
  */
-@Immutable
 abstract class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**
      * Serial number for inter-operability with different versions.

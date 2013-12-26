@@ -98,12 +98,12 @@ import java.util.Objects;
  *       All other information are fetched from the database.</li>
  * </ul>
  *
- * {@section Thread safety}
+ * {@section Immutability and thread safety}
  * This base class is immutable if the {@link Citation}, {@link ReferenceIdentifier}, {@link GenericName} and
- * {@link InternationalString} instances given to the constructor are also immutable. Most SIS subclasses are
- * immutable under the same conditions. This means that unless otherwise noted in the javadoc,
- * {@code IdentifiedObject} instances created by SIS factories can be shared by many objects and passed between
- * threads without synchronization.
+ * {@link InternationalString} instances given to the constructor are also immutable. Most SIS subclasses and
+ * related classes are immutable under similar conditions. This means that unless otherwise noted in the javadoc,
+ * {@code IdentifiedObject} instances created using only SIS factories and static constants can be shared by many
+ * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)

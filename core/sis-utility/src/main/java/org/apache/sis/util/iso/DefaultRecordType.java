@@ -29,7 +29,6 @@ import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.RecordSchema;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -48,12 +47,17 @@ import java.util.Objects;
  * {@code RecordType} instances can be though as equivalent to instances of the Java {@link Class} class.
  * The set of members in a {@code RecordType} can be though as equivalent to the set of fields in a class.
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe if the {@link TypeName} and {@link RecordSchema} arguments,
+ * as well as all ({@link MemberName}, {@link Type}) entries in the map given to the constructor, are also immutable.
+ * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads and do not change
+ * any public {@code RecordType} state.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 @XmlType(name = "RecordType")
 public class DefaultRecordType implements RecordType, Serializable {
     /**

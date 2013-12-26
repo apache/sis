@@ -32,7 +32,6 @@ import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -71,6 +70,11 @@ import java.util.Objects;
  *     PrimeMeridian pm = GeodeticObjects.WGS84.primeMeridian();
  * }
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
+ * all components were created using only SIS factories and static constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4 (derived from geotk-1.2)
@@ -79,7 +83,6 @@ import java.util.Objects;
  *
  * @see org.apache.sis.referencing.GeodeticObjects#primeMeridian()
  */
-@Immutable
 @XmlType(name = "PrimeMeridianType")
 @XmlRootElement(name = "PrimeMeridian")
 public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements PrimeMeridian {

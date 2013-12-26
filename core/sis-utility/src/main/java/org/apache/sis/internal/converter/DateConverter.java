@@ -19,7 +19,6 @@ package org.apache.sis.internal.converter;
 import java.util.Date;
 import java.util.Set;
 import java.util.EnumSet;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 
@@ -35,12 +34,14 @@ import org.apache.sis.math.FunctionProperty;
  * The converter from dates to timestamps is not injective, because the same date could be mapped
  * to many timestamps since timestamps have an additional nanoseconds field.
  *
+ * {@section Immutability and thread safety}
+ * This base class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
  * @module
  */
-@Immutable
 abstract class DateConverter<T> extends SystemConverter<Date,T> {
     /**
      * For cross-version compatibility.

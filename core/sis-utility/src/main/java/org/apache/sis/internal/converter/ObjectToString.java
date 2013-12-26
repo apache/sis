@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 
@@ -35,6 +34,9 @@ import org.apache.sis.math.FunctionProperty;
  *     ObjectConverter<S,String> c = StringConverter.getInstance(sourceClass).inverse();
  * }
  *
+ * {@section Immutability and thread safety}
+ * This base class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @param <S> The source type.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -42,7 +44,6 @@ import org.apache.sis.math.FunctionProperty;
  * @version 0.3
  * @module
  */
-@Immutable
 class ObjectToString<S> extends SystemConverter<S,String> {
     /**
      * For cross-version compatibility.

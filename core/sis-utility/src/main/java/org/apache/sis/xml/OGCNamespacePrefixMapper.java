@@ -17,7 +17,6 @@
 package org.apache.sis.xml;
 
 import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
-import org.apache.sis.util.Immutable;
 
 
 /**
@@ -29,6 +28,9 @@ import org.apache.sis.util.Immutable;
  * bundled with JAXB 2.1. Even with working {@code @XmlSchema} annotations, this mapper still
  * a convenient may to gain more control like choosing a default namespace at runtime.
  *
+ * {@section Immutability and thread safety}
+ * This final class is immutable and thus inherently thread-safe.
+ *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
  * @version 0.3
@@ -37,7 +39,6 @@ import org.apache.sis.util.Immutable;
  * @see <a href="http://java.sun.com/webservices/docs/1.5/jaxb/vendorProperties.html">JAXB extensions</a>
  * @see <a href="https://issues.apache.org/jira/browse/SIS-74">SIS-74</a>
  */
-@Immutable
 final class OGCNamespacePrefixMapper extends NamespacePrefixMapper {
     /**
      * If non-null, this namespace will be the default namespace (the one without prefix).
