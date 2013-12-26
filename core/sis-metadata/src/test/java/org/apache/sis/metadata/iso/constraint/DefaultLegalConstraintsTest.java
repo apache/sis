@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso;
+package org.apache.sis.metadata.iso.constraint;
 
 import java.util.logging.LogRecord;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
+import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
@@ -26,21 +27,19 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests XML (un)marshalling of various metadata objects.
- * For every metadata objects tested by this class, the expected XML representation
- * is provided by {@code *.xml} files <a href="{@scmUrl metadata}/">here</a>.
+ * Tests {@link DefaultLegalConstraints}.
  *
- * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.4
  * @version 0.4
  * @module
  */
-public final strictfp class DefaultMetadataTest extends XMLTestCase implements WarningListener<Object> {
+public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase implements WarningListener<Object> {
     /**
      * The resource key for the message of the warning that occurred while unmarshalling a XML fragment,
      * or {@code null} if none.
@@ -81,37 +80,43 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
     /**
      * Unmarshalls the given XML fragment.
      */
-    private DefaultMetadata unmarshal(final String xml) throws JAXBException {
+    private DefaultLegalConstraints unmarshal(final String xml) throws JAXBException {
         final MarshallerPool pool = getMarshallerPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         unmarshaller.setProperty(XML.WARNING_LISTENER, this);
         final Object c = unmarshal(unmarshaller, xml);
         pool.recycle(unmarshaller);
-        return (DefaultMetadata) c;
+        return (DefaultLegalConstraints) c;
     }
 
     /**
-     * Tests unmarshalling of a metadata having a collection that contains no element.
-     * This was used to cause a {@code NullPointerException} prior SIS-139 fix.
+     * Tests unmarshalling of an element containing an empty {@code codeListValue} attribute.
+     * This was used to cause a {@code NullPointerException} prior SIS-157 fix.
      *
      * @throws JAXBException If an error occurred during the during unmarshalling processes.
      *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-139">SIS-139</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-157">SIS-157</a>
      */
     @Test
-    public void testEmptyCollection() throws JAXBException {
-        final DefaultMetadata metadata = unmarshal(
-                "<gmd:MD_Metadata xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
-                "  <gmd:contact/>\n" +
-                "</gmd:MD_Metadata>");
+    public void testUnmarshallEmptyCodeListValue() throws JAXBException {
+        final DefaultLegalConstraints c = unmarshal(
+                "<gmd:MD_LegalConstraints xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+                "  <gmd:accessConstraints>\n" +
+                "    <gmd:MD_RestrictionCode codeListValue=\"intellectualPropertyRights\" codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#MD_RestrictionCode\"/>\n" +
+                "  </gmd:accessConstraints>\n" +
+                "  <gmd:useConstraints>\n" + // Below is an intentionally empty code list value (SIS-157)
+                "    <gmd:MD_RestrictionCode codeListValue=\"\" codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#MD_RestrictionCode\"/>\n" +
+                "  </gmd:useConstraints>\n" +
+                "</gmd:MD_LegalConstraints>");
         /*
          * Verify metadata property.
          */
-        assertTrue(metadata.getContacts().isEmpty());
+        assertEquals("accessConstraints", Restriction.INTELLECTUAL_PROPERTY_RIGHTS, getSingleton(c.getAccessConstraints()));
+        assertTrue("useConstraints", c.getUseConstraints().isEmpty());
         /*
          * Verify warning message emitted during unmarshalling.
          */
         assertEquals("warning", "NullCollectionElement_1", resourceKey);
-        assertArrayEquals("warning", new String[] {"CheckedArrayList<ResponsibleParty>"}, parameters);
+        assertArrayEquals("warning", new String[] {"CodeListSet<Restriction>"}, parameters);
     }
 }

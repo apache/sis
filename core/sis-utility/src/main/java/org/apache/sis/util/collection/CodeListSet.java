@@ -26,6 +26,8 @@ import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.internal.util.CheckedArrayList;
 
 
 /**
@@ -52,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see java.util.EnumSet
@@ -76,7 +78,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      *
      * @see #getElementType()
      */
-    private final Class<E>  elementType;
+    private final Class<E> elementType;
 
     /**
      * A bitmask of code list values present in this map.
@@ -215,6 +217,22 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      */
     @Override
     public boolean add(final E element) {
+        if (element == null) {
+            final String message = CheckedArrayList.illegalElement(this, element, elementType);
+            if (message == null) {
+                /*
+                 * If a unmarshalling process is under way, silently discard null element.
+                 * This case happen when a codeListValue attribute in a XML file is empty.
+                 * See https://issues.apache.org/jira/browse/SIS-157
+                 */
+                return false;
+            }
+            if (element == null) {
+                throw new NullArgumentException(message);
+            } else {
+                throw new IllegalArgumentException(message);
+            }
+        }
         int ordinal = element.ordinal();
         if (ordinal < Long.SIZE) {
             return values != (values |= (1L << ordinal));

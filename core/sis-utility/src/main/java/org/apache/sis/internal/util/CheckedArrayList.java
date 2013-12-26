@@ -22,7 +22,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 
@@ -93,21 +95,48 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     }
 
     /**
-     * Returns {@code true} if a unmarshalling process is under way.
-     * In the later case, logs a warning for non-null element of the wrong type.
+     * Invoked when an illegal element has been given to the {@code add(E)} method.
+     * The element may be illegal either because null or because of invalid type.
+     * This method will perform only one of the following actions:
+     *
+     * <ul>
+     *   <li>If a unmarshalling process is under way, then this method logs a warning and returns {@code null}.
+     *       The {@code add(E)} caller method shall return {@code false} without throwing exception. This is a
+     *       violation of {@link Collection#add(Object)} contract, but is required for unmarshalling of empty
+     *       XML elements (see SIS-139 and SIS-157).</li>
+     *   <li>If no unmarshalling process is under way, then this method returns a {@code String} containing the
+     *       error message to give to the exception to be thrown. The {@code add(E)} caller method is responsible
+     *       to thrown an exception with that message. We let the caller throw the exception for reducing the
+     *       stack trace depth, so the first element on the stack trace is the public {@code add(E)} method.</li>
+     * </ul>
+     *
+     * @param  collection   The collection in which the user attempted to add an invalid element.
+     * @param  element      The element that the user attempted to add (may be {@code null}).
+     * @param  expectedType The type of elements that the collection expected.
+     * @return The message to give to the exception to be thrown, or {@code null} if no message shall be thrown.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-139">SIS-139</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-157">SIS-157</a>
      */
-    static boolean warning(final Collection<?> source, final Object element, final Class<?> type) {
+    public static String illegalElement(final Collection<?> collection, final Object element, final Class<?> expectedType) {
+        final short key;
+        final Object[] arguments;
+        if (element == null) {
+            key = Errors.Keys.NullCollectionElement_1;
+            arguments = new Object[] {
+                Classes.getShortClassName(collection) + '<' + Classes.getShortName(expectedType) + '>'
+            };
+        } else {
+            key = Errors.Keys.IllegalArgumentClass_3;
+            arguments = new Object[] {"element", expectedType, element.getClass()};
+        }
         final Context context = Context.current();
-        if (context == null) {
-            return false;
+        if (context != null) {
+            Context.warningOccured(context, collection.getClass(), "add", Errors.class, key, arguments);
+            return null;
+        } else {
+            return Errors.format(key, arguments);
         }
-        if (element != null) {
-            Context.warningOccured(context, source.getClass(), "add",
-                    Errors.class, Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass());
-        }
-        return true;
     }
 
     /**
@@ -122,7 +151,8 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
         if (type.isInstance(element)) {
             return true;
         }
-        if (warning(this, element, type)) {
+        final String message = illegalElement(this, element, type);
+        if (message == null) {
             /*
              * If a unmarshalling process is under way, silently discard null element.
              * This case happen when a XML element for a collection contains no child.
@@ -130,9 +160,11 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
              */
             return false;
         }
-        ensureNonNull("element", element);
-        throw new IllegalArgumentException(Errors.format(
-                Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass()));
+        if (element == null) {
+            throw new NullArgumentException(message);
+        } else {
+            throw new IllegalArgumentException(message);
+        }
     }
 
     /**
