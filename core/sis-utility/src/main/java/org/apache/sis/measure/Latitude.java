@@ -16,12 +16,13 @@
  */
 package org.apache.sis.measure;
 
-import org.apache.sis.util.Immutable;
-
 
 /**
  * A latitude angle in decimal degrees.
  * Positive latitudes are North, while negative latitudes are South.
+ *
+ * {@section Immutability and thread safety}
+ * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)
@@ -31,7 +32,6 @@ import org.apache.sis.util.Immutable;
  * @see Longitude
  * @see AngleFormat
  */
-@Immutable
 public final class Latitude extends Angle {
     /**
      * Serial number for inter-operability with different versions.

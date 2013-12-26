@@ -67,7 +67,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
             list.add(null);
         } catch (NullArgumentException e) {
             final String message = e.getMessage();
-            assertTrue("element", message.contains("element"));
+            assertTrue(message.contains("CheckedArrayList<String>"));
         }
     }
 
@@ -82,7 +82,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
             list.addAll(toAdd);
         } catch (NullArgumentException e) {
             final String message = e.getMessage();
-            assertTrue("element", message.contains("element"));
+            assertTrue(message.contains("CheckedArrayList<String>"));
         }
     }
 

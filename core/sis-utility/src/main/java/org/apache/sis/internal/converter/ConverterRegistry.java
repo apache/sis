@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -41,17 +40,19 @@ import org.apache.sis.util.resources.Errors;
  * initialized with default converters is provided by the {@link SystemRegistry#INSTANCE} constant.</p>
  *
  * {@section Note about conversions from interfaces}
- * {@code ConverterRegistry} is primarily designed for handling converters from classes to
- * other classes. Handling of interfaces are not prohibited (and actually sometime supported),
- * but their behavior may be more ambiguous than in the case of classes because of
- * multi-inheritance in interface hierarchy.
+ * {@code ConverterRegistry} is primarily designed for handling converters from classes to other classes.
+ * Handling of interfaces are not prohibited (and actually sometime supported), but their behavior may be
+ * more ambiguous than in the case of classes because of multi-inheritance in interface hierarchy.
+ *
+ * {@section Thread safety}
+ * This base class is thread-safe. Subclasses shall make sure that any overridden methods remain safe to call
+ * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
-@ThreadSafe
 public class ConverterRegistry {
     /**
      * The map of converters of any kind. For any key of type {@code ClassPair<S,T>},

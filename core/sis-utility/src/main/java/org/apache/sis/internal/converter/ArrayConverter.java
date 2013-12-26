@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.lang.reflect.Array;
 import org.apache.sis.math.FunctionProperty;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -32,12 +31,15 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * the source and target types of the element converter shall be {@code <? super S>} and {@code <? extends T>}
  * respectively.
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable, and thus inherently thread-safe,
+ * if the converter given to the constructor is also immutable.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 final class ArrayConverter<S,T> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.

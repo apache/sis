@@ -634,7 +634,7 @@ public strictfp class XMLComparator {
         actual   = trim(actual);
         if ((expected != actual) && (expected == null || !expected.equals(actual))) {
             // Before to declare a test failure, compares again as numerical values if possible.
-            if (tolerance > 0 && abs(doubleValue(expected) - doubleValue(actual)) <= tolerance) {
+            if (abs(doubleValue(expected) - doubleValue(actual)) <= tolerance) {
                 return;
             }
             final String lineSeparator = JDK7.lineSeparator();

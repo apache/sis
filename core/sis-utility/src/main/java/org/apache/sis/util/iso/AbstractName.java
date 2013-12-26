@@ -29,7 +29,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Immutable;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -51,6 +50,10 @@ import org.apache.sis.internal.jdk7.Objects;
  * {@section <code>Comparable</code> ordering}
  * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
  * See {@link #compareTo(GenericName)} for more information.
+ *
+ * {@section Immutability and thread safety}
+ * This base class is immutable and thread-safe. Subclasses shall make sure that any overridden methods
+ * remain safe to call from multiple threads and do not change any public {@code GenericName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
@@ -321,13 +324,13 @@ public abstract class AbstractName implements GenericName, Serializable {
 
     /**
      * An international string built from a snapshot of {@link GenericName}.
+     * This class is immutable is the list given to the constructor is immutable.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.3 (derived from geotk-2.1)
      * @version 0.3
      * @module
      */
-    @Immutable
     private static final class International extends SimpleInternationalString {
         /**
          * Serial number for inter-operability with different versions.

@@ -26,7 +26,6 @@ import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -43,12 +42,17 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} with at least one separator</li>
  * </ul>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe if the {@link NameSpace} and all {@link CharSequence}
+ * elements in the arguments given to the constructor are also immutable. Subclasses shall make sure that any
+ * overridden methods remain safe to call from multiple threads and do not change any public {@code LocalName}
+ * state.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
  */
-@Immutable
 @XmlType(name = "ScopedName") // Actually 'gml:CodeType', but the later is used elsewhere.
 @XmlRootElement(name = "ScopedName")
 public class DefaultScopedName extends AbstractName implements ScopedName {

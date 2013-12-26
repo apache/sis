@@ -23,7 +23,6 @@ import java.util.FormattableFlags;
 import java.text.Format;
 import java.text.ParseException;
 import java.io.Serializable;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.internal.util.Utilities;
 
 import static java.lang.Double.doubleToLongBits;
@@ -41,6 +40,11 @@ import static org.apache.sis.math.MathFunctions.isNegative;
  * {@code "%s"} conversion specifier of {@link Formatter}, but this is less efficient for this
  * class.
  *
+ * {@section Immutability and thread safety}
+ * This class and the {@link Latitude} / {@link Longitude} subclasses are immutable, and thus
+ * inherently thread-safe. Other subclasses may or may not be immutable, at implementation choice
+ * (see {@link java.lang.Number} for an example of a similar in purpose class having mutable subclasses).
+ *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)
  * @version 0.3
@@ -50,7 +54,6 @@ import static org.apache.sis.math.MathFunctions.isNegative;
  * @see Longitude
  * @see AngleFormat
  */
-@Immutable
 public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Serial number for inter-operability with different versions.

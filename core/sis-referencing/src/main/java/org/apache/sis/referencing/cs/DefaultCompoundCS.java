@@ -23,7 +23,6 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.Immutable;
 
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -41,12 +40,17 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *   <td>(not applicable)</td>
  * </tr></table>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * and the {@link CoordinateSystemAxis} instances given to the constructor are also immutable. Unless otherwise
+ * noted in the javadoc, this condition holds if all components were created using only SIS factories and static
+ * constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */
-@Immutable
 public class DefaultCompoundCS extends AbstractCS {
     /**
      * Serial number for inter-operability with different versions.

@@ -31,7 +31,6 @@ import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
@@ -81,6 +80,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *       method must be overridden in a {@code MetadataStandard} subclass.</li>
  * </ul>
  *
+ * {@section Thread safety}
+ * The same {@code MetadataStandard} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses shall make sure that any overridden methods remain safe to call
+ * from multiple threads, because the same {@code MetadataStandard} instances are typically referenced
+ * by a large amount of {@link ModifiableMetadata}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
@@ -88,7 +93,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @see AbstractMetadata
  */
-@ThreadSafe
 public class MetadataStandard implements Serializable {
     /**
      * For cross-version compatibility.
