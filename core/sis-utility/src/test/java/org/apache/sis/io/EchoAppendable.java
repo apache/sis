@@ -17,7 +17,6 @@
 package org.apache.sis.io;
 
 import java.io.IOException;
-import org.apache.sis.util.Decorator;
 
 import static org.junit.Assert.*;
 
@@ -33,7 +32,6 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-@Decorator(Appendable.class)
 public class EchoAppendable extends Appender {
     /**
      * The echo writer.
@@ -54,6 +52,8 @@ public class EchoAppendable extends Appender {
     /**
      * Writes a single character.
      *
+     * @param  c The character to append.
+     * @return {@code this}.
      * @throws IOException If an I/O error occurs.
      */
     @Override
@@ -67,6 +67,7 @@ public class EchoAppendable extends Appender {
      * Writes a character sequence.
      *
      * @param  sequence The character sequence to be written.
+     * @return {@code this}.
      * @throws IOException If an I/O error occurs.
      */
     @Override
@@ -82,6 +83,7 @@ public class EchoAppendable extends Appender {
      * @param  sequence The character sequence to be written.
      * @param  start    Index from which to start reading characters.
      * @param  end      Index of the character following the last character to read.
+     * @return {@code this}.
      * @throws IOException If an I/O error occurs.
      */
     @Override

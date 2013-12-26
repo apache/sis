@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -42,6 +41,11 @@ import org.apache.sis.util.resources.Errors;
  *   <li>Otherwise the warning is logged to the logger returned by {@link #getLogger()}.</li>
  * </ul>
  *
+ * {@section Thread safety}
+ * The same {@code WarningListeners} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
+ * from multiple threads.
+ *
  * @param <S> The type of the source of warnings.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -52,7 +56,6 @@ import org.apache.sis.util.resources.Errors;
  * @see WarningListener
  * @see org.apache.sis.storage.DataStore#listeners
  */
-@ThreadSafe
 public class WarningListeners<S> implements Localized {
     /**
      * The declared source of warnings. This is not necessarily the real source,
@@ -166,8 +169,7 @@ public class WarningListeners<S> implements Localized {
             trace = Thread.currentThread().getStackTrace();
             record = new LogRecord(Level.WARNING, message);
         }
-        for (int i=0; i<trace.length; i++) {
-            StackTraceElement e = trace[i];
+        for (final StackTraceElement e : trace) {
             if (isPublic(e)) {
                 record.setSourceClassName(e.getClassName());
                 record.setSourceMethodName(e.getMethodName());

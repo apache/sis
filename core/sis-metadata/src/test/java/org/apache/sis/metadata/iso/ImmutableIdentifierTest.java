@@ -19,12 +19,14 @@ package org.apache.sis.metadata.iso;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import javax.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.opengis.test.Validators;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -36,9 +38,10 @@ import static org.opengis.referencing.ReferenceIdentifier.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.2)
- * @version 0.3
+ * @version 0.4
  * @module
  */
+@DependsOn(DefaultIdentifierTest.class)
 public final strictfp class ImmutableIdentifierTest extends TestCase {
     /**
      * Returns the properties map to be used in argument to test methods.
@@ -152,5 +155,16 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains(AUTHORITY_KEY));
         }
+    }
+
+    /**
+     * Test XML marshalling.
+     *
+     * @throws JAXBException Should never happen.
+     */
+    @Test
+    public void testMarshal() throws JAXBException {
+        final ImmutableIdentifier identifier = new ImmutableIdentifier(new DefaultCitation("EPSG"), null, "4326");
+        new DefaultIdentifierTest().testMarshal("RS_Identifier", identifier);
     }
 }

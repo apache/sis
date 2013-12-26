@@ -33,7 +33,6 @@ import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ThreadSafe;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -47,7 +46,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @version 0.3
  * @module
  */
-@ThreadSafe
 @XmlTransient
 public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject, Serializable {
     /**

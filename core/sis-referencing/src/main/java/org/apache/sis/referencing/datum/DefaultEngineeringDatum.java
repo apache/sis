@@ -24,7 +24,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.io.wkt.Formatter;
 
 
@@ -34,12 +33,16 @@ import org.apache.sis.io.wkt.Formatter;
  * This origin can be fixed with respect to the earth (such as a defined point at a construction site),
  * or be a defined point on a moving vehicle (such as on a ship or satellite).
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if all
+ * components were created using only SIS factories and static constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
  * @module
  */
-@Immutable
 @XmlType(name = "EngineeringDatumType")
 @XmlRootElement(name = "EngineeringDatum")
 public class DefaultEngineeringDatum extends AbstractDatum implements EngineeringDatum {

@@ -24,7 +24,6 @@ import java.net.URI;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import org.apache.sis.math.FunctionProperty;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 
@@ -32,12 +31,14 @@ import org.apache.sis.util.UnconvertibleObjectException;
 /**
  * Handles conversions between {@link Path}, {@link File}, {@link URI} and {@link URL} objects.
  *
+ * {@section Immutability and thread safety}
+ * This base class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.01)
  * @version 0.3
  * @module
  */
-@Immutable
 abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.

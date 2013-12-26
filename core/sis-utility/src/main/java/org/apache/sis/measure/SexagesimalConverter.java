@@ -22,7 +22,6 @@ import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import javax.measure.converter.UnitConverter;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -39,12 +38,14 @@ import static org.apache.sis.math.MathFunctions.truncate;
  * by {@link AngleFormat}) rather than a unit issue. Unfortunately, this pseudo-unit is extensively
  * used in the EPSG database, so we have to support it.</p>
  *
+ * {@section Immutability and thread safety}
+ * This class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
  */
-@Immutable
 class SexagesimalConverter extends UnitConverter { // Intentionally not final.
     /**
      * Serial number for compatibility with different versions.
@@ -210,7 +211,6 @@ class SexagesimalConverter extends UnitConverter { // Intentionally not final.
     /**
      * The inverse of {@link SexagesimalConverter}.
      */
-    @Immutable
     private static final class Inverse extends SexagesimalConverter {
         /**
          * Serial number for compatibility with different versions.

@@ -50,7 +50,8 @@ import static org.apache.sis.test.Assert.*;
  */
 @DependsOn({
     SexagesimalConverterTest.class,
-    org.apache.sis.internal.util.URIParserTest.class
+    org.apache.sis.internal.util.DefinitionURITest.class,
+    org.apache.sis.internal.util.XPathsTest.class
 })
 public final strictfp class UnitsTest extends TestCase {
     /**

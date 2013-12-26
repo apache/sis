@@ -31,7 +31,8 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.URIParser;
+import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.internal.util.XPaths;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -338,20 +339,20 @@ public final class Units extends Static {
          * If the unit is not an authority code (which is the most common case), then we
          * will check for hard-coded unit symbols.
          *
-         * URIParser.codeOf(…) returns 'uom' directly (provided that whitespaces were already trimmed)
+         * DefinitionURI.codeOf(…) returns 'uom' directly (provided that whitespaces were already trimmed)
          * if no ':' character were found, in which case the string is assumed to be the code directly.
          * This is the intended behavior for AuthorityFactory, but in the particular case of this method
          * we want to try to parse as a xpointer before to give up.
          */
         if (isURI(uom)) {
-            String code = URIParser.codeOf("uom", "EPSG", uom);
+            String code = DefinitionURI.codeOf("uom", "EPSG", uom);
             if (code != null && code != uom) try { // Really identity check, see above comment.
                 return valueOfEPSG(Integer.parseInt(code));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.IllegalArgumentValue_2, "uom", uom), e);
             }
-            code = URIParser.xpointer("uom", uom);
+            code = XPaths.xpointer("uom", uom);
             if (code != null) {
                 uom = code;
             }

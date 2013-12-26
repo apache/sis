@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
@@ -41,6 +40,9 @@ import org.apache.sis.util.resources.Errors;
  * If nevertheless performance appears to be a problem, consider reverting to revision 1455255
  * of this class, which was using one subclass per target type as described above.
  *
+ * {@section Immutability and thread safety}
+ * This class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @param <S> The source number type.
  * @param <T> The target number type.
  *
@@ -49,7 +51,6 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  */
-@Immutable
 final class NumberConverter<S extends Number, T extends Number> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.
@@ -122,7 +123,6 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
      * Converter from numbers to comparables. This special case exists because {@link Number}
      * does not implement {@link java.lang.Comparable} directly, but all known subclasses do.
      */
-    @Immutable
     static final class Comparable<S extends Number> extends SystemConverter<S, java.lang.Comparable<?>> {
         /**
          * For cross-version compatibility.

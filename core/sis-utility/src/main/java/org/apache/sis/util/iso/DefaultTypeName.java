@@ -19,7 +19,6 @@ package org.apache.sis.util.iso;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
-import org.apache.sis.util.Immutable;
 
 
 /**
@@ -30,13 +29,17 @@ import org.apache.sis.util.Immutable;
  *   <li>{@link DefaultNameFactory#createTypeName(NameSpace, CharSequence)}</li>
  * </ul>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe if the {@link NameSpace} and {@link CharSequence}
+ * arguments given to the constructor are also immutable. Subclasses shall make sure that any overridden methods
+ * remain safe to call from multiple threads and do not change any public {@code TypeName} state.
+ *
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
-@Immutable
 @XmlRootElement(name = "TypeName")
 public class DefaultTypeName extends DefaultLocalName implements TypeName {
     /**

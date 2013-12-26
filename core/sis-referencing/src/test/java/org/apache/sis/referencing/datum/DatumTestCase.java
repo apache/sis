@@ -24,7 +24,7 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.XMLTestCase;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -58,6 +58,19 @@ abstract strictfp class DatumTestCase extends XMLTestCase {
         assertEquals("name", "Paris", meridian.getName().getCode());
         assertEquals("greenwichLongitude", 2.5969213, meridian.getGreenwichLongitude(), 0);
         assertEquals("angularUnit", NonSI.GRADE, meridian.getAngularUnit());
+    }
+
+    /**
+     * Marshals the given object and ensure that the result is equals to the content of the given file,
+     * ignoring namespace declarations.
+     *
+     * @param  filename The name of the XML file.
+     * @param  object The object to marshal.
+     * @throws JAXBException If an error occurred during marshalling.
+     */
+    final void assertMarshalEqualsFile(final String filename, final Object object) throws JAXBException {
+        assertXmlEquals(getResource(filename), marshal(object), "xlmns:*", "xsi:schemaLocation",
+                "xmlns:xsi"); // Not necessary on JDK7 but needed on JDK6, not sure why...
     }
 
     /**

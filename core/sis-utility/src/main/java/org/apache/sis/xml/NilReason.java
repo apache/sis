@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
@@ -50,6 +49,9 @@ import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
  * {@code NilReason} is used in a number of XML elements where it is necessary to permit
  * one of the above values as an alternative to the primary element.
  *
+ * {@section Immutability and thread safety}
+ * This final class is immutable and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
  * @version 0.4
@@ -57,7 +59,6 @@ import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
  *
  * @see NilObject
  */
-@Immutable
 public final class NilReason implements Serializable {
     /**
      * For cross-version compatibility.

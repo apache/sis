@@ -37,7 +37,6 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
@@ -105,6 +104,11 @@ import org.apache.sis.internal.jdk7.Objects;
  *     Ellipsoid e = GeodeticObjects.WGS84.ellipsoid();
  * }
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructors are also immutable. Unless otherwise noted in the javadoc, this condition holds if all
+ * components were created using only SIS factories and static constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4 (derived from geotk-1.2)
@@ -113,7 +117,6 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @see org.apache.sis.referencing.GeodeticObjects#ellipsoid()
  */
-@Immutable
 @XmlType(name="EllipsoidType", propOrder={
     "semiMajorAxisMeasure",
     "secondDefiningParameter"
@@ -349,12 +352,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * been defined, it is now possible to calculate the value of the missing parameter
      * using the values of those that are set.
      *
-     * <p>This method is invoked by JAXB only.</p>
-     *
      * @see #setSemiMajorAxisMeasure(Measure)
      * @see #setSecondDefiningParameter(SecondDefiningParameter)
      */
-    private void afterUnmarshal(Object target, Object parent) {
+    private void afterUnmarshal() {
         if (ivfDefinitive) {
             if (semiMinorAxis == 0) {
                 semiMinorAxis = semiMajorAxis * (1 - 1/inverseFlattening);
@@ -412,9 +413,12 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             warnDuplicated("semiMajorAxis");
         } else {
             final Unit<Length> uom = unit; // In case semi-minor were defined before semi-major.
-            semiMajorAxis = measure.value;
+            ensureStrictlyPositive("semiMajorAxis", semiMajorAxis = measure.value);
             unit = measure.getUnit(Length.class);
             harmonizeAxisUnits(uom);
+            if ((ivfDefinitive ? inverseFlattening : semiMinorAxis) != 0) {
+                afterUnmarshal();
+            }
         }
     }
 
@@ -513,30 +517,37 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         }
         final Measure measure = second.measure;
         if (measure != null) {
-            double value = measure.value;
-            if (second.isIvfDefinitive()) {
-                if (inverseFlattening == 0) {
-                    inverseFlattening = value;
-                    ivfDefinitive = true;
-                    return;
+            final boolean isIvfDefinitive = second.isIvfDefinitive();
+            if ((isIvfDefinitive ? inverseFlattening : semiMinorAxis) != 0) {
+                warnDuplicated("secondDefiningParameter");
+            } else {
+                ivfDefinitive = isIvfDefinitive;
+                double value = measure.value;
+                if (isIvfDefinitive) {
+                    if (value == 0) {
+                        value = Double.POSITIVE_INFINITY;
+                    }
+                    ensureStrictlyPositive("inverseFlattening", inverseFlattening = value);
+                } else if (semiMinorAxis == 0) {
+                    ensureStrictlyPositive("semiMinorAxis", semiMinorAxis = value);
+                    if (unit == null) {
+                        unit = measure.getUnit(Length.class);
+                    } else {
+                        harmonizeAxisUnits(measure.unit);
+                    }
                 }
-            } else if (semiMinorAxis == 0) {
-                semiMinorAxis = value;
-                ivfDefinitive = false;
-                if (unit == null) {
-                    unit = measure.getUnit(Length.class);
-                } else {
-                    harmonizeAxisUnits(measure.unit);
+                if (semiMajorAxis != 0) {
+                    afterUnmarshal();
                 }
-                return;
             }
-            warnDuplicated("secondDefiningParameter");
         }
     }
 
     /**
      * Ensures that the semi-minor axis uses the same unit than the semi-major one.
+     * The {@link #unit} field shall be set to the semi-major axis unit before this method call.
      *
+     * @param  uom The semi-minor axis unit.
      * @throws ConversionException If semi-major and semi-minor axes use inconsistent units
      *         and we can not convert from one to the other.
      */

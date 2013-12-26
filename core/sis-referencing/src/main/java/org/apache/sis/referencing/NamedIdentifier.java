@@ -33,7 +33,6 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.Immutable;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -64,12 +63,20 @@ import org.apache.sis.internal.jdk7.Objects;
  * as the name {@linkplain ScopedName#tip() tip}. Note that according ISO 19115, citation alternate titles often
  * contains abbreviation (for example "DCW" as an alternative title for "<cite>Digital Chart of the World</cite>").
  *
+ *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
+ * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
+ * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#freeze()
+ * DefaultCitation.freeze()} before passing the arguments to the constructor.
+ * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads and do not change
+ * any public {@code NamedIdentifier} state.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */
-@Immutable
 public class NamedIdentifier extends ImmutableIdentifier implements GenericName {
     /**
      * Serial number for inter-operability with different versions.

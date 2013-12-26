@@ -33,7 +33,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;
@@ -63,12 +62,16 @@ import org.apache.sis.internal.jdk7.JDK7;
  *   <li>{@link Class} and {@link Throwable} instances are summarized.</li>
  * </ul>
  *
+ * {@section Thread safety}
+ * The same {@code IndexedResourceBundle} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call from
+ * multiple threads.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.2)
  * @version 0.4
  * @module
  */
-@ThreadSafe
 public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Maximum string length for text inserted into another text. This parameter is used by

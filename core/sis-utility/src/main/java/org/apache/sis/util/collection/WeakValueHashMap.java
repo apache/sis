@@ -27,7 +27,6 @@ import java.lang.ref.WeakReference;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
@@ -71,6 +70,11 @@ import org.apache.sis.internal.jdk7.Objects;
  * <p>{@code WeakValueHashMap} works with array keys as one would expect. For example arrays of {@code int[]} are
  * compared using the {@link java.util.Arrays#equals(int[], int[])} method.</p>
  *
+ * {@section Thread safety}
+ * The same {@code WeakValueHashMap} instance can be safely used by many threads without synchronization on the part
+ * of the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
+ * then the caller can synchronize on {@code this}.
+ *
  * @param <K> The class of key elements.
  * @param <V> The class of value elements.
  *
@@ -83,7 +87,6 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see WeakHashSet
  * @see Cache
  */
-@ThreadSafe
 public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Comparison mode for key objects. The standard mode is {@code EQUALS}, which means that keys are compared

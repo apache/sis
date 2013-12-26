@@ -26,8 +26,11 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Base class of all converters defined in the {@code org.apache.sis.internal} package.
- * Those converters are returned by system-wide {@link ConverterRegitry}, and cached for
- * reuse.
+ * Those converters are returned by system-wide {@link ConverterRegitry}, and cached for reuse.
+ *
+ * {@section Immutability and thread safety}
+ * This base class is immutable, and thus inherently thread-safe. Subclasses should be immutable
+ * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *
  * @param <S> The base type of source objects.
  * @param <T> The base type of converted objects.
@@ -111,6 +114,10 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      *       (as in {@link ConverterRegistry#find(Class, Class)}), the key shall be
      *       an instance of {@code ClassPair} instance (not a subclass).</li>
      * </ul>
+     *
+     * @param  other The object to compare with this {@code SystemConverter}.
+     * @return {@code true} if the given object is a {@code ClassPair} or a converter of the
+     *         same class than {@code this}, and both have the same source and target classes.
      */
     @Override
     public final boolean equals(final Object other) {

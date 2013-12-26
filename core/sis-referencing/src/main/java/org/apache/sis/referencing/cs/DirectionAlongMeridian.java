@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.util.Immutable;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -30,12 +29,14 @@ import org.apache.sis.internal.referencing.AxisDirections;
  * Parses {@linkplain AxisDirection axis direction} of the kind "<cite>South along 90 deg East</cite>".
  * Those directions are used in the EPSG database for polar stereographic projections.
  *
+ * {@section Immutability and thread safety}
+ * This final class is immutable and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4 (derived from geotk-2.4)
  * @version 0.4
  * @module
  */
-@Immutable
 final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>, Serializable {
     /**
      * For cross-version compatibility.

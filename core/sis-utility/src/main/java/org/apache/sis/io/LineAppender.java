@@ -18,7 +18,6 @@ package org.apache.sis.io;
 
 import java.io.Flushable;
 import java.io.IOException;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -62,7 +61,6 @@ import org.apache.sis.internal.jdk7.JDK7;
  * @version 0.4
  * @module
  */
-@Decorator(Appendable.class)
 public class LineAppender extends Appender implements Flushable {
     /**
      * The line separator, or {@code null} if not yet determined. If {@code null}, then the

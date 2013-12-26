@@ -546,6 +546,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NullArgument_1 = 95;
 
         /**
+         * ‘{0}’ collection does not accept null elements.
+         */
+        public static final short NullCollectionElement_1 = 134;
+
+        /**
          * Null key is not allowed in this dictionary.
          */
         public static final short NullMapKey = 96;
