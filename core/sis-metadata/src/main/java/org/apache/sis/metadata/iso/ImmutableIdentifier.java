@@ -63,7 +63,7 @@ import java.util.Objects;
  * The following examples show an identifier for a Geographic Coordinate Reference System (CRS)
  * identified by code 4326 in the "EPSG" code space:
  *
- * <p><b><cite>Well Known Text</cite> (WKT) version 1</b></p>
+ * <ul><li><p><b><cite>Well Known Text</cite> (WKT) version 1</b></p>
  * The WKT 1 format contains only the {@linkplain #getCodeSpace() code space} and the {@linkplain #getCode() code}.
  * If there is no code space, then the {@linkplain #getAuthority() authority} abbreviation is used as a fallback.
  * Example:
@@ -72,7 +72,7 @@ import java.util.Objects;
  *   AUTHORITY["EPSG", "4326"]
  * }
  *
- * <p><b><cite>Well Known Text</cite> (WKT) version 2</b></p>
+ * </li><li><p><b><cite>Well Known Text</cite> (WKT) version 2</b></p>
  * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code} and
  * the {@linkplain #getVersion() version} if available. The WKT can optionally provides a {@code URI} element,
  * which expresses the same information in a different way (the URN syntax is described in the next item below).
@@ -82,7 +82,7 @@ import java.util.Objects;
  *   ID["EPSG", 4326, URI["urn:ogc:def:crs:EPSG::4326"]]
  * }
  *
- * <p><b>XML in referencing objects</b></p>
+ * </li><li><p><b>XML in referencing objects</b></p>
  * The <cite>Definition identifier URNs in OGC namespace</cite> paper defines a syntax for identifiers commonly
  * found in Geographic Markup Language (GML) documents. Example:
  *
@@ -97,7 +97,7 @@ import java.util.Objects;
  * urn:ogc:def:&lt;type&gt;:&lt;{@linkplain #getCodeSpace() codespace}&gt;:&lt;{@linkplain #getVersion() version}&gt;:&lt;{@linkplain #getCode() code}&gt;
  * </code></blockquote>
  *
- * <p><b>XML in metadata objects</b></p>
+ * </li><li><p><b>XML in metadata objects</b></p>
  * The XML representation of {@link ImmutableIdentifier} in a metadata is similar to the {@link DefaultIdentifier}
  * one except for the {@code "RS_"} prefix:
  *
@@ -115,6 +115,7 @@ import java.util.Objects;
  *     </gmd:authority>
  *   </gmd:RS_Identifier>
  * }
+ * </li></ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)
