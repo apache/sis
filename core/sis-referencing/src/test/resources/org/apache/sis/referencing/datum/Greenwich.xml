@@ -18,11 +18,10 @@
   under the License.
 -->
 
-<gml:PrimeMeridian
-    xmlns:gml = "http://www.opengis.net/gml/3.2"
-    xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/datums.xsd"
-    gml:id = "epsg-meridian-8901">
+<gml:PrimeMeridian xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/datums.xsd"
+                   xmlns:gml          = "http://www.opengis.net/gml/3.2"
+                   xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
+                   gml:id             = "epsg-meridian-8901">
 
   <gml:identifier codeSpace="OGP">urn:ogc:def:meridian:EPSG::8901</gml:identifier>
   <gml:name>Greenwich</gml:name>

@@ -73,6 +73,6 @@ public final class DateAsLongAdapter extends XmlAdapter<GO_DateTime, Long> {
                 return new GO_DateTime(new Date(time), false);
             }
         }
-        return new GO_DateTime();
+        return null;
     }
 }

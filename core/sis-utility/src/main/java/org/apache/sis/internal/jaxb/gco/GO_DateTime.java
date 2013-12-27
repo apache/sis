@@ -53,7 +53,7 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     private XMLGregorianCalendar date;
 
     /**
-     * Empty constructor for JAXB, and also for empty wrapper for formating only an empty element.
+     * Empty constructor for JAXB.
      */
     public GO_DateTime() {
     }

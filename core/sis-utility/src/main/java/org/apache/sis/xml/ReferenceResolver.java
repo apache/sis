@@ -113,9 +113,8 @@ public class ReferenceResolver {
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled as an <strong>interface</strong>.
-     *                 This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
-     * @param  link The {@code xlink} attributes.
+     * @param  type    The type of object to be unmarshalled, often as an interface.
+     * @param  link    The {@code xlink} attributes.
      * @return An object of the given type for the given {@code xlink} attribute, or {@code null} if none.
      */
     public <T> T resolve(final MarshalContext context, final Class<T> type, final XLink link) {
@@ -141,8 +140,7 @@ public class ReferenceResolver {
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be marshalled as an <strong>interface</strong>.
-     *                 This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
+     * @param  type    The type of object to be unmarshalled, often as an interface.
      * @param  object  The object to be marshalled.
      * @param  uuid    The unique identifier of the object to be marshalled.
      * @return {@code true} if the marshaller can use the {@code uuidref} attribute
