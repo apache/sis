@@ -125,17 +125,17 @@ public final class Measure {
     @XmlAttribute(required = true)
     public String getUOM() {
         final Unit<?> unit = this.unit;
-        if (unit == null || unit.equals(Unit.ONE)) {
-            return "";
-        }
-        if (unit.equals(NonSI.PIXEL)) {
-            return "pixel"; // TODO: maybe not the most appropriate unit.
-        }
         if (!asXPointer) {
             final Integer code = Units.getEpsgCode(unit);
             if (code != null) {
                 return "urn:ogc:def:uom:EPSG::" + code;
             }
+        }
+        if (unit == null || unit.equals(Unit.ONE)) {
+            return "";
+        }
+        if (unit.equals(NonSI.PIXEL)) {
+            return "pixel"; // TODO: maybe not the most appropriate unit.
         }
         return Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT).append(Schemas.UOM_PATH)
                 .append("#xpointer(//*[@gml:id='").append(unit).append("'])").toString();

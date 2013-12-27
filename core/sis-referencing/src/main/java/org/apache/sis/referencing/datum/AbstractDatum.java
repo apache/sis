@@ -87,7 +87,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Description, possibly including coordinates, of the point or points used to anchor the datum
      * to the Earth. Also known as the "origin", especially for Engineering and Image Datums.
      */
-    @XmlElement
+    @XmlElement(name = "anchorDefinition")
     private final InternationalString anchorPoint;
 
     /**
@@ -102,7 +102,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Area or region in which this datum object is valid.
      */
-    @XmlElement(name = "validArea")
+    @XmlElement
     private final Extent domainOfValidity;
 
     /**
