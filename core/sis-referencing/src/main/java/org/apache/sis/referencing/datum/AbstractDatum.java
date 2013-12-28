@@ -21,7 +21,6 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
@@ -34,7 +33,6 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.metadata.MetadataUtilities;
-import org.apache.sis.internal.jaxb.gco.DateAsLongAdapter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
@@ -94,10 +92,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * The time after which this datum definition is valid. This time may be precise
      * (e.g. 1997 for IRTF97) or merely a year (e.g. 1983 for NAD83). If the time is
      * not defined, then the value is {@link Long#MIN_VALUE}.
+     *
+     * <p>Consider this field as final. It is non-final only for the need of XML unmarshalling.</p>
      */
-    @XmlElement
-    @XmlJavaTypeAdapter(value=DateAsLongAdapter.class, type=long.class)
-    private final long realizationEpoch;
+    private long realizationEpoch;
 
     /**
      * Area or region in which this datum object is valid.
@@ -275,8 +273,16 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @return The time after which this datum definition is valid, or {@code null} if none.
      */
     @Override
+    @XmlElement(name = "realizationEpoch")
     public Date getRealizationEpoch() {
         return MetadataUtilities.toDate(realizationEpoch);
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     */
+    private void setRealizationEpoch(final Date value) {
+        realizationEpoch = MetadataUtilities.toMilliseconds(value);
     }
 
     /**

@@ -20,6 +20,10 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import javax.xml.bind.Marshaller;
@@ -51,6 +55,23 @@ import static org.opengis.test.Assert.*;
  * @see XMLComparator
  */
 public abstract strictfp class XMLTestCase extends TestCase {
+    /**
+     * The timezone used for the tests. We intentionally use a timezone different than UTC in order
+     * to have an error of one or two hours if a code fails to take timezone offset in account.
+     */
+    private static final String TIMEZONE = "CET";
+
+    /**
+     * Date parser and formatter using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
+     * and the time zone of the XML (un)marshallers used for the tests.
+     */
+    private static final DateFormat dateFormat;
+    static {
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.UK);
+        dateFormat.setTimeZone(TimeZone.getTimeZone(TIMEZONE));
+        dateFormat.setLenient(false);
+    };
+
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller} binded to the default set of classes.
      * The locale is set to {@link Locale#UK} (the language of ISO standards) and the timezone is arbitrarily
@@ -99,7 +120,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
         if (defaultPool == null) {
             final Map<String,Object> properties = new HashMap<>(4);
             assertNull(properties.put(XML.LOCALE, Locale.UK));
-            assertNull(properties.put(XML.TIMEZONE, "CET"));
+            assertNull(properties.put(XML.TIMEZONE, TIMEZONE));
             defaultPool = new MarshallerPool(properties);
         }
         return defaultPool;
@@ -197,5 +218,23 @@ public abstract strictfp class XMLTestCase extends TestCase {
         ArgumentChecks.ensureNonNull("unmarshaller", unmarshaller);
         ArgumentChecks.ensureNonNull("xml", xml);
         return unmarshaller.unmarshal(new StringReader(xml));
+    }
+
+    /**
+     * Parses the date for the given string using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
+     * and the time zone of the XML (un)marshallers used for the tests.
+     *
+     * @param  date The date as a {@link String}.
+     * @return The date as a {@link Date}.
+     */
+    protected static Date xmlDate(final String date) {
+        ArgumentChecks.ensureNonNull("date", date);
+        try {
+            synchronized (dateFormat) {
+                return dateFormat.parse(date);
+            }
+        } catch (ParseException e) {
+            throw new AssertionError(e);
+        }
     }
 }

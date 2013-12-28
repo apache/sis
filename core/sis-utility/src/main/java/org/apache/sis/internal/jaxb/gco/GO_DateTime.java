@@ -34,7 +34,7 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
@@ -62,14 +62,12 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
      * Builds a wrapper for the given {@link Date}.
      *
      * @param date The date to marshal. Can not be {@code null}.
-     * @param allowTime {@code true} for allowing the usage of {@code "DateTime"} field if
-     *        applicable, or {@code false} for using the {@code "Date"} field in every cases.
      */
-    GO_DateTime(final Date date, final boolean allowTime) {
+    private GO_DateTime(final Date date) {
         final Context context = Context.current();
         try {
             final XMLGregorianCalendar gc = XmlUtilities.toXML(context, date);
-            if (XmlUtilities.trimTime(gc, !allowTime)) {
+            if (XmlUtilities.trimTime(gc, false)) {
                 this.date = gc;
             } else {
                 dateTime = gc;
@@ -109,6 +107,6 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
      */
     @Override
     public GO_DateTime marshal(final Date value) {
-        return (value != null) ? new GO_DateTime(value, true) : null;
+        return (value != null) ? new GO_DateTime(value) : null;
     }
 }

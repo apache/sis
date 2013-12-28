@@ -35,7 +35,7 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
-import static org.apache.sis.test.TestUtilities.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.mock.GeodeticDatumMock.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
@@ -233,8 +233,8 @@ public final strictfp class DefaultGeodeticDatumTest extends DatumTestCase {
                 datum.getScope().toString());
         assertEquals("anchorDefinition", "Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.",
                 datum.getAnchorPoint().toString());
-//      assertEquals("realizationEpoch", date("1984-01-01 00:00:00"),
-//              datum.getRealizationEpoch());
+        assertEquals("realizationEpoch", xmlDate("1984-01-01 00:00:00"),
+                datum.getRealizationEpoch());
         assertEquals("remarks", "Defining parameters cited in EPSG database.",
                 datum.getEllipsoid().getRemarks().toString());
     }
