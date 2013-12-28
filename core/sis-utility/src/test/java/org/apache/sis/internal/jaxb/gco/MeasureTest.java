@@ -17,9 +17,11 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.net.URISyntaxException;
+import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -31,16 +33,30 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.10)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class MeasureTest extends TestCase {
+    /**
+     * Tests the {@link Measure#getUOM()}.
+     */
+    @Test
+    public void testGetUOM() {
+        final Measure measure = new Measure(10, SI.METRE);
+        assertEquals("urn:ogc:def:uom:EPSG::9001", measure.getUOM());
+        measure.unit = NonSI.DEGREE_ANGLE;
+        assertEquals("urn:ogc:def:uom:EPSG::9102", measure.getUOM());
+        measure.unit = Unit.ONE;
+        assertEquals("urn:ogc:def:uom:EPSG::9201", measure.getUOM());
+    }
+
     /**
      * Tests the {@link Measure#setUOM(String)}.
      *
      * @throws URISyntaxException Should not happen.
      */
     @Test
+    @DependsOnMethod("testGetUOM")
     public void testSetUOM() throws URISyntaxException {
         final Measure measure = new Measure();
         measure.setUOM("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#m");

@@ -21,10 +21,13 @@ import java.util.HashMap;
 import java.util.Locale;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
+import javax.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.test.Validators;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.test.DependsOnMethod;
@@ -32,7 +35,9 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.mock.GeodeticDatumMock.*;
+import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 
 /**
@@ -175,5 +180,62 @@ public final strictfp class DefaultGeodeticDatumTest extends DatumTestCase {
         assertWktEquals(datum,
                 "DATUM[“WGS84”,\n" +
                 "  SPHEROID[“WGS84”, 6378137.0, 298.257223563]]");
+    }
+
+    /**
+     * Tests marshalling.
+     *
+     * @throws JAXBException If an error occurred during marshalling.
+     */
+    @Test
+    public void testMarshalling() throws JAXBException {
+        assertXmlEquals(
+                "<gml:GeodeticDatum xmlns:gml=\"" + Namespaces.GML + "\">\n" +
+                "  <gml:name codeSpace=\"test\">WGS84</gml:name>\n" +
+                "  <gml:primeMeridian>\n" +
+                "    <gml:PrimeMeridian>\n" +
+                "      <gml:name codeSpace=\"test\">Greenwich</gml:name>\n" +
+                "      <gml:greenwichLongitude uom=\"urn:ogc:def:uom:EPSG::9102\">0.0</gml:greenwichLongitude>\n" +
+                "    </gml:PrimeMeridian>\n" +
+                "  </gml:primeMeridian>\n" +
+                "  <gml:ellipsoid>\n" +
+                "    <gml:Ellipsoid>\n" +
+                "      <gml:name codeSpace=\"test\">WGS84</gml:name>\n" +
+                "      <gml:semiMajorAxis uom=\"urn:ogc:def:uom:EPSG::9001\">6378137.0</gml:semiMajorAxis>\n" +
+                "      <gml:secondDefiningParameter>\n" +
+                "        <gml:SecondDefiningParameter>\n" +
+                "          <gml:inverseFlattening uom=\"urn:ogc:def:uom:EPSG::9201\">298.257223563</gml:inverseFlattening>\n" +
+                "        </gml:SecondDefiningParameter>\n" +
+                "      </gml:secondDefiningParameter>\n" +
+                "    </gml:Ellipsoid>\n" +
+                "  </gml:ellipsoid>\n" +
+                "</gml:GeodeticDatum>",
+                marshal(new DefaultGeodeticDatum(WGS84)), "xmlns:*");
+    }
+
+    /**
+     * Tests unmarshalling.
+     *
+     * @throws JAXBException If an error occurred during unmarshalling.
+     */
+    @Test
+    public void testUnmarshalling() throws JAXBException {
+        final DefaultGeodeticDatum datum = unmarshall(DefaultGeodeticDatum.class, "WGS 84.xml");
+        assertIsWGS84(datum);
+        assertIsWorld((GeographicBoundingBox) getSingleton(datum.getDomainOfValidity().getGeographicElements()));
+        /*
+         * Values in the following tests are specific to our XML file.
+         * The actual texts in the EPSG database are more descriptive.
+         */
+        assertEquals("remarks", "No distinction between the original and subsequent WGS 84 frames.",
+                datum.getRemarks().toString());
+        assertEquals("scope", "Satellite navigation.",
+                datum.getScope().toString());
+        assertEquals("anchorDefinition", "Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.",
+                datum.getAnchorPoint().toString());
+        assertEquals("realizationEpoch", xmlDate("1984-01-01 00:00:00"),
+                datum.getRealizationEpoch());
+        assertEquals("remarks", "Defining parameters cited in EPSG database.",
+                datum.getEllipsoid().getRemarks().toString());
     }
 }
