@@ -550,13 +550,16 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </executions>
       </plugin>
 
-      <!-- Create web site -->
+      <!-- Create web site. The Maven generated site is not deployed at the URL
+           declared in this pom.xml (namely http://sis.apache.org). Consequently,
+           we disable links relativization for avoiding confusing behavior. -->
       <plugin>
         <artifactId>maven-site-plugin</artifactId>
         <configuration>
           <locales>${website.locale}</locales>
           <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
           <outputEncoding>${website.encoding}</outputEncoding>
+          <relativizeDecorationLinks>false</relativizeDecorationLinks>
         </configuration>
       </plugin>
 
@@ -612,15 +615,14 @@ Apache SIS is a free software, Java language library for developing geospatial a
               <report>index</report>
               <report>summary</report>
               <report>license</report>
-              <report>dependencies</report>
               <report>dependency-info</report>
+              <report>dependencies</report>
               <report>dependency-convergence</report>
               <report>issue-tracking</report>
               <report>mailing-list</report>
               <report>project-team</report>
               <report>scm</report>
               <report>cim</report>
-              <report>modules</report>
             </reports>
           </reportSet>
         </reportSets>
