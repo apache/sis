@@ -53,7 +53,8 @@
     @XmlJavaTypeAdapter(CD_PrimeMeridian.class),
     @XmlJavaTypeAdapter(CD_VerticalDatumType.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
-    @XmlJavaTypeAdapter(InternationalStringConverter.class)
+    @XmlJavaTypeAdapter(InternationalStringConverter.class),
+    @XmlJavaTypeAdapter(DateAdapter.class),
 })
 package org.apache.sis.referencing.datum;
 
@@ -66,5 +67,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.*;
+import org.apache.sis.internal.jaxb.gml.DateAdapter;
 import org.apache.sis.internal.jaxb.metadata.*;
 import org.apache.sis.internal.jaxb.referencing.*;
