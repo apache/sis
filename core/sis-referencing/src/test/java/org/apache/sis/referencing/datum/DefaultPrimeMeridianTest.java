@@ -30,6 +30,7 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 import static org.apache.sis.test.mock.PrimeMeridianMock.GREENWICH;
 
 
@@ -49,7 +50,7 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
     @Test
     public void testToWKT() {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
-        assertIsGreenwichMeridian(pm);
+        assertIsGreenwich(pm);
         assertWktEquals(pm, "PRIMEM[“Greenwich”, 0.0]");
     }
 
@@ -106,7 +107,7 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
     @Test
     public void testUnmarshall() throws JAXBException {
         final DefaultPrimeMeridian pm = unmarshall(DefaultPrimeMeridian.class, "Greenwich.xml");
-        assertIsGreenwichMeridian(pm);
+        assertIsGreenwich(pm);
     }
 
     /**
@@ -123,7 +124,7 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
         final DefaultPrimeMeridian pm = (DefaultPrimeMeridian)
                 unmarshal(unmarshaller, getGreenwichXml(LegacyNamespaces.GML));
         pool.recycle(unmarshaller);
-        assertIsGreenwichMeridian(pm);
+        assertIsGreenwich(pm);
     }
 
     /**
@@ -135,7 +136,7 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
     @DependsOnMethod({"testUnmarshall", "testMarshall"})
     public void testParisMeridian() throws JAXBException {
         final DefaultPrimeMeridian pm = unmarshall(DefaultPrimeMeridian.class, "Paris.xml");
-        assertIsParisMeridian(pm);
+        assertIsParis(pm);
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(NonSI.DEGREE_ANGLE), 1E-12);
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
         assertNull("name.codeSpace", pm.getName().getCodeSpace());

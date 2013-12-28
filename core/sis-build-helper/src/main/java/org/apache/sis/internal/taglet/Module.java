@@ -165,12 +165,10 @@ public final class Module implements Taglet {
         }
         final StringBuilder buffer = new StringBuilder(128);
         buffer.append("\n<p><font size=\"-1\">");
-        for (int i=0; i<tags.length; i++) {
-            final Tag tag = tags[i];
+        for (final Tag tag : tags) {
             File file = tag.position().file();
             module = file.getName();
-            while (file != null) {
-                file = file.getParentFile();
+            while ((file = file.getParentFile()) != null) {
                 if (file.getName().equals("src")) {
                     file = file.getParentFile();
                     if (file != null) {

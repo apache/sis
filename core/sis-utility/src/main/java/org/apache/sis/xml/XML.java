@@ -69,7 +69,8 @@ public final class XML extends Static {
     /**
      * Specifies the locale to use for marshalling
      * {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList}
-     * instances. The value for this property shall be an instance of {@link Locale}.
+     * instances. The value for this property shall be an instance of {@link Locale} or a
+     * {@link CharSequence} recognized by {@link org.apache.sis.util.Locales#parse(String)}.
      *
      * <p>This property is mostly for marshallers. However this property can also be used at
      * unmarshalling time, for example if a {@code <gmd:PT_FreeText>} element containing
@@ -98,6 +99,8 @@ public final class XML extends Static {
 
     /**
      * Specifies the timezone to use for marshalling dates and times.
+     * The value for this property shall be an instance of {@link TimeZone}
+     * or a {@link CharSequence} recognized by {@link TimeZone#getTimeZone(String)}.
      *
      * {@section Default behavior}
      * If this property is never set, then (un)marshalling will use the

@@ -398,7 +398,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
   <properties>
     <geoapi.version>3.1-M04</geoapi.version>
     <netcdf.version>4.3.18</netcdf.version>
-    <findbugs.version>2.5.2</findbugs.version>
+    <findbugs.version>2.5.3</findbugs.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
@@ -550,13 +550,16 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </executions>
       </plugin>
 
-      <!-- Create web site -->
+      <!-- Create web site. The Maven generated site is not deployed at the URL
+           declared in this pom.xml (namely http://sis.apache.org). Consequently,
+           we disable links relativization for avoiding confusing behavior. -->
       <plugin>
         <artifactId>maven-site-plugin</artifactId>
         <configuration>
           <locales>${website.locale}</locales>
           <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
           <outputEncoding>${website.encoding}</outputEncoding>
+          <relativizeDecorationLinks>false</relativizeDecorationLinks>
         </configuration>
       </plugin>
 
@@ -590,7 +593,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <plugin>
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>8.0.1.v20110908</version>
+          <version>8.1.14.v20131031</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -606,6 +609,23 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>2.7</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>index</report>
+              <report>summary</report>
+              <report>license</report>
+              <report>dependency-info</report>
+              <report>dependencies</report>
+              <report>dependency-convergence</report>
+              <report>issue-tracking</report>
+              <report>mailing-list</report>
+              <report>project-team</report>
+              <report>scm</report>
+              <report>cim</report>
+            </reports>
+          </reportSet>
+        </reportSets>
       </plugin>
 
       <!-- Produce JavaDoc -->
@@ -669,7 +689,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           </groups>
 
           <!-- Internal packages to hide from javadoc. -->
-          <excludePackageNames>org.apache.sis.internal:com</excludePackageNames>
+          <excludePackageNames>org.apache.sis.internal:org.apache.sis.util.resources:com</excludePackageNames>
 
           <!-- Custom taglets, some of them implemented in Java. -->
           <tags>
@@ -693,25 +713,48 @@ Apache SIS is a free software, Java language library for developing geospatial a
             <version>${sis.plugin.version}</version>
           </tagletArtifact>
         </configuration>
+        <reportSets>
+          <reportSet>
+            <id>aggregate</id>
+            <reports>
+              <report>aggregate</report>
+              <report>test-aggregate</report>
+            </reports>
+          </reportSet>
+        </reportSets>
       </plugin>
 
       <!-- Produce Source cross references -->
       <plugin>
         <artifactId>maven-jxr-plugin</artifactId>
-        <version>2.3</version>
+        <version>2.4</version>
+        <reportSets>
+          <reportSet>
+            <id>aggregate</id>
+            <reports>
+              <report>aggregate</report>
+              <report>test-aggregate</report>
+            </reports>
+          </reportSet>
+        </reportSets>
       </plugin>
 
       <!-- Unit tests report -->
       <plugin>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.15</version>
+        <version>2.16</version>
       </plugin>
 
       <!-- "Release Audit" report (checks license headers etc.) -->
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>rat-maven-plugin</artifactId>
-        <version>1.0-alpha-3</version>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.10</version>
+        <configuration>
+          <excludes>
+            <exclude>ide-project/**</exclude>
+          </excludes>
+        </configuration>
       </plugin>
 
       <!-- FindBugs Report. Checkstyle configuration instructions apply also to FindBugs:

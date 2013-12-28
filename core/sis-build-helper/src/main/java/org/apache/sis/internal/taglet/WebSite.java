@@ -22,7 +22,8 @@ import com.sun.tools.doclets.Taglet;
 
 
 /**
- * The <code>@website</code> tag for inserting a URL to the web site.
+ * The <code>@website</code> tag for inserting a URL to the web site for Maven reports.
+ * The main interest of this taglet is to adapt the URL to the SIS branch.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3

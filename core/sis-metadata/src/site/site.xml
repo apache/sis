@@ -29,11 +29,12 @@
        ==================================================== -->
   <body>
     <menu name="Quick links">
-      <item name="Module Javadoc"  href="apidocs/index.html"/>
+      <item name="Apache SIS home" href="http://sis.apache.org"/>
+      <item name="Package Javadoc" href="../apidocs/org/apache/sis/metadata/iso/package-summary.html"/>
       <item name="FAQ"             href="http://sis.apache.org/faq.html#metadata"/>
-      <item name="Apache SIS home" href="../index.html"/>
     </menu>
 
+    <menu ref="parent"/>  <!-- Replaced by a link to the parent. -->
     <menu ref="reports"/> <!-- Replaced by menus for any configured reports (mailing lists, etc.) -->
   </body>
 </project>
