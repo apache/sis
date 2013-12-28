@@ -227,11 +227,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
                  */
                 return false;
             }
-            if (element == null) {
-                throw new NullArgumentException(message);
-            } else {
-                throw new IllegalArgumentException(message);
-            }
+            throw new NullArgumentException(message);
         }
         int ordinal = element.ordinal();
         if (ordinal < Long.SIZE) {
