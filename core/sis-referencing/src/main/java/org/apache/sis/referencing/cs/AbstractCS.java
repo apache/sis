@@ -77,10 +77,25 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     static final int VALID = 0, INVALID_DIRECTION = 1, INVALID_UNIT = 2;
 
     /**
+     * An empty array of axes, used only for JAXB.
+     */
+    private static final CoordinateSystemAxis[] EMPTY = new CoordinateSystemAxis[0];
+
+    /**
      * The sequence of axes for this coordinate system.
      */
     @XmlElement(name = "axis")
     private final CoordinateSystemAxis[] axes;
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractCS() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        axes = EMPTY;
+    }
 
     /**
      * Constructs a coordinate system from a set of properties and a sequence of axes.

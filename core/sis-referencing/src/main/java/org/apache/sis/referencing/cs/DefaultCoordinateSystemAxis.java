@@ -154,6 +154,21 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     private final RangeMeaning rangeMeaning;
 
     /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultCoordinateSystemAxis() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        abbreviation = null;
+        direction    = null;
+        unit         = null;
+        rangeMeaning = null;
+        minimum      = Double.NEGATIVE_INFINITY;
+        maximum      = Double.POSITIVE_INFINITY;
+    }
+
+    /**
      * Constructs an axis from a set of properties and a given range.
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
