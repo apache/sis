@@ -60,7 +60,7 @@ public final class CD_ImageDatum extends PropertyType<CD_ImageDatum, ImageDatum>
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
-     * in a {@code <gml:imageDatum>} XML element.
+     * in a {@code <gml:ImageDatum>} XML element.
      *
      * @param  value The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
@@ -72,7 +72,7 @@ public final class CD_ImageDatum extends PropertyType<CD_ImageDatum, ImageDatum>
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual element to write
-     * inside the {@code <gml:imageDatum>} XML element.
+     * inside the {@code <gml:ImageDatum>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return The element to be marshalled.
