@@ -226,7 +226,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     public double dS;
 
     /**
-     * The target datum for this set of parameters.
+     * The target datum for this set of parameters, or {@code null} if unknown.
      * This is usually the WGS 84 datum, but other targets are allowed.
      *
      * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
@@ -254,12 +254,11 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * <p>Alternatively, numerical fields can also be initialized by a call to
      * {@link #setPositionVectorTransformation(Matrix, double)}.</p>
      *
-     * @param targetDatum The target datum (usually WGS 84) for this set of parameters.
+     * @param targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unknown.
      * @param domainOfValidity Area or region in which a coordinate transformation based on those Bursa-Wolf parameters
      *        is valid, or {@code null} is unspecified.
      */
     public BursaWolfParameters(final GeodeticDatum targetDatum, final Extent domainOfValidity) {
-        ensureNonNull("targetDatum", targetDatum);
         this.targetDatum = targetDatum;
         this.domainOfValidity = domainOfValidity;
     }
@@ -278,13 +277,13 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
-     * Returns the target datum for this set of parameters.
+     * Returns the target datum for this set of parameters, or {@code null} if unknown.
      * This is usually the WGS 84 datum, but other targets are allowed.
      *
      * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
      * instance.</p>
      *
-     * @return The target datum for this set of parameters.
+     * @return The target datum for this set of parameters, or {@code null} if unknown.
      */
     public GeodeticDatum getTargetDatum() {
         return targetDatum;
@@ -298,8 +297,9 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * @return {@code true} if the given datum is equal to WGS84 for computational purpose.
      */
     final boolean isToWGS84() {
-        return IdentifiedObjects.isHeuristicMatchForName(targetDatum, "WGS 84") ||
-               IdentifiedObjects.isHeuristicMatchForName(targetDatum, "WGS84");
+        return (targetDatum != null) &&
+               (IdentifiedObjects.isHeuristicMatchForName(targetDatum, "WGS 84") ||
+                IdentifiedObjects.isHeuristicMatchForName(targetDatum, "WGS84"));
     }
 
     /**
@@ -319,6 +319,18 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      */
     public boolean isTranslation() {
         return rX == 0 && rY == 0 && rZ == 0 && dS == 0;
+    }
+
+    /**
+     * Inverts in-place the sign of rotation terms ({@link #rX}, {@link #rY}, {@link #rZ}).
+     * This method can be invoked for converting a <cite>Coordinate Frame Rotation</cite> transformation
+     * (EPSG operation method 9607) to a <em>Position Vector</em> transformation (EPSG operation method 9606).
+     * The later convention is used by IAG and recommended by ISO 19111.
+     */
+    public void reverseRotation() {
+        rX = -rX;
+        rY = -rY;
+        rZ = -rZ;
     }
 
     /**

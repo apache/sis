@@ -21,7 +21,6 @@ import java.io.PrintWriter;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.X364;
 
@@ -82,7 +81,7 @@ public class FormattableObject {
      * @see org.opengis.referencing.IdentifiedObject#toWKT()
      */
     public String toWKT() throws UnformattableObjectException {
-        return formatWKT(Convention.OGC, false, true);
+        return formatWKT(Convention.OGC, WKTFormat.DEFAULT_INDENTATION, false, true);
     }
 
     /**
@@ -94,7 +93,7 @@ public class FormattableObject {
      */
     @Override
     public String toString() {
-        return formatWKT(Convention.OGC, false, false);
+        return formatWKT(Convention.OGC, WKTFormat.DEFAULT_INDENTATION, false, false);
     }
 
     /**
@@ -108,7 +107,7 @@ public class FormattableObject {
      */
     public String toString(final Convention convention) {
         ArgumentChecks.ensureNonNull("convention", convention);
-        return formatWKT(convention, false, false);
+        return formatWKT(convention, WKTFormat.DEFAULT_INDENTATION, false, false);
     }
 
     /**
@@ -123,7 +122,8 @@ public class FormattableObject {
     public void print() {
         final Console console = System.console();
         final PrintWriter out = (console != null) ? console.writer() : null;
-        final String wkt = formatWKT(Convention.OGC, (out != null) && X364.isAnsiSupported(), false);
+        final String wkt = formatWKT(Convention.OGC, WKTFormat.DEFAULT_INDENTATION,
+                (out != null) && X364.isAnsiSupported(), false);
         if (out != null) {
             out.println(wkt);
         } else {
@@ -135,14 +135,15 @@ public class FormattableObject {
      * Returns a WKT for this object using the specified convention.
      * If {@code strict} is true, then an exception is thrown if the WKT is not standard-compliant.
      *
-     * @param  convention The convention for choosing WKT entities names.
-     * @param  colorize   {@code true} for applying syntax coloring, or {@code false} otherwise.
-     * @param  strict     {@code true} if an exception shall be thrown for unformattable objects,
-     *                    or {@code false} for providing a non-standard formatting instead.
+     * @param  convention  The convention for choosing WKT entities names.
+     * @param  indentation The indentation to apply, or {@link WKTFormat#SINGLE_LINE}.
+     * @param  colorize    {@code true} for applying syntax coloring, or {@code false} otherwise.
+     * @param  strict      {@code true} if an exception shall be thrown for unformattable objects,
+     *                     or {@code false} for providing a non-standard formatting instead.
      * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
      * @throws UnformattableObjectException If {@code strict} is {@code true} and this object can not be formatted.
      */
-    private String formatWKT(final Convention convention, final boolean colorize, final boolean strict)
+    final String formatWKT(final Convention convention, final byte indentation, final boolean colorize, final boolean strict)
              throws UnformattableObjectException
     {
         Formatter formatter = FORMATTER.get();
@@ -150,6 +151,7 @@ public class FormattableObject {
             formatter = new Formatter();
             FORMATTER.set(formatter);
         }
+        formatter.indentation = indentation;
         formatter.colors = colorize ? Colors.DEFAULT : null;
         formatter.setConvention(convention, null);
         try {
@@ -164,7 +166,10 @@ public class FormattableObject {
                 formatter.append(this);
             }
             if (strict) {
-                formatter.ensureValidWKT();
+                final String message = formatter.getErrorMessage();
+                if (message != null) {
+                    throw new UnformattableObjectException(message, formatter.errorCause);
+                }
             }
             return formatter.toString();
         } finally {
@@ -198,16 +203,11 @@ public class FormattableObject {
      * @see #toString()
      */
     protected String formatTo(final Formatter formatter) {
-        Class<?> type = getClass();
-        for (final Class<?> candidate : type.getInterfaces()) {
-            final String name = candidate.getName();
-            if (name.startsWith("org.opengis.") && !name.startsWith("org.opengis.util.")) {
-                type = candidate;
-                break;
-            }
+        formatter.setInvalidWKT(getClass());
+        String name = formatter.invalidElement;
+        if (name == null) { // May happen if the user override Formatter.setInvalidWKT(Class).
+            name = "UNKNOWN";
         }
-        final String name = Classes.getShortName(type);
-        formatter.setInvalidWKT(name);
         return name;
     }
 }
