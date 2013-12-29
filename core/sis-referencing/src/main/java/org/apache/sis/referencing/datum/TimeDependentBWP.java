@@ -217,6 +217,20 @@ public class TimeDependentBWP extends BursaWolfParameters {
     }
 
     /**
+     * Inverts in-place the sign of rotation terms and their derivative.
+     * This method can be invoked for converting a <cite>Coordinate Frame Rotation</cite> transformation
+     * (EPSG operation method 9607) to a <em>Position Vector</em> transformation (EPSG operation method 9606).
+     * The later convention is used by IAG and recommended by ISO 19111.
+     */
+    @Override
+    public void reverseRotation() {
+        super.reverseRotation();
+        drX = -drX;
+        drY = -drY;
+        drZ = -drZ;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
