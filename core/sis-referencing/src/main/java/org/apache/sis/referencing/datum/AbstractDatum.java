@@ -67,9 +67,10 @@ import java.util.Objects;
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
 @XmlType(name="AbstractDatumType")
-@XmlSeeAlso(
-    DefaultGeodeticDatum.class
-)
+@XmlSeeAlso({
+    DefaultGeodeticDatum.class,
+    DefaultVerticalDatum.class
+})
 public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Serial number for inter-operability with different versions.

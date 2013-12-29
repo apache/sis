@@ -25,6 +25,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.VerticalDatum;
 
 import static org.apache.sis.test.Assert.*;
 
@@ -181,7 +182,7 @@ public final strictfp class GeodeticObjectVerifier {
      * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
      *     <td>{@code "World Geodetic System 1984"}</td></tr>
      * <tr><td>{@linkplain GeodeticDatum#getDomainOfValidity() Domain of validity}</td>
-     *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world}</td></tr>
+     *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
      * <tr><td>{@linkplain GeodeticDatum#getPrimeMeridian() Prime meridian}</td>
      *     <td>{@linkplain #assertIsGreenwich(PrimeMeridian) Is Greenwich}</td></tr>
      * <tr><td>{@linkplain GeodeticDatum#getEllipsoid() Ellipsoid}</td>
@@ -195,5 +196,24 @@ public final strictfp class GeodeticObjectVerifier {
         assertIsWorld    (datum.getDomainOfValidity());
         assertIsGreenwich(datum.getPrimeMeridian());
         assertIsWGS84    (datum.getEllipsoid());
+    }
+
+    /**
+     * Asserts that the given datum is the Mean Sea Level one.
+     * This method verifies the following properties:
+     *
+     * <table class="sis">
+     * <tr><th>Property</th> <th>Expected value</th></tr>
+     * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
+     *     <td>{@code "Mean Sea Level"}</td></tr>
+     * <tr><td>{@linkplain GeodeticDatum#getDomainOfValidity() Domain of validity}</td>
+     *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
+     * </table>
+     *
+     * @param datum The datum to verify.
+     */
+    public static void assertIsMeanSeaLevel(final VerticalDatum datum) {
+        assertEquals("name", "Mean Sea Level", datum.getName().getCode());
+        assertIsWorld(datum.getDomainOfValidity());
     }
 }
