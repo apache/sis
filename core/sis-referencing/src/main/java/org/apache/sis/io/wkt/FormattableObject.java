@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.io.Console;
 import java.io.PrintWriter;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.util.Debug;
@@ -57,12 +58,20 @@ import org.apache.sis.internal.util.X364;
 @XmlTransient
 public class FormattableObject {
     /**
-     * The formatter for the {@link #toWKT()} and {@link #toString()} methods.
-     * Formatters are not thread-safe, consequently we need a different instance for each thread.
-     * We do not use synchronization because the formatter will call back user's code, which
-     * introduce a risk of thread lock if the user performs his own synchronization.
+     * The formatter for the {@link #toWKT()} and {@link #toString()} methods. Formatters are not
+     * thread-safe, consequently we must make sure that only one thread uses a given instance.
+     *
+     * {@note We do not use synchronization because the formatter will call back user's code, which
+     *        introduce a risk of thread lock if the user performs his own synchronization.}
+     *
+     * {@note We do not use <code>ThreadLocal</code> because <code>Formatter</code> is not reentrant
+     *        neither, so it may produce very confusing behavior when debugging a code that perform
+     *        WKT formatting (some debuggers seem to invoke <code>toString()</code> for their own
+     *        purpose in the same thread). Since <code>toString()</code> is typically invoked for
+     *        debugging purpose, a single formatter for any thread is presumed sufficient.}
+     *
      */
-    private static final ThreadLocal<Formatter> FORMATTER = new ThreadLocal<>();
+    private static final AtomicReference<Formatter> FORMATTER = new AtomicReference<>();
 
     /**
      * Default constructor.
@@ -146,14 +155,14 @@ public class FormattableObject {
     final String formatWKT(final Convention convention, final byte indentation, final boolean colorize, final boolean strict)
              throws UnformattableObjectException
     {
-        Formatter formatter = FORMATTER.get();
+        Formatter formatter = FORMATTER.getAndSet(null);
         if (formatter == null) {
             formatter = new Formatter();
-            FORMATTER.set(formatter);
         }
         formatter.indentation = indentation;
         formatter.colors = colorize ? Colors.DEFAULT : null;
         formatter.setConvention(convention, null);
+        final String wkt;
         try {
             /*
              * Special processing for parameter values, which is formatted
@@ -171,10 +180,12 @@ public class FormattableObject {
                     throw new UnformattableObjectException(message, formatter.errorCause);
                 }
             }
-            return formatter.toString();
+            wkt = formatter.toString();
         } finally {
             formatter.clear();
         }
+        FORMATTER.set(formatter);
+        return wkt;
     }
 
     /**
