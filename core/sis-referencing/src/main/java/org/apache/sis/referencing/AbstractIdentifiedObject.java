@@ -651,40 +651,35 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         if (object == null) {
             return false;
         }
-        if (getClass() == object.getClass()) {
-            /*
-             * If the classes are the same, then the hash codes should be computed in the same
-             * way. Since those codes are cached, this is an efficient way to quickly check if
-             * the two objects are different. Note that using the hash codes for comparisons
-             * that ignore metadata is okay only if the implementation note described in the
-             * 'computeHashCode()' javadoc hold (metadata not used in hash code computation).
-             */
-            if (mode.ordinal() < ComparisonMode.APPROXIMATIVE.ordinal()) {
-                final int tc = hashCode;
-                if (tc != 0) {
-                    final int oc = ((AbstractIdentifiedObject) object).hashCode;
-                    if (oc != 0 && tc != oc) {
-                        return false;
-                    }
-                }
-            }
-        } else {
-            if (mode == ComparisonMode.STRICT) { // Same class was required for this mode.
-                return false;
-            }
-            if (!(object instanceof IdentifiedObject)) {
-                return false;
-            }
-        }
         switch (mode) {
             case STRICT: {
+                if (getClass() != object.getClass()) {
+                    return false;
+                }
                 final AbstractIdentifiedObject that = (AbstractIdentifiedObject) object;
+                /*
+                 * If the hash codes were cached for both objects, opportunistically compare them.
+                 * This is an efficient way to quickly check if the two objects are different
+                 * before the more extensive check below.
+                 */
+                if (mode == ComparisonMode.STRICT) {
+                    final int tc = hashCode;
+                    if (tc != 0) {
+                        final int oc = that.hashCode;
+                        if (oc != 0 && tc != oc) {
+                            return false;
+                        }
+                    }
+                }
                 return Objects.equals(name, that.name) &&
                        nonNull(alias).equals(nonNull(that.alias)) &&
                        nonNull(identifiers).equals(nonNull(that.identifiers)) &&
                        Objects.equals(remarks, that.remarks);
             }
             case BY_CONTRACT: {
+                if (!(object instanceof IdentifiedObject)) {
+                    return false;
+                }
                 final IdentifiedObject that = (IdentifiedObject) object;
                 return deepEquals(getName(),        that.getName(),        mode) &&
                        deepEquals(getAlias(),       that.getAlias(),       mode) &&
@@ -694,7 +689,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             case IGNORE_METADATA:
             case APPROXIMATIVE:
             case DEBUG: {
-                return true;
+                return (object instanceof IdentifiedObject);
             }
             default: {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownEnumValue_1, mode));
