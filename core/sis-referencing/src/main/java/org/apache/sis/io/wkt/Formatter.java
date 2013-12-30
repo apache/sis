@@ -692,13 +692,13 @@ public class Formatter {
     private void format(double number) {
         setColor(ElementKind.NUMBER);
         /*
-         * The -2 above is for using two less fraction digits than the expected number accuracy.
+         * The 2 below is for using two less fraction digits than the expected number accuracy.
          * The intend is to give to DecimalFormat a chance to hide rounding errors, keeping in
          * mind that the number value is not necessarily the original one (we may have applied
          * a unit conversion). In the case of WGS84 semi-major axis in metres, we still have a
          * maximum of 8 fraction digits, which is more than enough.
          */
-        numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number) - 2);
+        numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number, 2));
         numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
         numberFormat.format(number, buffer, dummy);
         resetColor();
