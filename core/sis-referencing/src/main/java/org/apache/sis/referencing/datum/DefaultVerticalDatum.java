@@ -270,7 +270,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         }
         switch (mode) {
             case STRICT: {
-                return Objects.equals(type(), ((DefaultVerticalDatum) object).type());
+                return type().equals(((DefaultVerticalDatum) object).type());
             }
             default: {
                 return Objects.equals(getVerticalDatumType(), ((VerticalDatum) object).getVerticalDatumType());
@@ -291,7 +291,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
          * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
          * differentiate this VerticalDatum implementation from implementations of other GeoAPI interfaces.
          */
-        return serialVersionUID ^ (super.computeHashCode() + Objects.hashCode(type()));
+        return serialVersionUID ^ (super.computeHashCode() + type().hashCode());
     }
 
     /**

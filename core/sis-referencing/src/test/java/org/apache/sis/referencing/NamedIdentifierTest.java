@@ -25,7 +25,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
 
 
@@ -64,16 +64,23 @@ public final strictfp class NamedIdentifierTest extends TestCase {
     }
 
     /**
+     * Creates an internationalized name with a code set to "name" localized in English, French and Japanese.
+     */
+    private NamedIdentifier createI18N() {
+        final DefaultInternationalString i18n = new DefaultInternationalString();
+        i18n.add(Locale.ENGLISH,  "name");
+        i18n.add(Locale.FRENCH,   "nom");
+        i18n.add(Locale.JAPANESE, "名前");
+        return new NamedIdentifier(EPSG, i18n);
+    }
+
+    /**
      * Tests the {@link NamedIdentifier#NamedIdentifier(Citation, InternationalString)} constructor.
      */
     @Test
     @DependsOnMethod("testCreateFromCode")
     public void testCreateFromInternationalString() {
-        final DefaultInternationalString i18n = new DefaultInternationalString();
-        i18n.add(Locale.ENGLISH,  "name");
-        i18n.add(Locale.FRENCH,   "nom");
-        i18n.add(Locale.JAPANESE, "名前");
-        final NamedIdentifier identifier = new NamedIdentifier(EPSG, i18n);
+        final NamedIdentifier identifier = createI18N();
         Validators.validate((ReferenceIdentifier) identifier);
         Validators.validate((GenericName) identifier);
 
@@ -95,5 +102,23 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         assertEquals("name",  "EPSG:nom",  identifier.toInternationalString().toString(Locale.FRENCH));
         assertEquals("name",  "EPSG:名前",  identifier.toInternationalString().toString(Locale.JAPANESE));
         assertTrue  ("scope",              identifier.scope().isGlobal());
+    }
+
+    /**
+     * Tests serialization.
+     */
+    @Test
+    @DependsOnMethod("testCreateFromInternationalString")
+    public void testSerialization() {
+        NamedIdentifier unserial = assertSerializedEquals(new NamedIdentifier(EPSG, "4326"));
+        assertEquals("EPSG:4326", unserial.toInternationalString().toString(Locale.ENGLISH));
+        /*
+         * Try again with an international string. We would not been able to get back the
+         * localized strings if NamedIdentifier.writeObject/readObject(…) didn't worked.
+         */
+        unserial = assertSerializedEquals(createI18N());
+        assertEquals("EPSG:name", unserial.toInternationalString().toString(Locale.ENGLISH));
+        assertEquals("EPSG:nom",  unserial.toInternationalString().toString(Locale.FRENCH));
+        assertEquals("EPSG:名前",  unserial.toInternationalString().toString(Locale.JAPANESE));
     }
 }

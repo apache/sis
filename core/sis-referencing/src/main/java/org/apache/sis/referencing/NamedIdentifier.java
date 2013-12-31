@@ -19,6 +19,9 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.Locale;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -81,7 +84,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8474731565582774497L;
+    private static final long serialVersionUID = 8474731565582874497L;
 
     /**
      * A pool of {@link NameSpace} values for given {@link InternationalString}.
@@ -90,10 +93,15 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
 
     /**
      * The name of this identifier as a generic name. If {@code null}, will be constructed
-     * only when first needed. This field is serialized (instead of being recreated after
-     * deserialization) because it may be a user-supplied value.
+     * only when first needed.
      */
-    private GenericName name;
+    private transient GenericName name;
+
+    /**
+     * {@code true} if {@link #name} has been given explicitly by the user.
+     * Consider this field as final - it is not only for constructors convenience.
+     */
+    private boolean isNameSupplied;
 
     /**
      * Creates a new identifier from the specified one. This is a copy constructor
@@ -110,6 +118,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
         super(identifier);
         if (identifier instanceof GenericName) {
             name = (GenericName) identifier;
+            isNameSupplied = true;
         }
     }
 
@@ -140,6 +149,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     public NamedIdentifier(final Citation authority, final InternationalString code) {
         this(authority, code.toString(Locale.ROOT));
         name = createName(authority, code);
+        isNameSupplied = true; // Because 'code' is an international string.
     }
 
     /**
@@ -359,12 +369,46 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
             return true;
         }
         if (super.equals(object)) {
+            if (!isNameSupplied) {
+                return true; // No need to compare names if they are computed from the same values.
+            }
             final NamedIdentifier that = (NamedIdentifier) object;
             return Objects.equals(this.getName(), that.getName());
         }
         return false;
     }
 
-    // We do not override hashCode because the name is usually inferred from existing properties.
-    // The above 'equals' method nevertheless compare the name in case it was explicitely specified.
+    /**
+     * Returns a hash code value for this object.
+     */
+    @Override
+    public int hashCode() {
+        /*
+         * We do not use the name because it is usually inferred from existing properties.
+         * We only revert the bits for differentiating this NamedIdentifier class from its parent class.
+         */
+        return ~super.hashCode();
+    }
+
+    /**
+     * Invoked on serialization for writing the {@linkplain #name} if it was supplied by the user.
+     * Otherwise, we will let {@link #getName()} recompute the name only when needed.
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        if (isNameSupplied) {
+            out.writeObject(name);
+        }
+    }
+
+    /**
+     * Invoked on deserialization for reading the name written by {@link #writeObject(ObjectOutputStream)},
+     * if any.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        if (isNameSupplied) {
+            name = (GenericName) in.readObject();
+        }
+    }
 }
