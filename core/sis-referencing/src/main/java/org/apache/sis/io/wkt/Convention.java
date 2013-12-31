@@ -16,25 +16,20 @@
  */
 package org.apache.sis.io.wkt;
 
-import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Quantity;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.util.Debug;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 
-import static java.util.Collections.singletonMap;
 import static javax.measure.unit.NonSI.DEGREE_ANGLE;
-import static org.opengis.referencing.cs.CoordinateSystemAxis.NAME_KEY;
 
 
 /**
@@ -101,7 +96,7 @@ public enum Convention {
         @Override
         public CoordinateSystem toConformCS(CoordinateSystem cs) {
             if (cs instanceof CartesianCS) {
-                cs = replace((CartesianCS) cs, false);
+                cs = Legacy.replace((CartesianCS) cs, false);
             }
             return cs;
         }
@@ -203,18 +198,6 @@ public enum Convention {
             return cs; // Prevent any modification on the internal CS.
         }
     };
-
-    /**
-     * A three-dimensional Cartesian CS with the legacy set of geocentric axes.
-     * Those axes were defined in the OGC 01-009 specification as <var>Other</var>,
-     * <var>{@linkplain DefaultCoordinateSystemAxis#EASTING Easting}</var>,
-     * <var>{@linkplain DefaultCoordinateSystemAxis#NORTHING Northing}</var>
-     * in metres, where the "Other" axis is toward prime meridian.
-     */
-    private static final DefaultCartesianCS LEGACY = new DefaultCartesianCS(singletonMap(NAME_KEY, "Legacy geocentric"),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Geocentric X"), "X", AxisDirection.OTHER, SI.METRE),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Geocentric Y"), "Y", AxisDirection.EAST,  SI.METRE),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Geocentric Z"), "Z", AxisDirection.NORTH, SI.METRE));
 
     /**
      * If non-null, forces {@code PRIMEM} and {@code PARAMETER} angular units to this field
@@ -344,32 +327,8 @@ public enum Convention {
      */
     public CoordinateSystem toConformCS(CoordinateSystem cs) {
         if (cs instanceof CartesianCS) {
-            cs = replace((CartesianCS) cs, true);
+            cs = Legacy.replace((CartesianCS) cs, true);
         }
         return cs;
-    }
-
-    /**
-     * Returns the axes to use instead of the ones in the given coordinate system.
-     * If the coordinate system axes should be used as-is, returns {@code cs}.
-     *
-     * @param  cs The coordinate system for which to compare the axis directions.
-     * @param  legacy {@code true} for replacing ISO directions by the legacy ones,
-     *         or {@code false} for the other way around.
-     * @return The axes to use instead of the ones in the given CS,
-     *         or {@code cs} if the CS axes should be used as-is.
-     */
-    static CartesianCS replace(final CartesianCS cs, final boolean legacy) {
-        final CartesianCS check = legacy ? DefaultCartesianCS.GEOCENTRIC : LEGACY;
-        final int dimension = check.getDimension();
-        if (cs.getDimension() != dimension) {
-            return cs;
-        }
-        for (int i=0; i<dimension; i++) {
-            if (!cs.getAxis(i).getDirection().equals(check.getAxis(i).getDirection())) {
-                return cs;
-            }
-        }
-        return legacy ? LEGACY : DefaultCartesianCS.GEOCENTRIC;
     }
 }

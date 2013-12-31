@@ -70,7 +70,7 @@ import static org.apache.sis.internal.jdk7.JDK7.highSurrogate;
  * {@section Handling of null values}
  * Most methods in this class accept a {@code null} {@code CharSequence} argument. In such cases
  * the method return value is either a {@code null} {@code CharSequence}, an empty array, or a
- * {@code int} primitive type calculated as if the input was an empty string.
+ * {@code 0} or {@code false} primitive type calculated as if the input was an empty string.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -123,11 +123,12 @@ public final class CharSequences extends Static {
     /**
      * Returns a character sequence of the specified length filled with white spaces.
      *
-     * <p>This method is typically used for performing right-alignment of text on the
+     * {@section Use case}
+     * This method is typically invoked for performing right-alignment of text on the
      * {@linkplain java.io.Console console} or other device using monospaced font.
-     * The {@code length} argument is then calculated by (<var>desired width</var> -
-     * <var>used width</var>). Since the used width may be greater than expected,
-     * this method accepts negative {@code length} values as if they were zero.</p>
+     * Callers compute a value for the {@code length} argument by (<var>desired width</var> - <var>used width</var>).
+     * Since the <var>used width</var> value may be greater than expected, this method handle negative {@code length}
+     * values as if the value was zero.
      *
      * @param  length The string length. Negative values are clamped to 0.
      * @return A string of length {@code length} filled with white spaces.
@@ -318,15 +319,17 @@ public final class CharSequences extends Static {
      * @param  toSearch  The substring for which to search.
      * @param  fromIndex The index from which to start the search.
      * @param  toIndex   The index after the last character where to perform the search.
-     * @return The index within the text of the first occurrence of the specified part,
-     *         starting at the specified index, or -1 if none.
-     * @throws NullPointerException if any of the arguments is null.
+     * @return The index within the text of the first occurrence of the specified part, starting at the specified
+     *         index, or -1 if no occurrence has been found or if the {@code text} argument is null.
+     * @throws NullArgumentException If the {@code toSearch} argument is null.
+     * @throws IllegalArgumentException If the {@code toSearch} argument is empty.
      *
      * @see String#indexOf(String, int)
      * @see StringBuilder#indexOf(String, int)
      * @see StringBuffer#indexOf(String, int)
      */
     public static int indexOf(final CharSequence text, final CharSequence toSearch, int fromIndex, int toIndex) {
+        ArgumentChecks.ensureNonEmpty("toSearch", toSearch);
         if (text != null) {
             int length = text.length();
             if (toIndex > length) {
@@ -554,6 +557,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  toIndex   The index after the last character where to perform the search.
      * @return The index within the text of the first occurrence of a non-space character, starting
      *         at the specified index, or a value equals or greater than {@code toIndex} if none.
+     * @throws NullPointerException if the {@code text} argument is null.
      *
      * @see #skipTrailingWhitespaces(CharSequence, int, int)
      * @see #trimWhitespaces(CharSequence)
@@ -590,6 +594,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  toIndex   The index after the last character where to perform the search.
      * @return The index within the text of the last occurrence of a non-space character, starting
      *         at the specified index, or a value equals or lower than {@code fromIndex} if none.
+     * @throws NullPointerException if the {@code text} argument is null.
      *
      * @see #skipLeadingWhitespaces(CharSequence, int, int)
      * @see #trimWhitespaces(CharSequence)
@@ -1021,17 +1026,19 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  text  The text from which to remove leading and trailing white spaces.
      * @param  lower Index of the first character to consider for inclusion in the sub-sequence.
      * @param  upper Index after the last character to consider for inclusion in the sub-sequence.
-     * @return A characters sequence with leading and trailing white spaces removed.
-     * @throws NullPointerException If {@code text} is {@code null}.
+     * @return A characters sequence with leading and trailing white spaces removed, or {@code null}
+     *         if the {@code text} argument is null.
      * @throws IndexOutOfBoundsException If {@code lower} or {@code upper} is out of bounds.
      */
     public static CharSequence trimWhitespaces(CharSequence text, int lower, int upper) {
-        final int length = text.length();
+        final int length = length(text);
         ArgumentChecks.ensureValidIndexRange(length, lower, upper);
-        lower = skipLeadingWhitespaces (text, lower, upper);
-        upper = skipTrailingWhitespaces(text, lower, upper);
-        if (lower != 0 || upper != length) { // Safety in case subSequence doesn't make the check.
-            text = text.subSequence(lower, upper);
+        if (text != null) {
+            lower = skipLeadingWhitespaces (text, lower, upper);
+            upper = skipTrailingWhitespaces(text, lower, upper);
+            if (lower != 0 || upper != length) { // Safety in case subSequence doesn't make the check.
+                text = text.subSequence(lower, upper);
+            }
         }
         return text;
     }
@@ -1230,16 +1237,14 @@ searchWordBreak:    while (true) {
      * </ol>
      *
      * {@section Exception to the above rules}
-     * If the given identifier contains only upper-case letters, digits and the {@code '_'}
-     * character, then the identifier is returned "as is" except for the {@code '_'} characters
-     * which are replaced by {@code '-'}. This work well for identifiers like {@code "UTF-8"} or
-     * {@code "ISO-LATIN-1"} for example.
+     * If the given identifier contains only upper-case letters, digits and the {@code '_'} character,
+     * then the identifier is returned "as is" except for the {@code '_'} characters which are replaced by {@code '-'}.
+     * This work well for identifiers like {@code "UTF-8"} or {@code "ISO-LATIN-1"} for instance.
      *
      * <p>Note that those heuristic rules may be modified in future SIS versions,
      * depending on the practical experience gained.</p>
      *
-     * @param  identifier An identifier with no space, words begin with an upper-case character,
-     *         or {@code null}.
+     * @param  identifier An identifier with no space, words begin with an upper-case character, or {@code null}.
      * @return The identifier with spaces inserted after what looks like words, or {@code null}
      *         if the given {@code identifier} argument was null.
      */
@@ -1407,25 +1412,26 @@ searchWordBreak:    while (true) {
      * one character from the same word may appear in the acronym, but they must always
      * be the first consecutive characters. The comparison is case-insensitive.
      *
-     * <p><b>Example:</b> given the string {@code "Open Geospatial Consortium"}, the following
-     * strings are recognized as acronyms: {@code "OGC"}, {@code "ogc"}, {@code "O.G.C."},
-     * {@code "OpGeoCon"}.</p>
+     * {@example Given the <code>"Open Geospatial Consortium"</code> words, the following strings are
+     *           recognized as acronyms: <code>"OGC"</code>, <code>"ogc"</code>, <code>"O.G.C."</code>,
+     *           <code>"OpGeoCon"</code>.}
      *
-     * @param  acronym A possible acronym of the sequence of words.
-     * @param  words The sequence of words.
+     * If any of the given arguments is {@code null}, this method returns {@code false}.
+     *
+     * @param  acronym A possible acronym of the sequence of words, or {@code null}.
+     * @param  words The sequence of words, or {@code null}.
      * @return {@code true} if the first string is an acronym of the second one.
-     * @throws NullPointerException if any of the arguments is null.
      */
     public static boolean isAcronymForWords(final CharSequence acronym, final CharSequence words) {
-        final int lgc = words.length();
-        final int lga = acronym.length();
-        int ic=0, ia=0;
-        int ca, cc;
+        final int lga = length(acronym);
+        int ia=0, ca;
         do {
             if (ia >= lga) return false;
             ca = codePointAt(acronym, ia);
             ia += charCount(ca);
         } while (!isLetterOrDigit(ca));
+        final int lgc = length(words);
+        int ic=0, cc;
         do {
             if (ic >= lgc) return false;
             cc = codePointAt(words, ic);
@@ -1517,12 +1523,11 @@ cmp:    while (ia < lga) {
      * Unicode identifier start} and all remaining characters (if any) are
      * {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier parts}.
      *
-     * @param  identifier The character sequence to test.
+     * @param  identifier The character sequence to test, or {@code null}.
      * @return {@code true} if the given character sequence is a legal Unicode identifier.
-     * @throws NullPointerException if the argument is null.
      */
     public static boolean isUnicodeIdentifier(final CharSequence identifier) {
-        final int length = identifier.length();
+        final int length = length(identifier);
         if (length == 0) {
             return false;
         }
@@ -1548,7 +1553,6 @@ cmp:    while (ia < lga) {
      *
      * @param  text The character sequence to test.
      * @return {@code true} if every character are upper-case.
-     * @throws NullPointerException if the argument is null.
      *
      * @see String#toUpperCase()
      */

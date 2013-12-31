@@ -17,16 +17,16 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<gml:GeodeticDatum xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/datums.xsd"
+<gml:VerticalDatum xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/datums.xsd"
                    xmlns:gml          = "http://www.opengis.net/gml/3.2"
                    xmlns:gmd          = "http://www.isotc211.org/2005/gmd"
                    xmlns:gco          = "http://www.isotc211.org/2005/gco"
                    xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                    gml:id             = "epsg-datum-6326">
 
-  <gml:identifier codeSpace="OGP">urn:ogc:def:datum:EPSG::6326</gml:identifier>
-  <gml:name>World Geodetic System 1984</gml:name>
-  <gml:remarks>No distinction between the original and subsequent WGS 84 frames.</gml:remarks>
+  <gml:identifier codeSpace="OGP">urn:ogc:def:datum:EPSG::5100</gml:identifier>
+  <gml:name>Mean Sea Level</gml:name>
+  <gml:remarks>Approximates geoid.</gml:remarks>
   <gml:domainOfValidity>
     <gmd:EX_Extent>
       <gmd:description>
@@ -42,27 +42,6 @@
       </gmd:geographicElement>
     </gmd:EX_Extent>
   </gml:domainOfValidity>
-  <gml:scope>Satellite navigation.</gml:scope>
-  <gml:anchorDefinition>Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.</gml:anchorDefinition>
-  <gml:realizationEpoch>1984-01-01</gml:realizationEpoch>
-  <gml:primeMeridian>
-    <gml:PrimeMeridian gml:id = "epsg-meridian-8901">
-      <gml:identifier codeSpace="OGP">urn:ogc:def:meridian:EPSG::8901</gml:identifier>
-      <gml:name>Greenwich</gml:name>
-      <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9102">0</gml:greenwichLongitude>
-    </gml:PrimeMeridian>
-  </gml:primeMeridian>
-  <gml:ellipsoid>
-    <gml:Ellipsoid gml:id = "epsg-ellipsoid-7030">
-      <gml:identifier codeSpace="OGP">urn:ogc:def:ellipsoid:EPSG::7030</gml:identifier>
-      <gml:name>WGS 84</gml:name>
-      <gml:remarks>Defining parameters cited in EPSG database.</gml:remarks>
-      <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9001">6378137</gml:semiMajorAxis>
-      <gml:secondDefiningParameter>
-        <gml:SecondDefiningParameter>
-          <gml:inverseFlattening uom="urn:ogc:def:uom:EPSG::9201">298.257223563</gml:inverseFlattening>
-        </gml:SecondDefiningParameter>
-      </gml:secondDefiningParameter>
-    </gml:Ellipsoid>
-  </gml:ellipsoid>
-</gml:GeodeticDatum>
+  <gml:scope>Hydrography.</gml:scope>
+  <gml:anchorDefinition>Averaged over a 19-year period.</gml:anchorDefinition>
+</gml:VerticalDatum>

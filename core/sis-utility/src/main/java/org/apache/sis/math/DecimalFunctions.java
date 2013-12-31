@@ -18,6 +18,7 @@ package org.apache.sis.math;
 
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
@@ -407,8 +408,8 @@ public final class DecimalFunctions extends Static {
      *           of a <code>double</code> value, padding with trailing zeros if necessary, but no more than
      *           necessary.}
      *
-     * @param  value The value for which to get the number of significant digits.
-     * @return The number of significant digits (may be negative), or 0 if {@code value} is NaN or infinity.
+     * @param  value The value for which to get the number of significant fraction digits.
+     * @return The number of significant fraction digits (may be negative), or 0 if {@code value} is NaN or infinity.
      *
      * @see java.text.NumberFormat#setMinimumFractionDigits(int)
      */
@@ -425,5 +426,51 @@ public final class DecimalFunctions extends Static {
             return -Numerics.toExp10(exponent - SIGNIFICAND_SIZE);
         }
         return 0;
+    }
+
+    /**
+     * Returns the number of significant fraction digits, potentially minus trailing digits that may be rounding error.
+     * First, this method gets the number of fraction digits as of {@link #fractionDigitsForValue(double)}. Then there
+     * is a choice:
+     *
+     * <ul>
+     *   <li>If after rounding the given {@code value} to an amount of fraction digits given by ({@code fractionDigits}
+     *       - {@code uncertainDigits}) the 4 last fraction digits before the rounded ones are zero, then this method
+     *       returns {@code fractionDigits} - {@code uncertainDigits}.</li>
+     *   <li>Otherwise this method returns {@code fractionDigits}.</li>
+     * </ul>
+     *
+     * Examples:
+     *
+     * <ul>
+     *   <li>{@code fractionDigitsForValue(179.12499999999824)} returns 14,
+     *       the amount of digits after the decimal separator.</li>
+     *   <li>{@code fractionDigitsForValue(179.12499999999824, 3)} returns 11 because rounding the 3 last digits
+     *       (i.e. rounding after the 11<sup>th</sup> digit) results in 179.125000000000.
+     *       Since the 4 last fraction digits are zero, the condition for allowing that rounding is meet.</li>
+     *   <li>{@code fractionDigitsForValue(179.12499999999824, 2)} returns 14 because rounding the 2 last digits
+     *       (i.e. rounding after the 12<sup>th</sup> digit) results in 179.124999999998.
+     *       The condition for 4 trailing zero fraction digits is not meet.</li>
+     *   <li>{@code fractionDigitsForValue(179.12499997999999, 3)} returns 14 because rounding the 3 last digits
+     *       results in 179.12499997000. The condition for 4 trailing zero fraction digits is not meet.</li>
+     * </ul>
+     *
+     * {@note The threshold of 4 trailing fraction digits is arbitrary and may change in any future SIS version.}
+     *
+     * @param  value The value for which to get the number of significant fraction fraction digits minus rounding error.
+     * @param  uncertainDigits Number of trailing fraction digits which may be rounding error artefacts.
+     * @return Suggested number of significant digits (may be negative), or 0 if {@code value} is NaN or infinity.
+     */
+    public static int fractionDigitsForValue(double value, final int uncertainDigits) {
+        ArgumentChecks.ensurePositive("uncertainDigits", uncertainDigits);
+        int digits = fractionDigitsForValue(value);
+        final int reduced = digits - uncertainDigits;
+        if (reduced > 0) {
+            value *= pow10(reduced);
+            if ((Math.rint(value) % 10000) == 0) {
+                return reduced;
+            }
+        }
+        return digits;
     }
 }

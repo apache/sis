@@ -208,44 +208,13 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Alters the given seed with the hash code value computed from the given value.
+     * Returns a hash code value for the given long.
      *
-     * @param  value The value whose hash code to compute.
-     * @param  seed  The hash code value computed so far. If this method is invoked for the first
-     *               field, then any arbitrary value (preferably different for each class) is okay.
-     * @return An updated hash code value.
+     * @param  c The value to hash.
+     * @return Hash code value for the given long.
      */
-    public static int hash(final float value, final int seed) {
-        /*
-         * Multiplication by prime number produces better hash code distribution.
-         * Value 31 is often used because some modern compilers can optimize x*31
-         * as  (x << 5) - x    (Josh Bloch, Effective Java).
-         */
-        return 31*seed + Float.floatToIntBits(value);
-    }
-
-    /**
-     * Alters the given seed with the hash code value computed from the given value.
-     *
-     * @param  value The value whose hash code to compute.
-     * @param  seed  The hash code value computed so far. If this method is invoked for the first
-     *               field, then any arbitrary value (preferably different for each class) is okay.
-     * @return An updated hash code value.
-     */
-    public static int hash(final double value, final int seed) {
-        return hash(Double.doubleToLongBits(value), seed);
-    }
-
-    /**
-     * Alters the given seed with the hash code value computed from the given value.
-     *
-     * @param  value The value whose hash code to compute.
-     * @param  seed  The hash code value computed so far. If this method is invoked for the first
-     *               field, then any arbitrary value (preferably different for each class) is okay.
-     * @return An updated hash code value.
-     */
-    public static int hash(final long value, final int seed) {
-        return 31*seed + (((int) value) ^ ((int) (value >>> 32)));
+    public static int hashCode(final long c) {
+        return ((int) c) ^ (int) (c >>> Integer.SIZE);
     }
 
     /**
