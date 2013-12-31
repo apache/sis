@@ -57,6 +57,8 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
         bursaWolf.rZ = 0.554;
         bursaWolf.dS = 0.219;
         bursaWolf.verify();
+        assertFalse("isIdentity",    bursaWolf.isIdentity());
+        assertFalse("isTranslation", bursaWolf.isTranslation());
         return bursaWolf;
     }
 
@@ -75,6 +77,24 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
         bursaWolf.rZ =    0.3898;
         bursaWolf.dS =   -0.3143;
         bursaWolf.verify();
+        assertFalse("isIdentity",    bursaWolf.isIdentity());
+        assertFalse("isTranslation", bursaWolf.isTranslation());
+        return bursaWolf;
+    }
+
+    /**
+     * Returns the parameters for the <cite>NTF to WGS 84 (1)</cite> transformation (EPSG:1193).
+     * Area of validity is France - onshore - mainland and Corsica.
+     * This transformation uses only translation parameters.
+     */
+    static BursaWolfParameters createNTF_to_WGS84() {
+        final BursaWolfParameters bursaWolf = new BursaWolfParameters(WGS84, Extents.WORLD);
+        bursaWolf.tX = -168;
+        bursaWolf.tY =  -60;
+        bursaWolf.tZ =  320;
+        bursaWolf.verify();
+        assertFalse("isIdentity",    bursaWolf.isIdentity());
+        assertTrue ("isTranslation", bursaWolf.isTranslation());
         return bursaWolf;
     }
 
@@ -112,6 +132,15 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
         final MatrixSIS target  = Matrices.create(4, 1, new double[] {3657660.78, 255778.43, 5201387.75, 1});
         assertMatrixEquals("toWGS84", target, toWGS84.multiply(source), 0.01);
         assertMatrixEquals("toWGS72", source, toWGS72.multiply(target), 0.01);
+        /*
+         * Tests the optimized path for translation-only parameters.
+         * Matrices having only translation terms are much easier to predict.
+         */
+        assertMatrixEquals("Translation only", new Matrix4(
+                1, 0, 0, -168,
+                0, 1, 0,  -60,
+                0, 0, 1,  320,
+                0, 0, 0,    1), getPositionVectorTransformation(createNTF_to_WGS84()), 0);
     }
 
     /**
