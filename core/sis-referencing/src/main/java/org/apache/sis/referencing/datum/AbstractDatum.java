@@ -67,9 +67,10 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
 @XmlType(name="AbstractDatumType")
-@XmlSeeAlso(
-    DefaultGeodeticDatum.class
-)
+@XmlSeeAlso({
+    DefaultGeodeticDatum.class,
+    DefaultVerticalDatum.class
+})
 public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Serial number for inter-operability with different versions.
@@ -400,37 +401,20 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Computes a hash value consistent with the given comparison mode.
-     * If the given argument is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}, then the
-     * {@linkplain #getAnchorPoint() anchor point}, {@linkplain #getRealizationEpoch() realization epoch},
-     * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}
-     * properties are ignored.
+     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
+     * for more information.
      *
-     * @return The hash code value for the given comparison mode.
+     * @return The hash code value. This value may change in any future Apache SIS version.
      */
     @Override
-    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+    protected long computeHashCode() {
         /*
-         * The "^ (int) serialVersionUID" is an arbitrary change applied to the hash code value in order to
+         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
          * differentiate this Datum implementation from implementations of other GeoAPI interfaces.
          */
-        int code = super.hashCode(mode) ^ (int) serialVersionUID;
-        switch (mode) {
-            case STRICT: {
-                code += Objects.hash(anchorPoint, realizationEpoch, domainOfValidity, scope);
-                break;
-            }
-            case BY_CONTRACT: {
-                code += Objects.hash(getAnchorPoint(), getRealizationEpoch(), getDomainOfValidity(), getScope());
-                break;
-            }
-            /*
-             * The name is significant for all modes, but we nevertheless ignore it because
-             * of the way the name is compared in the equals(Object, ComparisonMode) method
-             * which make hash code computation impractical in the IGNORE_METADATA case.
-             */
-        }
-        return code;
+        return serialVersionUID ^ (super.computeHashCode() +
+                Objects.hash(anchorPoint, realizationEpoch, domainOfValidity, scope));
     }
 
     /**

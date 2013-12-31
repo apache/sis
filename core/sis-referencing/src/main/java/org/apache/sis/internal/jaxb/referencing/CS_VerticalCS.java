@@ -17,26 +17,26 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.XmlElement;
-import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.cs.VerticalCS;
+import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
-import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 
 
 /**
  * JAXB adapter mapping implementing class to the GeoAPI interface. See
  * package documentation for more information about JAXB and interface.
  *
- * @author  Cédric Briançon (Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.05)
+ * @since   0.4 (derived from geotk-3.04)
  * @version 0.4
  * @module
  */
-public final class CD_VerticalDatum extends PropertyType<CD_VerticalDatum, VerticalDatum> {
+public final class CS_VerticalCS extends PropertyType<CS_VerticalCS, VerticalCS> {
     /**
      * Empty constructor for JAXB only.
      */
-    public CD_VerticalDatum() {
+    public CS_VerticalCS() {
     }
 
     /**
@@ -44,42 +44,42 @@ public final class CD_VerticalDatum extends PropertyType<CD_VerticalDatum, Verti
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code VerticalDatum.class}
+     * @return {@code VerticalCS.class}
      */
     @Override
-    protected Class<VerticalDatum> getBoundType() {
-        return VerticalDatum.class;
+    protected Class<VerticalCS> getBoundType() {
+        return VerticalCS.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CD_VerticalDatum(final VerticalDatum metadata) {
+    private CS_VerticalCS(final VerticalCS metadata) {
         super(metadata);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
-     * in a {@code <gml:VerticalDatum>} XML element.
+     * in a {@code <gml:VerticalCS>} XML element.
      *
      * @param  value The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CD_VerticalDatum wrap(final VerticalDatum value) {
-        return new CD_VerticalDatum(value);
+    protected CS_VerticalCS wrap(final VerticalCS value) {
+        return new CS_VerticalCS(value);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual element to write
-     * inside the {@code <gml:VerticalDatum>} XML element.
+     * inside the {@code <gml:VerticalCS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return The element to be marshalled.
      */
-    @XmlElement(name = "VerticalDatum")
-    public DefaultVerticalDatum getElement() {
-        return DefaultVerticalDatum.castOrCopy(metadata);
+    @XmlElement(name = "VerticalCS")
+    public DefaultVerticalCS getElement() {
+        return DefaultVerticalCS.castOrCopy(metadata);
     }
 
     /**
@@ -87,7 +87,7 @@ public final class CD_VerticalDatum extends PropertyType<CD_VerticalDatum, Verti
      *
      * @param element The unmarshalled element.
      */
-    public void setElement(final DefaultVerticalDatum element) {
+    public void setElement(final DefaultVerticalCS element) {
         this.metadata = element;
     }
 }

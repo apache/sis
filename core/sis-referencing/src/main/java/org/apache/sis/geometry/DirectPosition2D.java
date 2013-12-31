@@ -21,6 +21,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
@@ -302,14 +303,9 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      */
     @Override
     public int hashCode() {
-        int code;
-        long bits;
-        bits = doubleToLongBits(x); code = 31      + (((int) bits) ^ (int) (bits >>> 32));
-        bits = doubleToLongBits(y); code = 31*code + (((int) bits) ^ (int) (bits >>> 32));
-        if (crs != null) {
-            code += crs.hashCode();
-        }
-        return code;
+        int code =  31 + Numerics.hashCode(doubleToLongBits(x));
+        code = code*31 + Numerics.hashCode(doubleToLongBits(y));
+        return code + Objects.hashCode(crs);
     }
 
     /**
