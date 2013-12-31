@@ -430,7 +430,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Returns the {@link #name} and all aliases which are also instance of {@lik ReferenceIdentifier}.
      * The later happen often in SIS implementation since many aliases are instance of {@link NamedIdentifier}.
      */
-    @XmlElement(name = "name")
+    @XmlElement(name = "name", required = true)
     final Collection<ReferenceIdentifier> getNames() {
         // Unconditionally creates a modifiable list because some JAXB implementations modify it.
         final Collection<ReferenceIdentifier> names = new ArrayList<>(nonNull(alias).size() + 1);
