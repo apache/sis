@@ -427,7 +427,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             final Matrix4 matrix = new Matrix4();
             matrix.m03 = tX;
             matrix.m13 = tY;
-            matrix.m13 = tZ;
+            matrix.m23 = tZ;
             return matrix;
         }
         /*
@@ -625,10 +625,10 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             return "TOWGS84";
         }
         String keyword = super.formatTo(formatter); // Declare the WKT as invalid.
-        final String name = IdentifiedObjects.getName(targetDatum, null);
+        final String name = IdentifiedObjects.getUnicodeIdentifier(targetDatum);
         if (name != null) {
             // We may try to build something better here in future SIS versions, if there is a need for that.
-            keyword = "To" + name;
+            keyword = "TO" + name;
         }
         return keyword;
     }
