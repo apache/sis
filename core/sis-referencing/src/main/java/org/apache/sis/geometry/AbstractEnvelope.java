@@ -33,6 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
@@ -1019,19 +1020,14 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     @Override
     public int hashCode() {
         final int dimension = getDimension();
-        int code = 1;
+        long code = 1;
         boolean p = true;
         do {
             for (int i=0; i<dimension; i++) {
-                final long bits = doubleToLongBits(p ? getLower(i) : getUpper(i));
-                code = 31 * code + (((int) bits) ^ (int) (bits >>> 32));
+                code = code*31 + doubleToLongBits(p ? getLower(i) : getUpper(i));
             }
         } while ((p = !p) == false);
-        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-        if (crs != null) {
-            code += crs.hashCode();
-        }
-        return code;
+        return Numerics.hashCode(code) + Objects.hashCode(getCoordinateReferenceSystem());
     }
 
     /**

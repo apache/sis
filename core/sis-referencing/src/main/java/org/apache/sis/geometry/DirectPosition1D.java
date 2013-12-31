@@ -25,9 +25,13 @@ import java.io.Serializable;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
@@ -224,6 +228,8 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
 
     /**
      * Returns a copy of this position.
+     *
+     * @return A copy of this position.
      */
     @Override
     public DirectPosition1D clone() {
@@ -240,11 +246,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      */
     @Override
     public int hashCode() {
-        final long value = Double.doubleToLongBits(ordinate);
-        int code = 31 + (((int) value) ^ (int) (value >>> 32));
-        if (crs != null) {
-            code += crs.hashCode();
-        }
+        final int code = 31 + Numerics.hashCode(Double.doubleToLongBits(ordinate)) + Objects.hashCode(crs);
         assert code == super.hashCode();
         return code;
     }

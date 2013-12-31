@@ -39,7 +39,6 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -553,20 +552,20 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Computes a hash value consistent with the given comparison mode.
+     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
+     * for more information.
      *
-     * @return The hash code value for the given comparison mode.
+     * @return The hash code value. This value may change in any future Apache SIS version.
      */
     @Override
-    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
-        int code = super.hashCode(mode);
-        if (unit      != null) code = 31*code + unit     .hashCode();
-        if (direction != null) code = 31*code + direction.hashCode();
-        if (mode == ComparisonMode.STRICT) {
-            code = Numerics.hash(minimum, code);
-            code = Numerics.hash(maximum, code);
-        }
-        return code;
+    protected long computeHashCode() {
+        /*
+         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
+         * differentiate this CoordinateSystemAxis implementation from implementations of other GeoAPI interfaces.
+         */
+        return serialVersionUID ^ (super.computeHashCode() + Objects.hashCode(unit) + Objects.hashCode(direction)
+                + Double.doubleToLongBits(minimum) + 31*Double.doubleToLongBits(maximum));
     }
 
     /**
