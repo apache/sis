@@ -40,6 +40,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.jaxb.referencing.Code;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Deprecable;
@@ -643,7 +644,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *         relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      *
-     * @see #hashCode(ComparisonMode)
+     * @see #computeHashCode()
      * @see org.apache.sis.util.Utilities#deepEquals(Object, Object, ComparisonMode)
      */
     @Override
@@ -698,51 +699,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Computes a hash value consistent with the given comparison mode.
-     * This method accepts only the following enumeration values:
-     *
-     * <ul>
-     *   <li>{@link ComparisonMode#STRICT STRICT}: this method may use any property,
-     *       including implementation-specific ones if any, at implementation choice.</li>
-     *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}: this method can use any property defined
-     *       in the implemented interface (typically a GeoAPI interface).</li>
-     *   <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}: this method ignores the metadata that do not
-     *       affect coordinate operations. By default, the ignored properties are the {@linkplain #getName() name},
-     *       {@linkplain #getIdentifiers() identifiers} and {@linkplain #getRemarks() remarks}.
-     *       However subclasses may ignore a different list of properties.</li>
-     * </ul>
-     *
-     * In the later case, two identified objects will return the same hash value if they are equal in the sense of
-     * <code>{@linkplain #equals(Object, ComparisonMode) equals}(object, IGNORE_METADATA)</code>.
-     * This feature allows users to implement metadata-insensitive {@link java.util.HashMap}.
-     *
-     * @param  mode Specifies the properties that can be used for hash code computation.
-     * @return The hash code value. This value may change between different execution of the Apache SIS library.
-     * @throws IllegalArgumentException If the given {@code mode} is not one of {@code STRICT}, {@code BY_CONTRACT}
-     *         or {@code IGNORE_METADATA} enumeration values.
-     */
-    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
-        int code = (int) serialVersionUID;
-        switch (mode) {
-            case STRICT: {
-                code ^= Objects.hash(name, nonNull(alias), nonNull(identifiers), remarks);
-                break;
-            }
-            case BY_CONTRACT: {
-                code ^= Objects.hash(getName(), getAlias(), getIdentifiers(), getRemarks());
-                break;
-            }
-            case IGNORE_METADATA: {
-                break;
-            }
-            default: {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "mode", mode));
-            }
-        }
-        return code;
-    }
-
-    /**
      * Compares the specified object with this object for equality.
      * This method is implemented as below (omitting assertions):
      *
@@ -764,30 +720,53 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Returns a hash value for this identified object.
-     * This method derives a value from <code>{@linkplain #hashCode(ComparisonMode) hashCode}(STRICT)</code>.
-     * Notes:
+     * Returns a hash value for this identified object. Two {@code AbstractIdentifiedObject} instances
+     * for which {@link #equals(Object)} returns {@code true} shall have the same hash code value, if
+     * the hash codes are computed on the same JVM instance for both objects. The hash code value is
+     * <em>not</em> guaranteed to be stable between different versions of the Apache SIS library, or
+     * between libraries running on different JVM.
      *
-     * <ul>
-     *   <li>The derived value may be different than {@code hashCode(STRICT)}.</li>
-     *   <li>This method may cache the hash code value.</li>
-     * </ul>
+     * {@section Implementation note}
+     * This method invokes {@link #computeHashCode()} when first needed, then caches the result.
+     * Subclasses shall override {@link #computeHashCode()} instead than this method.
      *
-     * Subclasses shall override {@link #hashCode(ComparisonMode)} instead than this method.
-     *
-     * @return The hash code value. This value may change between different execution of the Apache SIS library.
+     * @return The hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     public final int hashCode() { // No need to synchronize; ok if invoked twice.
         int hash = hashCode;
         if (hash == 0) {
-            hash = hashCode(ComparisonMode.STRICT);
+            hash = Numerics.hashCode(computeHashCode());
             if (hash == 0) {
                 hash = -1;
             }
             hashCode = hash;
         }
-        assert hash == -1 || hash == hashCode(ComparisonMode.STRICT) : this;
+        assert hash == -1 || hash == Numerics.hashCode(computeHashCode()) : hash;
         return hash;
+    }
+
+    /**
+     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * This method is invoked at most once in normal execution, or an arbitrary amount of times if Java
+     * assertions are enabled. The hash code value shall never change during the whole lifetime of this
+     * object.
+     *
+     * {@section Overriding}
+     * Subclasses can override this method for using more properties in hash code calculation.
+     * All {@code computeHashCode()} methods shall invoke {@code super.computeHashCode()},
+     * <strong>not</strong> {@code hashCode()}. Example:
+     *
+     * {@preformat java
+     *     &#64;Override
+     *     protected long computeHashCode() {
+     *         return super.computeHashCode() + 31 * Objects.hash(myProperties);
+     *     }
+     * }
+     *
+     * @return The hash code value. This value may change in any future Apache SIS version.
+     */
+    protected long computeHashCode() {
+        return Objects.hash(name, nonNull(alias), nonNull(identifiers), remarks) ^ serialVersionUID;
     }
 }

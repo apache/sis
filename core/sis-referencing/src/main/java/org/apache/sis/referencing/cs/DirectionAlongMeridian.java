@@ -235,7 +235,7 @@ final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>
         if (object instanceof DirectionAlongMeridian) {
             final DirectionAlongMeridian that = (DirectionAlongMeridian) object;
             return baseDirection.equals(that.baseDirection) &&
-                   Double.doubleToLongBits(meridian) == Double.doubleToLongBits(that.meridian);
+                   Numerics.equals(meridian, that.meridian);
         }
         return false;
     }
@@ -245,7 +245,7 @@ final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>
      */
     @Override
     public int hashCode() {
-        return Numerics.hash(meridian, baseDirection.hashCode()) ^ (int) serialVersionUID;
+        return Numerics.hashCode(serialVersionUID ^ (Double.doubleToLongBits(meridian) + baseDirection.hashCode()));
     }
 
     /**

@@ -223,31 +223,18 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     }
 
     /**
-     * Computes a hash value consistent with the given comparison mode.
-     * If the given argument is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}, then the
-     * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}
-     * properties are ignored, in addition to other ignored properties documented in the
-     * {@linkplain AbstractIdentifiedObject#hashCode(ComparisonMode) super-class}.
+     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
+     * for more information.
      *
-     * @return The hash code value for the given comparison mode.
+     * @return The hash code value. This value may change in any future Apache SIS version.
      */
     @Override
-    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+    protected long computeHashCode() {
         /*
-         * The "^ (int) serialVersionUID" is an arbitrary change applied to the hash code value in order to
+         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
          * differentiate this ReferenceSystem implementation from implementations of other GeoAPI interfaces.
          */
-        int code = super.hashCode(mode) ^ (int) serialVersionUID;
-        switch (mode) {
-            case STRICT: {
-                code ^= Objects.hash(domainOfValidity, scope);
-                break;
-            }
-            case BY_CONTRACT: {
-                code ^= Objects.hash(getDomainOfValidity(), getScope());
-                break;
-            }
-        }
-        return code;
+        return serialVersionUID ^ (super.computeHashCode() + Objects.hash(domainOfValidity, scope));
     }
 }
