@@ -60,7 +60,7 @@ public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, Geode
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
-     * in a {@code <gml:geodeticDatum>} XML element.
+     * in a {@code <gml:GeodeticDatum>} XML element.
      *
      * @param  value The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
@@ -72,7 +72,7 @@ public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, Geode
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual element to write
-     * inside the {@code <gml:geodeticDatum>} XML element.
+     * inside the {@code <gml:GeodeticDatum>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return The element to be marshalled.

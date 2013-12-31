@@ -17,26 +17,26 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.XmlElement;
-import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.cs.AffineCS;
+import org.apache.sis.referencing.cs.DefaultAffineCS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
-import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 
 
 /**
  * JAXB adapter mapping implementing class to the GeoAPI interface. See
  * package documentation for more information about JAXB and interface.
  *
- * @author  Cédric Briançon (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.05)
+ * @author Cédric Briançon (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
+ * @since   0.4 (derived from geotk-3.04)
  * @version 0.4
  * @module
  */
-public final class CD_VerticalDatum extends PropertyType<CD_VerticalDatum, VerticalDatum> {
+public final class CS_AffineCS extends PropertyType<CS_AffineCS, AffineCS> {
     /**
      * Empty constructor for JAXB only.
      */
-    public CD_VerticalDatum() {
+    public CS_AffineCS() {
     }
 
     /**
@@ -44,42 +44,42 @@ public final class CD_VerticalDatum extends PropertyType<CD_VerticalDatum, Verti
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code VerticalDatum.class}
+     * @return {@code AffineCS.class}
      */
     @Override
-    protected Class<VerticalDatum> getBoundType() {
-        return VerticalDatum.class;
+    protected Class<AffineCS> getBoundType() {
+        return AffineCS.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CD_VerticalDatum(final VerticalDatum metadata) {
+    private CS_AffineCS(final AffineCS metadata) {
         super(metadata);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
-     * in a {@code <gml:VerticalDatum>} XML element.
+     * in a {@code <gml:AffineCS>} XML element.
      *
      * @param  value The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CD_VerticalDatum wrap(final VerticalDatum value) {
-        return new CD_VerticalDatum(value);
+    protected CS_AffineCS wrap(final AffineCS value) {
+        return new CS_AffineCS(value);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual element to write
-     * inside the {@code <gml:VerticalDatum>} XML element.
+     * inside the {@code <gml:AffineCS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return The element to be marshalled.
      */
-    @XmlElement(name = "VerticalDatum")
-    public DefaultVerticalDatum getElement() {
-        return DefaultVerticalDatum.castOrCopy(metadata);
+    @XmlElement(name = "AffineCS")
+    public DefaultAffineCS getElement() {
+        return DefaultAffineCS.castOrCopy(metadata);
     }
 
     /**
@@ -87,7 +87,7 @@ public final class CD_VerticalDatum extends PropertyType<CD_VerticalDatum, Verti
      *
      * @param element The unmarshalled element.
      */
-    public void setElement(final DefaultVerticalDatum element) {
+    public void setElement(final DefaultAffineCS element) {
         this.metadata = element;
     }
 }

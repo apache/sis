@@ -17,13 +17,17 @@
 package org.apache.sis.referencing.datum;
 
 import java.lang.reflect.Field;
+import javax.xml.bind.JAXBException;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.referencing.Assert.*;
 import static java.util.Collections.singletonMap;
+import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 
 /**
@@ -74,5 +78,24 @@ public final strictfp class DefaultVerticalDatumTest extends DatumTestCase {
 
         datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Ellipsoidal"), VerticalDatumTypes.ELLIPSOIDAL);
         assertWktEquals(datum, "VERT_DATUM[“Ellipsoidal”, 2002]");
+    }
+
+    /**
+     * Tests unmarshalling.
+     *
+     * @throws JAXBException If an error occurred during unmarshalling.
+     */
+    @Test
+    public void testUnmarshalling() throws JAXBException {
+        final DefaultVerticalDatum datum = unmarshall(DefaultVerticalDatum.class, "Mean Sea Level.xml");
+        assertIsMeanSeaLevel(datum);
+        assertIsWorld((GeographicBoundingBox) getSingleton(datum.getDomainOfValidity().getGeographicElements()));
+        /*
+         * Values in the following tests are specific to our XML file.
+         * The actual texts in the EPSG database are more descriptive.
+         */
+        assertEquals("remarks",          "Approximates geoid.",             datum.getRemarks().toString());
+        assertEquals("scope",            "Hydrography.",                    datum.getScope().toString());
+        assertEquals("anchorDefinition", "Averaged over a 19-year period.", datum.getAnchorPoint().toString());
     }
 }

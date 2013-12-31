@@ -470,13 +470,20 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Computes a hash value consistent with the given comparison mode.
+     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
+     * for more information.
      *
-     * @return The hash code value for the given comparison mode.
+     * @return The hash code value. This value may change in any future Apache SIS version.
      */
     @Override
-    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
-        return (Objects.hashCode(ellipsoid) * 31 + Objects.hashCode(primeMeridian)) * 31 + super.hashCode(mode);
+    protected long computeHashCode() {
+        /*
+         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
+         * differentiate this GeodeticDatum implementation from implementations of other GeoAPI interfaces.
+         */
+        return serialVersionUID ^ (super.computeHashCode() +
+                Objects.hashCode(ellipsoid) + 31 * Objects.hashCode(primeMeridian));
     }
 
     /**

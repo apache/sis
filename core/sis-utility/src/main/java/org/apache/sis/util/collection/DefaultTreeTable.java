@@ -724,7 +724,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
                 // Do not use Objects.hashCode(...) because we want the result of array
                 // containing only null elements to be the same than null array (zero).
                 for (int i=values.length; --i>=0;) {
-                    hash = 31*hash + Objects.hash(values[i]);
+                    hash = 31*hash + Objects.hashCode(values[i]);
                 }
             }
             // Do not use Objects.hashCode(...) because we

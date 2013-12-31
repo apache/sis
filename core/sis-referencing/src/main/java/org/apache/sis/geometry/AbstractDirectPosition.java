@@ -32,6 +32,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
@@ -361,8 +362,7 @@ parse:  while (i < length) {
         final int dimension = getDimension();
         int code = 1;
         for (int i=0; i<dimension; i++) {
-            final long bits = doubleToLongBits(getOrdinate(i));
-            code = 31 * code + (((int) bits) ^ (int) (bits >>> 32));
+            code = code*31 + Numerics.hashCode(doubleToLongBits(getOrdinate(i)));
         }
         return code + Objects.hashCode(getCoordinateReferenceSystem());
     }

@@ -63,9 +63,6 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      */
     private static final long serialVersionUID = -6182037957705712945L;
 
-    @Deprecated
-    public static final DefaultCartesianCS GEOCENTRIC = null; // TODO: Not supported yet.
-
     /**
      * Constructs a one-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the
