@@ -41,6 +41,7 @@ import org.opengis.util.CodeList;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -172,7 +173,7 @@ public class Formatter {
      * The amount of spaces to use in indentation, or {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE}
      * if indentation is disabled.
      */
-    int indentation;
+    byte indentation;
 
     /**
      * The amount of space to write on the left side of each line. This amount is increased
@@ -188,25 +189,28 @@ public class Formatter {
     private boolean requestNewLine;
 
     /**
-     * {@code true} if the last formatted element was invalid WKT. This field is for internal use only.
-     * It is reset to {@code false} after the invalid part has been processed by {@link #append(FormattableObject)}.
+     * {@code true} if the last formatted element was invalid WKT and shall be highlighted with syntatic coloration.
+     * This field has no effect if {@link #colors} is null. This field is reset to {@code false} after the invalid
+     * part has been processed by {@link #append(FormattableObject)}, in order to highlight only the first erroneous
+     * element without clearing the {@link #invalidElement} value.
      */
-    private boolean wasInvalidWKT;
+    private boolean highlightError;
 
     /**
      * Non-null if the WKT is invalid. If non-null, then this field contains a keyword that identify the
      * problematic part.
      *
      * @see #isInvalidWKT()
+     * @see #getErrorMessage()
      */
-    private String unformattable;
+    String invalidElement;
 
     /**
-     * Warning that may be produced during WKT formatting, or {@code null} if none.
+     * Error that occurred during WKT formatting, or {@code null} if none.
      *
-     * @see #isInvalidWKT()
+     * @see #getErrorMessage()
      */
-    private Exception warning;
+    Exception errorCause;
 
     /**
      * Creates a new formatter instance with the default symbols, no syntax coloring and the default indentation.
@@ -225,15 +229,12 @@ public class Formatter {
      *        or {@link WKTFormat#SINGLE_LINE} for formatting the whole WKT on a single line.
      */
     public Formatter(final Convention convention, final Symbols symbols, final Colors colors, final int indentation) {
-        ArgumentChecks.ensureNonNull("convention", convention);
-        ArgumentChecks.ensureNonNull("symbols", symbols);
-        if (indentation < WKTFormat.SINGLE_LINE) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentValue_2, "indentation", indentation));
-        }
+        ArgumentChecks.ensureNonNull("convention",  convention);
+        ArgumentChecks.ensureNonNull("symbols",     symbols);
+        ArgumentChecks.ensureBetween("indentation", WKTFormat.SINGLE_LINE, Byte.MAX_VALUE, indentation);
         this.convention   = convention;
         this.symbols      = symbols.immutable();
-        this.indentation  = indentation;
+        this.indentation  = (byte) indentation;
         this.numberFormat = symbols.createNumberFormat();
         this.unitFormat   = UnitFormat.getInstance(symbols.getLocale());
         this.buffer       = new StringBuffer();
@@ -444,8 +445,8 @@ public class Formatter {
         indent(+1);
         requestNewLine = false;
         String keyword = object.formatTo(this);
-        if (colors != null && wasInvalidWKT) {
-            wasInvalidWKT = false;
+        if (colors != null && highlightError) {
+            highlightError = false;
             final String color = colors.getAnsiSequence(ElementKind.ERROR);
             if (color != null) {
                 buffer.insert(base, color + BACKGROUND_DEFAULT);
@@ -575,7 +576,8 @@ public class Formatter {
                             buffer.insert(stop, BACKGROUND_DEFAULT).insert(start, c);
                         }
                     }
-                    warning = exception;
+                    setInvalidWKT(descriptor);
+                    errorCause = exception;
                     value = Double.NaN;
                 }
                 format(value);
@@ -693,13 +695,13 @@ public class Formatter {
     private void format(double number) {
         setColor(ElementKind.NUMBER);
         /*
-         * The -2 above is for using two less fraction digits than the expected number accuracy.
+         * The 2 below is for using two less fraction digits than the expected number accuracy.
          * The intend is to give to DecimalFormat a chance to hide rounding errors, keeping in
          * mind that the number value is not necessarily the original one (we may have applied
          * a unit conversion). In the case of WGS84 semi-major axis in metres, we still have a
          * maximum of 8 fraction digits, which is more than enough.
          */
-        numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number) - 2);
+        numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number, 2));
         numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
         numberFormat.format(number, buffer, dummy);
         resetColor();
@@ -782,7 +784,7 @@ public class Formatter {
      * @return {@code true} if the WKT is invalid.
      */
     public boolean isInvalidWKT() {
-        return unformattable != null || (buffer != null && buffer.length() == 0);
+        return (invalidElement != null) || (buffer != null && buffer.length() == 0);
         /*
          * Note: we really use a "and" condition (not an other "or") for the buffer test because
          *       the buffer is reset to 'null' by WKTFormat after a successfull formatting.
@@ -790,28 +792,51 @@ public class Formatter {
     }
 
     /**
-     * Sets a flag marking the current WKT as not strictly compliant to the
-     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">WKT
-     * specification</a>. This method is invoked by {@link FormattableObject#formatTo(Formatter)}
-     * methods when the object to format is more complex than what the WKT specification allows.
+     * Marks the current WKT representation of the given object as not strictly compliant to the WKT specification.
+     * This method can be invoked by implementations of {@link FormattableObject#formatTo(Formatter)} when the object
+     * to format is more complex than what the WKT specification allows.
      * Applications can test {@link #isInvalidWKT()} later for checking WKT validity.
      *
-     * @param unformattable A keyword that identify the component that can not be formatted,
+     * @param unformattable The object that can not be formatted,
      */
-    public void setInvalidWKT(final String unformattable) {
+    public void setInvalidWKT(final IdentifiedObject unformattable) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
-        this.unformattable = unformattable;
-        wasInvalidWKT = true;
+        String name = getName(unformattable);
+        if (name != null) {
+            invalidElement = name;
+            highlightError = true;
+        } else {
+            setInvalidWKT(unformattable.getClass());
+        }
     }
 
     /**
-     * Throws an exception if {@link #isInvalidWKT()} is set.
+     * Marks the current WKT representation of the given class as not strictly compliant to the WKT specification.
+     * This method can be used as an alternative to {@link #setInvalidWKT(IdentifiedObject)} when the problematic
+     * object is not an instance of {@code IdentifiedObject}.
+     *
+     * @param unformattable The class of the object that can not be formatted,
      */
-    final void ensureValidWKT() throws UnformattableObjectException {
-        if (isInvalidWKT()) {
-            throw new UnformattableObjectException(Errors.format(
-                    Errors.Keys.CanNotRepresentInFormat_2, "WKT", unformattable), warning);
+    public void setInvalidWKT(Class<?> unformattable) {
+        ArgumentChecks.ensureNonNull("unformattable", unformattable);
+        if (!unformattable.isInterface()) {
+            for (final Class<?> candidate : unformattable.getInterfaces()) {
+                if (candidate.getName().startsWith("org.opengis.")) {
+                    unformattable = candidate;
+                    break;
+                }
+            }
         }
+        invalidElement = Classes.getShortName(unformattable);
+        highlightError = true;
+    }
+
+    /**
+     * Returns the error message {@link #isInvalidWKT()} is set, or {@code null} otherwise.
+     * If non-null, a cause may be available in the {@link #errorCause} field.
+     */
+    final String getErrorMessage() {
+        return isInvalidWKT() ? Errors.format(Errors.Keys.CanNotRepresentInFormat_2, "WKT", invalidElement) : null;
     }
 
     /**
@@ -825,19 +850,23 @@ public class Formatter {
     }
 
     /**
-     * Clears this formatter. All properties (including {@linkplain #getLinearUnit() unit}
-     * and {@linkplain #isInvalidWKT() WKT validity flag} are reset to their default value.
-     * After this method call, this {@code Formatter} object is ready for formatting a new object.
+     * Clears this formatter before formatting a new object. This method clears the
+     * {@linkplain #getLinearUnit() linear unit} and {@linkplain #isInvalidWKT() WKT validity flag}.
      */
     public void clear() {
+        /*
+         * Configuration options (indentation, colors, conventions) are left unchanged.
+         * We do not mention that fact in the Javadoc because those options do not appear
+         * in the Formatter public API (they are in the WKTFormat API instead).
+         */
         if (buffer != null) {
             buffer.setLength(0);
         }
         linearUnit     = null;
         angularUnit    = null;
-        unformattable  = null;
-        warning        = null;
-        wasInvalidWKT  = false;
+        invalidElement = null;
+        errorCause     = null;
+        highlightError = false;
         requestNewLine = false;
         margin         = 0;
     }

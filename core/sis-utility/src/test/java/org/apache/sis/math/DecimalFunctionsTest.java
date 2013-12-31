@@ -231,11 +231,16 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
     public void testFractionDigitsForValue() {
         assertEquals(-EXPONENT_FOR_ZERO, fractionDigitsForValue(0));
         assertEquals(-EXPONENT_FOR_ZERO, fractionDigitsForValue(MIN_VALUE));
-        assertEquals(                16, fractionDigitsForValue(1));
-        assertEquals(                15, fractionDigitsForValue(45));
-        assertEquals(                 0, fractionDigitsForValue(NaN));
-        assertEquals(                 0, fractionDigitsForValue(POSITIVE_INFINITY));
-        assertEquals(                 0, fractionDigitsForValue(NEGATIVE_INFINITY));
+        assertEquals(16, fractionDigitsForValue(1));
+        assertEquals(15, fractionDigitsForValue(45));
+        assertEquals(15, fractionDigitsForValue(39.666666666666667));
+        assertEquals(15, fractionDigitsForValue(-8.131906111111111));
+        assertEquals(16, fractionDigitsForValue(0.6149999999999993));
+        assertEquals(17, fractionDigitsForValue(-0.198));
+        assertEquals(14, fractionDigitsForValue(179.12499999999824));
+        assertEquals( 0, fractionDigitsForValue(NaN));
+        assertEquals( 0, fractionDigitsForValue(POSITIVE_INFINITY));
+        assertEquals( 0, fractionDigitsForValue(NEGATIVE_INFINITY));
         for (int i=EXPONENT_FOR_ZERO; i<=EXPONENT_FOR_MAX; i++) {
             final double value = pow10(i);
             final double accuracy = pow10(-fractionDigitsForValue(value));
@@ -246,5 +251,25 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
             final double accuracy = pow10(-fractionDigitsForValue(value));
             assertEquals("Shall not be greater than ULP", 0, accuracy, StrictMath.ulp(value));
         }
+    }
+
+    /**
+     * Tests {@link DecimalFunctions#fractionDigitsForValue(double, int)}.
+     */
+    @Test
+    @DependsOnMethod("testFractionDigitsForValue")
+    public void testFractionDigitsForValue2() {
+        assertEquals(-EXPONENT_FOR_ZERO, fractionDigitsForValue(0, 2));
+        assertEquals(0, fractionDigitsForValue(POSITIVE_INFINITY,  2));
+
+        assertEquals("Expected no rounding", 15, fractionDigitsForValue(39.666666666666667,  2));
+        assertEquals("Expected no rounding", 15, fractionDigitsForValue(-8.131906111111111,  2));
+        assertEquals("Expected no rounding", 16, fractionDigitsForValue( 0.6149999999999993, 1));
+        assertEquals("Expected rounding",    14, fractionDigitsForValue( 0.6149999999999993, 2));
+        assertEquals("Expected rounding",    14, fractionDigitsForValue(-0.6149999999999993, 2));
+        assertEquals("Expected rounding",    15, fractionDigitsForValue(-0.1979999999999998, 2));
+        assertEquals("Expected rounding",    11, fractionDigitsForValue( 179.12499999999824, 3));
+        assertEquals("Expected no rounding", 14, fractionDigitsForValue( 179.12499999999824, 2));
+        assertEquals("Expected no rounding", 14, fractionDigitsForValue( 179.12499997999999, 3));
     }
 }

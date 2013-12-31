@@ -42,7 +42,6 @@ import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
-import static org.apache.sis.internal.util.Numerics.hash;
 import static org.apache.sis.internal.util.Numerics.epsilonEqual;
 import static org.apache.sis.util.ArgumentChecks.ensureStrictlyPositive;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -724,28 +723,20 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Computes a hash value consistent with the given comparison mode.
+     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
+     * for more information.
      *
-     * @return The hash code value for the given comparison mode.
+     * @return The hash code value. This value may change in any future Apache SIS version.
      */
     @Override
-    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+    protected long computeHashCode() {
         /*
-         * The "^ (int) serialVersionUID" is an arbitrary change applied to the hash code value in order to
-         * differentiate this DefaultEllipsoid implementation from implementations of other GeoAPI interfaces.
+         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
+         * differentiate this Ellipsoid implementation from implementations of other GeoAPI interfaces.
          */
-        int code = super.hashCode(mode) ^ (int) serialVersionUID;
-        switch (mode) {
-            case STRICT: {
-                code = hash(semiMajorAxis, hash(ivfDefinitive ? inverseFlattening : semiMinorAxis, code));
-                break;
-            }
-            default: {
-                code = hash(getSemiMajorAxis(), hash(isIvfDefinitive() ? getInverseFlattening() : getSemiMinorAxis(), code));
-                break;
-            }
-        }
-        return code;
+        return serialVersionUID ^ (super.computeHashCode() + Double.doubleToLongBits(semiMajorAxis) +
+               31 * Double.doubleToLongBits(ivfDefinitive ? inverseFlattening : semiMinorAxis));
     }
 
     /**

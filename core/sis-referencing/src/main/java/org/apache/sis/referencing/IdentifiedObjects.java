@@ -32,7 +32,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.DefaultNameSpace;
-import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.citation.Citations; // For javadoc.
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
@@ -74,9 +74,26 @@ public final class IdentifiedObjects extends Static {
     }
 
     /**
+     * Returns every object names and aliases according the given authority. This method performs
+     * the same work than {@link #getName(IdentifiedObject, Citation)}, except that it does not
+     * stop at the first match. This method is useful in the rare cases where the same authority
+     * declares more than one name, and all those names are of interest.
+     *
+     * @param  object The object to get the names and aliases from, or {@code null}.
+     * @param  authority The authority for the names to return, or {@code null} for any authority.
+     * @return The object's names and aliases, or an empty set if no name or alias matching the
+     *         specified authority has been found.
+     */
+    public static Set<String> getNames(final IdentifiedObject object, final Citation authority) {
+        final Set<String> names = new LinkedHashSet<String>(8);
+        name(object, authority, names);
+        return names;
+    }
+
+    /**
      * Returns an object name according the given authority.
-     * This method checks first the {@linkplain IdentifiedObject#getName() primary name},
-     * then all {@linkplain IdentifiedObject#getAlias() alias} in their iteration order.
+     * This method checks first the {@linkplain AbstractIdentifiedObject#getName() primary name},
+     * then all {@linkplain AbstractIdentifiedObject#getAlias() aliases} in their iteration order.
      *
      * <ul>
      *   <li><p>If the name or alias implements the {@link ReferenceIdentifier} interface,
@@ -107,23 +124,6 @@ public final class IdentifiedObjects extends Static {
      */
     public static String getName(final IdentifiedObject object, final Citation authority) {
         return name(object, authority, null);
-    }
-
-    /**
-     * Returns every object names and aliases according the given authority. This method performs
-     * the same work than {@link #getName(IdentifiedObject, Citation)}, except that it does not
-     * stop at the first match. This method is useful in the rare cases where the same authority
-     * declares more than one name, and all those names are of interest.
-     *
-     * @param  object The object to get the names and aliases from, or {@code null}.
-     * @param  authority The authority for the names to return, or {@code null} for any authority.
-     * @return The object's names and aliases, or an empty set if no name or alias matching the
-     *         specified authority has been found.
-     */
-    public static Set<String> getNames(final IdentifiedObject object, final Citation authority) {
-        final Set<String> names = new LinkedHashSet<String>(8);
-        name(object, authority, names);
-        return names;
     }
 
     /**
@@ -218,8 +218,8 @@ public final class IdentifiedObjects extends Static {
 
     /**
      * Returns an identifier for the given object according the given authority.
-     * This method checks all {@linkplain IdentifiedObject#getIdentifiers() identifiers} in their iteration order
-     * and returns the first identifier with an {@linkplain ReferenceIdentifier#getAuthority() authority} citation
+     * This method checks all {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers} in their iteration
+     * order and returns the first identifier with an {@linkplain NamedIdentifier#getAuthority() authority} citation
      * {@linkplain Citations#identifierMatches(Citation, Citation) matching} the specified authority.
      *
      * @param  object The object to get the identifier from, or {@code null}.
@@ -246,15 +246,11 @@ public final class IdentifiedObjects extends Static {
     }
 
     /**
-     * Returns the declared identifier, or {@code null} if none. This method searches for the first
-     * identifier (which is usually the main one) explicitly declared in the {@link IdentifiedObject}.
-     * At the contrary of {@link #searchIdentifierCode(IdentifiedObject, boolean)},
-     * <em>this method does not verify the identifier validity</em>.
-     *
-     * <p>More specifically, this method uses the first non-null element found in
-     * <code>object.{@linkplain IdentifiedObject#getIdentifiers() getIdentifiers()}</code>.
-     * If there is none, then it uses <code>object.{@linkplain IdentifiedObject#getName() getName()}</code>,
-     * which is not guaranteed to be a valid identifier.</p>
+     * Returns the string representation of the first identifier, or the object name if there is no identifier.
+     * This method searches for the first non-null element in
+     * <code>object.{@linkplain AbstractIdentifiedObject#getIdentifiers() getIdentifiers()}</code>. If there is none,
+     * then this method fallback on <code>object.{@linkplain AbstractIdentifiedObject#getName() getName()}</code>.
+     * The first element found is formatted by {@link #toString(Identifier)}.
      *
      * {@section Recommanded alternatives}
      * <ul>
@@ -265,12 +261,12 @@ public final class IdentifiedObjects extends Static {
      * </ul>
      *
      * @param  object The identified object, or {@code null}.
-     * @return Identifier represented as a string for communication between systems, or {@code null}.
+     * @return A string representation of the first identifier or name, or {@code null} if none.
      *
      * @see #getIdentifier(IdentifiedObject, Citation)
      * @see #searchIdentifierCode(IdentifiedObject, boolean)
      */
-    public static String getIdentifierCode(final IdentifiedObject object) {
+    public static String getIdentifierOrName(final IdentifiedObject object) {
         if (object != null) {
             final Iterator<ReferenceIdentifier> it = iterator(object.getIdentifiers());
             if (it != null) while (it.hasNext()) {
@@ -282,6 +278,53 @@ public final class IdentifiedObjects extends Static {
             final String name = toString(object.getName());
             if (name != null) { // Paranoiac check.
                 return name;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the first name, alias or identifier which is a
+     * {@linkplain CharSequences#isUnicodeIdentifier(CharSequence) valid Unicode identifier}.
+     * This method performs the search in the following order:
+     *
+     * <ul>
+     *   <li><code>object.{@linkplain AbstractIdentifiedObject#getName() getName()}</code></li>
+     *   <li><code>object.{@linkplain AbstractIdentifiedObject#getAlias() getAlias()}</code> in iteration order</li>
+     *   <li><code>object.{@linkplain AbstractIdentifiedObject#getIdentifiers() getIdentifiers()}</code> in iteration order</li>
+     * </ul>
+     *
+     * @param  object The identified object, or {@code null}.
+     * @return The first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.
+     */
+    public static String getUnicodeIdentifier(final IdentifiedObject object) {
+        if (object != null) {
+            ReferenceIdentifier identifier = object.getName();
+            if (identifier != null) { // Paranoiac check.
+                final String code = identifier.getCode();
+                if (CharSequences.isUnicodeIdentifier(code)) {
+                    return code;
+                }
+            }
+            final Iterator<GenericName> it = iterator(object.getAlias());
+            if (it != null) while (it.hasNext()) {
+                GenericName alias = it.next();
+                if (alias != null && (alias = alias.tip()) != null) {
+                    final String code = alias.toString();
+                    if (CharSequences.isUnicodeIdentifier(code)) {
+                        return code;
+                    }
+                }
+            }
+            final Iterator<ReferenceIdentifier> id = iterator(object.getIdentifiers());
+            if (id != null) while (id.hasNext()) {
+                identifier = id.next();
+                if (identifier != null) { // Paranoiac check.
+                    final String code = identifier.getCode();
+                    if (CharSequences.isUnicodeIdentifier(code)) {
+                        return code;
+                    }
+                }
             }
         }
         return null;
@@ -409,13 +452,15 @@ public final class IdentifiedObjects extends Static {
             return identifier.toString();
         }
         final String code = identifier.getCode();
+        final String cs;
         if (identifier instanceof ReferenceIdentifier) {
-            final String cs = ((ReferenceIdentifier) identifier).getCodeSpace();
-            if (cs != null) {
-                return cs + DefaultNameSpace.DEFAULT_SEPARATOR + code;
-            }
+            cs = ((ReferenceIdentifier) identifier).getCodeSpace();
+        } else {
+            cs = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority());
         }
-        final String authority = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority());
-        return (authority != null) ? (authority + DefaultNameSpace.DEFAULT_SEPARATOR + code) : code;
+        if (cs != null && !cs.isEmpty()) {
+            return cs + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+        }
+        return code;
     }
 }
