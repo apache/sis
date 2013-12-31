@@ -192,10 +192,9 @@ public class FormattableObject {
      * Formats the inner part of this <cite>Well Known Text</cite> (WKT) element into the given formatter.
      * This method is automatically invoked by {@link WKTFormat} when a formattable element is found.
      *
-     * <p>Element keyword and {@linkplain org.apache.sis.referencing.IdentifiedObjects#getIdentifierCode
-     * authority code} shall not be formatted here. For example if this formattable element is for a
-     * {@code GEOGCS} element, then this method shall write the content starting at the insertion point
-     * shows below:</p>
+     * <p>Element keyword and authority code shall not be formatted here.
+     * For example if this formattable element is for a {@code GEOGCS} element,
+     * then this method shall write the content starting at the insertion point shows below:</p>
      *
      * {@preformat text
      *     GEOGCS["WGS 84", AUTHORITY["EPSG","4326"]]
