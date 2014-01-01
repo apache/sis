@@ -817,7 +817,7 @@ public class TableAppender extends Appender implements Flushable {
     }
 
     /**
-     * Repeats a character. The {@code count} value may be negative,
+     * Repeats a character. The {@code count} value may be negative,
      * which is handled as if it was zero.
      *
      * @param out   The stream or buffer where to repeat the character.

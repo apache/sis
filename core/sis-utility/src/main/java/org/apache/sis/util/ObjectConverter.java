@@ -31,7 +31,7 @@ import org.apache.sis.internal.jdk8.Function;
  * <p>The main method of this interface is {@link #apply(Object)}, which receives an object of type
  * <var>S</var> and returns an object of type <var>T</var>. The set of all <var>S</var> values for which
  * {@code apply(S)} does not throw {@link UnconvertibleObjectException} is called the <cite>domain</cite>
- * of this function, regardless of whether the <var>T</var> result is {@code null} or not.</p>
+ * of this function, regardless of whether the <var>T</var> result is {@code null} or not.</p>
  *
  * {@section Function properties}
  * Some characteristics about the <var>S</var> to <var>T</var> mapping are given by the

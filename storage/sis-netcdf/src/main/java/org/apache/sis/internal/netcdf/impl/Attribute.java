@@ -47,7 +47,7 @@ final class Attribute {
     final String name;
 
     /**
-     * The value, either as a {@link String} or as an array of primitive type.
+     * The value, either as a {@link String} or as an array of primitive type.
      * Never {@code null} and never an empty string or empty array.
      */
     final Object value;

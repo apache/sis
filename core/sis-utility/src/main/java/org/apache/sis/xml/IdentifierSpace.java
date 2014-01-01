@@ -99,7 +99,7 @@ public interface IdentifierSpace<T> extends Citation {
     /**
      * Any XML attributes defined by OGC in the
      * <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">xlink</a> schema.
-     * Note that the above {@link #HREF} identifier space is a special case of this
+     * Note that the above {@link #HREF} identifier space is a special case of this
      * {@code xlink} identifier space.
      *
      * @see XLink

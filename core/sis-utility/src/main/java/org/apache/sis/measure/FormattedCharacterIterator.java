@@ -65,7 +65,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      * <p>To be more specific:</p>
      * <ul>
      *   <li>The map key is one of the static constants defined in the formatter {@code Field} inner class.</li>
-     *   <li>{@link #value} is the numeric value being formatted for that particular field.</li>
+     *   <li>{@link #value} is the numeric value being formatted for that particular field.</li>
      *   <li>{@link #start} and {@link #limit} are the range of index in the
      *       {@link SimpleCharacterIterator#text} where the field value has been formatted.</li>
      * </ul>

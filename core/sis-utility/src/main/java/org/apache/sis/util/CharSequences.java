@@ -274,7 +274,7 @@ public final class CharSequences extends Static {
      *
      * @param  text The character sequence to count occurrences, or {@code null}.
      * @param  toSearch The character to count.
-     * @return The number of occurrences of the given character, or 0 if the {@code text} is null.
+     * @return The number of occurrences of the given character, or 0 if the {@code text} is null.
      */
     public static int count(final CharSequence text, final char toSearch) {
         int n = 0;
@@ -542,7 +542,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *   <li>If the given range contains only space characters and the character at {@code toIndex-1}
      *       is the high surrogate of a valid supplementary code point, then this method returns
      *       {@code toIndex+1}, which is the index of the next code point.</li>
-     *   <li>If {@code fromIndex} is negative or {@code toIndex} is greater than the text length,
+     *   <li>If {@code fromIndex} is negative or {@code toIndex} is greater than the text length,
      *       then the behavior of this method is undefined.</li>
      * </ul>
      *
@@ -579,7 +579,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *   <li>If the given range contains only space characters and the character at {@code fromIndex}
      *       is the low surrogate of a valid supplementary code point, then this method returns
      *       {@code fromIndex-1}, which is the index of the code point.</li>
-     *   <li>If {@code fromIndex} is negative or {@code toIndex} is greater than the text length,
+     *   <li>If {@code fromIndex} is negative or {@code toIndex} is greater than the text length,
      *       then the behavior of this method is undefined.</li>
      * </ul>
      *
@@ -954,7 +954,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @param  text The text to scan for Unicode characters to replace by ASCII characters,
      *         or {@code null}.
-     * @return The given text with substitutions applied, or {@code text} if no replacement
+     * @return The given text with substitutions applied, or {@code text} if no replacement
      *         has been applied, or {@code null} if the given text was null.
      *
      * @see StringBuilders#toASCII(StringBuilder)
@@ -1023,7 +1023,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  lower Index of the first character to consider for inclusion in the sub-sequence.
      * @param  upper Index after the last character to consider for inclusion in the sub-sequence.
      * @return A characters sequence with leading and trailing white spaces removed, or {@code null}
-     *         if the {@code text} argument is null.
+     *         if the {@code text} argument is null.
      * @throws IndexOutOfBoundsException If {@code lower} or {@code upper} is out of bounds.
      */
     public static CharSequence trimWhitespaces(CharSequence text, int lower, int upper) {
@@ -1931,7 +1931,7 @@ cmp:    while (ia < lga) {
      *
      * @param  text The text for which to get the token.
      * @param  fromIndex Index of the fist character to consider in the given text.
-     * @return A sub-sequence of {@code text} starting at the given offset, or an empty string
+     * @return A sub-sequence of {@code text} starting at the given offset, or an empty string
      *         if there is no non-blank character at or after the given offset.
      * @throws NullPointerException if the {@code text} argument is null.
      */

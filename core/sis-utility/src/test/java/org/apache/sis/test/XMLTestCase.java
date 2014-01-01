@@ -131,11 +131,11 @@ public abstract strictfp class XMLTestCase extends TestCase {
     }
 
     /**
-     * Initializes the {@link #context} to the given locale and timezone.
+     * Initializes the {@link #context} to the given locale and timezone.
      *
      * @param marshal  {@code true} for setting the {@link Context#MARSHALLING} flag.
-     * @param locale   The locale, or {@code null} for the default.
-     * @param timezone The timezone, or {@code null} for the default.
+     * @param locale   The locale, or {@code null} for the default.
+     * @param timezone The timezone, or {@code null} for the default.
      *
      * @see #clearContext()
      */

@@ -66,7 +66,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Constructs a new constraints with the given {@linkplain #getUseLimitations() use limitation}.
      *
-     * @param useLimitation The use limitation, or {@code null} if none.
+     * @param useLimitation The use limitation, or {@code null} if none.
      */
     public DefaultConstraints(final CharSequence useLimitation) {
         useLimitations = singleton(Types.toInternationalString(useLimitation), InternationalString.class);

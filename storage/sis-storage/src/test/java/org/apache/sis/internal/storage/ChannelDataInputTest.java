@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 
 /**
  * Tests {@link ChannelDataInput}. First, a buffer is filled with random data. Then, a view over a portion
- * of that buffer is used for the tests, while the original full buffer is used for comparison purpose.
+ * of that buffer is used for the tests, while the original full buffer is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)

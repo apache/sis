@@ -264,7 +264,7 @@ public final class Context extends MarshalContext {
      * }
      *
      * Callers should use the {@link #isFlagSet(Context, int)} method instead if the
-     * {@code Context} instance is known, for avoiding a call to {@link #current()}.
+     * {@code Context} instance is known, for avoiding a call to {@link #current()}.
      *
      * @return {@code true} if XML marshalling is under progress.
      */

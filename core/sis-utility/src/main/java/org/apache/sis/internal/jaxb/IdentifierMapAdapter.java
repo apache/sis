@@ -449,7 +449,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
 
         /**
          * Advances to the next non-null identifier, skips duplicated authorities, wraps the
-         * identifier in an entry if needed and stores the result in the {@link #next} field.
+         * identifier in an entry if needed and stores the result in the {@link #next} field.
          * If we reach the iteration end, then this method set the {@link #identifiers}
          * iterator to {@code null}.
          */

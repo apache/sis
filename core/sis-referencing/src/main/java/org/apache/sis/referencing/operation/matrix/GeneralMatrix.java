@@ -87,7 +87,7 @@ class GeneralMatrix extends MatrixSIS {
      * @param numRow Number of rows.
      * @param numCol Number of columns.
      * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
-     *        or {@code false} for leaving it initialized to zero.
+     *        or {@code false} for leaving it initialized to zero.
      * @param precision 1 for normal precision, or 2 for extended precision.
      *        No other value is allowed (this is not verified).
      */
@@ -294,7 +294,7 @@ class GeneralMatrix extends MatrixSIS {
      * The array will have twice the normal length. See {@link #elements} for more discussion.
      *
      * <p>This method may return a direct reference to the internal array. <strong>Do not modify.</strong>,
-     * unless the {@code copy} argument is {@code true}.</p>
+     * unless the {@code copy} argument is {@code true}.</p>
      *
      * @param copy If {@code true}, then the returned array is guaranteed to be a copy, never the internal array.
      */

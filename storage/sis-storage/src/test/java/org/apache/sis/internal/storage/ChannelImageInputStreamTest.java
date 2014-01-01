@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 
 /**
  * Tests {@link ChannelImageInputStream}. A buffer is filled with random data
- * and a standard {@link ImageInputStream} is used for comparison purpose.
+ * and a standard {@link ImageInputStream} is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)

@@ -71,7 +71,7 @@ public interface TreeTable {
     /**
      * Returns the table columns, in the order they shall be rendered by default.
      * This method returns the union of all table columns in every nodes of this
-     * tree. However any {@link Node} instance can return {@code null} for a
+     * tree. However any {@link Node} instance can return {@code null} for a
      * particular column if the node doesn't have that column.
      *
      * @return The union of all table columns in every tree node.
@@ -179,7 +179,7 @@ public interface TreeTable {
         Node newChild() throws UnsupportedOperationException;
 
         /**
-         * Returns the value in the given column, or {@code null} if none.
+         * Returns the value in the given column, or {@code null} if none.
          *
          * @param  <V>    The base type of values in the given column.
          * @param  column Identifier of the column from which to get the value.

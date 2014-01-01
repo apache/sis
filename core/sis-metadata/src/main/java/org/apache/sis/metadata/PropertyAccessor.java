@@ -491,8 +491,7 @@ class PropertyAccessor {
      *
      * @param  index The index of the property for which to get the name.
      * @param  keyPolicy The kind of name to return.
-     * @return The name of the given kind at the given index,
-     *         or {@code null} if the index is out of bounds.
+     * @return The name of the given kind at the given index, or {@code null} if the index is out of bounds.
      */
     @SuppressWarnings("fallthrough")
     @Workaround(library="JDK", version="1.7") // Actually apply to String.intern() below.
@@ -583,8 +582,7 @@ class PropertyAccessor {
      * The information are created when first needed.
      *
      * @param  index The index of the property for which to get the information.
-     * @return The information for the property at the given index,
-     *         or {@code null} if the index is out of bounds.
+     * @return The information for the property at the given index, or {@code null} if the index is out of bounds.
      *
      * @see PropertyInformation
      */

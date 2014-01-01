@@ -159,7 +159,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      *        the collection interface even for singleton elements if they wish.}
      *
      * @param  index The index in the accessor (<em>not</em> the index in this collection).
-     * @return {@code true} if the value at the given index is a collection.
+     * @return {@code true} if the value at the given index is a collection.
      */
     final boolean isCollection(final int index) {
         return accessor.isCollection(index);

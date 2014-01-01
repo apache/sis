@@ -152,14 +152,14 @@ public class ConverterRegistry {
     }
 
     /**
-     * If {@code existing} or one of its children is equals to the given {@code converter},
+     * If {@code existing} or one of its children is equals to the given {@code converter},
      * returns it. Otherwise returns {@code null}.
      *
-     * @param  <S> The {@code converter} source class.
-     * @param  <T> The {@code converter} target class.
+     * @param  <S> The {@code converter} source class.
+     * @param  <T> The {@code converter} target class.
      * @param  converter The converter to replace by an existing converter, if possible.
      * @param  existing Existing converter to test.
-     * @return A converter equals to {@code converter}, or {@code null} if none.
+     * @return A converter equals to {@code converter}, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     private static <S,T> ObjectConverter<S,T> findEquals(ObjectConverter<S,T> converter,
@@ -180,12 +180,12 @@ public class ConverterRegistry {
     }
 
     /**
-     * Returns a converter equals to the given {@code converter}, or {@code null} if none.
+     * Returns a converter equals to the given {@code converter}, or {@code null} if none.
      *
-     * @param  <S> The {@code converter} source class.
-     * @param  <T> The {@code converter} target class.
+     * @param  <S> The {@code converter} source class.
+     * @param  <T> The {@code converter} target class.
      * @param  converter The converter to replace by an existing converter, if possible.
-     * @return A converter equals to {@code converter}, or {@code null} if none.
+     * @return A converter equals to {@code converter}, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     final <S,T> ObjectConverter<S,T> findEquals(final SystemConverter<S,T> converter) {

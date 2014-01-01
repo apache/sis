@@ -35,7 +35,7 @@ import static org.apache.sis.test.Assert.*;
 public final strictfp class StatisticsFormatTest extends TestCase {
     /**
      * Tests the formatting of {@code Statistics} without column headers.
-     * We instantiate the {@link StatisticsFormat} directly in order to fix the locale
+     * We instantiate the {@link StatisticsFormat} directly in order to fix the locale
      * to a hard-coded value. But except for the localization, the result should be
      * nearly identical to a call to the {@link Statistics#toString()} method.
      */
