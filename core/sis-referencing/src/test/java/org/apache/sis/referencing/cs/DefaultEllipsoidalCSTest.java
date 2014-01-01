@@ -18,12 +18,15 @@ package org.apache.sis.referencing.cs;
 
 import javax.xml.bind.JAXBException;
 import org.opengis.test.Validators;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -57,5 +60,19 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
          */
         assertEquals("name",    "Latitude (north), Longitude (east)",     cs.getName().getCode());
         assertEquals("remarks", "Used in two-dimensional GeographicCRS.", cs.getRemarks().toString());
+        assertIdentifierEquals("identifier", "OGP", "EPSG", null, "6422", getSingleton(cs.getIdentifiers()));
+
+        final CoordinateSystemAxis latitude  = cs.getAxis(0);
+        final CoordinateSystemAxis longitude = cs.getAxis(1);
+        assertIdentifierEquals("axis[0].identifier", "OGP", "EPSG", null, "106", getSingleton(latitude.getIdentifiers()));
+        assertIdentifierEquals("axis[1].identifier", "OGP", "EPSG", null, "107", getSingleton(longitude.getIdentifiers()));
+        assertEquals("axis[0].abbreviation", "Lat",                   latitude .getAbbreviation());
+        assertEquals("axis[1].abbreviation", "Long",                  longitude.getAbbreviation());
+        assertEquals("axis[0].rangeMeaning", RangeMeaning.EXACT,      latitude .getRangeMeaning());
+        assertEquals("axis[1].abbreviation", RangeMeaning.WRAPAROUND, longitude.getRangeMeaning());
+        /*
+         * Minimum and maximum values have been verified by GeodeticObjectVerifier.assertIsGeodetic2D(cs)
+         * if range meanings were not null.
+         */
     }
 }

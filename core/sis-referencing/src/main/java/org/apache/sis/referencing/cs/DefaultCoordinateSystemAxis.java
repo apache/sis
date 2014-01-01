@@ -39,6 +39,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -144,12 +145,15 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * Minimal and maximal value for this axis, or negative/positive infinity if none.
+     *
+     * Consider this field as final. It is not final only for XML unmarshalling.
      */
-    private final double minimum, maximum;
+    private double minimumValue, maximumValue;
 
     /**
      * The range meaning for this axis, or {@code null} if unspecified.
      */
+    @XmlElement
     private final RangeMeaning rangeMeaning;
 
     /**
@@ -163,8 +167,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         direction    = null;
         unit         = null;
         rangeMeaning = null;
-        minimum      = Double.NEGATIVE_INFINITY;
-        maximum      = Double.POSITIVE_INFINITY;
+        minimumValue = Double.NEGATIVE_INFINITY;
+        maximumValue = Double.POSITIVE_INFINITY;
     }
 
     /**
@@ -205,31 +209,37 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @param abbreviation The {@linkplain #getAbbreviation() abbreviation} used for this coordinate system axis.
      * @param direction    The {@linkplain #getDirection() direction} of this coordinate system axis.
      * @param unit         The {@linkplain #getUnit() unit of measure} used for this coordinate system axis.
-     * @param minimum      The minimum value normally allowed for this axis.
-     * @param maximum      The maximum value normally allowed for this axis.
-     * @param rangeMeaning The meaning of axis value range specified by the minimum and maximum values.
+     * @param minimumValue The minimum value normally allowed for this axis, or {@link Double#NEGATIVE_INFINITY} if none.
+     * @param maximumValue The maximum value normally allowed for this axis, or {@link Double#POSITIVE_INFINITY} if none.
+     * @param rangeMeaning The meaning of axis value range specified by the minimum and maximum values, or {@code null}
+     *                     if it does not apply. Shall not be null if the minimum and maximum values are not infinite.
      */
     public DefaultCoordinateSystemAxis(final Map<String,?> properties,
                                        final String        abbreviation,
                                        final AxisDirection direction,
                                        final Unit<?>       unit,
-                                       final double        minimum,
-                                       final double        maximum,
-                                       final RangeMeaning  rangeMeaning)
+                                       final double        minimumValue,
+                                       final double        maximumValue,
+                                             RangeMeaning  rangeMeaning)
     {
         super(properties);
         this.abbreviation = abbreviation;
         this.direction    = direction;
         this.unit         = unit;
-        this.minimum      = minimum;
-        this.maximum      = maximum;
-        this.rangeMeaning = rangeMeaning;
+        this.minimumValue = minimumValue;
+        this.maximumValue = maximumValue;
         ensureNonNull("abbreviation", abbreviation);
         ensureNonNull("direction",    direction);
         ensureNonNull("unit",         unit);
-        if (!(minimum < maximum)) { // Use '!' for catching NaN
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimum, maximum));
+        if (!(minimumValue < maximumValue)) { // Use '!' for catching NaN
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimumValue, maximumValue));
         }
+        if ((minimumValue != Double.NEGATIVE_INFINITY) || (maximumValue != Double.POSITIVE_INFINITY)) {
+            ensureNonNull("rangeMeaning", rangeMeaning);
+        } else {
+            rangeMeaning = null;
+        }
+        this.rangeMeaning = rangeMeaning;
     }
 
     /**
@@ -258,13 +268,14 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         ensureNonNull("unit",         unit);
         double min = Double.NEGATIVE_INFINITY;
         double max = Double.POSITIVE_INFINITY;
-        RangeMeaning r = RangeMeaning.EXACT;
+        RangeMeaning r = null;
         if (Units.isAngular(unit)) {
             final UnitConverter fromDegrees = NonSI.DEGREE_ANGLE.getConverterTo(unit.asType(Angle.class));
             final AxisDirection dir = AxisDirections.absolute(direction);
             if (dir.equals(AxisDirection.NORTH)) {
                 min = fromDegrees.convert(Latitude.MIN_VALUE);
                 max = fromDegrees.convert(Latitude.MAX_VALUE);
+                r = RangeMeaning.EXACT;
             } else if (dir.equals(AxisDirection.EAST)) {
                 min = fromDegrees.convert(Longitude.MIN_VALUE);
                 max = fromDegrees.convert(Longitude.MAX_VALUE);
@@ -276,8 +287,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 max = t;
             }
         }
-        minimum = min;
-        maximum = max;
+        minimumValue = min;
+        maximumValue = max;
         rangeMeaning = r;
     }
 
@@ -297,8 +308,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         abbreviation = axis.getAbbreviation();
         direction    = axis.getDirection();
         unit         = axis.getUnit();
-        minimum      = axis.getMinimumValue();
-        maximum      = axis.getMaximumValue();
+        minimumValue = axis.getMinimumValue();
+        maximumValue = axis.getMaximumValue();
         rangeMeaning = axis.getRangeMeaning();
     }
 
@@ -367,7 +378,29 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      */
     @Override
     public double getMinimumValue() {
-        return minimum;
+        return minimumValue;
+    }
+
+    /**
+     * Invoke by JAXB at marshalling time for fetching the minimum value, or {@code null} if none.
+     */
+    @XmlElement(name = "minimumValue")
+    private Double getMinimum() {
+        return (minimumValue != Double.NEGATIVE_INFINITY) ? minimumValue : null;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for setting the minimum value.
+     */
+    private void setMinimum(final Double value) {
+        if (value != null) {
+            final double min = value.doubleValue();
+            if (min < maximumValue) {
+                minimumValue = min;
+            } else {
+                outOfRange("minimumValue", value);
+            }
+        }
     }
 
     /**
@@ -379,7 +412,41 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      */
     @Override
     public double getMaximumValue() {
-        return maximum;
+        return maximumValue;
+    }
+
+    /**
+     * Invoke by JAXB at marshalling time for fetching the maximum value, or {@code null} if none.
+     */
+    @XmlElement(name = "maximumValue")
+    private Double getMaximum() {
+        return (maximumValue != Double.POSITIVE_INFINITY) ? maximumValue : null;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for setting the maximum value.
+     */
+    private void setMaximum(final Double value) {
+        if (value != null) {
+            final double max = value.doubleValue();
+            if (max > minimumValue) {
+                maximumValue = max;
+            } else {
+                outOfRange("maximumValue", value);
+            }
+        }
+    }
+
+    /**
+     * Invoked at unmarshalling time if a minimum or maximum value is out of range.
+     *
+     * @param name  The property name. Will also be used as "method" name for logging purpose,
+     *              since the setter method "conceptually" do not exist (it is only for JAXB).
+     * @param value The invalid value.
+     */
+    private static void outOfRange(final String name, final Double value) {
+        Context.warningOccured(Context.current(), DefaultCoordinateSystemAxis.class, name,
+                Errors.class, Errors.Keys.InconsistentAttribute_2, name, value);
     }
 
     /**
@@ -499,8 +566,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (compareMetadata) {
             if (!Objects.equals(this.abbreviation, that.abbreviation) ||
                 !Objects.equals(this.rangeMeaning, that.rangeMeaning) ||
-                Double.doubleToLongBits(minimum) != Double.doubleToLongBits(that.minimum) ||
-                Double.doubleToLongBits(maximum) != Double.doubleToLongBits(that.maximum))
+                Double.doubleToLongBits(minimumValue) != Double.doubleToLongBits(that.minimumValue) ||
+                Double.doubleToLongBits(maximumValue) != Double.doubleToLongBits(that.maximumValue))
             {
                 return false;
             }
@@ -564,7 +631,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * differentiate this CoordinateSystemAxis implementation from implementations of other GeoAPI interfaces.
          */
         return serialVersionUID ^ (super.computeHashCode() + Objects.hashCode(unit) + Objects.hashCode(direction)
-                + Double.doubleToLongBits(minimum) + 31*Double.doubleToLongBits(maximum));
+                + Double.doubleToLongBits(minimumValue) + 31*Double.doubleToLongBits(maximumValue));
     }
 
     /**

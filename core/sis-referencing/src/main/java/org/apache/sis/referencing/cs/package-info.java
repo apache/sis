@@ -37,6 +37,7 @@
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CS_AxisDirection.class),
     @XmlJavaTypeAdapter(CS_CoordinateSystemAxis.class),
+    @XmlJavaTypeAdapter(CS_RangeMeaning.class),
     @XmlJavaTypeAdapter(UnitAdapter.class)
 })
 package org.apache.sis.referencing.cs;

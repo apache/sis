@@ -16,33 +16,33 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
 
 
 /**
  * JAXB adapter for (un)marshalling of GeoAPI code list.
  *
- * @author  Guilhem Legal (Geomatys)
- * @since   0.4 (derived from geotk-3.04)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.4
  * @version 0.4
  * @module
  */
-public final class CS_AxisDirection extends CodeListAdapter<AxisDirection> {
+public final class CS_RangeMeaning extends CodeListAdapter<RangeMeaning> {
     /**
      * Empty constructor for JAXB only.
      */
-    public CS_AxisDirection() {
+    public CS_RangeMeaning() {
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return {@code AxisDirection.class}
+     * @return {@code RangeMeaning.class}
      */
     @Override
-    protected Class<AxisDirection> getCodeListClass() {
-        return AxisDirection.class;
+    protected Class<RangeMeaning> getCodeListClass() {
+        return RangeMeaning.class;
     }
 
     /**

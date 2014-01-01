@@ -33,7 +33,7 @@
       <gml:axisDirection codeSpace="EPSG">north</gml:axisDirection>
       <gml:minimumValue>-90</gml:minimumValue>
       <gml:maximumValue>+90</gml:maximumValue>
-      <gml:rangeMeaning codeSpace="EPSG">wraparound</gml:rangeMeaning>
+      <gml:rangeMeaning codeSpace="EPSG">exact</gml:rangeMeaning>
     </gml:CoordinateSystemAxis>
   </gml:axis>
   <gml:axis>
@@ -44,7 +44,7 @@
       <gml:axisDirection codeSpace="EPSG">east</gml:axisDirection>
       <gml:minimumValue>-180</gml:minimumValue>
       <gml:maximumValue>+180</gml:maximumValue>
-      <gml:rangeMeaning codeSpace="EPSG">exact</gml:rangeMeaning>
+      <gml:rangeMeaning codeSpace="EPSG">wraparound</gml:rangeMeaning>
     </gml:CoordinateSystemAxis>
   </gml:axis>
 </gml:EllipsoidalCS>
