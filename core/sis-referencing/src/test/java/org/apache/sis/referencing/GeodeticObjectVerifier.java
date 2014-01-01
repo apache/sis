@@ -29,6 +29,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.RangeMeaning;
 
 import static org.apache.sis.test.Assert.*;
 
@@ -228,10 +229,20 @@ public final strictfp class GeodeticObjectVerifier {
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain EllipsoidalCS#getDimension() Dimension}</td>
      *     <td>2</td></tr>
-     * <tr><td>Axis names</td>
-     *     <td>{@code "Geodetic latitude"}, {@code "Geodetic longitude"}</td></tr>
-     * <tr><td>Axis directions</td>
-     *     <td>{@link AxisDirection#NORTH NORTH}, {@link AxisDirection#EAST EAST}</td></tr>
+     * <tr><td>Axis[0] name code</td>
+     *     <td>{@code "Geodetic latitude"}</td></tr>
+     * <tr><td>Axis[1] name code</td>
+     *     <td>{@code "Geodetic longitude"}</td></tr>
+     * <tr><td>Axis[0] {@linkplain CoordinateSystemAxis#getDirection() direction}</td>
+     *     <td>{@link AxisDirection#NORTH NORTH}</td></tr>
+     * <tr><td>Axis[1] {@linkplain CoordinateSystemAxis#getDirection() direction}</td>
+     *     <td>{@link AxisDirection#EAST EAST}</td></tr>
+     * <tr><td>Axes {@linkplain CoordinateSystemAxis#getUnit() units}</td>
+     *     <td>{@link NonSI#DEGREE_ANGLE}</td></tr>
+     * <tr><td>Axis[0] range</td>
+     *     <td>[-90 … 90] with {@link RangeMeaning#EXACT}, or all range properties missing</td></tr>
+     * <tr><td>Axis[1] range</td>
+     *     <td>[-180 … 180] with {@link RangeMeaning#WRAPAROUND}, or all range properties missing</td></tr>
      * </table>
      *
      * @param cs The coordinate system to verify.
@@ -242,9 +253,29 @@ public final strictfp class GeodeticObjectVerifier {
         final CoordinateSystemAxis longitude = cs.getAxis(1);
         assertNotNull("axis", latitude);
         assertNotNull("axis", longitude);
-        assertEquals("axis.name", "Geodetic latitude",  latitude .getName().getCode());
-        assertEquals("axis.name", "Geodetic longitude", longitude.getName().getCode());
-        assertEquals("axis.direction", AxisDirection.NORTH, latitude.getDirection());
-        assertEquals("axis.direction", AxisDirection.EAST, longitude.getDirection());
+        assertEquals("axis[0].name",      "Geodetic latitude",  latitude .getName().getCode());
+        assertEquals("axis[1].name",      "Geodetic longitude", longitude.getName().getCode());
+        assertEquals("axis[0].direction", AxisDirection.NORTH,  latitude .getDirection());
+        assertEquals("axis[1].direction", AxisDirection.EAST,   longitude.getDirection());
+        assertEquals("axis[0].unit",      NonSI.DEGREE_ANGLE,   latitude .getUnit());
+        assertEquals("axis[1].unit",      NonSI.DEGREE_ANGLE,   longitude.getUnit());
+        verifyRange(latitude,   -90,  +90, RangeMeaning.EXACT);
+        verifyRange(longitude, -180, +180, RangeMeaning.WRAPAROUND);
+    }
+
+    /**
+     * Asserts that the axis range is either fully missing, or defined to exactly the given properties.
+     */
+    private static void verifyRange(final CoordinateSystemAxis axis,
+            final double min, final double max, final RangeMeaning rm)
+    {
+        final double       minimumValue = axis.getMinimumValue();
+        final double       maximumValue = axis.getMaximumValue();
+        final RangeMeaning rangeMeaning = axis.getRangeMeaning();
+        if (minimumValue != Double.NEGATIVE_INFINITY || maximumValue != Double.POSITIVE_INFINITY || rangeMeaning != null) {
+            assertEquals("axis.minimumValue", min, minimumValue, STRICT);
+            assertEquals("axis.maximumValue", max, maximumValue, STRICT);
+            assertEquals("axis.rangeMeaning", rm,  rangeMeaning);
+        }
     }
 }
