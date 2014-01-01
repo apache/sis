@@ -338,7 +338,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Compares the given object with this element information for equality.
      *
      * @param  obj The object to compare with this element information for equality.
-     * @return {@code true} if both objects are equal.
+     * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object obj) {

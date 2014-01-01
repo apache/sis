@@ -426,7 +426,7 @@ pathTree:   for (int j=0; ; j++) {
      * following separators:
      *
      * <ul>
-     *   <li>If {@code directory} is null, then {@code paths} is assumed to be a
+     *   <li>If {@code directory} is null, then {@code paths} is assumed to be a
      *       system property value using the {@link File#pathSeparatorChar}.</li>
      *   <li>If {@code directory} is non-null, then {@code paths} is assumed to be
      *       a {@code MANIFEST.MF} attribute using space as the path separator.</li>

@@ -67,7 +67,7 @@ import org.apache.sis.util.ArgumentChecks;
  * There is no pre-defined method for this task because there is too many parameters that
  * developers may want to customize (columns to merge, conditions for accepting the merge,
  * kind of objects to merge, name separator, <i>etc.</i>). In the following code snippet,
- * the content of the {@code NAME} columns are concatenated only if the {@code VALUE} column
+ * the content of the {@code NAME} columns are concatenated only if the {@code VALUE} column
  * has no value (for avoiding data lost when the node is discarded) and use the system file
  * separator as name separator:
  *

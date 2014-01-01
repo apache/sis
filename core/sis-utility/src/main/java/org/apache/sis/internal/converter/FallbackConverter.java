@@ -150,7 +150,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * @param  primary The first converter, which may be a {@code Fallback} tree.
      * @param  fallback A new fallback to insert in the converters tree.
      * @return A tree of converters which contains the given {@code converter}. May be either
-     *         {@code existing}, {@code converter} or a new {@code FallbackConverter} instance.
+     *         {@code existing}, {@code converter} or a new {@code FallbackConverter} instance.
      */
     public static <S,T> ObjectConverter<S, ? extends T> merge(
                   final ObjectConverter<S, ? extends T> primary,
@@ -202,7 +202,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     }
 
     /**
-     * Merges if the {@code converter} target class of is a subtype of the {@code branch}
+     * Merges if the {@code converter} target class of is a subtype of the {@code branch}
      * target class. Otherwise returns {@code null}.
      *
      * <p>The {@code branch} can be either an arbitrary {@code ObjectConverter}, or a previously
@@ -255,7 +255,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     /**
      * Merge {@code this} with an other converter whose target class is a subtype of
      * this {@link #targetClass}. If either {@link #fallback} or {@link #primary} are
-     * other {@code FallbackConverter} instances, then this method will follow those
+     * other {@code FallbackConverter} instances, then this method will follow those
      * branches.
      *
      * @param  converter The converter to merge with {@code this}.

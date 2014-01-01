@@ -68,7 +68,7 @@ public final class Latitude extends Angle {
      * The hemisphere (N or S) is optional (default to North).
      *
      * <p>This is a convenience constructor mostly for testing purpose, since it uses a fixed
-     * locale. Developers should consider using {@link AngleFormat} for end-user applications
+     * locale. Developers should consider using {@link AngleFormat} for end-user applications
      * instead than this constructor.</p>
      *
      * @param  string A string to be converted to a {@code Latitude}.

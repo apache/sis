@@ -146,7 +146,7 @@ public class OptionKey<T> implements Serializable {
     public static final OptionKey<ByteBuffer> BYTE_BUFFER = new OptionKey<>("BYTE_BUFFER", ByteBuffer.class);
 
     /**
-     * The name of this key. For {@code OptionKey} instances, it shall be the name of the static constants.
+     * The name of this key. For {@code OptionKey} instances, it shall be the name of the static constants.
      * For subclasses of {@code OptionKey}, there is no restriction.
      */
     private final String name;

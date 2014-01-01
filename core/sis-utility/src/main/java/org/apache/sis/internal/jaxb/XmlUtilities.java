@@ -92,7 +92,7 @@ public final class XmlUtilities extends SystemListener {
      * them unchanged otherwise (except for milliseconds). More specifically:
      *
      * <ul>
-     *   <li>If the {@code force} argument is {@code false}, then:
+     *   <li>If the {@code force} argument is {@code false}, then:
      *     <ul>
      *       <li>If every time components (hour, minute, seconds and milliseconds) are zero, set
      *           them to {@code FIELD_UNDEFINED} in order to prevent them from being formatted
@@ -100,7 +100,7 @@ public final class XmlUtilities extends SystemListener {
      *       <li>Otherwise returns {@code false}. But before doing so, still set the milliseconds
      *           to {@code FIELD_UNDEFINED} if its value was 0.</li>
      *     </ul></li>
-     *   <li>Otherwise (if the {@code force} argument is {@code false}), then the temporal
+     *   <li>Otherwise (if the {@code force} argument is {@code false}), then the temporal
      *       part is set to {@code FIELD_UNDEFINED} unconditionally and this method returns
      *       {@code true}.</li>
      * </ul>
@@ -113,8 +113,8 @@ public final class XmlUtilities extends SystemListener {
      * <p>This method will be deprecated after we implemented ISO 19108 in SIS.</p>
      *
      * @param  gc The date to modify in-place.
-     * @param  force {@code true} for forcing the temporal components to be removed without any check.
-     * @return {@code true} if the time part has been completely removed, {@code false} otherwise.
+     * @param  force {@code true} for forcing the temporal components to be removed without any check.
+     * @return {@code true} if the time part has been completely removed, {@code false} otherwise.
      */
     public static boolean trimTime(final XMLGregorianCalendar gc, final boolean force) {
         if (force || gc.getMillisecond() == 0) {

@@ -49,7 +49,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * A parser and formatter for {@link TreeTable} instances.
  * This formatter is given an arbitrary number of {@link TableColumn}s
  * to use during the formatting. The first column is taken as the node label.
- * If a {@code TreeTable} is formatted with only that column,
+ * If a {@code TreeTable} is formatted with only that column,
  * then the {@link String} result is like the following example:
  *
  * {@preformat text
@@ -59,7 +59,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  *     └─Node #3
  * }
  *
- * If the same {@code TreeTable} is formatted with two columns,
+ * If the same {@code TreeTable} is formatted with two columns,
  * then the {@link String} result is like the following example:
  *
  * {@preformat text

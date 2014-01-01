@@ -72,7 +72,7 @@ strictfp class GeoapiAssert extends org.opengis.test.Assert {
     }
 
     /**
-     * Verifies if we expected a null value, then returns {@code true} if the value is null as expected.
+     * Verifies if we expected a null value, then returns {@code true} if the value is null as expected.
      */
     private static boolean isNull(final String message, final Object expected, final Object actual) {
         final boolean isNull = (actual == null);

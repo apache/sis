@@ -172,7 +172,7 @@ final class VariableInfo extends Variable {
 
     /**
      * Returns the type of data as a Java primitive type if possible,
-     * or {@code null} if the data type is unknown to this method.
+     * or {@code null} if the data type is unknown to this method.
      */
     @Override
     public Class<?> getDataType() {

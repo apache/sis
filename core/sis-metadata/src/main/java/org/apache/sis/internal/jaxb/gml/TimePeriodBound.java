@@ -45,7 +45,7 @@ public abstract class TimePeriodBound {
     }
 
     /**
-     * Returns the XML calendar, or {@code null} if none. This information is encoded
+     * Returns the XML calendar, or {@code null} if none. This information is encoded
      * in different fields depending if we are reading/writing a GML2 or a GML3 file.
      */
     abstract XMLGregorianCalendar calendar();
@@ -80,7 +80,7 @@ public abstract class TimePeriodBound {
         public String indeterminatePosition;
 
         /**
-         * The actual time position, or {@code null} for {@linkplain #indeterminatePosition indeterminate position}.
+         * The actual time position, or {@code null} for {@linkplain #indeterminatePosition indeterminate position}.
          *
          * <p><strong>WARNING: The timezone information may be lost!</strong> This is because this field
          * is derived from a {@link java.util.Date}, in which case we don't know if the time is really 0
@@ -120,7 +120,7 @@ public abstract class TimePeriodBound {
 
     /**
      * The begin or end position in a {@link TimePeriod}, expressed in the GML 2 way.
-     * This object encapsulates a {@link TimeInstant} inside a {@code begin} or {@code end}
+     * This object encapsulates a {@link TimeInstant} inside a {@code begin} or {@code end}
      * element inside a GML 2 {@link TimePeriod} in GML 2. This is not used for GML 3.
      * Example:
      *

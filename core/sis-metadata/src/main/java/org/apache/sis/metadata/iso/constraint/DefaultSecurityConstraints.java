@@ -77,7 +77,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Constructs a new constraints with the given {@linkplain #getUseLimitations() use limitation}.
      *
-     * @param useLimitation The use limitation, or {@code null} if none.
+     * @param useLimitation The use limitation, or {@code null} if none.
      */
     public DefaultSecurityConstraints(final CharSequence useLimitation) {
         super(useLimitation);

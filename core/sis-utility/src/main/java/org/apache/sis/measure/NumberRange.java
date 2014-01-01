@@ -231,7 +231,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value, or {@code null} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
+     * @return The new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     public static NumberRange<?> createBestFit(final Number minValue, final boolean isMinIncluded,
