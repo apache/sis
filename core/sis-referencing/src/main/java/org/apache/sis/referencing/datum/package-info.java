@@ -28,9 +28,12 @@
  * or to platforms (mobile or not)
  * ({@linkplain org.apache.sis.referencing.datum.DefaultEngineeringDatum engineering},
  *  {@linkplain org.apache.sis.referencing.datum.DefaultImageDatum image}).
- * Some worthy methods defined in this package are:</p>
+ * Some of those SIS subclasses provide additional methods that are not part of OGC/ISO specifications:</p>
  * <ul>
+ *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()}</li>
+ *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#getEccentricity()}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#orthodromicDistance(double, double, double, double)}</li>
+ *   <li>{@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getBursaWolfParameters()}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPositionVectorTransformation
  *       DefaultGeodeticDatum.getPositionVectorTransformation(GeodeticDatum, Extent)}</li>
  * </ul>
@@ -42,6 +45,7 @@
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
     @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
