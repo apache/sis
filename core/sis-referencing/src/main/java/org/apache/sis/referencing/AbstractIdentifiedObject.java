@@ -120,7 +120,8 @@ import java.util.Objects;
     AbstractReferenceSystem.class,
     org.apache.sis.referencing.datum.AbstractDatum.class,
     org.apache.sis.referencing.datum.DefaultEllipsoid.class,
-    org.apache.sis.referencing.datum.DefaultPrimeMeridian.class
+    org.apache.sis.referencing.datum.DefaultPrimeMeridian.class,
+    org.apache.sis.referencing.cs.AbstractCS.class
 })
 public class AbstractIdentifiedObject extends FormattableObject implements IdentifiedObject,
         LenientComparable, Deprecable, Serializable

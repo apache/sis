@@ -143,12 +143,12 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     private final Unit<?> unit;
 
     /**
-     * Minimal and maximal value for this axis.
+     * Minimal and maximal value for this axis, or negative/positive infinity if none.
      */
     private final double minimum, maximum;
 
     /**
-     * The range meaning for this axis.
+     * The range meaning for this axis, or {@code null} if unspecified.
      */
     private final RangeMeaning rangeMeaning;
 
@@ -227,7 +227,6 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         ensureNonNull("abbreviation", abbreviation);
         ensureNonNull("direction",    direction);
         ensureNonNull("unit",         unit);
-        ensureNonNull("rangeMeaning", rangeMeaning);
         if (!(minimum < maximum)) { // Use '!' for catching NaN
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimum, maximum));
         }
@@ -387,7 +386,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Returns the meaning of axis value range specified by the {@linkplain #getMinimumValue() minimum}
      * and {@linkplain #getMaximumValue() maximum} values.
      *
-     * @return The meaning of axis value range.
+     * @return The meaning of axis value range, or {@code null} if unspecified.
      */
     @Override
     public RangeMeaning getRangeMeaning() {

@@ -17,16 +17,13 @@
 package org.apache.sis.internal.profile.fra;
 
 import java.util.Arrays;
-import java.io.IOException;
-import java.io.InputStream;
 import javax.xml.bind.JAXBException;
-import org.apache.sis.xml.XML;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -42,11 +39,11 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.4
  * @module
  */
-public final strictfp class DirectReferenceSystemTest extends TestCase {
+public final strictfp class DirectReferenceSystemTest extends XMLTestCase {
     /**
-     * An XML file representing a reference system tree.
+     * An XML file in this package containing a reference system definition.
      */
-    private static final String RESOURCE_FILE = "DirectReferenceSystem.xml";
+    private static final String XML_FILE = "DirectReferenceSystem.xml";
 
     /**
      * Creates the metadata object to be tested.
@@ -63,13 +60,11 @@ public final strictfp class DirectReferenceSystemTest extends TestCase {
      * Ensures that the marshalling process of a {@link DefaultMetadata} produces
      * an XML document which complies with the one expected.
      *
-     * @throws IOException if an error occurred while reading the resource file.
      * @throws JAXBException if the marshalling process fails.
      */
     @Test
-    public void marshallingTest() throws IOException, JAXBException {
-        final String actual = XML.marshal(createMetadata());
-        assertXmlEquals(DirectReferenceSystemTest.class.getResource(RESOURCE_FILE), actual, "xmlns:*", "xsi:schemaLocation");
+    public void marshallingTest() throws JAXBException {
+        assertMarshalEqualsFile(XML_FILE, createMetadata(), "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -77,15 +72,11 @@ public final strictfp class DirectReferenceSystemTest extends TestCase {
      * document produces an object containing all the information.
      *
      * @throws JAXBException if the unmarshalling process fails.
-     * @throws IOException if an error occurred while reading the resource file.
      */
     @Test
-    public void unmarshallingTest() throws JAXBException, IOException {
-        final DefaultMetadata result;
-        try (InputStream in = DirectReferenceSystemTest.class.getResourceAsStream(RESOURCE_FILE)) {
-            result = (DefaultMetadata) XML.unmarshal(in);
-        }
+    public void unmarshallingTest() throws JAXBException {
         final DefaultMetadata expected = createMetadata();
+        final DefaultMetadata result = unmarshalFile(DefaultMetadata.class, XML_FILE);
         /*
          * Compare in debug mode before to perform the real comparison,
          * for making easier to analyze the stack trace in case of failure.
