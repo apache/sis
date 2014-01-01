@@ -69,7 +69,10 @@ import java.util.Objects;
 @XmlType(name = "AbstractDatumType")
 @XmlSeeAlso({
     DefaultGeodeticDatum.class,
-    DefaultVerticalDatum.class
+    DefaultVerticalDatum.class,
+    DefaultTemporalDatum.class,
+    DefaultEngineeringDatum.class,
+    DefaultImageDatum.class
 })
 public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**

@@ -56,6 +56,7 @@
     @XmlJavaTypeAdapter(CD_Ellipsoid.class),
     @XmlJavaTypeAdapter(CD_PrimeMeridian.class),
     @XmlJavaTypeAdapter(CD_VerticalDatumType.class),
+    @XmlJavaTypeAdapter(CD_PixelInCell.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringConverter.class),
     @XmlJavaTypeAdapter(DateAdapter.class),
