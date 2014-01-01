@@ -59,6 +59,14 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
     private static final long serialVersionUID = 7977674229369042440L;
 
     /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    DefaultAffineCS() {
+    }
+
+    /**
      * Constructs a coordinate system of arbitrary dimension. This constructor is
      * not public because {@code AffineCS} are restricted to 2 and 3 dimensions.
      */

@@ -58,6 +58,14 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     private static final long serialVersionUID = -1452492488902329211L;
 
     /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    private DefaultEllipsoidalCS() {
+    }
+
+    /**
      * Constructs a two-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
