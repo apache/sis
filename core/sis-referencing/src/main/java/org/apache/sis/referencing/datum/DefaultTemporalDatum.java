@@ -19,11 +19,14 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.TemporalDatum;
+import org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.ComparisonMode;
 
@@ -83,8 +86,10 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * The date and time origin of this temporal datum, or {@link Long#MIN_VALUE} if none.
      * This information is mandatory, but SIS is tolerant to missing value is case a XML
      * fragment was incomplete.
+     *
+     * <p>Consider this field as final. It is non-final only for the need of XML unmarshalling.</p>
      */
-    private final long origin;
+    private long origin;
 
     /**
      * Constructs a new datum in which every attributes are set to a null value.
@@ -194,8 +199,17 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * @return The date and time origin of this temporal datum.
      */
     @Override
+    @XmlElement(name = "origin")
+    @XmlJavaTypeAdapter(UniversalTimeAdapter.class)
     public Date getOrigin() {
         return MetadataUtilities.toDate(origin);
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     */
+    private void setOrigin(final Date value) {
+        origin = MetadataUtilities.toMilliseconds(value);
     }
 
     /**

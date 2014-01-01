@@ -17,41 +17,41 @@
 package org.apache.sis.internal.jaxb.gml;
 
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.GregorianCalendar;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.XmlUtilities;
 
+import static org.apache.sis.internal.jaxb.XmlUtilities.getDatatypeFactory;
+
 
 /**
  * JAXB adapter wrapping the date value (as milliseconds elapsed since January 1st, 1970) in a
- * {@link XMLGregorianCalendar} for the {@code xsd:date} type. Hours, minutes and seconds are
- * discarded.
- *
- * <p>Using this adapter is equivalent to apply the following annotation on a {@code Date} field:</p>
- *
- * {@preformat java
- *     &#64;XmlElement
- *     &#64;XmlSchemaType(name="date")
- *     private Date realizationEpoch;
- * }
- *
- * The main difference is that this adapter will take in account the timezone declared using the
- * {@link org.apache.sis.xml.XML#TIMEZONE} property.
+ * {@link XMLGregorianCalendar} for the {@code xsd:dateTime} type with the timezone forced to UTC.
+ * The milliseconds are omitted if not different than zero.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
  *
- * @see UniversalTimeAdapter
+ * @see DateAdapter
  */
-public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
+public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
+    /**
+     * The timezone of the date to marshal with this adapter.
+     */
+    private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+
     /**
      * Empty constructor for JAXB only.
      */
-    public DateAdapter() {
+    public UniversalTimeAdapter() {
     }
 
     /**
@@ -76,13 +76,16 @@ public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     @Override
     public XMLGregorianCalendar marshal(final Date value) {
         if (value != null) {
-            final Context context = Context.current();
+            final GregorianCalendar calendar = new GregorianCalendar(UTC, Locale.ROOT);
+            calendar.setTime(value);
             try {
-                final XMLGregorianCalendar gc = XmlUtilities.toXML(context, value);
-                XmlUtilities.trimTime(gc, true); // Type is xsd:date without time.
+                final XMLGregorianCalendar gc = getDatatypeFactory().newXMLGregorianCalendar(calendar);
+                if (gc.getMillisecond() == 0) {
+                    gc.setMillisecond(DatatypeConstants.FIELD_UNDEFINED);
+                }
                 return gc;
             } catch (DatatypeConfigurationException e) {
-                Context.warningOccured(context, XmlAdapter.class, "marshal", e, true);
+                Context.warningOccured(Context.current(), XmlAdapter.class, "marshal", e, true);
             }
         }
         return null;

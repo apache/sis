@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import org.opengis.referencing.datum.VerticalDatumType;
+import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
 
 
@@ -24,24 +24,24 @@ import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
  * JAXB adapter for (un)marshalling of GeoAPI code list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.20)
+ * @since   0.4
  * @version 0.4
  * @module
  */
-public final class CD_VerticalDatumType extends CodeListAdapter<VerticalDatumType> {
+public final class CD_PixelInCell extends CodeListAdapter<PixelInCell> {
     /**
      * Empty constructor for JAXB only.
      */
-    public CD_VerticalDatumType() {
+    public CD_PixelInCell() {
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return {@code VerticalDatumType.class}
+     * @return {@code PixelInCell.class}
      */
     @Override
-    protected Class<VerticalDatumType> getCodeListClass() {
-        return VerticalDatumType.class;
+    protected Class<PixelInCell> getCodeListClass() {
+        return PixelInCell.class;
     }
 }
