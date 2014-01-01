@@ -25,6 +25,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -43,7 +44,12 @@ import static org.apache.sis.test.mock.PrimeMeridianMock.GREENWICH;
  * @module
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
-public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
+public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
+    /**
+     * An XML file in this package containing a prime meridian definition.
+     */
+    private static final String XML_FILE = "Greenwich.xml";
+
     /**
      * Tests {@link DefaultPrimeMeridian#toWKT()}.
      */
@@ -106,7 +112,7 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
      */
     @Test
     public void testUnmarshall() throws JAXBException {
-        final DefaultPrimeMeridian pm = unmarshall(DefaultPrimeMeridian.class, "Greenwich.xml");
+        final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, XML_FILE);
         assertIsGreenwich(pm);
     }
 
@@ -135,7 +141,7 @@ public final strictfp class DefaultPrimeMeridianTest extends DatumTestCase {
     @Test
     @DependsOnMethod({"testUnmarshall", "testMarshall"})
     public void testParisMeridian() throws JAXBException {
-        final DefaultPrimeMeridian pm = unmarshall(DefaultPrimeMeridian.class, "Paris.xml");
+        final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, "Paris.xml");
         assertIsParis(pm);
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(NonSI.DEGREE_ANGLE), 1E-12);
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());

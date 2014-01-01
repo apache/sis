@@ -17,17 +17,14 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Locale;
-import java.net.URL;
-import java.io.IOException;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.xml.XML;
 import org.apache.sis.xml.FreeTextMarshallingTest;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.opengis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -43,16 +40,9 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(FreeTextMarshallingTest.class)
 public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
     /**
-     * Returns the URL to the XML file of the given name.
-     *
-     * @param  filename The name of the XML file.
-     * @return The URL to the given XML file.
+     * An XML file in this package containing a positional accuracy definition.
      */
-    private static URL getResource(final String filename) {
-        final URL resource = AbstractPositionalAccuracyTest.class.getResource(filename);
-        assertNotNull(filename, resource);
-        return resource;
-    }
+    private static final String XML_FILE = "PositionalAccuracy.xml";
 
     /**
      * Tests the (un)marshalling of a text group with a default {@code <gco:CharacterString>} element.
@@ -62,18 +52,15 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
      * <p><b>XML test file:</b>
      * <a href="{@scmUrl metadata}/quality/PositionalAccuracy.xml">PositionalAccuracy.xml</a></p>
      *
-     * @throws IOException   If an error occurred while reading the XML file.
      * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-107">GEOTK-107</a>
      * @see FreeTextMarshallingTest
      */
     @Test
-    public void testXML() throws IOException, JAXBException {
-        final URL    resource = getResource("PositionalAccuracy.xml");
-        final Object metadata = XML.unmarshal(resource);
-        assertInstanceOf("PositionalAccuracy.xml", AbstractElement.class, metadata);
-        final InternationalString nameOfMeasure = getSingleton(((AbstractElement) metadata).getNamesOfMeasure());
+    public void testXML() throws JAXBException {
+        final AbstractElement metadata = unmarshalFile(AbstractElement.class, XML_FILE);
+        final InternationalString nameOfMeasure = getSingleton(metadata.getNamesOfMeasure());
         /*
          * Programmatic verification of the text group.
          */
@@ -86,10 +73,10 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
          * needs to contain a "result" element in order to pass XML validation test.
          */
         assertInstanceOf("Wrong value for <gmd:result>", DefaultConformanceResult.class,
-                getSingleton(((AbstractElement) metadata).getResults()));
+                getSingleton(metadata.getResults()));
         /*
-         * Final comparison: ensure that we didn't lost any information.
+         * Marshalling: ensure that we didn't lost any information.
          */
-        assertXmlEquals(resource, marshal(metadata), "xmlns:*", "xsi:schemaLocation", "xsi:type");
+        assertMarshalEqualsFile(XML_FILE, metadata, "xmlns:*", "xsi:schemaLocation", "xsi:type");
     }
 }

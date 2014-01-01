@@ -26,6 +26,9 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.AxisDirection;
 
 import static org.apache.sis.test.Assert.*;
 
@@ -215,5 +218,33 @@ public final strictfp class GeodeticObjectVerifier {
     public static void assertIsMeanSeaLevel(final VerticalDatum datum) {
         assertEquals("name", "Mean Sea Level", datum.getName().getCode());
         assertIsWorld(datum.getDomainOfValidity());
+    }
+
+    /**
+     * Asserts that the given coordinate system contains the geodetic (latitude, longitude) axes.
+     * This method verifies the following properties:
+     *
+     * <table class="sis">
+     * <tr><th>Property</th> <th>Expected value</th></tr>
+     * <tr><td>{@linkplain EllipsoidalCS#getDimension() Dimension}</td>
+     *     <td>2</td></tr>
+     * <tr><td>Axis names</td>
+     *     <td>{@code "Geodetic latitude"}, {@code "Geodetic longitude"}</td></tr>
+     * <tr><td>Axis directions</td>
+     *     <td>{@link AxisDirection#NORTH NORTH}, {@link AxisDirection#EAST EAST}</td></tr>
+     * </table>
+     *
+     * @param cs The coordinate system to verify.
+     */
+    public static void assertIsGeodetic2D(final EllipsoidalCS cs) {
+        assertEquals("dimension", 2, cs.getDimension());
+        final CoordinateSystemAxis latitude  = cs.getAxis(0);
+        final CoordinateSystemAxis longitude = cs.getAxis(1);
+        assertNotNull("axis", latitude);
+        assertNotNull("axis", longitude);
+        assertEquals("axis.name", "Geodetic latitude",  latitude .getName().getCode());
+        assertEquals("axis.name", "Geodetic longitude", longitude.getName().getCode());
+        assertEquals("axis.direction", AxisDirection.NORTH, latitude.getDirection());
+        assertEquals("axis.direction", AxisDirection.EAST, longitude.getDirection());
     }
 }

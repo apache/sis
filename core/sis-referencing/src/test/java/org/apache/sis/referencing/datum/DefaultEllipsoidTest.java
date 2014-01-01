@@ -24,6 +24,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.test.mock.GeodeticDatumMock;
 import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
@@ -41,7 +42,12 @@ import static org.apache.sis.referencing.Assert.*;
  * @module
  */
 @DependsOn(org.apache.sis.internal.referencing.FormulasTest.class)
-public final strictfp class DefaultEllipsoidTest extends DatumTestCase {
+public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
+    /**
+     * An XML file in this package containing an ellipsoid definition.
+     */
+    private static final String XML_FILE = "Clarke 1880.xml";
+
     /**
      * Half of a minute of angle, in degrees.
      */
@@ -167,7 +173,7 @@ public final strictfp class DefaultEllipsoidTest extends DatumTestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final DefaultEllipsoid ellipsoid = unmarshall(DefaultEllipsoid.class, "Clarke 1880.xml");
+        final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, XML_FILE);
         assertEquals("name", "Clarke 1880 (international foot)", ellipsoid.getName().getCode());
         assertEquals("remarks", "Definition in feet assumed to be international foot.", ellipsoid.getRemarks().toString());
         assertFalse ("isIvfDefinitive",                       ellipsoid.isIvfDefinitive());
@@ -178,6 +184,6 @@ public final strictfp class DefaultEllipsoidTest extends DatumTestCase {
         /*
          * Marshall and compare to the original file.
          */
-        assertMarshalEqualsFile("Clarke 1880.xml", ellipsoid);
+        assertMarshalEqualsFile(XML_FILE, ellipsoid, "xlmns:*", "xsi:schemaLocation");
     }
 }

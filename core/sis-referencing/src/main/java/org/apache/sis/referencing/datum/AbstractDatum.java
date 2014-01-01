@@ -66,7 +66,7 @@ import java.util.Objects;
  * @see org.apache.sis.referencing.cs.AbstractCS
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
-@XmlType(name="AbstractDatumType")
+@XmlType(name = "AbstractDatumType")
 @XmlSeeAlso({
     DefaultGeodeticDatum.class,
     DefaultVerticalDatum.class
