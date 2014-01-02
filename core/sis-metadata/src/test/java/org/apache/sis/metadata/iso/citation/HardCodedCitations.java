@@ -138,6 +138,16 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
+     * The <a href="http://sis.apache.org">Apache SIS</a> project.
+     */
+    public static final DefaultCitation SIS;
+    static {
+        final DefaultCitation c = new DefaultCitation("SIS");
+        c.freeze();
+        SIS = c;
+    }
+
+    /**
      * Do not allow instantiation of this class.
      */
     private HardCodedCitations() {

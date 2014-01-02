@@ -201,7 +201,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Sets the ordinate values along all dimensions.
      *
-     * @param  ordinates The new ordinates values, or a {@code null} array
+     * @param  ordinates The new ordinates values, or a {@code null} array
      *         for setting all ordinate values to {@link Double#NaN NaN}.
      * @throws MismatchedDimensionException If the length of the specified array is not
      *         equals to the {@linkplain #getDimension() dimension} of this position.
@@ -247,7 +247,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * contains a coordinate reference system (CRS), then the CRS for this position will
      * be set to the CRS of the specified position.
      *
-     * @param  position The new position for this point, or {@code null} for setting all ordinate
+     * @param  position The new position for this point, or {@code null} for setting all ordinate
      *         values to {@link Double#NaN NaN}.
      * @throws MismatchedDimensionException if the given position doesn't have the expected dimension.
      */

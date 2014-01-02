@@ -210,7 +210,7 @@ public final class DecimalFunctions extends Static {
      * {@section Domain of validity}
      * The current implementation can not compute delta for {@code abs(value) < 3E-8} approximatively,
      * except for the 0 value which is supported. For any non-zero value closer to zero than the 3E-8
-     * threshold, this method returns {@code NaN} because of insufficient algorithm accuracy.
+     * threshold, this method returns {@code NaN} because of insufficient algorithm accuracy.
      * This limitation may change in any future SIS version if we find a better algorithm.
      *
      * @param  value The value for which to get the delta compared to its base 10 representation.
@@ -334,7 +334,7 @@ public final class DecimalFunctions extends Static {
      *
      *       {@example <code>fractionDigitsForDelta(100, …)</code> returns -2.}</li>
      *
-     *   <li>If the first non-zero digits of {@code accuracy} are equal or greater than 95
+     *   <li>If the first non-zero digits of {@code accuracy} are equal or greater than 95
      *       (e.g. 0.00099) and the {@code strict} argument is {@code true}, then this method
      *       increases the number of needed fraction digits in order to prevent the rounded
      *       number to be collapsed into the next integer value.

@@ -18,6 +18,8 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import javax.measure.unit.Unit;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -51,11 +53,21 @@ import org.apache.sis.measure.Units;
  * @version 0.4
  * @module
  */
+@XmlType(name = "EllipsoidalCSType")
+@XmlRootElement(name = "EllipsoidalCS")
 public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -1452492488902329211L;
+
+    /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    private DefaultEllipsoidalCS() {
+    }
 
     /**
      * Constructs a two-dimensional coordinate system from a set of properties.

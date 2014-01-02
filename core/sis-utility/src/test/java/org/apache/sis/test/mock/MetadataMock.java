@@ -68,7 +68,7 @@ public final strictfp class MetadataMock implements Metadata {
 
     /**
      * Creates an initially empty metadata with the given language.
-     * Callers are free to assign new value to the {@link #language} field directly.
+     * Callers are free to assign new value to the {@link #language} field directly.
      *
      * @param language The initial {@link #language} value (can be {@code null}).
      */

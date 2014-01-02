@@ -66,10 +66,13 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see org.apache.sis.referencing.cs.AbstractCS
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
-@XmlType(name="AbstractDatumType")
+@XmlType(name = "AbstractDatumType")
 @XmlSeeAlso({
     DefaultGeodeticDatum.class,
-    DefaultVerticalDatum.class
+    DefaultVerticalDatum.class,
+    DefaultTemporalDatum.class,
+    DefaultEngineeringDatum.class,
+    DefaultImageDatum.class
 })
 public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**

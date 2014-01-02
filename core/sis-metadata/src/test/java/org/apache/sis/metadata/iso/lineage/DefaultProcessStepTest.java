@@ -16,14 +16,12 @@
  */
 package org.apache.sis.metadata.iso.lineage;
 
-import java.net.URL;
-import java.io.IOException;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**
@@ -37,16 +35,9 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class DefaultProcessStepTest extends XMLTestCase {
     /**
-     * Returns the URL to the XML file of the given name.
-     *
-     * @param  filename The name of the XML file.
-     * @return The URL to the given XML file.
+     * An XML file in this package containing a process step definition.
      */
-    private static URL getResource(final String filename) {
-        final URL resource = DefaultProcessStepTest.class.getResource(filename);
-        assertNotNull(filename, resource);
-        return resource;
-    }
+    private static final String XML_FILE = "ProcessStep.xml";
 
     /**
      * Tests the (un)marshalling of a metadata mixing elements from ISO 19115 and ISO 19115-2 standards.
@@ -54,11 +45,10 @@ public final strictfp class DefaultProcessStepTest extends XMLTestCase {
      * <p><b>XML test file:</b>
      * <a href="{@scmUrl metadata}/lineage/ProcessStep.xml">ProcessStep.xml</a></p>
      *
-     * @throws IOException   If an error occurred while reading the XML file.
      * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
      */
     @Test
-    public void testXML() throws IOException, JAXBException {
+    public void testXML() throws JAXBException {
         final DefaultProcessing  processing  = new DefaultProcessing();
         final DefaultProcessStep processStep = new DefaultProcessStep("Some process step.");
         processing.setProcedureDescription(new SimpleInternationalString("Some procedure."));
@@ -66,12 +56,10 @@ public final strictfp class DefaultProcessStepTest extends XMLTestCase {
         /*
          * XML marshalling, and compare with the content of "ProcessStep.xml" file.
          */
-        final String xml = marshal(processStep);
-        assertTrue(xml.startsWith("<?xml"));
-        assertXmlEquals(getResource("ProcessStep.xml"), xml, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML_FILE, processStep, "xlmns:*", "xsi:schemaLocation");
         /*
-         * Final comparison: ensure that we didn't lost any information.
+         * XML unmarshalling: ensure that we didn't lost any information.
          */
-        assertEquals(processStep, unmarshal(DefaultProcessStep.class, xml));
+        assertEquals(processStep, unmarshalFile(DefaultProcessStep.class, XML_FILE));
     }
 }

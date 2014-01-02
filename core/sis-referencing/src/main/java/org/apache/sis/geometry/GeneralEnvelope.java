@@ -55,7 +55,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  * coordinates of an arbitrary number of dimensions. This is in contrast with
  * {@link Envelope2D}, which can use only two-dimensional coordinates.
  *
- * <p>A {@code GeneralEnvelope} can be created in various ways:</p>
+ * <p>A {@code GeneralEnvelope} can be created in various ways:</p>
  * <ul>
  *   <li>{@linkplain #GeneralEnvelope(int) From a given number of dimension}, with all ordinates initialized to 0.</li>
  *   <li>{@linkplain #GeneralEnvelope(double[], double[]) From two coordinate points}.</li>
