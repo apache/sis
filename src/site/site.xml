@@ -72,7 +72,7 @@
       <item name="Utilities"      href="sis-utility/index.html"/>
       <item name="Metadata"       href="sis-metadata/index.html"/>
       <item name="Referencing"    href="sis-referencing/index.html"/>
-      <item name="Features"       href="sis-features/index.html"/>
+      <item name="Features"       href="sis-feature/index.html"/>
       <item name="Storage"        href="sis-storage/index.html"/>
       <item name="Shapefile"      href="sis-shapefile/index.html"/>
       <item name="NetCDF"         href="sis-netcdf/index.html"/>
