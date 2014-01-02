@@ -44,6 +44,8 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see UniversalTimeAdapter
  */
 public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     /**

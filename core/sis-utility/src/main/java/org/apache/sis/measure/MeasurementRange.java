@@ -116,7 +116,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @param  maxValue       The maximal value, or {@code null} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @param  unit           The unit of measurement, or {@code null} if unknown.
-     * @return The new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
+     * @return The new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
      *
      * @see NumberRange#createBestFit(Number, boolean, Number, boolean)
      */

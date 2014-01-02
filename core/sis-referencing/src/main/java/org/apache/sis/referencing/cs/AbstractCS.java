@@ -21,7 +21,9 @@ import java.util.Arrays;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -65,6 +67,10 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see DefaultCoordinateSystemAxis
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
+@XmlType(name = "AbstractCoordinateSystemType")
+@XmlSeeAlso({
+    DefaultEllipsoidalCS.class
+})
 public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSystem {
     /**
      * Serial number for inter-operability with different versions.

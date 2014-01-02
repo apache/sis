@@ -232,7 +232,7 @@ public class XLink implements Serializable {
         /**
          * A pointer to an external resource. Allows the {@link XLink#getHRef() href},
          * {@link XLink#getRole() role}, {@link #getTitle() title} and {@link XLink#getLabel()
-         * label} attributes, where {@code href} is mandatory and all other are optional.
+         * label} attributes, where {@code href} is mandatory and all other are optional.
          */
         @XmlEnumValue("locator")
         LOCATOR(0x1 | 0x2 | 0x4 | 0x10 | 0x80, 0x1 | 0x2),
@@ -374,9 +374,9 @@ public class XLink implements Serializable {
     /**
      * Sets the type of link. Any value different than {@link org.apache.sis.xml.XLink.Type#AUTO
      * Type.AUTO} (including {@code null}) will overwrite the value inferred automatically by
-     * {@link #getType()}. A {@code AUTO} value will enable automatic type detection.
+     * {@link #getType()}. A {@code AUTO} value will enable automatic type detection.
      *
-     * @param type The new type of link, or {@code null} if none.
+     * @param type The new type of link, or {@code null} if none.
      */
     public void setType(final Type type) {
         canWrite(0x1, "type", "type"); // We want a non-null value in all cases.
@@ -421,7 +421,7 @@ public class XLink implements Serializable {
      *        attribute allows an XML element to refer to another XML element that has
      *        a corresponding <code>id</code> attribute.}
      *
-     * @return A URN to a resources, or {@code null} if none.
+     * @return A URN to a resources, or {@code null} if none.
      *
      * @category locator
      */
@@ -433,7 +433,7 @@ public class XLink implements Serializable {
     /**
      * Sets the URN to a resources.
      *
-     * @param  href A URN to a resources, or {@code null} if none.
+     * @param  href A URN to a resources, or {@code null} if none.
      * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
      * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "href"} attribute.
@@ -448,7 +448,7 @@ public class XLink implements Serializable {
     /**
      * Returns a URI reference for some description of the arc role.
      *
-     * @return A URI reference for some description of the arc role, or {@code null} if none.
+     * @return A URI reference for some description of the arc role, or {@code null} if none.
      *
      * @category semantic
      */
@@ -460,7 +460,7 @@ public class XLink implements Serializable {
     /**
      * Sets the URI reference for some description of the arc role.
      *
-     * @param  role A URI reference for some description of the arc role, or {@code null} if none.
+     * @param  role A URI reference for some description of the arc role, or {@code null} if none.
      * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
      * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "role"} attribute.
@@ -475,7 +475,7 @@ public class XLink implements Serializable {
     /**
      * Returns a URI reference for some description of the arc role.
      *
-     * @return A URI reference for some description of the arc role, or {@code null} if none.
+     * @return A URI reference for some description of the arc role, or {@code null} if none.
      *
      * @category semantic
      */
@@ -487,7 +487,7 @@ public class XLink implements Serializable {
     /**
      * Sets a URI reference for some description of the arc role.
      *
-     * @param  arcrole A URI reference for some description of the arc role, or {@code null} if none.
+     * @param  arcrole A URI reference for some description of the arc role, or {@code null} if none.
      * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
      * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "arcrole"} attribute.
@@ -502,7 +502,7 @@ public class XLink implements Serializable {
     /**
      * Returns a human-readable string with a short description for the arc.
      *
-     * @return A human-readable string with a short description for the arc, or {@code null} if none.
+     * @return A human-readable string with a short description for the arc, or {@code null} if none.
      *
      * @category semantic
      */
@@ -515,7 +515,7 @@ public class XLink implements Serializable {
      * Sets a human-readable string with a short description for the arc.
      *
      * @param  title A human-readable string with a short description for the arc,
-     *         or {@code null} if none.
+     *         or {@code null} if none.
      * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
      * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "title"} attribute.

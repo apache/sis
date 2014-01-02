@@ -895,7 +895,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * values to their callers.</p>
      *
      * <p>This property can also be set in order to allow some recursivity. If during the creation
-     * of an object, the program asks to this {@code Cache} for the same object (using the same key),
+     * of an object, the program asks to this {@code Cache} for the same object (using the same key),
      * then the default {@code Cache} implementation will consider this situation as a key collision
      * unless this property has been set to {@code true}.</p>
      *

@@ -42,7 +42,7 @@ package org.apache.sis.util;
  */
 public interface Emptiable {
     /**
-     * Returns {@code true} if this instance is empty. The definition of "emptiness" may vary between implementations.
+     * Returns {@code true} if this instance is empty. The definition of "emptiness" may vary between implementations.
      * For example {@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#isEmpty()} returns {@code true}
      * if all values are {@code NaN} (i.e. uninitialized) while {@link org.apache.sis.geometry.AbstractEnvelope#isEmpty()}
      * returns {@code true} if the geometric surface is zero.

@@ -62,6 +62,7 @@ import org.apache.sis.measure.Units;
  * @version 0.4
  * @module
  *
+ * @see UnitAdapter
  * @see org.apache.sis.measure.Measure
  */
 public final class Measure {
@@ -104,7 +105,7 @@ public final class Measure {
 
     /**
      * Constructs a string representation of the units as defined in the ISO-19103 standard.
-     * This method is invoked during XML marshalling. For example in the units are "metre",
+     * This method is invoked during XML marshalling. For example if the units are "metre",
      * then this method returns one of the following strings, in preference order:
      *
      * {@preformat text
@@ -122,9 +123,21 @@ public final class Measure {
      * @todo Strictly speaking, the above URL should be used only for "m", "deg" and "rad" units because they
      *       are the only ones defined in the <code>gmxUom.xml</code> file. What should we do for other units?
      */
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "uom", required = true)
     public String getUOM() {
-        final Unit<?> unit = this.unit;
+        return getUOM(unit, asXPointer);
+    }
+
+    /**
+     * Implementation of {@link #getUOM()} as a static method for use by classes that define their own
+     * {@code uom} attribute, instead of letting the {@code uom} attribute on the measurement value.
+     * The main example is {@link org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis}.
+     *
+     * @param  unit The unit to format.
+     * @param  asXPointer {@code true} if the units shall be formatted as {@code xpointer}.
+     * @return
+     */
+    static String getUOM(final Unit<?> unit, final boolean asXPointer) {
         if (!asXPointer) {
             final Integer code = Units.getEpsgCode(unit);
             if (code != null) {
@@ -155,32 +168,42 @@ public final class Measure {
     /**
      * Returns {@link #unit} as a unit compatible with the given quantity.
      *
-     * @todo For now, this method does not format useful error message in case of missing unit or wrong unit type.
+     * @todo For now, this method does not format useful error message in case of wrong unit type.
      *       We define this method merely as a placeholder for future improvement in error handling.
      *
      * @param  <Q>  Compile-time type of the {@code type} argument.
      * @param  type The quantity for the desired unit.
-     * @return A unit compatible with the given type.
+     * @return A unit compatible with the given type, or {@code null} if none.
      */
     public <Q extends Quantity> Unit<Q> getUnit(final Class<Q> type) {
-        return unit.asType(type);
+        return (unit != null) ? unit.asType(type) : null;
     }
 
     /**
-     * Sets the unit to the given value, with a warning logged if the user specified a unit
-     * different than the previous {@link #unit} value.
+     * Sets the unit to the given value, and returns {@code true} if the current {@link #unit} value was different.
+     * A return value of {@code true} means that the caller should log a warning.
      *
      * {@example Some users wrongly assign the "m" unit to <code>Ellipsoid.inverseFlattening</code>.
      *           The SIS adapter forces the unit to <code>Unit.ONE</code>, but we want to let the user
      *           know that he probably did something wrong.}
      *
-     * @param newUnit The new unit (can not be null).
+     * @param  newUnit The new unit (can not be null).
+     * @return {@code true} if a different unit was defined before this method call.
      */
-    public void setUnit(final Unit<?> newUnit) {
-        if (unit != null && !unit.equals(newUnit)) {
-            Context.warningOccured(Context.current(), getClass(), "setUnit",
-                    Errors.class, Errors.Keys.IncompatiblePropertyValue_1, unit);
-        }
+    public boolean setUnit(final Unit<?> newUnit) {
+        final boolean changed = (unit != null && !unit.equals(newUnit));
         unit = newUnit;
+        return changed;
+    }
+
+    /**
+     * Sends a warning for a missing {@code "uom"} attribute.
+     *
+     * @param caller     The class of the method invoking this method.
+     * @param methodName The name of the method invoking this method.
+     */
+    public static void missingUOM(final Class<?> caller, final String methodName) {
+        Context.warningOccured(Context.current(), caller, methodName,
+                Errors.class, Errors.Keys.MandatoryAttribute_2, "uom", "Measure");
     }
 }

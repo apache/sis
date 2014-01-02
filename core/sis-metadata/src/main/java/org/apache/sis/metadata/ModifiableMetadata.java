@@ -263,7 +263,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *       modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
-     *   <li>If {@code target} is null, creates a new {@link List}.</li>
+     *   <li>If {@code target} is null, creates a new {@link List}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
@@ -271,7 +271,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @param  source      The source list, or {@code null}.
      * @param  target      The target list, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the list.
-     * @return A list (possibly the {@code target} instance) containing the {@code source}
+     * @return A list (possibly the {@code target} instance) containing the {@code source}
      *         elements, or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      *
@@ -311,7 +311,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *       modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
-     *   <li>If {@code target} is null, creates a new {@link Set}.</li>
+     *   <li>If {@code target} is null, creates a new {@link Set}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
@@ -319,7 +319,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @param  source      The source set, or {@code null}.
      * @param  target      The target set, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the set.
-     * @return A set (possibly the {@code target} instance) containing the {@code source}
+     * @return A set (possibly the {@code target} instance) containing the {@code source}
      *         elements, or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      *
@@ -359,7 +359,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *       modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
-     *   <li>If {@code target} is null, creates a new {@link Set} or a new {@link List}
+     *   <li>If {@code target} is null, creates a new {@link Set} or a new {@link List}
      *       depending on the value returned by {@link #collectionType(Class)}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
@@ -375,7 +375,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @param  source      The source collection, or {@code null}.
      * @param  target      The target collection, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the collection.
-     * @return A collection (possibly the {@code target} instance) containing the {@code source}
+     * @return A collection (possibly the {@code target} instance) containing the {@code source}
      *         elements, or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      */
@@ -420,7 +420,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Creates a list with the content of the {@code source} collection,
-     * or returns {@code null} if the source is {@code null} or empty.
+     * or returns {@code null} if the source is {@code null} or empty.
      * This is a convenience method for copying fields in subclass copy constructors.
      *
      * @param  <E>         The type represented by the {@code Class} argument.
@@ -440,7 +440,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Creates a set with the content of the {@code source} collection,
-     * or returns {@code null} if the source is {@code null} or empty.
+     * or returns {@code null} if the source is {@code null} or empty.
      * This is a convenience method for copying fields in subclass copy constructors.
      *
      * @param  <E>         The type represented by the {@code Class} argument.
@@ -460,7 +460,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Creates a list or set with the content of the {@code source} collection,
-     * or returns {@code null} if the source is {@code null} or empty.
+     * or returns {@code null} if the source is {@code null} or empty.
      * This is a convenience method for copying fields in subclass copy constructors.
      *
      * <p>The collection type is selected as described in the

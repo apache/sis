@@ -567,7 +567,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns the NetCDF attribute of the given name, or {@code null} if none.
+     * Returns the NetCDF attribute of the given name, or {@code null} if none.
      * The {@code name} argument is typically (but is not restricted too) one of
      * the constants defined in the {@link AttributeNames} class.
      *

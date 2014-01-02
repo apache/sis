@@ -21,7 +21,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.measure.unit.Unit;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.Measure;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -128,7 +130,10 @@ public final class SecondDefiningParameter {
      * @param measure The inverse flattening value.
      */
     public void setInverseFlattening(final Measure measure) {
-        measure.setUnit(Unit.ONE);
+        if (measure.setUnit(Unit.ONE)) {
+            Context.warningOccured(Context.current(), SecondDefiningParameter.class, "setInverseFlattening",
+                    Errors.class, Errors.Keys.IncompatiblePropertyValue_1, "uom");
+        }
         this.measure = measure;
     }
 }

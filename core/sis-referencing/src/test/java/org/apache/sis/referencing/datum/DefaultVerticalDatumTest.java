@@ -21,6 +21,7 @@ import javax.xml.bind.JAXBException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -39,7 +40,12 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * @module
  */
 @DependsOn(org.apache.sis.internal.referencing.VerticalDatumTypesTest.class)
-public final strictfp class DefaultVerticalDatumTest extends DatumTestCase {
+public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
+    /**
+     * An XML file in this package containing a vertical datum definition.
+     */
+    private static final String XML_FILE = "Mean Sea Level.xml";
+
     /**
      * Tests the {@link DefaultVerticalDatum#getVerticalDatumType()} method in a state
      * simulating unmarshalling of GML 3.2 document.
@@ -87,7 +93,7 @@ public final strictfp class DefaultVerticalDatumTest extends DatumTestCase {
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
-        final DefaultVerticalDatum datum = unmarshall(DefaultVerticalDatum.class, "Mean Sea Level.xml");
+        final DefaultVerticalDatum datum = unmarshalFile(DefaultVerticalDatum.class, XML_FILE);
         assertIsMeanSeaLevel(datum);
         assertIsWorld((GeographicBoundingBox) getSingleton(datum.getDomainOfValidity().getGeographicElements()));
         /*

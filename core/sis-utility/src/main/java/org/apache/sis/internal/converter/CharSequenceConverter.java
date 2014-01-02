@@ -77,7 +77,7 @@ final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**
      * Returns the properties of the converter given at construction time minus
      * {@link FunctionProperty#INJECTIVE}, because we don't know how many source
-     * {@code CharSequence}s can produce the same {@code String}.
+     * {@code CharSequence}s can produce the same {@code String}.
      */
     @Override
     public Set<FunctionProperty> properties() {

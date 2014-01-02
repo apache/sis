@@ -77,7 +77,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *       Only getter methods will be used and all operations that modify the metadata properties
  *       will throw an {@link UnmodifiableMetadataException}.</li>
  *   <li>For <em>read/write</em> metadata, the {@link #getImplementation(Class)}
- *       method must be overridden in a {@code MetadataStandard} subclass.</li>
+ *       method must be overridden in a {@code MetadataStandard} subclass.</li>
  * </ul>
  *
  * {@section Thread safety}
@@ -274,7 +274,7 @@ public class MetadataStandard implements Serializable {
      *         not implement a metadata interface of the expected package and {@code mandatory}
      *         is {@code false}.
      * @throws ClassCastException if the specified class does not implement a metadata interface
-     *         of the expected package and {@code mandatory} is {@code true}.
+     *         of the expected package and {@code mandatory} is {@code true}.
      */
     final PropertyAccessor getAccessor(final Class<?> implementation, final boolean mandatory) {
         synchronized (accessors) {
@@ -436,7 +436,7 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * Returns the implementation class for the given interface, or {@code null} if none.
+     * Returns the implementation class for the given interface, or {@code null} if none.
      * The default implementation returns {@code null} if every cases. Subclasses shall
      * override this method in order to map GeoAPI interfaces to their implementation.
      *
@@ -588,9 +588,9 @@ public class MetadataStandard implements Serializable {
      * The map is backed by the metadata object using Java reflection, so changes in the
      * underlying metadata object are immediately reflected in the map and conversely.
      *
-     * <p>The map content is determined by the arguments: {@code metadata} determines the set of
+     * <p>The map content is determined by the arguments: {@code metadata} determines the set of
      * keys, {@code keyPolicy} determines their {@code String} representations of those keys and
-     * {@code valuePolicy} determines whether entries having a null value or an empty collection
+     * {@code valuePolicy} determines whether entries having a null value or an empty collection
      * shall be included in the map.</p>
      *
      * {@section Supported operations}

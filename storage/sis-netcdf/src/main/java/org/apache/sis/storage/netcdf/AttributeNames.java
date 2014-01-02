@@ -441,7 +441,7 @@ public class AttributeNames {
         public final String NAME;
 
         /**
-         * The attribute name for the responsible's institution, or {@code null} if none.
+         * The attribute name for the responsible's institution, or {@code null} if none.
          * Possible value is {@code "institution"}.
          *
          * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
@@ -472,7 +472,7 @@ public class AttributeNames {
         public final String EMAIL;
 
         /**
-         * The attribute name for the responsible's role, or {@code null} if none.
+         * The attribute name for the responsible's role, or {@code null} if none.
          * Possible value is {@code "contributor_role"}.
          *
          * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /

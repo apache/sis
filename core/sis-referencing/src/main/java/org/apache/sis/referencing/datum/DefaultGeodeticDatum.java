@@ -105,7 +105,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * {@section Immutability and thread safety}
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
- * the {@link Ellipsoid} and the {@link PrimeMeridian} given to the constructor are also immutable. Unless otherwise
+ * the {@link Ellipsoid} and the {@link PrimeMeridian} given to the constructor are also immutable. Unless otherwise
  * noted in the javadoc, this condition holds if all components were created using only SIS factories and static
  * constants.
  *

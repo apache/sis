@@ -17,7 +17,7 @@
 
 /**
  * Implementations of GeoAPI types from the {@link org.opengis.util} package.
- * {@code InternationalString} implementations are closely related to the {@code <gmd:textGroup>}
+ * {@code InternationalString} implementations are closely related to the {@code <gmd:textGroup>}
  * XML element found in ISO specifications. All other non-static types except the {@code Factory}
  * implementations are derived from the ISO 19103 specification.
  * The main content of this package are:
