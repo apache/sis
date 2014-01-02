@@ -194,6 +194,21 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code PrimeMeridian.class}.
+     *
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>PrimeMeridian</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code PrimeMeridian.class} or a user-defined sub-interface.
+     */
+    @Override
+    public Class<? extends PrimeMeridian> getInterface() {
+        return PrimeMeridian.class;
+    }
+
+    /**
      * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
      *
      * @return The prime meridian Greenwich longitude, in {@linkplain #getAngularUnit() angular unit}.
@@ -271,7 +286,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!(object instanceof PrimeMeridian && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -307,12 +322,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this PrimeMeridian implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() +
-                Double.doubleToLongBits(greenwichLongitude) + Objects.hashCode(angularUnit));
+        return super.computeHashCode() + Double.doubleToLongBits(greenwichLongitude) + Objects.hashCode(angularUnit);
     }
 
     /**

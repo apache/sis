@@ -166,6 +166,21 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code ImageDatum.class}.
+     *
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>ImageDatum</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code ImageDatum.class} or a user-defined sub-interface.
+     */
+    @Override
+    public Class<? extends ImageDatum> getInterface() {
+        return ImageDatum.class;
+    }
+
+    /**
      * Specification of the way the image grid is associated with the image data attributes.
      *
      * @return The way image grid is associated with image data attributes.
@@ -189,7 +204,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!(object instanceof ImageDatum && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -211,11 +226,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this ImageDatum implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() + Objects.hashCode(pixelInCell));
+        return super.computeHashCode() + Objects.hashCode(pixelInCell);
     }
 
     /**

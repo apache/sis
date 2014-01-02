@@ -19,7 +19,6 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.util.ComparisonMode;
 
 
 /**
@@ -144,19 +143,17 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
     }
 
     /**
-     * Compares this coordinate system with the specified object for equality.
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code UserDefinedCS.class}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
-     * @return {@code true} if both objects are equal.
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>UserDefinedCS</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code UserDefinedCS.class} or a user-defined sub-interface.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true; // Slight optimization.
-        }
-        return (object instanceof UserDefinedCS) && super.equals(object, mode);
+    public Class<? extends UserDefinedCS> getInterface() {
+        return UserDefinedCS.class;
     }
 }

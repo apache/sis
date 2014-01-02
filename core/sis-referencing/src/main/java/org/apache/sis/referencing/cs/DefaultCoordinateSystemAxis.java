@@ -339,6 +339,21 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code CoordinateSystemAxis.class}.
+     *
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>CoordinateSystemAxis</code> sub-interface. Overriding possibility is left mostly
+     *        for implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code CoordinateSystemAxis.class} or a user-defined sub-interface.
+     */
+    @Override
+    public Class<? extends CoordinateSystemAxis> getInterface() {
+        return CoordinateSystemAxis.class;
+    }
+
+    /**
      * Returns the direction of this coordinate system axis.
      * This direction is often approximate and intended to provide a human interpretable meaning to the axis.
      * A {@linkplain AbstractCS coordinate system} can not contain two axes having the same direction or
@@ -551,7 +566,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!(object instanceof CoordinateSystemAxis && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         final DefaultCoordinateSystemAxis that = castOrCopy((CoordinateSystemAxis) object);
@@ -636,12 +651,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this CoordinateSystemAxis implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() + Objects.hashCode(unit) + Objects.hashCode(direction)
-                + Double.doubleToLongBits(minimumValue) + 31*Double.doubleToLongBits(maximumValue));
+        return super.computeHashCode() + Objects.hashCode(unit) + Objects.hashCode(direction)
+                + Double.doubleToLongBits(minimumValue) + 31*Double.doubleToLongBits(maximumValue);
     }
 
     /**

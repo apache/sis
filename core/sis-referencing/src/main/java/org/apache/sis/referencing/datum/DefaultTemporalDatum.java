@@ -194,6 +194,21 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code TemporalDatum.class}.
+     *
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>TemporalDatum</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code TemporalDatum.class} or a user-defined sub-interface.
+     */
+    @Override
+    public Class<? extends TemporalDatum> getInterface() {
+        return TemporalDatum.class;
+    }
+
+    /**
      * Returns the date and time origin of this temporal datum.
      *
      * @return The date and time origin of this temporal datum.
@@ -226,7 +241,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!(object instanceof TemporalDatum && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -240,7 +255,6 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
-    /**
      * Invoked by {@link #hashCode()} for computing the hash code when first needed.
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
@@ -249,10 +263,6 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this TemporalDatum implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() + origin);
+        return super.computeHashCode() + origin;
     }
 }
