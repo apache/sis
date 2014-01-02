@@ -364,6 +364,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                 inverseFlattening = semiMajorAxis / (semiMajorAxis - semiMinorAxis);
             }
         }
+        if (unit == null) {
+            Measure.missingUOM(DefaultEllipsoid.class, "semiMajorAxis");
+        }
     }
 
     /**
@@ -529,11 +532,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                     ensureStrictlyPositive("inverseFlattening", inverseFlattening = value);
                 } else if (semiMinorAxis == 0) {
                     ensureStrictlyPositive("semiMinorAxis", semiMinorAxis = value);
-                    if (unit == null) {
-                        unit = measure.getUnit(Length.class);
-                    } else {
-                        harmonizeAxisUnits(measure.unit);
-                    }
+                    harmonizeAxisUnits(measure.getUnit(Length.class));
                 }
                 if (semiMajorAxis != 0) {
                     afterUnmarshal();
@@ -550,8 +549,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @throws ConversionException If semi-major and semi-minor axes use inconsistent units
      *         and we can not convert from one to the other.
      */
-    private void harmonizeAxisUnits(final Unit<?> uom) throws ConversionException {
-        if (uom != null && uom != unit) {
+    private void harmonizeAxisUnits(final Unit<Length> uom) throws ConversionException {
+        if (unit == null) {
+            unit = uom;
+        } else if (uom != null && uom != unit) {
             semiMinorAxis = uom.getConverterToAny(unit).convert(semiMinorAxis);
         }
     }
