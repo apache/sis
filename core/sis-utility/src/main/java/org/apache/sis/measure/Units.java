@@ -148,7 +148,7 @@ public final class Units extends Static {
      * Makes sure that the specified unit is either null or an angular unit.
      * This method is used for argument checks in constructors and setter methods.
      *
-     * @param  unit The unit to check, or {@code null} if none.
+     * @param  unit The unit to check, or {@code null} if none.
      * @return The given {@code unit} argument, which may be null.
      * @throws IllegalArgumentException if {@code unit} is non-null and not an angular unit.
      *
@@ -166,7 +166,7 @@ public final class Units extends Static {
      * Makes sure that the specified unit is either null or a linear unit.
      * This method is used for argument checks in constructors and setter methods.
      *
-     * @param  unit The unit to check, or {@code null} if none.
+     * @param  unit The unit to check, or {@code null} if none.
      * @return The given {@code unit} argument, which may be null.
      * @throws IllegalArgumentException if {@code unit} is non-null and not a linear unit.
      *
@@ -184,7 +184,7 @@ public final class Units extends Static {
      * Makes sure that the specified unit is either null or a temporal unit.
      * This method is used for argument checks in constructors and setter methods.
      *
-     * @param  unit The unit to check, or {@code null} if none.
+     * @param  unit The unit to check, or {@code null} if none.
      * @return The given {@code unit} argument, which may be null.
      * @throws IllegalArgumentException if {@code unit} is non-null and not a temporal unit.
      *
@@ -202,7 +202,7 @@ public final class Units extends Static {
      * Makes sure that the specified unit is either null or a scale unit.
      * This method is used for argument checks in constructors and setter methods.
      *
-     * @param  unit The unit to check, or {@code null} if none.
+     * @param  unit The unit to check, or {@code null} if none.
      * @return The given {@code unit} argument, which may be null.
      * @throws IllegalArgumentException if {@code unit} is non-null and not a scale unit.
      *

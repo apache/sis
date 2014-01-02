@@ -160,7 +160,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @param northBoundLatitude The maximal φ value.
      *
      * @throws IllegalArgumentException If (<var>south bound</var> &gt; <var>north bound</var>).
-     *         Note that {@linkplain Double#NaN NaN} values are allowed.
+     *         Note that {@linkplain Double#NaN NaN} values are allowed.
      *
      * @see #setBounds(double, double, double, double)
      */
@@ -368,7 +368,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * <p>This method should be invoked <strong>before</strong> {@link #normalize()}.</p>
      *
      * @throws IllegalArgumentException If (<var>south bound</var> &gt; <var>north bound</var>).
-     *         Note that {@linkplain Double#NaN NaN} values are allowed.
+     *         Note that {@linkplain Double#NaN NaN} values are allowed.
      */
     private static void verifyBounds(final double southBoundLatitude, final double northBoundLatitude)
             throws IllegalArgumentException
@@ -437,7 +437,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @param northBoundLatitude The maximal φ value.
      *
      * @throws IllegalArgumentException If (<var>south bound</var> &gt; <var>north bound</var>).
-     *         Note that {@linkplain Double#NaN NaN} values are allowed.
+     *         Note that {@linkplain Double#NaN NaN} values are allowed.
      */
     public void setBounds(final double westBoundLongitude,
                           final double eastBoundLongitude,

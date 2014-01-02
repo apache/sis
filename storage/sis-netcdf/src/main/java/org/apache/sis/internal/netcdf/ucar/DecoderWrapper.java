@@ -146,7 +146,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
-     * Returns the NetCDF attribute of the given name in the given group, or {@code null} if none.
+     * Returns the NetCDF attribute of the given name in the given group, or {@code null} if none.
      * This method is invoked for every global and group attributes to be read by this class (but
      * not {@linkplain VariableSimpleIF variable} attributes), thus providing a single point where
      * we can filter the attributes to be read - if we want to do that in a future version.

@@ -89,7 +89,7 @@ public enum X364 {
     private static final String START = "\u001B[";
 
     /**
-     * The end of escape sequences. Fixed to {@code 'm'} for now, but a wider range
+     * The end of escape sequences. Fixed to {@code 'm'} for now, but a wider range
      * of letters actually exists for different operations.
      */
     private static final char END = 'm';

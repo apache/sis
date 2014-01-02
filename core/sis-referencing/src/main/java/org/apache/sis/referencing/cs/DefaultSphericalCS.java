@@ -60,6 +60,14 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
     private static final long serialVersionUID = 196295996465774477L;
 
     /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    private DefaultSphericalCS() {
+    }
+
+    /**
      * Constructs a three-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.

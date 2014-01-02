@@ -243,6 +243,18 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     private void setGreenwichMeasure(final Measure measure) {
         greenwichLongitude = measure.value;
         angularUnit = measure.getUnit(Angle.class);
+        if (angularUnit == null) {
+            /*
+             * Missing unit: if the Greenwich longitude is zero, any angular unit gives the same result
+             * (assuming that the missing unit was not applying an offset), so we can select a default.
+             * If the Greenwich longitude is not zero, we can not guess. Our object will be invalid.
+             */
+            if (greenwichLongitude == 0) {
+                angularUnit = NonSI.DEGREE_ANGLE;
+            } else {
+                Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
+            }
+        }
     }
 
     /**

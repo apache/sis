@@ -29,7 +29,7 @@ package org.apache.sis.xml;
  *
  * <p>Nil objects appear most frequently in XML documents since if a mandatory ISO 19115 attribute
  * is absent, then the ISO 19139 standard requires us to said why it is so. The following example
- * shows a {@code CI_Citation} fragment with an ordinary {@code CI_Series} element on the left side,
+ * shows a {@code CI_Citation} fragment with an ordinary {@code CI_Series} element on the left side,
  * and an unknown {@code CI_Series} element on the right side:</p>
  *
  * <table class="sis"><tr>

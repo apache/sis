@@ -97,7 +97,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
      * The index of values associated to each column. This is used by the {@link Node}
      * implementation for storing values in a single flat array. After creation, this
-     * map shall be read-only since many {@code Node} instances may share it.
+     * map shall be read-only since many {@code Node} instances may share it.
      *
      * {@note This field and the {@link #columns} field could be computed from each other.
      *        But we serialize this field anyway because children nodes will typically hold
@@ -390,7 +390,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * {@link #getValue(TableColumn)} and {@link #setValue(TableColumn, Object)}
          * methods for identifying the index where to store values in the {@link #values} array.
          *
-         * <p>This map shall be read-only since many {@code Node} instances may share it.</p>
+         * <p>This map shall be read-only since many {@code Node} instances may share it.</p>
          *
          * @see DefaultTreeTable#columnIndices
          */
@@ -563,7 +563,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         }
 
         /**
-         * Returns the value in the given column, or {@code null} if none.
+         * Returns the value in the given column, or {@code null} if none.
          *
          * @param  <V>    The base type of values in the given column.
          * @param  column Identifier of the column from which to get the value.

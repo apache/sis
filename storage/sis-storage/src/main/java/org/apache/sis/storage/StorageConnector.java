@@ -419,7 +419,7 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Creates a view for the input as a {@link ChannelDataInput} if possible.
+     * Creates a view for the input as a {@link ChannelDataInput} if possible.
      * If the view can not be created, remember that fact in order to avoid new attempts.
      *
      * @param  asImageInputStream If the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
@@ -449,7 +449,7 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Creates a view for the input as a {@link DataInput} if possible. This method performs the choice
+     * Creates a view for the input as a {@link DataInput} if possible. This method performs the choice
      * documented in the {@link #getStorageAs(Class)} method for the {@code DataInput} case. Opening the
      * data input may imply creating a {@link ByteBuffer}, in which case the buffer will be stored under
      * the {@code ByteBuffer.class} key together with the {@code DataInput.class} case.
@@ -645,7 +645,7 @@ public class StorageConnector implements Serializable {
     /**
      * Adds the given view in the cache.
      *
-     * @param <T>   The compile-time type of the {@code type} argument.
+     * @param <T>   The compile-time type of the {@code type} argument.
      * @param type  The view type.
      * @param view  The view, or {@code null} if none.
      */
@@ -658,7 +658,7 @@ public class StorageConnector implements Serializable {
     /**
      * Returns the view for the given type from the cache.
      *
-     * @param <T>   The compile-time type of the {@code type} argument.
+     * @param <T>   The compile-time type of the {@code type} argument.
      * @param type  The view type.
      * @return      The view, or {@code null} if none.
      */
@@ -787,7 +787,7 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Returns a string representation of this {@code StorageConnector} for debugging purpose.
+     * Returns a string representation of this {@code StorageConnector} for debugging purpose.
      */
     @Debug
     @Override

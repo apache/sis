@@ -194,7 +194,7 @@ public final class XML extends Static {
      * string is not valid), the default behavior is to throw an exception which cause the
      * (un)marshalling of the entire document to fail. This default behavior can be customized by
      * invoking {@link Marshaller#setProperty(String, Object)} with this {@code CONVERTER} property
-     * key and a custom {@link ValueConverter} instance. {@code ValueConverter} can also be used
+     * key and a custom {@link ValueConverter} instance. {@code ValueConverter} can also be used
      * for replacing an erroneous URL by a fixed URL. See the {@link ValueConverter} javadoc for
      * more details.</p>
      *

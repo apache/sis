@@ -50,7 +50,7 @@ final class StandardImplementation extends MetadataStandard {
     private final String[] prefix;
 
     /**
-     * The acronyms that implementation classes may have, or {@code null} if none. If non-null,
+     * The acronyms that implementation classes may have, or {@code null} if none. If non-null,
      * then this array shall contain (<var>full text</var>, <var>acronym</var>) pairs. The full
      * text shall appear to the end of the class name, otherwise it is not replaced. This is
      * necessary in order to avoid the replacement of {@code "DefaultCoordinateSystemAxis"} by
@@ -92,7 +92,7 @@ final class StandardImplementation extends MetadataStandard {
     }
 
     /**
-     * Returns the implementation class for the given interface, or {@code null} if none.
+     * Returns the implementation class for the given interface, or {@code null} if none.
      * This class uses heuristic rules based on naming conventions.
      *
      * @param  type The interface, typically from the {@code org.opengis.metadata} package.

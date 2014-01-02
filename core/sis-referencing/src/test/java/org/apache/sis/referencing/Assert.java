@@ -301,4 +301,22 @@ public strictfp class Assert extends org.apache.sis.test.Assert {
             assertMultilinesEquals(object.getName().getCode(), expected, object.toWKT());
         }
     }
+
+    /**
+     * Asserts that the given WKT is equal to the expected one. If the given expected string contains
+     * {@code '“'} and {@code '”'} characters (for easier reading), then those characters will be replaced
+     * by "ordinary" quote characters ({@code '"'}).
+     *
+     * @param expected The expected text, or {@code null} if {@code actual} is expected to be null.
+     * @param actual   The actual <cite>Well Known Text</cite> to compare.
+     */
+    public static void assertWktEquals(String expected, final String actual) {
+        if (expected == null) {
+            assertNull(actual);
+        } else {
+            assertNotNull(actual);
+            expected = expected.replace('“', '"').replace('”', '"');
+            assertMultilinesEquals(expected, actual);
+        }
+    }
 }

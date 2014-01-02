@@ -42,7 +42,7 @@ import org.apache.sis.xml.IdentifiedObject;
 @XmlTransient
 public abstract class GMLAdapter {
     /**
-     * The period identifier, or {@code null} if undefined.
+     * The period identifier, or {@code null} if undefined.
      * This element is part of GML 3.1.1 specification.
      *
      * {@section Difference between <code>gmd:uuid</code> and <code>gml:id</code>}

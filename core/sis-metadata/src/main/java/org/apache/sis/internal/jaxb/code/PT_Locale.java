@@ -78,13 +78,13 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     @XmlType(name = "PT_Locale", propOrder = { "languageCode", "country", "characterEncoding" })
     private static final class Wrapper {
         /**
-         * The language code, or {@code null} if none.
+         * The language code, or {@code null} if none.
          */
         @XmlElement(required = true)
         LanguageCode languageCode;
 
         /**
-         * The country code, or {@code null} if none.
+         * The country code, or {@code null} if none.
          */
         @XmlElement
         Country country;

@@ -117,7 +117,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
 
     /**
      * Sets or clears the parent of the given node. This method doesn't need to care about the
-     * current node parent, since {@code TreeNodeList} will take care of removing the tree node
+     * current node parent, since {@code TreeNodeList} will take care of removing the tree node
      * from its previous parent before to invoke this method.
      *
      * <p>The {@code mode} argument specifies the parent value to set, as one of the following

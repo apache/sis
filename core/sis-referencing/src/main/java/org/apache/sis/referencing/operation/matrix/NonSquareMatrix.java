@@ -44,7 +44,7 @@ final class NonSquareMatrix extends GeneralMatrix {
      * @param numRow Number of rows.
      * @param numCol Number of columns.
      * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
-     *        or {@code false} for leaving it initialized to zero.
+     *        or {@code false} for leaving it initialized to zero.
      * @param precision 1 for normal precision, or 2 for extended precision.
      */
     NonSquareMatrix(final int numRow, final int numCol, final boolean setToIdentity, final int precision) {

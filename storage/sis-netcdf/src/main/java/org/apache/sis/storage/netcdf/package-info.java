@@ -26,7 +26,7 @@
  * </ul>
  *
  * The NetCDF attributes recognized by this package are listed in the
- * {@link org.apache.sis.storage.netcdf.AttributeNames} class.
+ * {@link org.apache.sis.storage.netcdf.AttributeNames} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.20)

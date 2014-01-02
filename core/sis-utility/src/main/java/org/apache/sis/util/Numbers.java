@@ -44,7 +44,7 @@ import static java.lang.Double.doubleToLongBits;
  */
 public final class Numbers extends Static {
     /**
-     * Constant of value {@value} used in {@code switch} statements or as index in arrays.
+     * Constant of value {@value} used in {@code switch} statements or as index in arrays.
      */
     public static final byte
             BIG_DECIMAL=10, BIG_INTEGER=9,
@@ -545,7 +545,7 @@ public final class Numbers extends Static {
      * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer}, {@link Long},
      * {@link Float}, {@link Double}, {@link BigInteger} and {@link BigDecimal} classes.
      * Furthermore, the given value shall be convertible to the given class without precision lost,
-     * otherwise an {@link IllegalArgumentException} will be thrown.
+     * otherwise an {@link IllegalArgumentException} will be thrown.
      *
      * @param  <N> The wrapper class.
      * @param  value The value to wrap.
