@@ -37,6 +37,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.CodeList;
 
 import org.apache.sis.measure.Units;
@@ -49,6 +50,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 
 /**
@@ -361,7 +363,7 @@ public class Formatter {
     /**
      * Increase or reduce the indentation. A value of {@code +1} increase
      * the indentation by the amount of spaces specified at construction time,
-     * and a value of {@code +1} reduce it.
+     * and a value of {@code -1} reduce it.
      */
     private void indent(final int amount) {
         margin = Math.max(0, margin + indentation*amount);
@@ -513,9 +515,63 @@ public class Formatter {
         if (transform != null) {
             if (transform instanceof FormattableObject) {
                 append((FormattableObject) transform);
+            } else if (transform instanceof LinearTransform) {
+                appendSeparator(true);
+                buffer.append("PARAM_MT").appendCodePoint(symbols.getOpeningBracket(0));
+                quote("Affine");
+                indent(+1);
+                append(((LinearTransform) transform).getMatrix());
+                indent(-1);
+                buffer.appendCodePoint(symbols.getClosingBracket(0));
             } else {
                 throw new UnformattableObjectException(Errors.format(
                         Errors.Keys.IllegalClass_2, FormattableObject.class, transform.getClass()));
+            }
+        }
+    }
+
+    /**
+     * Appends a sequence of {@code PARAMETER[…]} elements for the given matrix.
+     * Only elements different than the default values are appended.
+     * The default values are 1 on the matrix diagonal and 0 elsewhere.
+     *
+     * @param matrix The matrix to append to the WKT, or {@code null} if none.
+     */
+    public void append(final Matrix matrix) {
+        if (matrix == null) {
+            return;
+        }
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        final int openingBracket  = symbols.getOpeningBracket(0);
+        final int closingBracket  = symbols.getClosingBracket(0);
+        final int openQuote       = symbols.getOpenQuote();
+        final int closeQuote      = symbols.getCloseQuote();
+        final String separator    = symbols.getSeparator();
+        final StringBuffer buffer = this.buffer;
+        boolean columns = false;
+        do {
+            appendSeparator(true);
+            buffer.append("PARAMETER").appendCodePoint(openingBracket);
+            quote(columns ? "num_col" : "num_row");
+            buffer.append(separator);
+            format(columns ? numCol : numRow);
+            buffer.appendCodePoint(closingBracket);
+        } while ((columns = !columns) == true);
+        for (int j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                final double element = matrix.getElement(j, i);
+                if (element != (i == j ? 1 : 0)) {
+                    appendSeparator(true);
+                    buffer.append("PARAMETER").appendCodePoint(openingBracket);
+                    setColor(ElementKind.PARAMETER);
+                    buffer.appendCodePoint(openQuote).append("elt_").append(j)
+                            .append('_').append(i).appendCodePoint(closeQuote);
+                    resetColor();
+                    buffer.append(separator);
+                    format(element);
+                    buffer.appendCodePoint(closingBracket);
+                }
             }
         }
     }
