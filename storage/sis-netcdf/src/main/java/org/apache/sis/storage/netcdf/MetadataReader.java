@@ -108,7 +108,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
 final class MetadataReader {
     /**
      * Names of groups where to search for metadata, in precedence order.
-     * The {@code null} value stands for global attributes.
+     * The {@code null} value stands for global attributes.
      *
      * <p>REMINDER: if modified, update class javadoc too.</p>
      */

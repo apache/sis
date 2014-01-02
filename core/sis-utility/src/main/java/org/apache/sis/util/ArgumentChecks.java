@@ -143,7 +143,7 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Makes sure that a character sequence is non-null and non-empty. If the given {@code text} is
-     * null, then a {@link NullArgumentException} is thrown. Otherwise if the given {@code text} has
+     * null, then a {@link NullArgumentException} is thrown. Otherwise if the given {@code text} has
      * a {@linkplain CharSequence#length() length} equals to 0, then an {@link IllegalArgumentException}
      * is thrown.
      *

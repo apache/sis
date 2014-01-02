@@ -89,7 +89,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      * degrees (e.g. 45.5°) or degrees with minutes and seconds (e.g. 45°30').
      *
      * <p>This is a convenience constructor mostly for testing purpose, since it uses a fixed
-     * locale. Developers should consider using {@link AngleFormat} for end-user applications
+     * locale. Developers should consider using {@link AngleFormat} for end-user applications
      * instead than this constructor.</p>
      *
      * @param  string A string to be converted to an {@code Angle}.
@@ -197,7 +197,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Returns a string representation of this {@code Angle} object.
      * This is a convenience method mostly for debugging purpose, since it uses a fixed locale.
-     * Developers should consider using {@link AngleFormat} for end-user applications instead
+     * Developers should consider using {@link AngleFormat} for end-user applications instead
      * than this method.
      *
      * @see AngleFormat#format(double)

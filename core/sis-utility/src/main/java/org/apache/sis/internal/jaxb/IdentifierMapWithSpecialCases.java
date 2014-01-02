@@ -64,8 +64,8 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
      * If the given authority is a special case, returns its {@link NonMarshalledAuthority}
      * integer enum. Otherwise returns -1. See javadoc for more information about special cases.
      *
-     * @param authority A {@link Citation} constant. The type is relaxed to {@code Object}
-     *        because the signature of some {@code Map} methods are that way.
+     * @param authority A {@link Citation} constant. The type is relaxed to {@code Object}
+     *        because the signature of some {@code Map} methods are that way.
      */
     private static int specialCase(final Object authority) {
         if (authority == IdentifierSpace.HREF) return NonMarshalledAuthority.HREF;
@@ -179,7 +179,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
     /**
      * {@inheritDoc}
      *
-     * <p>If the given {@code authority} is {@code HREF} and if the given string is parsable as a {@link URI},
+     * <p>If the given {@code authority} is {@code HREF} and if the given string is parsable as a {@link URI},
      * then this method will actually store the value as the {@link XLink#getHRef()} property of the {@code XLink}
      * associated to the {@code XLINK} key. Only if the given string can not be parsed, then the value is stored
      * <cite>as-is</cite> under the {@code HREF} key.</p>
@@ -223,7 +223,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
     /**
      * {@inheritDoc}
      *
-     * <p>If the given {@code authority} is {@code HREF}, then this method will actually store the value
+     * <p>If the given {@code authority} is {@code HREF}, then this method will actually store the value
      * as the {@link XLink#getHRef()} property of the {@code XLink} associated to the {@code XLINK} key.
      * The previous {@code HREF} value, if any, is discarded.</p>
      */

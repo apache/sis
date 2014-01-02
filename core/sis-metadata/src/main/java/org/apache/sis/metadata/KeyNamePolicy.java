@@ -47,7 +47,7 @@ public enum KeyNamePolicy {
 
     /**
      * The keys in the map are the Javabeans property names. This is the method name with
-     * the {@code get} or {@code is} prefix removed, and the first letter made lower-case.
+     * the {@code get} or {@code is} prefix removed, and the first letter made lower-case.
      *
      * <p>This is the default type of names returned by {@link AbstractMetadata#asMap()}.</p>
      */

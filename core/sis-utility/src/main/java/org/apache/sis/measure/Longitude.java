@@ -69,7 +69,7 @@ public final class Longitude extends Angle {
      * The hemisphere (E or W) is optional (default to East).
      *
      * <p>This is a convenience constructor mostly for testing purpose, since it uses a fixed
-     * locale. Developers should consider using {@link AngleFormat} for end-user applications
+     * locale. Developers should consider using {@link AngleFormat} for end-user applications
      * instead than this constructor.</p>
      *
      * @param  string A string to be converted to a {@code Longitude}.

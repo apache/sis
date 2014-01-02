@@ -127,7 +127,7 @@ public interface LenientComparable {
      * Note that {@code this.equals(other, mode)} is <strong>not</strong> guaranteed to be equal
      * to {@code other.equals(this, mode)}.  In particular, the {@code BY_CONTRACT} level and all
      * levels below it will typically compare only the properties known to {@code this} instance,
-     * ignoring any properties that may be known only by the {@code other} instance.
+     * ignoring any properties that may be known only by the {@code other} instance.
      *
      * @param  other The object to compare to {@code this}.
      * @param  mode The strictness level of the comparison.

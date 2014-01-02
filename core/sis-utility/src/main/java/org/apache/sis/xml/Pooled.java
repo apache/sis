@@ -450,14 +450,14 @@ abstract class Pooled {
     /**
      * Sets the given property to the wrapped (un)marshaller. This method is invoked
      * automatically when the property given to the {@link #setProperty(String, Object)}
-     * method was not one of the {@link XML} constants.
+     * method was not one of the {@link XML} constants.
      */
     abstract void setStandardProperty(String name, Object value) throws PropertyException;
 
     /**
      * Gets the given property from the wrapped (un)marshaller. This method is invoked
      * automatically when the property key given to the {@link #getProperty(String)}
-     * method was not one of the {@link XML} constants.
+     * method was not one of the {@link XML} constants.
      */
     abstract Object getStandardProperty(String name) throws PropertyException;
 

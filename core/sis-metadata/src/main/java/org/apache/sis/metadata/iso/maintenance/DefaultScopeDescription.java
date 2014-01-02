@@ -64,7 +64,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
 
     /**
      * The names of the mutually exclusive properties. The index of each name shall be the
-     * value of the above {@code byte} constants minus one.
+     * value of the above {@code byte} constants minus one.
      */
     private static final String[] NAMES = {
         "attributes",

@@ -110,7 +110,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Creates a maintenance information.
      *
      * @param maintenanceAndUpdateFrequency The frequency with which changes and additions are
-     *        made to the resource after the initial resource is completed, or {@code null} if none.
+     *        made to the resource after the initial resource is completed, or {@code null} if none.
      */
     public DefaultMaintenanceInformation(final MaintenanceFrequency maintenanceAndUpdateFrequency) {
         this.maintenanceAndUpdateFrequency = maintenanceAndUpdateFrequency;

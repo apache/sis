@@ -118,8 +118,8 @@ public final strictfp class CharactersTest extends TestCase {
     }
 
     /**
-     * Scans the full {@code char} range in order to check for
-     * {@link org.apache.sis.util.Characters.Filter} consistency.
+     * Scans the full {@code char} range in order to check for
+     * {@link org.apache.sis.util.Characters.Filter} consistency.
      */
     @Test
     public void scanCharacterRange() {

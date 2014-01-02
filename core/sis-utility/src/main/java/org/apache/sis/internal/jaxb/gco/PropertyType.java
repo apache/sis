@@ -235,7 +235,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
-     * Returns the object reference, or {@code null} if none and the {@code create} argument is {@code false}.
+     * Returns the object reference, or {@code null} if none and the {@code create} argument is {@code false}.
      * If the {@code create} argument is {@code true}, then this method will create the object reference when
      * first needed. In the later case, any previous {@code gco:nilReason} will be overwritten since
      * the object is not nil.

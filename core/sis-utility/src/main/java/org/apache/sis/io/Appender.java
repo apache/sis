@@ -37,7 +37,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  *   <li>No synchronization is performed.</li>
  * </ul>
  *
- * If needed, this {@code Appender} can be viewed as a synchronized
+ * If needed, this {@code Appender} can be viewed as a synchronized
  * {@link java.io.Writer} by invoking the {@link IO#asWriter(Appendable)} method.
  *
  * {@section Flushing and closing the stream}

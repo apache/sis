@@ -172,7 +172,7 @@ public final class StringBuilders extends Static {
      * been appended to the buffer}, in order to make it appears like an integer when possible.
      *
      * @param buffer The buffer to trim if possible.
-     * @throws NullArgumentException If the given {@code buffer} is null.
+     * @throws NullArgumentException If the given {@code buffer} is null.
      *
      * @see CharSequences#trimFractionalPart(CharSequence)
      */
@@ -198,7 +198,7 @@ public final class StringBuilders extends Static {
      * to {@code 00FF}, inclusive. Other characters are left unchanged.</p>
      *
      * @param  buffer The text to scan for Unicode characters to replace by ASCII characters.
-     * @throws NullArgumentException If the given {@code buffer} is null.
+     * @throws NullArgumentException If the given {@code buffer} is null.
      *
      * @see CharSequences#toASCII(CharSequence)
      */

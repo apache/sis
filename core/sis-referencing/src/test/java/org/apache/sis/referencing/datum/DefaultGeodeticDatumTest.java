@@ -30,6 +30,7 @@ import org.opengis.test.Validators;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -53,7 +54,12 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
   DefaultEllipsoidTest.class,
   BursaWolfParametersTest.class
 })
-public final strictfp class DefaultGeodeticDatumTest extends DatumTestCase {
+public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
+    /**
+     * An XML file in this package containing a geodetic datum definition.
+     */
+    private static final String XML_FILE = "WGS 84.xml";
+
     /**
      * Tests the creation and serialization of a {@link DefaultGeodeticDatum}.
      */
@@ -220,7 +226,7 @@ public final strictfp class DefaultGeodeticDatumTest extends DatumTestCase {
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
-        final DefaultGeodeticDatum datum = unmarshall(DefaultGeodeticDatum.class, "WGS 84.xml");
+        final DefaultGeodeticDatum datum = unmarshalFile(DefaultGeodeticDatum.class, XML_FILE);
         assertIsWGS84(datum);
         assertIsWorld((GeographicBoundingBox) getSingleton(datum.getDomainOfValidity().getGeographicElements()));
         /*

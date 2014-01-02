@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -59,6 +60,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     /**
      * Specification of the way the image grid is associated with the image data attributes.
      */
+    @XmlElement(required = true)
     private final PixelInCell pixelInCell;
 
     /**

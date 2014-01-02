@@ -16,12 +16,14 @@
  */
 package org.apache.sis.io.wkt;
 
+import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.referencing.Assert.*;
 
 
 /**
@@ -41,5 +43,23 @@ public final strictfp class FormatterTest extends TestCase {
     public void testAnsiEscapeSequences() {
         assertEquals("FOREGROUND_DEFAULT", X364.FOREGROUND_DEFAULT.sequence(), Formatter.FOREGROUND_DEFAULT);
         assertEquals("BACKGROUND_DEFAULT", X364.BACKGROUND_DEFAULT.sequence(), Formatter.BACKGROUND_DEFAULT);
+    }
+
+    /**
+     * Tests {@link Formatter#append(Matrix)}.
+     */
+    @Test
+    public void testAppendMatrix() {
+        final Formatter formatter = new Formatter();
+        formatter.append(new Matrix4(1, 0, 4, 0,
+                                    -2, 1, 0, 0,
+                                     0, 0, 1, 7,
+                                     0, 0, 0, 1));
+        assertWktEquals(
+                "PARAMETER[“num_row”, 4],\n"    +
+                "PARAMETER[“num_col”, 4],\n"    +
+                "PARAMETER[“elt_0_2”, 4.0],\n"  +
+                "PARAMETER[“elt_1_0”, -2.0],\n"  +
+                "PARAMETER[“elt_2_3”, 7.0]", formatter.toString());
     }
 }

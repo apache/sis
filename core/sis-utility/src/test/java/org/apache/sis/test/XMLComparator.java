@@ -145,7 +145,7 @@ public strictfp class XMLComparator {
      * </ul>
      *
      * <p>{@code XMLComparator} is namespace aware. The second case in the above-cited choice may happen only
-     * if the user provided {@link Node} instances to the constructor. In such case, {@code XMLComparator} has
+     * if the user provided {@link Node} instances to the constructor. In such case, {@code XMLComparator} has
      * no control on whether the nodes contain namespaces or not.</p>
      *
      * <p>For example in order to ignore the namespace, type and schema location declaration,
