@@ -27,10 +27,12 @@ import org.apache.sis.internal.jaxb.Context;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
+ *
+ * @see Measure
  */
-public final class UnitAdapter extends XmlAdapter<String, Unit<?>> {
+public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     /**
      * Returns a unit for the given string.
      *
@@ -39,12 +41,9 @@ public final class UnitAdapter extends XmlAdapter<String, Unit<?>> {
      * @throws IllegalArgumentException if the given symbol is unknown.
      */
     @Override
-    public Unit<?> unmarshal(String value) throws IllegalArgumentException {
-        if (value != null) {
-            final Context context = Context.current();
-            return Context.converter(context).toUnit(context, value);
-        }
-        return null;
+    public final Unit<?> unmarshal(final String value) throws IllegalArgumentException {
+        final Context context = Context.current();
+        return Context.converter(context).toUnit(context, value);
     }
 
     /**
@@ -56,5 +55,16 @@ public final class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     @Override
     public String marshal(final Unit<?> value) {
         return (value != null) ? value.toString() : null;
+    }
+
+    /**
+     * A variant of {@link UnitAdapter} which marshal units as an URN.
+     * Example: {@code "urn:ogc:def:uom:EPSG::9001"}.
+     */
+    public static final class AsURN extends UnitAdapter {
+        @Override
+        public String marshal(final Unit<?> value) {
+            return Measure.getUOM(value, false);
+        }
     }
 }

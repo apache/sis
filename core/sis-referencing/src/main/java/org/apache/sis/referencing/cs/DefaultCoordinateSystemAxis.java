@@ -23,8 +23,10 @@ import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import javax.measure.converter.UnitConverter;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -73,6 +75,14 @@ import java.util.Objects;
  * @see AbstractCS
  * @see Unit
  */
+@XmlType(name = "CoordinateSystemAxisType", propOrder = {
+    "abbreviation",
+    "direction",
+    "minimum",
+    "maximum",
+    "rangeMeaning"
+})
+@XmlRootElement(name = "CoordinateSystemAxis")
 public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implements CoordinateSystemAxis {
     /**
      * Serial number for inter-operability with different versions.
