@@ -242,6 +242,18 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The default implementation returns {@code Datum.class}.
+     * Subclasses implementing a more specific GeoAPI interface shall override this method.
+     *
+     * @return The datum interface implemented by this class.
+     */
+    @Override
+    public Class<? extends Datum> getInterface() {
+        return Datum.class;
+    }
+
+    /**
      * Returns a description of the point(s) used to anchor the datum to the Earth.
      * Also known as the "origin", especially for Engineering and Image Datums.
      *
@@ -371,7 +383,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (!(object instanceof Datum && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -412,12 +424,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this Datum implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() +
-                Objects.hash(anchorPoint, realizationEpoch, domainOfValidity, scope));
+        return super.computeHashCode() + Objects.hash(anchorPoint, realizationEpoch, domainOfValidity, scope);
     }
 
     /**

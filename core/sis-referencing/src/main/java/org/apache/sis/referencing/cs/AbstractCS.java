@@ -228,6 +228,18 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The default implementation returns {@code CoordinateSystem.class}.
+     * Subclasses implementing a more specific GeoAPI interface shall override this method.
+     *
+     * @return The coordinate system interface implemented by this class.
+     */
+    @Override
+    public Class<? extends CoordinateSystem> getInterface() {
+        return CoordinateSystem.class;
+    }
+
+    /**
      * Returns the number of dimensions of this coordinate system.
      * This is the number of axes given at construction time.
      *
@@ -261,6 +273,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true; // Slight optimization.
+        }
         if (!super.equals(object, mode)) {
             return false;
         }
@@ -270,9 +285,6 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                 return Arrays.equals(axes, ((AbstractCS) object).axes);
             }
             default: {
-                if (!(object instanceof CoordinateSystem)) {
-                    return false;
-                }
                 final CoordinateSystem that = (CoordinateSystem) object;
                 final int dimension = getDimension();
                 if (dimension != that.getDimension()) {
@@ -297,11 +309,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this CoordinateSystem implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() + Arrays.hashCode(axes));
+        return super.computeHashCode() + Arrays.hashCode(axes);
     }
 
     /**

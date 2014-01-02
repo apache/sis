@@ -370,6 +370,21 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code Ellipsoid.class}.
+     *
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>Ellipsoid</code> sub-interface. This method may be overridden if an implementor
+     *        extended GeoAPI with his own set of interfaces.}
+     *
+     * @return {@code Ellipsoid.class} or a user-defined sub-interface.
+     */
+    @Override
+    public Class<? extends Ellipsoid> getInterface() {
+        return Ellipsoid.class;
+    }
+
+    /**
      * Returns the linear unit of the {@linkplain #getSemiMajorAxis() semi-major}
      * and {@linkplain #getSemiMinorAxis() semi-minor} axis values.
      *
@@ -691,7 +706,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!(object instanceof Ellipsoid && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -732,12 +747,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this Ellipsoid implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() + Double.doubleToLongBits(semiMajorAxis) +
-               31 * Double.doubleToLongBits(ivfDefinitive ? inverseFlattening : semiMinorAxis));
+        return super.computeHashCode() + Double.doubleToLongBits(semiMajorAxis) +
+               31 * Double.doubleToLongBits(ivfDefinitive ? inverseFlattening : semiMinorAxis);
     }
 
     /**

@@ -194,6 +194,21 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code VerticalDatum.class}.
+     *
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>VerticalDatum</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code VerticalDatum.class} or a user-defined sub-interface.
+     */
+    @Override
+    public Class<? extends VerticalDatum> getInterface() {
+        return VerticalDatum.class;
+    }
+
+    /**
      * Returns the type of this datum, or infers the type from the datum name if no type were specified.
      * The later case occurs after unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
      * It may also happen if the datum were created using reflection.
@@ -265,7 +280,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!(object instanceof VerticalDatum && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -287,11 +302,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this VerticalDatum implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() + type().hashCode());
+        return super.computeHashCode() + type().hashCode();
     }
 
     /**

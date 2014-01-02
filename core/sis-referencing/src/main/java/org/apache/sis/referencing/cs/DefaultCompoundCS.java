@@ -186,9 +186,6 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true; // Slight optimization.
-        }
         if (!(object instanceof DefaultCompoundCS && super.equals(object, mode))) {
             return false;
         }
