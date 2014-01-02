@@ -645,8 +645,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <li>If {@code mode} is {@link ComparisonMode#STRICT STRICT}, then this method verifies if the two
      *       objects are of the same {@linkplain #getClass() class} and compares all public properties,
      *       including SIS-specific (non standard) properties.</li>
-     *   <li>If {@code mode} is {@link ComparisonMode#BY_CONTRACT}, then this method verifies if the the two
-     *       object implements the same {@linkplain #getInterface() GeoAPI interface} and compares all properties
+     *   <li>If {@code mode} is {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then this method verifies if the two
+     *       objects implement the same {@linkplain #getInterface() GeoAPI interface} and compares all properties
      *       defined by that interface ({@linkplain #getName() name}, {@linkplain #getRemarks() remarks},
      *       {@linkplain #getIdentifiers() identifiers}, <i>etc</i>).</li>
      *   <li>If {@code mode} is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA},
