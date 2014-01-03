@@ -125,7 +125,7 @@ public final class Measure {
      */
     @XmlAttribute(name = "uom", required = true)
     public String getUOM() {
-        return getUOM(unit, asXPointer);
+        return getUOM(unit, asXPointer, false);
     }
 
     /**
@@ -135,11 +135,12 @@ public final class Measure {
      *
      * @param  unit The unit to format.
      * @param  asXPointer {@code true} if the units shall be formatted as {@code xpointer}.
-     * @return
+     * @param  inAxis {@code true} for a unit used in Coordinate System Axis definition.
+     * @return The string representation of the unit of measure.
      */
-    static String getUOM(final Unit<?> unit, final boolean asXPointer) {
+    static String getUOM(final Unit<?> unit, final boolean asXPointer, final boolean inAxis) {
         if (!asXPointer) {
-            final Integer code = Units.getEpsgCode(unit);
+            final Integer code = Units.getEpsgCode(unit, inAxis);
             if (code != null) {
                 return "urn:ogc:def:uom:EPSG::" + code;
             }

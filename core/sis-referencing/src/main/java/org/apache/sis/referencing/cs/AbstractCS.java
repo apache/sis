@@ -69,7 +69,16 @@ import static org.apache.sis.util.Utilities.deepEquals;
  */
 @XmlType(name = "AbstractCoordinateSystemType")
 @XmlSeeAlso({
-    DefaultEllipsoidalCS.class
+    DefaultAffineCS.class,
+    DefaultCartesianCS.class, // Not an AffineCS subclass in GML schema.
+    DefaultSphericalCS.class,
+    DefaultEllipsoidalCS.class,
+    DefaultCylindricalCS.class,
+    DefaultPolarCS.class,
+    DefaultLinearCS.class,
+    DefaultVerticalCS.class,
+    DefaultTimeCS.class,
+    DefaultUserDefinedCS.class
 })
 public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSystem {
     /**

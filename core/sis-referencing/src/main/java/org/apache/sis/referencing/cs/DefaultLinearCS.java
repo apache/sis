@@ -18,6 +18,8 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import javax.measure.unit.Unit;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.LinearCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -49,6 +51,8 @@ import org.apache.sis.measure.Units;
  * @version 0.4
  * @module
  */
+@XmlType(name = "LinearCSType")
+@XmlRootElement(name = "LinearCS")
 public class DefaultLinearCS extends AbstractCS implements LinearCS {
     /**
      * Serial number for inter-operability with different versions.

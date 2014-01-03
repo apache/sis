@@ -18,6 +18,8 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import javax.measure.unit.Unit;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -50,6 +52,8 @@ import org.apache.sis.measure.Units;
  *
  * @see DefaultPolarCS
  */
+@XmlType(name = "CylindricalCSType")
+@XmlRootElement(name = "CylindricalCS")
 public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
     /**
      * Serial number for inter-operability with different versions.
