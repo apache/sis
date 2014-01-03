@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 
@@ -35,6 +37,8 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  * @version 0.4
  * @module
  */
+@XmlType(name = "UserDefinedCSType")
+@XmlRootElement(name = "UserDefinedCS")
 public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
     /**
      * Serial number for inter-operability with different versions.

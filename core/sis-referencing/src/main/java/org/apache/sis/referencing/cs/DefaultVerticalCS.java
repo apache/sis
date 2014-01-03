@@ -18,6 +18,8 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import javax.measure.unit.Unit;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -60,6 +62,8 @@ import org.apache.sis.internal.referencing.AxisDirections;
  * @version 0.4
  * @module
  */
+@XmlType(name = "VerticalCSType")
+@XmlRootElement(name = "VerticalCS")
 public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
     /**
      * Serial number for inter-operability with different versions.

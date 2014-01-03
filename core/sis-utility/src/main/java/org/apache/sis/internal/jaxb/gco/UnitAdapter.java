@@ -58,13 +58,16 @@ public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     }
 
     /**
-     * A variant of {@link UnitAdapter} which marshal units as an URN.
+     * A variant of {@link UnitAdapter} which marshal units as an URN for Coordinate System (CS) axes.
      * Example: {@code "urn:ogc:def:uom:EPSG::9001"}.
+     *
+     * The difference between coordinate system axis and other uses (prime meridian, etc.) is in the choice of EPSG
+     * code for the degrees. See {@link org.apache.sis.measure.Units#getEpsgCode(Unit, boolean)} for more information.
      */
-    public static final class AsURN extends UnitAdapter {
+    public static final class ForCS extends UnitAdapter {
         @Override
         public String marshal(final Unit<?> value) {
-            return Measure.getUOM(value, false);
+            return Measure.getUOM(value, false, true);
         }
     }
 }

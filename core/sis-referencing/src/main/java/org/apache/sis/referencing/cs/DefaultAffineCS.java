@@ -18,6 +18,8 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import javax.measure.unit.Unit;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
@@ -51,6 +53,8 @@ import org.apache.sis.measure.Units;
  * @version 0.4
  * @module
  */
+@XmlType(name = "AffineCSType")
+@XmlRootElement(name = "AffineCS")
 public class DefaultAffineCS extends AbstractCS implements AffineCS {
     /**
      * Serial number for inter-operability with different versions.

@@ -255,7 +255,8 @@ public final strictfp class UnitsTest extends TestCase {
     @Test
     public void testValueOfEPSG() {
         assertSame(METRE,        valueOfEPSG(9001));
-        assertSame(DEGREE_ANGLE, valueOfEPSG(9102));
+        assertSame(DEGREE_ANGLE, valueOfEPSG(9102)); // Used in prime meridian and operation parameters.
+        assertSame(DEGREE_ANGLE, valueOfEPSG(9122)); // Used in coordinate system axes.
         assertSame(METRE,        valueOf("EPSG:9001"));
         assertSame(DEGREE_ANGLE, valueOf(" epsg : 9102"));
         assertSame(DEGREE_ANGLE, valueOf("urn:ogc:def:uom:EPSG::9102"));
@@ -264,12 +265,14 @@ public final strictfp class UnitsTest extends TestCase {
     }
 
     /**
-     * Tests {@link Units#getEpsgCode(Unit)}.
+     * Tests {@link Units#getEpsgCode(Unit, boolean)}.
      */
     @Test
     public void testGetEpsgCode() {
-        assertEquals(Integer.valueOf(9001), getEpsgCode(METRE));
-        assertEquals(Integer.valueOf(9102), getEpsgCode(DEGREE_ANGLE));
-        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS));
+        assertEquals(Integer.valueOf(9001), getEpsgCode(METRE, false));
+        assertEquals(Integer.valueOf(9102), getEpsgCode(DEGREE_ANGLE, false));
+        assertEquals(Integer.valueOf(9122), getEpsgCode(DEGREE_ANGLE, true));
+        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS, false));
+        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS, true));
     }
 }
