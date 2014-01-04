@@ -31,6 +31,9 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
+// Related to JDK7
+import java.util.Objects;
+
 
 /**
  * Abstract coordinate reference system, usually defined by a coordinate system and a datum.
@@ -42,6 +45,17 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * }
  *
  * However most subclasses restrict the allowed number of dimensions.
+ *
+ * {@section Instantiation}
+ * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
+ * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
+ *
+ * {@section Immutability and thread safety}
+ * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
+ * conditions. This means that unless otherwise noted in the javadoc, {@code CoordinateReferenceSystem} instances
+ * created using only SIS factories and static constants can be shared by many objects and passed between threads
+ * without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
@@ -115,12 +129,12 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
-     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the reference system.
+     * @param properties The properties to be given to the coordinate reference system.
      * @param cs The coordinate system.
      */
     public AbstractCRS(final Map<String,?> properties, final CoordinateSystem cs) {
@@ -204,7 +218,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         if (super.equals(object, mode)) {
             switch (mode) {
                 case STRICT: {
-                    return coordinateSystem.equals(((AbstractCRS) object).coordinateSystem);
+                    final AbstractCRS that = (AbstractCRS) object;
+                    return Objects.equals(coordinateSystem, that.coordinateSystem);
                 }
                 default: {
                     final CoordinateReferenceSystem that = (CoordinateReferenceSystem) object;
@@ -216,7 +231,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
@@ -224,7 +239,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + 31*coordinateSystem.hashCode();
+        return super.computeHashCode() + 31*Objects.hashCode(coordinateSystem);
     }
 
     /**
