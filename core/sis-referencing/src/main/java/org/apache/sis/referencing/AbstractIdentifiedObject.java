@@ -119,7 +119,7 @@ import java.util.Objects;
     "remarks"
 })
 @XmlSeeAlso({
-    AbstractReferenceSystem.class,
+    org.apache.sis.referencing.crs.AbstractCRS.class,
     org.apache.sis.referencing.datum.AbstractDatum.class,
     org.apache.sis.referencing.datum.DefaultEllipsoid.class,
     org.apache.sis.referencing.datum.DefaultPrimeMeridian.class,
