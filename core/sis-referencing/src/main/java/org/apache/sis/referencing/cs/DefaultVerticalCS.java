@@ -61,6 +61,9 @@ import org.apache.sis.internal.referencing.AxisDirections;
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
+ * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
  */
 @XmlType(name = "VerticalCSType")
 @XmlRootElement(name = "VerticalCS")
