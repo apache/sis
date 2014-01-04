@@ -74,6 +74,7 @@ import java.util.Objects;
 @XmlSeeAlso({
     DefaultVerticalCRS.class,
     DefaultTemporalCRS.class,
+    DefaultImageCRS.class,
     DefaultCompoundCRS.class
 })
 public class AbstractCRS extends AbstractReferenceSystem implements CoordinateReferenceSystem {
