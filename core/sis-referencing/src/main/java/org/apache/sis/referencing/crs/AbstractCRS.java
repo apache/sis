@@ -72,6 +72,7 @@ import java.util.Objects;
 @XmlType(name="AbstractCRSType")
 @XmlRootElement(name = "AbstractCRS")
 @XmlSeeAlso({
+    DefaultVerticalCRS.class,
     DefaultCompoundCRS.class
 })
 public class AbstractCRS extends AbstractReferenceSystem implements CoordinateReferenceSystem {
