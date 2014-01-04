@@ -74,6 +74,8 @@ import java.util.Objects;
  * @module
  *
  * @see org.apache.sis.referencing.GeodeticObjects.Temporal#datum()
+ * @see org.apache.sis.referencing.cs.DefaultTimeCS
+ * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
  */
 @XmlType(name = "TemporalDatumType")
 @XmlRootElement(name = "TemporalDatum")
