@@ -81,18 +81,21 @@ public final class CRS extends Static {
      * {@example Apache SIS allows 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
      * coordinate reference system to be built in two different ways as shown below:
      *
-     * <table class="compact"><tr><td><blockquote>
-     *   <code>CompoundCRS</code> (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)<br>
-     *   <code>  ├─CompoundCRS</code> (<var>x</var>,<var>y</var>,<var>z</var>)<br>
-     *   <code>  │   ├─ProjectedCRS</code> (<var>x</var>,<var>y</var>)<br>
-     *   <code>  │   └─VerticalCRS</code> (<var>z</var>)<br>
-     *   <code>  └─TemporalCRS</code> (<var>t</var>)
+     * <table class="compact">
+     * <tr><th>Hierarchical structure</th><th>Flat list</th></tr>
+     * <tr><td><blockquote>
+     *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
+     *   <code>  ├─CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>)<br>
+     *   <code>  │   ├─ProjectedCRS</code> — (<var>x</var>, <var>y</var>)<br>
+     *   <code>  │   └─VerticalCRS</code> — (<var>z</var>)<br>
+     *   <code>  └─TemporalCRS</code> — (<var>t</var>)
      * </blockquote></td><td><blockquote>
-     *   <code>CompoundCRS</code> (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)<br>
-     *   <code>  ├─ProjectedCRS</code> (<var>x</var>,<var>y</var>)<br>
-     *   <code>  ├─VerticalCRS</code> (<var>z</var>)<br>
-     *   <code>  └─TemporalCRS</code> (<var>t</var>)
-     * </blockquote></td></tr></table>
+     *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
+     *   <code>  ├─ProjectedCRS</code> — (<var>x</var>, <var>y</var>)<br>
+     *   <code>  ├─VerticalCRS</code> — (<var>z</var>)<br>
+     *   <code>  └─TemporalCRS</code> — (<var>t</var>)
+     * </blockquote>
+     * </td></tr></table>
      *
      * This method guaranteed that the returned list is a flat one as shown on the right side.
      * Note that such flat lists are the only one allowed by ISO/OGC standards for compound CRS.
