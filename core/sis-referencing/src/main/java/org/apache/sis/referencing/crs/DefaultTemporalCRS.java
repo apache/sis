@@ -29,6 +29,8 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.measure.Units;
 
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
 
 /**
  * A 1D coordinate reference system used for the recording of time.
@@ -36,7 +38,7 @@ import org.apache.sis.measure.Units;
  * <table class="sis">
  * <tr><th>Used with CS type(s)</th></tr>
  * <tr><td>
- *   {@link org.apache.sis.referencing.cs.DefaultTimeCS TimeCS}
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS Time CS}
  * </td></tr></table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -47,13 +49,22 @@ import org.apache.sis.measure.Units;
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
  */
-@XmlType(name = "TemporalCRSType")
+@XmlType(name = "TemporalCRSType", propOrder = {
+    "coordinateSystem",
+    "datum"
+})
 @XmlRootElement(name = "TemporalCRS")
 public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 3000119849197222007L;
+
+    /**
+     * The datum.
+     */
+    @XmlElement(name = "temporalDatum")
+    private final TemporalDatum datum;
 
     /**
      * A converter from values in this CRS to values in milliseconds.
@@ -74,6 +85,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultTemporalCRS() {
+        datum = null;
     }
 
     /**
@@ -128,7 +140,9 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
                               final TemporalDatum datum,
                               final TimeCS        cs)
     {
-        super(properties, datum, cs);
+        super(properties, cs);
+        ensureNonNull("datum", datum);
+        this.datum = datum;
     }
 
     /**
@@ -144,6 +158,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     protected DefaultTemporalCRS(final TemporalCRS crs) {
         super(crs);
+        datum = crs.getDatum();
     }
 
     /**
@@ -180,8 +195,18 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * Initialize the fields required for {@link #toDate} and {@link #toValue} operations.
      */
     private void initializeConverter() {
-        origin   = getDatum().getOrigin().getTime();
+        origin   = datum.getOrigin().getTime();
         toMillis = getCoordinateSystem().getAxis(0).getUnit().asType(Duration.class).getConverterTo(Units.MILLISECOND);
+    }
+
+    /**
+     * Returns the datum.
+     *
+     * @return The datum.
+     */
+    @Override
+    public final TemporalDatum getDatum() {
+        return datum;
     }
 
     /**
@@ -198,26 +223,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * Used by JAXB only (invoked by reflection).
      */
-    final void setCoordinateSystem(final TimeCS cs) {
+    private void setCoordinateSystem(final TimeCS cs) {
         super.setCoordinateSystem("timeCS", cs);
-    }
-
-    /**
-     * Returns the datum.
-     *
-     * @return The datum.
-     */
-    @Override
-    @XmlElement(name = "temporalDatum")
-    public TemporalDatum getDatum() {
-        return (TemporalDatum) super.getDatum();
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    final void setDatum(final TemporalDatum datum) {
-        super.setDatum("temporalDatum", datum);
     }
 
     /**

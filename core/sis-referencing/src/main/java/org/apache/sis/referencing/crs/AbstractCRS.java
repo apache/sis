@@ -93,21 +93,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     private CoordinateSystem coordinateSystem;
 
     /**
-     * The datum, or {@code null} if none. This field shall be null for {@link DefaultCompoundCRS}
-     * and non-null for all other CRS types.
-     *
-     * {@note In OGC/ISO model, this property is defined in the <code>SingleCRS</code> sub-type.
-     *        However Apache SIS does not define an <code>AbstractSingleCRS</code> class in order
-     *        to simplify our class hierarchy, so we have to define this property here.}
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDatum(Datum)}</p>
-     *
-     * @see #getDatum()
-     */
-    private Datum datum;
-
-    /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
      * reserved to JAXB, which will assign values to the fields using reflexion.
@@ -170,22 +155,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * For subclasses that implement the {@link SingleCRS} interface. This constructor is not public
-     * because this {@code AbstractCRS} class implements the {@code CoordinateReferenceSystem} interface,
-     * not {@code SingleCRS}, and only the later has a datum attribute.
-     */
-    AbstractCRS(final Map<String,?> properties,
-                final Datum datum,
-                final CoordinateSystem cs)
-    {
-        super(properties);
-        ensureNonNull("datum", datum);
-        ensureNonNull("cs", cs);
-        this.datum = datum;
-        coordinateSystem = cs;
-    }
-
-    /**
      * Constructs a new coordinate reference system with the same values than the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
@@ -215,13 +184,13 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * Returns the datum, or {@code null} if none.
      *
      * This property does not exist in {@code CoordinateReferenceSystem} interface — it is defined in the
-     * {@link SingleCRS} sub-interface instead. But Apache SIS does not define an {@code AbstractSingleCRS}
-     * class in order to simplify our class hierarchy, so we store the datum in this class has a hidden property.
+     * {@link SingleCRS} sub-interface instead. But Apache SIS does not define an {@code AbstractSingleCRS} class
+     * in order to simplify our class hierarchy, so we provide a datum getter in this class has a hidden property.
      * Subclasses implementing {@code SingleCRS} (basically all SIS subclasses except {@link DefaultCompoundCRS})
      * will override this method with public access and more specific return type.
      */
     Datum getDatum() {
-        return datum;
+        return null;
     }
 
     /**
@@ -235,21 +204,13 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Sets the datum. This method is invoked only by JAXB at unmarshalling time
-     * and can be invoked only if the datum has never been set.
-     *
-     * @param  name The property name, used only in case of error message to format.
-     * @throws IllegalStateException If the datum has already been set.
-     */
-    final void setDatum(final String name, final Datum datum) {
-        if (datum != null && ReferencingUtilities.canSetProperty(name, this.datum != null)) {
-            this.datum = datum;
-        }
-    }
-
-    /**
      * Sets the coordinate system to the given value. This method is invoked only by JAXB at
      * unmarshalling time and can be invoked only if the coordinate system has never been set.
+     *
+     * {@note It was easy to put JAXB annotations directly on datum fields in subclasses because each CRS
+     *        type can be associated to only one datum type. But we do not have this convenience for
+     *        coordinate systems, where the same CRS may accept more than one kind of CS.
+     *        In GML, the different kinds of CS are marshalled in different XML elements.}
      *
      * @param  name The property name, used only in case of error message to format.
      * @throws IllegalStateException If the coordinate system has already been set.
@@ -284,14 +245,15 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode)) {
+            final Datum datum = getDatum();
             switch (mode) {
                 case STRICT: {
                     final AbstractCRS that = (AbstractCRS) object;
-                    return Objects.equals(datum, that.datum) &&
+                    return Objects.equals(datum, that.getDatum()) &&
                            Objects.equals(coordinateSystem, that.coordinateSystem);
                 }
                 default: {
-                    return deepEquals(getDatum(),
+                    return deepEquals(datum,
                                       (object instanceof SingleCRS) ? ((SingleCRS) object).getDatum() : null, mode) &&
                            deepEquals(getCoordinateSystem(),
                                       ((CoordinateReferenceSystem) object).getCoordinateSystem(), mode);
@@ -310,7 +272,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + Objects.hash(datum, coordinateSystem);
+        return super.computeHashCode() + Objects.hash(getDatum(), coordinateSystem);
     }
 
     /**
@@ -339,7 +301,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * For {@link DefaultEngineeringCRS} and {@link DefaultVerticalCRS} use only.
      */
     final void formatDefaultWKT(final Formatter formatter) {
-        formatter.append(datum);
+        formatter.append(getDatum());
         final Unit<?> unit = getUnit();
         formatter.append(unit);
         final int dimension = coordinateSystem.getDimension();
