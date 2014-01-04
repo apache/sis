@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Map;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
@@ -60,6 +61,7 @@ import java.util.Objects;
  * @version 0.4
  * @module
  */
+@XmlTransient
 public class AbstractReferenceSystem extends AbstractIdentifiedObject implements ReferenceSystem {
     /**
      * Serial number for inter-operability with different versions.

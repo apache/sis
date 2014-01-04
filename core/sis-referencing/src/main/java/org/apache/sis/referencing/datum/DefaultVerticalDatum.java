@@ -32,6 +32,7 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;
@@ -87,7 +88,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     private static final long serialVersionUID = 380347456670516572L;
 
     /**
-     * The type of this vertical datum. Consider this field as final.
+     * The type of this vertical datum.
      * If {@code null}, a value will be inferred from the name by {@link #type()}.
      */
     private VerticalDatumType type;
@@ -260,10 +261,9 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Invoked by JAXB only. The vertical datum type is set only if it has not already been specified.
      */
     private void setTypeElement(final VerticalDatumType t) {
-        if (type != null) {
-            throw new IllegalStateException();
+        if (t != null && canSetProperty("verticalDatumType", type != null)) {
+            type = t;
         }
-        type = t;
     }
 
     /**

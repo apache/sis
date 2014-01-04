@@ -35,6 +35,7 @@ import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;
@@ -94,14 +95,16 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     /**
      * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
      *
-     * <p>Consider this field as final. It is declared non-final only for JAXB unmarshalling.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setGreenwichMeasure(Measure)}</p>
      */
     private double greenwichLongitude;
 
     /**
      * The angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
      *
-     * <p>Consider this field as final. It is declared non-final only for JAXB unmarshalling.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setGreenwichMeasure(Measure)}</p>
      */
     private Unit<Angle> angularUnit;
 
@@ -256,18 +259,20 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Invoked by JAXB for setting the Greenwich longitude and its unit of measurement.
      */
     private void setGreenwichMeasure(final Measure measure) {
-        greenwichLongitude = measure.value;
-        angularUnit = measure.getUnit(Angle.class);
-        if (angularUnit == null) {
-            /*
-             * Missing unit: if the Greenwich longitude is zero, any angular unit gives the same result
-             * (assuming that the missing unit was not applying an offset), so we can select a default.
-             * If the Greenwich longitude is not zero, we can not guess. Our object will be invalid.
-             */
-            if (greenwichLongitude == 0) {
-                angularUnit = NonSI.DEGREE_ANGLE;
-            } else {
-                Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
+        if (measure != null && canSetProperty("greenwichLongitude", greenwichLongitude != 0 || angularUnit != null)) {
+            greenwichLongitude = measure.value;
+            angularUnit = measure.getUnit(Angle.class);
+            if (angularUnit == null) {
+                /*
+                 * Missing unit: if the Greenwich longitude is zero, any angular unit gives the same result
+                 * (assuming that the missing unit was not applying an offset), so we can select a default.
+                 * If the Greenwich longitude is not zero, we can not guess. Our object will be invalid.
+                 */
+                if (greenwichLongitude == 0) {
+                    angularUnit = NonSI.DEGREE_ANGLE;
+                } else {
+                    Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
+                }
             }
         }
     }
