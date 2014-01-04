@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.measure.unit.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
@@ -70,6 +71,9 @@ import java.util.Objects;
  */
 @XmlType(name="AbstractCRSType")
 @XmlRootElement(name = "AbstractCRS")
+@XmlSeeAlso({
+    DefaultCompoundCRS.class
+})
 public class AbstractCRS extends AbstractReferenceSystem implements CoordinateReferenceSystem {
     /**
      * Serial number for inter-operability with different versions.

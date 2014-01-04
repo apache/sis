@@ -16,9 +16,16 @@
  */
 package org.apache.sis.referencing;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.util.Static;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -29,7 +36,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class CRS extends Static {
@@ -55,5 +62,64 @@ public final class CRS extends Static {
     {
         ensureNonNull("code", code);
         return null;
+    }
+
+    /**
+     * Returns the ordered list of single coordinate reference systems for the specified CRS.
+     * This method performs the following choices:
+     *
+     * <ul>
+     *   <li>If the given CRS is null, returns an empty list.</li>
+     *   <li>If the given CRS is an instance of {@link SingleCRS}, returns that instance in a singleton list.</li>
+     *   <li>If the given CRS is an instance of {@link CompoundCRS}, returns a flattened list of its
+     *       {@linkplain DefaultCompoundCRS#getComponents() components}. Some components may themselves be
+     *       other {@code CompoundCRS} instances, in which case those compound CRS are also expanded in their
+     *       list of {@code SingleCRS} components.</li>
+     *   <li>Otherwise throws a {@code ClassCastException}.</li>
+     * </ul>
+     *
+     * {@example Apache SIS allows 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
+     * coordinate reference system to be built in two different ways as shown below:
+     *
+     * <table class="compact"><tr><td><blockquote>
+     *   <code>CompoundCRS</code> (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)<br>
+     *   <code>  ├─CompoundCRS</code> (<var>x</var>,<var>y</var>,<var>z</var>)<br>
+     *   <code>  │   ├─ProjectedCRS</code> (<var>x</var>,<var>y</var>)<br>
+     *   <code>  │   └─VerticalCRS</code> (<var>z</var>)<br>
+     *   <code>  └─TemporalCRS</code> (<var>t</var>)
+     * </blockquote></td><td><blockquote>
+     *   <code>CompoundCRS</code> (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)<br>
+     *   <code>  ├─ProjectedCRS</code> (<var>x</var>,<var>y</var>)<br>
+     *   <code>  ├─VerticalCRS</code> (<var>z</var>)<br>
+     *   <code>  └─TemporalCRS</code> (<var>t</var>)
+     * </blockquote></td></tr></table>
+     *
+     * This method guaranteed that the returned list is a flat one as shown on the right side.
+     * Note that such flat lists are the only one allowed by ISO/OGC standards for compound CRS.
+     * The hierarchical structure is an Apache SIS flexibility.}
+     *
+     * @param  crs The coordinate reference system, or {@code null}.
+     * @return The single coordinate reference systems, or an empty list if the given CRS is {@code null}.
+     * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
+     *
+     * @see DefaultCompoundCRS#getSingleComponents()
+     */
+    public static List<SingleCRS> getSingleComponents(final CoordinateReferenceSystem crs) {
+        final List<SingleCRS> singles;
+        if (crs == null) {
+            singles = Collections.emptyList();
+        } else if (crs instanceof CompoundCRS) {
+            if (crs instanceof DefaultCompoundCRS) {
+                singles = ((DefaultCompoundCRS) crs).getSingleComponents();
+            } else {
+                final List<CoordinateReferenceSystem> elements = ((CompoundCRS) crs).getComponents();
+                singles = new ArrayList<>(elements.size());
+                ReferencingUtilities.getSingleComponents(elements, singles);
+            }
+        } else {
+            // Intentional CassCastException here if the crs is not a SingleCRS.
+            singles = Collections.singletonList((SingleCRS) crs);
+        }
+        return singles;
     }
 }

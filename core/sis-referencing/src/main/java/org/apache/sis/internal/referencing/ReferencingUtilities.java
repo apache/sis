@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Collection;
 import javax.measure.unit.Unit;
 import org.opengis.parameter.*;
 import org.opengis.referencing.*;
@@ -84,6 +85,24 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns the URN type for the given class, or {@code null} if unknown.
+     * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of URN types.
+     *
+     * @param  type The class for which to get the URN type.
+     * @return The URN type, or {@code null} if unknown.
+     *
+     * @see org.apache.sis.internal.util.DefinitionURI
+     */
+    public static String toURNType(final Class<?> type) {
+        for (int i=0; i<TYPES.length; i++) {
+            if (TYPES[i].isAssignableFrom(type)) {
+                return URN_TYPES[i];
+            }
+        }
+        return null;
+    }
+
+    /**
      * Retrieves the value at the specified row and column of the given matrix, wrapped in a {@code Number}.
      * The {@code Number} type depends on the matrix accuracy.
      *
@@ -126,6 +145,37 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Copies all {@link SingleCRS} components from the given source to the given collection.
+     * For each {@link CompoundCRS} element found in the iteration, this method replaces the
+     * {@code CompoundCRS} by its {@linkplain CompoundCRS#getComponents() components}, which
+     * may themselves have other {@code CompoundCRS}. Those replacements are performed recursively
+     * until we obtain a flat view of CRS components.
+     *
+     * @param  source The collection of single or compound CRS.
+     * @param  addTo  Where to add the single CRS in order to obtain a flat view of {@code source}.
+     * @return {@code true} if this method found only single CRS in {@code source}, in which case {@code addTo}
+     *         got the same content (assuming that {@code addTo} was empty prior this method call).
+     * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
+     *
+     * @see org.apache.sis.referencing.CRS#getSingleComponents(CoordinateReferenceSystem)
+     */
+    public static boolean getSingleComponents(final Iterable<? extends CoordinateReferenceSystem> source,
+            final Collection<? super SingleCRS> addTo) throws ClassCastException
+    {
+        boolean sameContent = true;
+        for (final CoordinateReferenceSystem candidate : source) {
+            if (candidate instanceof CompoundCRS) {
+                getSingleComponents(((CompoundCRS) candidate).getComponents(), addTo);
+                sameContent = false;
+            } else {
+                // Intentional CassCastException here if the candidate is not a SingleCRS.
+                addTo.add((SingleCRS) candidate);
+            }
+        }
+        return sameContent;
+    }
+
+    /**
      * Ensures that the given argument value is {@code false}. This method is invoked by private setter methods,
      * which are themselves invoked by JAXB at unmarshalling time. Invoking this method from those setter methods
      * serves two purposes:
@@ -149,23 +199,5 @@ public final class ReferencingUtilities extends Static {
             throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));
         }
         return true;
-    }
-
-    /**
-     * Returns the URN type for the given class, or {@code null} if unknown.
-     * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of URN types.
-     *
-     * @param  type The class for which to get the URN type.
-     * @return The URN type, or {@code null} if unknown.
-     *
-     * @see org.apache.sis.internal.util.DefinitionURI
-     */
-    public static String toURNType(final Class<?> type) {
-        for (int i=0; i<TYPES.length; i++) {
-            if (TYPES[i].isAssignableFrom(type)) {
-                return URN_TYPES[i];
-            }
-        }
-        return null;
     }
 }
