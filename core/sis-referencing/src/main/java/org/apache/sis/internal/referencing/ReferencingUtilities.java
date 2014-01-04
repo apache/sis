@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
+import javax.measure.unit.Unit;
 import org.opengis.parameter.*;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
@@ -23,6 +24,7 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Static;
 
 
@@ -96,6 +98,57 @@ public final class ReferencingUtilities extends Static {
         } else {
             return matrix.getElement(row, column);
         }
+    }
+
+    /**
+     * Returns the unit used for all axes in the given coordinate system.
+     * If not all axes use the same unit, then this method returns {@code null}.
+     * This convenience method is often used for Well Know Text (WKT) version 1 formatting.
+     *
+     * @param cs The coordinate system for which to get the unit, or {@code null}.
+     * @return The unit for all axis in the given coordinate system, or {@code null}.
+     */
+    public static Unit<?> getUnit(final CoordinateSystem cs) {
+        Unit<?> unit = null;
+        if (cs != null) {
+            for (int i=cs.getDimension(); --i>=0;) {
+                final Unit<?> candidate = cs.getAxis(i).getUnit();
+                if (candidate != null) {
+                    if (unit == null) {
+                        unit = candidate;
+                    } else if (!unit.equals(candidate)) {
+                        return null;
+                    }
+                }
+            }
+        }
+        return unit;
+    }
+
+    /**
+     * Ensures that the given argument value is {@code false}. This method is invoked by private setter methods,
+     * which are themselves invoked by JAXB at unmarshalling time. Invoking this method from those setter methods
+     * serves two purposes:
+     *
+     * <ul>
+     *   <li>Make sure that a singleton property is not defined twice in the XML document.</li>
+     *   <li>Protect ourselves against changes in immutable objects outside unmarshalling. It should
+     *       not be necessary since the setter methods shall not be public, but we are paranoiac.</li>
+     *   <li>Be a central point where we can trace all setter methods, in case we want to improve
+     *       warning or error messages in future SIS versions.</li>
+     * </ul>
+     *
+     * @param  name The property name, used only in case of error message to format.
+     * @param  isDefined Whether the property in the caller object is current defined.
+     * @return {@code true} if the caller can set the property.
+     * @throws IllegalStateException If {@code isDefined} is {@code true}.
+     */
+    public static boolean canSetProperty(final String name, final boolean isDefined) throws IllegalStateException {
+        if (isDefined) {
+            // Future SIS version could log a warning instead if a unmarshalling is in progress.
+            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));
+        }
+        return true;
     }
 
     /**

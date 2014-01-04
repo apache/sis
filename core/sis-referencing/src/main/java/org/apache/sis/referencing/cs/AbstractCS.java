@@ -23,6 +23,7 @@ import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -68,6 +69,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
 @XmlType(name = "AbstractCoordinateSystemType")
+@XmlRootElement(name = "AbstractCoordinateSystem")
 @XmlSeeAlso({
     DefaultAffineCS.class,
     DefaultCartesianCS.class, // Not an AffineCS subclass in GML schema.
@@ -103,9 +105,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     private final CoordinateSystemAxis[] axes;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * Constructs a new object in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved
+     * to JAXB, which will assign values to the fields using reflexion.
      */
     AbstractCS() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);

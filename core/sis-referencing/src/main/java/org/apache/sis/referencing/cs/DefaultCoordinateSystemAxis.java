@@ -44,8 +44,12 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
 
+import static java.lang.Double.doubleToLongBits;
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;
@@ -156,7 +160,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     /**
      * Minimal and maximal value for this axis, or negative/positive infinity if none.
      *
-     * Consider this field as final. It is not final only for XML unmarshalling.
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setMinimum(Double)}
+     * or {@link #setMaximum(Double)}</p>
      */
     private double minimumValue, maximumValue;
 
@@ -177,8 +183,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         direction    = null;
         unit         = null;
         rangeMeaning = null;
-        minimumValue = Double.NEGATIVE_INFINITY;
-        maximumValue = Double.POSITIVE_INFINITY;
+        minimumValue = NEGATIVE_INFINITY;
+        maximumValue = POSITIVE_INFINITY;
     }
 
     /**
@@ -244,7 +250,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (!(minimumValue < maximumValue)) { // Use '!' for catching NaN
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimumValue, maximumValue));
         }
-        if ((minimumValue != Double.NEGATIVE_INFINITY) || (maximumValue != Double.POSITIVE_INFINITY)) {
+        if ((minimumValue != NEGATIVE_INFINITY) || (maximumValue != POSITIVE_INFINITY)) {
             ensureNonNull("rangeMeaning", rangeMeaning);
         } else {
             rangeMeaning = null;
@@ -276,8 +282,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         ensureNonNull("abbreviation", abbreviation);
         ensureNonNull("direction",    direction);
         ensureNonNull("unit",         unit);
-        double min = Double.NEGATIVE_INFINITY;
-        double max = Double.POSITIVE_INFINITY;
+        double min = NEGATIVE_INFINITY;
+        double max = POSITIVE_INFINITY;
         RangeMeaning r = null;
         if (Units.isAngular(unit)) {
             final UnitConverter fromDegrees = NonSI.DEGREE_ANGLE.getConverterTo(unit.asType(Angle.class));
@@ -411,14 +417,14 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      */
     @XmlElement(name = "minimumValue")
     private Double getMinimum() {
-        return (minimumValue != Double.NEGATIVE_INFINITY) ? minimumValue : null;
+        return (minimumValue != NEGATIVE_INFINITY) ? minimumValue : null;
     }
 
     /**
      * Invoked by JAXB at unmarshalling time for setting the minimum value.
      */
     private void setMinimum(final Double value) {
-        if (value != null) {
+        if (value != null && canSetProperty("minimumValue", minimumValue != NEGATIVE_INFINITY)) {
             final double min = value.doubleValue();
             if (min < maximumValue) {
                 minimumValue = min;
@@ -445,14 +451,14 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      */
     @XmlElement(name = "maximumValue")
     private Double getMaximum() {
-        return (maximumValue != Double.POSITIVE_INFINITY) ? maximumValue : null;
+        return (maximumValue != POSITIVE_INFINITY) ? maximumValue : null;
     }
 
     /**
      * Invoked by JAXB at unmarshalling time for setting the maximum value.
      */
     private void setMaximum(final Double value) {
-        if (value != null) {
+        if (value != null && canSetProperty("maximumValue", maximumValue != POSITIVE_INFINITY)) {
             final double max = value.doubleValue();
             if (max > minimumValue) {
                 maximumValue = max;
@@ -591,8 +597,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (compareMetadata) {
             if (!Objects.equals(this.abbreviation, that.abbreviation) ||
                 !Objects.equals(this.rangeMeaning, that.rangeMeaning) ||
-                Double.doubleToLongBits(minimumValue) != Double.doubleToLongBits(that.minimumValue) ||
-                Double.doubleToLongBits(maximumValue) != Double.doubleToLongBits(that.maximumValue))
+                doubleToLongBits(minimumValue) != doubleToLongBits(that.minimumValue) ||
+                doubleToLongBits(maximumValue) != doubleToLongBits(that.maximumValue))
             {
                 return false;
             }
@@ -652,7 +658,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + Objects.hashCode(unit) + Objects.hashCode(direction)
-                + Double.doubleToLongBits(minimumValue) + 31*Double.doubleToLongBits(maximumValue);
+                + doubleToLongBits(minimumValue) + 31*doubleToLongBits(maximumValue);
     }
 
     /**

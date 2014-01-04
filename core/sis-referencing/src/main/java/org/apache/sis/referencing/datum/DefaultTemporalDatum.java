@@ -31,6 +31,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;
@@ -87,7 +88,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * This information is mandatory, but SIS is tolerant to missing value is case a XML
      * fragment was incomplete.
      *
-     * <p>Consider this field as final. It is non-final only for the need of XML unmarshalling.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setOrigin(Date)}</p>
      */
     private long origin;
 
@@ -224,7 +226,9 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * Invoked by JAXB only at unmarshalling time.
      */
     private void setOrigin(final Date value) {
-        origin = MetadataUtilities.toMilliseconds(value);
+        if (value != null && canSetProperty("origin", origin != Long.MIN_VALUE)) {
+            origin = value.getTime();
+        }
     }
 
     /**

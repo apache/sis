@@ -19,8 +19,9 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
@@ -36,6 +37,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;
@@ -67,6 +69,7 @@ import java.util.Objects;
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
 @XmlType(name = "AbstractDatumType")
+@XmlRootElement(name = "AbstractDatum")
 @XmlSeeAlso({
     DefaultGeodeticDatum.class,
     DefaultVerticalDatum.class,
@@ -97,7 +100,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * (e.g. 1997 for IRTF97) or merely a year (e.g. 1983 for NAD83). If the time is
      * not defined, then the value is {@link Long#MIN_VALUE}.
      *
-     * <p>Consider this field as final. It is non-final only for the need of XML unmarshalling.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setRealizationEpoch(Date)}</p>
      */
     private long realizationEpoch;
 
@@ -298,7 +302,9 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Invoked by JAXB only at unmarshalling time.
      */
     private void setRealizationEpoch(final Date value) {
-        realizationEpoch = MetadataUtilities.toMilliseconds(value);
+        if (value != null && canSetProperty("realizationEpoch", realizationEpoch != Long.MIN_VALUE)) {
+            realizationEpoch = value.getTime();
+        }
     }
 
     /**

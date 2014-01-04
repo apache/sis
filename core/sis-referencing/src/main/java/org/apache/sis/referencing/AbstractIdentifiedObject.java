@@ -56,6 +56,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;
@@ -158,7 +159,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Alternatively an identifier by which this object can be referenced.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setIdentifier(ReferenceIdentifier)}</p>
+     * This field is modified only at unmarshalling time by {@link #setIdentifier(Code)}</p>
      *
      * @see #getIdentifiers()
      * @see #getIdentifier()
@@ -185,8 +186,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     AbstractIdentifiedObject() {
-        identifiers = null;
-        remarks     = null;
+        remarks = null;
     }
 
     /**
@@ -445,7 +445,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private void setIdentifier(final Code identifier) {
         if (identifier != null) {
             final ReferenceIdentifier id = identifier.getIdentifier();
-            if (id != null) {
+            if (id != null && canSetProperty("identifier", identifiers != null)) {
                 identifiers = Collections.singleton(id);
             }
         }
@@ -476,11 +476,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * after the object has been made available to the user.
      */
     private void setNames(final Collection<ReferenceIdentifier> names) {
-        if (names != null) {
+        if (names != null && canSetProperty("name", name != null)) {
             final Iterator<ReferenceIdentifier> it = names.iterator();
             if (it.hasNext()) {
                 name = it.next();
-                if (it.hasNext()) {
+                if (it.hasNext() && canSetProperty("alias", alias != null)) {
                     alias = new ArrayList<>(4); // There is generally few aliases.
                     do {
                         alias.add(new NamedIdentifier(it.next()));
