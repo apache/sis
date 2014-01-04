@@ -17,25 +17,26 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.util.Date;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.referencing.cs.VerticalCS;
-import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.datum.VerticalDatum;
+import javax.measure.quantity.Duration;
+import javax.measure.converter.UnitConverter;
+import org.opengis.referencing.cs.TimeCS;
+import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.measure.Units;
 
 
 /**
- * A 1D coordinate reference system used for recording heights or depths.
- * Vertical CRSs make use of the direction of gravity to define the concept of height or depth,
- * but the relationship with gravity may not be straightforward.
+ * A 1D coordinate reference system used for the recording of time.
  *
  * <table class="sis">
  * <tr><th>Used with CS type(s)</th></tr>
  * <tr><td>
- *   {@link org.apache.sis.referencing.cs.DefaultVerticalCS VerticalCS}
+ *   {@link org.apache.sis.referencing.cs.DefaultTimeCS TimeCS}
  * </td></tr></table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -43,23 +44,36 @@ import org.apache.sis.io.wkt.Formatter;
  * @version 0.4
  * @module
  *
- * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
- * @see org.apache.sis.referencing.cs.DefaultVerticalCS
+ * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
+ * @see org.apache.sis.referencing.cs.DefaultTimeCS
  */
-@XmlType(name = "VerticalCRSType")
-@XmlRootElement(name = "VerticalCRS")
-public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
+@XmlType(name = "TemporalCRSType")
+@XmlRootElement(name = "TemporalCRS")
+public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3565878468719941800L;
+    private static final long serialVersionUID = 3000119849197222007L;
+
+    /**
+     * A converter from values in this CRS to values in milliseconds.
+     * Will be constructed only when first needed.
+     */
+    private transient UnitConverter toMillis;
+
+    /**
+     * The {@linkplain TemporalDatum#getOrigin origin} in milliseconds since January 1st, 1970.
+     * This field could be implicit in the {@link #toMillis} converter, but we still handle it
+     * explicitly in order to use integer arithmetic.
+     */
+    private transient long origin;
 
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
-    private DefaultVerticalCRS() {
+    private DefaultTemporalCRS() {
     }
 
     /**
@@ -110,9 +124,9 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * @param datum The datum.
      * @param cs The coordinate system.
      */
-    public DefaultVerticalCRS(final Map<String,?> properties,
-                              final VerticalDatum datum,
-                              final VerticalCS    cs)
+    public DefaultTemporalCRS(final Map<String,?> properties,
+                              final TemporalDatum datum,
+                              final TimeCS        cs)
     {
         super(properties, datum, cs);
     }
@@ -126,9 +140,9 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      *
      * @param crs The coordinate reference system to copy.
      *
-     * @see #castOrCopy(VerticalCRS)
+     * @see #castOrCopy(TemporalCRS)
      */
-    protected DefaultVerticalCRS(final VerticalCRS crs) {
+    protected DefaultTemporalCRS(final TemporalCRS crs) {
         super(crs);
     }
 
@@ -142,24 +156,32 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * @return A SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultVerticalCRS castOrCopy(final VerticalCRS object) {
-        return (object == null) || (object instanceof DefaultVerticalCRS)
-                ? (DefaultVerticalCRS) object : new DefaultVerticalCRS(object);
+    public static DefaultTemporalCRS castOrCopy(final TemporalCRS object) {
+        return (object == null || object instanceof DefaultTemporalCRS)
+                ? (DefaultTemporalCRS) object : new DefaultTemporalCRS(object);
     }
 
     /**
      * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code VerticalCRS.class}.
+     * The SIS implementation returns {@code TemporalCRS.class}.
      *
      * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>VerticalCRS</code> sub-interface. Overriding possibility is left mostly for
+     *        <code>TemporalCRS</code> sub-interface. Overriding possibility is left mostly for
      *        implementors who wish to extend GeoAPI with their own set of interfaces.}
      *
-     * @return {@code VerticalCRS.class} or a user-defined sub-interface.
+     * @return {@code TemporalCRS.class} or a user-defined sub-interface.
      */
     @Override
-    public Class<? extends VerticalCRS> getInterface() {
-        return VerticalCRS.class;
+    public Class<? extends TemporalCRS> getInterface() {
+        return TemporalCRS.class;
+    }
+
+    /**
+     * Initialize the fields required for {@link #toDate} and {@link #toValue} operations.
+     */
+    private void initializeConverter() {
+        origin   = getDatum().getOrigin().getTime();
+        toMillis = getCoordinateSystem().getAxis(0).getUnit().asType(Duration.class).getConverterTo(Units.MILLISECOND);
     }
 
     /**
@@ -168,16 +190,16 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * @return The coordinate system.
      */
     @Override
-    @XmlElement(name = "verticalCS")
-    public VerticalCS getCoordinateSystem() {
-        return (VerticalCS) super.getCoordinateSystem();
+    @XmlElement(name = "timeCS")
+    public TimeCS getCoordinateSystem() {
+        return (TimeCS) super.getCoordinateSystem();
     }
 
     /**
      * Used by JAXB only (invoked by reflection).
      */
-    private void setCoordinateSystem(final VerticalCS cs) {
-        super.setCoordinateSystem("verticalCS", cs);
+    final void setCoordinateSystem(final TimeCS cs) {
+        super.setCoordinateSystem("timeCS", cs);
     }
 
     /**
@@ -186,27 +208,53 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * @return The datum.
      */
     @Override
-    @XmlElement(name = "verticalDatum")
-    public VerticalDatum getDatum() {
-        return (VerticalDatum) super.getDatum();
+    @XmlElement(name = "temporalDatum")
+    public TemporalDatum getDatum() {
+        return (TemporalDatum) super.getDatum();
     }
 
     /**
      * Used by JAXB only (invoked by reflection).
      */
-    private void setDatum(final VerticalDatum datum) {
-        super.setDatum("verticalDatum", datum);
+    final void setDatum(final TemporalDatum datum) {
+        super.setDatum("temporalDatum", datum);
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
+     * Convert the given value into a {@link Date} object.
+     * If the given value is {@link Double#NaN NaN} or infinite, then this method returns {@code null}.
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "VERT_CS"}.
+     * <p>This method is the converse of {@link #toValue(Date)}.</p>
+     *
+     * @param  value A value in this axis unit.
+     * @return The value as a {@linkplain Date date}, or {@code null} if the given value is NaN or infinite.
      */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        formatDefaultWKT(formatter);
-        return "VERT_CS";
+    public Date toDate(final double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return null;
+        }
+        if (toMillis == null) {
+            initializeConverter();
+        }
+        return new Date(Math.round(toMillis.convert(value)) + origin);
+    }
+
+    /**
+     * Convert the given {@linkplain Date date} into a value in this axis unit.
+     * If the given time is {@code null}, then this method returns {@link Double#NaN NaN}.
+     *
+     * <p>This method is the converse of {@link #toDate(double)}.</p>
+     *
+     * @param  time The value as a {@linkplain Date date}, or {@code null}.
+     * @return value A value in this axis unit, or {@link Double#NaN NaN} if the given time is {@code null}.
+     */
+    public double toValue(final Date time) {
+        if (time == null) {
+            return Double.NaN;
+        }
+        if (toMillis == null) {
+            initializeConverter();
+        }
+        return toMillis.inverse().convert(time.getTime() - origin);
     }
 }

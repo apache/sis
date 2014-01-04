@@ -49,6 +49,9 @@ import org.apache.sis.measure.Units;
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
+ * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  */
 @XmlType(name = "TimeCSType")
 @XmlRootElement(name = "TimeCS")
