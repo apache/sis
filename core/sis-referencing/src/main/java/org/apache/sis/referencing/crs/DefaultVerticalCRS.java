@@ -26,6 +26,8 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
 
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
 
 /**
  * A 1D coordinate reference system used for recording heights or depths.
@@ -35,7 +37,7 @@ import org.apache.sis.io.wkt.Formatter;
  * <table class="sis">
  * <tr><th>Used with CS type(s)</th></tr>
  * <tr><td>
- *   {@link org.apache.sis.referencing.cs.DefaultVerticalCS VerticalCS}
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultVerticalCS Vertical CS}
  * </td></tr></table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -46,7 +48,10 @@ import org.apache.sis.io.wkt.Formatter;
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
  */
-@XmlType(name = "VerticalCRSType")
+@XmlType(name = "VerticalCRSType", propOrder = {
+    "coordinateSystem",
+    "datum"
+})
 @XmlRootElement(name = "VerticalCRS")
 public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     /**
@@ -55,11 +60,18 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     private static final long serialVersionUID = 3565878468719941800L;
 
     /**
+     * The datum.
+     */
+    @XmlElement(name = "verticalDatum")
+    private final VerticalDatum datum;
+
+    /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultVerticalCRS() {
+        datum = null;
     }
 
     /**
@@ -114,7 +126,9 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
                               final VerticalDatum datum,
                               final VerticalCS    cs)
     {
-        super(properties, datum, cs);
+        super(properties, cs);
+        ensureNonNull("datum", datum);
+        this.datum = datum;
     }
 
     /**
@@ -130,6 +144,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      */
     protected DefaultVerticalCRS(final VerticalCRS crs) {
         super(crs);
+        datum = crs.getDatum();
     }
 
     /**
@@ -163,6 +178,16 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     }
 
     /**
+     * Returns the datum.
+     *
+     * @return The datum.
+     */
+    @Override
+    public final VerticalDatum getDatum() {
+        return datum;
+    }
+
+    /**
      * Returns the coordinate system.
      *
      * @return The coordinate system.
@@ -178,24 +203,6 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      */
     private void setCoordinateSystem(final VerticalCS cs) {
         super.setCoordinateSystem("verticalCS", cs);
-    }
-
-    /**
-     * Returns the datum.
-     *
-     * @return The datum.
-     */
-    @Override
-    @XmlElement(name = "verticalDatum")
-    public VerticalDatum getDatum() {
-        return (VerticalDatum) super.getDatum();
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setDatum(final VerticalDatum datum) {
-        super.setDatum("verticalDatum", datum);
     }
 
     /**
