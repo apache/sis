@@ -62,13 +62,19 @@
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CD_GeodeticDatum.class),
+    @XmlJavaTypeAdapter(CD_EngineeringDatum.class),
     @XmlJavaTypeAdapter(CD_ImageDatum.class),
     @XmlJavaTypeAdapter(CD_TemporalDatum.class),
     @XmlJavaTypeAdapter(CD_VerticalDatum.class),
     @XmlJavaTypeAdapter(CS_AffineCS.class),
     @XmlJavaTypeAdapter(CS_CartesianCS.class),
+    @XmlJavaTypeAdapter(CS_CylindricalCS.class),
     @XmlJavaTypeAdapter(CS_EllipsoidalCS.class),
+    @XmlJavaTypeAdapter(CS_LinearCS.class),
+    @XmlJavaTypeAdapter(CS_PolarCS.class),
+    @XmlJavaTypeAdapter(CS_SphericalCS.class),
     @XmlJavaTypeAdapter(CS_TimeCS.class),
+    @XmlJavaTypeAdapter(CS_UserDefinedCS.class),
     @XmlJavaTypeAdapter(CS_VerticalCS.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringConverter.class)

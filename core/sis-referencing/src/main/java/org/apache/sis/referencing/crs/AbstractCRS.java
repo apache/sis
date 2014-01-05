@@ -22,6 +22,8 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.cs.AffineCS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -74,6 +76,7 @@ import java.util.Objects;
 @XmlSeeAlso({
     DefaultVerticalCRS.class,
     DefaultTemporalCRS.class,
+    DefaultEngineeringCRS.class,
     DefaultImageCRS.class,
     DefaultCompoundCRS.class
 })
@@ -205,6 +208,22 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
+     * Returns the coordinate system if it is of the given type, or {@code null} otherwise.
+     * This method is invoked by subclasses that can accept more than one CS type.
+     */
+    @SuppressWarnings("unchecked")
+    final <T extends CoordinateSystem> T getCoordinateSystem(final Class<T> type) {
+        final CoordinateSystem cs = coordinateSystem;
+        if (type.isInstance(cs)) {
+            // Special case for AfficeCS: must ensure that the cs is not the CartesianCS subtype.
+            if (type != AffineCS.class || !(cs instanceof CartesianCS)) {
+                return (T) cs;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Sets the coordinate system to the given value. This method is invoked only by JAXB at
      * unmarshalling time and can be invoked only if the coordinate system has never been set.
      *
@@ -305,12 +324,13 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         formatter.append(getDatum());
         final Unit<?> unit = getUnit();
         formatter.append(unit);
-        final int dimension = coordinateSystem.getDimension();
+        final CoordinateSystem cs = coordinateSystem;
+        final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
-            formatter.append(coordinateSystem.getAxis(i));
+            formatter.append(cs.getAxis(i));
         }
         if (unit == null) {
-            formatter.setInvalidWKT(coordinateSystem);
+            formatter.setInvalidWKT(cs);
         }
     }
 }
