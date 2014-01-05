@@ -43,6 +43,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -57,6 +58,9 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.4
  * @module
  */
+@DependsOn({
+    org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class
+})
 public final strictfp class ReferencingInMetadataTest extends XMLTestCase {
     /**
      * Tolerance threshold for strict floating point comparisons.
@@ -168,9 +172,9 @@ public final strictfp class ReferencingInMetadataTest extends XMLTestCase {
          *   </gmd:MD_DataIdentification>
          * </gmd:identificationInfo>
          *
-         * Now marshal the object and compare with the original file, ignoring gml:id for now.
+         * Now marshal the object and compare with the original file.
          */
-        assertMarshalEqualsFile(VERTICAL_CRS_XML, metadata, "xmlns:*", "xsi:schemaLocation", "gml:id");
+        assertMarshalEqualsFile(VERTICAL_CRS_XML, metadata, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
