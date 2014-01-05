@@ -140,7 +140,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      *
      * @param crs The coordinate reference system to copy.
      *
-     * @see #castOrCopy(TemporalCRS)
+     * @see #castOrCopy(ImageCRS)
      */
     protected DefaultImageCRS(final ImageCRS crs) {
         super(crs);

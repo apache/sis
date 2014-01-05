@@ -34,6 +34,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 /**
  * A 1D coordinate reference system used for the recording of time.
+ * The Apache SIS implementation provides the following methods in addition to the OGC/ISO properties:
+ *
+ * <ul>
+ *   <li>{@link #toDate(double)} for converting a temporal position to a {@link Date}.</li>
+ *   <li>{@link #toValue(Date)} for converting a {@link Date} to a temporal position.</li>
+ * </ul>
  *
  * <table class="sis">
  * <tr><th>Used with CS type(s)</th></tr>
