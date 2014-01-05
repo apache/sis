@@ -19,8 +19,9 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
@@ -36,6 +37,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -67,6 +69,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
 @XmlType(name = "AbstractDatumType")
+@XmlRootElement(name = "AbstractDatum")
 @XmlSeeAlso({
     DefaultGeodeticDatum.class,
     DefaultVerticalDatum.class,
@@ -97,7 +100,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * (e.g. 1997 for IRTF97) or merely a year (e.g. 1983 for NAD83). If the time is
      * not defined, then the value is {@link Long#MIN_VALUE}.
      *
-     * <p>Consider this field as final. It is non-final only for the need of XML unmarshalling.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setRealizationEpoch(Date)}</p>
      */
     private long realizationEpoch;
 
@@ -242,6 +246,18 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The default implementation returns {@code Datum.class}.
+     * Subclasses implementing a more specific GeoAPI interface shall override this method.
+     *
+     * @return The datum interface implemented by this class.
+     */
+    @Override
+    public Class<? extends Datum> getInterface() {
+        return Datum.class;
+    }
+
+    /**
      * Returns a description of the point(s) used to anchor the datum to the Earth.
      * Also known as the "origin", especially for Engineering and Image Datums.
      *
@@ -286,7 +302,9 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Invoked by JAXB only at unmarshalling time.
      */
     private void setRealizationEpoch(final Date value) {
-        realizationEpoch = MetadataUtilities.toMilliseconds(value);
+        if (value != null && canSetProperty("realizationEpoch", realizationEpoch != Long.MIN_VALUE)) {
+            realizationEpoch = value.getTime();
+        }
     }
 
     /**
@@ -371,7 +389,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (!(object instanceof Datum && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -404,7 +422,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
@@ -412,12 +430,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this Datum implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() +
-                Objects.hash(anchorPoint, realizationEpoch, domainOfValidity, scope));
+        return super.computeHashCode() + Objects.hash(anchorPoint, realizationEpoch, domainOfValidity, scope);
     }
 
     /**

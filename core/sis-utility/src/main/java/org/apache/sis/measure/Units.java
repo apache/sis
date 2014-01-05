@@ -439,7 +439,7 @@ public final class Units extends Static {
     /**
      * Returns {@code true} if the given unit seems to be an URI. Example:
      * <ul>
-     *   <li>{@code "urn:ogc:def:uom:EPSG::9102"}</li>
+     *   <li>{@code "urn:ogc:def:uom:EPSG::9001"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"}</li>
      * </ul>
      */
@@ -460,17 +460,17 @@ public final class Units extends Static {
      * {@code null}.
      *
      * <p>The list of units recognized by this method is not exhaustive. This method recognizes
-     * the base units declared in the {@code [TARGET_UOM_CODE]} column of the above-cited table,
+     * the base units declared in the {@code TARGET_UOM_CODE} column of the above-cited table,
      * and some frequently-used units. The list of recognized units may be updated in any future
      * version of SIS.</p>
      *
      * <p>The {@link org.apache.sis.referencing.factory.epsg.DirectEpsgFactory} uses this method
      * for fetching the base units, and derives automatically other units from the information
-     * found in the EPSG database. This method is also used by other code not directly related
+     * found in the EPSG database. This method is also used by other classes not directly related
      * to the EPSG database, like {@link org.apache.sis.referencing.factory.web.AutoCRSFactory}
      * which uses EPSG code for identifying units.</p>
      *
-     * <p>The values currently recognized are:</p>
+     * <p>The currently recognized values are:</p>
      * <table class="sis">
      *   <tr>
      *     <th>Linear units</th>
@@ -507,6 +507,10 @@ public final class Units extends Static {
      *   </tr>
      * </table>
      *
+     * <b>Note:</b> EPSG uses code 9102 (<cite>degree</cite>) for prime meridian and coordinate operation parameters,
+     * and code 9122 (<cite>degree (supplier to define representation)</cite>) for coordinate system axes.
+     * But Apache SIS considers those two codes as synonymous.
+     *
      * @param  code The EPSG code for a unit of measurement.
      * @return The unit, or {@code null} if the code is unrecognized.
      */
@@ -538,12 +542,26 @@ public final class Units extends Static {
      * Returns the EPSG code of the given units, or {@code null} if unknown.
      * This method is the converse of {@link #valueOfEPSG(int)}.
      *
+     * <p>The same unit may be represented by different EPSG codes depending on the context:</p>
+     * <ul>
+     *   <li>EPSG:9102 – <cite>degree</cite> – is used for prime meridian and coordinate operation parameters.</li>
+     *   <li>EPSG:9122 – <cite>degree (supplier to define representation)</cite> – is used for coordinate system axes.</li>
+     * </ul>
+     *
+     * When such choice exists, the code to return is determined by the {@code inAxis} argument,
+     * which specifies whether the code will be used for axis definition or in other context.
+     *
      * @param  unit The unit for which to get the EPSG code.
+     * @param  inAxis {@code true} for a unit used in Coordinate System Axis definition.
      * @return The EPSG code of the given units, or {@code null} if unknown.
      *
      * @since 0.4
      */
-    public static Integer getEpsgCode(final Unit<?> unit) {
-        return UnitsMap.EPSG_CODES.get(unit);
+    public static Integer getEpsgCode(final Unit<?> unit, final boolean inAxis) {
+        Integer code = UnitsMap.EPSG_CODES.get(unit);
+        if (inAxis && code != null && code.intValue() == 9102) {
+            code = UnitsMap.I9122;
+        }
+        return code;
     }
 }

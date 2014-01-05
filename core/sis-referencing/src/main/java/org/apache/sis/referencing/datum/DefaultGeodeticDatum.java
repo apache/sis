@@ -291,6 +291,21 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code GeodeticDatum.class}.
+     *
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>GeodeticDatum</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code GeodeticDatum.class} or a user-defined sub-interface.
+     */
+    @Override
+    public Class<? extends GeodeticDatum> getInterface() {
+        return GeodeticDatum.class;
+    }
+
+    /**
      * Returns the ellipsoid given at construction time.
      *
      * @return The ellipsoid.
@@ -441,7 +456,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!(object instanceof GeodeticDatum && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -470,7 +485,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
@@ -478,12 +493,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this GeodeticDatum implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() +
-                Objects.hashCode(ellipsoid) + 31 * Objects.hashCode(primeMeridian));
+        return super.computeHashCode() + Objects.hashCode(ellipsoid) + 31 * Objects.hashCode(primeMeridian);
     }
 
     /**

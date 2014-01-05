@@ -63,7 +63,7 @@ public final strictfp class NumericsTest extends TestCase {
     @Test
     public void testToExp10() {
         for (int i=-2620; i<=2620; i++) {
-            assertEquals(Math.floor(i * MathFunctions.LOG10_2), toExp10(i), 0);
+            assertEquals(StrictMath.floor(i * MathFunctions.LOG10_2), toExp10(i), 0);
         }
         for (int i=-307; i<=308; i++) {
             final String value = "1E" + i;

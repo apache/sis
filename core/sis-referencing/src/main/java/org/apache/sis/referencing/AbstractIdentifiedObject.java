@@ -18,10 +18,8 @@ package org.apache.sis.referencing;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Locale;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
@@ -46,6 +44,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
 
@@ -55,6 +54,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -117,7 +117,7 @@ import org.apache.sis.internal.jdk7.Objects;
     "remarks"
 })
 @XmlSeeAlso({
-    AbstractReferenceSystem.class,
+    org.apache.sis.referencing.crs.AbstractCRS.class,
     org.apache.sis.referencing.datum.AbstractDatum.class,
     org.apache.sis.referencing.datum.DefaultEllipsoid.class,
     org.apache.sis.referencing.datum.DefaultPrimeMeridian.class,
@@ -159,7 +159,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Alternatively an identifier by which this object can be referenced.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setIdentifier(ReferenceIdentifier)}</p>
+     * This field is modified only at unmarshalling time by {@link #setIdentifier(Code)}</p>
      *
      * @see #getIdentifiers()
      * @see #getIdentifier()
@@ -355,6 +355,29 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * This information is part of the data compared by {@link #equals(Object, ComparisonMode)}.
+     *
+     * <p>The default implementation returns {@code IdentifiedObject.class}.
+     * Subclasses implementing a more specific GeoAPI interface shall override this method.</p>
+     *
+     * {@section Invariants}
+     * The following invariants must hold for all {@code AbstractIdentifiedObject} instances:
+     * <ul>
+     *   <li><code>getInterface().{@linkplain Class#isInstance(Object) isInstance}(this)</code>
+     *       shall return {@code true}.</li>
+     *   <li>If {@code A.getClass() == B.getClass()} is {@code true}, then
+     *       {@code A.getInterface() == B.getInterface()} shall be {@code true}.
+     *       Note that the converse does not need to hold.</li>
+     * </ul>
+     *
+     * @return The GeoAPI interface implemented by this class.
+     */
+    public Class<? extends IdentifiedObject> getInterface() {
+        return IdentifiedObject.class;
+    }
+
+    /**
      * The {@code gml:id}, which is mandatory. The current implementation searches for the first identifier,
      * regardless its authority. If no identifier is found, then the name is used.
      * If no name is found (which should not occur for valid objects), then this method returns {@code null}.
@@ -425,7 +448,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private void setIdentifier(final Code identifier) {
         if (identifier != null) {
             final ReferenceIdentifier id = identifier.getIdentifier();
-            if (id != null) {
+            if (id != null && canSetProperty("identifier", identifiers != null)) {
                 identifiers = Collections.singleton(id);
             }
         }
@@ -600,13 +623,17 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The strictness level is controlled by the second argument:
      *
      * <ul>
-     *   <li>If {@code mode} is {@link ComparisonMode#STRICT STRICT}, then all available properties
-     *       are compared including {@linkplain #getName() name}, {@linkplain #getRemarks() remarks},
-     *       {@linkplain #getIdentifiers() identifiers code}, <i>etc.</i></li>
+     *   <li>If {@code mode} is {@link ComparisonMode#STRICT STRICT}, then this method verifies if the two
+     *       objects are of the same {@linkplain #getClass() class} and compares all public properties,
+     *       including SIS-specific (non standard) properties.</li>
+     *   <li>If {@code mode} is {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then this method verifies if the two
+     *       objects implement the same {@linkplain #getInterface() GeoAPI interface} and compares all properties
+     *       defined by that interface ({@linkplain #getName() name}, {@linkplain #getRemarks() remarks},
+     *       {@linkplain #getIdentifiers() identifiers}, <i>etc</i>).</li>
      *   <li>If {@code mode} is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA},
      *       then this method compares only the properties needed for computing transformations.
      *       In other words, {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true}
-     *       if the transformation from {@code sourceCRS} to {@code targetCRS} is likely to be the
+     *       if the transformation from {@code sourceCRS} to {@code targetCRS} would be the
      *       identity transform, no matter what {@link #getName()} said.</li>
      * </ul>
      *
@@ -622,9 +649,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * See {@link #isHeuristicMatchForName(String)} for more information.
      *
      * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  mode The strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      *
      * @see #computeHashCode()
@@ -661,7 +686,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                        Objects.equals(remarks, that.remarks);
             }
             case BY_CONTRACT: {
-                if (!(object instanceof IdentifiedObject)) {
+                if (!implementsSameInterface(object)) {
                     return false;
                 }
                 final IdentifiedObject that = (IdentifiedObject) object;
@@ -673,12 +698,32 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             case IGNORE_METADATA:
             case APPROXIMATIVE:
             case DEBUG: {
-                return (object instanceof IdentifiedObject);
+                return implementsSameInterface(object);
             }
             default: {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownEnumValue_1, mode));
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the given object implements the same GeoAPI interface than this object.
+     */
+    private boolean implementsSameInterface(final Object object) {
+        final Class<? extends IdentifiedObject> type = getInterface();
+        if (object instanceof AbstractIdentifiedObject) {
+            return ((AbstractIdentifiedObject) object).getInterface() == type;
+        }
+        /*
+         * Fallback for non-SIS implementations.
+         */
+        if (type.isInstance(object)) {
+            final Class<? extends IdentifiedObject>[] t = Classes.getLeafInterfaces(object.getClass(), type);
+            if (t.length == 1 && t[0] == type) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -733,7 +778,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Invoked by {@link #hashCode()} for computing the hash code when first needed.
      * This method is invoked at most once in normal execution, or an arbitrary amount of times if Java
      * assertions are enabled. The hash code value shall never change during the whole lifetime of this
-     * object.
+     * object in a JVM. The hash code value does not need to be the same in two different executions of
+     * the JVM.
      *
      * {@section Overriding}
      * Subclasses can override this method for using more properties in hash code calculation.
@@ -750,6 +796,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @return The hash code value. This value may change in any future Apache SIS version.
      */
     protected long computeHashCode() {
-        return Objects.hash(name, nonNull(alias), nonNull(identifiers), remarks) ^ serialVersionUID;
+        return Objects.hash(name, nonNull(alias), nonNull(identifiers), remarks) ^ getInterface().hashCode();
     }
 }

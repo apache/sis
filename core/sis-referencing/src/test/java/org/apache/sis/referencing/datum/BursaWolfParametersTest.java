@@ -45,7 +45,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     /**
      * The conversion factor from arc-seconds to radians.
      */
-    private static final double TO_RADIANS = Math.PI / (180 * 60 * 60);
+    private static final double TO_RADIANS = StrictMath.PI / (180 * 60 * 60);
 
     /**
      * Returns the parameters for the <cite>WGS 72 to WGS 84 (2)</cite> transformation (EPSG:1238).
