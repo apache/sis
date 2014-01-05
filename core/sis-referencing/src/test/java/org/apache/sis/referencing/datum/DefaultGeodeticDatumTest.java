@@ -23,7 +23,6 @@ import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.test.Validators;
@@ -36,7 +35,6 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.mock.GeodeticDatumMock.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
@@ -227,8 +225,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     @Test
     public void testUnmarshalling() throws JAXBException {
         final DefaultGeodeticDatum datum = unmarshalFile(DefaultGeodeticDatum.class, XML_FILE);
-        assertIsWGS84(datum);
-        assertIsWorld((GeographicBoundingBox) getSingleton(datum.getDomainOfValidity().getGeographicElements()));
+        assertIsWGS84(datum, true);
         /*
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.

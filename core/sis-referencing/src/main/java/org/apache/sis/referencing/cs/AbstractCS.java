@@ -23,6 +23,7 @@ import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -68,8 +69,18 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
 @XmlType(name = "AbstractCoordinateSystemType")
+@XmlRootElement(name = "AbstractCoordinateSystem")
 @XmlSeeAlso({
-    DefaultEllipsoidalCS.class
+    DefaultAffineCS.class,
+    DefaultCartesianCS.class, // Not an AffineCS subclass in GML schema.
+    DefaultSphericalCS.class,
+    DefaultEllipsoidalCS.class,
+    DefaultCylindricalCS.class,
+    DefaultPolarCS.class,
+    DefaultLinearCS.class,
+    DefaultVerticalCS.class,
+    DefaultTimeCS.class,
+    DefaultUserDefinedCS.class
 })
 public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSystem {
     /**
@@ -94,9 +105,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     private final CoordinateSystemAxis[] axes;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * Constructs a new object in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved
+     * to JAXB, which will assign values to the fields using reflexion.
      */
     AbstractCS() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
@@ -228,6 +239,18 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The default implementation returns {@code CoordinateSystem.class}.
+     * Subclasses implementing a more specific GeoAPI interface shall override this method.
+     *
+     * @return The coordinate system interface implemented by this class.
+     */
+    @Override
+    public Class<? extends CoordinateSystem> getInterface() {
+        return CoordinateSystem.class;
+    }
+
+    /**
      * Returns the number of dimensions of this coordinate system.
      * This is the number of axes given at construction time.
      *
@@ -261,6 +284,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true; // Slight optimization.
+        }
         if (!super.equals(object, mode)) {
             return false;
         }
@@ -270,9 +296,6 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                 return Arrays.equals(axes, ((AbstractCS) object).axes);
             }
             default: {
-                if (!(object instanceof CoordinateSystem)) {
-                    return false;
-                }
                 final CoordinateSystem that = (CoordinateSystem) object;
                 final int dimension = getDimension();
                 if (dimension != that.getDimension()) {
@@ -289,7 +312,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
@@ -297,11 +320,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this CoordinateSystem implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() + Arrays.hashCode(axes));
+        return super.computeHashCode() + Arrays.hashCode(axes);
     }
 
     /**

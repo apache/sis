@@ -29,7 +29,7 @@
     <gml:CoordinateSystemAxis gml:id="epsg-axis-106" uom="urn:ogc:def:uom:EPSG::9122">
       <gml:identifier codeSpace="OGP">urn:ogc:def:axis:EPSG::106</gml:identifier>
       <gml:name>Geodetic latitude</gml:name>
-      <gml:axisAbbrev>Lat</gml:axisAbbrev>
+      <gml:axisAbbrev>φ</gml:axisAbbrev>
       <gml:axisDirection codeSpace="EPSG">north</gml:axisDirection>
       <gml:minimumValue>-90</gml:minimumValue>
       <gml:maximumValue>+90</gml:maximumValue>
@@ -40,7 +40,7 @@
     <gml:CoordinateSystemAxis gml:id="epsg-axis-107" uom="urn:ogc:def:uom:EPSG::9122">
       <gml:identifier codeSpace="OGP">urn:ogc:def:axis:EPSG::107</gml:identifier>
       <gml:name>Geodetic longitude</gml:name>
-      <gml:axisAbbrev>Long</gml:axisAbbrev>
+      <gml:axisAbbrev>λ</gml:axisAbbrev>
       <gml:axisDirection codeSpace="EPSG">east</gml:axisDirection>
       <gml:minimumValue>-180</gml:minimumValue>
       <gml:maximumValue>+180</gml:maximumValue>

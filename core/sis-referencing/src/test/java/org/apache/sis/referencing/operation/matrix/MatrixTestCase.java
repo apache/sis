@@ -71,7 +71,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Tolerance factor for comparisons of floating point numbers between SIS and JAMA implementation,
      * which is {@value}. Note that the matrix element values used in this class vary between 0 and 100,
-     * and the {@code Math.ulp(100.0)} value is approximatively 1.4E-14.
+     * and the {@code StrictMath.ulp(100.0)} value is approximatively 1.4E-14.
      *
      * {@section How this value is determined}
      * Experience (by looking at {@link #statistics}) shows that the differences are usually smaller than 1E-12.

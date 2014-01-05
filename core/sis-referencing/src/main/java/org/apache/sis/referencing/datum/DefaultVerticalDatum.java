@@ -32,6 +32,7 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -77,6 +78,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * @module
  *
  * @see org.apache.sis.referencing.GeodeticObjects.Vertical#datum()
+ * @see org.apache.sis.referencing.cs.DefaultVerticalCS
+ * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
  */
 @XmlType(name = "VerticalDatumType")
 @XmlRootElement(name = "VerticalDatum")
@@ -87,7 +90,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     private static final long serialVersionUID = 380347456670516572L;
 
     /**
-     * The type of this vertical datum. Consider this field as final.
+     * The type of this vertical datum.
      * If {@code null}, a value will be inferred from the name by {@link #type()}.
      */
     private VerticalDatumType type;
@@ -194,6 +197,21 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code VerticalDatum.class}.
+     *
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>VerticalDatum</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code VerticalDatum.class} or a user-defined sub-interface.
+     */
+    @Override
+    public Class<? extends VerticalDatum> getInterface() {
+        return VerticalDatum.class;
+    }
+
+    /**
      * Returns the type of this datum, or infers the type from the datum name if no type were specified.
      * The later case occurs after unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
      * It may also happen if the datum were created using reflection.
@@ -245,10 +263,9 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Invoked by JAXB only. The vertical datum type is set only if it has not already been specified.
      */
     private void setTypeElement(final VerticalDatumType t) {
-        if (type != null) {
-            throw new IllegalStateException();
+        if (t != null && canSetProperty("verticalDatumType", type != null)) {
+            type = t;
         }
-        type = t;
     }
 
     /**
@@ -265,7 +282,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!(object instanceof VerticalDatum && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -279,7 +296,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
@@ -287,11 +304,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this VerticalDatum implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() + type().hashCode());
+        return super.computeHashCode() + type().hashCode();
     }
 
     /**

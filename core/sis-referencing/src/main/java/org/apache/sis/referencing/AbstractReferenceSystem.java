@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Map;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
@@ -60,6 +61,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @version 0.4
  * @module
  */
+@XmlTransient
 public class AbstractReferenceSystem extends AbstractIdentifiedObject implements ReferenceSystem {
     /**
      * Serial number for inter-operability with different versions.
@@ -90,21 +92,6 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     AbstractReferenceSystem() {
         domainOfValidity = null;
         scope = null;
-    }
-
-    /**
-     * Constructs a new reference system with the same values than the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param object The reference system to copy.
-     */
-    public AbstractReferenceSystem(final ReferenceSystem object) {
-        super(object);
-        domainOfValidity = object.getDomainOfValidity();
-        scope            = object.getScope();
     }
 
     /**
@@ -163,6 +150,33 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     }
 
     /**
+     * Constructs a new reference system with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param object The reference system to copy.
+     */
+    protected AbstractReferenceSystem(final ReferenceSystem object) {
+        super(object);
+        domainOfValidity = object.getDomainOfValidity();
+        scope            = object.getScope();
+    }
+
+    /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The default implementation returns {@code ReferenceSystem.class}.
+     * Subclasses implementing a more specific GeoAPI interface shall override this method.
+     *
+     * @return The GeoAPI interface implemented by this class.
+     */
+    @Override
+    public Class<? extends ReferenceSystem> getInterface() {
+        return ReferenceSystem.class;
+    }
+
+    /**
      * Returns the region or timeframe in which this reference system is valid,
      * or {@code null} if unspecified.
      *
@@ -201,7 +215,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (!(object instanceof ReferenceSystem && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -223,7 +237,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     }
 
     /**
-     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
@@ -231,10 +245,6 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this ReferenceSystem implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() + Objects.hash(domainOfValidity, scope));
+        return super.computeHashCode() + Objects.hash(domainOfValidity, scope);
     }
 }

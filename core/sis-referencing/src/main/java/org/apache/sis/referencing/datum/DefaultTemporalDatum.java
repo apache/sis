@@ -31,6 +31,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -73,6 +74,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * @module
  *
  * @see org.apache.sis.referencing.GeodeticObjects.Temporal#datum()
+ * @see org.apache.sis.referencing.cs.DefaultTimeCS
+ * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
  */
 @XmlType(name = "TemporalDatumType")
 @XmlRootElement(name = "TemporalDatum")
@@ -87,7 +90,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * This information is mandatory, but SIS is tolerant to missing value is case a XML
      * fragment was incomplete.
      *
-     * <p>Consider this field as final. It is non-final only for the need of XML unmarshalling.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setOrigin(Date)}</p>
      */
     private long origin;
 
@@ -194,6 +198,21 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code TemporalDatum.class}.
+     *
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>TemporalDatum</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code TemporalDatum.class} or a user-defined sub-interface.
+     */
+    @Override
+    public Class<? extends TemporalDatum> getInterface() {
+        return TemporalDatum.class;
+    }
+
+    /**
      * Returns the date and time origin of this temporal datum.
      *
      * @return The date and time origin of this temporal datum.
@@ -209,7 +228,9 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * Invoked by JAXB only at unmarshalling time.
      */
     private void setOrigin(final Date value) {
-        origin = MetadataUtilities.toMilliseconds(value);
+        if (value != null && canSetProperty("origin", origin != Long.MIN_VALUE)) {
+            origin = value.getTime();
+        }
     }
 
     /**
@@ -226,7 +247,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!(object instanceof TemporalDatum && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -240,8 +261,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
-    /**
-     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
@@ -249,10 +269,6 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this TemporalDatum implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() + origin);
+        return super.computeHashCode() + origin;
     }
 }

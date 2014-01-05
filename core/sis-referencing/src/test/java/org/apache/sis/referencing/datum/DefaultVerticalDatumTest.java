@@ -18,7 +18,6 @@ package org.apache.sis.referencing.datum;
 
 import java.lang.reflect.Field;
 import javax.xml.bind.JAXBException;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.test.XMLTestCase;
@@ -27,7 +26,6 @@ import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.referencing.Assert.*;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 
@@ -94,8 +92,7 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
     @Test
     public void testUnmarshalling() throws JAXBException {
         final DefaultVerticalDatum datum = unmarshalFile(DefaultVerticalDatum.class, XML_FILE);
-        assertIsMeanSeaLevel(datum);
-        assertIsWorld((GeographicBoundingBox) getSingleton(datum.getDomainOfValidity().getGeographicElements()));
+        assertIsMeanSeaLevel(datum, true);
         /*
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.
