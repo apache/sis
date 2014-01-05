@@ -17,13 +17,17 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
+import javax.xml.bind.JAXBException;
 import org.opengis.test.Validators;
-import org.apache.sis.test.TestCase;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.referencing.GeodeticObjectVerifier;
+import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singletonMap;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -35,7 +39,12 @@ import static java.util.Collections.singletonMap;
  * @module
  */
 @DependsOn(DefaultCoordinateSystemAxisTest.class)
-public final strictfp class DefaultCartesianCSTest extends TestCase {
+public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
+    /**
+     * An XML file in this package containing a Cartesian coordinate system definition.
+     */
+    private static final String XML_FILE = "CartesianCS.xml";
+
     /**
      * Tests the creation of a Cartesian CS with legal axes.
      */
@@ -102,5 +111,32 @@ public final strictfp class DefaultCartesianCSTest extends TestCase {
         } catch (IllegalArgumentException e) {
             assertFalse(e.getMessage().isEmpty());
         }
+    }
+
+    /**
+     * Tests (un)marshalling of a Cartesian coordinate system.
+     *
+     * @throws JAXBException If an error occurred during unmarshalling.
+     */
+    @Test
+    public void testXML() throws JAXBException {
+        final DefaultCartesianCS cs = unmarshalFile(DefaultCartesianCS.class, XML_FILE);
+        Validators.validate(cs);
+        GeodeticObjectVerifier.assertIsProjected2D(cs);
+        /*
+         * Values in the following tests are specific to our XML file.
+         * The actual texts in the EPSG database are more descriptive.
+         */
+        final CoordinateSystemAxis E = cs.getAxis(0);
+        final CoordinateSystemAxis N = cs.getAxis(1);
+        assertEquals("name",    "Easting, northing (E,N)", cs.getName().getCode());
+        assertEquals("remarks", "Used in ProjectedCRS.", cs.getRemarks().toString());
+        assertIdentifierEquals(        "identifier", "OGP", "EPSG", null, "4400", getSingleton(cs.getIdentifiers()));
+        assertIdentifierEquals("axis[0].identifier", "OGP", "EPSG", null, "1",    getSingleton(E.getIdentifiers()));
+        assertIdentifierEquals("axis[1].identifier", "OGP", "EPSG", null, "2",    getSingleton(N.getIdentifiers()));
+        /*
+         * Marshal and compare with the original file.
+         */
+        assertMarshalEqualsFile(XML_FILE, cs, "xmlns:*", "xsi:schemaLocation");
     }
 }

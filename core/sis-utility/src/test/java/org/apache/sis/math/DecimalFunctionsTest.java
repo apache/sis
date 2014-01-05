@@ -66,7 +66,7 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
         for (int i=EXPONENT_FOR_ZERO; i<=EXPONENT_FOR_MAX; i++) { // Range of allowed exponents in base 10.
             assertEquals(parseDouble("1E"+i), pow10(i), STRICT);
         }
-        assertEquals(1000000000000000000L, Math.round(pow10(18))); // Highest value having an exact representation.
+        assertEquals(1000000000000000000L, StrictMath.round(pow10(18))); // Highest value having an exact representation.
     }
 
     /**

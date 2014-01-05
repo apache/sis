@@ -27,8 +27,9 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.RangeMeaning;
 
 import static org.apache.sis.test.Assert.*;
@@ -65,14 +66,19 @@ public final strictfp class GeodeticObjectVerifier {
      * for example a polygon encompassing the world.</p>
      *
      * @param extent The extent to verify, or {@code null} if none.
+     * @param isMandatory {@code true} if an absence of world extent is a failure.
      */
-    private static void assertIsWorld(final Extent extent) {
+    private static void assertIsWorld(final Extent extent, boolean isMandatory) {
         if (extent != null) {
             for (final GeographicExtent element : extent.getGeographicElements()) {
                 if (element instanceof GeographicBoundingBox) {
                     assertIsWorld((GeographicBoundingBox) element);
+                    isMandatory = false;
                 }
             }
+        }
+        if (isMandatory) {
+            fail("Expected a world extent element.");
         }
     }
 
@@ -194,10 +200,12 @@ public final strictfp class GeodeticObjectVerifier {
      * </table>
      *
      * @param datum The datum to verify.
+     * @param isExtentMandatory {@code true} if the domain of validity is required to contain an {@code Extent} element
+     *        for the world, or {@code false} if optional.
      */
-    public static void assertIsWGS84(final GeodeticDatum datum) {
+    public static void assertIsWGS84(final GeodeticDatum datum, final boolean isExtentMandatory) {
         assertEquals("name", "World Geodetic System 1984", datum.getName().getCode());
-        assertIsWorld    (datum.getDomainOfValidity());
+        assertIsWorld    (datum.getDomainOfValidity(), isExtentMandatory);
         assertIsGreenwich(datum.getPrimeMeridian());
         assertIsWGS84    (datum.getEllipsoid());
     }
@@ -215,39 +223,99 @@ public final strictfp class GeodeticObjectVerifier {
      * </table>
      *
      * @param datum The datum to verify.
+     * @param isExtentMandatory {@code true} if the domain of validity is required to contain an {@code Extent} element
+     *        for the world, or {@code false} if optional.
      */
-    public static void assertIsMeanSeaLevel(final VerticalDatum datum) {
+    public static void assertIsMeanSeaLevel(final VerticalDatum datum, final boolean isExtentMandatory) {
         assertEquals("name", "Mean Sea Level", datum.getName().getCode());
-        assertIsWorld(datum.getDomainOfValidity());
+        assertIsWorld(datum.getDomainOfValidity(), isExtentMandatory);
     }
 
     /**
-     * Asserts that the given coordinate system contains the geodetic (latitude, longitude) axes.
+     * Asserts that the given coordinate system contains the (easting, northing) axes in metres.
      * This method verifies the following properties:
      *
      * <table class="sis">
-     * <tr><th>Property</th> <th>Expected value</th></tr>
-     * <tr><td>{@linkplain EllipsoidalCS#getDimension() Dimension}</td>
-     *     <td>2</td></tr>
-     * <tr><td>Axis[0] name code</td>
-     *     <td>{@code "Geodetic latitude"}</td></tr>
-     * <tr><td>Axis[1] name code</td>
-     *     <td>{@code "Geodetic longitude"}</td></tr>
-     * <tr><td>Axis[0] {@linkplain CoordinateSystemAxis#getDirection() direction}</td>
+     * <tr><th>Property</th> <th colspan="2">Expected value</th></tr>
+     * <tr><td>{@linkplain CartesianCS#getDimension() Dimension}</td>
+     *     <td colspan="2">2</td></tr>
+     * <tr><td>Axes {@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
+     *     <td>{@code "Easting"}</td>
+     *     <td>{@code "Northing"}</td></tr>
+     * <tr><td>Axes {@linkplain CoordinateSystemAxis#getAbbreviation() abbreviation}</td>
+     *     <td>{@code "E"}</td>
+     *     <td>{@code "N"}</td></tr>
+     * <tr><td>Axes {@linkplain CoordinateSystemAxis#getDirection() direction}</td>
+     *     <td>{@link AxisDirection#EAST EAST}</td>
      *     <td>{@link AxisDirection#NORTH NORTH}</td></tr>
-     * <tr><td>Axis[1] {@linkplain CoordinateSystemAxis#getDirection() direction}</td>
-     *     <td>{@link AxisDirection#EAST EAST}</td></tr>
      * <tr><td>Axes {@linkplain CoordinateSystemAxis#getUnit() units}</td>
-     *     <td>{@link NonSI#DEGREE_ANGLE}</td></tr>
-     * <tr><td>Axis[0] range</td>
-     *     <td>[-90 … 90] with {@link RangeMeaning#EXACT}, or all range properties missing</td></tr>
-     * <tr><td>Axis[1] range</td>
-     *     <td>[-180 … 180] with {@link RangeMeaning#WRAPAROUND}, or all range properties missing</td></tr>
+     *     <td>{@link SI#METRE}</td>
+     *     <td>{@link SI#METRE}</td></tr>
+     * <tr><td>Axes range</td>
+     *     <td>[-∞ … ∞]</td>
+     *     <td>[-∞ … ∞]</td></tr>
+     * <tr><td>Axes range meaning</td>
+     *     <td>{@code null}</td>
+     *     <td>{@code null}</td>
      * </table>
      *
      * @param cs The coordinate system to verify.
      */
-    public static void assertIsGeodetic2D(final EllipsoidalCS cs) {
+    public static void assertIsProjected2D(final CartesianCS cs) {
+        assertEquals("dimension", 2, cs.getDimension());
+        final CoordinateSystemAxis E = cs.getAxis(0);
+        final CoordinateSystemAxis N = cs.getAxis(1);
+        assertNotNull("axis", E);
+        assertNotNull("axis", N);
+        assertEquals("axis[0].name",         "Easting",           E.getName().getCode());
+        assertEquals("axis[1].name",         "Northing",          N.getName().getCode());
+        assertEquals("axis[0].abbreviation", "E",                 E.getAbbreviation());
+        assertEquals("axis[1].abbreviation", "N",                 N.getAbbreviation());
+        assertEquals("axis[0].direction",    AxisDirection.EAST,  E.getDirection());
+        assertEquals("axis[1].direction",    AxisDirection.NORTH, N.getDirection());
+        assertEquals("axis[0].unit",         SI.METRE,            E.getUnit());
+        assertEquals("axis[1].unit",         SI.METRE,            N.getUnit());
+        verifyRange(E, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null, true);
+        verifyRange(N, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null, true);
+    }
+
+    /**
+     * Asserts that the given coordinate system contains the geodetic (latitude, longitude) axes in degrees.
+     * This method verifies the following properties:
+     *
+     * <table class="sis">
+     * <tr><th>Property</th> <th colspan="2">Expected value</th></tr>
+     * <tr><td>{@linkplain EllipsoidalCS#getDimension() Dimension}</td>
+     *     <td colspan="2">2</td></tr>
+     * <tr><td>Axes {@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
+     *     <td>{@code "Geodetic latitude"}</td>
+     *     <td>{@code "Geodetic longitude"}</td></tr>
+     * <tr><td>Axes {@linkplain CoordinateSystemAxis#getDirection() direction}</td>
+     *     <td>{@link AxisDirection#NORTH NORTH}</td>
+     *     <td>{@link AxisDirection#EAST EAST}</td></tr>
+     * <tr><td>Axes {@linkplain CoordinateSystemAxis#getUnit() units}</td>
+     *     <td>{@link NonSI#DEGREE_ANGLE}</td>
+     *     <td>{@link NonSI#DEGREE_ANGLE}</td></tr>
+     * <tr><td>Axes range</td>
+     *     <td>[-90 … 90] (see below)</td>
+     *     <td>[-180 … 180] (see below)</td></tr>
+     * <tr><td>Axes range meaning</td>
+     *     <td>{@link RangeMeaning#EXACT} or missing</td>
+     *     <td>{@link RangeMeaning#WRAPAROUND} or missing</td></tr>
+     * </table>
+     *
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>The axes range may be missing if and only if the range meaning is also missing.</li>
+     *   <li>This method does not verify {@linkplain CoordinateSystemAxis#getAbbreviation() abbreviations}
+     *       because the classical symbols (φ,λ) are often replaced by (lat,long).</li>
+     * </ul>
+     *
+     * @param cs The coordinate system to verify.
+     * @param rangeIsMandatory {@code true} if the axes range and range meaning properties shall be defined,
+     *        or {@code false} if they are optional.
+     */
+    public static void assertIsGeodetic2D(final EllipsoidalCS cs, final boolean rangeIsMandatory) {
         assertEquals("dimension", 2, cs.getDimension());
         final CoordinateSystemAxis latitude  = cs.getAxis(0);
         final CoordinateSystemAxis longitude = cs.getAxis(1);
@@ -259,23 +327,26 @@ public final strictfp class GeodeticObjectVerifier {
         assertEquals("axis[1].direction", AxisDirection.EAST,   longitude.getDirection());
         assertEquals("axis[0].unit",      NonSI.DEGREE_ANGLE,   latitude .getUnit());
         assertEquals("axis[1].unit",      NonSI.DEGREE_ANGLE,   longitude.getUnit());
-        verifyRange(latitude,   -90,  +90, RangeMeaning.EXACT);
-        verifyRange(longitude, -180, +180, RangeMeaning.WRAPAROUND);
+        verifyRange(latitude,   -90,  +90, RangeMeaning.EXACT, rangeIsMandatory);
+        verifyRange(longitude, -180, +180, RangeMeaning.WRAPAROUND, rangeIsMandatory);
     }
 
     /**
      * Asserts that the axis range is either fully missing, or defined to exactly the given properties.
      */
     private static void verifyRange(final CoordinateSystemAxis axis,
-            final double min, final double max, final RangeMeaning rm)
+            final double min, final double max, final RangeMeaning expected, final boolean isMandatory)
     {
         final double       minimumValue = axis.getMinimumValue();
         final double       maximumValue = axis.getMaximumValue();
         final RangeMeaning rangeMeaning = axis.getRangeMeaning();
-        if (minimumValue != Double.NEGATIVE_INFINITY || maximumValue != Double.POSITIVE_INFINITY || rangeMeaning != null) {
+        if (isMandatory || rangeMeaning != null ||
+                minimumValue != Double.NEGATIVE_INFINITY ||
+                maximumValue != Double.POSITIVE_INFINITY)
+        {
             assertEquals("axis.minimumValue", min, minimumValue, STRICT);
             assertEquals("axis.maximumValue", max, maximumValue, STRICT);
-            assertEquals("axis.rangeMeaning", rm,  rangeMeaning);
+            assertEquals("axis.rangeMeaning", expected, rangeMeaning);
         }
     }
 }

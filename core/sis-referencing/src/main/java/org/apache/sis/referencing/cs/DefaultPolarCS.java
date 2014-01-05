@@ -18,12 +18,13 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import javax.measure.unit.Unit;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.ComparisonMode;
 
 
 /**
@@ -49,6 +50,8 @@ import org.apache.sis.util.ComparisonMode;
  * @version 0.4
  * @module
  */
+@XmlType(name = "PolarCSType")
+@XmlRootElement(name = "PolarCS")
 public class DefaultPolarCS extends AbstractCS implements PolarCS {
     /**
      * Serial number for inter-operability with different versions.
@@ -158,19 +161,17 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
     }
 
     /**
-     * Compares this coordinate system with the specified object for equality.
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code PolarCS.class}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
-     * @return {@code true} if both objects are equal.
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>PolarCS</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code PolarCS.class} or a user-defined sub-interface.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true; // Slight optimization.
-        }
-        return (object instanceof PolarCS) && super.equals(object, mode);
+    public Class<? extends PolarCS> getInterface() {
+        return PolarCS.class;
     }
 }
