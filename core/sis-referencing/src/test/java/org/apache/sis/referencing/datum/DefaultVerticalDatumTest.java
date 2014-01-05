@@ -17,9 +17,15 @@
 package org.apache.sis.referencing.datum;
 
 import java.lang.reflect.Field;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.util.Version;
+import org.apache.sis.xml.XML;
+import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -43,6 +49,11 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
      * An XML file in this package containing a vertical datum definition.
      */
     private static final String XML_FILE = "Mean Sea Level.xml";
+
+    /**
+     * An XML file with the same content than {@link #XML_FILE}, but written in an older GML format.
+     */
+    private static final String GML31_FILE = "Mean Sea Level (GML 3.1).xml";
 
     /**
      * Tests the {@link DefaultVerticalDatum#getVerticalDatumType()} method in a state
@@ -85,14 +96,20 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
     }
 
     /**
-     * Tests unmarshalling.
+     * Tests XML (un)marshalling.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException If an error occurred during (un)marshalling.
      */
     @Test
-    public void testUnmarshalling() throws JAXBException {
+    public void testXML() throws JAXBException {
         final DefaultVerticalDatum datum = unmarshalFile(DefaultVerticalDatum.class, XML_FILE);
         assertIsMeanSeaLevel(datum, true);
+        /*
+         * Following attribute does not exist in GML 3.2, so it has been inferred.
+         * Our datum name is "Mean Sea Level", which for now is not yet mapped to
+         * the geoidal type (this could change in any future SIS version).
+         */
+        assertEquals("vertDatumType", VerticalDatumType.OTHER_SURFACE, datum.getVerticalDatumType());
         /*
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.
@@ -100,5 +117,53 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
         assertEquals("remarks",          "Approximates geoid.",             datum.getRemarks().toString());
         assertEquals("scope",            "Hydrography.",                    datum.getScope().toString());
         assertEquals("anchorDefinition", "Averaged over a 19-year period.", datum.getAnchorPoint().toString());
+        /*
+         * Test marshalling and compare with the original file.
+         */
+        assertMarshalEqualsFile(XML_FILE, datum, "xmlns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Tests (un)marshalling of an older version, GML 3.1.
+     *
+     * @throws JAXBException If an error occurred during unmarshalling.
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-160">SIS-160: Need XSLT between GML 3.1 and 3.2</a>
+     */
+    @Test
+    public void testGML31() throws JAXBException {
+        final Version version = new Version("3.1");
+        final MarshallerPool pool = getMarshallerPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        unmarshaller.setProperty(XML.GML_VERSION, version);
+        final DefaultVerticalDatum datum =
+                (DefaultVerticalDatum) unmarshaller.unmarshal(getClass().getResource(GML31_FILE));
+        pool.recycle(unmarshaller);
+        /*
+         * Following attribute exists in GML 3.1 only.
+         */
+        assertEquals("vertDatumType", VerticalDatumType.GEOIDAL, datum.getVerticalDatumType());
+        /*
+         * The name, anchor definition and domain of validity are lost because
+         * those property does not have the same XML element name (SIS-160).
+         * Below is all we have.
+         */
+        assertEquals("remarks", "Approximates geoid.", datum.getRemarks().toString());
+        assertEquals("scope",   "Hydrography.",        datum.getScope().toString());
+        /*
+         * Test marshaling. We can not yet compare with the original XML file
+         * because of all the information lost. This may be fixed in a future
+         * SIS version (SIS-160).
+         */
+        final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.setProperty(XML.GML_VERSION, version);
+        final String xml = marshal(marshaller, datum);
+        pool.recycle(marshaller);
+        assertXmlEquals(
+                "<gml:VerticalDatum xmlns:gml=\"" + LegacyNamespaces.GML + "\">\n" +
+                "  <gml:remarks>Approximates geoid.</gml:remarks>\n" +
+                "  <gml:scope>Hydrography.</gml:scope>\n" +
+                "  <gml:verticalDatumType>geoidal</gml:verticalDatumType>\n" +
+                "</gml:VerticalDatum>", xml, "xmlns:*");
     }
 }
