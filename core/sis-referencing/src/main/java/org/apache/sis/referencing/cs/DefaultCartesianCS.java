@@ -34,16 +34,16 @@ import org.apache.sis.util.resources.Errors;
  *   <th>Used with</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultGeocentricCRS Geocentric CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS Geocentric CRS}</td>
  *   <td>“Geocentric X”, “Geocentric Y”, “Geocentric Z”</td>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultProjectedCRS Projected CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected CRS}</td>
  *   <td>“Easting” or “Westing”, “Northing” or “Southing”</td>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
  *   <td>unspecified</td>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultImageCRS Image CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultImageCRS Image CRS}</td>
  *   <td>unspecified</td>
  * </tr></table>
  *
