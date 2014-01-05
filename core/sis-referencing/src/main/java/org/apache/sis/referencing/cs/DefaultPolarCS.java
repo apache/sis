@@ -35,7 +35,7 @@ import org.apache.sis.measure.Units;
  *   <th>Used with</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
  *   <td>unspecified</td>
  * </tr></table>
  *

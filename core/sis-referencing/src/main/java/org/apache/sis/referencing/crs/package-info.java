@@ -37,7 +37,7 @@
  *       {@link org.apache.sis.referencing.crs.DefaultVerticalCRS VerticalCRS} and
  *       {@link org.apache.sis.referencing.crs.DefaultTemporalCRS TemporalCRS}.</li>
  *   <li>Any number of dimensions:
- *       {@link org.geotoolkit.referencing.crs.DefaultCompoundCRS CompoundCRS}
+ *       {@link org.apache.sis.referencing.crs.DefaultCompoundCRS CompoundCRS}
  *       (often used for adding a time axis to the above CRS).
  * </ul>
  *

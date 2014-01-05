@@ -36,7 +36,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *   <th>Used with CRS types</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultCompoundCRS Compound}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultCompoundCRS Compound}</td>
  *   <td>(not applicable)</td>
  * </tr></table>
  *
