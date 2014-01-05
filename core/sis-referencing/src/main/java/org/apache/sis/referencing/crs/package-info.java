@@ -21,7 +21,7 @@
  * The remaining discussion on this page is specific to the SIS implementation.
  *
  * <p>The root class for this package is {@link org.apache.sis.referencing.crs.AbstractCRS}.
- * Coordinate Reference System (CRS) can have various number of dimensions, but some restriction
+ * Coordinate Reference System (CRS) can have various number of dimensions, but some restrictions
  * apply depending on the CRS type:</p>
  *
  * <ul>
@@ -39,6 +39,14 @@
  *   <li>Any number of dimensions:
  *       {@link org.apache.sis.referencing.crs.DefaultCompoundCRS CompoundCRS}
  *       (often used for adding a time axis to the above CRS).
+ * </ul>
+ *
+ * {@section Apache SIS extensions}
+ * Some SIS implementations provide additional methods that are not part of OGC/ISO specifications:
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toDate(double)}</li>
+ *   <li>{@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toValue DefaultTemporalCRS.toValue(Date)}</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
