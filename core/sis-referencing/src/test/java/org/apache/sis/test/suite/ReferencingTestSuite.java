@@ -49,6 +49,7 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.SymbolsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
+    org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class,
     org.apache.sis.referencing.IdentifiedObjectsTest.class,
     org.apache.sis.referencing.NamedIdentifierTest.class,
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
@@ -76,7 +77,9 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.GeneralEnvelopeTest.class,
     org.apache.sis.geometry.SubEnvelopeTest.class,
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,
-    org.apache.sis.geometry.Envelope2DTest.class
+    org.apache.sis.geometry.Envelope2DTest.class,
+
+    org.apache.sis.test.integration.ReferencingInMetadataTest.class
 })
 public final strictfp class ReferencingTestSuite extends TestSuite {
     /**

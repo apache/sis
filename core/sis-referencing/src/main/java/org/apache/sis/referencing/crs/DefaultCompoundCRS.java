@@ -47,7 +47,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * This class is often used for defining 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
  * coordinate reference systems as an aggregation of simpler CRS. Below is two examples of such aggregations:
  *
- * <table class="compact">
+ * <p><table class="compact">
  * <tr><th>Flat list</th><th>Hierarchical structure</th></tr>
  * <tr><td><blockquote>
  *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
@@ -61,7 +61,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *   <code>  │   └─VerticalCRS</code> — (<var>z</var>)<br>
  *   <code>  └─TemporalCRS</code> — (<var>t</var>)
  * </blockquote></td></tr>
- * </table>
+ * </table></p>
  *
  * Strictly speaking, only the flat list on the left side is allowed by OGC/ISO specifications.
  * However Apache SIS relaxes this rule by allowing hierarchies as shown on the right side. This
