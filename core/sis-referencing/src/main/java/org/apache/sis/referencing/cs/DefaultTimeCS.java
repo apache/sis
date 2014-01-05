@@ -19,11 +19,12 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.measure.Units;
 
 
@@ -48,7 +49,12 @@ import org.apache.sis.measure.Units;
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
+ * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  */
+@XmlType(name = "TimeCSType")
+@XmlRootElement(name = "TimeCS")
 public class DefaultTimeCS extends AbstractCS implements TimeCS {
     /**
      * Serial number for inter-operability with different versions.
@@ -152,19 +158,17 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
     }
 
     /**
-     * Compares this coordinate system with the specified object for equality.
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code TimeCS.class}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
-     * @return {@code true} if both objects are equal.
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>TimeCS</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code TimeCS.class} or a user-defined sub-interface.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true; // Slight optimization.
-        }
-        return (object instanceof TimeCS) && super.equals(object, mode);
+    public Class<? extends TimeCS> getInterface() {
+        return TimeCS.class;
     }
 }

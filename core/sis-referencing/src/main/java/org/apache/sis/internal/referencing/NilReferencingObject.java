@@ -20,8 +20,9 @@ import java.util.Set;
 import java.util.Collection;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.extent.Extent;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.io.wkt.UnformattableObjectException;
@@ -38,7 +39,7 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
  * @version 0.4
  * @module
  */
-public final class NilReferencingObject implements NilObject, IdentifiedObject {
+public final class NilReferencingObject implements NilObject, ReferenceSystem {
     /**
      * The unique instance.
      */
@@ -67,6 +68,8 @@ public final class NilReferencingObject implements NilObject, IdentifiedObject {
     @Override public Collection<GenericName>  getAlias()       {return null;}
     @Override public Set<ReferenceIdentifier> getIdentifiers() {return null;}
     @Override public InternationalString      getRemarks()     {return null;}
+    @Override public InternationalString      getScope()       {return null;}
+    @Override public Extent getDomainOfValidity()              {return null;}
 
     /**
      * Throws the exception in all cases.
@@ -77,12 +80,5 @@ public final class NilReferencingObject implements NilObject, IdentifiedObject {
     @Override
     public String toWKT() throws UnformattableObjectException {
         throw new UnformattableObjectException();
-    }
-
-    /**
-     * Returns the unique instance on deserialization.
-     */
-    private Object readResolve() {
-        return INSTANCE;
     }
 }

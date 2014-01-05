@@ -50,7 +50,7 @@ public final strictfp class CommonAxes {
      * @see #GEODETIC_LATITUDE
      */
     public static final DefaultCoordinateSystemAxis GEODETIC_LONGITUDE = create("Geodetic longitude", "λ",
-            AxisDirection.EAST, 180, NonSI.DEGREE_ANGLE);
+            AxisDirection.EAST, -180, 180, NonSI.DEGREE_ANGLE, RangeMeaning.WRAPAROUND);
 
     /**
      * Default axis info for geodetic latitudes in a
@@ -67,7 +67,7 @@ public final strictfp class CommonAxes {
      * @see #GEODETIC_LONGITUDE
      */
     public static final DefaultCoordinateSystemAxis GEODETIC_LATITUDE = create("Geodetic latitude", "φ",
-            AxisDirection.NORTH, 90, NonSI.DEGREE_ANGLE);
+            AxisDirection.NORTH, -90, 90, NonSI.DEGREE_ANGLE, RangeMeaning.EXACT);
 
     /**
      * Default axis info for longitudes.
@@ -82,7 +82,7 @@ public final strictfp class CommonAxes {
      * @see #LATITUDE
      */
     public static final DefaultCoordinateSystemAxis LONGITUDE = create("Longitude", "λ",
-            AxisDirection.EAST, 180, NonSI.DEGREE_ANGLE);
+            AxisDirection.EAST, -180, 180, NonSI.DEGREE_ANGLE, RangeMeaning.WRAPAROUND);
 
     /**
      * Default axis info for latitudes.
@@ -97,7 +97,7 @@ public final strictfp class CommonAxes {
      * @see #LONGITUDE
      */
     public static final DefaultCoordinateSystemAxis LATITUDE = create("Latitude", "φ",
-            AxisDirection.NORTH, 90, NonSI.DEGREE_ANGLE);
+            AxisDirection.NORTH, -90, 90, NonSI.DEGREE_ANGLE, RangeMeaning.EXACT);
 
     /**
      * The default axis for height values above the ellipsoid in a
@@ -114,7 +114,7 @@ public final strictfp class CommonAxes {
      * @see #DEPTH
      */
     public static final DefaultCoordinateSystemAxis ELLIPSOIDAL_HEIGHT = create("Ellipsoidal height", "h",
-            AxisDirection.UP, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.UP, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * The default axis for height values measured from gravity.
@@ -127,13 +127,13 @@ public final strictfp class CommonAxes {
      * @see #DEPTH
      */
     public static final DefaultCoordinateSystemAxis GRAVITY_RELATED_HEIGHT = create("Gravity-related height", "H",
-            AxisDirection.UP, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.UP, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * A height in centimetres, for {@link CoordinateSystemsTest} only.
      */
     static final DefaultCoordinateSystemAxis HEIGHT_cm = create("Height", "h",
-            AxisDirection.UP, Double.POSITIVE_INFINITY, SI.CENTIMETRE);
+            AxisDirection.UP, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.CENTIMETRE, null);
 
     /**
      * The default axis for altitude values.
@@ -148,7 +148,7 @@ public final strictfp class CommonAxes {
      * @see #DEPTH
      */
     public static final DefaultCoordinateSystemAxis ALTITUDE = create("Altitude", "h",
-            AxisDirection.UP, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.UP, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * The default axis for depth.
@@ -161,7 +161,7 @@ public final strictfp class CommonAxes {
      * @see #GRAVITY_RELATED_HEIGHT
      */
     public static final DefaultCoordinateSystemAxis DEPTH = create("Depth", "d",
-            AxisDirection.DOWN, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.DOWN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * Default axis info for radius in a
@@ -179,7 +179,7 @@ public final strictfp class CommonAxes {
      * @see #DEPTH
      */
     public static final DefaultCoordinateSystemAxis GEOCENTRIC_RADIUS = create("Geocentric radius", "r",
-            AxisDirection.UP, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.UP, 0, Double.POSITIVE_INFINITY, SI.METRE, RangeMeaning.EXACT);
 
     /**
      * Default axis info for longitudes in a
@@ -197,7 +197,7 @@ public final strictfp class CommonAxes {
      * @see #SPHERICAL_LATITUDE
      */
     public static final DefaultCoordinateSystemAxis SPHERICAL_LONGITUDE = create("Spherical longitude", "Ω",
-            AxisDirection.EAST, 180, NonSI.DEGREE_ANGLE);
+            AxisDirection.EAST, -180, 180, NonSI.DEGREE_ANGLE, RangeMeaning.WRAPAROUND);
 
     /**
      * Default axis info for latitudes in a
@@ -215,7 +215,7 @@ public final strictfp class CommonAxes {
      * @see #SPHERICAL_LONGITUDE
      */
     public static final DefaultCoordinateSystemAxis SPHERICAL_LATITUDE = create("Spherical latitude", "Θ",
-            AxisDirection.NORTH, 90, NonSI.DEGREE_ANGLE);
+            AxisDirection.NORTH, -90, 90, NonSI.DEGREE_ANGLE, RangeMeaning.EXACT);
 
     /**
      * Default axis info for <var>x</var> values in a
@@ -233,7 +233,7 @@ public final strictfp class CommonAxes {
      * @see #COLUMN
      */
     public static final DefaultCoordinateSystemAxis X = create("x", "x",
-            AxisDirection.EAST, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * Default axis info for <var>y</var> values in a
@@ -251,7 +251,7 @@ public final strictfp class CommonAxes {
      * @see #ROW
      */
     public static final DefaultCoordinateSystemAxis Y = create("y", "y",
-            AxisDirection.NORTH, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.NORTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * Default axis info for <var>z</var> values in a
@@ -263,7 +263,7 @@ public final strictfp class CommonAxes {
      * <p>This axis is usually part of a {@link #X}, {@link #Y}, {@link #Z} set.</p>
      */
     public static final DefaultCoordinateSystemAxis Z = create("z", "z",
-            AxisDirection.UP, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.UP, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * Default axis info for <var>x</var> values in a
@@ -279,7 +279,7 @@ public final strictfp class CommonAxes {
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
      */
     public static final DefaultCoordinateSystemAxis GEOCENTRIC_X = create("X", "X",
-            AxisDirection.GEOCENTRIC_X, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.GEOCENTRIC_X, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * Default axis info for <var>y</var> values in a
@@ -295,7 +295,7 @@ public final strictfp class CommonAxes {
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
      */
     public static final DefaultCoordinateSystemAxis GEOCENTRIC_Y = create("Y", "Y",
-            AxisDirection.GEOCENTRIC_Y, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.GEOCENTRIC_Y, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * Default axis info for <var>z</var> values in a
@@ -311,7 +311,7 @@ public final strictfp class CommonAxes {
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
      */
     public static final DefaultCoordinateSystemAxis GEOCENTRIC_Z = create("Z", "Z",
-            AxisDirection.GEOCENTRIC_Z, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.GEOCENTRIC_Z, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * Default axis info for Easting values in a
@@ -326,7 +326,7 @@ public final strictfp class CommonAxes {
      * @see #WESTING
      */
     public static final DefaultCoordinateSystemAxis EASTING = create("Easting", "E",
-            AxisDirection.EAST, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * Default axis info for Westing values in a
@@ -339,7 +339,7 @@ public final strictfp class CommonAxes {
      * @see #WESTING
      */
     public static final DefaultCoordinateSystemAxis WESTING = create("Westing", "W",
-            AxisDirection.WEST, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.WEST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * Default axis info for Northing values in a
@@ -354,7 +354,7 @@ public final strictfp class CommonAxes {
      * @see #SOUTHING
      */
     public static final DefaultCoordinateSystemAxis NORTHING = create("Northing", "N",
-            AxisDirection.NORTH, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.NORTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * Default axis info for Southing values in a
@@ -367,19 +367,19 @@ public final strictfp class CommonAxes {
      * @see #SOUTHING
      */
     public static final DefaultCoordinateSystemAxis SOUTHING = create("Southing", "S",
-            AxisDirection.SOUTH, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.SOUTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * An axis with North-East orientation.
      */
     static final DefaultCoordinateSystemAxis NORTH_EAST = create("NORTH_EAST", "NE",
-            AxisDirection.NORTH_EAST, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.NORTH_EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * An axis with South-East orientation.
      */
     static final DefaultCoordinateSystemAxis SOUTH_EAST = create("SOUTH_EAST", "SE",
-            AxisDirection.SOUTH_EAST, Double.POSITIVE_INFINITY, SI.METRE);
+            AxisDirection.SOUTH_EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null);
 
     /**
      * A default axis for time values in a {@linkplain org.opengis.referencing.cs.TimeCS time CS}.
@@ -387,7 +387,7 @@ public final strictfp class CommonAxes {
      * The abbreviation is lower case "<var>t</var>".
      */
     public static final DefaultCoordinateSystemAxis TIME = create("Time", "t",
-            AxisDirection.FUTURE, Double.POSITIVE_INFINITY, NonSI.DAY);
+            AxisDirection.FUTURE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, NonSI.DAY, null);
 
     /**
      * A default axis for column indices in a {@linkplain org.opengis.coverage.grid.GridCoverage grid coverage}.
@@ -395,7 +395,7 @@ public final strictfp class CommonAxes {
      * The abbreviation is lower case "<var>i</var>".
      */
     public static final DefaultCoordinateSystemAxis COLUMN = create("Column", "i",
-            AxisDirection.COLUMN_POSITIVE, Double.POSITIVE_INFINITY, Unit.ONE);
+            AxisDirection.COLUMN_POSITIVE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Unit.ONE, null);
 
     /**
      * A default axis for row indices in a {@linkplain org.opengis.coverage.grid.GridCoverage grid coverage}.
@@ -403,7 +403,7 @@ public final strictfp class CommonAxes {
      * The abbreviation is lower case "<var>j</var>".
      */
     public static final DefaultCoordinateSystemAxis ROW = create("Row", "j",
-            AxisDirection.ROW_POSITIVE, Double.POSITIVE_INFINITY, Unit.ONE);
+            AxisDirection.ROW_POSITIVE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Unit.ONE, null);
 
     /**
      * A default axis for <var>x</var> values in a display device. Increasing values go toward
@@ -411,7 +411,7 @@ public final strictfp class CommonAxes {
      * The abbreviation is lower case "<var>x</var>".
      */
     public static final DefaultCoordinateSystemAxis DISPLAY_X = create("x", "x",
-            AxisDirection.DISPLAY_RIGHT, Double.POSITIVE_INFINITY, Unit.ONE);
+            AxisDirection.DISPLAY_RIGHT, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Unit.ONE, null);
 
     /**
      * A default axis for <var>y</var> values in a display device. Increasing values go toward
@@ -419,7 +419,7 @@ public final strictfp class CommonAxes {
      * The abbreviation is lower case "<var>y</var>".
      */
     public static final DefaultCoordinateSystemAxis DISPLAY_Y = create("y", "y",
-            AxisDirection.DISPLAY_DOWN, Double.POSITIVE_INFINITY, Unit.ONE);
+            AxisDirection.DISPLAY_DOWN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Unit.ONE, null);
 
     /**
      * Undefined or unknown axis. Axis direction is {@link AxisDirection#OTHER OTHER}
@@ -427,17 +427,17 @@ public final strictfp class CommonAxes {
      * for axes that were not properly defined.
      */
     public static final DefaultCoordinateSystemAxis UNDEFINED = create("Undefined", "?",
-            AxisDirection.OTHER, Double.POSITIVE_INFINITY, Unit.ONE);
+            AxisDirection.OTHER, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Unit.ONE, null);
 
     /**
      * Creates a new axis of the given name, abbreviation, direction and unit.
      */
     private static DefaultCoordinateSystemAxis create(final String name, final String abbreviation,
-            final AxisDirection direction, final double maximum, final Unit<?> unit)
+            final AxisDirection direction, final double minimum, final double maximum, final Unit<?> unit,
+            final RangeMeaning meaning)
     {
         return new DefaultCoordinateSystemAxis(singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, name),
-                abbreviation, direction, unit, name.endsWith("radius") ? 0 : -maximum, maximum,
-                name.endsWith("longitude") ? RangeMeaning.WRAPAROUND : RangeMeaning.EXACT);
+                abbreviation, direction, unit, minimum, maximum, meaning);
     }
 
     /**

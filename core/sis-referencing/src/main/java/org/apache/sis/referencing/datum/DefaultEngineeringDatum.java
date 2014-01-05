@@ -23,7 +23,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.EngineeringDatum;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 
 
@@ -149,36 +148,18 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     }
 
     /**
-     * Compares this datum with the specified object for equality.
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code EngineeringDatum.class}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
-     * @return {@code true} if both objects are equal.
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>EngineeringDatum</code> sub-interface. Overriding possibility is left mostly
+     *        for implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code EngineeringDatum.class} or a user-defined sub-interface.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true; // Slight optimization.
-        }
-        return (object instanceof EngineeringDatum) && super.equals(object, mode);
-    }
-
-    /**
-     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
-     * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
-     * for more information.
-     *
-     * @return The hash code value. This value may change in any future Apache SIS version.
-     */
-    @Override
-    protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this EngineeringDatum implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ super.computeHashCode();
+    public Class<? extends EngineeringDatum> getInterface() {
+        return EngineeringDatum.class;
     }
 
     /**

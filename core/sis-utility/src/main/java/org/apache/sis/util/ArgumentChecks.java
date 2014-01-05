@@ -122,7 +122,7 @@ public final class ArgumentChecks extends Static {
      *
      * @param  name    The name of the argument to be checked. Used only if an exception is thrown.
      * @param  index   The Index of the element to check in an array or a list. Used only if an exception is thrown.
-     * @param  element The array or list element to check against null null.
+     * @param  element The array or list element to check against null value.
      * @throws NullArgumentException if {@code element} is null.
      */
     public static void ensureNonNullElement(final String name, final int index, final Object element)

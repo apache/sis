@@ -35,6 +35,7 @@ import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -94,14 +95,16 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     /**
      * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
      *
-     * <p>Consider this field as final. It is declared non-final only for JAXB unmarshalling.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setGreenwichMeasure(Measure)}</p>
      */
     private double greenwichLongitude;
 
     /**
      * The angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
      *
-     * <p>Consider this field as final. It is declared non-final only for JAXB unmarshalling.</p>
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setGreenwichMeasure(Measure)}</p>
      */
     private Unit<Angle> angularUnit;
 
@@ -194,6 +197,21 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code PrimeMeridian.class}.
+     *
+     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
+     *        <code>PrimeMeridian</code> sub-interface. Overriding possibility is left mostly for
+     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     *
+     * @return {@code PrimeMeridian.class} or a user-defined sub-interface.
+     */
+    @Override
+    public Class<? extends PrimeMeridian> getInterface() {
+        return PrimeMeridian.class;
+    }
+
+    /**
      * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
      *
      * @return The prime meridian Greenwich longitude, in {@linkplain #getAngularUnit() angular unit}.
@@ -241,18 +259,20 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Invoked by JAXB for setting the Greenwich longitude and its unit of measurement.
      */
     private void setGreenwichMeasure(final Measure measure) {
-        greenwichLongitude = measure.value;
-        angularUnit = measure.getUnit(Angle.class);
-        if (angularUnit == null) {
-            /*
-             * Missing unit: if the Greenwich longitude is zero, any angular unit gives the same result
-             * (assuming that the missing unit was not applying an offset), so we can select a default.
-             * If the Greenwich longitude is not zero, we can not guess. Our object will be invalid.
-             */
-            if (greenwichLongitude == 0) {
-                angularUnit = NonSI.DEGREE_ANGLE;
-            } else {
-                Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
+        if (measure != null && canSetProperty("greenwichLongitude", greenwichLongitude != 0 || angularUnit != null)) {
+            greenwichLongitude = measure.value;
+            angularUnit = measure.getUnit(Angle.class);
+            if (angularUnit == null) {
+                /*
+                 * Missing unit: if the Greenwich longitude is zero, any angular unit gives the same result
+                 * (assuming that the missing unit was not applying an offset), so we can select a default.
+                 * If the Greenwich longitude is not zero, we can not guess. Our object will be invalid.
+                 */
+                if (greenwichLongitude == 0) {
+                    angularUnit = NonSI.DEGREE_ANGLE;
+                } else {
+                    Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
+                }
             }
         }
     }
@@ -271,7 +291,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!(object instanceof PrimeMeridian && super.equals(object, mode))) {
+        if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
@@ -299,7 +319,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
+     * Invoked by {@code hashCode()} for computing the hash code when first needed.
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
@@ -307,12 +327,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      */
     @Override
     protected long computeHashCode() {
-        /*
-         * The "serialVersionUID ^ …" is an arbitrary change applied to the hash code value in order to
-         * differentiate this PrimeMeridian implementation from implementations of other GeoAPI interfaces.
-         */
-        return serialVersionUID ^ (super.computeHashCode() +
-                Double.doubleToLongBits(greenwichLongitude) + Objects.hashCode(angularUnit));
+        return super.computeHashCode() + Double.doubleToLongBits(greenwichLongitude) + Objects.hashCode(angularUnit);
     }
 
     /**

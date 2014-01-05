@@ -373,11 +373,11 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     }
 
     /**
-     * Tests π values using the {@link Math#PI} constant.
+     * Tests π values using the {@link StrictMath#PI} constant.
      * This test method serves two purposes:
      *
      * <ul>
-     *   <li>Ensure that the results of small arithmetic operations on {@link Math#PI} produce
+     *   <li>Ensure that the results of small arithmetic operations on {@link StrictMath#PI} produce
      *       numbers that {@link DoubleDouble#errorForWellKnownValue(double)} can find.</li>
      *   <li>Compare with the values computed by the {@code qd-2.3.14} package (a C/C++ library),
      *       which is taken as the reference implementation.</li>
