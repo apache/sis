@@ -68,7 +68,12 @@ import java.util.Objects;
  * @see org.apache.sis.referencing.cs.AbstractCS
  * @see org.apache.sis.referencing.crs.AbstractCRS
  */
-@XmlType(name = "AbstractDatumType")
+@XmlType(name = "AbstractDatumType", propOrder = {
+    "domainOfValidity",
+    "scope",
+    "anchorDefinition",
+    "realizationEpoch"
+})
 @XmlRootElement(name = "AbstractDatum")
 @XmlSeeAlso({
     DefaultGeodeticDatum.class,
@@ -92,8 +97,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Description, possibly including coordinates, of the point or points used to anchor the datum
      * to the Earth. Also known as the "origin", especially for Engineering and Image Datums.
      */
-    @XmlElement(name = "anchorDefinition")
-    private final InternationalString anchorPoint;
+    @XmlElement
+    private final InternationalString anchorDefinition;
 
     /**
      * The time after which this datum definition is valid. This time may be precise
@@ -124,7 +129,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     AbstractDatum() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        anchorPoint      = null;
+        anchorDefinition = null;
         realizationEpoch = Long.MIN_VALUE;
         domainOfValidity = null;
         scope            = null;
@@ -193,7 +198,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         super(properties);
         realizationEpoch = MetadataUtilities.toMilliseconds(property(properties, REALIZATION_EPOCH_KEY, Date.class));
         domainOfValidity = property(properties, DOMAIN_OF_VALIDITY_KEY, Extent.class);
-        anchorPoint      = Types.toInternationalString(properties, ANCHOR_POINT_KEY);
+        anchorDefinition = Types.toInternationalString(properties, ANCHOR_POINT_KEY);
         scope            = Types.toInternationalString(properties, SCOPE_KEY);
     }
 
@@ -211,7 +216,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         realizationEpoch = MetadataUtilities.toMilliseconds(datum.getRealizationEpoch());
         domainOfValidity = datum.getDomainOfValidity();
         scope            = datum.getScope();
-        anchorPoint      = datum.getAnchorPoint();
+        anchorDefinition = datum.getAnchorPoint();
     }
 
     /**
@@ -280,7 +285,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @Override
     public InternationalString getAnchorPoint() {
-        return anchorPoint;
+        return anchorDefinition;
     }
 
     /**
@@ -397,7 +402,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                 final AbstractDatum that = (AbstractDatum) object;
                 return this.realizationEpoch == that.realizationEpoch &&
                        Objects.equals(this.domainOfValidity, that.domainOfValidity) &&
-                       Objects.equals(this.anchorPoint,      that.anchorPoint) &&
+                       Objects.equals(this.anchorDefinition, that.anchorDefinition) &&
                        Objects.equals(this.scope,            that.scope);
             }
             case BY_CONTRACT: {
@@ -430,7 +435,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + Objects.hash(anchorPoint, realizationEpoch, domainOfValidity, scope);
+        return super.computeHashCode() + Objects.hash(anchorDefinition, realizationEpoch, domainOfValidity, scope);
     }
 
     /**

@@ -158,6 +158,13 @@ public final class XML extends Static {
      *
      * <p>The value can be {@link String} or {@link Version} objects.
      * If no version is specified, then the most recent GML version is assumed.</p>
+     *
+     * {@section Supported GML versions}
+     * Apache SIS currently supports GML 3.2.1 by default. SIS can read and write GML 3.2
+     * if this property is set to "3.2". It is also possible to set this property to "3.1",
+     * but the marshalled XML is not GML 3.1.1 conformant because of the differences between the two schemas.
+     * See <a href="http://issues.apache.org/jira/browse/SIS-160">SIS-160: Need XSLT between GML 3.1 and 3.2</a>
+     * for information about the status of GML 3.1.1 support.
      */
     public static final String GML_VERSION = "org.apache.sis.gml.version";
 
