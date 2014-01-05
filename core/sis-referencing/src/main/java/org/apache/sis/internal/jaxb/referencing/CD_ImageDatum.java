@@ -54,20 +54,20 @@ public final class CD_ImageDatum extends PropertyType<CD_ImageDatum, ImageDatum>
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CD_ImageDatum(final ImageDatum metadata) {
-        super(metadata);
+    private CD_ImageDatum(final ImageDatum datum) {
+        super(datum);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:ImageDatum>} XML element.
      *
-     * @param  value The element to marshall.
+     * @param  datum The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CD_ImageDatum wrap(final ImageDatum value) {
-        return new CD_ImageDatum(value);
+    protected CD_ImageDatum wrap(final ImageDatum datum) {
+        return new CD_ImageDatum(datum);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CD_ImageDatum extends PropertyType<CD_ImageDatum, ImageDatum>
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param element The unmarshalled element.
+     * @param datum The unmarshalled element.
      */
-    public void setElement(final DefaultImageDatum element) {
-        this.metadata = element;
+    public void setElement(final DefaultImageDatum datum) {
+        metadata = datum;
     }
 }

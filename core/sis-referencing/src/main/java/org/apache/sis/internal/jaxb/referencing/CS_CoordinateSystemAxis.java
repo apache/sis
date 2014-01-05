@@ -32,9 +32,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @version 0.4
  * @module
  */
-public final class CS_CoordinateSystemAxis extends
-        PropertyType<CS_CoordinateSystemAxis, CoordinateSystemAxis>
-{
+public final class CS_CoordinateSystemAxis extends PropertyType<CS_CoordinateSystemAxis, CoordinateSystemAxis> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -56,20 +54,20 @@ public final class CS_CoordinateSystemAxis extends
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CS_CoordinateSystemAxis(final CoordinateSystemAxis metadata) {
-        super(metadata);
+    private CS_CoordinateSystemAxis(final CoordinateSystemAxis axis) {
+        super(axis);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:CoordinateSystemAxis>} XML element.
      *
-     * @param  value The element to marshall.
+     * @param  axis The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CS_CoordinateSystemAxis wrap(final CoordinateSystemAxis value) {
-        return new CS_CoordinateSystemAxis(value);
+    protected CS_CoordinateSystemAxis wrap(final CoordinateSystemAxis axis) {
+        return new CS_CoordinateSystemAxis(axis);
     }
 
     /**
@@ -87,9 +85,9 @@ public final class CS_CoordinateSystemAxis extends
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param element The unmarshalled element.
+     * @param axis The unmarshalled element.
      */
-    public void setElement(final DefaultCoordinateSystemAxis element) {
-        this.metadata = element;
+    public void setElement(final DefaultCoordinateSystemAxis axis) {
+        metadata = axis;
     }
 }
