@@ -54,20 +54,20 @@ public final class CD_TemporalDatum extends PropertyType<CD_TemporalDatum, Tempo
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CD_TemporalDatum(final TemporalDatum metadata) {
-        super(metadata);
+    private CD_TemporalDatum(final TemporalDatum datum) {
+        super(datum);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:TemporalDatum>} XML element.
      *
-     * @param  value The element to marshall.
+     * @param  datum The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CD_TemporalDatum wrap(final TemporalDatum value) {
-        return new CD_TemporalDatum(value);
+    protected CD_TemporalDatum wrap(final TemporalDatum datum) {
+        return new CD_TemporalDatum(datum);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CD_TemporalDatum extends PropertyType<CD_TemporalDatum, Tempo
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param element The unmarshalled element.
+     * @param datum The unmarshalled element.
      */
-    public void setElement(final DefaultTemporalDatum element) {
-        this.metadata = element;
+    public void setElement(final DefaultTemporalDatum datum) {
+        metadata = datum;
     }
 }

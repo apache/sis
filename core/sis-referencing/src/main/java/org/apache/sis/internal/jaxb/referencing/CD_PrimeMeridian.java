@@ -54,20 +54,20 @@ public final class CD_PrimeMeridian extends PropertyType<CD_PrimeMeridian, Prime
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CD_PrimeMeridian(final PrimeMeridian metadata) {
-        super(metadata);
+    private CD_PrimeMeridian(final PrimeMeridian datum) {
+        super(datum);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:PrimeMeridian>} XML element.
      *
-     * @param  value The element to marshall.
+     * @param  datum The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CD_PrimeMeridian wrap(final PrimeMeridian value) {
-        return new CD_PrimeMeridian(value);
+    protected CD_PrimeMeridian wrap(final PrimeMeridian datum) {
+        return new CD_PrimeMeridian(datum);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CD_PrimeMeridian extends PropertyType<CD_PrimeMeridian, Prime
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param element The unmarshalled element.
+     * @param datum The unmarshalled element.
      */
-    public void setElement(final DefaultPrimeMeridian element) {
-        this.metadata = element;
+    public void setElement(final DefaultPrimeMeridian datum) {
+        metadata = datum;
     }
 }

@@ -54,20 +54,20 @@ public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CD_Ellipsoid(final Ellipsoid metadata) {
-        super(metadata);
+    private CD_Ellipsoid(final Ellipsoid ellipsoid) {
+        super(ellipsoid);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:Ellipsoid>} XML element.
      *
-     * @param  value The element to marshall.
+     * @param  ellipsoid The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CD_Ellipsoid wrap(final Ellipsoid value) {
-        return new CD_Ellipsoid(value);
+    protected CD_Ellipsoid wrap(final Ellipsoid ellipsoid) {
+        return new CD_Ellipsoid(ellipsoid);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param element The unmarshalled element.
+     * @param ellipsoid The unmarshalled element.
      */
-    public void setElement(final DefaultEllipsoid element) {
-        this.metadata = element;
+    public void setElement(final DefaultEllipsoid ellipsoid) {
+        metadata = ellipsoid;
     }
 }
