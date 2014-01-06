@@ -54,20 +54,20 @@ public final class CS_CartesianCS extends PropertyType<CS_CartesianCS, Cartesian
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CS_CartesianCS(final CartesianCS metadata) {
-        super(metadata);
+    private CS_CartesianCS(final CartesianCS cs) {
+        super(cs);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:CartesianCS>} XML element.
      *
-     * @param  value The element to marshall.
+     * @param  cs The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CS_CartesianCS wrap(final CartesianCS value) {
-        return new CS_CartesianCS(value);
+    protected CS_CartesianCS wrap(final CartesianCS cs) {
+        return new CS_CartesianCS(cs);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CS_CartesianCS extends PropertyType<CS_CartesianCS, Cartesian
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param element The unmarshalled element.
+     * @param cs The unmarshalled element.
      */
-    public void setElement(final DefaultCartesianCS element) {
-        this.metadata = element;
+    public void setElement(final DefaultCartesianCS cs) {
+        metadata = cs;
     }
 }

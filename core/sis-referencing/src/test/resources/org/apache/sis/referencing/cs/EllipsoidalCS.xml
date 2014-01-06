@@ -22,6 +22,7 @@
                    xmlns:gml          = "http://www.opengis.net/gml/3.2"
                    xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                    gml:id             = "epsg-cs-6422">
+
   <gml:identifier codeSpace="OGP">urn:ogc:def:cs:EPSG::6422</gml:identifier>
   <gml:name>Latitude (north), Longitude (east)</gml:name>
   <gml:remarks>Used in two-dimensional GeographicCRS.</gml:remarks>

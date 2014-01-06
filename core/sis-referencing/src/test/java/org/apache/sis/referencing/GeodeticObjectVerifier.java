@@ -26,11 +26,13 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.opengis.referencing.crs.GeodeticCRS;
 
 import static org.apache.sis.test.Assert.*;
 
@@ -211,6 +213,37 @@ public final strictfp class GeodeticObjectVerifier {
     }
 
     /**
+     * Asserts that the given CRS is the WGS 84 one.
+     * This method verifies the following properties:
+     *
+     * <table class="sis">
+     * <tr><th>Property</th> <th>Expected value</th></tr>
+     * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticCRS#getName() name}</td>
+     *     <td>{@code "WGS 84"}</td></tr>
+     * <tr><td>{@linkplain GeodeticCRS#getDomainOfValidity() Domain of validity}</td>
+     *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
+     * <tr><td>{@linkplain GeodeticCRS#getDatum() Datum}</td>
+     *     <td>{@linkplain #assertIsWGS84(GeodeticDatum, boolean) Is WGS84}</td></tr>
+     * <tr><td>{@linkplain GeodeticCRS#getCoordinateSystem() Coordinate system}</td>
+     *     <td>{@linkplain #assertIsGeodetic2D(EllipsoidalCS, boolean) Is for a 2D geodetic CRS}</td></tr>
+     * </table>
+     *
+     * @param crs The coordinate reference system to verify.
+     * @param isExtentMandatory {@code true} if the CRS and datum domains of validity are required to contain an
+     *        {@code Extent} element for the world, or {@code false} if optional.
+     * @param isRangeMandatory {@code true} if the coordinate system axes range and range meaning properties
+     *        shall be defined, or {@code false} if they are optional.
+     */
+    public static void assertIsWGS84(final GeodeticCRS crs, final boolean isExtentMandatory, final boolean isRangeMandatory) {
+        assertEquals("name", "WGS 84", crs.getName().getCode());
+        assertIsWorld(crs.getDomainOfValidity(), isExtentMandatory);
+        assertIsWGS84(crs.getDatum(), isExtentMandatory);
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        assertInstanceOf("coordinateSystem", EllipsoidalCS.class, cs);
+        assertIsGeodetic2D((EllipsoidalCS) cs, isRangeMandatory);
+    }
+
+    /**
      * Asserts that the given datum is the Mean Sea Level one.
      * This method verifies the following properties:
      *
@@ -312,10 +345,10 @@ public final strictfp class GeodeticObjectVerifier {
      * </ul>
      *
      * @param cs The coordinate system to verify.
-     * @param rangeIsMandatory {@code true} if the axes range and range meaning properties shall be defined,
+     * @param isRangeMandatory {@code true} if the axes range and range meaning properties shall be defined,
      *        or {@code false} if they are optional.
      */
-    public static void assertIsGeodetic2D(final EllipsoidalCS cs, final boolean rangeIsMandatory) {
+    public static void assertIsGeodetic2D(final EllipsoidalCS cs, final boolean isRangeMandatory) {
         assertEquals("dimension", 2, cs.getDimension());
         final CoordinateSystemAxis latitude  = cs.getAxis(0);
         final CoordinateSystemAxis longitude = cs.getAxis(1);
@@ -327,8 +360,8 @@ public final strictfp class GeodeticObjectVerifier {
         assertEquals("axis[1].direction", AxisDirection.EAST,   longitude.getDirection());
         assertEquals("axis[0].unit",      NonSI.DEGREE_ANGLE,   latitude .getUnit());
         assertEquals("axis[1].unit",      NonSI.DEGREE_ANGLE,   longitude.getUnit());
-        verifyRange(latitude,   -90,  +90, RangeMeaning.EXACT, rangeIsMandatory);
-        verifyRange(longitude, -180, +180, RangeMeaning.WRAPAROUND, rangeIsMandatory);
+        verifyRange(latitude,   -90,  +90, RangeMeaning.EXACT, isRangeMandatory);
+        verifyRange(longitude, -180, +180, RangeMeaning.WRAPAROUND, isRangeMandatory);
     }
 
     /**

@@ -66,6 +66,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.cs.DefaultCartesianCSTest.class,
     org.apache.sis.referencing.cs.DefaultEllipsoidalCSTest.class,
     org.apache.sis.referencing.cs.CoordinateSystemsTest.class,
+    org.apache.sis.referencing.crs.DefaultGeodeticCRSTest.class,
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.GeodeticObjectsTest.class,
 

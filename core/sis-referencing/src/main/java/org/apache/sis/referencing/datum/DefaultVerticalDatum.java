@@ -92,6 +92,9 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * The type of this vertical datum.
      * If {@code null}, a value will be inferred from the name by {@link #type()}.
+     *
+     * @see #type()
+     * @see #getVerticalDatumType()
      */
     private VerticalDatumType type;
 
@@ -221,6 +224,9 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *
      * <p>No synchronization needed; this is not a problem if this value is computed twice.
      * This method returns only existing immutable instances.</p>
+     *
+     * @see #getVerticalDatumType()
+     * @see #getTypeElement()
      */
     private VerticalDatumType type() {
         VerticalDatumType t = type;
@@ -253,6 +259,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * Returns the type to be marshalled to XML.
      * This element was present in GML 3.0 and 3.1, but has been removed from GML 3.2.
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-160">SIS-160: Need XSLT between GML 3.1 and 3.2</a>
      */
     @XmlElement(name = "verticalDatumType")
     private VerticalDatumType getTypeElement() {

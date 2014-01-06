@@ -17,26 +17,25 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.referencing.cs.AffineCS;
-import org.opengis.referencing.crs.ImageCRS;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.datum.ImageDatum;
+import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.datum.GeodeticDatum;
+import javax.measure.unit.Unit;
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * An engineering coordinate reference system applied to locations in images. Image coordinate
- * reference systems are treated as a separate sub-type because a separate user community exists
- * for images with its own terms of reference.
+ * A 3D coordinate reference system with the origin at the approximate centre of mass of the earth.
+ * A geocentric CRS deals with the earth's curvature by taking a 3D spatial view, which obviates
+ * the need to model the earth's curvature.
  *
- * <p><b>Used with coordinate system types:</b>
+ * <p><b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or
- *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine}.
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical}.
  * </p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -44,31 +43,19 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.4
  * @module
  */
-@XmlType(name = "ImageCRSType", propOrder = {
-    "cartesianCS",
-    "affineCS",
-    "datum"
-})
-@XmlRootElement(name = "ImageCRS")
-public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
+@XmlTransient
+public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements GeocentricCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7312452786096397847L;
-
-    /**
-     * The datum.
-     */
-    @XmlElement(name = "imageDatum")
-    private final ImageDatum datum;
+    private static final long serialVersionUID = 6784642848287659827L;
 
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
-    private DefaultImageCRS() {
-        datum = null;
+    private DefaultGeocentricCRS() {
     }
 
     /**
@@ -119,13 +106,27 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * @param datum The datum.
      * @param cs The coordinate system.
      */
-    public DefaultImageCRS(final Map<String,?> properties,
-                           final ImageDatum    datum,
-                           final AffineCS      cs)
+    public DefaultGeocentricCRS(final Map<String,?> properties,
+                                final GeodeticDatum datum,
+                                final CartesianCS   cs)
     {
-        super(properties, cs);
-        ensureNonNull("datum", datum);
-        this.datum = datum;
+        super(properties, datum, cs);
+    }
+
+    /**
+     * Creates a coordinate reference system from the given properties, datum and coordinate system.
+     * The properties given in argument are the same than for the
+     * {@linkplain #DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS) above constructor}.
+     *
+     * @param properties The properties to be given to the coordinate reference system.
+     * @param datum The datum.
+     * @param cs The coordinate system.
+     */
+    public DefaultGeocentricCRS(final Map<String,?> properties,
+                                final GeodeticDatum datum,
+                                final SphericalCS   cs)
+    {
+        super(properties, datum, cs);
     }
 
     /**
@@ -137,11 +138,10 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      *
      * @param crs The coordinate reference system to copy.
      *
-     * @see #castOrCopy(ImageCRS)
+     * @see #castOrCopy(GeocentricCRS)
      */
-    protected DefaultImageCRS(final ImageCRS crs) {
+    protected DefaultGeocentricCRS(final GeocentricCRS crs) {
         super(crs);
-        datum = crs.getDatum();
     }
 
     /**
@@ -154,75 +154,50 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * @return A SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultImageCRS castOrCopy(final ImageCRS object) {
-        return (object == null) || (object instanceof DefaultImageCRS)
-                ? (DefaultImageCRS) object : new DefaultImageCRS(object);
+    public static DefaultGeocentricCRS castOrCopy(final GeocentricCRS object) {
+        return (object == null) || (object instanceof DefaultGeocentricCRS)
+                ? (DefaultGeocentricCRS) object : new DefaultGeocentricCRS(object);
     }
 
     /**
      * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code ImageCRS.class}.
+     * The SIS implementation returns {@code GeocentricCRS.class}.
      *
      * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>ImageCRS</code> sub-interface. Overriding possibility is left mostly for
+     *        <code>GeocentricCRS</code> sub-interface. Overriding possibility is left mostly for
      *        implementors who wish to extend GeoAPI with their own set of interfaces.}
      *
-     * @return {@code ImageCRS.class} or a user-defined sub-interface.
+     * @return {@code GeocentricCRS.class} or a user-defined sub-interface.
      */
     @Override
-    public Class<? extends ImageCRS> getInterface() {
-        return ImageCRS.class;
+    public Class<? extends GeocentricCRS> getInterface() {
+        return GeocentricCRS.class;
     }
 
     /**
-     * Returns the datum.
+     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
      *
-     * @return The datum.
+     * @param  formatter The formatter to use.
+     * @return The name of the WKT element type, which is {@code "GEOCCS"}.
      */
     @Override
-    public final ImageDatum getDatum() {
-        return datum;
-    }
-
-    /**
-     * Returns the coordinate system.
-     *
-     * @return The coordinate system.
-     */
-    @Override
-    public AffineCS getCoordinateSystem() {
-        return (AffineCS) super.getCoordinateSystem();
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     * Only one of {@code getAffineCS()} and {@link #getCartesianCS()} can return a non-null value.
-     */
-    @XmlElement(name = "affineCS")
-    private AffineCS getAffineCS() {
-        return getCoordinateSystem(AffineCS.class);
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     * Only one of {@link #getAffineCS()} and {@code getCartesianCS()} can return a non-null value.
-     */
-    @XmlElement(name = "cartesianCS")
-    private CartesianCS getCartesianCS() {
-        return getCoordinateSystem(CartesianCS.class);
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setAffineCS(final AffineCS cs) {
-        super.setCoordinateSystem("affineCS", cs);
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setCartesianCS(final CartesianCS cs) {
-        super.setCoordinateSystem("cartesianCS", cs);
+    protected String formatTo(final Formatter formatter) {
+        final Unit<?> unit = getUnit();
+        final GeodeticDatum datum = getDatum();
+        formatter.append(datum);
+        formatter.append(datum.getPrimeMeridian());
+        formatter.append(unit);
+        final CoordinateSystem cs = formatter.getConvention().toConformCS(getCoordinateSystem());
+        if (!(cs instanceof CartesianCS)) {
+            formatter.setInvalidWKT(cs);
+        }
+        final int dimension = cs.getDimension();
+        for (int i=0; i<dimension; i++) {
+            formatter.append(cs.getAxis(i));
+        }
+        if (unit == null) {
+            formatter.setInvalidWKT(this);
+        }
+        return "GEOCCS";
     }
 }

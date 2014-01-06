@@ -54,20 +54,20 @@ public final class CS_TimeCS extends PropertyType<CS_TimeCS, TimeCS> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CS_TimeCS(final TimeCS metadata) {
-        super(metadata);
+    private CS_TimeCS(final TimeCS cs) {
+        super(cs);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:TimeCS>} XML element.
      *
-     * @param  value The element to marshall.
+     * @param  cs The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CS_TimeCS wrap(final TimeCS value) {
-        return new CS_TimeCS(value);
+    protected CS_TimeCS wrap(final TimeCS cs) {
+        return new CS_TimeCS(cs);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CS_TimeCS extends PropertyType<CS_TimeCS, TimeCS> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param element The unmarshalled element.
+     * @param cs The unmarshalled element.
      */
-    public void setElement(final DefaultTimeCS element) {
-        this.metadata = element;
+    public void setElement(final DefaultTimeCS cs) {
+        metadata = cs;
     }
 }
