@@ -32,10 +32,10 @@ import org.apache.sis.measure.Units;
  * and an angle from a fixed direction.
  *
  * <table class="sis"><tr>
- *   <th>Used with</th>
+ *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
- *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering}</td>
  *   <td>unspecified</td>
  * </tr></table>
  *

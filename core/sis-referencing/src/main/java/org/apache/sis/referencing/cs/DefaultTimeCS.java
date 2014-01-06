@@ -32,10 +32,10 @@ import org.apache.sis.measure.Units;
  * A 1-dimensional coordinate system for time elapsed in the specified time units from a specified time origin.
  *
  * <table class="sis"><tr>
- *   <th>Used with</th>
+ *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
- *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS Temporal CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS Temporal}</td>
  *   <td>unspecified</td>
  * </tr></table>
  *

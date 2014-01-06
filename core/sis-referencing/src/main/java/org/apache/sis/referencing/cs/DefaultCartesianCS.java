@@ -31,19 +31,19 @@ import org.apache.sis.util.resources.Errors;
  * All axes shall have the same linear unit of measure.
  *
  * <table class="sis"><tr>
- *   <th>Used with</th>
+ *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
- *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS Geocentric CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS Geocentric}</td>
  *   <td>“Geocentric X”, “Geocentric Y”, “Geocentric Z”</td>
  * </tr><tr>
- *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected}</td>
  *   <td>“Easting” or “Westing”, “Northing” or “Southing”</td>
  * </tr><tr>
- *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering}</td>
  *   <td>unspecified</td>
  * </tr><tr>
- *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultImageCRS Image CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultImageCRS Image}</td>
  *   <td>unspecified</td>
  * </tr></table>
  *

@@ -34,13 +34,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * reference systems are treated as a separate sub-type because a separate user community exists
  * for images with its own terms of reference.
  *
- * <table class="sis">
- * <tr><th>Used with CS type(s)</th></tr>
- * <tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}
- * </td></tr><tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine CS}
- * </td></tr></table>
+ * <p><b>Used with coordinate system types:</b>
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine}.
+ * </p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)

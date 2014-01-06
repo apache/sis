@@ -24,22 +24,29 @@
  * Coordinate Reference System (CRS) can have various number of dimensions, but some restrictions
  * apply depending on the CRS type:</p>
  *
- * <ul>
- *   <li>Three-dimensional:
- *       {@link org.apache.sis.referencing.crs.DefaultGeographicCRS GeographicCRS} and
- *       {@link org.apache.sis.referencing.crs.DefaultGeocentricCRS GeocentricCRS}
- *       (note: ISO 19111 uses the same class, {@code GeodeticCRS}, for those two cases).</li>
- *   <li>Two-dimensional:
- *       {@link org.apache.sis.referencing.crs.DefaultGeographicCRS GeographicCRS} and
- *       {@link org.apache.sis.referencing.crs.DefaultProjectedCRS ProjectedCRS}
- *       (note that {@code GeographicCRS} can also be 3D).</li>
- *   <li>One-dimensional:
- *       {@link org.apache.sis.referencing.crs.DefaultVerticalCRS VerticalCRS} and
- *       {@link org.apache.sis.referencing.crs.DefaultTemporalCRS TemporalCRS}.</li>
- *   <li>Any number of dimensions:
- *       {@link org.apache.sis.referencing.crs.DefaultCompoundCRS CompoundCRS}
- *       (often used for adding a time axis to the above CRS).
- * </ul>
+ * <table class="sis">
+ *   <tr><th>Dimension</th> <th>CRS type examples</th> <th>Remarks</th></tr>
+ *   <tr>
+ *     <td>3</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS Geographic},
+ *         {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS Geocentric}</td>
+ *     <td>ISO 19111 uses the same class, {@code GeodeticCRS}, for those two cases.</td>
+ *   </tr><tr>
+ *     <td>2</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS Geographic},
+ *         {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected}</td>
+ *     <td>{@code GeographicCRS} can also be 3D.</td>
+ *   </tr><tr>
+ *     <td>1</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultVerticalCRS Vertical},
+ *         {@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS Temporal}.</td>
+ *     <td></td>
+ *   </tr><tr>
+ *     <td>Any</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultCompoundCRS Compound}</td>
+ *     <td>Often used for adding a time axis to the above CRS.</td>
+ *   </tr>
+ * </table>
  *
  * {@section Apache SIS extensions}
  * Some SIS implementations provide additional methods that are not part of OGC/ISO specifications:
@@ -48,6 +55,19 @@
  *   <li>{@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toDate(double)}</li>
  *   <li>{@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toValue DefaultTemporalCRS.toValue(Date)}</li>
  * </ul>
+ *
+ * In addition Apache SIS provides two distinct classes for geographic and geocentric CRS where OGC/ISO defines
+ * a single {@code GeodeticCRS} type. OGC/ISO distinguishes the geographic/geocentric cases according the type
+ * of the coordinate system associated to that CRS:
+ *
+ * <ul>
+ *   <li>A geodetic CRS associated to an {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal CS}
+ *       is geographic.</li>
+ *   <li>A geodetic CRS associated to a {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical} or
+ *       {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS} is geocentric.</li>
+ * </ul>
+ *
+ * SIS keeps the geographic and geocentric CRS as distinct types since such distinction is in wide use.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)

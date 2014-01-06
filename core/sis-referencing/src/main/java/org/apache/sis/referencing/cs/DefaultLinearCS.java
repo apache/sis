@@ -33,10 +33,10 @@ import org.apache.sis.measure.Units;
  * A typical example is an axis for representing the points along a road.
  *
  * <table class="sis"><tr>
- *   <th>Used with</th>
+ *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
- *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering}</td>
  *   <td>unspecified</td>
  * </tr></table>
  *
