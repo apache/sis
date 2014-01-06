@@ -33,10 +33,10 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * A coordinate system made of two or more independent coordinate systems.
  *
  * <table class="sis"><tr>
- *   <th>Used with CRS types</th>
+ *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultCompoundCRS Compound}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultCompoundCRS Compound}</td>
  *   <td>(not applicable)</td>
  * </tr></table>
  *

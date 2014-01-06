@@ -54,20 +54,20 @@ public final class CD_VerticalDatum extends PropertyType<CD_VerticalDatum, Verti
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CD_VerticalDatum(final VerticalDatum metadata) {
-        super(metadata);
+    private CD_VerticalDatum(final VerticalDatum datum) {
+        super(datum);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:VerticalDatum>} XML element.
      *
-     * @param  value The element to marshall.
+     * @param  datum The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CD_VerticalDatum wrap(final VerticalDatum value) {
-        return new CD_VerticalDatum(value);
+    protected CD_VerticalDatum wrap(final VerticalDatum datum) {
+        return new CD_VerticalDatum(datum);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CD_VerticalDatum extends PropertyType<CD_VerticalDatum, Verti
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param element The unmarshalled element.
+     * @param datum The unmarshalled element.
      */
-    public void setElement(final DefaultVerticalDatum element) {
-        this.metadata = element;
+    public void setElement(final DefaultVerticalDatum datum) {
+        metadata = datum;
     }
 }

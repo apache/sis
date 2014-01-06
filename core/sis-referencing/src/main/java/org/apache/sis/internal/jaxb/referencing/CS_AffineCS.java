@@ -26,8 +26,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * JAXB adapter mapping implementing class to the GeoAPI interface. See
  * package documentation for more information about JAXB and interface.
  *
- * @author Cédric Briançon (Geomatys)
- * @author Martin Desruisseaux (Geomatys)
+ * @author  Cédric Briançon (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.04)
  * @version 0.4
  * @module
@@ -54,20 +54,20 @@ public final class CS_AffineCS extends PropertyType<CS_AffineCS, AffineCS> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CS_AffineCS(final AffineCS metadata) {
-        super(metadata);
+    private CS_AffineCS(final AffineCS cs) {
+        super(cs);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:AffineCS>} XML element.
      *
-     * @param  value The element to marshall.
+     * @param  cs The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CS_AffineCS wrap(final AffineCS value) {
-        return new CS_AffineCS(value);
+    protected CS_AffineCS wrap(final AffineCS cs) {
+        return new CS_AffineCS(cs);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CS_AffineCS extends PropertyType<CS_AffineCS, AffineCS> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param element The unmarshalled element.
+     * @param cs The unmarshalled element.
      */
-    public void setElement(final DefaultAffineCS element) {
-        this.metadata = element;
+    public void setElement(final DefaultAffineCS cs) {
+        metadata = cs;
     }
 }

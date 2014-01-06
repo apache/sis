@@ -41,13 +41,13 @@ import org.apache.sis.internal.referencing.AxisDirections;
  * The above examples show the variety of units of measurement which can be associated to vertical positions.
  *
  * <table class="sis"><tr>
- *   <th>Used with</th>
+ *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultVerticalCRS Vertical CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultVerticalCRS Vertical}</td>
  *   <td>“Gravity-related height” or “Depth”</td>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering}</td>
  *   <td>unspecified</td>
  * </tr></table>
  *

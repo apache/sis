@@ -32,13 +32,13 @@ import org.apache.sis.measure.Units;
  * A 2- or 3-dimensional coordinate system made of straight axes (not necessarily orthogonal).
  *
  * <table class="sis"><tr>
- *   <th>Used with</th>
+ *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultEngineeringCRS Engineering CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering}</td>
  *   <td>unspecified</td>
  * </tr><tr>
- *   <td>{@linkplain org.geotoolkit.referencing.crs.DefaultImageCRS Image CRS}</td>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultImageCRS Image}</td>
  *   <td>unspecified</td>
  * </tr></table>
  *
