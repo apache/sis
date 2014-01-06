@@ -34,11 +34,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Vertical CRSs make use of the direction of gravity to define the concept of height or depth,
  * but the relationship with gravity may not be straightforward.
  *
- * <table class="sis">
- * <tr><th>Used with CS type(s)</th></tr>
- * <tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultVerticalCS Vertical CS}
- * </td></tr></table>
+ * <p><b>Used with coordinate system type:</b>
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultVerticalCS Vertical}.
+ * </p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
