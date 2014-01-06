@@ -41,11 +41,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@link #toValue(Date)} for converting a {@link Date} to a temporal position.</li>
  * </ul>
  *
- * <table class="sis">
- * <tr><th>Used with CS type(s)</th></tr>
- * <tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS Time CS}
- * </td></tr></table>
+ * <p><b>Used with coordinate system type:</b>
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS Time}.
+ * </p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)

@@ -44,25 +44,16 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>CRSs on moving platforms such as road vehicles, vessels, aircraft, or spacecraft.</li>
  * </ul>
  *
- * <table class="sis">
- * <tr><th>Used with CS type(s)</th></tr>
- * <tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}
- * </td></tr><tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine CS}
- * </td></tr><tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal CS}
- * </td></tr><tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical CS}
- * </td></tr><tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultCylindricalCS Cylindrical CS}
- * </td></tr><tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS Polar CS}
- * </td></tr><tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultVerticalCS Vertical CS}
- * </td></tr><tr><td>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultLinearCS Linear CS}
- * </td></tr></table>
+ * <p><b>Used with coordinate system types:</b>
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian},
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine},
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal},
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical},
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultCylindricalCS Cylindrical},
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS Polar},
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultVerticalCS Vertical} or
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultLinearCS Linear}.
+ * </p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
