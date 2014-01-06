@@ -54,20 +54,20 @@ public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, Geode
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CD_GeodeticDatum(final GeodeticDatum metadata) {
-        super(metadata);
+    private CD_GeodeticDatum(final GeodeticDatum datum) {
+        super(datum);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:GeodeticDatum>} XML element.
      *
-     * @param  value The element to marshall.
+     * @param  datum The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CD_GeodeticDatum wrap(final GeodeticDatum value) {
-        return new CD_GeodeticDatum(value);
+    protected CD_GeodeticDatum wrap(final GeodeticDatum datum) {
+        return new CD_GeodeticDatum(datum);
     }
 
     /**
@@ -85,9 +85,9 @@ public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, Geode
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param element The unmarshalled element.
+     * @param datum The unmarshalled element.
      */
-    public void setElement(final DefaultGeodeticDatum element) {
-        this.metadata = element;
+    public void setElement(final DefaultGeodeticDatum datum) {
+        metadata = datum;
     }
 }

@@ -422,7 +422,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             }
         }
         // In last ressort, append code without codespace since the name are often verbose.
-        return appendUnicodeIdentifier(id, '-', name.getCode(), ":", false) ? id.toString() : null;
+        if (name != null && appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
+            return id.toString();
+        }
+        return null;
     }
 
     /**
