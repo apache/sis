@@ -28,6 +28,8 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
@@ -35,6 +37,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.util.resources.Vocabulary;
@@ -57,7 +60,7 @@ import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
  * (<var>longitude</var>, <var>latitude</var>) axis order on the {@link #WGS84} geodetic datum:</p>
  *
  * {@preformat java
- *   GeographicCRS crs = GeodeticObjects.WGS84.crs(true);
+ *   GeographicCRS crs = GeodeticObjects.WGS84.geographic();
  * }
  *
  * For each enumeration value, the name of the CRS, datum and ellipsoid objects may or may not be the same.
@@ -104,7 +107,7 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    WGS84((short) 7030, (short) 6326),
+    WGS84((short) 4326, (short) 6326, (short) 7030),
 
     /**
      * World Geodetic System 1972.
@@ -120,7 +123,7 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    WGS72((short) 7043, (short) 6322),
+    WGS72((short) 4322, (short) 6322, (short) 7043),
 
     /**
      * European Terrestrial Reference System 1989.
@@ -142,7 +145,7 @@ public enum GeodeticObjects {
      *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses the NAD83 datum,
      *        while the <code>"IGNF:MILLER"</code> authority code uses the GRS80 datum.}
      */
-    ETRS89((short) 7019, (short) 6258),
+    ETRS89((short) 4258, (short) 6258, (short) 7019),
 
     /**
      * North American Datum 1983.
@@ -165,7 +168,7 @@ public enum GeodeticObjects {
      *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses the NAD83 datum,
      *        while the <code>"IGNF:MILLER"</code> authority code uses the GRS80 datum.}
      */
-    NAD83((short) 7019, (short) 6269),
+    NAD83((short) 4269, (short) 6269, (short) 7019),
 
     /**
      * North American Datum 1927.
@@ -181,7 +184,7 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    NAD27((short) 7008, (short) 6267),
+    NAD27((short) 4267, (short) 6267, (short) 7008),
 
     /**
      * European Datum 1950.
@@ -197,7 +200,7 @@ public enum GeodeticObjects {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    ED50((short) 7022, (short) 6230),
+    ED50((short) 4230, (short) 6230, (short) 7022),
 
     /**
      * Unspecified datum based upon the GRS 1980 Authalic Sphere. Spheres use a simpler algorithm for
@@ -215,17 +218,23 @@ public enum GeodeticObjects {
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */
-    SPHERE((short) 7048, (short) 6047);
+    SPHERE((short) 4047, (short) 6047, (short) 7048);
+
+    /**
+     * The EPSG code of the geographic CRS.
+     */
+    final short crs;
+
+    /**
+     * The EPSG code of the datum. The value is often {@link #crs} + 2000,
+     * but it doesn't have to be always the case.
+     */
+    final short datum;
 
     /**
      * The EPSG code of the ellipsoid.
      */
     final short ellipsoid;
-
-    /**
-     * The EPSG code of the datum.
-     */
-    final short datum;
 
     /**
      * The cached object. This is initially {@code null}, then set to various kind of objects depending
@@ -237,12 +246,14 @@ public enum GeodeticObjects {
     /**
      * Creates a new constant for the given EPSG or SIS codes.
      *
-     * @param ellipsoid The EPSG code for the ellipsoid.
+     * @param crs       The EPSG code for the geographic CRS.
      * @param datum     The EPSG code for the datum.
+     * @param ellipsoid The EPSG code for the ellipsoid.
      */
-    private GeodeticObjects(final short ellipsoid, final short datum) {
-        this.ellipsoid = ellipsoid;
+    private GeodeticObjects(final short crs, final short datum, final short ellipsoid) {
+        this.crs       = crs;
         this.datum     = datum;
+        this.ellipsoid = ellipsoid;
     }
 
     /**
@@ -258,6 +269,61 @@ public enum GeodeticObjects {
      */
     synchronized void clear() {
         cached = null;
+    }
+
+    /**
+     * Returns the two-dimensional geographic CRS associated to this geodetic object.
+     * The coordinate system axes will be in (<var>latitude</var>, <var>longitude</var>) order
+     * oriented toward {@linkplain AxisDirection#NORTH North} and {@linkplain AxisDirection#EAST East}
+     * respectively, with units in degrees.
+     * The following table summarizes the coordinate reference systems known to this class,
+     * together with an enumeration value that can be used for fetching that CRS:
+     *
+     * <blockquote><table class="sis">
+     *   <tr><th>Name or alias</th>            <th>Enum</th>            <th>EPSG</th></tr>
+     *   <tr><td>ED50</td>                     <td>{@link #ED50}</td>   <td>4230</td></tr>
+     *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td>4258</td></tr>
+     *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td>4267</td></tr>
+     *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td>4269</td></tr>
+     *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td>4047</td></tr>
+     *   <tr><td>WGS 72</td>                   <td>{@link #WGS72}</td>  <td>4322</td></tr>
+     *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4326</td></tr>
+     * </table></blockquote>
+     *
+     * @return The geographic CRS associated to this constant.
+     *
+     * @see org.apache.sis.referencing.crs.DefaultGeographicCRS
+     * @see CRSAuthorityFactory#createGeographicCRS(String)
+     */
+    public GeographicCRS geographic() {
+        GeographicCRS object = geographic(cached);
+        if (object == null) {
+            synchronized (this) {
+                object = geographic(cached);
+                if (object == null) {
+                    final CRSAuthorityFactory factory = StandardObjects.crsFactory();
+                    if (factory != null) try {
+                        cached = object = factory.createGeographicCRS(String.valueOf(crs));
+                        return object;
+                    } catch (FactoryException e) {
+                        StandardObjects.failure(this, "geographic", e);
+                    }
+                    /*
+                     * All constants defined in this enumeration use the same coordinate system, EPSG:6422.
+                     * We will arbitrarily create this CS only for WGS84 (the most frequently created CRS),
+                     * and share that CS instance for all other constants.
+                     */
+                    final EllipsoidalCS cs;
+                    if (this == WGS84) {
+                        cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6422);
+                    } else {
+                        cs = WGS84.geographic().getCoordinateSystem();
+                    }
+                    object = StandardDefinitions.createGeographicCRS(crs, datum(), cs);
+                }
+            }
+        }
+        return object;
     }
 
     /**
@@ -385,6 +451,13 @@ public enum GeodeticObjects {
             }
         }
         return object;
+    }
+
+    /**
+     * Returns the geographic CRS associated to the given object, or {@code null} if none.
+     */
+    private static GeographicCRS geographic(final IdentifiedObject object) {
+        return (object instanceof GeographicCRS) ? (GeographicCRS) object : null;
     }
 
     /**

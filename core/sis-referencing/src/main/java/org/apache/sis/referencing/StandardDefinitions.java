@@ -25,10 +25,21 @@ import javax.measure.quantity.Length;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.cs.RangeMeaning;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Latitude;
 
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
@@ -71,6 +82,30 @@ final class StandardDefinitions {
         map.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, name));
         map.put(ALIAS_KEY, alias); // May be null, which is okay.
         return map;
+    }
+
+    /**
+     * Creates a geodetic CRS from hard-coded values for the given code.
+     *
+     * @param  code  The EPSG code.
+     * @param  datum The geodetic datum.
+     * @param  cs    The coordinate system.
+     * @return The geographic CRS for the given code.
+     */
+    static GeographicCRS createGeographicCRS(final short code, final GeodeticDatum datum, final EllipsoidalCS cs) {
+        final String name;
+        String alias = null;
+        switch (code) {
+            case 4326: name = "WGS 84"; break;
+            case 4322: name = "WGS 72"; break;
+            case 4258: name = "ETRS89"; alias = "ETRS89-GRS80"; break;
+            case 4269: name = "NAD83"; break;
+            case 4267: name = "NAD27"; break;
+            case 4230: name = "ED50"; break;
+            case 4047: name = "Unspecified datum based upon the GRS 1980 Authalic Sphere"; break;
+            default:   throw new AssertionError(code);
+        }
+        return new DefaultGeographicCRS(properties(code, name, alias), datum, cs);
     }
 
     /**
@@ -136,5 +171,75 @@ final class StandardDefinitions {
         properties.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, "Greenwich")); // Name is fixed by ISO 19111.
         properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, GREENWICH));
         return new DefaultPrimeMeridian(properties, 0, NonSI.DEGREE_ANGLE);
+    }
+
+    /**
+     * Creates a coordinate system from hard-coded values for the given code.
+     * The coordinate system names used by this method contains only the first
+     * part of the names declared in the EPSG database.
+     *
+     * @param  code The EPSG code.
+     * @return The coordinate system for the given code.
+     */
+    static CoordinateSystem createCoordinateSystem(final short code) {
+        final String name;
+        short xc, yc, zc = 0; // Not necessarily (long, lat) order.
+        switch (code) {
+            case 6422: name = "Ellipsoidal 2D"; xc = 106; yc = 107;           break;
+            case 6423: name = "Ellipsoidal 3D"; xc = 108; yc = 109; zc = 110; break;
+            default:   throw new AssertionError(code);
+        }
+        final Map<String,?> properties = properties(code, name, null);
+        final CoordinateSystemAxis xAxis = createAxis(xc);
+        final CoordinateSystemAxis yAxis = createAxis(yc);
+        if (zc != 0) {
+            final CoordinateSystemAxis zAxis = createAxis(zc);
+            return new DefaultEllipsoidalCS(properties, xAxis, yAxis, zAxis);
+        }
+        return new DefaultEllipsoidalCS(properties, xAxis, yAxis);
+    }
+
+    /**
+     * Creates an axis from hard-coded values for the given code.
+     *
+     * @param  code The EPSG code.
+     * @return The coordinate system axis for the given code.
+     */
+    private static CoordinateSystemAxis createAxis(final short code) {
+        final String name, abrv;
+        final Unit<?> unit;
+        final double min, max;
+        final RangeMeaning rm;
+        final AxisDirection dir;
+        switch (code) {
+            case 106:
+            case 108:  name = "Geodetic latitude";
+                       abrv = "φ";
+                       unit = NonSI.DEGREE_ANGLE;
+                       dir  = AxisDirection.NORTH;
+                       min  = Latitude.MIN_VALUE;
+                       max  = Latitude.MAX_VALUE;
+                       rm   = RangeMeaning.EXACT;
+                       break;
+            case 107:
+            case 109:  name = "Geodetic longitude";
+                       abrv = "λ";
+                       unit = NonSI.DEGREE_ANGLE;
+                       dir  = AxisDirection.EAST;
+                       min  = Longitude.MIN_VALUE;
+                       max  = Longitude.MAX_VALUE;
+                       rm   = RangeMeaning.WRAPAROUND;
+                       break;
+            case 110:  name = "llipsoidal height ";
+                       abrv = "h";
+                       unit = SI.METRE;
+                       dir  = AxisDirection.UP;
+                       min  = Double.NEGATIVE_INFINITY;
+                       max  = Double.POSITIVE_INFINITY;
+                       rm   = null;
+                       break;
+            default:   throw new AssertionError(code);
+        }
+        return new DefaultCoordinateSystemAxis(properties(code, name, null), abrv, dir, unit, min, max, rm);
     }
 }
