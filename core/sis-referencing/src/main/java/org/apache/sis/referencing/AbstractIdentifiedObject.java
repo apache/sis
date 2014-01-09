@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.io.Serializable;
@@ -137,7 +138,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The name for this object or code. Shall never be {@code null}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setNames(Collection)}</p>
+     * This field is modified only at unmarshalling time by {@link Names#add(ReferenceIdentifier)}.</p>
      *
      * @see #getName()
      * @see #getNames()
@@ -150,7 +151,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * we may get both on unmarshalling.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setNames(Collection)}</p>
+     * This field is modified only at unmarshalling time by {@link Names#add(ReferenceIdentifier)}.</p>
      */
     private Collection<GenericName> alias;
 
@@ -455,41 +456,99 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
+     * A writable view over the {@linkplain AbstractIdentifiedObject#getName() name} of the enclosing object followed by
+     * all {@linkplain AbstractIdentifiedObject#getAlias() aliases} which are instance of {@link ReferenceIdentifier}.
+     * Used by JAXB only at (un)marshalling time because GML merges the name and aliases in a single {@code <gml:name>}
+     * property.
+     */
+    private final class Names extends AbstractCollection<ReferenceIdentifier> {
+        /**
+         * Invoked by JAXB before to write in the collection at unmarshalling time.
+         * Do nothing since our object is already empty.
+         */
+        @Override
+        public void clear() {
+        }
+
+        /**
+         * Returns the number of name and aliases that are instance of {@link ReferenceIdentifier}.
+         */
+        @Override
+        public int size() {
+            return NameIterator.count(AbstractIdentifiedObject.this);
+        }
+
+        /**
+         * Returns an iterator over the name and aliases that are instance of {@link ReferenceIdentifier}.
+         */
+        @Override
+        public Iterator<ReferenceIdentifier> iterator() {
+            return new NameIterator(AbstractIdentifiedObject.this);
+        }
+
+        /**
+         * Invoked by JAXB at unmarshalling time for each identifier. The first identifier will be taken
+         * as the name and all other identifiers (if any) as aliases.
+         *
+         * <p>Some JAXB implementations never invoke {@link AbstractIdentifiedObject#setNames(Collection)}.
+         * Instead they invoke {@link AbstractIdentifiedObject#getNames()} and add directly the identifiers
+         * in the returned collection. Consequently this method must writes directly in the enclosing object.
+         * See <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a> for more information.</p>
+         */
+        @Override
+        public boolean add(final ReferenceIdentifier id) {
+            if (name == null) {
+                name = id;
+                return true;
+            }
+            if (alias == null) {
+                alias = new ArrayList<>(4);
+            }
+            /*
+             * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
+             * so the 'instanceof' check should not be necessary. But do a paranoiac check anyway.
+             */
+            return alias.add(id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id));
+        }
+    }
+
+    /**
      * Returns the {@link #name} and all aliases which are also instance of {@lik ReferenceIdentifier}.
      * The later happen often in SIS implementation since many aliases are instance of {@link NamedIdentifier}.
      */
     @XmlElement(name = "name", required = true)
     final Collection<ReferenceIdentifier> getNames() {
-        // Unconditionally creates a modifiable list because some JAXB implementations modify it.
-        final Collection<ReferenceIdentifier> names = new ArrayList<>(nonNull(alias).size() + 1);
-        names.add(name);
-        if (alias != null) {
-            for (final GenericName c : alias) {
-                if (c != name && (c instanceof ReferenceIdentifier)) {
-                    names.add((ReferenceIdentifier) c);
-                }
-            }
-        }
-        return names;
+        return new Names();
     }
 
     /**
      * Sets the first element as the {@link #name} and all remaining elements as {@link #alias}.
-     * This method is invoked by JAXB at unmarshalling time. It should not be invoked anymore
-     * after the object has been made available to the user.
+     * This method is invoked by some implementations of JAXB (not all of them) at unmarshalling time.
+     * It should not be invoked anymore after the object has been made available to the user.
+     *
+     * <p>Some JAXB implementations never invoke this setter method. Instead they invoke {@link #getNames()}
+     * and add directly the identifiers in the returned collection. Whether JAXB will perform a final call to
+     * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 early access do not).
+     * Consequently we can not rely on this method to be invoked. It is better if this method is invoked, but
+     * we will not lost data if it is not.</p>
+     *
+     * @see <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a>
      */
     private void setNames(final Collection<ReferenceIdentifier> names) {
-        if (names != null && canSetProperty("name", name != null)) {
-            final Iterator<ReferenceIdentifier> it = names.iterator();
-            if (it.hasNext()) {
-                name = it.next();
-                if (it.hasNext() && canSetProperty("alias", alias != null)) {
-                    alias = new ArrayList<>(4); // There is generally few aliases.
-                    do {
-                        alias.add(new NamedIdentifier(it.next()));
-                    } while (it.hasNext());
-                }
-            }
+        /*
+         * If the collection is an instance of Names, then assume that the collection is the instance obtained
+         * by getNames(), in which case this IdentifiedObject already contains the content of that collection.
+         * This behavior is necessary for working around the JAXB-488 issue.
+         */
+        if (!(names instanceof Names)) {
+            getNames().addAll(names);
+        }
+        /*
+         * Froze aliases in an unmodifiable set. In JAXB implementations that do not invoke the setter method,
+         * the aliases list is left modifiable. This is a hole in our object immutability.
+         */
+        if (alias != null) {
+            alias = immutableSet(true, alias.toArray(new GenericName[alias.size()]));
         }
     }
 

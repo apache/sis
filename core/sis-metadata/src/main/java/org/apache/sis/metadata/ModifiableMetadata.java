@@ -282,7 +282,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             List<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
     {
-        // See the comments in writeCollection(...) for implementation notes.
+        // See the comments in writeCollection(…) for implementation notes.
         if (source != target) {
             if (unmodifiable == FREEZING) {
                 return (List<E>) source;
@@ -330,7 +330,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             Set<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
     {
-        // See the comments in writeCollection(...) for implementation notes.
+        // See the comments in writeCollection(…) for implementation notes.
         if (source != target) {
             if (unmodifiable == FREEZING) {
                 return (Set<E>) source;
@@ -387,7 +387,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         /*
          * It is not worth to copy the content if the current and the new instance are the
          * same. This is safe only using the != operator, not the !equals(Object) method.
-         * This optimization is required for efficient working of PropertyAccessor.set(...).
+         * This optimization is required for efficient working of PropertyAccessor.set(…)
+         * and JAXB unmarshalling.
          */
         if (source != target) {
             if (unmodifiable == FREEZING) {
