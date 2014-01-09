@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import java.lang.reflect.Method;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
@@ -61,6 +62,14 @@ final class StandardObjects extends SystemListener {
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e); // Should never happen.
         }
+    }
+
+    /**
+     * Returns the EPSG factory to use for creating CRS, or {@code null} if none.
+     * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
+     */
+    static CRSAuthorityFactory crsFactory() {
+        return null; // TODO
     }
 
     /**
