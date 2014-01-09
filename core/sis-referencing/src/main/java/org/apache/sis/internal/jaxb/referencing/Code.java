@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.util.DefinitionURI;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.apache.sis.internal.referencing.ReferencingUtilities.toURNType;
@@ -114,7 +114,7 @@ public final class Code {
             }
             authority = Citations.fromName(cs);
         }
-        return new ImmutableIdentifier(authority, cs, c, version, null);
+        return new NamedIdentifier(authority, cs, c, version, null);
     }
 
     /**
