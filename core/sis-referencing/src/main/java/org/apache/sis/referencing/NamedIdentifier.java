@@ -137,8 +137,6 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Constructs an identifier from an authority and localizable code.
      * This is a convenience constructor for commonly-used parameters.
-     * If more control are wanted (for example adding remarks), use the
-     * {@linkplain #NamedIdentifier(Map) constructor with a properties map}.
      *
      * @param authority The authority (e.g. {@link Citations#OGC} or {@link Citations#EPSG}),
      *                  or {@code null} if not available.
@@ -155,30 +153,38 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Constructs an identifier from an authority and code.
      * This is a convenience constructor for commonly-used parameters.
-     * If more control are wanted (for example adding remarks), use the
-     * {@linkplain #NamedIdentifier(Map) constructor with a properties map}.
      *
      * @param authority The authority (e.g. {@link Citations#OGC} or {@link Citations#EPSG}),
      *                  or {@code null} if not available.
      * @param code      The code. This parameter is mandatory.
      */
     public NamedIdentifier(final Citation authority, final String code) {
-        this(authority, code, null);
+        super(authority, Citations.getIdentifier(authority), code);
     }
 
     /**
-     * Constructs an identifier from an authority, code and version.
-     * This is a convenience constructor for commonly-used parameters.
-     * If more control are wanted (for example adding remarks), use the
-     * {@linkplain #NamedIdentifier(Map) constructor with a properties map}.
+     * Creates an identifier from the specified code and authority,
+     * with an optional version number and remarks.
      *
-     * @param authority The authority (e.g. {@link Citations#OGC} or {@link Citations#EPSG}),
-     *                  or {@code null} if not available.
-     * @param code      The code. This parameter is mandatory.
-     * @param version   The version, or {@code null} if none.
+     * @param authority
+     *          Organization or party responsible for definition and maintenance of the code
+     *          space or code, or {@code null} if not available.
+     * @param codeSpace
+     *          Name or identifier of the person or organization responsible for namespace, or
+     *          {@code null} if not available. This is often an abbreviation of the authority name.
+     * @param code
+     *          Identifier code or name, optionally from a controlled list or pattern defined by
+     *          a code space. The code can not be null.
+     * @param version
+     *          The version of the associated code space or code as specified by the code authority,
+     *          or {@code null} if none.
+     * @param remarks
+     *          Comments on or information about this identifier, or {@code null} if none.
      */
-    public NamedIdentifier(final Citation authority, final String code, final String version) {
-        super(authority, Citations.getIdentifier(authority), code, version, null);
+    public NamedIdentifier(final Citation authority, final String codeSpace,
+            final String code, final String version, final InternationalString remarks)
+    {
+        super(authority, codeSpace, code, version, remarks);
     }
 
     /**
