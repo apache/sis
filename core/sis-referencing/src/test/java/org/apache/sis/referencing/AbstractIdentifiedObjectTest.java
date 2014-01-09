@@ -85,7 +85,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
         assertEquals("codespace",   "EPSG",                          name.getCodeSpace());
         assertEquals("version",     "8.3",                           name.getVersion());
         assertEquals("aliases",     "International 1979",            getSingleton(object.getAlias()).toString());
-//      assertEquals("names",       Collections.singletonList(name), object.getNames());
+        assertEquals("names",       name,                            getSingleton(object.getNames()));
         assertEquals("identifiers", identifiers,                     object.getIdentifiers());
         assertEquals("ID",          gmlID,                           object.getID());
         assertEquals("remarks",     "Adopted by IUGG 1979 Canberra", object.getRemarks().toString(Locale.ENGLISH));

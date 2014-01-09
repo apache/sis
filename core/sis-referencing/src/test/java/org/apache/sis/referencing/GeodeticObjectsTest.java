@@ -17,6 +17,7 @@
 package org.apache.sis.referencing;
 
 import java.util.Date;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
@@ -48,6 +49,16 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
      * Length of a day in milliseconds.
      */
     private static final double DAY_LENGTH = 24 * 60 * 60 * 1000;
+
+    /**
+     * Tests the {@link GeodeticObjects#WGS84} constant.
+     */
+    @Test
+    public void testWGS84() {
+        final GeographicCRS crs = GeodeticObjects.WGS84.geographic();
+        Validators.validate(crs);
+        GeodeticObjectVerifier.assertIsWGS84(crs, false, true);
+    }
 
     /**
      * Verifies the vertical datum enumeration.

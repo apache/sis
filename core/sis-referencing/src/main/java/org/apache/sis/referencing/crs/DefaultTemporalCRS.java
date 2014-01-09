@@ -45,6 +45,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS Time}.
  * </p>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
+ * the coordinate system and the datum instances given to the constructor are also immutable. Unless otherwise noted
+ * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
  * @version 0.4
