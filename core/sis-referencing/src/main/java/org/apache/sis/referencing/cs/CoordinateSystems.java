@@ -49,11 +49,6 @@ import java.util.Objects;
  */
 public final class CoordinateSystems extends Static {
     /**
-     * Number of directions from "North", "North-North-East", "North-East", etc.
-     */
-    static final int COMPASS_DIRECTION_COUNT = 16;
-
-    /**
      * Do not allow instantiation of this class.
      */
     private CoordinateSystems() {
@@ -105,14 +100,25 @@ public final class CoordinateSystems extends Static {
      * in decimal <strong>degrees</strong>. This method returns a value between -180° and +180°,
      * or {@link Double#NaN NaN} if no angle can be computed.
      *
-     * <p>A positive angle denotes a right-handed system, while a negative angle denotes a left-handed system.
-     * Example:</p>
+     * <p>A positive angle between two compass directions denotes a right-handed system,
+     * while a negative angle denotes a left-handed system. Examples:</p>
      *
      * <ul>
      *   <li>The angle from {@link AxisDirection#EAST EAST} to {@link AxisDirection#NORTH NORTH} is 90°</li>
      *   <li>The angle from {@link AxisDirection#SOUTH SOUTH} to {@link AxisDirection#WEST WEST} is -90°</li>
      *   <li>The angle from "<cite>North along 90° East</cite>" to "<cite>North along 0°</cite>" is 90°.</li>
      * </ul>
+     *
+     * {@section Vertical directions}
+     * By convention, this method defines the angle from any compass direction to the {@link AxisDirection#UP UP}
+     * vertical direction (the <cite>altitude</cite> or <cite>elevation</cite>) as 90°, and the angle of any compass
+     * direction to the {@link AxisDirection#DOWN DOWN} vertical direction as -90°. The angle between two opposite
+     * vertical directions is ±180°. Those directions are approximative since this method does not take the Earth
+     * ellipsoidal or geoidal shape in account.
+     *
+     * {@section Invariants}
+     * {@code angle(A, B) == -angle(B, A)} for any return value different than {@code NaN}.
+     * This invariant holds also for angles of ±180°, even if an angle of -180° is equivalent to +180°.
      *
      * @param  source The source axis direction.
      * @param  target The target axis direction.
@@ -123,12 +129,45 @@ public final class CoordinateSystems extends Static {
     public static double angle(final AxisDirection source, final AxisDirection target) {
         ensureNonNull("source", source);
         ensureNonNull("target", target);
-        // Tests for NORTH, SOUTH, EAST, EAST-NORTH-EAST, etc. directions.
-        final int compass = getCompassAngle(source, target);
-        if (compass != Integer.MIN_VALUE) {
-            return compass * (360.0 / COMPASS_DIRECTION_COUNT);
+        /*
+         * Check for NORTH, SOUTH, EAST, EAST-NORTH-EAST, etc.
+         * Checked first because this is the most common case.
+         */
+        int c = AxisDirections.angleForCompass(source, target);
+        if (c != Integer.MIN_VALUE) {
+            return c * (360.0 / AxisDirections.COMPASS_COUNT);
         }
-        // Tests for "South along 90 deg East", etc. directions.
+        /*
+         * Check for UP and DOWN, with special case if one of the direction is a compass one.
+         */
+        final boolean v1 = AxisDirections.isVertical(source);
+        final boolean v2 = AxisDirections.isVertical(target);
+        if (v1 | v2) {
+            if (v1 & v2) {
+                return (source == target) ? 0 : (target == AxisDirection.UP) ? 180 : -180;
+            }
+            if (AxisDirections.isCompass(v1 ? target : source)) {
+                return (v1 ? source : target) == AxisDirection.UP ? 90 : -90;
+            }
+        }
+        /*
+         * Check for GEOCENTRIC_X, GEOCENTRIC_Y, GEOCENTRIC_Z.
+         */
+        c = AxisDirections.angleForGeocentric(source, target);
+        if (c != Integer.MIN_VALUE) {
+            return c * 90.0;
+        }
+        /*
+         * Check for DISPLAY_UP, DISPLAY_DOWN, etc.
+         */
+        c = AxisDirections.angleForDisplay(source, target);
+        if (c != Integer.MIN_VALUE) {
+            return c * (360.0 / AxisDirections.DISPLAY_COUNT);
+        }
+        /*
+         * Check for "South along 90° East", etc. directions. We do this test last
+         * because it performs a relatively costly parsing of axis direction name.
+         */
         final DirectionAlongMeridian src = DirectionAlongMeridian.parse(source);
         if (src != null) {
             final DirectionAlongMeridian tgt = DirectionAlongMeridian.parse(target);
@@ -137,28 +176,6 @@ public final class CoordinateSystems extends Static {
             }
         }
         return Double.NaN;
-    }
-
-    /**
-     * Tests for angle on compass only (do not tests angle between direction along meridians).
-     * Returns {@link Integer#MIN_VALUE} if the angle can't be computed.
-     */
-    static int getCompassAngle(final AxisDirection source, final AxisDirection target) {
-        final int base = AxisDirection.NORTH.ordinal();
-        final int src  = source.ordinal() - base;
-        if (src >= 0 && src < COMPASS_DIRECTION_COUNT) {
-            int tgt = target.ordinal() - base;
-            if (tgt >= 0 && tgt < COMPASS_DIRECTION_COUNT) {
-                tgt = src - tgt;
-                if (tgt < -COMPASS_DIRECTION_COUNT/2) {
-                    tgt += COMPASS_DIRECTION_COUNT;
-                } else if (tgt > COMPASS_DIRECTION_COUNT/2) {
-                    tgt -= COMPASS_DIRECTION_COUNT;
-                }
-                return tgt;
-            }
-        }
-        return Integer.MIN_VALUE;
     }
 
     /**

@@ -35,10 +35,22 @@ import static org.apache.sis.util.CharSequences.*;
  */
 public final class AxisDirections extends Static {
     /**
-     * Do not allow instantiation of this class.
+     * Number of directions like "North", "North-North-East", "North-East", etc.
+     * The first of those directions is {@link AxisDirection#NORTH}.
      */
-    private AxisDirections() {
-    }
+    public static final int COMPASS_COUNT = 16;
+
+    /**
+     * Number of geocentric directions.
+     * The first of those directions is {@link AxisDirection#GEOCENTRIC_X}.
+     */
+    public static final int GEOCENTRIC_COUNT = 3;
+
+    /**
+     * Number of directions like "Display right", "Display down", etc.
+     * The first of those directions is {@link AxisDirection#DISPLAY_RIGHT}.
+     */
+    public static final int DISPLAY_COUNT = 4;
 
     /**
      * For each direction, the opposite direction.
@@ -68,6 +80,12 @@ public final class AxisDirections extends Static {
     private static void put(final AxisDirection dir, final AxisDirection opposite) {
         OPPOSITES[dir.ordinal()] = opposite;
         OPPOSITES[opposite.ordinal()] = dir;
+    }
+
+    /**
+     * Do not allow instantiation of this class.
+     */
+    private AxisDirections() {
     }
 
     /**
@@ -151,6 +169,32 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Returns {@code true} if the specified direction is a compass direction.
+     * Compass directions are {@code NORTH}, {@code EAST}, {@code NORTH_EAST}, etc.
+     *
+     * @param  dir The direction to test, or {@code null}.
+     * @return {@code true} if the given direction is a compass direction.
+     *
+     * @see #angleForCompass(AxisDirection, AxisDirection)
+     */
+    public static boolean isCompass(final AxisDirection dir) {
+        if (dir == null) return false;
+        final int n  = dir.ordinal() - NORTH.ordinal();
+        return n >= 0 && n < COMPASS_COUNT;
+    }
+
+    /**
+     * Returns {@code true} if the given direction is {@code UP} or {@code DOWN}.
+     *
+     * @param  dir The direction to test, or {@code null}.
+     * @return {@code true} if the direction is vertical, or {@code false} otherwise.
+     */
+    public static boolean isVertical(final AxisDirection dir) {
+        if (dir == null) return false;
+        return ((dir.ordinal() - UP.ordinal()) & ~1) == 0;
+    }
+
+    /**
      * Returns {@code true} if the given direction is a spatial axis direction (including vertical and geocentric axes).
      * The current implementation conservatively returns {@code true} for every non-null directions except a hard-coded
      * set of directions which are known to be non-spatial. We conservatively accept unknown axis directions because
@@ -183,6 +227,89 @@ public final class AxisDirections extends Static {
         final int ordinal = dir.ordinal();
         return ordinal >= COLUMN_POSITIVE.ordinal() && ordinal <= ROW_NEGATIVE.ordinal();
     }
+
+    /**
+     * Angle between geocentric directions only.
+     *
+     * @param  source The start direction.
+     * @param  target The final direction.
+     * @return The angle as a multiple of 90°, or {@link Integer#MIN_VALUE} if none.
+     */
+    public static int angleForGeocentric(final AxisDirection source, final AxisDirection target) {
+        final int base = GEOCENTRIC_X.ordinal();
+        final int src  = source.ordinal() - base;
+        if (src >= 0 && src < GEOCENTRIC_COUNT) {
+            final int tgt = target.ordinal() - base;
+            if (tgt >= 0 && tgt < GEOCENTRIC_COUNT) {
+                int n = (tgt - src);
+                n -= GEOCENTRIC_COUNT * (n/2); // If -2 add 3.  If +2 subtract 3.  Otherwise do nothing.
+                return n;
+            }
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    /**
+     * Angle between compass directions only (not for angle between direction along meridians).
+     *
+     * @param  source The start direction.
+     * @param  target The final direction.
+     * @return The arithmetic angle as a multiple of 360/{@link #COMPASS_COUNT}, or {@link Integer#MIN_VALUE} if none.
+     *
+     * @see #isCompass(AxisDirection)
+     */
+    public static int angleForCompass(final AxisDirection source, final AxisDirection target) {
+        final int base = NORTH.ordinal();
+        final int src  = source.ordinal() - base;
+        if (src >= 0 && src < COMPASS_COUNT) {
+            final int tgt = target.ordinal() - base;
+            if (tgt >= 0 && tgt < COMPASS_COUNT) {
+                int n = src - tgt;
+                if (n < -COMPASS_COUNT/2) {
+                    n += COMPASS_COUNT;
+                } else if (n > COMPASS_COUNT/2) {
+                    n -= COMPASS_COUNT;
+                }
+                return n;
+            }
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    /**
+     * Angle between display directions only.
+     *
+     * @param  source The start direction.
+     * @param  target The final direction.
+     * @return The arithmetic angle as a multiple of 360/{@link #DISPLAY_RIGHT}, or {@link Integer#MIN_VALUE} if none.
+     */
+    public static int angleForDisplay(final AxisDirection source, final AxisDirection target) {
+        final int base = DISPLAY_RIGHT.ordinal();
+        int src  = source.ordinal() - base;
+        if (src >= 0 && src < DISPLAY_COUNT) {
+            int tgt = target.ordinal() - base;
+            if (tgt >= 0 && tgt < DISPLAY_COUNT) {
+                /*
+                 * Display directions are RIGHT, LEFT, UP, DOWN. We need to reorder them as UP, RIGHT, DOWN, LEFT.
+                 */
+                src = DISPLAY_ORDER[src];
+                tgt = DISPLAY_ORDER[tgt];
+                int n = src - tgt;
+                if (n < -DISPLAY_COUNT/2) {
+                    n += DISPLAY_COUNT;
+                } else if (n > DISPLAY_COUNT/2) {
+                    n -= DISPLAY_COUNT;
+                }
+                return n;
+            }
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    /**
+     * Maps RIGHT, LEFT, UP, DOWN display order to UP, RIGHT, DOWN, LEFT.
+     */
+    private static final byte[] DISPLAY_ORDER = {1, 3, 0, 2};
 
     /**
      * Finds the dimension of an axis having the given direction or its opposite.

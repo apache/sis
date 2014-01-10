@@ -497,38 +497,46 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
          */
         @Override
         public boolean add(final ReferenceIdentifier id) {
-            if (name == null) {
-                name = id;
+            addName(id);
+            return true;
+        }
+    }
+
+    /**
+     * Implementation of {@link Names#add(ReferenceIdentifier)}, defined in the enclosing class
+     * for access to private fields without compiler-generated bridge methods.
+     */
+    final void addName(final ReferenceIdentifier id) {
+        if (name == null) {
+            name = id;
+        } else {
+            /*
+             * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
+             * so the 'instanceof' check should not be necessary. But we do a paranoiac check anyway.
+             */
+            final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
+            if (alias == null) {
+                alias = Collections.singleton(n);
             } else {
                 /*
-                 * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
-                 * so the 'instanceof' check should not be necessary. But we do a paranoiac check anyway.
+                 * This implementation is inefficient since each addition copies the array, but we rarely
+                 * have more than two aliases.  This implementation is okay for a small number of aliases
+                 * and ensures that the enclosing AbstractIdentifiedObject is unmodifiable except by this
+                 * add(…) method.
+                 *
+                 * Note about alternative approaches
+                 * ---------------------------------
+                 * An alternative approach could be to use an ArrayList and replace it by an unmodifiable
+                 * list only after unmarshalling (using an afterUnmarshal(Unmarshaller, Object) method),
+                 * but we want to avoid Unmarshaller dependency (for reducing classes loading for users
+                 * who are not interrested in XML) and it may actually be less efficient for the vast
+                 * majority of cases where there is less than 3 aliases.
                  */
-                final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
-                if (alias == null) {
-                    alias = Collections.singleton(n);
-                } else {
-                    /*
-                     * This implementation is inefficient since each addition copies the array, but we rarely
-                     * have more than two aliases.  This implementation is okay for a small number of aliases
-                     * and ensures that the enclosing AbstractIdentifiedObject is unmodifiable except by this
-                     * add(…) method.
-                     *
-                     * Note about alternative approaches
-                     * ---------------------------------
-                     * An alternative approach could be to use an ArrayList and replace it by an unmodifiable
-                     * list only after unmarshalling (using an afterUnmarshal(Unmarshaller, Object) method),
-                     * but we want to avoid Unmarshaller dependency (for reducing classes loading for users
-                     * who are not interrested in XML) and it may actually be less efficient for the vast
-                     * majority of cases where there is less than 3 aliases.
-                     */
-                    final int size = alias.size();
-                    final GenericName[] names = alias.toArray(new GenericName[size + 1]);
-                    names[size] = n;
-                    alias = UnmodifiableArrayList.wrap(names);
-                }
+                final int size = alias.size();
+                final GenericName[] names = alias.toArray(new GenericName[size + 1]);
+                names[size] = n;
+                alias = UnmodifiableArrayList.wrap(names);
             }
-            return true;
         }
     }
 
