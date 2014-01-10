@@ -17,24 +17,44 @@
 package org.apache.sis.referencing.cs;
 
 import org.opengis.referencing.cs.AxisDirection; // For javadoc
+import org.opengis.referencing.cs.CoordinateSystem;
 
 
 /**
- * High-level characteristics about the axes of an ellipsoidal coordinate system.
+ * High-level characteristics about the axes of a coordinate system.
  * This enumeration provides a convenient way to identify some common axes conventions like
- * (<var>latitude</var>, <var>longitude</var>) versus (<var>longitude</var>, <var>latitude</var>) order,
+ * (<var>latitude</var>, <var>longitude</var>) versus (<var>longitude</var>, <var>latitude</var>) axis order,
  * or [-180 … +180]° versus [0 … 360]° longitude range.
  *
- * <p>Enumeration values are inferred from the properties of given {@link EllipsoidalCS} instances.
+ * <p>Enumeration values are inferred from the properties of given {@link CoordinateSystem} instances.
  * This enumeration does not add new information and does not aim to cover all possible conventions – it is
  * only a convenience for identifying some common patterns.</p>
  *
+ * {@section Axis order}
+ * The axis order is specified by the authority (typically a national agency) defining the Coordinate Reference System
+ * (CRS). The order depends on the CRS type and the country defining the CRS. In the case of geographic CRS, the
+ * (<var>latitude</var>, <var>longitude</var>) axis order is widely used by geographers and pilotes for centuries.
+ * However software developers tend to consistently use the (<var>x</var>,<var>y</var>) order for every kind of CRS.
+ * Those different practices resulted in contradictory definitions of axis order for almost every CRS of kind
+ * {@code GeographicCRS}, for some {@code ProjectedCRS} in the South hemisphere (South Africa, Australia, <i>etc.</i>)
+ * and for some polar projections among others.
+ *
+ * <p>Recent OGC standards mandate the use of axis order as defined by the authority. Oldest OGC standards used the
+ * (<var>x</var>,<var>y</var>) axis order instead, ignoring any authority specification. Many softwares still use the
+ * old (<var>x</var>,<var>y</var>) axis order, because it is easier to implement. Apache SIS supports both conventions.
+ * By default, SIS creates CRS with axis order as defined by the authority. Those CRS are created by calls to the
+ * {@link org.apache.sis.referencing.CRS#forCode(String)} method. The actual axis order can be verified after the CRS
+ * creation with {@code System.out.println(crs)}. If (<var>x</var>,<var>y</var>) axis order is wanted for compatibility
+ * with older OGC specifications or other softwares, CRS forced to longitude first axis order can be created using the
+ * {@link #RIGHT_HANDED} enumeration value.</p>
+ *
  * {@section Range of longitude values}
- * This enumeration provides a way to specify whether the range of longitude values is expected to be positive
- * (typically [0 … 360]°) or if the range mixes positive and negative values (typically [-180 … +180]°).
- * This information usually has no impact on coordinate transformations. However, they have an impact on
- * methods that verify the <cite>domain of validity</cite>, for example
- * {@link org.apache.sis.geometry.GeneralEnvelope#normalize()}.
+ * Most geographic CRS have a longitude axis defined in the [-180 … +180]° range. All map projections in Apache SIS are
+ * designed to work in that range. This is also the range of {@link Math} trigonometric functions like {@code atan2}.
+ * However some data use the [0 … 360]° range instead. A geographic CRS can be shifted to that range of longitude values
+ * using the {@link #POSITIVE_RANGE} enumeration value. The choice of longitude range will impact not only some
+ * coordinate conversions, but also the methods that verify the <cite>domain of validity</cite>
+ * (e.g. {@link org.apache.sis.geometry.GeneralEnvelope#normalize()}).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.20)
@@ -44,22 +64,26 @@ import org.opengis.referencing.cs.AxisDirection; // For javadoc
 public enum AxesConvention {
     /**
      * Axis order and ranges are as specified by the authority. For ellipsoidal coordinate systems defined by
-     * EPSG database, this is often - but not always - (<var>latitude</var>, <var>longitude</var>) axis order
+     * EPSG database, this is often – but not always – (<var>latitude</var>, <var>longitude</var>) axis order
      * with longitude values in the [-180 … +180]° range.
      */
     AS_SPECIFIED,
 
     /**
      * Axes are reordered for a <cite>right-handed</cite> coordinate system. Axis orientations and ranges are unchanged.
-     * This enum is often used for deriving a coordinate system with the (<var>longitude</var>, <var>latitude</var>)
-     * or (<var>x</var>, <var>y</var>) axis order, but actually does not guarantee that longitude or <var>x</var> will
-     * be first (see for example the (South, East) case below). Note also that the "<var>x</var> first" criterion has
-     * no meaning for map projections having their origin on a pole, while the right-handed rule applies everywhere.
+     * This enum is often used for deriving a coordinate system with the (<var>longitude</var>, <var>latitude</var>) or
+     * (<var>x</var>,<var>y</var>) axis order. Strictly speaking a right-handed coordinate system does not guarantee
+     * that longitude or <var>x</var> axis will be first (see for example the (South, East) case below).
+     * But in practice this works for the coordinate reference systems defined in the EPSG database.
+     *
+     * {@note We do not provide "<cite>longitude/<var>x</var> axis first</cite>" enumeration value because
+     *        such criterion has no meaning for map projections over a pole, while the right-handed rule
+     *        can apply everywhere.}
      *
      * {@example The following table lists some axis orientations in the first column, and
      *           how those axes are reordered in a right-handed coordinate system (second column):
      * <ul>
-     *   <table>
+     *   <table class="sis">
      *     <tr><th>Left-handed</th>   <th>Right-handed</th>  <th>Remarks</th></tr>
      *     <tr><td>(North, East)</td> <td>(East, North)</td> <td>This is the most common case.</td></tr>
      *     <tr><td>(East, South)</td> <td>(South, East)</td> <td>This right-handed system has latitude first.</td></tr>
@@ -74,14 +98,14 @@ public enum AxesConvention {
     RIGHT_HANDED,
 
     /**
-     * Axes having a <cite>wraparound</cite> range meaning are shifted to their ranges of positive values.
-     * The unit and range period are unchanged.
+     * Axes having a <cite>wraparound</cite>
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getRangeMeaning() range meaning}
+     * are shifted to their ranges of positive values. The unit and range period are unchanged.
      *
-     * <p>The most frequent usage of this enum is for shifting longitude values from [-180 … +180]° to the [0 … 360]°
-     * range. However this enum could also be used with climatological calendars if their time axis has a wrapround
-     * range meaning.</p>
+     * <p>The most frequent usage of this enum is for shifting longitude values from the [-180 … +180]° range
+     * to the [0 … 360]° range. However this enum could also be used with climatological calendars if their
+     * time axis has a wrapround range meaning.</p>
      *
-     * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getRangeMeaning()
      * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
      */
     POSITIVE_RANGE
