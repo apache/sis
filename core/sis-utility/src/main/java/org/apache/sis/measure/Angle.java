@@ -30,9 +30,20 @@ import static org.apache.sis.math.MathFunctions.isNegative;
 
 
 /**
- * An angle in decimal degrees. An angle is the amount of rotation needed to bring one line or
- * plane into coincidence with another, generally measured in degrees, sexagesimal degrees or
- * grads.
+ * An angle in decimal degrees. An angle is the amount of rotation needed to bring one line or plane
+ * into coincidence with another, generally measured in degrees, sexagesimal degrees or grads.
+ * Various kind of angles are used in geographic information systems,
+ * some of them having a specialized class in Apache SIS:
+ *
+ * <ul>
+ *   <li>{@linkplain Latitude} is an angle which ranges from 0° at the equator to 90° at the poles.</li>
+ *   <li>{@linkplain Longitude} is an angle measured east-west from a prime meridian
+ *       (usually Greenwich, but not necessarily).</li>
+ *   <li><cite>Azimuth</cite> is a direction given by an angle between 0° and 360° measured clockwise from North.</li>
+ *   <li><cite>Bearing</cite> is a direction given by an angle between 0° and 90° in a quadrant defined by a cardinal
+ *       direction. Bearing is also sometime used for an angle relative to a vessel forward direction.</li>
+ *   <li><cite>Interior angle</cite> is an angle measured between two lines of sight.</li>
+ * </ul>
  *
  * {@section Formatting angles}
  * The recommended way to format angles is to instantiate an {@link AngleFormat} once, then to
