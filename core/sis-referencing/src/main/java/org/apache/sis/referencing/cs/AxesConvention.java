@@ -50,7 +50,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
  *
  * {@section Range of longitude values}
  * Most geographic CRS have a longitude axis defined in the [-180 … +180]° range. All map projections in Apache SIS are
- * designed to work in that range. This is also the range of {@link Math} trigonometric functions like {@code atan2}.
+ * designed to work in that range. This is also the range of {@link Math} trigonometric functions like {@code atan2(y,x)}.
  * However some data use the [0 … 360]° range instead. A geographic CRS can be shifted to that range of longitude values
  * using the {@link #POSITIVE_RANGE} enumeration value. The choice of longitude range will impact not only some
  * coordinate conversions, but also the methods that verify the <cite>domain of validity</cite>
@@ -72,13 +72,12 @@ public enum AxesConvention {
     /**
      * Axes are reordered for a <cite>right-handed</cite> coordinate system. Axis orientations and ranges are unchanged.
      * This enum is often used for deriving a coordinate system with the (<var>longitude</var>, <var>latitude</var>) or
-     * (<var>x</var>,<var>y</var>) axis order. Strictly speaking a right-handed coordinate system does not guarantee
-     * that longitude or <var>x</var> axis will be first (see for example the (South, East) case below).
-     * But in practice this works for the coordinate reference systems defined in the EPSG database.
+     * (<var>x</var>,<var>y</var>) axis order. However a right-handed coordinate system does not guarantee
+     * that longitude or <var>x</var> axis will be first (see for example the (North, West) case below).
      *
-     * {@note We do not provide "<cite>longitude/<var>x</var> axis first</cite>" enumeration value because
-     *        such criterion has no meaning for map projections over a pole, while the right-handed rule
-     *        can apply everywhere.}
+     * {@note We do not provide a "<cite>longitude or <var>x</var> axis first</cite>" enumeration value because
+     *        such criterion is hard to apply to inter-cardinal directions and has no meaning for map projections
+     *        over a pole, while the right-handed rule can apply everywhere.}
      *
      * {@example The following table lists some axis orientations in the first column, and
      *           how those axes are reordered in a right-handed coordinate system (second column):
@@ -86,7 +85,7 @@ public enum AxesConvention {
      *   <table class="sis">
      *     <tr><th>Left-handed</th>   <th>Right-handed</th>  <th>Remarks</th></tr>
      *     <tr><td>(North, East)</td> <td>(East, North)</td> <td>This is the most common case.</td></tr>
-     *     <tr><td>(East, South)</td> <td>(South, East)</td> <td>This right-handed system has latitude first.</td></tr>
+     *     <tr><td>(West, North)</td> <td>(North, West)</td> <td>This right-handed system has latitude first.</td></tr>
      *     <tr><td>(South, West)</td> <td>(West, South)</td> <td>Used for the mapping of southern Africa.</td></tr>
      *     <tr><td>(South along 0°,<br>South along 90° West)</td>
      *         <td>(South along 90° West,<br>South along 0°)</td> <td>Can be used for the mapping of North pole.</td></tr>
