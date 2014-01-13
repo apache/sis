@@ -22,8 +22,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.measure.Angle;
 
 
 /**
@@ -194,11 +195,16 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
             final AxisDirection axis0 = getAxis(i).getDirection();
             for (int j=i; ++j<dimension;) {
                 final AxisDirection axis1 = getAxis(j).getDirection();
-                final double angle = CoordinateSystems.angle(axis0, axis1); // May be NaN, which we accept.
-                if (Math.abs(Math.abs(angle) - 90) > Formulas.ANGULAR_TOLERANCE) {
-                    throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.NonPerpendicularDirections_2, axis0, axis1));
+                final Angle angle = CoordinateSystems.angle(axis0, axis1);
+                if (angle != null) {
+                    if (Math.abs(angle.degrees()) == 90) {
+                        continue; // Axes are perpendicular.
+                    }
+                } else if (AxisDirections.isCustom(axis0) || AxisDirections.isCustom(axis1)) {
+                    continue; // If we do not recognize an axis, assume that the user know what he is doing.
                 }
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.NonPerpendicularDirections_2, axis0, axis1));
             }
         }
     }

@@ -24,6 +24,8 @@ import javax.measure.converter.ConversionException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.measure.Angle;
+import org.apache.sis.measure.ElevationAngle;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
@@ -96,12 +98,12 @@ public final class CoordinateSystems extends Static {
     }
 
     /**
-     * Returns the arithmetic (counterclockwise) angle from the first axis direction to the second direction,
-     * in decimal <strong>degrees</strong>. This method returns a value between -180° and +180°,
-     * or {@link Double#NaN NaN} if no angle can be computed.
+     * Returns the arithmetic (counterclockwise) angle from the first axis direction to the second direction.
+     * This method returns a value between -180° and +180°, or {@code null} if no angle can be computed.
      *
-     * <p>A positive angle between two compass directions denotes a right-handed system,
-     * while a negative angle denotes a left-handed system. Examples:</p>
+     * {@section Horizontal directions}
+     * For any pair of compass directions which are not opposite directions, a positive angle denotes
+     * a right-handed system while a negative angle denotes a left-handed system. Examples:
      *
      * <ul>
      *   <li>The angle from {@link AxisDirection#EAST EAST} to {@link AxisDirection#NORTH NORTH} is 90°</li>
@@ -109,16 +111,22 @@ public final class CoordinateSystems extends Static {
      *   <li>The angle from "<cite>North along 90° East</cite>" to "<cite>North along 0°</cite>" is 90°.</li>
      * </ul>
      *
-     * {@section Vertical directions}
-     * By convention, this method defines the angle from any compass direction to the {@link AxisDirection#UP UP}
-     * vertical direction (the <cite>altitude</cite> or <cite>elevation</cite>) as 90°, and the angle of any compass
-     * direction to the {@link AxisDirection#DOWN DOWN} vertical direction as -90°. The angle between two opposite
-     * vertical directions is ±180°. Those directions are approximative since this method does not take the Earth
-     * ellipsoidal or geoidal shape in account.
+     * {@section Horizontal and vertical directions}
+     * By convention this method defines the angle from any compass direction to the {@link AxisDirection#UP UP}
+     * vertical direction as 90°, and the angle of any compass direction to the {@link AxisDirection#DOWN DOWN}
+     * vertical direction as -90°. The sign of those angles gives no indication about whether the coordinate system
+     * is right-handed or left-handed. Those angles are returned as instances of {@link ElevationAngle}.
+     *
+     * <p>All angles are approximative since this method does not take the Earth ellipsoidal or geoidal shape in
+     * account.</p>
      *
      * {@section Invariants}
-     * {@code angle(A, B) == -angle(B, A)} for any return value different than {@code NaN}.
-     * This invariant holds also for angles of ±180°, even if an angle of -180° is equivalent to +180°.
+     * For any non-null return value:
+     * <ul>
+     *   <li>{@code angle(A, A) == 0°}</li>
+     *   <li>{@code angle(A, opposite(A)) == ±180°}</li>
+     *   <li>{@code angle(A, B) == -angle(B, A)}</li>
+     * </ul>
      *
      * @param  source The source axis direction.
      * @param  target The target axis direction.
@@ -126,7 +134,7 @@ public final class CoordinateSystems extends Static {
      *         the source direction in order to make it point toward the target direction, or
      *         {@link Double#NaN} if this value can not be computed.
      */
-    public static double angle(final AxisDirection source, final AxisDirection target) {
+    public static Angle angle(final AxisDirection source, final AxisDirection target) {
         ensureNonNull("source", source);
         ensureNonNull("target", target);
         /*
@@ -135,47 +143,48 @@ public final class CoordinateSystems extends Static {
          */
         int c = AxisDirections.angleForCompass(source, target);
         if (c != Integer.MIN_VALUE) {
-            return c * (360.0 / AxisDirections.COMPASS_COUNT);
-        }
-        /*
-         * Check for UP and DOWN, with special case if one of the direction is a compass one.
-         */
-        final boolean v1 = AxisDirections.isVertical(source);
-        final boolean v2 = AxisDirections.isVertical(target);
-        if (v1 | v2) {
-            if (v1 & v2) {
-                return (source == target) ? 0 : (target == AxisDirection.UP) ? 180 : -180;
-            }
-            if (AxisDirections.isCompass(v1 ? target : source)) {
-                return (v1 ? source : target) == AxisDirection.UP ? 90 : -90;
-            }
+            return new Angle(c * (360.0 / AxisDirections.COMPASS_COUNT));
         }
         /*
          * Check for GEOCENTRIC_X, GEOCENTRIC_Y, GEOCENTRIC_Z.
          */
         c = AxisDirections.angleForGeocentric(source, target);
         if (c != Integer.MIN_VALUE) {
-            return c * 90.0;
+            return new Angle(c * 90);
         }
         /*
          * Check for DISPLAY_UP, DISPLAY_DOWN, etc.
          */
         c = AxisDirections.angleForDisplay(source, target);
         if (c != Integer.MIN_VALUE) {
-            return c * (360.0 / AxisDirections.DISPLAY_COUNT);
+            return new Angle(c * (360 / AxisDirections.DISPLAY_COUNT));
         }
         /*
          * Check for "South along 90° East", etc. directions. We do this test last
          * because it performs a relatively costly parsing of axis direction name.
          */
-        final DirectionAlongMeridian src = DirectionAlongMeridian.parse(source);
-        if (src != null) {
-            final DirectionAlongMeridian tgt = DirectionAlongMeridian.parse(target);
-            if (tgt != null) {
-                return src.getAngle(tgt);
+        final DirectionAlongMeridian srcMeridian = DirectionAlongMeridian.parse(source);
+        final DirectionAlongMeridian tgtMeridian = DirectionAlongMeridian.parse(target);
+        if (srcMeridian != null && tgtMeridian != null) {
+            return new Angle(srcMeridian.angle(tgtMeridian));
+        }
+        /*
+         * Check for UP and DOWN, with special case if one of the direction is a compass one.
+         */
+        final boolean srcVrt = AxisDirections.isVertical(source);
+        final boolean tgtVrt = AxisDirections.isVertical(target);
+        if (tgtVrt) {
+            if (srcVrt) {
+                return new Angle(source.equals(target) ? 0 : target.equals(AxisDirection.UP) ? 180 : -180);
+            } else if (AxisDirections.isCompass(source) || srcMeridian != null) {
+                return target.equals(AxisDirection.UP) ? ElevationAngle.ZENITH : ElevationAngle.NADIR;
+            }
+        } else if (srcVrt) {
+            if (AxisDirections.isCompass(target) || tgtMeridian != null) {
+                return source.equals(AxisDirection.UP) ? ElevationAngle.NADIR : ElevationAngle.ZENITH;
             }
         }
-        return Double.NaN;
+        return null;
     }
 
     /**

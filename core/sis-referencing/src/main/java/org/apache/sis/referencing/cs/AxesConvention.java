@@ -72,8 +72,9 @@ public enum AxesConvention {
     /**
      * Axes are reordered for a <cite>right-handed</cite> coordinate system. Axis orientations and ranges are unchanged.
      * This enum is often used for deriving a coordinate system with the (<var>longitude</var>, <var>latitude</var>) or
-     * (<var>x</var>,<var>y</var>) axis order. However a right-handed coordinate system does not guarantee
-     * that longitude or <var>x</var> axis will be first (see for example the (North, West) case below).
+     * (<var>x</var>,<var>y</var>) axis order. While it works in many cases, note that a right-handed coordinate system
+     * does not guarantee that longitude or <var>x</var> axis will be first in every cases. The most notable exception
+     * is the (North, West) case.
      *
      * {@note We do not provide a "<cite>longitude or <var>x</var> axis first</cite>" enumeration value because
      *        such criterion is hard to apply to inter-cardinal directions and has no meaning for map projections

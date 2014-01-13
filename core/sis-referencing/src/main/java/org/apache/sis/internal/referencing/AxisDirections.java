@@ -195,6 +195,18 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Returns {@code true} if the given direction is {@code OTHER} or a user-defined direction.
+     *
+     * @param  dir The direction to test, or {@code null}.
+     * @return {@code true} if the given direction is {@code OTHER} or a user-defined direction.
+     */
+    public static boolean isCustom(final AxisDirection dir) {
+        if (dir == null) return false;
+        final int ordinal = dir.ordinal();
+        return ordinal <= OTHER.ordinal() || ordinal > DISPLAY_DOWN.ordinal();
+    }
+
+    /**
      * Returns {@code true} if the given direction is a spatial axis direction (including vertical and geocentric axes).
      * The current implementation conservatively returns {@code true} for every non-null directions except a hard-coded
      * set of directions which are known to be non-spatial. We conservatively accept unknown axis directions because

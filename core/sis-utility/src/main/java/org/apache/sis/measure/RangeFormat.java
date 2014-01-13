@@ -123,7 +123,7 @@ public class RangeFormat extends Format {
     private static final int UNIT_FIELD = 2;
 
     /**
-     * Defines constants that are used as attribute keys in the iterator returned from
+     * Constants that are used as attribute keys in the iterator returned from
      * {@link RangeFormat#formatToCharacterIterator(Object)}.
      *
      * @author  Martin Desruisseaux (Geomatys)
