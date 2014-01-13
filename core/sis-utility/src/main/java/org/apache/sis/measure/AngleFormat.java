@@ -195,7 +195,7 @@ public class AngleFormat extends Format implements Localized {
     private static final int[] SYMBOLS = {'D', 'M', 'S', '#', '?'};
 
     /**
-     * Defines constants that are used as attribute keys in the iterator returned from
+     * Constants that are used as attribute keys in the iterator returned from
      * {@link AngleFormat#formatToCharacterIterator(Object)}.
      *
      * @author  Martin Desruisseaux (Geomatys)

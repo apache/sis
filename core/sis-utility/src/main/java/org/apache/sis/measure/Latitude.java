@@ -40,7 +40,7 @@ package org.apache.sis.measure;
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic},
  * or <cite>geocentric</cite> if the coordinate reference system is
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric}.
- * If the context is unknown, geodetic latitude can usually be assumed.
+ * If the context is unknown, then geodetic latitude can usually be assumed.
  *
  * {@section Immutability and thread safety}
  * This final class is immutable and thus inherently thread-safe.
