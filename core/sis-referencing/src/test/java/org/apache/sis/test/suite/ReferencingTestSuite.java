@@ -63,7 +63,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class,
     org.apache.sis.referencing.cs.DirectionAlongMeridianTest.class,
     org.apache.sis.referencing.cs.DefaultCoordinateSystemAxisTest.class,
-    org.apache.sis.referencing.cs.ComparableAxisWrapperTest.class,
+    org.apache.sis.referencing.cs.NormalizerTest.class,
     org.apache.sis.referencing.cs.AbstractCSTest.class,
     org.apache.sis.referencing.cs.DefaultCartesianCSTest.class,
     org.apache.sis.referencing.cs.DefaultEllipsoidalCSTest.class,

@@ -123,16 +123,16 @@ public final class CoordinateSystems extends Static {
      * {@section Invariants}
      * For any non-null return value:
      * <ul>
-     *   <li>{@code angle(A, A) == 0°}</li>
-     *   <li>{@code angle(A, opposite(A)) == ±180°}</li>
-     *   <li>{@code angle(A, B) == -angle(B, A)}</li>
+     *   <li>{@code angle(A, A) = 0°}</li>
+     *   <li>{@code angle(A, opposite(A)) = ±180°}</li>
+     *   <li>{@code angle(A, B) = -angle(B, A)}</li>
      * </ul>
      *
      * @param  source The source axis direction.
      * @param  target The target axis direction.
      * @return The arithmetic angle (in degrees) of the rotation to apply on a line pointing toward
      *         the source direction in order to make it point toward the target direction, or
-     *         {@link Double#NaN} if this value can not be computed.
+     *         {@code null} if this value can not be computed.
      */
     public static Angle angle(final AxisDirection source, final AxisDirection target) {
         ensureNonNull("source", source);
@@ -153,15 +153,17 @@ public final class CoordinateSystems extends Static {
             return new Angle(c * 90);
         }
         /*
-         * Check for DISPLAY_UP, DISPLAY_DOWN, etc.
+         * Check for DISPLAY_UP, DISPLAY_DOWN, etc. assuming a flat screen.
+         * Note that we do not check for grid directions (COLUMN_POSITIVE,
+         * ROW_POSITIVE, etc.) because the grid geometry may be anything.
          */
         c = AxisDirections.angleForDisplay(source, target);
         if (c != Integer.MIN_VALUE) {
             return new Angle(c * (360 / AxisDirections.DISPLAY_COUNT));
         }
         /*
-         * Check for "South along 90° East", etc. directions. We do this test last
-         * because it performs a relatively costly parsing of axis direction name.
+         * Check for "South along 90° East", etc. directions. Note that this
+         * check may perform a relatively costly parsing of axis direction name.
          */
         final DirectionAlongMeridian srcMeridian = DirectionAlongMeridian.parse(source);
         final DirectionAlongMeridian tgtMeridian = DirectionAlongMeridian.parse(target);
@@ -169,7 +171,8 @@ public final class CoordinateSystems extends Static {
             return new Angle(srcMeridian.angle(tgtMeridian));
         }
         /*
-         * Check for UP and DOWN, with special case if one of the direction is a compass one.
+         * Check for UP and DOWN, with special case if one of the direction is horizontal
+         * (either a compass direction of a direction along a meridian).
          */
         final boolean srcVrt = AxisDirections.isVertical(source);
         final boolean tgtVrt = AxisDirections.isVertical(target);

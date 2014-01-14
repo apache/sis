@@ -42,7 +42,7 @@ import static org.apache.sis.math.MathFunctions.isNegative;
  *   <li><cite>Bearing</cite> is also sometime used in navigation for an angle relative to the vessel forward direction.</li>
  *   <li><cite>Deflection angle</cite> is the angle between a line and the prolongation of a preceding line.</li>
  *   <li><cite>Interior angle</cite> is an angle measured between two lines of sight.</li>
- *   <li><cite>Elevation angle</cite> is the angular height from the horizontal plane to an object above the horizon.</li>
+ *   <li>{@linkplain ElevationAngle Elevation angle} is the angular height from the horizontal plane to an object above the horizon.</li>
  * </ul>
  *
  * {@section Formatting angles}

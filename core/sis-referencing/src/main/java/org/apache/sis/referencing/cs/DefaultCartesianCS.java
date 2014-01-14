@@ -75,6 +75,15 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     }
 
     /**
+     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
+     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * because it does not verify the number of axes.
+     */
+    private DefaultCartesianCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        super(properties, axes);
+    }
+
+    /**
      * Constructs a one-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
@@ -195,6 +204,11 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
             for (int j=i; ++j<dimension;) {
                 final AxisDirection axis1 = getAxis(j).getDirection();
                 final Angle angle = CoordinateSystems.angle(axis0, axis1);
+                /*
+                 * The angle may be null for grid directions (COLUMN_POSITIVE, COLUMN_NEGATIVE,
+                 * ROW_POSITIVE, ROW_NEGATIVE). We conservatively accept those directions even if
+                 * they are not really for Cartesian CS because we do not know the grid geometry.
+                 */
                 if (angle != null && Math.abs(angle.degrees()) != 90) {
                     throw new IllegalArgumentException(Errors.format(
                             Errors.Keys.NonPerpendicularDirections_2, axis0, axis1));
@@ -216,5 +230,13 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     @Override
     public Class<? extends CartesianCS> getInterface() {
         return CartesianCS.class;
+    }
+
+    /**
+     * Returns a coordinate system of the same class than this CS but with different axes.
+     */
+    @Override
+    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        return new DefaultCartesianCS(properties, axes);
     }
 }

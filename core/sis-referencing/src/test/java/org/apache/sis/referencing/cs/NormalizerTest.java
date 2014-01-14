@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link ComparableAxisWrapper} class.
+ * Tests the {@link Normalizer} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.4)
@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
     DirectionAlongMeridianTest.class,
     DefaultCoordinateSystemAxisTest.class
 })
-public final strictfp class ComparableAxisWrapperTest extends TestCase {
+public final strictfp class NormalizerTest extends TestCase {
     /**
      * Tests sorting of axes.
      */
@@ -89,8 +89,8 @@ public final strictfp class ComparableAxisWrapperTest extends TestCase {
         assertOrdered(new AxisDirection[] {
             AxisDirection.NORTH_EAST,        // Right handed-rule
             AxisDirection.NORTH_NORTH_WEST,  // Right handed-rule
-            AxisDirection.GEOCENTRIC_Y,
             AxisDirection.GEOCENTRIC_X,
+            AxisDirection.GEOCENTRIC_Y,
             AxisDirection.PAST
         }, new AxisDirection[] {
             AxisDirection.GEOCENTRIC_Y,
@@ -121,6 +121,17 @@ public final strictfp class ComparableAxisWrapperTest extends TestCase {
             AxisDirection.DOWN,
             AxisDirection.EAST
         });
+
+        // Legacy (WKT 1) geocentric axes.
+        assertOrdered(new AxisDirection[] {
+            AxisDirection.OTHER,
+            AxisDirection.EAST,
+            AxisDirection.NORTH
+        }, new AxisDirection[] {
+            AxisDirection.NORTH,
+            AxisDirection.OTHER,
+            AxisDirection.EAST
+        });
     }
 
     /**
@@ -130,7 +141,7 @@ public final strictfp class ComparableAxisWrapperTest extends TestCase {
                                       final CoordinateSystemAxis[] actual)
     {
         final boolean changeExpected = !Arrays.equals(actual, expected);
-        assertEquals(changeExpected, ComparableAxisWrapper.sort(actual));
+        assertEquals(changeExpected, Normalizer.sort(actual));
         assertArrayEquals(expected, actual);
     }
 
@@ -147,7 +158,7 @@ public final strictfp class ComparableAxisWrapperTest extends TestCase {
      * Creates axis from the specified directions.
      */
     private static CoordinateSystemAxis[] toAxes(final AxisDirection[] directions) {
-        final Map<String,?> properties = singletonMap(NAME_KEY, "Test");
+        final Map<String,?> properties = singletonMap(NAME_KEY, "Temporary axis");
         final CoordinateSystemAxis[] axis = new CoordinateSystemAxis[directions.length];
         for (int i=0; i<directions.length; i++) {
             axis[i] = new DefaultCoordinateSystemAxis(properties, "none", directions[i], SI.METRE);

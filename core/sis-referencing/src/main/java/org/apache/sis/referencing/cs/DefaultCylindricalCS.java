@@ -69,6 +69,15 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
     }
 
     /**
+     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
+     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * because it does not verify the number of axes.
+     */
+    private DefaultCylindricalCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        super(properties, axes);
+    }
+
+    /**
      * Constructs a three-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
@@ -177,5 +186,13 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
     @Override
     public Class<? extends CylindricalCS> getInterface() {
         return CylindricalCS.class;
+    }
+
+    /**
+     * Returns a coordinate system of the same class than this CS but with different axes.
+     */
+    @Override
+    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        return new DefaultCylindricalCS(properties, axes);
     }
 }

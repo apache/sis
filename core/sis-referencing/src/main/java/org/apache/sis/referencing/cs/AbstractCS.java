@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
+import java.util.EnumMap;
 import java.util.Arrays;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
@@ -103,6 +104,14 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     @XmlElement(name = "axis")
     private final CoordinateSystemAxis[] axes;
+
+    /**
+     * Other coordinate systems derived from this coordinate systems for other axes conventions.
+     * Created only when first needed.
+     *
+     * @see #forConvention(AxesConvention)
+     */
+    private transient Map<AxesConvention,AbstractCS> derived;
 
     /**
      * Constructs a new object in which every attributes are set to a null or empty value.
@@ -271,6 +280,40 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     @Override
     public final CoordinateSystemAxis getAxis(final int dimension) throws IndexOutOfBoundsException {
         return axes[dimension];
+    }
+
+    /**
+     * Returns a coordinate system equivalent to this one but with axes rearranged according the given convention.
+     * If this coordinate system is already compatible with the given convention, then this method returns
+     * {@code this}.
+     *
+     * @param  convention The axes convention for which a coordinate system is desired.
+     * @return A coordinate system compatible with the given convention (may be {@code this}).
+     */
+    public synchronized AbstractCS forConvention(final AxesConvention convention) {
+        ensureNonNull("convention", convention);
+        if (derived == null) {
+            derived = new EnumMap<>(AxesConvention.class);
+        }
+        AbstractCS cs = derived.get(convention);
+        if (cs == null) {
+            switch (convention) {
+                case NORMALIZED:     // TODO
+                case RIGHT_HANDED:   cs = Normalizer.normalize(this); break;
+                case POSITIVE_RANGE: cs = this; break; // TODO
+                default: throw new AssertionError(convention);
+            }
+            derived.put(convention, cs);
+        }
+        return cs;
+    }
+
+    /**
+     * Returns a coordinate system of the same this than this CS but with different axes.
+     * This method shall be overridden by all {@code AbstractCS} subclasses in this package.
+     */
+    AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        return new AbstractCS(properties, axes);
     }
 
     /**

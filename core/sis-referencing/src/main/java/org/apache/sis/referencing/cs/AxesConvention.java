@@ -46,7 +46,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
  * {@link org.apache.sis.referencing.CRS#forCode(String)} method. The actual axis order can be verified after the CRS
  * creation with {@code System.out.println(crs)}. If (<var>x</var>,<var>y</var>) axis order is wanted for compatibility
  * with older OGC specifications or other softwares, CRS forced to longitude first axis order can be created using the
- * {@link #RIGHT_HANDED} enumeration value.</p>
+ * {@link #NORMALIZED} enumeration value.</p>
  *
  * {@section Range of longitude values}
  * Most geographic CRS have a longitude axis defined in the [-180 … +180]° range. All map projections in Apache SIS are
@@ -60,17 +60,30 @@ import org.opengis.referencing.cs.CoordinateSystem;
  * @since   0.4 (derived from geotk-3.20)
  * @version 0.4
  * @module
+ *
+ * @see AbstractCS#forConvention(AxesConvention)
  */
 public enum AxesConvention {
     /**
-     * Axis order and ranges are as specified by the authority. For ellipsoidal coordinate systems defined by
-     * EPSG database, this is often – but not always – (<var>latitude</var>, <var>longitude</var>) axis order
-     * with longitude values in the [-180 … +180]° range.
+     * Axes order, direction and units are forced to commonly used pre-defined values.
+     * This enum identifies the following changes.
+     *
+     * <ul>
+     *   <li>Any direction colinear with {@link AxisDirection#EAST EAST}, {@link AxisDirection#NORTH NORTH},
+     *       {@link AxisDirection#UP UP}, {@link AxisDirection#FUTURE FUTURE},
+     *       {@link AxisDirection#DISPLAY_RIGHT DISPLAY_RIGHT}, {@link AxisDirection#DISPLAY_DOWN DISPLAY_DOWN},
+     *       {@link AxisDirection#ROW_POSITIVE ROW_POSITIVE} and {@link AxisDirection#COLUMN_POSITIVE COLUMN_POSITIVE}
+     *       is replaced by the corresponding above-cited direction.</li>
+     *   <li>Axes with the new directions are reordered for a <cite>right-handed</cite> coordinate system.</li>
+     *   <li>Angular units are set to {@link javax.measure.unit.NonSI#DEGREE_ANGLE}.</li>
+     *   <li>Linear units are set to {@link javax.measure.unit.SI#METRE}.</li>
+     *   <li>Temporal units are set to {@link javax.measure.unit.NonSI#DAY}.</li>
+     * </ul>
      */
-    AS_SPECIFIED,
+    NORMALIZED,
 
     /**
-     * Axes are reordered for a <cite>right-handed</cite> coordinate system. Axis orientations and ranges are unchanged.
+     * Axes are reordered for a <cite>right-handed</cite> coordinate system. Directions, ranges and units are unchanged.
      * This enum is often used for deriving a coordinate system with the (<var>longitude</var>, <var>latitude</var>) or
      * (<var>x</var>,<var>y</var>) axis order. While it works in many cases, note that a right-handed coordinate system
      * does not guarantee that longitude or <var>x</var> axis will be first in every cases. The most notable exception
