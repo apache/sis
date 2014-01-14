@@ -104,6 +104,9 @@ final class Normalizer implements Comparable<Normalizer> {
     /**
      * Reorder the axes in an attempt to get a right-handed system.
      * If no axis change is needed, then this method returns {@code cs} unchanged.
+     *
+     * @param  cs The coordinate system to normalize.
+     * @return The normalized coordinate system.
      */
     static AbstractCS normalize(final AbstractCS cs) {
         final int dimension = cs.getDimension();
@@ -119,6 +122,6 @@ final class Normalizer implements Comparable<Normalizer> {
             return cs;
         }
         final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(cs.getInterface().getSimpleName());
-        return cs.createSameType(singletonMap(AbstractCS.NAME_KEY, DefaultCompoundCS.nameFor(buffer, axes)), axes);
+        return cs.createSameType(singletonMap(AbstractCS.NAME_KEY, DefaultCompoundCS.createName(buffer, axes)), axes);
     }
 }

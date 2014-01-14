@@ -52,7 +52,8 @@ public final strictfp class AbstractCSTest extends TestCase {
     {
         final AbstractCS derived = cs.forConvention(convention);
         assertNotSame("Expected a new instance.", cs, derived);
-        assertSame("Should be cached.", derived, cs.forConvention(convention));
+        assertSame("No change expected.", derived, derived.forConvention(convention));
+        assertSame("Shall be cached.", derived, cs.forConvention(convention));
         assertEquals("dimension", expected.length, cs.getDimension());
         for (int i=0; i<expected.length; i++) {
             assertEquals(expected[i], derived.getAxis(i));
