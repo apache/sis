@@ -16,10 +16,13 @@
  */
 package org.apache.sis.measure;
 
+import org.opengis.referencing.cs.AxisDirection; // For javadoc
+
 
 /**
- * The angular height of an object measured from the horizontal.
- * For visible objects it is an angle between 0 and 90 degrees.
+ * The angular height of an object measured from the horizontal plane.
+ * The elevation angle is part of <cite>local topocentric coordinates</cite> together with azimuth and distance.
+ * For visible objects the elevation is an angle between 0° and 90°.
  *
  * {@note <cite>Elevation angle</cite> and <cite>altitude angle</cite> may be used interchangeably.
  *        Both <cite>altitude</cite> and <cite>elevation</cite> words are also used to describe the
@@ -32,6 +35,8 @@ package org.apache.sis.measure;
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
  */
 public final class ElevationAngle extends Angle {
     /**
@@ -54,10 +59,10 @@ public final class ElevationAngle extends Angle {
     /**
      * Constructs a new elevation angle with the specified angular value.
      *
-     * @param θ Elevation angle value in decimal degrees.
+     * @param ε Elevation angle value in decimal degrees.
      */
-    public ElevationAngle(final double θ) {
-        super(θ);
+    public ElevationAngle(final double ε) {
+        super(ε);
     }
 
     /**

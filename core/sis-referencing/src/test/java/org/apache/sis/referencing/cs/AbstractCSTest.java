@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -34,16 +35,47 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn({
+    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
     DefaultCoordinateSystemAxisTest.class,
-    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class
+    NormalizerTest.class
 })
 public final strictfp class AbstractCSTest extends TestCase {
+    /**
+     * Gets a coordinate system for the given axes convention and compare against the expected values.
+     *
+     * @param convention The convention to use.
+     * @param cs The coordinate system to test.
+     * @param expected The expected axes, in order.
+     */
+    private static void verifyAxesConvention(final AxesConvention convention, final AbstractCS cs,
+            final CoordinateSystemAxis... expected)
+    {
+        final AbstractCS derived = cs.forConvention(convention);
+        assertNotSame("Expected a new instance.", cs, derived);
+        assertSame("Should be cached.", derived, cs.forConvention(convention));
+        assertEquals("dimension", expected.length, cs.getDimension());
+        for (int i=0; i<expected.length; i++) {
+            assertEquals(expected[i], derived.getAxis(i));
+        }
+    }
+
+    /**
+     * Tests {@link AbstractCS#forConvention(AxesConvention)}
+     * with a {@link AxesConvention#RIGHT_HANDED} argument.
+     */
+    @Test
+    public void testForRightHandedConvention() {
+        verifyAxesConvention(AxesConvention.RIGHT_HANDED, new AbstractCS(singletonMap(NAME_KEY, "Test"),
+            CommonAxes.LATITUDE, CommonAxes.TIME, CommonAxes.ALTITUDE, CommonAxes.LONGITUDE),
+            CommonAxes.LONGITUDE, CommonAxes.LATITUDE, CommonAxes.ALTITUDE, CommonAxes.TIME);
+    }
+
     /**
      * Tests serialization.
      */
     @Test
     public void testSerialization() {
-        AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"), CommonAxes.X, CommonAxes.Y);
-        cs = assertSerializedEquals(cs);
+        final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"), CommonAxes.X, CommonAxes.Y);
+        assertNotSame(cs, assertSerializedEquals(cs));
     }
 }
