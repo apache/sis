@@ -229,6 +229,42 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
+     * Returns a SIS coordinate system implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is is an instance of
+     *       {@link org.opengis.referencing.cs.AffineCS},
+     *       {@link org.opengis.referencing.cs.CartesianCS},
+     *       {@link org.opengis.referencing.cs.SphericalCS},
+     *       {@link org.opengis.referencing.cs.EllipsoidalCS},
+     *       {@link org.opengis.referencing.cs.CylindricalCS},
+     *       {@link org.opengis.referencing.cs.PolarCS},
+     *       {@link org.opengis.referencing.cs.LinearCS},
+     *       {@link org.opengis.referencing.cs.VerticalCS},
+     *       {@link org.opengis.referencing.cs.TimeCS} or
+     *       {@link org.opengis.referencing.cs.UserDefinedCS},
+     *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
+     *       Note that if the given object implements more than one of the above-cited interfaces,
+     *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code AbstractCS}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code AbstractCS} instance is created using the
+     *       {@linkplain #AbstractCS(CoordinateSystem) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       properties contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static AbstractCS castOrCopy(final CoordinateSystem object) {
+        return SubTypes.castOrCopy(object);
+    }
+
+    /**
      * Returns {@link #VALID} if the given argument values are allowed for an axis in this coordinate system,
      * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time for checking
      * argument validity. The default implementation returns {@code VALID} in all cases. Subclasses override

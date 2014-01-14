@@ -66,19 +66,29 @@ import org.opengis.referencing.cs.CoordinateSystem;
 public enum AxesConvention {
     /**
      * Axes order, direction and units are forced to commonly used pre-defined values.
-     * This enum identifies the following changes.
+     * This enum identifies the following changes to apply on a coordinate system:
      *
      * <ul>
-     *   <li>Any direction colinear with {@link AxisDirection#EAST EAST}, {@link AxisDirection#NORTH NORTH},
-     *       {@link AxisDirection#UP UP}, {@link AxisDirection#FUTURE FUTURE},
-     *       {@link AxisDirection#DISPLAY_RIGHT DISPLAY_RIGHT}, {@link AxisDirection#DISPLAY_DOWN DISPLAY_DOWN},
-     *       {@link AxisDirection#ROW_POSITIVE ROW_POSITIVE} and {@link AxisDirection#COLUMN_POSITIVE COLUMN_POSITIVE}
-     *       is replaced by the corresponding above-cited direction.</li>
+     *   <li>Directions opposites to the following ones are replaced by their "forward" counterpart
+     *       (e.g. {@code SOUTH} → {@code NORTH}):
+     *     <ul>
+     *       <li>{@link AxisDirection#EAST EAST}, {@link AxisDirection#NORTH NORTH},
+     *           {@link AxisDirection#UP UP}, {@link AxisDirection#FUTURE FUTURE} —
+     *           commonly used directions for (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) coordinates.</li>
+     *       <li>{@link AxisDirection#DISPLAY_RIGHT DISPLAY_RIGHT}, {@link AxisDirection#DISPLAY_DOWN DISPLAY_DOWN} —
+     *           commonly used (<var>x</var>, <var>y</var>) directions for screen devices.</li>
+     *       <li>{@link AxisDirection#ROW_POSITIVE ROW_POSITIVE},
+     *           {@link AxisDirection#COLUMN_POSITIVE COLUMN_POSITIVE} — indices in grids or matrices.</li>
+     *     </ul>
+     *   </li>
      *   <li>Axes with the new directions are reordered for a <cite>right-handed</cite> coordinate system.</li>
      *   <li>Angular units are set to {@link javax.measure.unit.NonSI#DEGREE_ANGLE}.</li>
      *   <li>Linear units are set to {@link javax.measure.unit.SI#METRE}.</li>
      *   <li>Temporal units are set to {@link javax.measure.unit.NonSI#DAY}.</li>
      * </ul>
+     *
+     * {@note The rules for normalized coordinate systems may be adjusted in future SIS versions based on experience
+     *        gained. For more predictable results, consider using the <code>RIGHT_HANDED</code> enum instead.}
      */
     NORMALIZED,
 

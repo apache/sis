@@ -22,7 +22,11 @@
  *
  * <p>The root class in this package is {@link org.apache.sis.referencing.cs.AbstractCS}.
  * Various subclasses are defined for various kinds of mathematical rules that determine
- * how coordinates are associated to quantities such as angles and distances.</p>
+ * how coordinates are associated to quantities such as angles and distances.
+ * Those SIS subclasses provide additional methods that are not part of OGC/ISO specifications:</p>
+ * <ul>
+ *   <li>{@link org.apache.sis.referencing.cs.AbstractCS#forConvention AbstractCS.forConvention(AxesConvention)}</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
