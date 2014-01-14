@@ -23,7 +23,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.iso.Types;
 
@@ -125,7 +124,7 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     @Workaround(library="JDK", version="1.7")
     private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
-        super(singletonMap(NAME_KEY, nameFor(new StringBuilder(60).append("Compound CS"), axes)), axes);
+        super(singletonMap(NAME_KEY, createName(new StringBuilder(60).append("Compound CS"), axes)), axes);
         this.components = UnmodifiableArrayList.wrap(components);
     }
 
@@ -143,10 +142,10 @@ public class DefaultCompoundCS extends AbstractCS {
      * @param  axes The axes.
      * @return A name for the given coordinate system type and axes.
      */
-    static String nameFor(final StringBuilder buffer, final CoordinateSystemAxis[] axes) {
+    static String createName(final StringBuilder buffer, final CoordinateSystemAxis[] axes) {
         String separator = ": ";
         for (final CoordinateSystemAxis axis : axes) {
-            buffer.append(separator).append(CharSequences.camelCaseToWords(Types.getCodeLabel(axis.getDirection()), false));
+            buffer.append(separator).append(Types.getCodeLabel(axis.getDirection()));
             separator = ", ";
             final Unit<?> unit = axis.getUnit();
             if (unit != null) {

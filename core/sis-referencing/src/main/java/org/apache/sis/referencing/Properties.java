@@ -55,7 +55,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
 
     /**
      * The keys to search for. The index of each element in this array must matches the index searched
-     * by {@link #get(IdentifiedObject, int)}. In other words, this array performs the reverse mapping
+     * by {@link #getAt(IdentifiedObject, int)}. In other words, this array performs the reverse mapping
      * of {@link #INDICES}.
      */
     private static final String[] KEYS = {
@@ -70,7 +70,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     };
 
     /**
-     * The mapping from key names to the index expected by the {@link #get(IdentifiedObject, int)} method.
+     * The mapping from key names to the index expected by the {@link #getAt(IdentifiedObject, int)} method.
      * This map shall not be modified after construction (for multi-thread safety without synchronization).
      */
     private static final Map<String,Integer> INDICES = new HashMap<>(16);
@@ -83,93 +83,107 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     }
 
     /**
-     * Returns the value to which this map maps the specified index.
-     * Returns null if the map contains no mapping for the given index.
-     *
-     * @param object The object from which to get the property value.
-     * @param key    The property index, as one of the values in the {@link #INDICES} map.
-     */
-    private static Object get(final IdentifiedObject object, final int key) {
-        switch (key) {
-            case 0: {
-                return object.getName();
-            }
-            case 1: {
-                final Collection<ReferenceIdentifier> c = object.getIdentifiers();
-                if (c != null) {
-                    final int size = c.size();
-                    if (size != 0) {
-                        return c.toArray(new ReferenceIdentifier[size]);
-                    }
-                }
-                break;
-            }
-            case 2: {
-                final Collection<GenericName> c = object.getAlias();
-                if (c != null) {
-                    final int size = c.size();
-                    if (size != 0) {
-                        return c.toArray(new GenericName[size]);
-                    }
-                }
-                break;
-            }
-            case 3: {
-                return object.getRemarks();
-            }
-            case 4: {
-                if (object instanceof ReferenceSystem) {
-                    return ((ReferenceSystem) object).getScope();
-                } else if (object instanceof Datum) {
-                    return ((Datum) object).getScope();
-                } else if (object instanceof CoordinateOperation) {
-                    return ((CoordinateOperation) object).getScope();
-                }
-                break;
-            }
-            case 5: {
-                if (object instanceof ReferenceSystem) {
-                    return ((ReferenceSystem) object).getDomainOfValidity();
-                } else if (object instanceof Datum) {
-                    return ((Datum) object).getDomainOfValidity();
-                } else if (object instanceof CoordinateOperation) {
-                    return ((CoordinateOperation) object).getDomainOfValidity();
-                }
-                break;
-            }
-            case 6: {
-                if (object instanceof CoordinateOperation) {
-                    return ((CoordinateOperation) object).getOperationVersion();
-                }
-                break;
-            }
-            case 7: {
-                if (object instanceof CoordinateOperation) {
-                    final Collection<PositionalAccuracy> c = ((CoordinateOperation) object).getCoordinateOperationAccuracy();
-                    if (c != null) {
-                        final int size = c.size();
-                        if (size != 0) {
-                            return c.toArray(new PositionalAccuracy[size]);
-                        }
-                    }
-                }
-                break;
-            }
-            default: throw new AssertionError(key);
-        }
-        return null;
-    }
-
-    /**
      * The object where all properties come from.
      */
     final IdentifiedObject object;
 
     /**
+     * The bitmask of properties to exclude.
+     */
+    final int excludeMask;
+
+    /**
      * Creates new properties from the specified identified object.
      */
-    Properties(final IdentifiedObject object) {
+    Properties(final IdentifiedObject object, final String[] excludes) {
         this.object = object;
+        int excludeMask = 0;
+        for (final String exclude : excludes) {
+            final Integer i = INDICES.get(exclude);
+            if (i != null) {
+                excludeMask |= (1 << i);
+            }
+        }
+        this.excludeMask = excludeMask;
+    }
+
+    /**
+     * Returns the value to which this map maps the specified index.
+     * Returns null if the map contains no mapping for the given index.
+     *
+     * @param key The property index, as one of the values in the {@link #INDICES} map.
+     */
+    final Object getAt(final int key) {
+        if ((excludeMask & (1 << key)) == 0) {
+            switch (key) {
+                case 0: {
+                    return object.getName();
+                }
+                case 1: {
+                    final Collection<ReferenceIdentifier> c = object.getIdentifiers();
+                    if (c != null) {
+                        final int size = c.size();
+                        if (size != 0) {
+                            return c.toArray(new ReferenceIdentifier[size]);
+                        }
+                    }
+                    break;
+                }
+                case 2: {
+                    final Collection<GenericName> c = object.getAlias();
+                    if (c != null) {
+                        final int size = c.size();
+                        if (size != 0) {
+                            return c.toArray(new GenericName[size]);
+                        }
+                    }
+                    break;
+                }
+                case 3: {
+                    return object.getRemarks();
+                }
+                case 4: {
+                    if (object instanceof ReferenceSystem) {
+                        return ((ReferenceSystem) object).getScope();
+                    } else if (object instanceof Datum) {
+                        return ((Datum) object).getScope();
+                    } else if (object instanceof CoordinateOperation) {
+                        return ((CoordinateOperation) object).getScope();
+                    }
+                    break;
+                }
+                case 5: {
+                    if (object instanceof ReferenceSystem) {
+                        return ((ReferenceSystem) object).getDomainOfValidity();
+                    } else if (object instanceof Datum) {
+                        return ((Datum) object).getDomainOfValidity();
+                    } else if (object instanceof CoordinateOperation) {
+                        return ((CoordinateOperation) object).getDomainOfValidity();
+                    }
+                    break;
+                }
+                case 6: {
+                    if (object instanceof CoordinateOperation) {
+                        return ((CoordinateOperation) object).getOperationVersion();
+                    }
+                    break;
+                }
+                case 7: {
+                    if (object instanceof CoordinateOperation) {
+                        final Collection<PositionalAccuracy> c = ((CoordinateOperation) object).getCoordinateOperationAccuracy();
+                        if (c != null) {
+                            final int size = c.size();
+                            if (size != 0) {
+                                return c.toArray(new PositionalAccuracy[size]);
+                            }
+                        }
+                    }
+                    break;
+                }
+                default: throw new AssertionError(key);
+            }
+        }
+        return null;
     }
 
     /**
@@ -178,7 +192,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     @Override
     public boolean isEmpty() {
         for (int i=0; i<KEYS.length; i++) {
-            if (get(object, i) != null) {
+            if (getAt(i) != null) {
                 return false;
             }
         }
@@ -192,7 +206,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     public int size() {
         int n = 0;
         for (int i=0; i<KEYS.length; i++) {
-            if (get(object, i) != null) {
+            if (getAt(i) != null) {
                 n++;
             }
         }
@@ -214,7 +228,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     @Override
     public Object get(final Object key) {
         final Integer i = INDICES.get(key);
-        return (i != null) ? get(object, i) : null;
+        return (i != null) ? getAt(i) : null;
     }
 
     /**
@@ -248,19 +262,14 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
         /** Iterates over the {@link #KEYS}, returning only the entry having a non-null value. */
         @Override
         public Iterator<Entry<String, Object>> iterator() {
-            return new Iter(object);
+            return new Iter();
         }
     }
 
     /**
      * The iterator returned by {@link EntrySet#iterator()}.
      */
-    private static final class Iter implements Iterator<Entry<String,Object>> {
-        /**
-         * A copy of the {@link Properties#object} reference.
-         */
-        private final IdentifiedObject object;
-
+    private final class Iter implements Iterator<Entry<String,Object>> {
         /**
          * Index of the next element to return.
          */
@@ -272,10 +281,9 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
         private Object value;
 
         /**
-         * Creates a new iterator wrapping the given object.
+         * Creates a new iterator.
          */
-        Iter(final IdentifiedObject object) {
-            this.object = object;
+        Iter() {
         }
 
         /**
@@ -287,7 +295,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                 if (nextIndex == KEYS.length) {
                     return false;
                 }
-                value = get(object, nextIndex++);
+                value = getAt(nextIndex++);
             }
             return true;
         }
