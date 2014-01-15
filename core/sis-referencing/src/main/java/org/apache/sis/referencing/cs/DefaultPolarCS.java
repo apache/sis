@@ -185,6 +185,16 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultPolarCS forConvention(final AxesConvention convention) {
+        return (DefaultPolarCS) super.forConvention(convention);
+    }
+
+    /**
      * Returns a coordinate system of the same class than this CS but with different axes.
      */
     @Override

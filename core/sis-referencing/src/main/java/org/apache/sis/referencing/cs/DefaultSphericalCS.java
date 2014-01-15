@@ -189,6 +189,16 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultSphericalCS forConvention(final AxesConvention convention) {
+        return (DefaultSphericalCS) super.forConvention(convention);
+    }
+
+    /**
      * Returns a coordinate system of the same class than this CS but with different axes.
      */
     @Override

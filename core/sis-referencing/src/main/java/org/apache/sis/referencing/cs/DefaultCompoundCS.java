@@ -199,6 +199,16 @@ public class DefaultCompoundCS extends AbstractCS {
         return components;
     }
 
+    /*
+     * Do not override createSameType(…) and forConvention(…) because we can not create a new DefaultCompoundCS
+     * without knownledge of the CoordinateSystem components to give to it. It would be possible to recursively
+     * invoke components[i].forConvention(…), but it would be useless to perform such decomposition here because
+     * DefaultCompoundCRS will need to perform its own decomposition anyway.
+     *
+     * If the user invokes DefaultCompoundCS.forConvention(…) anyway, he will get an AbstractCS instance, which
+     * is not that bad.
+     */
+
     /**
      * Compares this coordinate system with the specified object for equality.
      *

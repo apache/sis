@@ -182,6 +182,16 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultTimeCS forConvention(final AxesConvention convention) {
+        return (DefaultTimeCS) super.forConvention(convention);
+    }
+
+    /**
      * Returns a coordinate system of the same class than this CS but with different axes.
      */
     @Override
