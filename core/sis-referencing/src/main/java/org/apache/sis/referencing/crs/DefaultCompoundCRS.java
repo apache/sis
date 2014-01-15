@@ -331,7 +331,9 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
                 components[i] = component;
             }
             if (changed) {
-                Arrays.sort(components, SubTypes.BY_TYPE); // This array typically has less than 4 elements.
+                if (convention == AxesConvention.NORMALIZED) {
+                    Arrays.sort(components, SubTypes.BY_TYPE); // This array typically has less than 4 elements.
+                }
                 crs = new DefaultCompoundCRS(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), components);
             }
             derived.put(convention, crs);
