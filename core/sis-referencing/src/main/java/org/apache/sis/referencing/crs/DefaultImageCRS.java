@@ -25,6 +25,7 @@ import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.crs.ImageCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.datum.ImageDatum;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -230,6 +231,16 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      */
     private void setCartesianCS(final CartesianCS cs) {
         super.setCoordinateSystem("cartesianCS", cs);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultImageCRS forConvention(final AxesConvention convention) {
+        return (DefaultImageCRS) super.forConvention(convention);
     }
 
     /**

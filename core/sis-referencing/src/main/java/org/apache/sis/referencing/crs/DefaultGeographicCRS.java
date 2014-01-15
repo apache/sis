@@ -27,6 +27,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.io.wkt.Formatter;
@@ -175,6 +176,16 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     @Override
     public EllipsoidalCS getCoordinateSystem() {
         return (EllipsoidalCS) super.getCoordinateSystem();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultGeographicCRS forConvention(final AxesConvention convention) {
+        return (DefaultGeographicCRS) super.forConvention(convention);
     }
 
     /**
