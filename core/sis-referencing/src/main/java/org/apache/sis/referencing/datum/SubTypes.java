@@ -67,7 +67,12 @@ final class SubTypes {
         if (object instanceof ImageDatum) {
             return DefaultImageDatum.castOrCopy((ImageDatum) object);
         }
-        // Intentionally tested after the sub-interfaces.
+        /*
+         * Intentionally check for AbstractDatum after the interfaces because user may have defined his own
+         * subclass implementing the interface. If we were checking for AbstractDatum before the interfaces,
+         * the returned instance could have been a user subclass without the JAXB annotations required for
+         * XML marshalling.
+         */
         if (object == null || object instanceof AbstractDatum) {
             return (AbstractDatum) object;
         }

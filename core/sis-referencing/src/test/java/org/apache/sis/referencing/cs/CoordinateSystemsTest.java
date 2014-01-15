@@ -21,13 +21,14 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.measure.Angle;
+import org.apache.sis.measure.ElevationAngle;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.lang.StrictMath.*;
+import static java.lang.Double.NaN;
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.referencing.cs.CoordinateSystems.*;
@@ -42,12 +43,15 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.4
  * @module
  */
-@DependsOn(DirectionAlongMeridianTest.class)
+@DependsOn({
+    org.apache.sis.internal.referencing.AxisDirectionsTest.class,
+    DirectionAlongMeridianTest.class
+})
 public final strictfp class CoordinateSystemsTest extends TestCase {
     /**
      * Tolerance threshold for strict floating point comparisons.
      */
-    static final double STRICT = 0;
+    private static final double STRICT = 0;
 
     /**
      * Tests {@link CoordinateSystems#parseAxisDirection(String)}.
@@ -72,63 +76,33 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     }
 
     /**
-     * Tests the {@link CoordinateSystems#getCompassAngle(AxisDirection, AxisDirection)} method.
-     */
-    @Test
-    public void testGetCompassAngle() {
-        final AxisDirection[] compass = new AxisDirection[] {
-            AxisDirection.NORTH,
-            AxisDirection.NORTH_NORTH_EAST,
-            AxisDirection.NORTH_EAST,
-            AxisDirection.EAST_NORTH_EAST,
-            AxisDirection.EAST,
-            AxisDirection.EAST_SOUTH_EAST,
-            AxisDirection.SOUTH_EAST,
-            AxisDirection.SOUTH_SOUTH_EAST,
-            AxisDirection.SOUTH,
-            AxisDirection.SOUTH_SOUTH_WEST,
-            AxisDirection.SOUTH_WEST,
-            AxisDirection.WEST_SOUTH_WEST,
-            AxisDirection.WEST,
-            AxisDirection.WEST_NORTH_WEST,
-            AxisDirection.NORTH_WEST,
-            AxisDirection.NORTH_NORTH_WEST
-        };
-        assertEquals(compass.length, COMPASS_DIRECTION_COUNT);
-        final int base = AxisDirection.NORTH.ordinal();
-        final int h = compass.length / 2;
-        for (int i=0; i<compass.length; i++) {
-            final AxisDirection direction = compass[i];
-            final AxisDirection opposite  = AxisDirections.opposite(direction);
-            final String        message   = direction.name();
-            int io = i+h, in = i;
-            if (i >= h) io -= COMPASS_DIRECTION_COUNT;
-            if (i >  h) in -= COMPASS_DIRECTION_COUNT;
-            assertEquals(message, base + i,  direction.ordinal());
-            assertEquals(message, base + io, opposite.ordinal());
-            assertEquals(message, 0,     getCompassAngle(direction, direction));
-            assertEquals(message, h, abs(getCompassAngle(direction, opposite)));
-            assertEquals(message, in,    getCompassAngle(direction, AxisDirection.NORTH));
-        }
-    }
-
-    /**
      * Tests {@link CoordinateSystems#angle(AxisDirection, AxisDirection)}.
      */
     @Test
-    @DependsOnMethod("testGetCompassAngle")
     public void testAngle() {
-        assertEquals(    0, angle(AxisDirection.EAST,             AxisDirection.EAST),       STRICT);
-        assertEquals(  +90, angle(AxisDirection.EAST,             AxisDirection.NORTH),      STRICT);
-        assertEquals(  -90, angle(AxisDirection.NORTH,            AxisDirection.EAST),       STRICT);
-        assertEquals(  +90, angle(AxisDirection.WEST,             AxisDirection.SOUTH),      STRICT);
-        assertEquals(  -90, angle(AxisDirection.SOUTH,            AxisDirection.WEST),       STRICT);
-        assertEquals( -180, angle(AxisDirection.NORTH,            AxisDirection.SOUTH),      STRICT);
-        assertEquals(  180, angle(AxisDirection.SOUTH,            AxisDirection.NORTH),      STRICT);
-        assertEquals(   45, angle(AxisDirection.NORTH_EAST,       AxisDirection.NORTH),      STRICT);
-        assertEquals( 22.5, angle(AxisDirection.NORTH_NORTH_EAST, AxisDirection.NORTH),      STRICT);
-        assertEquals(-22.5, angle(AxisDirection.NORTH_NORTH_WEST, AxisDirection.NORTH),      STRICT);
-        assertEquals(   45, angle(AxisDirection.SOUTH,            AxisDirection.SOUTH_EAST), STRICT);
+        assertAngleEquals(false,   0,   AxisDirection.EAST,             AxisDirection.EAST);
+        assertAngleEquals(false,  90,   AxisDirection.EAST,             AxisDirection.NORTH);
+        assertAngleEquals(false,  90,   AxisDirection.WEST,             AxisDirection.SOUTH);
+        assertAngleEquals(false, 180,   AxisDirection.SOUTH,            AxisDirection.NORTH);
+        assertAngleEquals(false, 180,   AxisDirection.WEST,             AxisDirection.EAST);
+        assertAngleEquals(false,  45,   AxisDirection.NORTH_EAST,       AxisDirection.NORTH);
+        assertAngleEquals(false,  22.5, AxisDirection.NORTH_NORTH_EAST, AxisDirection.NORTH);
+        assertAngleEquals(false,  45,   AxisDirection.SOUTH,            AxisDirection.SOUTH_EAST);
+        assertAngleEquals(false, NaN,   AxisDirection.NORTH,            AxisDirection.FUTURE);
+        assertAngleEquals(true,   90,   AxisDirection.SOUTH,            AxisDirection.UP);
+        assertAngleEquals(true,  -90,   AxisDirection.SOUTH,            AxisDirection.DOWN);
+        assertAngleEquals(false,   0,   AxisDirection.UP,               AxisDirection.UP);
+        assertAngleEquals(false,   0,   AxisDirection.DOWN,             AxisDirection.DOWN);
+        assertAngleEquals(false, 180,   AxisDirection.DOWN,             AxisDirection.UP);
+        assertAngleEquals(false, NaN,   AxisDirection.DOWN,             AxisDirection.FUTURE);
+        assertAngleEquals(false, 180,   AxisDirection.DISPLAY_DOWN,     AxisDirection.DISPLAY_UP);
+        assertAngleEquals(false, -90,   AxisDirection.DISPLAY_RIGHT,    AxisDirection.DISPLAY_DOWN);
+        assertAngleEquals(false, NaN,   AxisDirection.DISPLAY_UP,       AxisDirection.DOWN);
+        assertAngleEquals(false, NaN,   AxisDirection.PAST,             AxisDirection.FUTURE); // Not spatial directions.
+        assertAngleEquals(false,  90,   AxisDirection.GEOCENTRIC_X,     AxisDirection.GEOCENTRIC_Y);
+        assertAngleEquals(false,  90,   AxisDirection.GEOCENTRIC_Y,     AxisDirection.GEOCENTRIC_Z);
+        assertAngleEquals(false,   0,   AxisDirection.GEOCENTRIC_Y,     AxisDirection.GEOCENTRIC_Y);
+        assertAngleEquals(false, NaN,   AxisDirection.GEOCENTRIC_Z,     AxisDirection.UP);
     }
 
     /**
@@ -137,28 +111,50 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     @Test
     @DependsOnMethod({"testParseAxisDirection", "testAngle"})
     public void testAngleAlongMeridians() {
-        compareAngle( 90.0, "West",                    "South");
-        compareAngle(-90.0, "South",                   "West");
-        compareAngle( 45.0, "South",                   "South-East");
-        compareAngle(-22.5, "North-North-West",        "North");
-        compareAngle(-22.5, "North_North_West",        "North");
-        compareAngle(-22.5, "North North West",        "North");
-        compareAngle( 90.0, "North along 90 deg East", "North along 0 deg");
-        compareAngle( 90.0, "South along 180 deg",     "South along 90 deg West");
-        compareAngle(   90, "North along 90°E",        "North along 0°");
-        compareAngle(  135, "North along 90°E",        "North along 45°W");
-        compareAngle( -135, "North along 45°W",        "North along 90°E");
+        assertAngleEquals(false,   90.0, "West",                    "South");
+        assertAngleEquals(false,  -90.0, "South",                   "West");
+        assertAngleEquals(false,   45.0, "South",                   "South-East");
+        assertAngleEquals(true,    90.0, "West",                    "Up");
+        assertAngleEquals(true,   -90.0, "West",                    "Down");
+        assertAngleEquals(false,  -22.5, "North-North-West",        "North");
+        assertAngleEquals(false,  -22.5, "North_North_West",        "North");
+        assertAngleEquals(false,  -22.5, "North North West",        "North");
+        assertAngleEquals(false,   90.0, "North along 90 deg East", "North along 0 deg");
+        assertAngleEquals(false,   90.0, "South along 180 deg",     "South along 90 deg West");
+        assertAngleEquals(false,   90.0, "North along 90°E",        "North along 0°");
+        assertAngleEquals(false,  135.0, "North along 90°E",        "North along 45°W");
+        assertAngleEquals(false, -135.0, "North along 45°W",        "North along 90°E");
+        assertAngleEquals(true,    90.0, "North along 45°W",        "Up");
+        assertAngleEquals(true,   -90.0, "North along 45°W",        "Down");
     }
 
     /**
-     * Compare the angle between the specified directions.
+     * Asserts that the angle between the parsed directions is equals to the given value.
+     * This method tests also the angle by interchanging the axis directions.
      */
-    private static void compareAngle(final double expected, final String source, final String target) {
+    private static void assertAngleEquals(final boolean isElevation, final double expected,
+            final String source, final String target)
+    {
         final AxisDirection dir1 = parseAxisDirection(source);
         final AxisDirection dir2 = parseAxisDirection(target);
         assertNotNull(source, dir1);
         assertNotNull(target, dir2);
-        assertEquals(expected, angle(dir1, dir2), STRICT);
+        assertAngleEquals(isElevation, expected, dir1, dir2);
+    }
+
+    /**
+     * Asserts that the angle between the given directions is equals to the given value.
+     * This method tests also the angle by interchanging the given directions.
+     */
+    private static void assertAngleEquals(final boolean isElevation, final double expected,
+            final AxisDirection source, final AxisDirection target)
+    {
+        final Angle forward = angle(source, target);
+        final Angle inverse = angle(target, source);
+        assertEquals(isElevation, forward instanceof ElevationAngle);
+        assertEquals(isElevation, inverse instanceof ElevationAngle);
+        assertEquals(+expected, (forward != null) ? forward.degrees() : Double.NaN, STRICT);
+        assertEquals(-expected, (inverse != null) ? inverse.degrees() : Double.NaN, STRICT);
     }
 
     /**

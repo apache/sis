@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
+import java.util.EnumMap;
 import java.util.Arrays;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
@@ -105,6 +106,14 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     private final CoordinateSystemAxis[] axes;
 
     /**
+     * Other coordinate systems derived from this coordinate systems for other axes conventions.
+     * Created only when first needed.
+     *
+     * @see #forConvention(AxesConvention)
+     */
+    private transient Map<AxesConvention,AbstractCS> derived;
+
+    /**
      * Constructs a new object in which every attributes are set to a null or empty value.
      * <strong>This is not a valid object.</strong> This constructor is strictly reserved
      * to JAXB, which will assign values to the fields using reflexion.
@@ -180,14 +189,16 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                 }
             }
             /*
-             * Ensures there is no axis along the same direction
-             * (e.g. two North axes, or an East and a West axis).
+             * Ensures there is no axis along the same direction (e.g. two North axes, or an East and a West axis).
+             * An exception to this rule is the time axis, since ISO 19107 explicitely allows compound CRS to have
+             * more than one time axis. Such case happen in meteorological models.
              */
             final AxisDirection dir = AxisDirections.absolute(direction);
             if (!dir.equals(AxisDirection.OTHER)) {
                 for (int j=i; --j>=0;) {
                     final AxisDirection other = axes[j].getDirection();
-                    if (dir.equals(AxisDirections.absolute(other))) {
+                    final AxisDirection abs = AxisDirections.absolute(other);
+                    if (dir.equals(abs) && !abs.equals(AxisDirection.FUTURE)) {
                         throw new IllegalArgumentException(Errors.format(
                                 Errors.Keys.ColinearAxisDirections_2, direction, other));
                     }
@@ -217,6 +228,42 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                 axes[i] = cs.getAxis(i);
             }
         }
+    }
+
+    /**
+     * Returns a SIS coordinate system implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is is an instance of
+     *       {@link org.opengis.referencing.cs.AffineCS},
+     *       {@link org.opengis.referencing.cs.CartesianCS},
+     *       {@link org.opengis.referencing.cs.SphericalCS},
+     *       {@link org.opengis.referencing.cs.EllipsoidalCS},
+     *       {@link org.opengis.referencing.cs.CylindricalCS},
+     *       {@link org.opengis.referencing.cs.PolarCS},
+     *       {@link org.opengis.referencing.cs.LinearCS},
+     *       {@link org.opengis.referencing.cs.VerticalCS},
+     *       {@link org.opengis.referencing.cs.TimeCS} or
+     *       {@link org.opengis.referencing.cs.UserDefinedCS},
+     *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
+     *       Note that if the given object implements more than one of the above-cited interfaces,
+     *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code AbstractCS}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code AbstractCS} instance is created using the
+     *       {@linkplain #AbstractCS(CoordinateSystem) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       properties contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static AbstractCS castOrCopy(final CoordinateSystem object) {
+        return SubTypes.castOrCopy(object);
     }
 
     /**
@@ -271,6 +318,48 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     @Override
     public final CoordinateSystemAxis getAxis(final int dimension) throws IndexOutOfBoundsException {
         return axes[dimension];
+    }
+
+    /**
+     * Returns a coordinate system equivalent to this one but with axes rearranged according the given convention.
+     * If this coordinate system is already compatible with the given convention, then this method returns
+     * {@code this}.
+     *
+     * @param  convention The axes convention for which a coordinate system is desired.
+     * @return A coordinate system compatible with the given convention (may be {@code this}).
+     *
+     * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
+     */
+    public synchronized AbstractCS forConvention(final AxesConvention convention) {
+        ensureNonNull("convention", convention);
+        if (derived == null) {
+            derived = new EnumMap<AxesConvention,AbstractCS>(AxesConvention.class);
+        }
+        AbstractCS cs = derived.get(convention);
+        if (cs == null) {
+            switch (convention) {
+                case NORMALIZED:     cs = Normalizer.normalize(this, true);  break;
+                case RIGHT_HANDED:   cs = Normalizer.normalize(this, false); break;
+                case POSITIVE_RANGE: cs = Normalizer.shiftAxisRange(this);   break;
+                default: throw new AssertionError(convention);
+            }
+            for (final AbstractCS existing : derived.values()) {
+                if (cs.equals(existing)) {
+                    cs = existing;
+                    break;
+                }
+            }
+            derived.put(convention, cs);
+        }
+        return cs;
+    }
+
+    /**
+     * Returns a coordinate system of the same type than this CS but with different axes.
+     * This method shall be overridden by all {@code AbstractCS} subclasses in this package.
+     */
+    AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        return new AbstractCS(properties, axes);
     }
 
     /**

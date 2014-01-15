@@ -18,13 +18,14 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
-import javax.measure.unit.Unit;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 
 
@@ -61,6 +62,17 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultGeocentricCRS() {
+    }
+
+    /**
+     * For {@link #createSameType(Map, CoordinateSystem)} usage only.
+     * This constructor does not verify the coordinate system type.
+     */
+    private DefaultGeocentricCRS(final Map<String,?>    properties,
+                                 final GeodeticDatum    datum,
+                                 final CoordinateSystem cs)
+    {
+        super(properties, datum, cs);
     }
 
     /**
@@ -177,6 +189,24 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     @Override
     public Class<? extends GeocentricCRS> getInterface() {
         return GeocentricCRS.class;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultGeocentricCRS forConvention(final AxesConvention convention) {
+        return (DefaultGeocentricCRS) super.forConvention(convention);
+    }
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        return new DefaultGeocentricCRS(properties, super.getDatum(), cs);
     }
 
     /**

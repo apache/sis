@@ -54,6 +54,15 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
     }
 
     /**
+     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
+     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * because it does not verify the number of axes.
+     */
+    private DefaultUserDefinedCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        super(properties, axes);
+    }
+
+    /**
      * Constructs a two-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
@@ -159,5 +168,23 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
     @Override
     public Class<? extends UserDefinedCS> getInterface() {
         return UserDefinedCS.class;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultUserDefinedCS forConvention(final AxesConvention convention) {
+        return (DefaultUserDefinedCS) super.forConvention(convention);
+    }
+
+    /**
+     * Returns a coordinate system of the same class than this CS but with different axes.
+     */
+    @Override
+    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        return new DefaultUserDefinedCS(properties, axes);
     }
 }

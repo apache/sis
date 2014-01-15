@@ -28,8 +28,10 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.collection.CheckedContainer;
@@ -303,6 +305,40 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             }
         }
         computeSingleCRS(components);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public synchronized DefaultCompoundCRS forConvention(final AxesConvention convention) {
+        ensureNonNull("convention", convention);
+        final Map<AxesConvention,AbstractCRS> derived = derived();
+        DefaultCompoundCRS crs = (DefaultCompoundCRS) derived.get(convention);
+        if (crs == null) {
+            crs = this;
+            boolean changed = false;
+            final CoordinateReferenceSystem[] components = new CoordinateReferenceSystem[singles.size()];
+            for (int i=0; i<components.length; i++) {
+                CoordinateReferenceSystem component = singles.get(i);
+                AbstractCRS m = castOrCopy(component);
+                if (m != (m = m.forConvention(convention))) {
+                    component = m;
+                    changed = true;
+                }
+                components[i] = component;
+            }
+            if (changed) {
+                if (convention == AxesConvention.NORMALIZED) {
+                    Arrays.sort(components, SubTypes.BY_TYPE); // This array typically has less than 4 elements.
+                }
+                crs = new DefaultCompoundCRS(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), components);
+            }
+            derived.put(convention, crs);
+        }
+        return crs;
     }
 
     /**

@@ -35,9 +35,9 @@ import static org.junit.Assert.*;
 @DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
 public final strictfp class DirectionAlongMeridianTest extends TestCase {
     /**
-     * For floating point comparisons.
+     * Tolerance threshold for strict floating point comparisons.
      */
-    private static final double EPS = 1E-10;
+    private static final double STRICT = 0;
 
     /**
      * Tests the {@link DirectionAlongMeridian#parse(AxisDirection)} method.
@@ -99,8 +99,8 @@ public final strictfp class DirectionAlongMeridianTest extends TestCase {
     private static void assertOrdered(final String dir1, final String dir2) {
         final DirectionAlongMeridian m1 = DirectionAlongMeridian.parse(dir1);
         final DirectionAlongMeridian m2 = DirectionAlongMeridian.parse(dir2);
-        assertEquals(+90, m1.getAngle(m2), EPS);
-        assertEquals(-90, m2.getAngle(m1), EPS);
+        assertEquals(+90, m1.angle(m2), STRICT);
+        assertEquals(-90, m2.angle(m1), STRICT);
         assertEquals( -1, m1.compareTo(m2));
         assertEquals( +1, m2.compareTo(m1));
         assertFalse (m1.equals(m2));
