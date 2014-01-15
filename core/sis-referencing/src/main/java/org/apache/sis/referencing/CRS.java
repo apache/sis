@@ -20,12 +20,16 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.opengis.util.FactoryException;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Static;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -48,8 +52,22 @@ public final class CRS extends Static {
 
     /**
      * Returns a Coordinate Reference System from the given authority code.
+     * There is many thousands of CRS identified by EPSG codes or by other authorities.
+     * The following table lists a very small subset of some of those codes:
      *
-     * @todo This method is not yet implemented. It will be provided after the EPSG-backed
+     * <blockquote><table class="sis">
+     *   <tr><th>Name or alias</th>            <th>Code</th></tr>
+     *   <tr><td>ED50</td>                     <td>EPSG:4230</td></tr>
+     *   <tr><td>ETRS89</td>                   <td>EPSG:4258</td></tr>
+     *   <tr><td>NAD27</td>                    <td>EPSG:4267</td></tr>
+     *   <tr><td>NAD83</td>                    <td>EPSG:4269</td></tr>
+     *   <tr><td>GRS 1980 Authalic Sphere</td> <td>EPSG:4047</td></tr>
+     *   <tr><td>WGS 72</td>                   <td>EPSG:4322</td></tr>
+     *   <tr><td>WGS 84</td>                   <td>EPSG:4326</td></tr>
+     *   <tr><td>WGS 84 with (<var>longitude</var>, <var>latitude</var>) axis order</td> <td>CRS:84</td></tr>
+     * </table></blockquote>
+     *
+     * @todo This method is only partially implemented. It will be fully supported after the EPSG-backed
      *       authority factory has been ported to Apache SIS.
      *
      * @param  code The authority code.
@@ -61,7 +79,52 @@ public final class CRS extends Static {
             throws NoSuchAuthorityCodeException, FactoryException
     {
         ensureNonNull("code", code);
-        return null;
+        final String authority;
+        final String value;
+        final DefinitionURI uri = DefinitionURI.parse(code);
+        if (uri != null) {
+            final String type = uri.type;
+            if (type != null && !type.equalsIgnoreCase("crs")) {
+                throw new NoSuchIdentifierException(Errors.format(Errors.Keys.UnknownType_1, type), type);
+            }
+            authority = uri.authority;
+            value = uri.code;
+        } else {
+            final int s = code.indexOf(DefinitionURI.SEPARATOR);
+            authority = CharSequences.trimWhitespaces(code.substring(0, Math.max(0, s)));
+            value = CharSequences.trimWhitespaces(code.substring(s + 1));
+        }
+        if (authority == null || authority.isEmpty()) {
+            throw new NoSuchIdentifierException(Errors.format(Errors.Keys.MissingAuthority_1, code), code);
+        }
+        /*
+         * Code below this point is a temporary implementation to
+         * be removed after we ported the EPSG authority factory.
+         */
+        NumberFormatException cause = null;
+        try {
+            if (authority.equalsIgnoreCase("CRS")) {
+                switch (Integer.parseInt(value)) {
+                    case 84: return GeodeticObjects.WGS84.normalizedGeographic();
+                }
+            } else if (authority.equalsIgnoreCase("EPSG")) {
+                final int n = Integer.parseInt(value);
+                for (final GeodeticObjects candidate : GeodeticObjects.values()) {
+                    if (candidate.geographic == n) {
+                        return candidate.geographic();
+                    }
+                }
+            } else {
+                throw new NoSuchIdentifierException(Errors.format(Errors.Keys.UnknownAuthority_1, authority), authority);
+            }
+        } catch (NumberFormatException e) {
+            cause = e;
+        }
+        final NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(
+                Errors.format(Errors.Keys.NoSuchAuthorityCode_3, authority, CoordinateReferenceSystem.class, value),
+                authority, value, code);
+        e.initCause(cause);
+        throw e;
     }
 
     /**

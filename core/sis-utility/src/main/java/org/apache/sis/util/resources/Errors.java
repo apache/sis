@@ -371,6 +371,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedMatrixSize_4 = 60;
 
         /**
+         * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.
+         */
+        public static final short MissingAuthority_1 = 135;
+
+        /**
          * This operation requires the “{0}” module.
          */
         public static final short MissingRequiredModule_1 = 61;
@@ -414,6 +419,11 @@ public final class Errors extends IndexedResourceBundle {
          * No convergence for points {0} and {1}.
          */
         public static final short NoConvergenceForPoints_2 = 69;
+
+        /**
+         * No code “{2}” from authority “{0}” found for object of type ‘{1}’.
+         */
+        public static final short NoSuchAuthorityCode_3 = 137;
 
         /**
          * Element “{0}” has not been found.
@@ -629,6 +639,11 @@ public final class Errors extends IndexedResourceBundle {
          * File “{1}” seems to be encoded in an other format than {0}.
          */
         public static final short UnexpectedFileFormat_2 = 111;
+
+        /**
+         * Authority “{0}” is unknown.
+         */
+        public static final short UnknownAuthority_1 = 136;
 
         /**
          * Axis direction “{0}” is unknown.
