@@ -23,6 +23,7 @@ import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -51,6 +52,13 @@ import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
  * @module
  */
 final class Normalizer implements Comparable<Normalizer> {
+    /**
+     * The properties to exclude in calls to {@link IdentifiedObjects#getProperties(IdentifiedObject, String...)}.
+     */
+    private static final String[] EXCLUDES = {
+        IDENTIFIERS_KEY
+    };
+
     /**
      * The axis to be compared by {@link #compareTo(Normalizer)}.
      */
@@ -172,7 +180,7 @@ final class Normalizer implements Comparable<Normalizer> {
         }
         final Map<String,?> properties;
         if (newAbbr.equals(abbreviation)) {
-            properties = IdentifiedObjects.getProperties(axis, IDENTIFIERS_KEY);
+            properties = IdentifiedObjects.getProperties(axis, EXCLUDES);
         } else {
             properties = singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed));
         }
@@ -219,5 +227,47 @@ final class Normalizer implements Comparable<Normalizer> {
         }
         final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(cs.getInterface().getSimpleName());
         return cs.createSameType(singletonMap(AbstractCS.NAME_KEY, DefaultCompoundCS.createName(buffer, axes)), axes);
+    }
+
+    /**
+     * Returns a coordinate system with the same axes than the given CS, except that the wrapround axes
+     * are shifted to a range of positive values. This method can be used in order to shift between the
+     * [-180 … +180]° and [0 … 360]° ranges of longitude values.
+     *
+     * <p>This method shifts the axis {@linkplain CoordinateSystemAxis#getMinimumValue() minimum} and
+     * {@linkplain CoordinateSystemAxis#getMaximumValue() maximum} values by a multiple of half the range
+     * (typically 180°). This method does not change the meaning of ordinate values. For example a longitude
+     * of -60° still locate the same point in the old and the new coordinate system. But the preferred way
+     * to locate that point become the 300° value if the longitude range has been shifted to positive values.</p>
+     *
+     * @return A coordinate system using the given kind of longitude range (may be {@code axis}).
+     */
+    static AbstractCS shiftAxisRange(final AbstractCS cs) {
+        boolean changed = false;
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[cs.getDimension()];
+        for (int i=0; i<axes.length; i++) {
+            CoordinateSystemAxis axis = cs.getAxis(i);
+            final RangeMeaning rangeMeaning = axis.getRangeMeaning();
+            if (RangeMeaning.WRAPAROUND.equals(rangeMeaning)) {
+                double min = axis.getMinimumValue();
+                if (min < 0) {
+                    double max = axis.getMaximumValue();
+                    double offset = (max - min) / 2;
+                    offset *= Math.floor(min/offset + 1E-10);
+                    min -= offset;
+                    max -= offset;
+                    if (min < max) { // Paranoiac check, but also a way to filter NaN values when offset is infinite.
+                        axis = new DefaultCoordinateSystemAxis(IdentifiedObjects.getProperties(axis, EXCLUDES),
+                                axis.getAbbreviation(), axis.getDirection(), axis.getUnit(), min, max, rangeMeaning);
+                        changed = true;
+                    }
+                }
+            }
+            axes[i] = axis;
+        }
+        if (!changed) {
+            return cs;
+        }
+        return cs.createSameType(IdentifiedObjects.getProperties(cs, EXCLUDES), axes);
     }
 }

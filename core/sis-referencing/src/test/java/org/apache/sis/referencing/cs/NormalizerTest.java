@@ -162,7 +162,7 @@ public final strictfp class NormalizerTest extends TestCase {
     }
 
     /**
-     * Tests {@link Normalizer#normalize(CoordinateSystemAxis, int)}.
+     * Tests {@link Normalizer#normalize(CoordinateSystemAxis)}.
      */
     @Test
     public void testNormalizeAxis() {
