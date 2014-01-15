@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.util.EnumMap;
 import javax.measure.unit.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -29,6 +30,8 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
@@ -91,11 +94,19 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * The coordinate system.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setCoordinateSystem(CoordinateSystem)}</p>
+     * This field is modified only at unmarshalling time by {@link #setCoordinateSystem(String, CoordinateSystem)}</p>
      *
      * @see #getCoordinateSystem()
      */
     private CoordinateSystem coordinateSystem;
+
+    /**
+     * Other coordinate systems derived from this coordinate systems for other axes conventions.
+     * Created only when first needed.
+     *
+     * @see #forConvention(AxesConvention)
+     */
+    private transient Map<AxesConvention,AbstractCRS> derived;
 
     /**
      * Constructs a new object in which every attributes are set to a null value.
@@ -243,8 +254,50 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
+     * Returns a coordinate reference system equivalent to this one but with axes rearranged according the given
+     * convention. If this CRS is already compatible with the given convention, then this method returns {@code this}.
+     *
+     * @param  convention The axes convention for which a coordinate reference system is desired.
+     * @return A coordinate reference system compatible with the given convention (may be {@code this}).
+     *
+     * @see AbstractCS#forConvention(AxesConvention)
+     */
+    public synchronized AbstractCRS forConvention(final AxesConvention convention) {
+        ensureNonNull("convention", convention);
+        if (derived == null) {
+            derived = new EnumMap<>(AxesConvention.class);
+        }
+        AbstractCRS crs = derived.get(convention);
+        if (crs == null) {
+            final AbstractCS cs = AbstractCS.castOrCopy(coordinateSystem);
+            final AbstractCS candidate = cs.forConvention(convention);
+            if (candidate == cs) {
+                crs = this;
+            } else {
+                crs = createSameType(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), candidate);
+                for (final AbstractCRS existing : derived.values()) {
+                    if (crs.equals(existing)) {
+                        crs = existing;
+                        break;
+                    }
+                }
+            }
+            derived.put(convention, crs);
+        }
+        return crs;
+    }
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     * This method shall be overridden by all {@code AbstractCRS} subclasses in this package.
+     */
+    AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        return new AbstractCRS(properties, cs);
+    }
+
+    /**
      * Returns the unit used for all axis, or {@code null} if not all axis uses the same unit.
-     * This method is often used for formatting according  Well Know Text (WKT) version 1.
+     * This method is often used for formatting according  Well Known Text (WKT) version 1.
      */
     final Unit<?> getUnit() {
         return ReferencingUtilities.getUnit(coordinateSystem);

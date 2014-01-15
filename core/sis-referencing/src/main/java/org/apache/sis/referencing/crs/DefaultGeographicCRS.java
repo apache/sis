@@ -178,6 +178,14 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        return new DefaultGeographicCRS(properties, super.getDatum(), (EllipsoidalCS) cs);
+    }
+
+    /**
      * Returns the angular unit of the specified coordinate system.
      * The preference will be given to the longitude axis, if found.
      */

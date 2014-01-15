@@ -64,6 +64,17 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     }
 
     /**
+     * For {@link #createSameType(Map, CoordinateSystem)} usage only.
+     * This constructor does not verify the coordinate system type.
+     */
+    private DefaultGeocentricCRS(final Map<String,?>    properties,
+                                 final GeodeticDatum    datum,
+                                 final CoordinateSystem cs)
+    {
+        super(properties, datum, cs);
+    }
+
+    /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
@@ -177,6 +188,14 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     @Override
     public Class<? extends GeocentricCRS> getInterface() {
         return GeocentricCRS.class;
+    }
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        return new DefaultGeocentricCRS(properties, super.getDatum(), cs);
     }
 
     /**

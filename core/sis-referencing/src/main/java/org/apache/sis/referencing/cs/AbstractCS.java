@@ -327,6 +327,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @param  convention The axes convention for which a coordinate system is desired.
      * @return A coordinate system compatible with the given convention (may be {@code this}).
+     *
+     * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
      */
     public synchronized AbstractCS forConvention(final AxesConvention convention) {
         ensureNonNull("convention", convention);
@@ -353,7 +355,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Returns a coordinate system of the same this than this CS but with different axes.
+     * Returns a coordinate system of the same type than this CS but with different axes.
      * This method shall be overridden by all {@code AbstractCS} subclasses in this package.
      */
     AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
