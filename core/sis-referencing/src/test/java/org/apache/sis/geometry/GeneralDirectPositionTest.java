@@ -19,7 +19,6 @@ package org.apache.sis.geometry;
 import java.util.Arrays;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -41,7 +40,6 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
      * Tests the {@link GeneralDirectPosition#normalize()} method.
      */
     @Test
-    @Ignore("The tested position needs to be associated to CRS:84")
     public void testNormalize() {
         final GeneralDirectPosition position = new GeneralDirectPosition(WGS84);
         position.setCoordinate(300, -100);
