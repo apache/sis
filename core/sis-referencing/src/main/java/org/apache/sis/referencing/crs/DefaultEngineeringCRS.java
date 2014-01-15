@@ -30,6 +30,7 @@ import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.datum.EngineeringDatum;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -231,6 +232,16 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     private void setPolarCS      (final PolarCS       cs) {super.setCoordinateSystem("polarCS",       cs);}
     private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
     private void setUserDefinedCS(final UserDefinedCS cs) {super.setCoordinateSystem("userDefinedCS", cs);}
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultEngineeringCRS forConvention(final AxesConvention convention) {
+        return (DefaultEngineeringCRS) super.forConvention(convention);
+    }
 
     /**
      * Returns a coordinate reference system of the same type than this CRS but with different axes.

@@ -27,6 +27,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.TemporalDatum;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.measure.Units;
 
@@ -235,6 +236,16 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     private void setCoordinateSystem(final TimeCS cs) {
         super.setCoordinateSystem("timeCS", cs);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultTemporalCRS forConvention(final AxesConvention convention) {
+        return (DefaultTemporalCRS) super.forConvention(convention);
     }
 
     /**

@@ -49,7 +49,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
  * {@link #RIGHT_HANDED} or {@link #NORMALIZED} enumeration value.</p>
  *
  * {@section Normalized coordinate systems}
- * The definition the <cite>normalized coordinate systems</cite> is somewhat fuzzy.
+ * The definition of <cite>normalized coordinate systems</cite> is somewhat fuzzy.
  * This concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:
  *
  * <blockquote><font size="-1"><b>6.7.2 Map CS</b> —
@@ -64,7 +64,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
  * for the creation of transformation steps, as in the example below:
  *
  * {@preformat java
- *     Matrix step1 = swapAndScaleAxes(sourceCS, sourceCS.forConvention(NORMALIZED);
+ *     Matrix step1 = swapAndScaleAxes(sourceCS, sourceCS.forConvention(NORMALIZED));
  *     Matrix step2 = ... some coordinate operation working on normalized axes ...
  *     Matrix step3 = swapAndScaleAxes(targetCS.forConvention(NORMALIZED), targetCS);
  * }

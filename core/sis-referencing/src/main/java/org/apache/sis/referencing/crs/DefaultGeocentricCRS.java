@@ -18,13 +18,14 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
-import javax.measure.unit.Unit;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 
 
@@ -188,6 +189,16 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     @Override
     public Class<? extends GeocentricCRS> getInterface() {
         return GeocentricCRS.class;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultGeocentricCRS forConvention(final AxesConvention convention) {
+        return (DefaultGeocentricCRS) super.forConvention(convention);
     }
 
     /**
