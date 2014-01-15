@@ -132,7 +132,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *
      * @param crs The coordinate reference system to copy.
      *
-     * @see #castOrCopy(GeocentricCRS)
+     * @see #castOrCopy(GeographicCRS)
      */
     protected DefaultGeographicCRS(final GeographicCRS crs) {
         super(crs);
