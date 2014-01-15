@@ -288,14 +288,14 @@ public enum GeodeticObjects {
      * together with an enumeration value that can be used for fetching that CRS:
      *
      * <blockquote><table class="sis">
-     *   <tr><th>Name or alias</th>            <th>Enum</th>            <th>EPSG</th></tr>
+     *   <tr><th>Name or alias</th>            <th>Enum</th>            <th>Code</th></tr>
      *   <tr><td>ED50</td>                     <td>{@link #ED50}</td>   <td></td></tr>
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td></td></tr>
      *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td></td></tr>
      *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td></td></tr>
      *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td></td></tr>
      *   <tr><td>WGS 72</td>                   <td>{@link #WGS72}</td>  <td></td></tr>
-     *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td></td></tr>
+     *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>CRS:84</td></tr>
      * </table></blockquote>
      *
      * @return The geographic CRS with non-standard (<var>longitude</var>, <var>latitude</var>) axis order.

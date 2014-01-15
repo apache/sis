@@ -22,7 +22,6 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
@@ -215,7 +214,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * {@link Envelope2D#createIntersection(Rectangle2D)} methods.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testIntersection() {
         //  ┌─────────────┐
         //  │  ┌───────┐  │
@@ -280,7 +278,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * {@link Envelope2D#createUnion(Rectangle2D)} methods.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testUnion() {
         //  ┌─────────────┐
         //  │  ┌───────┐  │
@@ -345,7 +342,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * {@link Envelope2D#add(Point2D)} methods.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testAddPoint() {
         final double ymin=-20, ymax=30; // Will not change anymore
         final GeneralEnvelope  e = create(20, ymin,  80, ymax);
@@ -375,7 +371,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * Tests the {@link GeneralEnvelope#normalize()} method.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testNormalize() {
         GeneralEnvelope e = create(-100, -100, +100, +100);
         assertTrue(e.normalize());
@@ -401,7 +396,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * with an envelope having more then 360° of longitude.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testNormalizeWorld() {
         GeneralEnvelope e = create(-195, -90, +170, +90); // -195° is equivalent to 165°
         assertTrue(e.normalize());
@@ -413,7 +407,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * Tests the {@link GeneralEnvelope#simplify()}.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testSimplify() {
         // Normal envelope: no change expected.
         GeneralEnvelope e = create(-100, -10, +100, +10);
