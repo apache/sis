@@ -178,10 +178,46 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
      * @param crs The coordinate reference system to copy.
+     *
+     * @see #castOrCopy(CoordinateReferenceSystem)
      */
     protected AbstractCRS(final CoordinateReferenceSystem crs) {
         super(crs);
         coordinateSystem = crs.getCoordinateSystem();
+    }
+
+    /**
+     * Returns a SIS coordinate reference system implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is is an instance of
+     *       {@link org.opengis.referencing.crs.GeodeticCRS} (including the
+     *       {@link org.opengis.referencing.crs.GeographicCRS} and
+     *       {@link org.opengis.referencing.crs.GeocentricCRS} subtypes),
+     *       {@link org.opengis.referencing.crs.VerticalCRS},
+     *       {@link org.opengis.referencing.crs.TemporalCRS},
+     *       {@link org.opengis.referencing.crs.EngineeringCRS},
+     *       {@link org.opengis.referencing.crs.ImageCRS} or
+     *       {@link org.opengis.referencing.cs.CompoundCRS},
+     *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
+     *       Note that if the given object implements more than one of the above-cited interfaces,
+     *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code AbstractCRS}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code AbstractCRS} instance is created using the
+     *       {@linkplain #AbstractCRS(CoordinateReferenceSystem) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       properties contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static AbstractCRS castOrCopy(final CoordinateReferenceSystem object) {
+        return SubTypes.castOrCopy(object);
     }
 
     /**
@@ -254,6 +290,18 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
+     * Returns the map of cached CRS for axes conventions.
+     * This method shall be invoked in a synchronized block.
+     */
+    final Map<AxesConvention,AbstractCRS> derived() {
+        assert Thread.holdsLock(this);
+        if (derived == null) {
+            derived = new EnumMap<>(AxesConvention.class);
+        }
+        return derived;
+    }
+
+    /**
      * Returns a coordinate reference system equivalent to this one but with axes rearranged according the given
      * convention. If this CRS is already compatible with the given convention, then this method returns {@code this}.
      *
@@ -264,9 +312,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     public synchronized AbstractCRS forConvention(final AxesConvention convention) {
         ensureNonNull("convention", convention);
-        if (derived == null) {
-            derived = new EnumMap<>(AxesConvention.class);
-        }
+        final Map<AxesConvention,AbstractCRS> derived = derived();
         AbstractCRS crs = derived.get(convention);
         if (crs == null) {
             final AbstractCS cs = AbstractCS.castOrCopy(coordinateSystem);
