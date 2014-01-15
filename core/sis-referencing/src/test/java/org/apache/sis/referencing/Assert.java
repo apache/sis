@@ -27,6 +27,9 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 
@@ -44,9 +47,39 @@ import static java.lang.StrictMath.*;
  */
 public strictfp class Assert extends org.apache.sis.test.Assert {
     /**
+     * Tolerance threshold for strict floating point comparisons.
+     */
+    private static final double STRICT = 0;
+
+    /**
      * For subclass constructor only.
      */
     protected Assert() {
+    }
+
+    /**
+     * Compares the given coordinate system axis against the expected values.
+     *
+     * @param name          The expected axis name code.
+     * @param abbreviation  The expected axis abbreviation.
+     * @param direction     The expected axis direction.
+     * @param minimumValue  The expected axis minimal value.
+     * @param maximumValue  The expected axis maximal value.
+     * @param unit          The expected axis unit of measurement.
+     * @param rangeMeaning  The expected axis range meaning.
+     * @param axis          The axis to verify.
+     */
+    public static void assertAxisEquals(final String name, final String abbreviation, final AxisDirection direction,
+            final double minimumValue, final double maximumValue, final Unit<?> unit, final RangeMeaning rangeMeaning,
+            final CoordinateSystemAxis axis)
+    {
+        assertEquals("name",         name,         axis.getName().getCode());
+        assertEquals("abbreviation", abbreviation, axis.getAbbreviation());
+        assertEquals("direction",    direction,    axis.getDirection());
+        assertEquals("minimumValue", minimumValue, axis.getMinimumValue(), STRICT);
+        assertEquals("maximumValue", maximumValue, axis.getMaximumValue(), STRICT);
+        assertEquals("unit",         unit,         axis.getUnit());
+        assertEquals("rangeMeaning", rangeMeaning, axis.getRangeMeaning());
     }
 
     /**

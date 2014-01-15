@@ -23,7 +23,6 @@ import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import javax.measure.converter.UnitConverter;
-import javax.measure.converter.ConversionException;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -606,7 +605,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         } else {
             /*
              * Checking the abbreviation is not sufficient. For example the polar angle and the
-             * spherical latitude have the same abbreviation (θ). SIS names like "Longitude"
+             * spherical latitude have the same abbreviation (θ). Legacy names like "Longitude"
              * (in addition to ISO 19111 "Geodetic longitude") bring more potential confusion.
              * Furthermore, not all implementors use the greek letters. For example most CRS in
              * WKT format use the "Lat" abbreviation instead of the greek letter φ.
@@ -672,23 +671,5 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     protected String formatTo(final Formatter formatter) {
         formatter.append(direction);
         return "AXIS";
-    }
-
-    /**
-     * Returns a new axis with the same properties (except identifiers) than current axis,
-     * but with a different unit of measurement.
-     *
-     * @param  newUnit The unit of measurement for the new axis.
-     * @return An axis using the given unit, or {@code this} if the current axis already use the given unit.
-     * @throws ConversionException If the given unit is incompatible with this axis unit.
-     */
-    final DefaultCoordinateSystemAxis forUnit(final Unit<?> newUnit) throws ConversionException {
-        if (unit.equals(newUnit)) {
-            return this;
-        }
-        final UnitConverter converter = unit.getConverterToAny(newUnit);
-        return new DefaultCoordinateSystemAxis(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY),
-                abbreviation, direction, newUnit, converter.convert(minimumValue),
-                converter.convert(maximumValue), rangeMeaning);
     }
 }

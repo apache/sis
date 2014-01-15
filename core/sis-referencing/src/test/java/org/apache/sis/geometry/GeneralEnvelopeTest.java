@@ -29,6 +29,7 @@ import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.referencing.Assert.*;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
+import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
 
 
 /**
@@ -45,11 +46,6 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  */
 @DependsOn(AbstractEnvelopeTest.class)
 public strictfp class GeneralEnvelopeTest extends TestCase {
-    /**
-     * The comparison threshold for strict comparisons.
-     */
-    static final double STRICT = 0;
-
     /**
      * Tolerance threshold for floating point comparisons.
      */

@@ -91,6 +91,32 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link AxisDirections#isIntercardinal(AxisDirection)}.
+     */
+    @Test
+    public void testIsIntercardinal() {
+        assertFalse(AxisDirections.isIntercardinal(NORTH));
+        assertTrue (AxisDirections.isIntercardinal(NORTH_NORTH_EAST));
+        assertTrue (AxisDirections.isIntercardinal(NORTH_EAST));
+        assertTrue (AxisDirections.isIntercardinal(EAST_NORTH_EAST));
+        assertFalse(AxisDirections.isIntercardinal(EAST));
+        assertTrue (AxisDirections.isIntercardinal(EAST_SOUTH_EAST));
+        assertTrue (AxisDirections.isIntercardinal(SOUTH_EAST));
+        assertTrue (AxisDirections.isIntercardinal(SOUTH_SOUTH_EAST));
+        assertFalse(AxisDirections.isIntercardinal(SOUTH));
+        assertTrue (AxisDirections.isIntercardinal(SOUTH_SOUTH_WEST));
+        assertTrue (AxisDirections.isIntercardinal(SOUTH_WEST));
+        assertTrue (AxisDirections.isIntercardinal(WEST_SOUTH_WEST));
+        assertFalse(AxisDirections.isIntercardinal(WEST));
+        assertTrue (AxisDirections.isIntercardinal(WEST_NORTH_WEST));
+        assertTrue (AxisDirections.isIntercardinal(NORTH_WEST));
+        assertTrue (AxisDirections.isIntercardinal(NORTH_NORTH_WEST));
+        assertFalse(AxisDirections.isIntercardinal(UP));
+        assertFalse(AxisDirections.isIntercardinal(FUTURE));
+        assertFalse(AxisDirections.isIntercardinal(OTHER));
+    }
+
+    /**
      * Tests {@link AxisDirections#isVertical(AxisDirection)}.
      */
     @Test

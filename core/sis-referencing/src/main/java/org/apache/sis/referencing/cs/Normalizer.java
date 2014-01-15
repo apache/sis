@@ -16,13 +16,25 @@
  */
 package org.apache.sis.referencing.cs;
 
+import java.util.Map;
 import java.util.Arrays;
+import javax.measure.unit.Unit;
+import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
+import javax.measure.converter.UnitConverter;
+import javax.measure.converter.ConversionException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singletonMap;
-import org.apache.sis.util.CharSequences;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
+import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 
 
 /**
@@ -102,23 +114,107 @@ final class Normalizer implements Comparable<Normalizer> {
     }
 
     /**
+     * Returns a new axis with the same properties (except identifiers) than given axis,
+     * but with normalized axis direction and unit of measurement.
+     *
+     * @param  axis The axis to normalize.
+     * @return An axis using normalized direction unit, or {@code axis} if the given axis already uses the given unit.
+     */
+    static CoordinateSystemAxis normalize(final CoordinateSystemAxis axis) {
+        /*
+         * Normalize the axis direction. For now we do not touch to inter-cardinal directions (e.g. "North-East")
+         * because it is not clear which normalization policy would match common usage.
+         */
+        final AxisDirection direction = axis.getDirection();
+        AxisDirection newDir = direction;
+        if (!AxisDirections.isIntercardinal(direction)) {
+            newDir = AxisDirections.absolute(direction);
+        }
+        final boolean sameDirection = newDir.equals(direction);
+        /*
+         * Normalize unit of measurement.
+         */
+        final Unit<?> unit = axis.getUnit(), newUnit;
+        if (Units.isLinear(unit)) {
+            newUnit = SI.METRE;
+        } else if (Units.isAngular(unit)) {
+            newUnit = NonSI.DEGREE_ANGLE;
+        } else if (Units.isTemporal(unit)) {
+            newUnit = NonSI.DAY;
+        } else {
+            newUnit = unit;
+        }
+        /*
+         * Reuse some properties (name, remarks, etc.) from the existing axis. If the direction changed,
+         * then the axis name may need change too (e.g. "Westing" → "Easting"). The new axis name may be
+         * set to "Unnamed", but the caller will hopefully be able to replace the returned instance by
+         * an instance from the EPSG database with appropriate name.
+         */
+        if (sameDirection && newUnit.equals(unit)) {
+            return axis;
+        }
+        final String abbreviation = axis.getAbbreviation();
+        String newAbbr = abbreviation;
+        if (!sameDirection) {
+            if (AxisDirections.isCompass(direction)) {
+                if (CharSequences.isAcronymForWords(abbreviation, direction.name())) {
+                    if (newDir.equals(AxisDirection.EAST)) {
+                        newAbbr = "E";
+                    } else if (newDir.equals(AxisDirection.NORTH)) {
+                        newAbbr = "N";
+                    }
+                }
+            } else if (newDir.equals(AxisDirection.UP)) {
+                newAbbr = "z";
+            } else if (newDir.equals(AxisDirection.FUTURE)) {
+                newAbbr = "t";
+            }
+        }
+        final Map<String,?> properties;
+        if (newAbbr.equals(abbreviation)) {
+            properties = IdentifiedObjects.getProperties(axis, IDENTIFIERS_KEY);
+        } else {
+            properties = singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed));
+        }
+        /*
+         * Converts the axis range and build the new axis.
+         */
+        final UnitConverter c;
+        try {
+            c = unit.getConverterToAny(newUnit);
+        } catch (ConversionException e) {
+            // Use IllegalStateException because the public API is an AbstractCS member method.
+            throw new IllegalStateException(Errors.format(Errors.Keys.IllegalUnitFor_2, "axis", unit), e);
+        }
+        return new DefaultCoordinateSystemAxis(properties, newAbbr, newDir, newUnit,
+                c.convert(axis.getMinimumValue()), c.convert(axis.getMaximumValue()), axis.getRangeMeaning());
+    }
+
+    /**
      * Reorder the axes in an attempt to get a right-handed system.
      * If no axis change is needed, then this method returns {@code cs} unchanged.
      *
      * @param  cs The coordinate system to normalize.
+     * @param  allowAxisChanges {@code true} for normalizing axis directions and units.
      * @return The normalized coordinate system.
      */
-    static AbstractCS normalize(final AbstractCS cs) {
+    static AbstractCS normalize(final AbstractCS cs, final boolean allowAxisChanges) {
+        boolean changed = false;
         final int dimension = cs.getDimension();
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
         for (int i=0; i<dimension; i++) {
-            axes[i] = cs.getAxis(i);
+            CoordinateSystemAxis axis = cs.getAxis(i);
+            if (allowAxisChanges) {
+                changed |= (axis != (axis = normalize(axis)));
+            }
+            axes[i] = axis;
         }
         /*
          * Sorts the axis in an attempt to create a right-handed system
          * and creates a new Coordinate System if at least one axis changed.
          */
-        if (!sort(axes)) {
+        changed |= sort(axes);
+        if (!changed) {
             return cs;
         }
         final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(cs.getInterface().getSimpleName());

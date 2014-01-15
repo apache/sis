@@ -16,18 +16,19 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.util.Arrays;
 import java.util.Map;
+import java.util.Arrays;
 import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
-import static org.junit.Assert.*;
+import static org.apache.sis.referencing.Assert.*;
 
 
 /**
@@ -44,10 +45,10 @@ import static org.junit.Assert.*;
 })
 public final strictfp class NormalizerTest extends TestCase {
     /**
-     * Tests sorting of axes.
+     * Tests {@link Normalizer#sort(CoordinateSystemAxis[])}.
      */
     @Test
-    public void testSortAxis() {
+    public void testSort() {
         assertOrdered(new CoordinateSystemAxis[] {
             CommonAxes.LONGITUDE,
             CommonAxes.LATITUDE,
@@ -66,13 +67,7 @@ public final strictfp class NormalizerTest extends TestCase {
             CommonAxes.ELLIPSOIDAL_HEIGHT,
             CommonAxes.LONGITUDE
         });
-    }
 
-    /**
-     * Tests sorting of directions.
-     */
-    @Test
-    public void testSortDirections() {
         // A plausible CS.
         assertOrdered(new AxisDirection[] {
             AxisDirection.EAST,    // Right handed-rule
@@ -164,5 +159,30 @@ public final strictfp class NormalizerTest extends TestCase {
             axis[i] = new DefaultCoordinateSystemAxis(properties, "none", directions[i], SI.METRE);
         }
         return axis;
+    }
+
+    /**
+     * Tests {@link Normalizer#normalize(CoordinateSystemAxis, int)}.
+     */
+    @Test
+    public void testNormalizeAxis() {
+        assertSame(CommonAxes.LATITUDE,  Normalizer.normalize(CommonAxes.LATITUDE));
+        assertSame(CommonAxes.LONGITUDE, Normalizer.normalize(CommonAxes.LONGITUDE));
+        assertSame(CommonAxes.EASTING,   Normalizer.normalize(CommonAxes.EASTING));
+        assertSame(CommonAxes.NORTHING,  Normalizer.normalize(CommonAxes.NORTHING));
+        assertSame(CommonAxes.ALTITUDE,  Normalizer.normalize(CommonAxes.ALTITUDE));
+        assertSame(CommonAxes.TIME,      Normalizer.normalize(CommonAxes.TIME));
+        /*
+         * Test a change of unit from centimetre to metre.
+         */
+        assertAxisEquals("Height", "h", AxisDirection.UP,
+            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
+            Normalizer.normalize(CommonAxes.HEIGHT_cm));
+        /*
+         * Test a change of direction from West to East.
+         */
+        assertAxisEquals(Vocabulary.format(Vocabulary.Keys.Unnamed), "E",
+            AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
+            Normalizer.normalize(CommonAxes.WESTING));
     }
 }

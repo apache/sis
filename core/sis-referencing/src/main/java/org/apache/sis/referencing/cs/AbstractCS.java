@@ -22,7 +22,6 @@ import java.util.Arrays;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
-import javax.measure.converter.ConversionException;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -34,7 +33,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -321,44 +319,6 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Returns a coordinate system with the same properties than this one (except identifiers)
-     * but different units of measurement. If this coordinate system already uses the given units,
-     * then this method returns {@code this}.
-     *
-     * @param  units The desired units of measurement for each axis. If this array length is smaller
-     *         than the coordinate system {@linkplain #getDimension() dimension}, then the last unit
-     *         is repeated for all remaining axes.
-     * @return A coordinate system with axis using the given units, or {@code this}.
-     * @throws ConversionException If at least one unit is incompatible with the existing ones.
-     */
-    public AbstractCS forUnits(final Unit<?>... units) throws ConversionException {
-        ensureNonNull("units", units);
-        if (units.length == 0 || units.length > axes.length) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedDimension_3,
-                    "units", axes.length, units.length));
-        }
-        CoordinateSystemAxis[] newAxes = null;
-        for (int i=0; i<axes.length; i++) {
-            final CoordinateSystemAxis axis = axes[i];
-            final Unit<?> unit = axis.getUnit();
-            final Unit<?> newUnit = units[Math.min(i, units.length - 1)];
-            if (!unit.equals(newUnit)) {
-                final DefaultCoordinateSystemAxis c = DefaultCoordinateSystemAxis.castOrCopy(axis).forUnit(newUnit);
-                if (c != axis) {
-                    if (newAxes == null) {
-                        newAxes = axes.clone();
-                    }
-                    newAxes[i] = c;
-                }
-            }
-        }
-        if (newAxes != null) {
-            return createSameType(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), newAxes);
-        }
-        return this;
-    }
-
-    /**
      * Returns a coordinate system equivalent to this one but with axes rearranged according the given convention.
      * If this coordinate system is already compatible with the given convention, then this method returns
      * {@code this}.
@@ -374,10 +334,16 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         AbstractCS cs = derived.get(convention);
         if (cs == null) {
             switch (convention) {
-                case NORMALIZED:     // TODO
-                case RIGHT_HANDED:   cs = Normalizer.normalize(this); break;
+                case NORMALIZED:     cs = Normalizer.normalize(this, true);  break;
+                case RIGHT_HANDED:   cs = Normalizer.normalize(this, false); break;
                 case POSITIVE_RANGE: cs = this; break; // TODO
                 default: throw new AssertionError(convention);
+            }
+            for (final AbstractCS existing : derived.values()) {
+                if (cs.equals(existing)) {
+                    cs = existing;
+                    break;
+                }
             }
             derived.put(convention, cs);
         }
