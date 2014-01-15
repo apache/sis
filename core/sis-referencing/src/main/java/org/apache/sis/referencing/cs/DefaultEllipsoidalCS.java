@@ -209,6 +209,16 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultEllipsoidalCS forConvention(final AxesConvention convention) {
+        return (DefaultEllipsoidalCS) super.forConvention(convention);
+    }
+
+    /**
      * Returns a coordinate system of the same class than this CS but with different axes.
      */
     @Override

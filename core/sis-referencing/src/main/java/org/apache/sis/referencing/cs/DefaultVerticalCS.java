@@ -194,6 +194,16 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultVerticalCS forConvention(final AxesConvention convention) {
+        return (DefaultVerticalCS) super.forConvention(convention);
+    }
+
+    /**
      * Returns a coordinate system of the same class than this CS but with different axes.
      */
     @Override

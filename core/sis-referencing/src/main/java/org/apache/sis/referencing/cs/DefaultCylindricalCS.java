@@ -189,6 +189,16 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultCylindricalCS forConvention(final AxesConvention convention) {
+        return (DefaultCylindricalCS) super.forConvention(convention);
+    }
+
+    /**
      * Returns a coordinate system of the same class than this CS but with different axes.
      */
     @Override

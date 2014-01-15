@@ -171,6 +171,16 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultUserDefinedCS forConvention(final AxesConvention convention) {
+        return (DefaultUserDefinedCS) super.forConvention(convention);
+    }
+
+    /**
      * Returns a coordinate system of the same class than this CS but with different axes.
      */
     @Override

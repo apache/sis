@@ -210,6 +210,16 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultAffineCS forConvention(final AxesConvention convention) {
+        return (DefaultAffineCS) super.forConvention(convention);
+    }
+
+    /**
      * Returns a coordinate system of the same class than this CS but with different axes.
      * This method shall be overridden by all {@code AffineCS} subclasses in this package.
      */

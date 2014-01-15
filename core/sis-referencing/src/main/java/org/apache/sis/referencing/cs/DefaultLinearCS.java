@@ -182,6 +182,16 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultLinearCS forConvention(final AxesConvention convention) {
+        return (DefaultLinearCS) super.forConvention(convention);
+    }
+
+    /**
      * Returns a coordinate system of the same class than this CS but with different axes.
      */
     @Override

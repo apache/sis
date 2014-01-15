@@ -233,6 +233,16 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultCartesianCS forConvention(final AxesConvention convention) {
+        return (DefaultCartesianCS) super.forConvention(convention);
+    }
+
+    /**
      * Returns a coordinate system of the same class than this CS but with different axes.
      */
     @Override
