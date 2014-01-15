@@ -27,6 +27,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.io.wkt.Formatter;
@@ -131,7 +132,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *
      * @param crs The coordinate reference system to copy.
      *
-     * @see #castOrCopy(GeocentricCRS)
+     * @see #castOrCopy(GeographicCRS)
      */
     protected DefaultGeographicCRS(final GeographicCRS crs) {
         super(crs);
@@ -175,6 +176,24 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     @Override
     public EllipsoidalCS getCoordinateSystem() {
         return (EllipsoidalCS) super.getCoordinateSystem();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultGeographicCRS forConvention(final AxesConvention convention) {
+        return (DefaultGeographicCRS) super.forConvention(convention);
+    }
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        return new DefaultGeographicCRS(properties, super.getDatum(), (EllipsoidalCS) cs);
     }
 
     /**

@@ -605,7 +605,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         } else {
             /*
              * Checking the abbreviation is not sufficient. For example the polar angle and the
-             * spherical latitude have the same abbreviation (θ). SIS names like "Longitude"
+             * spherical latitude have the same abbreviation (θ). Legacy names like "Longitude"
              * (in addition to ISO 19111 "Geodetic longitude") bring more potential confusion.
              * Furthermore, not all implementors use the greek letters. For example most CRS in
              * WKT format use the "Lat" abbreviation instead of the greek letter φ.

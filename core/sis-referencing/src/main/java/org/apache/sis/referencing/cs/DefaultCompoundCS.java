@@ -18,11 +18,13 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.List;
+import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -111,27 +113,49 @@ public class DefaultCompoundCS extends AbstractCS {
      * @param components The set of coordinate system.
      */
     public DefaultCompoundCS(CoordinateSystem... components) {
-        super(singletonMap(NAME_KEY, nameFor(components = clone(components))), getAxes(components));
-        this.components = UnmodifiableArrayList.wrap(components);
+        this(components = clone(components), getAxes(components));
     }
 
     /**
-     * Constructs a name from a merge of the name of all coordinate systems.
      * This is a work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      *
      * @param components The coordinate systems.
      */
     @Workaround(library="JDK", version="1.7")
-    private static String nameFor(final CoordinateSystem[] components) {
-        final StringBuilder buffer = new StringBuilder();
-        for (int i=0; i<components.length; i++) {
-            if (buffer.length() != 0) {
-                buffer.append(" / ");
+    private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
+        super(singletonMap(NAME_KEY, createName(new StringBuilder(60).append("Compound CS"), axes)), axes);
+        this.components = UnmodifiableArrayList.wrap(components);
+    }
+
+    /**
+     * Returns a name for a coordinate system.
+     * Examples:
+     *
+     * <ul>
+     *   <li>Ellipsoidal CS: North (°), East (°).</li>
+     *   <li>Cartesian CS: East (km), North (km).</li>
+     *   <li>Compound CS: East (km), North (km), Up (m).</li>
+     * </ul>
+     *
+     * @param  buffer A buffer filled with the name header.
+     * @param  axes The axes.
+     * @return A name for the given coordinate system type and axes.
+     */
+    static String createName(final StringBuilder buffer, final CoordinateSystemAxis[] axes) {
+        String separator = ": ";
+        for (final CoordinateSystemAxis axis : axes) {
+            buffer.append(separator).append(Types.getCodeLabel(axis.getDirection()));
+            separator = ", ";
+            final Unit<?> unit = axis.getUnit();
+            if (unit != null) {
+                final String symbol = unit.toString();
+                if (!symbol.isEmpty()) {
+                    buffer.append(" (").append(symbol).append(')');
+                }
             }
-            buffer.append(components[i].getName().getCode());
         }
-        return buffer.toString();
+        return buffer.append('.').toString();
     }
 
     /**
@@ -174,6 +198,16 @@ public class DefaultCompoundCS extends AbstractCS {
     public List<CoordinateSystem> getComponents() {
         return components;
     }
+
+    /*
+     * Do not override createSameType(…) and forConvention(…) because we can not create a new DefaultCompoundCS
+     * without knownledge of the CoordinateSystem components to give to it. It would be possible to recursively
+     * invoke components[i].forConvention(…), but it would be useless to perform such decomposition here because
+     * DefaultCompoundCRS will need to perform its own decomposition anyway.
+     *
+     * If the user invokes DefaultCompoundCS.forConvention(…) anyway, he will get an AbstractCS instance, which
+     * is not that bad.
+     */
 
     /**
      * Compares this coordinate system with the specified object for equality.

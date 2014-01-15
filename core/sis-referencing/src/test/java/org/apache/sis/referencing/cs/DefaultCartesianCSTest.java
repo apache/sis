@@ -38,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.4
  * @module
  */
-@DependsOn(DefaultCoordinateSystemAxisTest.class)
+@DependsOn(AbstractCSTest.class)
 public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
     /**
      * An XML file in this package containing a Cartesian coordinate system definition.

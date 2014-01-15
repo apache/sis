@@ -38,8 +38,10 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.util.resources.Vocabulary;
 
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
@@ -60,7 +62,7 @@ import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
  * (<var>longitude</var>, <var>latitude</var>) axis order on the {@link #WGS84} geodetic datum:</p>
  *
  * {@preformat java
- *   GeographicCRS crs = GeodeticObjects.WGS84.geographic();
+ *   GeographicCRS crs = GeodeticObjects.WGS84.normalizedGeographic();
  * }
  *
  * For each enumeration value, the name of the CRS, datum and ellipsoid objects may or may not be the same.
@@ -223,10 +225,10 @@ public enum GeodeticObjects {
     /**
      * The EPSG code of the geographic CRS.
      */
-    final short crs;
+    final short geographic;
 
     /**
-     * The EPSG code of the datum. The value is often {@link #crs} + 2000,
+     * The EPSG code of the datum. The value is often {@link #geographic} + 2000,
      * but it doesn't have to be always the case.
      */
     final short datum;
@@ -244,16 +246,23 @@ public enum GeodeticObjects {
     private transient volatile IdentifiedObject cached;
 
     /**
+     * The normalized geographic CRS, created when first needed.
+     *
+     * @see #normalizedGeographic()
+     */
+    private transient volatile GeographicCRS normalized;
+
+    /**
      * Creates a new constant for the given EPSG or SIS codes.
      *
-     * @param crs       The EPSG code for the geographic CRS.
-     * @param datum     The EPSG code for the datum.
-     * @param ellipsoid The EPSG code for the ellipsoid.
+     * @param geographic The EPSG code for the geographic CRS.
+     * @param datum      The EPSG code for the datum.
+     * @param ellipsoid  The EPSG code for the ellipsoid.
      */
-    private GeodeticObjects(final short crs, final short datum, final short ellipsoid) {
-        this.crs       = crs;
-        this.datum     = datum;
-        this.ellipsoid = ellipsoid;
+    private GeodeticObjects(final short geographic, final short datum, final short ellipsoid) {
+        this.geographic = geographic;
+        this.datum      = datum;
+        this.ellipsoid  = ellipsoid;
     }
 
     /**
@@ -272,10 +281,47 @@ public enum GeodeticObjects {
     }
 
     /**
-     * Returns the two-dimensional geographic CRS associated to this geodetic object.
-     * The coordinate system axes will be in (<var>latitude</var>, <var>longitude</var>) order
-     * oriented toward {@linkplain AxisDirection#NORTH North} and {@linkplain AxisDirection#EAST East}
-     * respectively, with units in degrees.
+     * Returns a two-dimensional geographic CRS with axes in the non-standard but computationally convenient
+     * (<var>longitude</var>, <var>latitude</var>) order. The coordinate system axes will be oriented toward
+     * {@linkplain AxisDirection#EAST East} and {@linkplain AxisDirection#NORTH North} respectively, with units
+     * in degrees. The following table summarizes the coordinate reference systems known to this class,
+     * together with an enumeration value that can be used for fetching that CRS:
+     *
+     * <blockquote><table class="sis">
+     *   <tr><th>Name or alias</th>            <th>Enum</th>            <th>Code</th></tr>
+     *   <tr><td>ED50</td>                     <td>{@link #ED50}</td>   <td></td></tr>
+     *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td></td></tr>
+     *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td></td></tr>
+     *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td></td></tr>
+     *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td></td></tr>
+     *   <tr><td>WGS 72</td>                   <td>{@link #WGS72}</td>  <td></td></tr>
+     *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>CRS:84</td></tr>
+     * </table></blockquote>
+     *
+     * @return The geographic CRS with non-standard (<var>longitude</var>, <var>latitude</var>) axis order.
+     *
+     * @see DefaultGeographicCRS#forConvention(AxesConvention)
+     * @see AxesConvention#NORMALIZED
+     */
+    public GeographicCRS normalizedGeographic() {
+        GeographicCRS object = normalized;
+        if (object == null) {
+            DefaultGeographicCRS crs = DefaultGeographicCRS.castOrCopy(geographic());
+            crs = crs.forConvention(AxesConvention.RIGHT_HANDED); // Equivalent to NORMALIZED in our cases, but faster.
+            synchronized (this) {
+                object = normalized;
+                if (object == null) {
+                    normalized = object = crs;
+                }
+            }
+        }
+        return object;
+    }
+
+    /**
+     * Returns the two-dimensional geographic CRS with axes in the standard (<var>latitude</var>, <var>longitude</var>)
+     * order. The coordinate system axes will be oriented toward {@linkplain AxisDirection#NORTH North} and
+     * {@linkplain AxisDirection#EAST East} respectively, with units in degrees.
      * The following table summarizes the coordinate reference systems known to this class,
      * together with an enumeration value that can be used for fetching that CRS:
      *
@@ -290,7 +336,7 @@ public enum GeodeticObjects {
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4326</td></tr>
      * </table></blockquote>
      *
-     * @return The geographic CRS associated to this constant.
+     * @return The geographic CRS with standard (<var>latitude</var>, <var>longitude</var>) axis order.
      *
      * @see org.apache.sis.referencing.crs.DefaultGeographicCRS
      * @see CRSAuthorityFactory#createGeographicCRS(String)
@@ -303,7 +349,7 @@ public enum GeodeticObjects {
                 if (object == null) {
                     final CRSAuthorityFactory factory = StandardObjects.crsFactory();
                     if (factory != null) try {
-                        cached = object = factory.createGeographicCRS(String.valueOf(crs));
+                        cached = object = factory.createGeographicCRS(String.valueOf(geographic));
                         return object;
                     } catch (FactoryException e) {
                         StandardObjects.failure(this, "geographic", e);
@@ -319,7 +365,8 @@ public enum GeodeticObjects {
                     } else {
                         cs = WGS84.geographic().getCoordinateSystem();
                     }
-                    object = StandardDefinitions.createGeographicCRS(crs, datum(), cs);
+                    object = StandardDefinitions.createGeographicCRS(geographic, datum(), cs);
+                    cached = object;
                 }
             }
         }
