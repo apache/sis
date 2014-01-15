@@ -189,14 +189,16 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                 }
             }
             /*
-             * Ensures there is no axis along the same direction
-             * (e.g. two North axes, or an East and a West axis).
+             * Ensures there is no axis along the same direction (e.g. two North axes, or an East and a West axis).
+             * An exception to this rule is the time axis, since ISO 19107 explicitely allows compound CRS to have
+             * more than one time axis. Such case happen in meteorological models.
              */
             final AxisDirection dir = AxisDirections.absolute(direction);
             if (!dir.equals(AxisDirection.OTHER)) {
                 for (int j=i; --j>=0;) {
                     final AxisDirection other = axes[j].getDirection();
-                    if (dir.equals(AxisDirections.absolute(other))) {
+                    final AxisDirection abs = AxisDirections.absolute(other);
+                    if (dir.equals(abs) && !abs.equals(AxisDirection.FUTURE)) {
                         throw new IllegalArgumentException(Errors.format(
                                 Errors.Keys.ColinearAxisDirections_2, direction, other));
                     }
@@ -336,7 +338,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
             switch (convention) {
                 case NORMALIZED:     cs = Normalizer.normalize(this, true);  break;
                 case RIGHT_HANDED:   cs = Normalizer.normalize(this, false); break;
-                case POSITIVE_RANGE: cs = this; break; // TODO
+                case POSITIVE_RANGE: cs = Normalizer.shiftAxisRange(this);   break;
                 default: throw new AssertionError(convention);
             }
             for (final AbstractCS existing : derived.values()) {

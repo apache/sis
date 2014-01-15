@@ -55,9 +55,9 @@ public final strictfp class AbstractCSTest extends TestCase {
             final CoordinateSystemAxis... expected)
     {
         final AbstractCS derived = cs.forConvention(convention);
-        assertNotSame("Expected a new instance.", cs, derived);
-        assertSame("No change expected.", derived, derived.forConvention(convention));
-        assertSame("Shall be cached.", derived, cs.forConvention(convention));
+        assertNotSame("cs.forConvention(…)", cs, derived);
+        assertSame("derived.forConvention(…)", derived, derived.forConvention(convention));
+        assertSame("cs.forConvention(…)", derived, cs.forConvention(convention));
         assertEquals("dimension", expected.length, cs.getDimension());
         for (int i=0; i<expected.length; i++) {
             assertEquals(expected[i], derived.getAxis(i));
@@ -87,7 +87,7 @@ public final strictfp class AbstractCSTest extends TestCase {
     @DependsOnMethod("testForRightHandedConvention")
     public void testForNormalizedConvention() {
         /*
-         * Some expected axes, identical to the one in CommonAxes except for name or units.
+         * Some expected axes, identical to the ones in CommonAxes except for name or units.
          */
         final DefaultCoordinateSystemAxis EASTING = new DefaultCoordinateSystemAxis(
                 singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E",
@@ -104,6 +104,16 @@ public final strictfp class AbstractCSTest extends TestCase {
                 CommonAxes.NORTHING, CommonAxes.WESTING, CommonAxes.HEIGHT_cm, CommonAxes.TIME);
         verifyAxesConvention(AxesConvention.NORMALIZED, cs,
                 EASTING, CommonAxes.NORTHING, HEIGHT, CommonAxes.TIME);
+    }
+
+    /**
+     * Tests {@link AbstractCS#forConvention(AxesConvention)}
+     * with a {@link AxesConvention#POSITIVE_RANGE} argument.
+     */
+    @Test
+    public void testForPositiveRangeConvention() {
+        final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"), CommonAxes.LONGITUDE, CommonAxes.LATITUDE);
+        verifyAxesConvention(AxesConvention.POSITIVE_RANGE, cs, CommonAxes.SHIFTED_LONGITUDE, CommonAxes.LATITUDE);
     }
 
     /**

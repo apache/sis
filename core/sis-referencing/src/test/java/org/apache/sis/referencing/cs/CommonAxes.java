@@ -70,6 +70,12 @@ public final strictfp class CommonAxes {
             AxisDirection.NORTH, NonSI.DEGREE_ANGLE, -90, 90, RangeMeaning.EXACT);
 
     /**
+     * Identical to {@link #LONGITUDE} except for the range of longitude values.
+     */
+    public static final DefaultCoordinateSystemAxis SHIFTED_LONGITUDE = create("Longitude", "λ",
+            AxisDirection.EAST, NonSI.DEGREE_ANGLE, 0, 360, RangeMeaning.WRAPAROUND);
+
+    /**
      * Default axis info for longitudes.
      * Increasing ordinates values go {@linkplain AxisDirection#EAST East}
      * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.

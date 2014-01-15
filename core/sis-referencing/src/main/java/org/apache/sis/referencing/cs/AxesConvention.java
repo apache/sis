@@ -45,8 +45,32 @@ import org.opengis.referencing.cs.CoordinateSystem;
  * By default, SIS creates CRS with axis order as defined by the authority. Those CRS are created by calls to the
  * {@link org.apache.sis.referencing.CRS#forCode(String)} method. The actual axis order can be verified after the CRS
  * creation with {@code System.out.println(crs)}. If (<var>x</var>,<var>y</var>) axis order is wanted for compatibility
- * with older OGC specifications or other softwares, CRS forced to longitude first axis order can be created using the
- * {@link #NORMALIZED} enumeration value.</p>
+ * with older OGC specifications or other softwares, CRS forced to "longitude first" axis order can be created using the
+ * {@link #RIGHT_HANDED} or {@link #NORMALIZED} enumeration value.</p>
+ *
+ * {@section Normalized coordinate systems}
+ * The definition the <cite>normalized coordinate systems</cite> is somewhat fuzzy.
+ * This concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:
+ *
+ * <blockquote><font size="-1"><b>6.7.2 Map CS</b> —
+ * The usual orientation of the Map CS shall be such that the <var>i</var> axis is parallel to the East-to-West axis
+ * of the Layer CRS and increases Eastward, and the <var>j</var> axis is parallel to the North-to-South axis of the
+ * Layer CRS and increases Southward. This orientation will not be possible in some cases, as (for example) in an
+ * orthographic projection over the South Pole. The convention to be followed is that, wherever possible, East shall
+ * be to the right edge and North shall be toward the upper edge of the Map CS.</font></blockquote>
+ *
+ * In addition to WMS, this method is used together with
+ * {@link org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes CoordinateSystems.swapAndScaleAxes(…)}
+ * for the creation of transformation steps, as in the example below:
+ *
+ * {@preformat java
+ *     Matrix step1 = swapAndScaleAxes(sourceCS, sourceCS.forConvention(NORMALIZED);
+ *     Matrix step2 = ... some coordinate operation working on normalized axes ...
+ *     Matrix step3 = swapAndScaleAxes(targetCS.forConvention(NORMALIZED), targetCS);
+ * }
+ *
+ * A rational for normalized axes order and units is explained in the <cite>Axis units and directions</cite>
+ * section of {@linkplain org.apache.sis.referencing.operation.projection map projection package description}.
  *
  * {@section Range of longitude values}
  * Most geographic CRS have a longitude axis defined in the [-180 … +180]° range. All map projections in Apache SIS are
@@ -117,6 +141,7 @@ public enum AxesConvention {
      * </ul>}
      *
      * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
+     * @see <a href="http://en.wikipedia.org/wiki/Right_hand_rule">Right-hand rule on Wikipedia</a>
      */
     RIGHT_HANDED,
 
