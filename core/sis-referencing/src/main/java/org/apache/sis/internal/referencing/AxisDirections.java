@@ -184,6 +184,19 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Returns {@code true} if the specified direction is an inter-cardinal direction.
+     * Inter-cardinal directions are {@code NORTH_EAST}, {@code SOUTH_SOUTH_EAST}, etc.
+     *
+     * @param  dir The direction to test, or {@code null}.
+     * @return {@code true} if the given direction is an inter-cardinal direction.
+     */
+    public static boolean isIntercardinal(final AxisDirection dir) {
+        if (dir == null) return false;
+        final int n  = dir.ordinal() - NORTH.ordinal();
+        return n >= 0 && n < COMPASS_COUNT && (n & 3) != 0;
+    }
+
+    /**
      * Returns {@code true} if the given direction is {@code UP} or {@code DOWN}.
      *
      * @param  dir The direction to test, or {@code null}.
@@ -340,7 +353,7 @@ public final class AxisDirections extends Static {
     }
 
     /**
-     * Searches for a axis direction having the given name in the specified list of directions.
+     * Searches for an axis direction having the given name in the specified list of directions.
      * This method compares the given name with the name of each {@code AxisDirection} in a lenient way:
      *
      * <ul>

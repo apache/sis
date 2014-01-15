@@ -74,7 +74,7 @@ public enum AxesConvention {
      *     <ul>
      *       <li>{@link AxisDirection#EAST EAST}, {@link AxisDirection#NORTH NORTH},
      *           {@link AxisDirection#UP UP}, {@link AxisDirection#FUTURE FUTURE} —
-     *           commonly used directions for (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) coordinates.</li>
+     *           commonly used (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) directions for coordinates.</li>
      *       <li>{@link AxisDirection#DISPLAY_RIGHT DISPLAY_RIGHT}, {@link AxisDirection#DISPLAY_DOWN DISPLAY_DOWN} —
      *           commonly used (<var>x</var>, <var>y</var>) directions for screen devices.</li>
      *       <li>{@link AxisDirection#ROW_POSITIVE ROW_POSITIVE},

@@ -16,7 +16,11 @@
  */
 package org.apache.sis.referencing.cs;
 
+import javax.measure.unit.SI;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -66,9 +70,40 @@ public final strictfp class AbstractCSTest extends TestCase {
      */
     @Test
     public void testForRightHandedConvention() {
-        verifyAxesConvention(AxesConvention.RIGHT_HANDED, new AbstractCS(singletonMap(NAME_KEY, "Test"),
-            CommonAxes.LATITUDE, CommonAxes.TIME, CommonAxes.ALTITUDE, CommonAxes.LONGITUDE),
-            CommonAxes.LONGITUDE, CommonAxes.LATITUDE, CommonAxes.ALTITUDE, CommonAxes.TIME);
+        final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"),
+                CommonAxes.LATITUDE, CommonAxes.TIME, CommonAxes.ALTITUDE, CommonAxes.LONGITUDE);
+        verifyAxesConvention(AxesConvention.RIGHT_HANDED, cs,
+                CommonAxes.LONGITUDE, CommonAxes.LATITUDE, CommonAxes.ALTITUDE, CommonAxes.TIME);
+        assertSame("Right-handed CS shall be same as normalized.",
+                cs.forConvention(AxesConvention.RIGHT_HANDED),
+                cs.forConvention(AxesConvention.NORMALIZED));
+    }
+
+    /**
+     * Tests {@link AbstractCS#forConvention(AxesConvention)}
+     * with a {@link AxesConvention#NORMALIZED} argument.
+     */
+    @Test
+    @DependsOnMethod("testForRightHandedConvention")
+    public void testForNormalizedConvention() {
+        /*
+         * Some expected axes, identical to the one in CommonAxes except for name or units.
+         */
+        final DefaultCoordinateSystemAxis EASTING = new DefaultCoordinateSystemAxis(
+                singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E",
+                AxisDirection.EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+        final DefaultCoordinateSystemAxis HEIGHT = new DefaultCoordinateSystemAxis(
+                singletonMap(NAME_KEY, "Height"), "h",
+            AxisDirection.UP, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+        /*
+         * Test RIGHT_HANDED as a matter of principle before to test NORMALIZED.
+         */
+        final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"),
+                CommonAxes.TIME, CommonAxes.NORTHING, CommonAxes.WESTING, CommonAxes.HEIGHT_cm);
+        verifyAxesConvention(AxesConvention.RIGHT_HANDED, cs,
+                CommonAxes.NORTHING, CommonAxes.WESTING, CommonAxes.HEIGHT_cm, CommonAxes.TIME);
+        verifyAxesConvention(AxesConvention.NORMALIZED, cs,
+                EASTING, CommonAxes.NORTHING, HEIGHT, CommonAxes.TIME);
     }
 
     /**
