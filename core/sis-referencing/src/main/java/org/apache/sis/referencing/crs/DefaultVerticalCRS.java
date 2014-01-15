@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
@@ -206,6 +207,14 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      */
     private void setCoordinateSystem(final VerticalCS cs) {
         super.setCoordinateSystem("verticalCS", cs);
+    }
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        return new DefaultVerticalCRS(properties, datum, (VerticalCS) cs);
     }
 
     /**

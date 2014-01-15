@@ -233,6 +233,14 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     private void setUserDefinedCS(final UserDefinedCS cs) {super.setCoordinateSystem("userDefinedCS", cs);}
 
     /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        return new DefaultEngineeringCRS(properties, datum, cs);
+    }
+
+    /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
      *
      * @param  formatter The formatter to use.
