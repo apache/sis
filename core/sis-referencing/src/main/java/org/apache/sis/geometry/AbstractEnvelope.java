@@ -1018,14 +1018,14 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     @Override
     public int hashCode() {
         final int dimension = getDimension();
-        long code = 1;
+        int code = 1;
         boolean p = true;
         do {
             for (int i=0; i<dimension; i++) {
-                code = code*31 + doubleToLongBits(p ? getLower(i) : getUpper(i));
+                code = code*31 + Numerics.hashCode(doubleToLongBits(p ? getLower(i) : getUpper(i)));
             }
         } while ((p = !p) == false);
-        return Numerics.hashCode(code) + Objects.hashCode(getCoordinateReferenceSystem());
+        return code + Objects.hashCode(getCoordinateReferenceSystem());
     }
 
     /**

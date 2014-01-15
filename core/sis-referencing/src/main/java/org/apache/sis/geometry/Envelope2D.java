@@ -24,10 +24,9 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.GeodeticObjects;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.referencing.CRS;
 
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
@@ -208,12 +207,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
              box.getSouthBoundLatitude(),
              box.getEastBoundLongitude(),
              box.getNorthBoundLatitude());
-        try {
-            crs = CRS.forCode("CRS:84");
-        } catch (FactoryException e) {
-            // Should never happen since we asked for a CRS which should always be present.
-            throw new AssertionError(e);
-        }
+        crs = GeodeticObjects.WGS84.normalizedGeographic();
         if (Boolean.FALSE.equals(box.getInclusion())) {
             x += width;
             width = -width;

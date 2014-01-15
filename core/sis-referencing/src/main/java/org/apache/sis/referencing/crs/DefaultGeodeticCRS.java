@@ -144,4 +144,13 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
     private void setCartesianCS  (final CartesianCS   cs) {super.setCoordinateSystem("cartesianCS",   cs);}
     private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
     private void setEllipsoidalCS(final EllipsoidalCS cs) {super.setCoordinateSystem("ellipsoidalCS", cs);}
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     * This method shall be overridden by all {@code DefaultGeodeticCRS} subclasses in this package.
+     */
+    @Override
+    AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        return new DefaultGeodeticCRS(properties, datum, cs);
+    }
 }

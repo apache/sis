@@ -52,6 +52,7 @@
  * Some SIS implementations provide additional methods that are not part of OGC/ISO specifications:
  *
  * <ul>
+ *   <li>{@link org.apache.sis.referencing.crs.AbstractCRS#forConvention AbstractCRS.forConvention(AxesConvention)}</li>
  *   <li>{@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toDate(double)}</li>
  *   <li>{@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toValue DefaultTemporalCRS.toValue(Date)}</li>
  * </ul>

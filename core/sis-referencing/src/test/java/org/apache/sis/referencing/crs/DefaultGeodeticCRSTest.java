@@ -37,6 +37,7 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn({
+    AbstractCRSTest.class,
     org.apache.sis.referencing.cs.DefaultEllipsoidalCSTest.class,
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class
 })

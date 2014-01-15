@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.referencing.AxisDirections;
 
@@ -127,7 +128,7 @@ final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>
             // since we are supposed to return 'null' in this situation.
             return null;
         }
-        if (!(meridian >= -180 && meridian <= 180)) {
+        if (!(meridian >= Longitude.MIN_VALUE && meridian <= Longitude.MAX_VALUE)) {
             // Meridian is NaN or is not in the valid range.
             return null;
         }
@@ -172,24 +173,14 @@ final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>
      *
      * {@example The angle from "<cite>North along 90 deg East</cite>" to "<cite>North along 0 deg</cite> is 90°.}
      */
-    public double getAngle(final DirectionAlongMeridian other) {
+    public double angle(final DirectionAlongMeridian other) {
         if (!baseDirection.equals(other.baseDirection)) {
             return Double.NaN;
         }
         /*
-         * We want the following pair of axis:
-         * (NORTH along 90°E, NORTH along 0°)
-         * to give a positive angle of 90°
+         * Example: angle between (NORTH along 90°E, NORTH along 0°) shall be +90°
          */
-        double angle = meridian - other.meridian;
-        /*
-         * Forces to the [-180° .. +180°] range.
-         */
-        if (angle < -180) {
-            angle += 360;
-        } else if (angle > 180) {
-            angle -= 360;
-        }
+        double angle = Longitude.normalize(meridian - other.meridian);
         /*
          * Reverses the sign for axis oriented toward SOUTH,
          * so a positive angle is a right-handed system.
@@ -220,7 +211,7 @@ final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>
         if (c != 0) {
             return c;
         }
-        final double angle = getAngle(that);
+        final double angle = angle(that);
         if (angle < 0) return +1;  // Really the opposite sign.
         if (angle > 0) return -1;  // Really the opposite sign.
         return 0;
@@ -275,7 +266,7 @@ final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>
             buffer.append(md);
         }
         buffer.append('°');
-        if (md != 0 && md != 180) {
+        if (md != 0 && md != Longitude.MAX_VALUE) {
             buffer.append(meridian < 0 ? 'W' : 'E');
         }
         name = buffer.toString();
