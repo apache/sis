@@ -18,6 +18,8 @@ package org.apache.sis.internal.util;
 
 import java.io.Serializable;
 import java.util.AbstractList;
+import java.util.Arrays;
+import java.lang.reflect.Array;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.CheckedContainer;
 
@@ -69,7 +71,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
     /**
      * The wrapped array.
      */
-    private final E[] array;
+    final E[] array;
 
     /**
      * Creates a new instance wrapping the given array. A direct reference to the given array is
@@ -167,6 +169,8 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
 
     /**
      * Returns the list size.
+     *
+     * @return The size of this list.
      */
     @Override
     public int size() {
@@ -192,6 +196,9 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
 
     /**
      * Returns the element at the specified index.
+     *
+     * @param  index The index of the element to get.
+     * @return The element at the given index.
      */
     @Override
     public E get(final int index) {
@@ -355,15 +362,54 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
             ArgumentChecks.ensureValidIndex(size, index);
             return super.get(index + lower);
         }
+
+        /**
+         * Returns a copy of the backing array section viewed by this sublist.
+         */
+        @Override
+        public E[] toArray() {
+            return Arrays.copyOfRange(array, lower, lower + size);
+        }
     }
 
     /**
      * Returns a copy of the backing array. Note that the array type is {@code E[]} rather than {@code Object[]}.
      * This is not what {@code ArrayList} does, but is not forbidden by {@link List#toArray()} javadoc neither.
+     *
+     * @return A copy of the wrapped array.
      */
     @Override
     public E[] toArray() {
         return array.clone();
+    }
+
+    /**
+     * Copies the backing array in the given one if the list fits in the given array.
+     * If the list does not fit in the given array, returns the collection in a new array.
+     *
+     * @param  <T>   The type of array element.
+     * @param  dest  The array where to copy the elements if the list can fits in the array.
+     * @return The given array, or a newly created array if this list is larger than the given array.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T[] toArray(T[] dest) {
+        final int size = size();
+        if (dest.length != size) {
+            if (dest.length < size) {
+                /*
+                 * We are cheating here since the array component may not be assignable to T.
+                 * But if this assumption is wrong, then the call to System.arraycopy(…) later
+                 * will thrown an ArrayStoreException, which is the exception type required by
+                 * the Collection.toArray(T[]) javadoc.
+                 */
+                dest = (T[]) Array.newInstance(dest.getClass().getComponentType(), size);
+            } else {
+                dest[size] = null; // Required by Collection.toArray(T[]) javadoc.
+            }
+        }
+        System.arraycopy(array, lower(), dest, 0, size);
+        return dest;
     }
 
     /**

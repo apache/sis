@@ -20,10 +20,10 @@ import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.apache.sis.referencing.GeodeticObjects;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
@@ -55,10 +55,8 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
 
     /**
      * The coordinate reference system used for the tests.
-     *
-     * @todo Need to be assigned when we will have ported the CRS implementations.
      */
-    static final GeographicCRS WGS84 = null;
+    static final GeographicCRS WGS84 = GeodeticObjects.WGS84.normalizedGeographic();
 
     /**
      * Creates an envelope of the given type. The type shall be one of the
@@ -87,14 +85,15 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
                 break;
             }
             case SUBENVELOPE: {
-                final GeneralEnvelope ge = new GeneralEnvelope(5);
-                ge.setCoordinateReferenceSystem(WGS84);
+                GeneralEnvelope ge = new GeneralEnvelope(5);
                 ge.setRange(1, xmin, xmax);
                 ge.setRange(2, ymin, ymax);
                 ge.setRange(0, 2, 3); // Following values will be verified in verifyInvariants(…)
                 ge.setRange(3, 4, 6);
                 ge.setRange(4, 8, 9);
-                envelope = ge.subEnvelope(1, 3);
+                ge = ge.subEnvelope(1, 3);
+                ge.setCoordinateReferenceSystem(WGS84);
+                envelope = ge;
                 break;
             }
             default: throw new IllegalArgumentException(String.valueOf(type));
@@ -190,7 +189,6 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * }
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testCrossingAntiMeridian() {
         final DirectPosition2D inside  = new DirectPosition2D(18, 32);
         final DirectPosition2D outside = new DirectPosition2D( 3, 32);
@@ -253,7 +251,6 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * }
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testCrossingAntiMeridianTwice() {
         final DirectPosition2D inside  = new DirectPosition2D(18, 32);
         final DirectPosition2D outside = new DirectPosition2D( 3, 32);
@@ -309,7 +306,6 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * on the left and right sides.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testCrossingAntiMeridianThreeTimes() {
         final DirectPosition2D wasInside = new DirectPosition2D(18, 32);
         final DirectPosition2D outside   = new DirectPosition2D( 3, 32);
@@ -415,7 +411,6 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * Tests a case crossing the anti-meridian crossing, from 0° to -0°.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testRange360() {
         final DirectPosition2D inside     = new DirectPosition2D(18, 32);
         final DirectPosition2D wasOutside = new DirectPosition2D( 3, 32);
@@ -501,7 +496,6 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testToSimpleEnvelopesOnEmptyEnvelope")
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testToSimpleEnvelopesOverAntiMeridian() {
         for (int type=0; type<LAST; type++) {
             if (type != RECTANGLE) {

@@ -28,6 +28,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.operation.CoordinateOperation;
 
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
@@ -61,16 +62,37 @@ public final class IdentifiedObjects extends Static {
 
     /**
      * Returns the information provided in the specified identified object as a map of properties.
-     * The returned map contains keys declared in the {@link IdentifiedObject} interface, for example
-     * {@link IdentifiedObject#NAME_KEY}. The values are obtained by calls to the methods associated
-     * to each key, for example {@link IdentifiedObject#getName()} for the {@code NAME_KEY}.
+     * The returned map contains the following entries for each key not contained in the {@code excludes} list
+     * and for which the corresponding method returns a non-null and non-empty value.
+     *
+     * <table class="sis">
+     *   <tr><th>Key</th> <th>Value</th></tr>
+     *   <tr><td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *       <td>{@link IdentifiedObject#getName()}</td></tr>
+     *   <tr><td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *       <td>{@link IdentifiedObject#getAlias()}</td></tr>
+     *   <tr><td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *       <td>{@link IdentifiedObject#getIdentifiers()}</td></tr>
+     *   <tr><td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
+     *       <td>{@link IdentifiedObject#getRemarks()}</td></tr>
+     *   <tr><td>{@value org.opengis.referencing.operation.CoordinateOperation#SCOPE_KEY}</td>
+     *       <td>{@link CoordinateOperation#getScope()} (also in datum and reference systems)</td></tr>
+     *   <tr><td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
+     *       <td>{@link CoordinateOperation#getDomainOfValidity()} (also in datum and reference systems)</td></tr>
+     *   <tr><td>{@value org.opengis.referencing.operation.CoordinateOperation#OPERATION_VERSION_KEY}</td>
+     *       <td>{@link CoordinateOperation#getOperationVersion()}</td></tr>
+     *   <tr><td>{@value org.opengis.referencing.operation.CoordinateOperation#COORDINATE_OPERATION_ACCURACY_KEY}</td>
+     *       <td>{@link CoordinateOperation#getCoordinateOperationAccuracy()}</td></tr>
+     * </table>
      *
      * @param  object The identified object to view as a properties map.
+     * @param  excludes The keys of properties to exclude from the map.
      * @return An view of the identified object as an immutable map.
      */
-    public static Map<String,?> getProperties(final IdentifiedObject object) {
+    public static Map<String,?> getProperties(final IdentifiedObject object, final String... excludes) {
         ensureNonNull("object", object);
-        return new Properties(object);
+        ensureNonNull("excludes", excludes);
+        return new Properties(object, excludes);
     }
 
     /**

@@ -22,8 +22,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.measure.Angle;
 
 
 /**
@@ -72,6 +72,15 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * which will assign values to the fields using reflexion.
      */
     private DefaultCartesianCS() {
+    }
+
+    /**
+     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
+     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * because it does not verify the number of axes.
+     */
+    private DefaultCartesianCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        super(properties, axes);
     }
 
     /**
@@ -194,8 +203,13 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
             final AxisDirection axis0 = getAxis(i).getDirection();
             for (int j=i; ++j<dimension;) {
                 final AxisDirection axis1 = getAxis(j).getDirection();
-                final double angle = CoordinateSystems.angle(axis0, axis1); // May be NaN, which we accept.
-                if (Math.abs(Math.abs(angle) - 90) > Formulas.ANGULAR_TOLERANCE) {
+                final Angle angle = CoordinateSystems.angle(axis0, axis1);
+                /*
+                 * The angle may be null for grid directions (COLUMN_POSITIVE, COLUMN_NEGATIVE,
+                 * ROW_POSITIVE, ROW_NEGATIVE). We conservatively accept those directions even if
+                 * they are not really for Cartesian CS because we do not know the grid geometry.
+                 */
+                if (angle != null && Math.abs(angle.degrees()) != 90) {
                     throw new IllegalArgumentException(Errors.format(
                             Errors.Keys.NonPerpendicularDirections_2, axis0, axis1));
                 }
@@ -216,5 +230,23 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     @Override
     public Class<? extends CartesianCS> getInterface() {
         return CartesianCS.class;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultCartesianCS forConvention(final AxesConvention convention) {
+        return (DefaultCartesianCS) super.forConvention(convention);
+    }
+
+    /**
+     * Returns a coordinate system of the same class than this CS but with different axes.
+     */
+    @Override
+    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        return new DefaultCartesianCS(properties, axes);
     }
 }

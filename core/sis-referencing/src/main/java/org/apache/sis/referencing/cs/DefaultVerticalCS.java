@@ -82,6 +82,15 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
     }
 
     /**
+     * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
+     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * because it does not verify the number of axes.
+     */
+    private DefaultVerticalCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        super(properties, axes);
+    }
+
+    /**
      * Constructs a coordinate system from a set of properties.
      * The properties map is given unchanged to the
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
@@ -182,5 +191,23 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
     @Override
     public Class<? extends VerticalCS> getInterface() {
         return VerticalCS.class;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultVerticalCS forConvention(final AxesConvention convention) {
+        return (DefaultVerticalCS) super.forConvention(convention);
+    }
+
+    /**
+     * Returns a coordinate system of the same class than this CS but with different axes.
+     */
+    @Override
+    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        return new DefaultVerticalCS(properties, axes);
     }
 }

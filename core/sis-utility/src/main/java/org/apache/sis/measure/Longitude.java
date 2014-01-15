@@ -20,6 +20,12 @@ package org.apache.sis.measure;
 /**
  * A longitude angle in decimal degrees.
  * Positive longitudes are East, while negative longitudes are West.
+ * The longitude symbol is the Greek lower-case letter lambda (λ).
+ *
+ * <p>Longitudes are not necessarily relative to the Greenwich meridian. The
+ * {@linkplain org.apache.sis.referencing.datum.DefaultPrimeMeridian prime meridian}
+ * depends on the context, typically specified through the geodetic datum of a
+ * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.</p>
  *
  * {@section Immutability and thread safety}
  * This final class is immutable and thus inherently thread-safe.
@@ -74,7 +80,7 @@ public final class Longitude extends Angle {
      *
      * @param  string A string to be converted to a {@code Longitude}.
      * @throws NumberFormatException if the string does not contain a parsable angle,
-     *         or represents a latitude angle.
+     *         or represents a longitude angle.
      *
      * @see AngleFormat#parse(String)
      */

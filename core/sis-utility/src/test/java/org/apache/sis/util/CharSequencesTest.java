@@ -327,21 +327,24 @@ public final strictfp class CharSequencesTest extends TestCase {
     @Test
     public void testIsAcronymForWords() {
         /*
-         * Following should be accepted as acronyms...
+         * Following shall be accepted as acronyms...
          */
         assertTrue(isAcronymForWords("OGC",                        "Open Geospatial Consortium"));
         assertTrue(isAcronymForWords("O.G.C.",                     "Open Geospatial Consortium"));
         assertTrue(isAcronymForWords("OpGeoCon",                   "Open Geospatial Consortium"));
         assertTrue(isAcronymForWords("Open Geospatial Consortium", "Open Geospatial Consortium"));
         assertTrue(isAcronymForWords("ogc",                        "Open Geospatial Consortium"));
+        assertTrue(isAcronymForWords("E",                          "EAST"));
+        assertTrue(isAcronymForWords("ENE",                        "EAST_NORTH_EAST"));
         /*
-         * Following should be rejected...
+         * Following shall be rejected...
          */
         assertFalse(isAcronymForWords("ORC",    "Open Geospatial Consortium"));
         assertFalse(isAcronymForWords("O.C.G.", "Open Geospatial Consortium"));
         assertFalse(isAcronymForWords("OGC2",   "Open Geospatial Consortium"));
         assertFalse(isAcronymForWords("OG",     "Open Geospatial Consortium"));
         assertFalse(isAcronymForWords("GC",     "Open Geospatial Consortium"));
+        assertFalse(isAcronymForWords("ENE",    "NORTH_EAST"));
         /*
          * Following are mapping of EPSG table names from MS-Access to ANSI SQL.
          * All those items must be recognized as acroynms - this is requred by DirectEpsgFactory.
@@ -369,7 +372,7 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertTrue(isAcronymForWords("deprecation",               "[Deprecation]"));
         assertFalse(isAcronymForWords(null,                       "[Deprecation]"));
         /*
-         * It is important the the following is not recognized as an acronym,
+         * It is important the following is not recognized as an acronym,
          * otherwise it leads to a confusion in DirectEpsgFactory.
          */
         assertFalse(isAcronymForWords("coordoperation", "[Coordinate_Operation Method]"));

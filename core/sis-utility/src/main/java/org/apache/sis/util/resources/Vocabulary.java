@@ -345,6 +345,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short UnavailableContent = 57;
 
         /**
+         * Unnamed
+         */
+        public static final short Unnamed = 65;
+
+        /**
          * Untitled
          */
         public static final short Untitled = 58;
