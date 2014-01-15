@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Date;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
@@ -40,7 +41,7 @@ import static org.apache.sis.test.TestUtilities.*;
  * @module
  */
 @DependsOn({
-  org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class,
+  org.apache.sis.referencing.crs.DefaultGeodeticCRSTest.class,
   org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class,
   StandardDefinitionsTest.class
 })
@@ -55,9 +56,21 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
      */
     @Test
     public void testWGS84() {
-        final GeographicCRS crs = GeodeticObjects.WGS84.geographic();
-        Validators.validate(crs);
-        GeodeticObjectVerifier.assertIsWGS84(crs, false, true);
+        final GeographicCRS geographic = GeodeticObjects.WGS84.geographic();
+        Validators.validate(geographic);
+        GeodeticObjectVerifier.assertIsWGS84(geographic, false, true);
+        assertSame("Cached value", geographic, GeodeticObjects.WGS84.geographic());
+        /*
+         * Verifies the variant using (longitude, latitude) axis order.
+         */
+        final GeographicCRS normalized = GeodeticObjects.WGS84.normalizedGeographic();
+        Validators.validate(normalized);
+        assertSame(geographic.getDatum(), normalized.getDatum());
+        final CoordinateSystem φλ = geographic.getCoordinateSystem();
+        final CoordinateSystem λφ = normalized.getCoordinateSystem();
+        assertSame("Longitude", φλ.getAxis(1), λφ.getAxis(0));
+        assertSame("Latitude",  φλ.getAxis(0), λφ.getAxis(1));
+        assertSame("Cached value", normalized, GeodeticObjects.WGS84.normalizedGeographic());
     }
 
     /**
