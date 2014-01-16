@@ -61,6 +61,8 @@ public final strictfp class CRSTest extends TestCase {
         verifyForCode(GeodeticObjects.NAD27 .geographic(), "EPSG:4267");
         verifyForCode(GeodeticObjects.ETRS89.geographic(), "EPSG:4258");
         verifyForCode(GeodeticObjects.ED50  .geographic(), "EPSG:4230");
+        assertSame("EPSG:5714", GeodeticObjects.Vertical.MSL_HEIGHT.crs(), CRS.forCode("EPSG:5714"));
+        assertSame("EPSG:5715", GeodeticObjects.Vertical.MSL_DEPTH .crs(), CRS.forCode("EPSG:5715"));
     }
 
     /**

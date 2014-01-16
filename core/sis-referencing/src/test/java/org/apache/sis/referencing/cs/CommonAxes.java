@@ -166,7 +166,7 @@ public final strictfp class CommonAxes {
      * @see #GEOCENTRIC_RADIUS
      * @see #GRAVITY_RELATED_HEIGHT
      */
-    public static final DefaultCoordinateSystemAxis DEPTH = create("Depth", "d",
+    public static final DefaultCoordinateSystemAxis DEPTH = create("Depth", "D",
             AxisDirection.DOWN, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**

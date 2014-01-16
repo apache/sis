@@ -246,7 +246,7 @@ final class StandardDefinitions {
      * @param  code The EPSG code.
      * @return The coordinate system axis for the given code.
      */
-    private static CoordinateSystemAxis createAxis(final short code) {
+    static CoordinateSystemAxis createAxis(final short code) {
         final String name, abrv;
         final Unit<?> unit;
         double min = Double.NEGATIVE_INFINITY;

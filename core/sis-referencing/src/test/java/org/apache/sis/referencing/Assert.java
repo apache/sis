@@ -47,7 +47,7 @@ import static java.lang.StrictMath.*;
  */
 public strictfp class Assert extends org.apache.sis.test.Assert {
     /**
-     * Tolerance threshold for strict floating point comparisons.
+     * The tolerance threshold for strict comparisons of floating point values.
      */
     private static final double STRICT = 0;
 

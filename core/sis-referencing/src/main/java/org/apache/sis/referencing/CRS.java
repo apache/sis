@@ -60,6 +60,9 @@ public final class CRS extends Static {
      *
      * <blockquote><table class="sis">
      *   <tr><th>Code</th>      <th>Enum</th>                                  <th>CRS Type</th>   <th>Description</th></tr>
+     *   <tr><td>CRS:27</td>    <td>{@link GeodeticObjects#NAD27  NAD27}</td>  <td>Geographic</td> <td>Like EPSG:4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>CRS:83</td>    <td>{@link GeodeticObjects#NAD83  NAD83}</td>  <td>Geographic</td> <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>CRS:84</td>    <td>{@link GeodeticObjects#WGS84  WGS84}</td>  <td>Geographic</td> <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>EPSG:4047</td> <td>{@link GeodeticObjects#SPHERE SPHERE}</td> <td>Geographic</td> <td>GRS 1980 Authalic Sphere</td></tr>
      *   <tr><td>EPSG:4230</td> <td>{@link GeodeticObjects#ED50   ED50}</td>   <td>Geographic</td> <td>European Datum 1950</td></tr>
      *   <tr><td>EPSG:4258</td> <td>{@link GeodeticObjects#ETRS89 ETRS89}</td> <td>Geographic</td> <td>European Terrestrial Reference Frame 1989</td></tr>
@@ -67,9 +70,8 @@ public final class CRS extends Static {
      *   <tr><td>EPSG:4269</td> <td>{@link GeodeticObjects#NAD83  NAD83}</td>  <td>Geographic</td> <td>North American Datum 1983</td></tr>
      *   <tr><td>EPSG:4322</td> <td>{@link GeodeticObjects#WGS72  WGS72}</td>  <td>Geographic</td> <td>World Geodetic System 1972</td></tr>
      *   <tr><td>EPSG:4326</td> <td>{@link GeodeticObjects#WGS84  WGS84}</td>  <td>Geographic</td> <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>CRS:27</td>    <td>{@link GeodeticObjects#NAD27  NAD27}</td>  <td>Geographic</td> <td>NAD 27 with (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
-     *   <tr><td>CRS:83</td>    <td>{@link GeodeticObjects#NAD83  NAD83}</td>  <td>Geographic</td> <td>NAD 83 with (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
-     *   <tr><td>CRS:84</td>    <td>{@link GeodeticObjects#WGS84  WGS84}</td>  <td>Geographic</td> <td>WGS 84 with (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>EPSG:5714</td> <td>{@link GeodeticObjects.Vertical#MSL_HEIGHT MSL_HEIGHT}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
+     *   <tr><td>EPSG:5715</td> <td>{@link GeodeticObjects.Vertical#MSL_DEPTH  MSL_DEPTH}</td>  <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
      * </table></blockquote>
      *
      * This method accepts also the URN and URL syntax.
@@ -120,9 +122,16 @@ public final class CRS extends Static {
                 }
             } else if (authority.equalsIgnoreCase("EPSG")) {
                 final int n = Integer.parseInt(value);
-                for (final GeodeticObjects candidate : GeodeticObjects.values()) {
-                    if (candidate.geographic == n) {
-                        return candidate.geographic();
+                if (n != 0) { // 0 stands for "no EPSG code" in GeodeticObjects.Vertical
+                    for (final GeodeticObjects candidate : GeodeticObjects.values()) {
+                        if (candidate.geographic == n) {
+                            return candidate.geographic();
+                        }
+                    }
+                    for (final GeodeticObjects.Vertical candidate : GeodeticObjects.Vertical.values()) {
+                        if (candidate.crs == n) {
+                            return candidate.crs();
+                        }
                     }
                 }
             } else {
