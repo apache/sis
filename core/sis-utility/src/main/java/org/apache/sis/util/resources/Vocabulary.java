@@ -155,6 +155,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Geoidal = 19;
 
         /**
+         * Height
+         */
+        public static final short Height = 69;
+
+        /**
          * Identifier
          */
         public static final short Identifier = 20;
@@ -315,9 +320,19 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short StandardDeviation = 51;
 
         /**
+         * Temporal
+         */
+        public static final short Temporal = 66;
+
+        /**
          * Temporary files
          */
         public static final short TemporaryFiles = 52;
+
+        /**
+         * Time
+         */
+        public static final short Time = 67;
 
         /**
          * {0} time
@@ -378,6 +393,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Versions
          */
         public static final short Versions = 63;
+
+        /**
+         * Vertical
+         */
+        public static final short Vertical = 68;
 
         /**
          * World

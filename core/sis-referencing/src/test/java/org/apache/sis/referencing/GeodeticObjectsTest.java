@@ -79,7 +79,8 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
     @Test
     public void testVertical() {
         assertEquals(VerticalDatumType. BAROMETRIC,    type(GeodeticObjects.Vertical.BAROMETRIC));
-        assertEquals(VerticalDatumType. GEOIDAL,       type(GeodeticObjects.Vertical.GEOIDAL));
+        assertEquals(VerticalDatumType. GEOIDAL,       type(GeodeticObjects.Vertical.MSL_HEIGHT));
+        assertEquals(VerticalDatumType. GEOIDAL,       type(GeodeticObjects.Vertical.MSL_DEPTH));
         assertEquals(VerticalDatumTypes.ELLIPSOIDAL,   type(GeodeticObjects.Vertical.ELLIPSOIDAL));
         assertEquals(VerticalDatumType. OTHER_SURFACE, type(GeodeticObjects.Vertical.OTHER_SURFACE));
     }

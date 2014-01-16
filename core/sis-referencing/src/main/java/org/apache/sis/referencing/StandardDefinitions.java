@@ -25,19 +25,25 @@ import javax.measure.quantity.Length;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.datum.DefaultVerticalDatum;
+import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 
@@ -174,6 +180,41 @@ final class StandardDefinitions {
     }
 
     /**
+     * Creates a vertical CRS from hard-coded values for the given code.
+     *
+     * @param  code  The EPSG code.
+     * @param  datum The vertical datum.
+     * @return The vertical CRS for the given code.
+     */
+    static VerticalCRS createVerticalCRS(final short code, final VerticalDatum datum) {
+        final String name, alias, cs;
+        final short c, axis;
+        switch (code) {
+            case 5714: name = "MSL height"; alias = "mean sea level height"; cs = "Vertical CS. Axis: height (H)."; c = 6499; axis = 114; break;
+            case 5715: name = "MSL depth";  alias = "mean sea level depth";  cs = "Vertical CS. Axis: depth (D).";  c = 6498; axis = 113; break;
+            default:   throw new AssertionError(code);
+        }
+        return new DefaultVerticalCRS(properties(code, name, alias), datum,
+                new DefaultVerticalCS(properties(c, cs, null), createAxis(axis)));
+    }
+
+    /**
+     * Creates a vertical datum from hard-coded values for the given code.
+     *
+     * @param  code The EPSG code.
+     * @return The vertical datum for the given code.
+     */
+    static VerticalDatum createVerticalDatum(final short code) {
+        final String name;
+        final String alias;
+        switch (code) {
+            case 5100: name = "Mean Sea Level"; alias = "MSL"; break;
+            default:   throw new AssertionError(code);
+        }
+        return new DefaultVerticalDatum(properties(code, name, alias), VerticalDatumType.GEOIDAL);
+    }
+
+    /**
      * Creates a coordinate system from hard-coded values for the given code.
      * The coordinate system names used by this method contains only the first
      * part of the names declared in the EPSG database.
@@ -208,12 +249,12 @@ final class StandardDefinitions {
     private static CoordinateSystemAxis createAxis(final short code) {
         final String name, abrv;
         final Unit<?> unit;
-        final double min, max;
-        final RangeMeaning rm;
+        double min = Double.NEGATIVE_INFINITY;
+        double max = Double.POSITIVE_INFINITY;
+        RangeMeaning rm = null;
         final AxisDirection dir;
         switch (code) {
-            case 106:
-            case 108:  name = "Geodetic latitude";
+            case 106:  name = "Geodetic latitude";
                        abrv = "φ";
                        unit = NonSI.DEGREE_ANGLE;
                        dir  = AxisDirection.NORTH;
@@ -221,8 +262,7 @@ final class StandardDefinitions {
                        max  = Latitude.MAX_VALUE;
                        rm   = RangeMeaning.EXACT;
                        break;
-            case 107:
-            case 109:  name = "Geodetic longitude";
+            case 107:  name = "Geodetic longitude";
                        abrv = "λ";
                        unit = NonSI.DEGREE_ANGLE;
                        dir  = AxisDirection.EAST;
@@ -230,13 +270,20 @@ final class StandardDefinitions {
                        max  = Longitude.MAX_VALUE;
                        rm   = RangeMeaning.WRAPAROUND;
                        break;
-            case 110:  name = "llipsoidal height ";
+            case 110:  name = "Ellipsoidal height";
                        abrv = "h";
                        unit = SI.METRE;
                        dir  = AxisDirection.UP;
-                       min  = Double.NEGATIVE_INFINITY;
-                       max  = Double.POSITIVE_INFINITY;
-                       rm   = null;
+                       break;
+            case 114:  name = "Gravity-related height";
+                       abrv = "H";
+                       unit = SI.METRE;
+                       dir  = AxisDirection.UP;
+                       break;
+            case 113:  name = "Depth";
+                       abrv = "D";
+                       unit = SI.METRE;
+                       dir  = AxisDirection.DOWN;
                        break;
             default:   throw new AssertionError(code);
         }

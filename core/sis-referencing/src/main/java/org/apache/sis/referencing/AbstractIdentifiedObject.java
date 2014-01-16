@@ -330,6 +330,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is is an instance of
+     *       {@link org.opengis.referencing.cs.CoordinateReferenceSystem},
+     *       {@link org.opengis.referencing.cs.CoordinateSystem},
+     *       {@link org.opengis.referencing.cs.CoordinateSystemAxis},
      *       {@link org.opengis.referencing.datum.Datum},
      *       {@link org.opengis.referencing.datum.Ellipsoid} or
      *       {@link org.opengis.referencing.datum.PrimeMeridian},
