@@ -320,21 +320,23 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         if (crs == null) {
             crs = this;
             boolean changed = false;
-            final CoordinateReferenceSystem[] components = new CoordinateReferenceSystem[singles.size()];
-            for (int i=0; i<components.length; i++) {
-                CoordinateReferenceSystem component = singles.get(i);
+            final List<? extends CoordinateReferenceSystem> components =
+                    (convention != AxesConvention.NORMALIZED) ? this.components : singles;
+            final CoordinateReferenceSystem[] newComponents = new CoordinateReferenceSystem[components.size()];
+            for (int i=0; i<newComponents.length; i++) {
+                CoordinateReferenceSystem component = components.get(i);
                 AbstractCRS m = castOrCopy(component);
                 if (m != (m = m.forConvention(convention))) {
                     component = m;
                     changed = true;
                 }
-                components[i] = component;
+                newComponents[i] = component;
             }
             if (changed) {
                 if (convention == AxesConvention.NORMALIZED) {
-                    Arrays.sort(components, SubTypes.BY_TYPE); // This array typically has less than 4 elements.
+                    Arrays.sort(newComponents, SubTypes.BY_TYPE); // This array typically has less than 4 elements.
                 }
-                crs = new DefaultCompoundCRS(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), components);
+                crs = new DefaultCompoundCRS(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), newComponents);
             }
             derived.put(convention, crs);
         }

@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.util.FactoryException;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -45,21 +46,33 @@ public final strictfp class CRSTest extends TestCase {
     }
 
     /**
-     * Tests {@link CRS#forCode(String)}.
+     * Tests {@link CRS#forCode(String)} with EPSG codes.
      *
      * @throws FactoryException If a CRS can not be constructed.
      */
     @Test
-    public void testForCode() throws FactoryException {
-        verifyForCode(GeodeticObjects.WGS84 .normalizedGeographic(), "CRS:84");
-        verifyForCode(GeodeticObjects.WGS84 .geographic(),           "EPSG:4326");
-        verifyForCode(GeodeticObjects.WGS84 .geographic(),           "urn:ogc:def:crs:EPSG::4326");
-        verifyForCode(GeodeticObjects.WGS84 .geographic(),           "http://www.opengis.net/gml/srs/epsg.xml#4326");
-        verifyForCode(GeodeticObjects.WGS72 .geographic(),           "EPSG:4322");
-        verifyForCode(GeodeticObjects.SPHERE.geographic(),           "EPSG:4047");
-        verifyForCode(GeodeticObjects.NAD83 .geographic(),           "EPSG:4269");
-        verifyForCode(GeodeticObjects.NAD27 .geographic(),           "EPSG:4267");
-        verifyForCode(GeodeticObjects.ETRS89.geographic(),           "EPSG:4258");
-        verifyForCode(GeodeticObjects.ED50  .geographic(),           "EPSG:4230");
+    public void testForEpsgCode() throws FactoryException {
+        verifyForCode(GeodeticObjects.WGS84 .geographic(), "EPSG:4326");
+        verifyForCode(GeodeticObjects.WGS84 .geographic(), "urn:ogc:def:crs:EPSG::4326");
+        verifyForCode(GeodeticObjects.WGS84 .geographic(), "http://www.opengis.net/gml/srs/epsg.xml#4326");
+        verifyForCode(GeodeticObjects.WGS72 .geographic(), "EPSG:4322");
+        verifyForCode(GeodeticObjects.SPHERE.geographic(), "EPSG:4047");
+        verifyForCode(GeodeticObjects.NAD83 .geographic(), "EPSG:4269");
+        verifyForCode(GeodeticObjects.NAD27 .geographic(), "EPSG:4267");
+        verifyForCode(GeodeticObjects.ETRS89.geographic(), "EPSG:4258");
+        verifyForCode(GeodeticObjects.ED50  .geographic(), "EPSG:4230");
+    }
+
+    /**
+     * Tests {@link CRS#forCode(String)} with CRS codes.
+     *
+     * @throws FactoryException If a CRS can not be constructed.
+     */
+    @Test
+    @DependsOnMethod("testForEpsgCode")
+    public void testForCrsCode() throws FactoryException {
+        verifyForCode(GeodeticObjects.WGS84.normalizedGeographic(), "CRS:84");
+        verifyForCode(GeodeticObjects.NAD83.normalizedGeographic(), "CRS:83");
+        verifyForCode(GeodeticObjects.NAD27.normalizedGeographic(), "CRS:27");
     }
 }
