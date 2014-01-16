@@ -42,7 +42,10 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.logging.Logging;
 
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
@@ -71,17 +74,17 @@ import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
  * <blockquote><table class="sis">
  *   <tr><th>Name or alias</th>                                     <th>Object type</th>           <th>Enumeration value</th></tr>
  *   <tr><td>Clarke 1866</td>                                       <td>Ellipsoid</td>             <td>{@link #NAD27}</td></tr>
- *   <tr><td>European Datum 1950 (ED50)</td>                        <td>Datum</td>                 <td>{@link #ED50}</td></tr>
- *   <tr><td>European Terrestrial Reference Frame (ETRS) 1989</td>  <td>Datum</td>                 <td>{@link #ETRS89}</td></tr>
- *   <tr><td>European Terrestrial Reference System (ETRF) 1989</td> <td>Datum</td>                 <td>{@link #ETRS89}</td></tr>
+ *   <tr><td>European Datum 1950 (ED50)</td>                        <td>CRS, datum</td>            <td>{@link #ED50}</td></tr>
+ *   <tr><td>European Terrestrial Reference Frame (ETRS) 1989</td>  <td>CRS, datum</td>            <td>{@link #ETRS89}</td></tr>
+ *   <tr><td>European Terrestrial Reference System (ETRF) 1989</td> <td>CRS, datum</td>            <td>{@link #ETRS89}</td></tr>
  *   <tr><td>Greenwich</td>                                         <td>Prime meridian</td>        <td>{@link #WGS84}, {@link #WGS72}, {@link #ETRS89}, {@link #NAD83}, {@link #NAD27}, {@link #ED50}, {@link #SPHERE}</td></tr>
  *   <tr><td>GRS 1980</td>                                          <td>Ellipsoid</td>             <td>{@link #ETRS89}, {@link #NAD83}</td></tr>
  *   <tr><td>GRS 1980 Authalic Sphere</td>                          <td>Ellipsoid</td>             <td>{@link #SPHERE}</td></tr>
  *   <tr><td>Hayford 1909</td>                                      <td>Ellipsoid</td>             <td>{@link #ED50}</td></tr>
  *   <tr><td>International 1924</td>                                <td>Ellipsoid</td>             <td>{@link #ED50}</td></tr>
  *   <tr><td>International 1979</td>                                <td>Ellipsoid</td>             <td>{@link #ETRS89}, {@link #NAD83}</td></tr>
- *   <tr><td>North American Datum 1927</td>                         <td>Datum</td>                 <td>{@link #NAD27}</td></tr>
- *   <tr><td>North American Datum 1983</td>                         <td>Datum</td>                 <td>{@link #NAD83}</td></tr>
+ *   <tr><td>North American Datum 1927</td>                         <td>CRS, datum</td>            <td>{@link #NAD27}</td></tr>
+ *   <tr><td>North American Datum 1983</td>                         <td>CRS, datum</td>            <td>{@link #NAD83}</td></tr>
  *   <tr><td>NWL 10D</td>                                           <td>Ellipsoid</td>             <td>{@link #WGS72}</td></tr>
  *   <tr><td>World Geodetic System (WGS) 1972</td>                  <td>CRS, datum, ellipsoid</td> <td>{@link #WGS72}</td></tr>
  *   <tr><td>World Geodetic System (WGS) 1984</td>                  <td>CRS, datum, ellipsoid</td> <td>{@link #WGS84}</td></tr>
@@ -250,7 +253,7 @@ public enum GeodeticObjects {
      *
      * @see #normalizedGeographic()
      */
-    private transient volatile GeographicCRS normalized;
+    private transient volatile GeographicCRS normalizedGeographic;
 
     /**
      * Creates a new constant for the given EPSG or SIS codes.
@@ -270,14 +273,21 @@ public enum GeodeticObjects {
      * This will clear the cache, since the EPSG database may have changed.
      */
     static {
-        new StandardObjects(GeodeticObjects.class); // Constructor registers itself.
+        SystemListener.add(new SystemListener(Modules.REFERENCING) {
+            @Override protected void classpathChanged() {
+                for (final GeodeticObjects e : values()) {
+                    e.clear();
+                }
+            }
+        });
     }
 
     /**
-     * Invoked by {@link StandardObjects#classpathChanged()} when the cache needs to be cleared.
+     * Invoked by when the cache needs to be cleared after a classpath change.
      */
     synchronized void clear() {
         cached = null;
+        normalizedGeographic = null;
     }
 
     /**
@@ -291,8 +301,8 @@ public enum GeodeticObjects {
      *   <tr><th>Name or alias</th>            <th>Enum</th>            <th>Code</th></tr>
      *   <tr><td>ED50</td>                     <td>{@link #ED50}</td>   <td></td></tr>
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td></td></tr>
-     *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td></td></tr>
-     *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td></td></tr>
+     *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td>CRS:27</td></tr>
+     *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td>CRS:83</td></tr>
      *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td></td></tr>
      *   <tr><td>WGS 72</td>                   <td>{@link #WGS72}</td>  <td></td></tr>
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>CRS:84</td></tr>
@@ -300,18 +310,19 @@ public enum GeodeticObjects {
      *
      * @return The geographic CRS with non-standard (<var>longitude</var>, <var>latitude</var>) axis order.
      *
+     * @see CRS#forCode(String)
      * @see DefaultGeographicCRS#forConvention(AxesConvention)
      * @see AxesConvention#NORMALIZED
      */
     public GeographicCRS normalizedGeographic() {
-        GeographicCRS object = normalized;
+        GeographicCRS object = normalizedGeographic;
         if (object == null) {
             DefaultGeographicCRS crs = DefaultGeographicCRS.castOrCopy(geographic());
             crs = crs.forConvention(AxesConvention.RIGHT_HANDED); // Equivalent to NORMALIZED in our cases, but faster.
             synchronized (this) {
-                object = normalized;
+                object = normalizedGeographic;
                 if (object == null) {
-                    normalized = object = crs;
+                    normalizedGeographic = object = crs;
                 }
             }
         }
@@ -338,8 +349,8 @@ public enum GeodeticObjects {
      *
      * @return The geographic CRS with standard (<var>latitude</var>, <var>longitude</var>) axis order.
      *
+     * @see CRS#forCode(String)
      * @see org.apache.sis.referencing.crs.DefaultGeographicCRS
-     * @see CRSAuthorityFactory#createGeographicCRS(String)
      */
     public GeographicCRS geographic() {
         GeographicCRS object = geographic(cached);
@@ -347,12 +358,12 @@ public enum GeodeticObjects {
             synchronized (this) {
                 object = geographic(cached);
                 if (object == null) {
-                    final CRSAuthorityFactory factory = StandardObjects.crsFactory();
+                    final CRSAuthorityFactory factory = crsFactory();
                     if (factory != null) try {
                         cached = object = factory.createGeographicCRS(String.valueOf(geographic));
                         return object;
                     } catch (FactoryException e) {
-                        StandardObjects.failure(this, "geographic", e);
+                        failure(this, "geographic", e);
                     }
                     /*
                      * All constants defined in this enumeration use the same coordinate system, EPSG:6422.
@@ -392,7 +403,6 @@ public enum GeodeticObjects {
      * @return The geodetic datum associated to this constant.
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
-     * @see DatumAuthorityFactory#createGeodeticDatum(String)
      */
     public GeodeticDatum datum() {
         GeodeticDatum object = datum(cached);
@@ -400,12 +410,12 @@ public enum GeodeticObjects {
             synchronized (this) {
                 object = datum(cached);
                 if (object == null) {
-                    final DatumAuthorityFactory factory = StandardObjects.datumFactory();
+                    final DatumAuthorityFactory factory = datumFactory();
                     if (factory != null) try {
                         cached = object = factory.createGeodeticDatum(String.valueOf(datum));
                         return object;
                     } catch (FactoryException e) {
-                        StandardObjects.failure(this, "datum", e);
+                        failure(this, "datum", e);
                     }
                     object = StandardDefinitions.createGeodeticDatum(datum, ellipsoid(), primeMeridian());
                     cached = object;
@@ -433,7 +443,6 @@ public enum GeodeticObjects {
      * @return The ellipsoid associated to this constant.
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid
-     * @see DatumAuthorityFactory#createEllipsoid(String)
      */
     public Ellipsoid ellipsoid() {
         Ellipsoid object = ellipsoid(cached);
@@ -444,12 +453,12 @@ public enum GeodeticObjects {
                     if (this == NAD83) {
                         object = ETRS89.ellipsoid(); // Share the same instance for NAD83 and ETRS89.
                     } else {
-                        final DatumAuthorityFactory factory = StandardObjects.datumFactory();
+                        final DatumAuthorityFactory factory = datumFactory();
                         if (factory != null) try {
                             cached = object = factory.createEllipsoid(String.valueOf(ellipsoid));
                             return object;
                         } catch (FactoryException e) {
-                            StandardObjects.failure(this, "ellipsoid", e);
+                            failure(this, "ellipsoid", e);
                         }
                         object = StandardDefinitions.createEllipsoid(ellipsoid);
                     }
@@ -473,7 +482,6 @@ public enum GeodeticObjects {
      * @return The prime meridian associated to this constant.
      *
      * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
-     * @see DatumAuthorityFactory#createPrimeMeridian(String)
      */
     public PrimeMeridian primeMeridian() {
         PrimeMeridian object = primeMeridian(cached);
@@ -484,12 +492,12 @@ public enum GeodeticObjects {
                     if (this != WGS84) {
                         object = WGS84.primeMeridian(); // Share the same instance for all constants.
                     } else {
-                        final DatumAuthorityFactory factory = StandardObjects.datumFactory();
+                        final DatumAuthorityFactory factory = datumFactory();
                         if (factory != null) try {
                             cached = object = factory.createPrimeMeridian(StandardDefinitions.GREENWICH);
                             return object;
                         } catch (FactoryException e) {
-                            StandardObjects.failure(this, "primeMeridian", e);
+                            failure(this, "primeMeridian", e);
                         }
                         object = StandardDefinitions.primeMeridian();
                     }
@@ -634,6 +642,27 @@ public enum GeodeticObjects {
         }
 
         /**
+         * Registers a listeners to be invoked when the classpath changed.
+         * This will clear the cache, since the factories may have changed.
+         */
+        static {
+            SystemListener.add(new SystemListener(Modules.REFERENCING) {
+                @Override protected void classpathChanged() {
+                    for (final Vertical e : values()) {
+                        e.clear();
+                    }
+                }
+            });
+        }
+
+        /**
+         * Invoked by when the cache needs to be cleared after a classpath change.
+         */
+        synchronized void clear() {
+            cached = null;
+        }
+
+        /**
          * Returns the datum associated to this vertical object.
          * The following table summarizes the datum known to this class,
          * together with an enumeration value that can be used for fetching that datum:
@@ -649,7 +678,6 @@ public enum GeodeticObjects {
          * @return The datum associated to this constant.
          *
          * @see DefaultVerticalDatum
-         * @see DatumAuthorityFactory#createVerticalDatum(String)
          */
         public VerticalDatum datum() {
             VerticalDatum object = datum(cached);
@@ -780,6 +808,27 @@ public enum GeodeticObjects {
         }
 
         /**
+         * Registers a listeners to be invoked when the classpath changed.
+         * This will clear the cache, since the factories may have changed.
+         */
+        static {
+            SystemListener.add(new SystemListener(Modules.REFERENCING) {
+                @Override protected void classpathChanged() {
+                    for (final Temporal e : values()) {
+                        e.clear();
+                    }
+                }
+            });
+        }
+
+        /**
+         * Invoked by when the cache needs to be cleared after a classpath change.
+         */
+        synchronized void clear() {
+            cached = null;
+        }
+
+        /**
          * Returns the datum associated to this temporal object.
          * The following table summarizes the datum known to this class,
          * together with an enumeration value that can be used for fetching that datum:
@@ -796,7 +845,6 @@ public enum GeodeticObjects {
          * @return The datum associated to this constant.
          *
          * @see DefaultTemporalDatum
-         * @see DatumAuthorityFactory#createTemporalDatum(String)
          */
         public TemporalDatum datum() {
             TemporalDatum object = datum(cached);
@@ -838,5 +886,29 @@ public enum GeodeticObjects {
             }
             return null;
         }
+    }
+
+    /**
+     * Returns the EPSG factory to use for creating CRS, or {@code null} if none.
+     * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
+     */
+    static CRSAuthorityFactory crsFactory() {
+        return null; // TODO
+    }
+
+    /**
+     * Returns the EPSG factory to use for creating datum, ellipsoids and prime meridians, or {@code null} if none.
+     * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
+     */
+    static DatumAuthorityFactory datumFactory() {
+        return null; // TODO
+    }
+
+    /**
+     * Invoked when a factory failed to create an object.
+     * After invoking this method, then the caller will fallback on hard-coded values.
+     */
+    static void failure(final Object caller, final String method, final FactoryException e) {
+        Logging.unexpectedException(caller.getClass(), method, e);
     }
 }
