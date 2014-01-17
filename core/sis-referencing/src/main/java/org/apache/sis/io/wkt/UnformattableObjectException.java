@@ -16,6 +16,8 @@
  */
 package org.apache.sis.io.wkt;
 
+import org.opengis.referencing.IdentifiedObject;
+
 
 /**
  * Thrown by {@link FormattableObject#toWKT()} when an object can not be formatted as WKT.
@@ -33,7 +35,7 @@ package org.apache.sis.io.wkt;
  * @version 0.4
  * @module
  *
- * @see Formatter#setInvalidWKT(String)
+ * @see Formatter#setInvalidWKT(IdentifiedObject)
  */
 public class UnformattableObjectException extends UnsupportedOperationException {
     /**

@@ -130,8 +130,8 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
 
     /**
      * Tests the {@link AbstractIdentifiedObject#AbstractIdentifiedObject(Map)} constructor
-     * with more than one identifier. This method tries a different identifier implementation
-     * than the {@link #testCreateWithSingleIdentifier()} one.
+     * with more than one identifier. This method also tries a different identifier implementation
+     * than the one used by {@link #testWithSingleIdentifier()}.
      */
     @Test
     @DependsOnMethod("testWithSingleIdentifier")

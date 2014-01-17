@@ -184,7 +184,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Constructs a new envelope with the same data than the specified geographic bounding box.
-     * The coordinate reference system is set to {@code "CRS:84"}.
+     * The coordinate reference system is set to the
+     * {@linkplain org.apache.sis.referencing.GeodeticObjects#defaultGeographic() default geographic CRS}.
+     * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
      * @param box The bounding box to copy.
      */
