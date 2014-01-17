@@ -81,19 +81,20 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
     @Test
     public void testVertical() {
         for (final GeodeticObjects.Vertical e : GeodeticObjects.Vertical.values()) {
-            final VerticalDatumType expectedType;
+            final VerticalDatumType datumType;
+            final String axisName, datumName;
             switch (e) {
-                case MSL_DEPTH:     // Fall through
-                case MSL_HEIGHT:    expectedType = VerticalDatumType. GEOIDAL;       break;
-                case BAROMETRIC:    expectedType = VerticalDatumType. BAROMETRIC;    break;
-                case ELLIPSOIDAL:   expectedType = VerticalDatumTypes.ELLIPSOIDAL;   break;
-                case OTHER_SURFACE: expectedType = VerticalDatumType. OTHER_SURFACE; break;
+                case BAROMETRIC:     axisName = "Barometric altitude";    datumName = "Constant pressure surface"; datumType = VerticalDatumType. BAROMETRIC;    break;
+                case MEAN_SEA_LEVEL: axisName = "Gravity-related height"; datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
+                case DEPTH:          axisName = "Depth";                  datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
+                case ELLIPSOIDAL:    axisName = "Ellipsoidal height";     datumName = "Ellipsoid";                 datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
+                case OTHER_SURFACE:  axisName = "Height";                 datumName = "Other surface";             datumType = VerticalDatumType. OTHER_SURFACE; break;
                 default: throw new AssertionError(e);
             }
             final String        name  = e.name();
             final VerticalDatum datum = e.datum();
             final VerticalCRS   crs   = e.crs();
-            if (!crs.getCoordinateSystem().getAxis(0).getName().getCode().equals("Height")) {
+            if (e.isEPSG) {
                 /*
                  * BAROMETRIC, ELLIPSOIDAL and OTHER_SURFACE uses an axis named "Height", which is not
                  * a valid axis name according ISO 19111. We skip the validation test for those enums.
@@ -102,7 +103,9 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
             }
             assertSame  (name, datum,          e.datum()); // Datum before CRS creation.
             assertSame  (name, crs.getDatum(), e.datum()); // Datum after CRS creation.
-            assertEquals(name, expectedType, datum.getVerticalDatumType());
+            assertEquals(name, datumName, datum.getName().getCode());
+            assertEquals(name, datumType, datum.getVerticalDatumType());
+            assertEquals(name, axisName,  crs.getCoordinateSystem().getAxis(0).getName().getCode());
         }
     }
 

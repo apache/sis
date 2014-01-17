@@ -576,7 +576,7 @@ public enum GeodeticObjects {
      * above the Mean Sea Level (MSL):</p>
      *
      * {@preformat java
-     *   VerticalCRS crs = GeodeticObjects.Vertical.MSL_HEIGHT.crs();
+     *   VerticalCRS crs = GeodeticObjects.Vertical.MEAN_SEA_LEVEL.crs();
      * }
      *
      * Below is an alphabetical list of object names available in this enumeration:
@@ -585,15 +585,15 @@ public enum GeodeticObjects {
      *   <tr><th>Name or alias</th>             <th>Object type</th> <th>Enumeration value</th></tr>
      *   <tr><td>Barometric altitude</td>       <td>CRS, Datum</td>  <td>{@link #BAROMETRIC}</td></tr>
      *   <tr><td><s>Ellipsoidal height</s></td> <td>CRS, Datum</td>  <td><s>{@link #ELLIPSOIDAL}</s></td></tr>
-     *   <tr><td>Mean Sea Level</td>            <td>Datum</td>       <td>{@link #MSL_HEIGHT}</td></tr>
-     *   <tr><td>Mean Sea Level height</td>     <td>CRS</td>         <td>{@link #MSL_HEIGHT}</td></tr>
-     *   <tr><td>Mean Sea Level depth</td>      <td>CRS</td>         <td>{@link #MSL_DEPTH}</td></tr>
+     *   <tr><td>Mean Sea Level</td>            <td>Datum</td>       <td>{@link #MEAN_SEA_LEVEL}</td></tr>
+     *   <tr><td>Mean Sea Level depth</td>      <td>CRS</td>         <td>{@link #DEPTH}</td></tr>
+     *   <tr><td>Mean Sea Level height</td>     <td>CRS</td>         <td>{@link #MEAN_SEA_LEVEL}</td></tr>
      *   <tr><td>Other surface</td>             <td>CRS, Datum</td>  <td>{@link #OTHER_SURFACE}</td></tr>
      * </table></blockquote>
      *
      * {@note We do not provide a <code>GEOIDAL</code> value because its definition depends on the realization epoch.
-     *        For example EGM84, EGM96 and EGM2008 are applications of three different geoid models on the WGS 84
-     *        ellipsoid. The <code>MSL_HEIGHT</code> value can be used instead as an approximation of geoidal heights.}
+     * For example EGM84, EGM96 and EGM2008 are applications of three different geoid models on the WGS 84 ellipsoid.
+     * The <code>MEAN_SEA_LEVEL</code> value can be used instead as an approximation of geoidal heights.}
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.4
@@ -603,11 +603,12 @@ public enum GeodeticObjects {
     public static enum Vertical {
         /**
          * Height measured by atmospheric pressure in hectopascals (hPa).
+         * Hectopascals are the units of measurement used by the worldwide meteorological community.
          * The datum is not specific to any location or epoch.
          *
          * @see VerticalDatumType#BAROMETRIC
          */
-        BAROMETRIC(Vocabulary.Keys.BarometricAltitude, (short) 0, (short) 0),
+        BAROMETRIC(false, Vocabulary.Keys.BarometricAltitude, Vocabulary.Keys.ConstantPressureSurface),
 
         /**
          * Height measured above the Mean Sea Level (MSL) in metres. Can be used as an approximation of geoidal heights
@@ -616,14 +617,14 @@ public enum GeodeticObjects {
          * <blockquote><table class="compact" style="text-align:left">
          *   <tr><th>EPSG identifiers:</th>         <td>5714 &nbsp;(<i>datum:</i> 5100)</td></tr>
          *   <tr><th>Primary names:</th>            <td>"MSL height" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
-         *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level height" &nbp;(<i>datum:</i> "MSL")</td></tr>
+         *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level height" &nbsp;(<i>datum:</i> "MSL")</td></tr>
          *   <tr><th>Direction:</th>                <td>{@link AxisDirection#UP}</td></tr>
          *   <tr><th>Unit:</th>                     <td>{@link SI#METRE}</td></tr>
          * </table></blockquote>
          *
          * @see VerticalDatumType#GEOIDAL
          */
-        MSL_HEIGHT(Vocabulary.Keys.Geoidal, (short) 5714, (short) 5100),
+        MEAN_SEA_LEVEL(true, (short) 5714, (short) 5100),
 
         /**
          * Depth measured below the Mean Sea Level (MSL) in metres.
@@ -631,14 +632,14 @@ public enum GeodeticObjects {
          * <blockquote><table class="compact" style="text-align:left">
          *   <tr><th>EPSG identifiers:</th>         <td>5715 &nbsp;(<i>datum:</i> 5100)</td></tr>
          *   <tr><th>Primary names:</th>            <td>"MSL depth" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
-         *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level depth" &nbp;(<i>datum:</i> "MSL")</td></tr>
+         *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level depth" &nbsp;(<i>datum:</i> "MSL")</td></tr>
          *   <tr><th>Direction:</th>                <td>{@link AxisDirection#DOWN}</td></tr>
          *   <tr><th>Unit:</th>                     <td>{@link SI#METRE}</td></tr>
          * </table></blockquote>
          *
          * @see VerticalDatumType#GEOIDAL
          */
-        MSL_DEPTH(Vocabulary.Keys.Geoidal, (short) 5715, (short) 5100),
+        DEPTH(true, (short) 5715, (short) 5100),
 
         /**
          * Height measured along the normal to the ellipsoid used in the definition of horizontal datum.
@@ -651,7 +652,7 @@ public enum GeodeticObjects {
          * because it is sometime useful to temporarily express ellipsoidal heights independently from other
          * ordinate values.</p>
          */
-        ELLIPSOIDAL(Vocabulary.Keys.Ellipsoidal, (short) 0, (short) 0),
+        ELLIPSOIDAL(false, Vocabulary.Keys.EllipsoidalHeight, Vocabulary.Keys.Ellipsoid),
 
         /**
          * Height measured above other kind of surface, for example a geological feature.
@@ -659,20 +660,21 @@ public enum GeodeticObjects {
          *
          * @see VerticalDatumType#OTHER_SURFACE
          */
-        OTHER_SURFACE(Vocabulary.Keys.OtherSurface, (short) 0, (short) 0);
+        OTHER_SURFACE(false, Vocabulary.Keys.Height, Vocabulary.Keys.OtherSurface);
 
         /**
-         * The resource keys for the name as one of the {@code Vocabulary.Keys} constants.
+         * {@code true} if {@link #crs} and {@link #datum} are EPSG codes, or {@code false} if
+         * they are resource keys for the name as one of the {@code Vocabulary.Keys} constants.
          */
-        private final short key;
+        final boolean isEPSG;
 
         /**
-         * The EPSG code for the CRS, or 0 if none.
+         * The EPSG code for the CRS or the resource keys, depending on {@link #isEPSG} value.
          */
         final short crs;
 
         /**
-         * The EPSG code for the datum, or 0 if none.
+         * The EPSG code for the datum or the resource keys, depending on {@link #isEPSG} value.
          */
         final short datum;
 
@@ -690,10 +692,10 @@ public enum GeodeticObjects {
          *        early class initialization. In particular, we do not want early dependency to the SIS-specific
          *        <code>VerticalDatumTypes.ELLIPSOIDAL</code> constant.}
          */
-        private Vertical(final short name, final short crs, final short datum) {
-            this.key   = name;
-            this.crs   = crs;
-            this.datum = datum;
+        private Vertical(final boolean isEPSG, final short crs, final short datum) {
+            this.isEPSG = isEPSG;
+            this.crs    = crs;
+            this.datum  = datum;
         }
 
         /**
@@ -726,8 +728,8 @@ public enum GeodeticObjects {
          *   <tr><th>Name or alias</th>             <th>Enum</th>                        <th>EPSG</th></tr>
          *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
          *   <tr><td><s>Ellipsoidal height</s></td> <td><s>{@link #ELLIPSOIDAL}</s></td> <td></td></tr>
-         *   <tr><td>Mean Sea Level height</td>     <td>{@link #MSL_HEIGHT}</td>         <td>5714</td></tr>
-         *   <tr><td>Mean Sea Level depth</td>      <td>{@link #MSL_DEPTH}</td>          <td>5715</td></tr>
+         *   <tr><td>Mean Sea Level depth</td>      <td>{@link #DEPTH}</td>              <td>5715</td></tr>
+         *   <tr><td>Mean Sea Level height</td>     <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5714</td></tr>
          *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
          * </table></blockquote>
          *
@@ -741,7 +743,7 @@ public enum GeodeticObjects {
                 synchronized (this) {
                     object = crs(cached);
                     if (object == null) {
-                        if (crs != 0) {
+                        if (isEPSG) {
                             final CRSAuthorityFactory factory = crsFactory();
                             if (factory != null) try {
                                 cached = object = factory.createVerticalCRS(String.valueOf(crs));
@@ -751,8 +753,8 @@ public enum GeodeticObjects {
                             }
                             object = StandardDefinitions.createVerticalCRS(crs, datum());
                         } else {
-                            final VerticalDatum datum = datum();
-                            object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(datum), datum, cs());
+                            final VerticalCS cs = cs();
+                            object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(cs), datum(), cs);
                         }
                         cached = object;
                     }
@@ -766,30 +768,20 @@ public enum GeodeticObjects {
          * This method does not cache the coordinate system.
          */
         private VerticalCS cs() {
-            final Map<String,?> cs, axis;
+            final Map<String,?> properties = properties(crs);
             final Unit<?> unit;
             switch (this) {
                 default: {
-                    // Share the coordinate system created for ellipsoidal height.
-                    return ELLIPSOIDAL.crs().getCoordinateSystem();
-                }
-                case ELLIPSOIDAL: {
-                    // Create all properties for a new coordinate system.
-                    cs   = properties(Vocabulary.Keys.Vertical);
-                    axis = properties(Vocabulary.Keys.Height);
                     unit = SI.METRE;
                     break;
                 }
                 case BAROMETRIC: {
-                    // Share the NamedIdentifier created for ellipsoidal height.
-                    final VerticalCS share = ELLIPSOIDAL.crs().getCoordinateSystem();
-                    cs   = IdentifiedObjects.getProperties(share);
-                    axis = IdentifiedObjects.getProperties(share.getAxis(0));
                     unit = SI.MetricPrefix.HECTO(SI.PASCAL);
                     break;
                 }
             }
-            return new DefaultVerticalCS(cs, new DefaultCoordinateSystemAxis(axis, "h", AxisDirection.UP, unit));
+            return new DefaultVerticalCS(properties,
+                    new DefaultCoordinateSystemAxis(properties, "h", AxisDirection.UP, unit));
         }
 
         /**
@@ -801,7 +793,7 @@ public enum GeodeticObjects {
          *   <tr><th>Name or alias</th>             <th>Enum</th>                        <th>EPSG</th></tr>
          *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
          *   <tr><td><s>Ellipsoidal height</s></td> <td><s>{@link #ELLIPSOIDAL}</s></td> <td></td></tr>
-         *   <tr><td>Mean Sea Level</td>            <td>{@link #MSL_HEIGHT}</td>         <td>5100</td></tr>
+         *   <tr><td>Mean Sea Level</td>            <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5100</td></tr>
          *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
          * </table></blockquote>
          *
@@ -815,7 +807,7 @@ public enum GeodeticObjects {
                 synchronized (this) {
                     object = datum(cached);
                     if (object == null) {
-                        if (datum != 0) {
+                        if (isEPSG) {
                             final DatumAuthorityFactory factory = datumFactory();
                             if (factory != null) try {
                                 cached = object = factory.createVerticalDatum(String.valueOf(datum));
@@ -825,7 +817,7 @@ public enum GeodeticObjects {
                             }
                             object = StandardDefinitions.createVerticalDatum(datum);
                         } else {
-                            object = new DefaultVerticalDatum(properties(key), VerticalDatumType.valueOf(name()));
+                            object = new DefaultVerticalDatum(properties(datum), VerticalDatumType.valueOf(name()));
                         }
                         cached = object;
                     }
