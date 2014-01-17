@@ -56,22 +56,22 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
          * (E,N) : legal axes for the usual projected CRS.
          */
         cs = new DefaultCartesianCS(properties,
-                CommonAxes.EASTING,
-                CommonAxes.NORTHING);
+                HardCodedAxes.EASTING,
+                HardCodedAxes.NORTHING);
         Validators.validate(cs);
         /*
          * (NE,SE) : same CS rotated by 45°
          */
         cs = new DefaultCartesianCS(properties,
-                CommonAxes.NORTH_EAST,
-                CommonAxes.SOUTH_EAST);
+                HardCodedAxes.NORTH_EAST,
+                HardCodedAxes.SOUTH_EAST);
         Validators.validate(cs);
         /*
          * (NE,h) : considered perpendicular.
          */
         cs = new DefaultCartesianCS(properties,
-                CommonAxes.NORTH_EAST,
-                CommonAxes.ALTITUDE);
+                HardCodedAxes.NORTH_EAST,
+                HardCodedAxes.ALTITUDE);
         Validators.validate(cs);
     }
 
@@ -86,8 +86,8 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
          */
         try {
             final DefaultCartesianCS cs = new DefaultCartesianCS(properties,
-                    CommonAxes.LONGITUDE,
-                    CommonAxes.LATITUDE);
+                    HardCodedAxes.LONGITUDE,
+                    HardCodedAxes.LATITUDE);
             fail("Angular units should not be accepted for " + cs);
         } catch (IllegalArgumentException e) {
             assertFalse(e.getMessage().isEmpty());
@@ -97,16 +97,16 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
          */
         try {
             final DefaultCartesianCS cs = new DefaultCartesianCS(properties,
-                    CommonAxes.SOUTHING,
-                    CommonAxes.NORTHING);
+                    HardCodedAxes.SOUTHING,
+                    HardCodedAxes.NORTHING);
             fail("Colinear units should not be accepted for " + cs);
         } catch (IllegalArgumentException e) {
             assertFalse(e.getMessage().isEmpty());
         }
         try {
             final DefaultCartesianCS cs = new DefaultCartesianCS(properties,
-                    CommonAxes.NORTH_EAST,
-                    CommonAxes.EASTING);
+                    HardCodedAxes.NORTH_EAST,
+                    HardCodedAxes.EASTING);
             fail("Non-perpendicular axis should not be accepted for " + cs);
         } catch (IllegalArgumentException e) {
             assertFalse(e.getMessage().isEmpty());

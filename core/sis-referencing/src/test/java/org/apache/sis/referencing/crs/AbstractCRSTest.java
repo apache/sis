@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.cs.CommonAxes;
+import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -46,10 +46,10 @@ public final strictfp class AbstractCRSTest extends TestCase {
         final AbstractCRS toTest, expected, actual;
         toTest   =  new AbstractCRS(singletonMap(NAME_KEY, "My CRS"),
                     new AbstractCS (singletonMap(NAME_KEY, "My strange CS"),
-                    CommonAxes.TIME, CommonAxes.ALTITUDE, CommonAxes.LATITUDE, CommonAxes.LONGITUDE));
+                    HardCodedAxes.TIME, HardCodedAxes.ALTITUDE, HardCodedAxes.LATITUDE, HardCodedAxes.LONGITUDE));
         expected =  new AbstractCRS(singletonMap(NAME_KEY, "My CRS"),
                     new AbstractCS (singletonMap(NAME_KEY, "Coordinate system: East (deg), North (deg), Up (m), Future (d)."),
-                    CommonAxes.LONGITUDE, CommonAxes.LATITUDE, CommonAxes.ALTITUDE, CommonAxes.TIME));
+                    HardCodedAxes.LONGITUDE, HardCodedAxes.LATITUDE, HardCodedAxes.ALTITUDE, HardCodedAxes.TIME));
         actual   =  toTest.forConvention(AxesConvention.RIGHT_HANDED);
 
         assertEquals("forConvention(RIGHT_HANDED)", expected, actual);

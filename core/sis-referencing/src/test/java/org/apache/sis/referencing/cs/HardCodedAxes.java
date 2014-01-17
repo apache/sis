@@ -16,11 +16,11 @@
  */
 package org.apache.sis.referencing.cs;
 
+import javax.measure.unit.Unit;
+import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
 
 import static java.util.Collections.singletonMap;
 
@@ -33,8 +33,7 @@ import static java.util.Collections.singletonMap;
  * @version 0.4
  * @module
  */
-@SuppressWarnings("serial")
-public final strictfp class CommonAxes {
+public final strictfp class HardCodedAxes {
     /**
      * Axis info for geodetic longitudes in a
      * {@linkplain org.opengis.referencing.crs.GeographicCRS geographic CRS}.
@@ -449,6 +448,6 @@ public final strictfp class CommonAxes {
     /**
      * Do not allow instantiation of this class.
      */
-    private CommonAxes() {
+    private HardCodedAxes() {
     }
 }

@@ -19,6 +19,8 @@ package org.apache.sis.test;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 import java.io.File;
 import java.net.URL;
 import java.net.URISyntaxException;
@@ -86,16 +88,31 @@ public abstract strictfp class TestSuite {
          * In some IDE configuration, all the ".class" files are in the same directory, in which case the
          * verification performed by this method become irrelevant.
          */
-        if (!new File(root.getParent(), ".." + File.separatorChar + "pom.xml").isFile()) {
+        File moduleDir = root;
+        for (int i=0; i<3; i++) {
+            moduleDir = moduleDir.getParentFile();
+            if (moduleDir == null) {
+                return;
+            }
+        }
+        if (!new File(moduleDir, "pom.xml").isFile()) {
             return;
         }
         /*
          * Now scan all "*Test.class" in the "target/org" directory and and sub-directories,
          * and fail on the first missing test file if any.
          */
-        final Set<Class<?>> tests = new HashSet<>(Arrays.asList(suite.getAnnotation(Suite.SuiteClasses.class).value()));
+        List<Class<?>> declared = Arrays.asList(suite.getAnnotation(Suite.SuiteClasses.class).value());
+        final Set<Class<?>> tests = new HashSet<>(declared);
+        if (tests.size() != declared.size()) {
+            declared = new ArrayList<>(declared);
+            assertTrue(declared.removeAll(tests));
+            fail("Classes defined twice in " + suite.getSimpleName() + ": " + declared);
+        }
         removeExistingTests(loader, root, new StringBuilder(120).append(root.getName()), tests);
-        assertTrue(tests.toString(), tests.isEmpty());
+        if (!tests.isEmpty()) {
+            fail("Classes not found. Are they defined in an other module? " + tests);
+        }
     }
 
     /**
@@ -124,7 +141,9 @@ public abstract strictfp class TestSuite {
                                 fail(e.toString());
                                 return;
                             }
-                            assertTrue(classname, tests.remove(test));
+                            if (!tests.remove(test)) {
+                                fail("Class " + classname + " is not specified in the test suite.");
+                            }
                         }
                     }
                     path.setLength(length);
