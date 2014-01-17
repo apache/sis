@@ -27,7 +27,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.util.Debug;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 
 import static javax.measure.unit.NonSI.DEGREE_ANGLE;
 
@@ -65,9 +64,7 @@ public enum Convention {
      *
      * <ul>
      *   <li>For {@link GeocentricCRS}, this convention uses the legacy set of Cartesian axes.
-     *     Those axes were defined in OGC 01-009 as <var>Other</var>,
-     *     <var>{@linkplain DefaultCoordinateSystemAxis#EASTING Easting}</var> and
-     *     <var>{@linkplain DefaultCoordinateSystemAxis#NORTHING Northing}</var>
+     *     Those axes were defined in OGC 01-009 as <var>Other</var>, <var>Easting</var> and <var>Northing</var>
      *     in metres, where the "<var>Other</var>" axis is toward prime meridian.</li>
      * </ul>
      *
@@ -83,10 +80,8 @@ public enum Convention {
      *
      * <ul>
      *   <li>For {@link GeocentricCRS}, this convention uses the new set of Cartesian axes.
-     *     Those axes are defined in ISO 19111 as
-     *     <var>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_X Geocentric X}</var>,
-     *     <var>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Y Geocentric Y}</var> and
-     *     <var>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Z Geocentric Z}</var> in metres.</li>
+     *     Those axes are defined in ISO 19111 as <var>Geocentric X</var>, <var>Geocentric Y</var>
+     *     and <var>Geocentric Z</var> in metres.</li>
      * </ul>
      *
      * @see Citations#EPSG
@@ -304,19 +299,11 @@ public enum Convention {
      * and the new (ISO 19111) directions. Those directions are:
      *
      * <table class="sis">
-     * <tr>
-     *   <th>ISO 19111</th>
-     *   <th>OGC 01-009</th>
-     * </tr><tr>
-     *   <td>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_X Geocentric X}</td>
-     *   <td>Other</td>
-     * </tr><tr>
-     *   <td>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Y Geocentric Y}</td>
-     *   <td>{@linkplain DefaultCoordinateSystemAxis#EASTING Easting}</td>
-     * </tr><tr>
-     *   <td>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Z Geocentric Z}</td>
-     *   <td>{@linkplain DefaultCoordinateSystemAxis#NORTHING Northing}</td>
-     * </tr></table>
+     *   <tr><th>ISO 19111</th>    <th>OGC 01-009</th></tr>
+     *   <tr><td>Geocentric X</td> <td>Other</td></tr>
+     *   <tr><td>Geocentric Y</td> <td>Easting</td></tr>
+     *   <tr><td>Geocentric Z</td> <td>Northing</td></tr>
+     * </table>
      *
      * @param  cs The coordinate system.
      * @return A coordinate system equivalent to the given one but with conform axis names,

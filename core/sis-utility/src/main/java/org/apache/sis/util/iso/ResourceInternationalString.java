@@ -69,7 +69,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * with the addition of type safety and optional arguments to be formatted in the localized string.
  * Those resource bundles provide {@code formatInternational(int, …)} static methods for creating
  * international strings with the same functionality than this {@code ResourceInternationalString}.
- * See {@link org.apache.sis.util.resources} for more information.
+ * See {@code org.apache.sis.util.resources} for more information.
  *
  * {@section Immutability and thread safety}
  * This class is immutable and thus inherently thread-safe if the bundles created by {@link #getBundle(Locale)}

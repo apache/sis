@@ -294,8 +294,7 @@ public final class Units extends Static {
      *
      * The above is exact for {@linkplain javax.measure.converter.LinearConverter linear converters},
      * which is the case of the vast majority of unit converters in use. It may not be exact for a
-     * few unusual converter like the one from {@link #SEXAGESIMAL_DMS} to decimal degrees for
-     * example.
+     * few unusual converter like the one from sexagesimal degrees to decimal degrees for example.
      *
      * @param  converter The converter for which we want the derivative at a given point.
      * @param  value The point at which to compute the derivative.

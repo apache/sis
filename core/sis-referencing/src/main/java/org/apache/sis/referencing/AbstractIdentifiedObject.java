@@ -138,7 +138,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The name for this object or code. Shall never be {@code null}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link Names#add(ReferenceIdentifier)}.</p>
+     * This field is modified only at unmarshalling time by {@link #addName(ReferenceIdentifier)}.</p>
      *
      * @see #getName()
      * @see #getNames()
@@ -151,7 +151,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * we may get both on unmarshalling.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link Names#add(ReferenceIdentifier)}.</p>
+     * This field is modified only at unmarshalling time by {@link #addName(ReferenceIdentifier)}.</p>
      */
     private Collection<GenericName> alias;
 

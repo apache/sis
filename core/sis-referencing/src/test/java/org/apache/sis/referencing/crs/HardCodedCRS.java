@@ -130,7 +130,7 @@ public final strictfp class HardCodedCRS {
      * By default, this CRS has no transformation path to any other CRS (i.e. a map using
      * this CS can't be reprojected to a geographic coordinate reference system for example).
      *
-     * <p>The {@code PixelInCell} attribute of the associated {@link ImageDatum}
+     * <p>The {@code PixelInCell} attribute of the associated {@code ImageDatum}
      * is set to {@link PixelInCell#CELL_CENTER}.</p>
      */
     public static final DefaultImageCRS IMAGE = new DefaultImageCRS(

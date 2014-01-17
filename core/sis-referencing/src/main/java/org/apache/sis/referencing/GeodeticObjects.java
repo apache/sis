@@ -300,6 +300,32 @@ public enum GeodeticObjects {
     }
 
     /**
+     * Returns the default two-dimensional normalized geographic CRS.
+     * The CRS returned by this method has the following properties:
+     *
+     * <ul>
+     *   <li>Axis order is (<var>longitude</var>, <var>latitude</var>).</li>
+     *   <li>Axis directions are ({@linkplain AxisDirection#EAST East}, {@linkplain AxisDirection#NORTH North}).</li>
+     *   <li>Angular unit is {@link NonSI#DEGREE_ANGLE}.</li>
+     *   <li>Prime meridian in Greenwich.</li>
+     * </ul>
+     *
+     * {@note This method makes no guarantees about the datum. The current default datum is WGS 84,
+     *        but this may change in future SIS versions if a WGS 84 replacement become in wide use.}
+     *
+     * <p>This default CRS is assigned to
+     * {@linkplain org.apache.sis.geometry.GeneralEnvelope#GeneralEnvelope(org.opengis.metadata.extent.GeographicBoundingBox)
+     * envelopes created from a geographic bounding box}.
+     * Since ISO 19115 {@link org.opengis.metadata.extent.GeographicBoundingBox} is approximative by definition,
+     * their datum can be arbitrary.</p>
+     *
+     * @return The default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.
+     */
+    public static GeographicCRS defaultGeographic() {
+        return WGS84.normalizedGeographic();
+    }
+
+    /**
      * Returns a two-dimensional geographic CRS with axes in the non-standard but computationally convenient
      * (<var>longitude</var>, <var>latitude</var>) order. The coordinate system axes will be oriented toward
      * {@linkplain AxisDirection#EAST East} and {@linkplain AxisDirection#NORTH North} respectively, with units
