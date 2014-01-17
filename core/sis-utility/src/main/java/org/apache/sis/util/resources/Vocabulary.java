@@ -105,6 +105,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Commands = 9;
 
         /**
+         * Constant pressure surface
+         */
+        public static final short ConstantPressureSurface = 19;
+
+        /**
          * Current date and time
          */
         public static final short CurrentDateTime = 10;
@@ -145,14 +150,14 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short DublinJulian = 17;
 
         /**
-         * Ellipsoidal
+         * Ellipsoid
          */
-        public static final short Ellipsoidal = 18;
+        public static final short Ellipsoid = 70;
 
         /**
-         * Geoidal
+         * Ellipsoidal height
          */
-        public static final short Geoidal = 19;
+        public static final short EllipsoidalHeight = 18;
 
         /**
          * Height

@@ -70,8 +70,8 @@ public final class CRS extends Static {
      *   <tr><td>EPSG:4269</td> <td>{@link GeodeticObjects#NAD83  NAD83}</td>  <td>Geographic</td> <td>North American Datum 1983</td></tr>
      *   <tr><td>EPSG:4322</td> <td>{@link GeodeticObjects#WGS72  WGS72}</td>  <td>Geographic</td> <td>World Geodetic System 1972</td></tr>
      *   <tr><td>EPSG:4326</td> <td>{@link GeodeticObjects#WGS84  WGS84}</td>  <td>Geographic</td> <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG:5714</td> <td>{@link GeodeticObjects.Vertical#MSL_HEIGHT MSL_HEIGHT}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
-     *   <tr><td>EPSG:5715</td> <td>{@link GeodeticObjects.Vertical#MSL_DEPTH  MSL_DEPTH}</td>  <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
+     *   <tr><td>EPSG:5715</td> <td>{@link GeodeticObjects.Vertical#DEPTH  DEPTH}</td> <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
+     *   <tr><td>EPSG:5714</td> <td>{@link GeodeticObjects.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
      * </table></blockquote>
      *
      * This method accepts also the URN and URL syntax.
@@ -122,16 +122,14 @@ public final class CRS extends Static {
                 }
             } else if (authority.equalsIgnoreCase("EPSG")) {
                 final int n = Integer.parseInt(value);
-                if (n != 0) { // 0 stands for "no EPSG code" in GeodeticObjects.Vertical
-                    for (final GeodeticObjects candidate : GeodeticObjects.values()) {
-                        if (candidate.geographic == n) {
-                            return candidate.geographic();
-                        }
+                for (final GeodeticObjects candidate : GeodeticObjects.values()) {
+                    if (candidate.geographic == n) {
+                        return candidate.geographic();
                     }
-                    for (final GeodeticObjects.Vertical candidate : GeodeticObjects.Vertical.values()) {
-                        if (candidate.crs == n) {
-                            return candidate.crs();
-                        }
+                }
+                for (final GeodeticObjects.Vertical candidate : GeodeticObjects.Vertical.values()) {
+                    if (candidate.isEPSG && candidate.crs == n) {
+                        return candidate.crs();
                     }
                 }
             } else {
