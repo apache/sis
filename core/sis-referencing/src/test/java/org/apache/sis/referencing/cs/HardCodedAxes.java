@@ -35,8 +35,7 @@ import static java.util.Collections.singletonMap;
  */
 public final strictfp class HardCodedAxes {
     /**
-     * Axis info for geodetic longitudes in a
-     * {@linkplain org.opengis.referencing.crs.GeographicCRS geographic CRS}.
+     * Axis for geodetic longitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
      * Increasing ordinates values go {@linkplain AxisDirection#EAST East}
      * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
      * The ISO 19111 name is "<cite>geodetic longitude</cite>" and the abbreviation is "λ" (lambda).
@@ -52,8 +51,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.EAST, NonSI.DEGREE_ANGLE, -180, 180, RangeMeaning.WRAPAROUND);
 
     /**
-     * Default axis info for geodetic latitudes in a
-     * {@linkplain org.opengis.referencing.crs.GeographicCRS geographic CRS}.
+     * Axis for geodetic latitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
      * Increasing ordinates values go {@linkplain AxisDirection#NORTH North}
      * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
      * The ISO 19111 name is "<cite>geodetic latitude</cite>" and the abbreviation is "φ" (phi).
@@ -69,46 +67,42 @@ public final strictfp class HardCodedAxes {
             AxisDirection.NORTH, NonSI.DEGREE_ANGLE, -90, 90, RangeMeaning.EXACT);
 
     /**
-     * Identical to {@link #LONGITUDE} except for the range of longitude values.
+     * Identical to {@link #GEODETIC_LONGITUDE} except for the range of longitude values.
      */
-    public static final DefaultCoordinateSystemAxis SHIFTED_LONGITUDE = create("Longitude", "λ",
+    public static final DefaultCoordinateSystemAxis SHIFTED_LONGITUDE = create("Geodetic longitude", "λ",
             AxisDirection.EAST, NonSI.DEGREE_ANGLE, 0, 360, RangeMeaning.WRAPAROUND);
 
     /**
-     * Default axis info for longitudes.
-     * Increasing ordinates values go {@linkplain AxisDirection#EAST East}
-     * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
-     * The abbreviation is "λ" (lambda).
-     *
-     * <p>This axis is usually part of a {@link #LONGITUDE}, {@link #LATITUDE}, {@link #ALTITUDE} set.</p>
+     * Axis for longitudes in gradian units.
+     * The axis name is {@code "Longitude"} (the {@code "Geodetic" } prefix is omitted for testing purpose).
+     * Increasing ordinates values go {@linkplain AxisDirection#EAST East} and units are {@link NonSI#GRADE}.
+     * The abbreviation is "λ" (lambda). The unit symbol is "gon".
      *
      * @see #GEODETIC_LONGITUDE
      * @see #SPHERICAL_LONGITUDE
      * @see #LATITUDE
      */
-    public static final DefaultCoordinateSystemAxis LONGITUDE = create("Longitude", "λ",
-            AxisDirection.EAST, NonSI.DEGREE_ANGLE, -180, 180, RangeMeaning.WRAPAROUND);
+    public static final DefaultCoordinateSystemAxis LONGITUDE_gon = create("Longitude", "λ",
+            AxisDirection.EAST, NonSI.GRADE, -200, 200, RangeMeaning.WRAPAROUND);
 
     /**
-     * Default axis info for latitudes.
-     * Increasing ordinates values go {@linkplain AxisDirection#NORTH North}
-     * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
-     * The abbreviation is "φ" (phi).
-     *
-     * <p>This axis is usually part of a {@link #LONGITUDE}, {@link #LATITUDE}, {@link #ALTITUDE} set.</p>
+     * Axis for latitudes in gradian units.
+     * The axis name is {@code "Latitude"} (the {@code "Geodetic" } prefix is omitted for testing purpose).
+     * Increasing ordinates values go {@linkplain AxisDirection#NORTH North} and units are {@link NonSI#GRADE}.
+     * The abbreviation is "φ" (phi). The unit symbol is "gon".
      *
      * @see #GEODETIC_LATITUDE
      * @see #SPHERICAL_LATITUDE
      * @see #LONGITUDE
      */
-    public static final DefaultCoordinateSystemAxis LATITUDE = create("Latitude", "φ",
-            AxisDirection.NORTH, NonSI.DEGREE_ANGLE, -90, 90, RangeMeaning.EXACT);
+    public static final DefaultCoordinateSystemAxis LATITUDE_gon = create("Latitude", "φ",
+            AxisDirection.NORTH, NonSI.GRADE, -100, 100, RangeMeaning.EXACT);
 
     /**
-     * The default axis for height values above the ellipsoid in a
-     * {@linkplain org.opengis.referencing.crs.GeographicCRS geographic CRS}.
+     * Axis for height values above the ellipsoid in a
+     * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
      * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#METRE metres}.
-     * The ISO 19111 name is "<cite>ellipsoidal heigt</cite>" and the abbreviation is lower case "<var>h</var>".
+     * The ISO 19111 name is "<cite>ellipsoidal height</cite>" and the abbreviation is lower case "<var>h</var>".
      *
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
      * {@link #ELLIPSOIDAL_HEIGHT} set.</p>
@@ -122,7 +116,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.UP, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * The default axis for height values measured from gravity.
+     * Axis for height values measured from gravity.
      * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is "<cite>gravity-related height</cite>" and the abbreviation is upper case "<var>H</var>".
      *
@@ -141,7 +135,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.UP, SI.CENTIMETRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * The default axis for altitude values.
+     * Axis for altitude values.
      * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#METRE metres}.
      * The abbreviation is lower case "<var>h</var>".
      *
@@ -156,7 +150,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.UP, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * The default axis for depth.
+     * Axis for depth.
      * Increasing ordinates values go {@linkplain AxisDirection#DOWN down} and units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is "<cite>depth</cite>".
      *
@@ -169,9 +163,8 @@ public final strictfp class HardCodedAxes {
             AxisDirection.DOWN, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Default axis info for radius in a
-     * {@linkplain org.opengis.referencing.crs.GeocentricCRS geocentric CRS} using
-     * {@linkplain org.opengis.referencing.cs.SphericalCS spherical CS}.
+     * Axis for radius in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
+     * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is "<cite>geocentric radius</cite>" and the abbreviation is lower case "<var>r</var>".
      *
@@ -187,9 +180,8 @@ public final strictfp class HardCodedAxes {
             AxisDirection.UP, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
     /**
-     * Default axis info for longitudes in a
-     * {@linkplain org.opengis.referencing.crs.GeocentricCRS geocentric CRS} using
-     * {@linkplain org.opengis.referencing.crs.SphericalCS spherical CS}.
+     * Axis for longitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
+     * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing ordinates values go {@linkplain AxisDirection#EAST East}
      * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
      * The ISO 19111 name is "<cite>spherical longitude</cite>" and the abbreviation is "Ω" (omega).
@@ -205,9 +197,8 @@ public final strictfp class HardCodedAxes {
             AxisDirection.EAST, NonSI.DEGREE_ANGLE, -180, 180, RangeMeaning.WRAPAROUND);
 
     /**
-     * Default axis info for latitudes in a
-     * {@linkplain org.opengis.referencing.crs.GeocentricCRS geocentric CRS} using
-     * {@linkplain org.opengis.referencing.cs.SphericalCS spherical CS}.
+     * Axis for latitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
+     * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing ordinates values go {@linkplain AxisDirection#NORTH North}
      * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
      * The ISO 19111 name is "<cite>spherical latitude</cite>" and the abbreviation is "Θ" (theta).
@@ -223,10 +214,8 @@ public final strictfp class HardCodedAxes {
             AxisDirection.NORTH, NonSI.DEGREE_ANGLE, -90, 90, RangeMeaning.EXACT);
 
     /**
-     * Default axis info for <var>x</var> values in a
-     * {@linkplain org.opengis.referencing.cs.CartesianCS Cartesian CS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#EAST East}
-     * and units are {@linkplain SI#METRE metres}.
+     * Axis for <var>x</var> values in a {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
+     * Increasing ordinates values go {@linkplain AxisDirection#EAST East} and units are {@linkplain SI#METRE metres}.
      * The abbreviation is lower case "<var>x</var>".
      *
      * <p>This axis is usually part of a {@link #X}, {@link #Y}, {@link #Z} set.</p>
@@ -241,10 +230,8 @@ public final strictfp class HardCodedAxes {
             AxisDirection.EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Default axis info for <var>y</var> values in a
-     * {@linkplain org.opengis.referencing.cs.CartesianCS Cartesian CS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#NORTH North}
-     * and units are {@linkplain SI#METRE metres}.
+     * Axis for <var>y</var> values in a {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
+     * Increasing ordinates values go {@linkplain AxisDirection#NORTH North} and units are {@linkplain SI#METRE metres}.
      * The abbreviation is lower case "<var>y</var>".
      *
      * <p>This axis is usually part of a {@link #X}, {@link #Y}, {@link #Z} set.</p>
@@ -259,10 +246,8 @@ public final strictfp class HardCodedAxes {
             AxisDirection.NORTH, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Default axis info for <var>z</var> values in a
-     * {@linkplain org.opengis.referencing.cs.CartesianCS Cartesian CS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#UP up}
-     * and units are {@linkplain SI#METRE metres}.
+     * Axis for <var>z</var> values in a {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
+     * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#METRE metres}.
      * The abbreviation is lower case "<var>z</var>".
      *
      * <p>This axis is usually part of a {@link #X}, {@link #Y}, {@link #Z} set.</p>
@@ -271,56 +256,52 @@ public final strictfp class HardCodedAxes {
             AxisDirection.UP, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Default axis info for <var>x</var> values in a
-     * {@linkplain org.opengis.referencing.crs.GeocentricCRS geocentric CRS} using
-     * {@linkplain org.opengis.referencing.cs.CartesianCS Cartesian CS}.
+     * Axis for <var>x</var> values in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
+     * using {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
      * Increasing ordinates values goes typically toward prime meridian, but the actual axis direction
      * is {@link AxisDirection#GEOCENTRIC_X GEOCENTRIC_X}. The units are {@linkplain SI#METRE metres}.
-     * The ISO 19111 name is "<cite>geocentric X</cite>" and the abbreviation is upper case "<var>X</var>".
+     * The ISO 19111 name is "<cite>Geocentric X</cite>" and the abbreviation is upper case "<var>X</var>".
      *
      * <p>In legacy OGC 01-009 specification (still in use for WKT format),
      * the direction was {@link AxisDirection#OTHER OTHER}).</p>
      *
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
      */
-    public static final DefaultCoordinateSystemAxis GEOCENTRIC_X = create("X", "X",
+    public static final DefaultCoordinateSystemAxis GEOCENTRIC_X = create("Geocentric X", "X",
             AxisDirection.GEOCENTRIC_X, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Default axis info for <var>y</var> values in a
-     * {@linkplain org.opengis.referencing.crs.GeocentricCRS geocentric CRS} using
-     * {@linkplain org.opengis.referencing.cs.CartesianCS Cartesian CS}.
+     * Axis for <var>y</var> values in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
+     * using {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
      * Increasing ordinates values goes typically toward East, but the actual axis direction is
      * {@link AxisDirection#GEOCENTRIC_Y GEOCENTRIC_Y}. The units are {@linkplain SI#METRE metres}.
-     * The ISO 19111 name is "<cite>geocentric Y</cite>" and the abbreviation is upper case "<var>Y</var>".
+     * The ISO 19111 name is "<cite>Geocentric Y</cite>" and the abbreviation is upper case "<var>Y</var>".
      *
      * <p>In legacy OGC 01-009 specification (still in use for WKT format),
      * the direction was {@link AxisDirection#EAST EAST}).</p>
      *
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
      */
-    public static final DefaultCoordinateSystemAxis GEOCENTRIC_Y = create("Y", "Y",
+    public static final DefaultCoordinateSystemAxis GEOCENTRIC_Y = create("Geocentric Y", "Y",
             AxisDirection.GEOCENTRIC_Y, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Default axis info for <var>z</var> values in a
-     * {@linkplain org.opengis.referencing.crs.GeocentricCRS geocentric CRS} using
-     * {@linkplain org.opengis.referencing.cs.CartesianCS Cartesian CS}.
+     * Axis for <var>z</var> values in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
+     * using {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
      * Increasing ordinates values goes typically toward North, but the actual axis direction is
      * {@link AxisDirection#GEOCENTRIC_Z GEOCENTRIC_Z}. The units are {@linkplain SI#METRE metres}.
-     * The ISO 19111 name is "<cite>geocentric Z</cite>" and the abbreviation is upper case "<var>Z</var>".
+     * The ISO 19111 name is "<cite>Geocentric Z</cite>" and the abbreviation is upper case "<var>Z</var>".
      *
      * <p>In legacy OGC 01-009 specification (still in use for WKT format),
      * the direction was {@link AxisDirection#NORTH NORTH}).</p>
      *
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
      */
-    public static final DefaultCoordinateSystemAxis GEOCENTRIC_Z = create("Z", "Z",
+    public static final DefaultCoordinateSystemAxis GEOCENTRIC_Z = create("Geocentric Z", "Z",
             AxisDirection.GEOCENTRIC_Z, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Default axis info for Easting values in a
-     * {@linkplain org.opengis.referencing.crs.ProjectedCRS projected CRS}.
+     * Axis for Easting values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
      * Increasing ordinates values go {@linkplain AxisDirection#EAST East} and units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is "<cite>easting</cite>" and the abbreviation is upper case "<var>E</var>".
      *
@@ -334,8 +315,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Default axis info for Westing values in a
-     * {@linkplain org.opengis.referencing.crs.ProjectedCRS projected CRS}.
+     * Axis for Westing values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
      * Increasing ordinates values go {@linkplain AxisDirection#WEST West} and units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is "<cite>westing</cite>" and the abbreviation is upper case "<var>W</var>".
      *
@@ -347,8 +327,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.WEST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Default axis info for Northing values in a
-     * {@linkplain org.opengis.referencing.crs.ProjectedCRS projected CRS}.
+     * Axis for Northing values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
      * Increasing ordinates values go {@linkplain AxisDirection#NORTH North} and units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is "<cite>northing</cite>" and the abbreviation is upper case "<var>N</var>".
      *
@@ -362,8 +341,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.NORTH, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * Default axis info for Southing values in a
-     * {@linkplain org.opengis.referencing.crs.ProjectedCRS projected CRS}.
+     * Axis for Southing values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
      * Increasing ordinates values go {@linkplain AxisDirection#SOUTH South} and units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is "<cite>southing</cite>" and the abbreviation is upper case "<var>S</var>".
      *
@@ -387,7 +365,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.SOUTH_EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * A default axis for time values in a {@linkplain org.opengis.referencing.cs.TimeCS time CS}.
+     * Axis for time values in a {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS time CS}.
      * Increasing time go toward {@linkplain AxisDirection#FUTURE future} and units are {@linkplain NonSI#DAY days}.
      * The abbreviation is lower case "<var>t</var>".
      */
@@ -395,7 +373,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.FUTURE, NonSI.DAY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * A default axis for column indices in a {@linkplain org.opengis.coverage.grid.GridCoverage grid coverage}.
+     * Axis for column indices in a {@linkplain org.opengis.coverage.grid.GridCoverage grid coverage}.
      * Increasing values go toward {@linkplain AxisDirection#COLUMN_POSITIVE positive column number}.
      * The abbreviation is lower case "<var>i</var>".
      */
@@ -403,7 +381,7 @@ public final strictfp class HardCodedAxes {
             AxisDirection.COLUMN_POSITIVE, Unit.ONE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * A default axis for row indices in a {@linkplain org.opengis.coverage.grid.GridCoverage grid coverage}.
+     * Axis for row indices in a {@linkplain org.opengis.coverage.grid.GridCoverage grid coverage}.
      * Increasing values go toward {@linkplain AxisDirection#ROW_POSITIVE positive row number}.
      * The abbreviation is lower case "<var>j</var>".
      */
@@ -411,16 +389,16 @@ public final strictfp class HardCodedAxes {
             AxisDirection.ROW_POSITIVE, Unit.ONE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * A default axis for <var>x</var> values in a display device. Increasing values go toward
-     * {@linkplain AxisDirection#DISPLAY_RIGHT display right}.
+     * Axis for <var>x</var> values in a display device.
+     * Increasing values go toward {@linkplain AxisDirection#DISPLAY_RIGHT display right}.
      * The abbreviation is lower case "<var>x</var>".
      */
     public static final DefaultCoordinateSystemAxis DISPLAY_X = create("x", "x",
             AxisDirection.DISPLAY_RIGHT, Unit.ONE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * A default axis for <var>y</var> values in a display device. Increasing values go toward
-     * {@linkplain AxisDirection#DISPLAY_DOWN display down}.
+     * Axis for <var>y</var> values in a display device.
+     * Increasing values go toward {@linkplain AxisDirection#DISPLAY_DOWN display down}.
      * The abbreviation is lower case "<var>y</var>".
      */
     public static final DefaultCoordinateSystemAxis DISPLAY_Y = create("y", "y",

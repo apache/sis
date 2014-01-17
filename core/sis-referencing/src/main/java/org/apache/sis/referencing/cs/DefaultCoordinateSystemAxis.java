@@ -36,11 +36,13 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -92,6 +94,16 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -7883614853277827689L;
+
+    /**
+     * The identifier for axis of unknown name. We have to use this identifier when the axis direction changed,
+     * because such change often implies a name change too (e.g. "Westing" → "Easting"), and we can not always
+     * guess what the new name should be.
+     *
+     * <p>This constant is used as a sentinel value for skipping axis name comparisons when the axis name is
+     * unknown.</p>
+     */
+    static final NamedIdentifier UNNAMED = new NamedIdentifier(null, Vocabulary.format(Vocabulary.Keys.Unnamed));
 
     /**
      * Some names to be treated as equivalent. This is needed because axis names are the primary way to
@@ -576,33 +588,23 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             return false;
         }
         final DefaultCoordinateSystemAxis that = castOrCopy((CoordinateSystemAxis) object);
-        return equals(that, mode.ordinal() < ComparisonMode.IGNORE_METADATA.ordinal(), true);
-    }
-
-    /**
-     * Compares the specified object with this axis for equality, with optional comparison of units.
-     * Units shall always be compared (they are not just metadata), except in the particular case of
-     * {@link CoordinateSystems#axisColinearWith}, which is used as a first step toward units conversions
-     * through {@link CoordinateSystems#swapAndScaleAxes}.
-     */
-    final boolean equals(final DefaultCoordinateSystemAxis that,
-                         final boolean compareMetadata, final boolean compareUnit)
-    {
+        if (!Objects.equals(direction, that.direction) || !Objects.equals(unit, that.unit)) {
+            return false;
+        }
         /*
          * It is important to NOT compare the minimum and maximum values when we are in
          * "ignore metadata" mode,  because we want CRS with a [-180 … +180]° longitude
          * range to be considered equivalent, from a coordinate transformation point of
          * view, to a CRS with a [0 … 360]° longitude range.
          */
-        if (compareMetadata) {
-            if (!Objects.equals(this.abbreviation, that.abbreviation) ||
-                !Objects.equals(this.rangeMeaning, that.rangeMeaning) ||
-                doubleToLongBits(minimumValue) != doubleToLongBits(that.minimumValue) ||
-                doubleToLongBits(maximumValue) != doubleToLongBits(that.maximumValue))
-            {
-                return false;
-            }
-        } else {
+        if (mode.ordinal() < ComparisonMode.IGNORE_METADATA.ordinal()) {
+            return Objects.equals(abbreviation, that.abbreviation) &&
+                   Objects.equals(rangeMeaning, that.rangeMeaning) &&
+                   doubleToLongBits(minimumValue) == doubleToLongBits(that.minimumValue) &&
+                   doubleToLongBits(maximumValue) == doubleToLongBits(that.maximumValue);
+        }
+        ReferenceIdentifier name = that.getName();
+        if (name != UNNAMED) {
             /*
              * Checking the abbreviation is not sufficient. For example the polar angle and the
              * spherical latitude have the same abbreviation (θ). Legacy names like "Longitude"
@@ -613,39 +615,33 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
              * the axis name instead. These names are constrained by ISO 19111 specification
              * (see class javadoc), so they should be reliable enough.
              *
-             * Note: there is no need to execute this block if 'compareMetadata' is true,
+             * Note: there is no need to execute this block if metadata are not ignored,
              *       because in this case a stricter check has already been performed by
              *       the 'equals' method in the superclass.
              */
-            final String thatName = that.getName().getCode();
-            if (!isHeuristicMatchForName(thatName)) {
-                /*
-                 * The above test checked for special cases ("Lat" / "Lon" aliases, etc.).
-                 * The next line may repeat the same check, so we may have a partial waste
-                 * of CPU.   But we do it anyway for checking the 'that' aliases, and also
-                 * because the user may have overridden 'that.isHeuristicMatchForName(…)'.
-                 */
-                final String thisName = getName().getCode();
-                if (!IdentifiedObjects.isHeuristicMatchForName(that, thisName)) {
+            final String thatCode = name.getCode();
+            if (!isHeuristicMatchForName(thatCode)) {
+                name = getName();
+                if (name != UNNAMED) {
                     /*
-                     * For the needs of CoordinateSystems.axisColinearWith(...), we must stop here.
-                     * In addition it may be safer to not test 'isHeuristicMatchForNameXY' when we
-                     * do not have the extra-safety of units comparison, because "x" and "y" names
-                     * are too generic.
+                     * The above test checked for special cases ("Lat" / "Lon" aliases, etc.).
+                     * The next line may repeat the same check, so we may have a partial waste
+                     * of CPU.   But we do it anyway for checking the 'that' aliases, and also
+                     * because the user may have overridden 'that.isHeuristicMatchForName(…)'.
                      */
-                    if (!compareUnit) {
-                        return false;
-                    }
-                    // Last chance: check for the special case of "x" and "y" axis names.
-                    if (!isHeuristicMatchForNameXY(thatName, thisName) &&
-                        !isHeuristicMatchForNameXY(thisName, thatName))
-                    {
-                        return false;
+                    final String thisCode = name.getCode();
+                    if (!IdentifiedObjects.isHeuristicMatchForName(that, thisCode)) {
+                        // Check for the special case of "x" and "y" axis names.
+                        if (!isHeuristicMatchForNameXY(thatCode, thisCode) &&
+                            !isHeuristicMatchForNameXY(thisCode, thatCode))
+                        {
+                            return false;
+                        }
                     }
                 }
             }
         }
-        return Objects.equals(direction, that.direction) && (!compareUnit || Objects.equals(unit, that.unit));
+        return true;
     }
 
     /**

@@ -71,9 +71,9 @@ public final strictfp class AbstractCSTest extends TestCase {
     @Test
     public void testForRightHandedConvention() {
         final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"),
-                HardCodedAxes.LATITUDE, HardCodedAxes.TIME, HardCodedAxes.ALTITUDE, HardCodedAxes.LONGITUDE);
+                HardCodedAxes.GEODETIC_LATITUDE, HardCodedAxes.TIME, HardCodedAxes.ALTITUDE, HardCodedAxes.GEODETIC_LONGITUDE);
         verifyAxesConvention(AxesConvention.RIGHT_HANDED, cs,
-                HardCodedAxes.LONGITUDE, HardCodedAxes.LATITUDE, HardCodedAxes.ALTITUDE, HardCodedAxes.TIME);
+                HardCodedAxes.GEODETIC_LONGITUDE, HardCodedAxes.GEODETIC_LATITUDE, HardCodedAxes.ALTITUDE, HardCodedAxes.TIME);
         assertSame("Right-handed CS shall be same as normalized.",
                 cs.forConvention(AxesConvention.RIGHT_HANDED),
                 cs.forConvention(AxesConvention.NORMALIZED));
@@ -112,8 +112,10 @@ public final strictfp class AbstractCSTest extends TestCase {
      */
     @Test
     public void testForPositiveRangeConvention() {
-        final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"), HardCodedAxes.LONGITUDE, HardCodedAxes.LATITUDE);
-        verifyAxesConvention(AxesConvention.POSITIVE_RANGE, cs, HardCodedAxes.SHIFTED_LONGITUDE, HardCodedAxes.LATITUDE);
+        final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"),
+                HardCodedAxes.GEODETIC_LONGITUDE, HardCodedAxes.GEODETIC_LATITUDE);
+        verifyAxesConvention(AxesConvention.POSITIVE_RANGE, cs,
+                HardCodedAxes.SHIFTED_LONGITUDE, HardCodedAxes.GEODETIC_LATITUDE);
     }
 
     /**

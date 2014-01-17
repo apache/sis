@@ -37,6 +37,17 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 public final strictfp class HardCodedCS {
     /**
      * A two-dimensional ellipsoidal CS with
+     * <var>{@linkplain HardCodedAxes#GEODETIC_LATITUDE geodetic latitude}</var>,
+     * <var>{@linkplain HardCodedAxes#GEODETIC_LONGITUDE geodetic longitude}</var>
+     * axes in decimal degrees.
+     */
+    public static final DefaultEllipsoidalCS GEODETIC_φλ = new DefaultEllipsoidalCS(
+            singletonMap(NAME_KEY, "Geodetic 2D (φ,λ)"),
+            HardCodedAxes.GEODETIC_LATITUDE,
+            HardCodedAxes.GEODETIC_LONGITUDE);
+
+    /**
+     * A two-dimensional ellipsoidal CS with
      * <var>{@linkplain HardCodedAxes#GEODETIC_LONGITUDE geodetic longitude}</var>,
      * <var>{@linkplain HardCodedAxes#GEODETIC_LATITUDE geodetic latitude}</var>
      * axes in decimal degrees.
@@ -58,6 +69,17 @@ public final strictfp class HardCodedCS {
             HardCodedAxes.GEODETIC_LONGITUDE,
             HardCodedAxes.GEODETIC_LATITUDE,
             HardCodedAxes.ELLIPSOIDAL_HEIGHT);
+
+    /**
+     * A two-dimensional ellipsoidal CS with
+     * <var>{@linkplain HardCodedAxes#LONGITUDE_gon longitude}</var>,
+     * <var>{@linkplain HardCodedAxes#LATITUDE_gon latitude}</var>
+     * axes (without "Geodetic" prefix) in gradians.
+     */
+    public static final DefaultEllipsoidalCS ELLIPSOIDAL_gon = new DefaultEllipsoidalCS(
+            singletonMap(NAME_KEY, "Ellipsoidal (gon)"),
+            HardCodedAxes.LONGITUDE_gon,
+            HardCodedAxes.LATITUDE_gon);
 
     /**
      * A three-dimensional spherical CS with
