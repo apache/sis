@@ -50,22 +50,22 @@ public final strictfp class NormalizerTest extends TestCase {
     @Test
     public void testSort() {
         assertOrdered(new CoordinateSystemAxis[] {
-            HardCodedAxes.LONGITUDE,
-            HardCodedAxes.LATITUDE,
+            HardCodedAxes.GEODETIC_LONGITUDE,
+            HardCodedAxes.GEODETIC_LATITUDE,
             HardCodedAxes.ELLIPSOIDAL_HEIGHT
         }, new CoordinateSystemAxis[] {
-            HardCodedAxes.LONGITUDE,
-            HardCodedAxes.LATITUDE,
+            HardCodedAxes.GEODETIC_LONGITUDE,
+            HardCodedAxes.GEODETIC_LATITUDE,
             HardCodedAxes.ELLIPSOIDAL_HEIGHT
         });
         assertOrdered(new CoordinateSystemAxis[] {
-            HardCodedAxes.LONGITUDE,
-            HardCodedAxes.LATITUDE,
+            HardCodedAxes.GEODETIC_LONGITUDE,
+            HardCodedAxes.GEODETIC_LATITUDE,
             HardCodedAxes.ELLIPSOIDAL_HEIGHT
         }, new CoordinateSystemAxis[] {
-            HardCodedAxes.LATITUDE,
+            HardCodedAxes.GEODETIC_LATITUDE,
             HardCodedAxes.ELLIPSOIDAL_HEIGHT,
-            HardCodedAxes.LONGITUDE
+            HardCodedAxes.GEODETIC_LONGITUDE
         });
 
         // A plausible CS.
@@ -166,12 +166,12 @@ public final strictfp class NormalizerTest extends TestCase {
      */
     @Test
     public void testNormalizeAxis() {
-        assertSame(HardCodedAxes.LATITUDE,  Normalizer.normalize(HardCodedAxes.LATITUDE));
-        assertSame(HardCodedAxes.LONGITUDE, Normalizer.normalize(HardCodedAxes.LONGITUDE));
-        assertSame(HardCodedAxes.EASTING,   Normalizer.normalize(HardCodedAxes.EASTING));
-        assertSame(HardCodedAxes.NORTHING,  Normalizer.normalize(HardCodedAxes.NORTHING));
-        assertSame(HardCodedAxes.ALTITUDE,  Normalizer.normalize(HardCodedAxes.ALTITUDE));
-        assertSame(HardCodedAxes.TIME,      Normalizer.normalize(HardCodedAxes.TIME));
+        assertSame(HardCodedAxes.GEODETIC_LATITUDE,  Normalizer.normalize(HardCodedAxes.GEODETIC_LATITUDE));
+        assertSame(HardCodedAxes.GEODETIC_LONGITUDE, Normalizer.normalize(HardCodedAxes.GEODETIC_LONGITUDE));
+        assertSame(HardCodedAxes.EASTING,            Normalizer.normalize(HardCodedAxes.EASTING));
+        assertSame(HardCodedAxes.NORTHING,           Normalizer.normalize(HardCodedAxes.NORTHING));
+        assertSame(HardCodedAxes.ALTITUDE,           Normalizer.normalize(HardCodedAxes.ALTITUDE));
+        assertSame(HardCodedAxes.TIME,               Normalizer.normalize(HardCodedAxes.TIME));
         /*
          * Test a change of unit from centimetre to metre.
          */

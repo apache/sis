@@ -39,6 +39,17 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 public final strictfp class HardCodedCRS {
     /**
      * A two-dimensional geographic coordinate reference system using the WGS84 datum.
+     * This CRS uses (<var>latitude</var>, <var>longitude</var>) ordinates with latitude values
+     * increasing towards the North and longitude values increasing towards the East.
+     * The angular units are decimal degrees and the prime meridian is Greenwich.
+     *
+     * <p>This CRS is equivalent to {@code EPSG:4326}.</p>
+     */
+    public static final DefaultGeographicCRS WGS84_φλ = new DefaultGeographicCRS(
+            properties("WGS 84 (φ,λ)"), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_φλ);
+
+    /**
+     * A two-dimensional geographic coordinate reference system using the WGS84 datum.
      * This CRS uses (<var>longitude</var>, <var>latitude</var>) ordinates with longitude values
      * increasing towards the East and latitude values increasing towards the North.
      * The angular units are decimal degrees and the prime meridian is Greenwich.
