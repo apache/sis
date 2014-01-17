@@ -23,7 +23,7 @@ import org.apache.sis.test.mock.GeodeticDatumMock;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.opengis.test.Validators;
-import org.apache.sis.referencing.cs.CommonAxes;
+import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -83,8 +83,8 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
     }
 
     /**
-     * Compares the values created by {@link StandardDefinitions#createAxis(short)} against the {@link CommonAxes}
-     * constants. Actually this is more a {@code CommonAxes} test than a {@code StandardDefinitions} one - in case
+     * Compares the values created by {@link StandardDefinitions#createAxis(short)} against the {@link HardCodedAxes}
+     * constants. Actually this is more a {@code HardCodedAxes} test than a {@code StandardDefinitions} one - in case
      * of test failure, both classes could be at fault.
      */
     @Test
@@ -93,11 +93,11 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
             106, 107, 110, 114, 113
         };
         final CoordinateSystemAxis[] axes = {
-            CommonAxes.GEODETIC_LATITUDE,
-            CommonAxes.GEODETIC_LONGITUDE,
-            CommonAxes.ELLIPSOIDAL_HEIGHT,
-            CommonAxes.GRAVITY_RELATED_HEIGHT,
-            CommonAxes.DEPTH
+            HardCodedAxes.GEODETIC_LATITUDE,
+            HardCodedAxes.GEODETIC_LONGITUDE,
+            HardCodedAxes.ELLIPSOIDAL_HEIGHT,
+            HardCodedAxes.GRAVITY_RELATED_HEIGHT,
+            HardCodedAxes.DEPTH
         };
         for (int i=0; i<codes.length; i++) {
             final CoordinateSystemAxis axis = StandardDefinitions.createAxis(codes[i]);

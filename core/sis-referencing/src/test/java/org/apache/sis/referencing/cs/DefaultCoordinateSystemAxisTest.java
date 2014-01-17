@@ -24,7 +24,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
-import static org.apache.sis.referencing.cs.CommonAxes.*;
+import static org.apache.sis.referencing.cs.HardCodedAxes.*;
 
 
 /**
@@ -41,7 +41,7 @@ import static org.apache.sis.referencing.cs.CommonAxes.*;
 })
 public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
     /**
-     * Validates the {@link CommonAxes} constants.
+     * Validates the {@link HardCodedAxes} constants.
      */
     @Test
     public void validate() {

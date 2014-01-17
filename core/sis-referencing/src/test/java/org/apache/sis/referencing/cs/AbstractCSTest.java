@@ -71,9 +71,9 @@ public final strictfp class AbstractCSTest extends TestCase {
     @Test
     public void testForRightHandedConvention() {
         final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"),
-                CommonAxes.LATITUDE, CommonAxes.TIME, CommonAxes.ALTITUDE, CommonAxes.LONGITUDE);
+                HardCodedAxes.LATITUDE, HardCodedAxes.TIME, HardCodedAxes.ALTITUDE, HardCodedAxes.LONGITUDE);
         verifyAxesConvention(AxesConvention.RIGHT_HANDED, cs,
-                CommonAxes.LONGITUDE, CommonAxes.LATITUDE, CommonAxes.ALTITUDE, CommonAxes.TIME);
+                HardCodedAxes.LONGITUDE, HardCodedAxes.LATITUDE, HardCodedAxes.ALTITUDE, HardCodedAxes.TIME);
         assertSame("Right-handed CS shall be same as normalized.",
                 cs.forConvention(AxesConvention.RIGHT_HANDED),
                 cs.forConvention(AxesConvention.NORMALIZED));
@@ -87,7 +87,7 @@ public final strictfp class AbstractCSTest extends TestCase {
     @DependsOnMethod("testForRightHandedConvention")
     public void testForNormalizedConvention() {
         /*
-         * Some expected axes, identical to the ones in CommonAxes except for name or units.
+         * Some expected axes, identical to the ones in HardCodedAxes except for name or units.
          */
         final DefaultCoordinateSystemAxis EASTING = new DefaultCoordinateSystemAxis(
                 singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E",
@@ -99,11 +99,11 @@ public final strictfp class AbstractCSTest extends TestCase {
          * Test RIGHT_HANDED as a matter of principle before to test NORMALIZED.
          */
         final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"),
-                CommonAxes.TIME, CommonAxes.NORTHING, CommonAxes.WESTING, CommonAxes.HEIGHT_cm);
+                HardCodedAxes.TIME, HardCodedAxes.NORTHING, HardCodedAxes.WESTING, HardCodedAxes.HEIGHT_cm);
         verifyAxesConvention(AxesConvention.RIGHT_HANDED, cs,
-                CommonAxes.NORTHING, CommonAxes.WESTING, CommonAxes.HEIGHT_cm, CommonAxes.TIME);
+                HardCodedAxes.NORTHING, HardCodedAxes.WESTING, HardCodedAxes.HEIGHT_cm, HardCodedAxes.TIME);
         verifyAxesConvention(AxesConvention.NORMALIZED, cs,
-                EASTING, CommonAxes.NORTHING, HEIGHT, CommonAxes.TIME);
+                EASTING, HardCodedAxes.NORTHING, HEIGHT, HardCodedAxes.TIME);
     }
 
     /**
@@ -112,8 +112,8 @@ public final strictfp class AbstractCSTest extends TestCase {
      */
     @Test
     public void testForPositiveRangeConvention() {
-        final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"), CommonAxes.LONGITUDE, CommonAxes.LATITUDE);
-        verifyAxesConvention(AxesConvention.POSITIVE_RANGE, cs, CommonAxes.SHIFTED_LONGITUDE, CommonAxes.LATITUDE);
+        final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"), HardCodedAxes.LONGITUDE, HardCodedAxes.LATITUDE);
+        verifyAxesConvention(AxesConvention.POSITIVE_RANGE, cs, HardCodedAxes.SHIFTED_LONGITUDE, HardCodedAxes.LATITUDE);
     }
 
     /**
@@ -121,7 +121,7 @@ public final strictfp class AbstractCSTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"), CommonAxes.X, CommonAxes.Y);
+        final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"), HardCodedAxes.X, HardCodedAxes.Y);
         assertNotSame(cs, assertSerializedEquals(cs));
     }
 }
