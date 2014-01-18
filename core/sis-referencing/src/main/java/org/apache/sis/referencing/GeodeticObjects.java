@@ -17,10 +17,11 @@
 package org.apache.sis.referencing;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Date;
-import java.util.Locale;
 import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Duration;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
@@ -28,6 +29,8 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.cs.TimeCS;
+import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -42,10 +45,19 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.DefaultTimeCS;
+import org.apache.sis.referencing.cs.DefaultVerticalCS;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
+import org.apache.sis.referencing.crs.DefaultTemporalCRS;
+import org.apache.sis.referencing.crs.DefaultVerticalCRS;
+import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.measure.Units;
 
+import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
 
 
 /**
@@ -56,7 +68,7 @@ import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
  *
  * <p>Referencing objects are cached after creation. Invoking the same method on the same {@code GeodeticObjects}
  * instance twice will return the same {@link IdentifiedObject} instance, unless the internal cache has been cleared
- * (e.g. the application is running in a container environment, and some modules have been installed or uninstalled).</p>
+ * (e.g. the application is running in a container environment and some modules have been installed or uninstalled).</p>
  *
  * <p><b>Example:</b> the following code fetches a geographic Coordinate Reference System using
  * (<var>longitude</var>, <var>latitude</var>) axis order on the {@link #WGS84} geodetic datum:</p>
@@ -71,17 +83,17 @@ import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
  * <blockquote><table class="sis">
  *   <tr><th>Name or alias</th>                                     <th>Object type</th>           <th>Enumeration value</th></tr>
  *   <tr><td>Clarke 1866</td>                                       <td>Ellipsoid</td>             <td>{@link #NAD27}</td></tr>
- *   <tr><td>European Datum 1950 (ED50)</td>                        <td>Datum</td>                 <td>{@link #ED50}</td></tr>
- *   <tr><td>European Terrestrial Reference Frame (ETRS) 1989</td>  <td>Datum</td>                 <td>{@link #ETRS89}</td></tr>
- *   <tr><td>European Terrestrial Reference System (ETRF) 1989</td> <td>Datum</td>                 <td>{@link #ETRS89}</td></tr>
+ *   <tr><td>European Datum 1950 (ED50)</td>                        <td>CRS, datum</td>            <td>{@link #ED50}</td></tr>
+ *   <tr><td>European Terrestrial Reference Frame (ETRS) 1989</td>  <td>CRS, datum</td>            <td>{@link #ETRS89}</td></tr>
+ *   <tr><td>European Terrestrial Reference System (ETRF) 1989</td> <td>CRS, datum</td>            <td>{@link #ETRS89}</td></tr>
  *   <tr><td>Greenwich</td>                                         <td>Prime meridian</td>        <td>{@link #WGS84}, {@link #WGS72}, {@link #ETRS89}, {@link #NAD83}, {@link #NAD27}, {@link #ED50}, {@link #SPHERE}</td></tr>
  *   <tr><td>GRS 1980</td>                                          <td>Ellipsoid</td>             <td>{@link #ETRS89}, {@link #NAD83}</td></tr>
  *   <tr><td>GRS 1980 Authalic Sphere</td>                          <td>Ellipsoid</td>             <td>{@link #SPHERE}</td></tr>
  *   <tr><td>Hayford 1909</td>                                      <td>Ellipsoid</td>             <td>{@link #ED50}</td></tr>
  *   <tr><td>International 1924</td>                                <td>Ellipsoid</td>             <td>{@link #ED50}</td></tr>
  *   <tr><td>International 1979</td>                                <td>Ellipsoid</td>             <td>{@link #ETRS89}, {@link #NAD83}</td></tr>
- *   <tr><td>North American Datum 1927</td>                         <td>Datum</td>                 <td>{@link #NAD27}</td></tr>
- *   <tr><td>North American Datum 1983</td>                         <td>Datum</td>                 <td>{@link #NAD83}</td></tr>
+ *   <tr><td>North American Datum 1927</td>                         <td>CRS, datum</td>            <td>{@link #NAD27}</td></tr>
+ *   <tr><td>North American Datum 1983</td>                         <td>CRS, datum</td>            <td>{@link #NAD83}</td></tr>
  *   <tr><td>NWL 10D</td>                                           <td>Ellipsoid</td>             <td>{@link #WGS72}</td></tr>
  *   <tr><td>World Geodetic System (WGS) 1972</td>                  <td>CRS, datum, ellipsoid</td> <td>{@link #WGS72}</td></tr>
  *   <tr><td>World Geodetic System (WGS) 1984</td>                  <td>CRS, datum, ellipsoid</td> <td>{@link #WGS84}</td></tr>
@@ -250,7 +262,7 @@ public enum GeodeticObjects {
      *
      * @see #normalizedGeographic()
      */
-    private transient volatile GeographicCRS normalized;
+    private transient volatile GeographicCRS normalizedGeographic;
 
     /**
      * Creates a new constant for the given EPSG or SIS codes.
@@ -270,14 +282,47 @@ public enum GeodeticObjects {
      * This will clear the cache, since the EPSG database may have changed.
      */
     static {
-        new StandardObjects(GeodeticObjects.class); // Constructor registers itself.
+        SystemListener.add(new SystemListener(Modules.REFERENCING) {
+            @Override protected void classpathChanged() {
+                for (final GeodeticObjects e : values()) {
+                    e.clear();
+                }
+            }
+        });
     }
 
     /**
-     * Invoked by {@link StandardObjects#classpathChanged()} when the cache needs to be cleared.
+     * Invoked by when the cache needs to be cleared after a classpath change.
      */
     synchronized void clear() {
         cached = null;
+        normalizedGeographic = null;
+    }
+
+    /**
+     * Returns the default two-dimensional normalized geographic CRS.
+     * The CRS returned by this method has the following properties:
+     *
+     * <ul>
+     *   <li>Axis order is (<var>longitude</var>, <var>latitude</var>).</li>
+     *   <li>Axis directions are ({@linkplain AxisDirection#EAST East}, {@linkplain AxisDirection#NORTH North}).</li>
+     *   <li>Angular unit is {@link NonSI#DEGREE_ANGLE}.</li>
+     *   <li>Prime meridian in Greenwich.</li>
+     * </ul>
+     *
+     * {@note This method makes no guarantees about the datum. The current default datum is WGS 84,
+     *        but this may change in future SIS versions if a WGS 84 replacement become in wide use.}
+     *
+     * <p>This default CRS is assigned to
+     * {@linkplain org.apache.sis.geometry.GeneralEnvelope#GeneralEnvelope(org.opengis.metadata.extent.GeographicBoundingBox)
+     * envelopes created from a geographic bounding box}.
+     * Since ISO 19115 {@link org.opengis.metadata.extent.GeographicBoundingBox} is approximative by definition,
+     * their datum can be arbitrary.</p>
+     *
+     * @return The default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.
+     */
+    public static GeographicCRS defaultGeographic() {
+        return WGS84.normalizedGeographic();
     }
 
     /**
@@ -291,8 +336,8 @@ public enum GeodeticObjects {
      *   <tr><th>Name or alias</th>            <th>Enum</th>            <th>Code</th></tr>
      *   <tr><td>ED50</td>                     <td>{@link #ED50}</td>   <td></td></tr>
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td></td></tr>
-     *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td></td></tr>
-     *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td></td></tr>
+     *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td>CRS:27</td></tr>
+     *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td>CRS:83</td></tr>
      *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td></td></tr>
      *   <tr><td>WGS 72</td>                   <td>{@link #WGS72}</td>  <td></td></tr>
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>CRS:84</td></tr>
@@ -300,18 +345,19 @@ public enum GeodeticObjects {
      *
      * @return The geographic CRS with non-standard (<var>longitude</var>, <var>latitude</var>) axis order.
      *
+     * @see CRS#forCode(String)
      * @see DefaultGeographicCRS#forConvention(AxesConvention)
      * @see AxesConvention#NORMALIZED
      */
     public GeographicCRS normalizedGeographic() {
-        GeographicCRS object = normalized;
+        GeographicCRS object = normalizedGeographic;
         if (object == null) {
             DefaultGeographicCRS crs = DefaultGeographicCRS.castOrCopy(geographic());
             crs = crs.forConvention(AxesConvention.RIGHT_HANDED); // Equivalent to NORMALIZED in our cases, but faster.
             synchronized (this) {
-                object = normalized;
+                object = normalizedGeographic;
                 if (object == null) {
-                    normalized = object = crs;
+                    normalizedGeographic = object = crs;
                 }
             }
         }
@@ -338,8 +384,8 @@ public enum GeodeticObjects {
      *
      * @return The geographic CRS with standard (<var>latitude</var>, <var>longitude</var>) axis order.
      *
+     * @see CRS#forCode(String)
      * @see org.apache.sis.referencing.crs.DefaultGeographicCRS
-     * @see CRSAuthorityFactory#createGeographicCRS(String)
      */
     public GeographicCRS geographic() {
         GeographicCRS object = geographic(cached);
@@ -347,12 +393,12 @@ public enum GeodeticObjects {
             synchronized (this) {
                 object = geographic(cached);
                 if (object == null) {
-                    final CRSAuthorityFactory factory = StandardObjects.crsFactory();
+                    final CRSAuthorityFactory factory = crsFactory();
                     if (factory != null) try {
                         cached = object = factory.createGeographicCRS(String.valueOf(geographic));
                         return object;
                     } catch (FactoryException e) {
-                        StandardObjects.failure(this, "geographic", e);
+                        failure(this, "geographic", e);
                     }
                     /*
                      * All constants defined in this enumeration use the same coordinate system, EPSG:6422.
@@ -392,7 +438,6 @@ public enum GeodeticObjects {
      * @return The geodetic datum associated to this constant.
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
-     * @see DatumAuthorityFactory#createGeodeticDatum(String)
      */
     public GeodeticDatum datum() {
         GeodeticDatum object = datum(cached);
@@ -400,12 +445,12 @@ public enum GeodeticObjects {
             synchronized (this) {
                 object = datum(cached);
                 if (object == null) {
-                    final DatumAuthorityFactory factory = StandardObjects.datumFactory();
+                    final DatumAuthorityFactory factory = datumFactory();
                     if (factory != null) try {
                         cached = object = factory.createGeodeticDatum(String.valueOf(datum));
                         return object;
                     } catch (FactoryException e) {
-                        StandardObjects.failure(this, "datum", e);
+                        failure(this, "datum", e);
                     }
                     object = StandardDefinitions.createGeodeticDatum(datum, ellipsoid(), primeMeridian());
                     cached = object;
@@ -433,7 +478,6 @@ public enum GeodeticObjects {
      * @return The ellipsoid associated to this constant.
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid
-     * @see DatumAuthorityFactory#createEllipsoid(String)
      */
     public Ellipsoid ellipsoid() {
         Ellipsoid object = ellipsoid(cached);
@@ -444,12 +488,12 @@ public enum GeodeticObjects {
                     if (this == NAD83) {
                         object = ETRS89.ellipsoid(); // Share the same instance for NAD83 and ETRS89.
                     } else {
-                        final DatumAuthorityFactory factory = StandardObjects.datumFactory();
+                        final DatumAuthorityFactory factory = datumFactory();
                         if (factory != null) try {
                             cached = object = factory.createEllipsoid(String.valueOf(ellipsoid));
                             return object;
                         } catch (FactoryException e) {
-                            StandardObjects.failure(this, "ellipsoid", e);
+                            failure(this, "ellipsoid", e);
                         }
                         object = StandardDefinitions.createEllipsoid(ellipsoid);
                     }
@@ -473,7 +517,6 @@ public enum GeodeticObjects {
      * @return The prime meridian associated to this constant.
      *
      * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
-     * @see DatumAuthorityFactory#createPrimeMeridian(String)
      */
     public PrimeMeridian primeMeridian() {
         PrimeMeridian object = primeMeridian(cached);
@@ -484,12 +527,12 @@ public enum GeodeticObjects {
                     if (this != WGS84) {
                         object = WGS84.primeMeridian(); // Share the same instance for all constants.
                     } else {
-                        final DatumAuthorityFactory factory = StandardObjects.datumFactory();
+                        final DatumAuthorityFactory factory = datumFactory();
                         if (factory != null) try {
                             cached = object = factory.createPrimeMeridian(StandardDefinitions.GREENWICH);
                             return object;
                         } catch (FactoryException e) {
-                            StandardObjects.failure(this, "primeMeridian", e);
+                            failure(this, "primeMeridian", e);
                         }
                         object = StandardDefinitions.primeMeridian();
                     }
@@ -553,23 +596,30 @@ public enum GeodeticObjects {
      *
      * <p>Referencing objects are cached after creation. Invoking the same method on the same {@code Vertical}
      * instance twice will return the same {@link IdentifiedObject} instance, unless the internal cache has been cleared
-     * (e.g. the application is running in a container environment, and some modules have been installed or uninstalled).</p>
+     * (e.g. the application is running in a container environment and some modules have been installed or uninstalled).</p>
      *
-     * <p><b>Example:</b> the following code fetches a vertical Coordinate Reference System for height above the geoid:</p>
+     * <p><b>Example:</b> the following code fetches a vertical Coordinate Reference System for heights
+     * above the Mean Sea Level (MSL):</p>
      *
      * {@preformat java
-     *   VerticalCRS crs = GeodeticObjects.Vertical.GEOIDAL.crs();
+     *   VerticalCRS crs = GeodeticObjects.Vertical.MEAN_SEA_LEVEL.crs();
      * }
      *
      * Below is an alphabetical list of object names available in this enumeration:
      *
      * <blockquote><table class="sis">
-     *   <tr><th>Name or alias</th>       <th>Object type</th> <th>Enumeration value</th></tr>
-     *   <tr><td>Barometric altitude</td> <td>CRS, Datum</td>  <td>{@link #BAROMETRIC}</td></tr>
-     *   <tr><td>Geoidal height</td>      <td>CRS, Datum</td>  <td>{@link #GEOIDAL}</td></tr>
-     *   <tr><td>Ellipsoidal height</td>  <td>CRS, Datum</td>  <td>{@link #ELLIPSOIDAL}</td></tr>
-     *   <tr><td>Other surface</td>       <td>CRS, Datum</td>  <td>{@link #OTHER_SURFACE}</td></tr>
+     *   <tr><th>Name or alias</th>             <th>Object type</th> <th>Enumeration value</th></tr>
+     *   <tr><td>Barometric altitude</td>       <td>CRS, Datum</td>  <td>{@link #BAROMETRIC}</td></tr>
+     *   <tr><td><s>Ellipsoidal height</s></td> <td>CRS, Datum</td>  <td><s>{@link #ELLIPSOIDAL}</s></td></tr>
+     *   <tr><td>Mean Sea Level</td>            <td>Datum</td>       <td>{@link #MEAN_SEA_LEVEL}</td></tr>
+     *   <tr><td>Mean Sea Level depth</td>      <td>CRS</td>         <td>{@link #DEPTH}</td></tr>
+     *   <tr><td>Mean Sea Level height</td>     <td>CRS</td>         <td>{@link #MEAN_SEA_LEVEL}</td></tr>
+     *   <tr><td>Other surface</td>             <td>CRS, Datum</td>  <td>{@link #OTHER_SURFACE}</td></tr>
      * </table></blockquote>
+     *
+     * {@note We do not provide a <code>GEOIDAL</code> value because its definition depends on the realization epoch.
+     * For example EGM84, EGM96 and EGM2008 are applications of three different geoid models on the WGS 84 ellipsoid.
+     * The <code>MEAN_SEA_LEVEL</code> value can be used instead as an approximation of geoidal heights.}
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.4
@@ -578,21 +628,48 @@ public enum GeodeticObjects {
      */
     public static enum Vertical {
         /**
-         * Height measured by atmospheric pressure.
+         * Height measured by atmospheric pressure in hectopascals (hPa).
+         * Hectopascals are the units of measurement used by the worldwide meteorological community.
+         * The datum is not specific to any location or epoch.
          *
          * @see VerticalDatumType#BAROMETRIC
          */
-        BAROMETRIC(Vocabulary.Keys.BarometricAltitude),
+        BAROMETRIC(false, Vocabulary.Keys.BarometricAltitude, Vocabulary.Keys.ConstantPressureSurface),
 
         /**
-         * Height measured above an equipotential surface.
+         * Height measured above the Mean Sea Level (MSL) in metres. Can be used as an approximation of geoidal heights
+         * (height measured above an equipotential surface), except that MSL are not specific to any location or epoch.
+         *
+         * <blockquote><table class="compact" style="text-align:left">
+         *   <tr><th>EPSG identifiers:</th>         <td>5714 &nbsp;(<i>datum:</i> 5100)</td></tr>
+         *   <tr><th>Primary names:</th>            <td>"MSL height" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
+         *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level height" &nbsp;(<i>datum:</i> "MSL")</td></tr>
+         *   <tr><th>Direction:</th>                <td>{@link AxisDirection#UP}</td></tr>
+         *   <tr><th>Unit:</th>                     <td>{@link SI#METRE}</td></tr>
+         * </table></blockquote>
          *
          * @see VerticalDatumType#GEOIDAL
          */
-        GEOIDAL(Vocabulary.Keys.Geoidal),
+        MEAN_SEA_LEVEL(true, (short) 5714, (short) 5100),
+
+        /**
+         * Depth measured below the Mean Sea Level (MSL) in metres.
+         *
+         * <blockquote><table class="compact" style="text-align:left">
+         *   <tr><th>EPSG identifiers:</th>         <td>5715 &nbsp;(<i>datum:</i> 5100)</td></tr>
+         *   <tr><th>Primary names:</th>            <td>"MSL depth" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
+         *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level depth" &nbsp;(<i>datum:</i> "MSL")</td></tr>
+         *   <tr><th>Direction:</th>                <td>{@link AxisDirection#DOWN}</td></tr>
+         *   <tr><th>Unit:</th>                     <td>{@link SI#METRE}</td></tr>
+         * </table></blockquote>
+         *
+         * @see VerticalDatumType#GEOIDAL
+         */
+        DEPTH(true, (short) 5715, (short) 5100),
 
         /**
          * Height measured along the normal to the ellipsoid used in the definition of horizontal datum.
+         * The unit of measurement is metres.
          *
          * <p><b>This datum is not part of ISO 19111 international standard.</b>
          * Usage of this datum is generally not recommended since ellipsoidal heights make little sense without
@@ -601,19 +678,31 @@ public enum GeodeticObjects {
          * because it is sometime useful to temporarily express ellipsoidal heights independently from other
          * ordinate values.</p>
          */
-        ELLIPSOIDAL(Vocabulary.Keys.Ellipsoidal),
+        ELLIPSOIDAL(false, Vocabulary.Keys.EllipsoidalHeight, Vocabulary.Keys.Ellipsoid),
 
         /**
          * Height measured above other kind of surface, for example a geological feature.
+         * The unit of measurement is metres.
          *
          * @see VerticalDatumType#OTHER_SURFACE
          */
-        OTHER_SURFACE(Vocabulary.Keys.OtherSurface);
+        OTHER_SURFACE(false, Vocabulary.Keys.Height, Vocabulary.Keys.OtherSurface);
 
         /**
-         * The resource keys for the name as one of the {@code Vocabulary.Keys} constants.
+         * {@code true} if {@link #crs} and {@link #datum} are EPSG codes, or {@code false} if
+         * they are resource keys for the name as one of the {@code Vocabulary.Keys} constants.
          */
-        private final short key;
+        final boolean isEPSG;
+
+        /**
+         * The EPSG code for the CRS or the resource keys, depending on {@link #isEPSG} value.
+         */
+        final short crs;
+
+        /**
+         * The EPSG code for the datum or the resource keys, depending on {@link #isEPSG} value.
+         */
+        final short datum;
 
         /**
          * The cached object. This is initially {@code null}, then set to various kind of objects depending
@@ -629,8 +718,96 @@ public enum GeodeticObjects {
          *        early class initialization. In particular, we do not want early dependency to the SIS-specific
          *        <code>VerticalDatumTypes.ELLIPSOIDAL</code> constant.}
          */
-        private Vertical(final short name) {
-            this.key = name;
+        private Vertical(final boolean isEPSG, final short crs, final short datum) {
+            this.isEPSG = isEPSG;
+            this.crs    = crs;
+            this.datum  = datum;
+        }
+
+        /**
+         * Registers a listeners to be invoked when the classpath changed.
+         * This will clear the cache, since the factories may have changed.
+         */
+        static {
+            SystemListener.add(new SystemListener(Modules.REFERENCING) {
+                @Override protected void classpathChanged() {
+                    for (final Vertical e : values()) {
+                        e.clear();
+                    }
+                }
+            });
+        }
+
+        /**
+         * Invoked by when the cache needs to be cleared after a classpath change.
+         */
+        synchronized void clear() {
+            cached = null;
+        }
+
+        /**
+         * Returns the coordinate reference system associated to this vertical object.
+         * The following table summarizes the CRS known to this class,
+         * together with an enumeration value that can be used for fetching that CRS:
+         *
+         * <blockquote><table class="sis">
+         *   <tr><th>Name or alias</th>             <th>Enum</th>                        <th>EPSG</th></tr>
+         *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
+         *   <tr><td><s>Ellipsoidal height</s></td> <td><s>{@link #ELLIPSOIDAL}</s></td> <td></td></tr>
+         *   <tr><td>Mean Sea Level depth</td>      <td>{@link #DEPTH}</td>              <td>5715</td></tr>
+         *   <tr><td>Mean Sea Level height</td>     <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5714</td></tr>
+         *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
+         * </table></blockquote>
+         *
+         * @return The CRS associated to this constant.
+         *
+         * @see DefaultVerticalCRS
+         */
+        public VerticalCRS crs() {
+            VerticalCRS object = crs(cached);
+            if (object == null) {
+                synchronized (this) {
+                    object = crs(cached);
+                    if (object == null) {
+                        if (isEPSG) {
+                            final CRSAuthorityFactory factory = crsFactory();
+                            if (factory != null) try {
+                                cached = object = factory.createVerticalCRS(String.valueOf(crs));
+                                return object;
+                            } catch (FactoryException e) {
+                                failure(this, "crs", e);
+                            }
+                            object = StandardDefinitions.createVerticalCRS(crs, datum());
+                        } else {
+                            final VerticalCS cs = cs();
+                            object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(cs), datum(), cs);
+                        }
+                        cached = object;
+                    }
+                }
+            }
+            return object;
+        }
+
+        /**
+         * Creates the coordinate system associated to this vertical object.
+         * This method does not cache the coordinate system.
+         */
+        private VerticalCS cs() {
+            final Map<String,?> properties = properties(crs);
+            final Unit<?> unit;
+            switch (this) {
+                default: {
+                    unit = SI.METRE;
+                    break;
+                }
+                case BAROMETRIC: {
+                    unit = SI.MetricPrefix.HECTO(SI.PASCAL);
+                    break;
+                }
+            }
+            return new DefaultVerticalCS(properties,
+                    new DefaultCoordinateSystemAxis(properties, "h", AxisDirection.UP, unit));
         }
 
         /**
@@ -639,17 +816,16 @@ public enum GeodeticObjects {
          * together with an enumeration value that can be used for fetching that datum:
          *
          * <blockquote><table class="sis">
-         *   <tr><th>Name or alias</th>       <th>Enum</th></tr>
-         *   <tr><td>Barometric altitude</td> <td>{@link #BAROMETRIC}</td></tr>
-         *   <tr><td>Geoidal height</td>      <td>{@link #GEOIDAL}</td></tr>
-         *   <tr><td>Ellipsoidal height</td>  <td>{@link #ELLIPSOIDAL}</td></tr>
-         *   <tr><td>Other surface</td>       <td>{@link #OTHER_SURFACE}</td></tr>
+         *   <tr><th>Name or alias</th>             <th>Enum</th>                        <th>EPSG</th></tr>
+         *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
+         *   <tr><td><s>Ellipsoidal height</s></td> <td><s>{@link #ELLIPSOIDAL}</s></td> <td></td></tr>
+         *   <tr><td>Mean Sea Level</td>            <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5100</td></tr>
+         *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
          * </table></blockquote>
          *
          * @return The datum associated to this constant.
          *
          * @see DefaultVerticalDatum
-         * @see DatumAuthorityFactory#createVerticalDatum(String)
          */
         public VerticalDatum datum() {
             VerticalDatum object = datum(cached);
@@ -657,16 +833,30 @@ public enum GeodeticObjects {
                 synchronized (this) {
                     object = datum(cached);
                     if (object == null) {
-                        final Map<String,Object> properties = new HashMap<String,Object>(4);
-                        final InternationalString name = Vocabulary.formatInternational(key);
-                        properties.put(NAME_KEY,  name.toString(Locale.ROOT));
-                        properties.put(ALIAS_KEY, name);
-                        object = new DefaultVerticalDatum(properties, VerticalDatumType.valueOf(name()));
+                        if (isEPSG) {
+                            final DatumAuthorityFactory factory = datumFactory();
+                            if (factory != null) try {
+                                cached = object = factory.createVerticalDatum(String.valueOf(datum));
+                                return object;
+                            } catch (FactoryException e) {
+                                failure(this, "datum", e);
+                            }
+                            object = StandardDefinitions.createVerticalDatum(datum);
+                        } else {
+                            object = new DefaultVerticalDatum(properties(datum), VerticalDatumType.valueOf(name()));
+                        }
                         cached = object;
                     }
                 }
             }
             return object;
+        }
+
+        /**
+         * Returns the vertical CRS associated to the given object, or {@code null} if none.
+         */
+        private static VerticalCRS crs(final IdentifiedObject object) {
+            return (object instanceof VerticalCRS) ? (VerticalCRS) object : null;
         }
 
         /**
@@ -691,7 +881,7 @@ public enum GeodeticObjects {
      *
      * <p>Referencing objects are cached after creation. Invoking the same method on the same {@code Temporal}
      * instance twice will return the same {@link IdentifiedObject} instance, unless the internal cache has been cleared
-     * (e.g. the application is running in a container environment, and some modules have been installed or uninstalled).</p>
+     * (e.g. the application is running in a container environment and some modules have been installed or uninstalled).</p>
      *
      * <p><b>Example:</b> the following code fetches a temporal Coordinate Reference System using the Julian calendar:</p>
      *
@@ -780,6 +970,95 @@ public enum GeodeticObjects {
         }
 
         /**
+         * Registers a listeners to be invoked when the classpath changed.
+         * This will clear the cache, since the factories may have changed.
+         */
+        static {
+            SystemListener.add(new SystemListener(Modules.REFERENCING) {
+                @Override protected void classpathChanged() {
+                    for (final Temporal e : values()) {
+                        e.clear();
+                    }
+                }
+            });
+        }
+
+        /**
+         * Invoked by when the cache needs to be cleared after a classpath change.
+         */
+        synchronized void clear() {
+            cached = null;
+        }
+
+        /**
+         * Returns the coordinate reference system associated to this temporal object.
+         * The following table summarizes the CRS known to this class,
+         * together with an enumeration value that can be used for fetching that CRS:
+         *
+         * <blockquote><table class="sis">
+         *   <tr><th>Name or alias</th>      <th>Enum</th></tr>
+         *   <tr><td>Dublin Julian</td>      <td>{@link #DUBLIN_JULIAN}</td></tr>
+         *   <tr><td>Julian</td>             <td>{@link #JULIAN}</td></tr>
+         *   <tr><td>Modified Julian</td>    <td>{@link #MODIFIED_JULIAN}</td></tr>
+         *   <tr><td>Truncated Julian</td>   <td>{@link #TRUNCATED_JULIAN}</td></tr>
+         *   <tr><td>Unix/POSIX or Java</td> <td>{@link #UNIX}</td></tr>
+         * </table></blockquote>
+         *
+         * @return The CRS associated to this constant.
+         *
+         * @see DefaultTemporalCRS
+         */
+        public TemporalCRS crs() {
+            TemporalCRS object = crs(cached);
+            if (object == null) {
+                synchronized (this) {
+                    object = crs(cached);
+                    if (object == null) {
+                        final TemporalDatum datum = datum();
+                        object = new DefaultTemporalCRS(IdentifiedObjects.getProperties(datum), datum, cs());
+                        cached = object;
+                    }
+                }
+            }
+            return object;
+        }
+
+        /**
+         * Creates the coordinate system associated to this temporal object.
+         * This method does not cache the coordinate system.
+         */
+        @SuppressWarnings("fallthrough")
+        private TimeCS cs() {
+            final Map<String,?> cs, axis;
+            Unit<Duration> unit = SI.SECOND;
+            switch (this) {
+                default: {
+                    // Share the coordinate system created for truncated Julian.
+                    return TRUNCATED_JULIAN.crs().getCoordinateSystem();
+                }
+                case TRUNCATED_JULIAN: {
+                    unit = NonSI.DAY;
+                    // Fall through
+                }
+                case UNIX: {
+                    // Share the NamedIdentifier created for Java time.
+                    final TimeCS share = JAVA.crs().getCoordinateSystem();
+                    cs   = IdentifiedObjects.getProperties(share);
+                    axis = IdentifiedObjects.getProperties(share.getAxis(0));
+                    break;
+                }
+                case JAVA: {
+                    // Create all properties for a new coordinate system.
+                    cs   = properties(Vocabulary.Keys.Temporal);
+                    axis = properties(Vocabulary.Keys.Time);
+                    unit = Units.MILLISECOND;
+                    break;
+                }
+            }
+            return new DefaultTimeCS(cs, new DefaultCoordinateSystemAxis(axis, "t", AxisDirection.FUTURE, unit));
+        }
+
+        /**
          * Returns the datum associated to this temporal object.
          * The following table summarizes the datum known to this class,
          * together with an enumeration value that can be used for fetching that datum:
@@ -796,7 +1075,6 @@ public enum GeodeticObjects {
          * @return The datum associated to this constant.
          *
          * @see DefaultTemporalDatum
-         * @see DatumAuthorityFactory#createTemporalDatum(String)
          */
         public TemporalDatum datum() {
             TemporalDatum object = datum(cached);
@@ -807,15 +1085,13 @@ public enum GeodeticObjects {
                         if (this == UNIX) {
                             object = JAVA.datum(); // Share the same instance for UNIX and JAVA.
                         } else {
-                            final Map<String,Object> properties = new HashMap<String,Object>(4);
-                            final InternationalString name;
+                            final Map<String,?> properties;
                             if (key == Vocabulary.Keys.Time_1) {
-                                name = Vocabulary.formatInternational(key, this == JAVA ? "Java" : "Unix/POSIX");
+                                properties = properties(Vocabulary.formatInternational(
+                                        key, (this == JAVA) ? "Java" : "Unix/POSIX"));
                             } else {
-                                name = Vocabulary.formatInternational(key);
+                                properties = properties(key);
                             }
-                            properties.put(NAME_KEY,  name.toString(Locale.ROOT));
-                            properties.put(ALIAS_KEY, name);
                             object = new DefaultTemporalDatum(properties, new Date(epoch));
                         }
                         cached = object;
@@ -823,6 +1099,13 @@ public enum GeodeticObjects {
                 }
             }
             return object;
+        }
+
+        /**
+         * Returns the temporal CRS associated to the given object, or {@code null} if none.
+         */
+        private static TemporalCRS crs(final IdentifiedObject object) {
+            return (object instanceof TemporalCRS) ? (TemporalCRS) object : null;
         }
 
         /**
@@ -837,5 +1120,46 @@ public enum GeodeticObjects {
             }
             return null;
         }
+    }
+
+    /**
+     * Puts the name for the given key in a map of properties to be given to object constructors.
+     *
+     * @param  key A constant from {@link org.apache.sis.util.resources.Vocabulary.Keys}.
+     * @return The properties to give to the object constructor.
+     */
+    static Map<String,?> properties(final short key) {
+        return properties(Vocabulary.formatInternational(key));
+    }
+
+    /**
+     * Puts the given name in a map of properties to be given to object constructors.
+     */
+    static Map<String,?> properties(final InternationalString name) {
+        return singletonMap(NAME_KEY, new NamedIdentifier(null, name));
+    }
+
+    /**
+     * Returns the EPSG factory to use for creating CRS, or {@code null} if none.
+     * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
+     */
+    static CRSAuthorityFactory crsFactory() {
+        return null; // TODO
+    }
+
+    /**
+     * Returns the EPSG factory to use for creating datum, ellipsoids and prime meridians, or {@code null} if none.
+     * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
+     */
+    static DatumAuthorityFactory datumFactory() {
+        return null; // TODO
+    }
+
+    /**
+     * Invoked when a factory failed to create an object.
+     * After invoking this method, then the caller will fallback on hard-coded values.
+     */
+    static void failure(final Object caller, final String method, final FactoryException e) {
+        Logging.unexpectedException(caller.getClass(), method, e);
     }
 }

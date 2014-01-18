@@ -17,10 +17,12 @@
 package org.apache.sis.referencing.cs;
 
 import javax.xml.bind.JAXBException;
+import javax.measure.unit.NonSI;
 import org.opengis.test.Validators;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.junit.Test;
 
@@ -31,7 +33,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 /**
  * Tests the {@link DefaultEllipsoidalCS} class.
  *
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
  * @version 0.4
  * @module
@@ -39,9 +41,80 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(AbstractCSTest.class)
 public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
     /**
+     * Tolerance threshold for strict floating point comparisons.
+     */
+    private static final double STRICT = 0;
+
+    /**
      * An XML file in this package containing an ellipsoidal coordinate system definition.
      */
     private static final String XML_FILE = "EllipsoidalCS.xml";
+
+    /**
+     * Tests the {@link DefaultEllipsoidalCS#forConvention(AxesConvention)} method.
+     */
+    @Test
+    public void testShiftLongitudeRange() {
+        final DefaultEllipsoidalCS cs = HardCodedCS.GEODETIC_3D;
+        CoordinateSystemAxis axis = cs.getAxis(0);
+        assertEquals("longitude.minimumValue", -180, axis.getMinimumValue(), STRICT);
+        assertEquals("longitude.maximumValue", +180, axis.getMaximumValue(), STRICT);
+
+        assertSame("Expected a no-op.", cs,  cs.forConvention(AxesConvention.NORMALIZED));
+        final DefaultEllipsoidalCS shifted = cs.forConvention(AxesConvention.POSITIVE_RANGE);
+        assertNotSame("Expected a new CS.", cs, shifted);
+        Validators.validate(shifted);
+
+        axis = shifted.getAxis(0);
+        assertEquals("longitude.minimumValue",   0, axis.getMinimumValue(), STRICT);
+        assertEquals("longitude.maximumValue", 360, axis.getMaximumValue(), STRICT);
+        assertSame("Expected a no-op.",         shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE));
+        assertSame("Expected cached instance.", shifted, cs     .forConvention(AxesConvention.POSITIVE_RANGE));
+    }
+
+    /**
+     * Tests the {@link DefaultEllipsoidalCS#forConvention(AxesConvention)} method with gradians units.
+     */
+    @Test
+    @DependsOnMethod("testShiftLongitudeRange")
+    public void testShiftLongitudeRangeGradians() {
+        final DefaultEllipsoidalCS cs = HardCodedCS.ELLIPSOIDAL_gon;
+        CoordinateSystemAxis axis = cs.getAxis(0);
+        assertEquals("longitude.minimumValue", -200, axis.getMinimumValue(), STRICT);
+        assertEquals("longitude.maximumValue", +200, axis.getMaximumValue(), STRICT);
+
+        assertSame("Expected a no-op.", cs,  cs.forConvention(AxesConvention.RIGHT_HANDED));
+        final DefaultEllipsoidalCS shifted = cs.forConvention(AxesConvention.POSITIVE_RANGE);
+        assertNotSame("Expected a new CS.", cs, shifted);
+        Validators.validate(shifted);
+
+        axis = shifted.getAxis(0);
+        assertEquals("longitude.minimumValue",   0, axis.getMinimumValue(), STRICT);
+        assertEquals("longitude.maximumValue", 400, axis.getMaximumValue(), STRICT);
+        assertSame("Expected a no-op.",         shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE));
+        assertSame("Expected cached instance.", shifted, cs     .forConvention(AxesConvention.POSITIVE_RANGE));
+    }
+
+    /**
+     * Tests the {@link DefaultEllipsoidalCS#forConvention(AxesConvention)} involving unit conversions.
+     */
+    @Test
+    public void testUnitConversion() {
+        final DefaultEllipsoidalCS cs = HardCodedCS.ELLIPSOIDAL_gon;
+        CoordinateSystemAxis axis = cs.getAxis(0);
+        assertEquals("unit", NonSI.GRADE, axis.getUnit());
+        assertEquals("longitude.minimumValue", -200, axis.getMinimumValue(), STRICT);
+        assertEquals("longitude.maximumValue", +200, axis.getMaximumValue(), STRICT);
+
+        final DefaultEllipsoidalCS converted = cs.forConvention(AxesConvention.NORMALIZED);
+        assertNotSame("Expected a new CS.", cs, converted);
+        Validators.validate(converted);
+
+        axis = converted.getAxis(0);
+        assertEquals("unit", NonSI.DEGREE_ANGLE, axis.getUnit());
+        assertEquals("longitude.minimumValue", -180, axis.getMinimumValue(), STRICT);
+        assertEquals("longitude.maximumValue", +180, axis.getMaximumValue(), STRICT);
+    }
 
     /**
      * Tests (un)marshalling of an ellipsoidal coordinate system.

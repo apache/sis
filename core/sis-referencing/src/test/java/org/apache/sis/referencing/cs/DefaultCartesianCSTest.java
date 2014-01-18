@@ -18,27 +18,34 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import javax.xml.bind.JAXBException;
+import javax.measure.unit.SI;
 import org.opengis.test.Validators;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singletonMap;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
  * Tests the {@link DefaultCartesianCS} class.
  *
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
  * @version 0.4
  * @module
  */
-@DependsOn(AbstractCSTest.class)
+@DependsOn({
+    DirectionAlongMeridianTest.class,
+    AbstractCSTest.class
+})
 public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
     /**
      * An XML file in this package containing a Cartesian coordinate system definition.
@@ -56,22 +63,22 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
          * (E,N) : legal axes for the usual projected CRS.
          */
         cs = new DefaultCartesianCS(properties,
-                CommonAxes.EASTING,
-                CommonAxes.NORTHING);
+                HardCodedAxes.EASTING,
+                HardCodedAxes.NORTHING);
         Validators.validate(cs);
         /*
          * (NE,SE) : same CS rotated by 45°
          */
         cs = new DefaultCartesianCS(properties,
-                CommonAxes.NORTH_EAST,
-                CommonAxes.SOUTH_EAST);
+                HardCodedAxes.NORTH_EAST,
+                HardCodedAxes.SOUTH_EAST);
         Validators.validate(cs);
         /*
          * (NE,h) : considered perpendicular.
          */
         cs = new DefaultCartesianCS(properties,
-                CommonAxes.NORTH_EAST,
-                CommonAxes.ALTITUDE);
+                HardCodedAxes.NORTH_EAST,
+                HardCodedAxes.ALTITUDE);
         Validators.validate(cs);
     }
 
@@ -86,8 +93,8 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
          */
         try {
             final DefaultCartesianCS cs = new DefaultCartesianCS(properties,
-                    CommonAxes.LONGITUDE,
-                    CommonAxes.LATITUDE);
+                    HardCodedAxes.GEODETIC_LONGITUDE,
+                    HardCodedAxes.GEODETIC_LATITUDE);
             fail("Angular units should not be accepted for " + cs);
         } catch (IllegalArgumentException e) {
             assertFalse(e.getMessage().isEmpty());
@@ -97,20 +104,96 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
          */
         try {
             final DefaultCartesianCS cs = new DefaultCartesianCS(properties,
-                    CommonAxes.SOUTHING,
-                    CommonAxes.NORTHING);
+                    HardCodedAxes.SOUTHING,
+                    HardCodedAxes.NORTHING);
             fail("Colinear units should not be accepted for " + cs);
         } catch (IllegalArgumentException e) {
             assertFalse(e.getMessage().isEmpty());
         }
         try {
             final DefaultCartesianCS cs = new DefaultCartesianCS(properties,
-                    CommonAxes.NORTH_EAST,
-                    CommonAxes.EASTING);
+                    HardCodedAxes.NORTH_EAST,
+                    HardCodedAxes.EASTING);
             fail("Non-perpendicular axis should not be accepted for " + cs);
         } catch (IllegalArgumentException e) {
             assertFalse(e.getMessage().isEmpty());
         }
+    }
+
+    /**
+     * Creates an axis for the specified direction.
+     *
+     * @param direction The name of an {@link AxisDirection} value.
+     */
+    private static DefaultCoordinateSystemAxis createAxis(final String direction) {
+        final AxisDirection c = CoordinateSystems.parseAxisDirection(direction);
+        if (c.equals(AxisDirection.NORTH)) return HardCodedAxes.NORTHING;
+        if (c.equals(AxisDirection.EAST))  return HardCodedAxes.EASTING;
+        if (c.equals(AxisDirection.SOUTH)) return HardCodedAxes.SOUTHING;
+        if (c.equals(AxisDirection.WEST))  return HardCodedAxes.WESTING;
+        return new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, c.name()), "?", c, SI.METRE);
+    }
+
+    /**
+     * Creates a coordinate system with the specified axis directions.
+     *
+     * @param x The name of an {@link AxisDirection} value for the x axis.
+     * @param y The name of an {@link AxisDirection} value for the y axis.
+     */
+    private static DefaultCartesianCS createCS(final String x, final String y) {
+        final DefaultCoordinateSystemAxis xAxis = createAxis(x);
+        final DefaultCoordinateSystemAxis yAxis = createAxis(y);
+        final String name = xAxis.getName().getCode() + ", " + yAxis.getName().getCode();
+        return new DefaultCartesianCS(singletonMap(NAME_KEY, name), xAxis, yAxis);
+    }
+
+    /**
+     * Creates a Cartesian CS using the provided test axis, invoke {@link AbstractCS#standard}
+     * with it and compare with the expected axis.
+     *
+     * @param expectedX The name of the expected {@link AxisDirection} of x axis after normalization.
+     * @param expectedY The name of the expected {@link AxisDirection} of y axis after normalization.
+     * @param toTestX   The name of the {@link AxisDirection} value for the x axis of the CS to normalize.
+     * @param toTestY   The name of the {@link AxisDirection} value for the y axis of the CS to normalize.
+     */
+    private static void assertNormalizationEquals(
+            final String expectedX, final String expectedY,
+            final String toTestX,   final String toTestY)
+    {
+        DefaultCartesianCS cs = createCS(toTestX, toTestY);
+        cs = cs.forConvention(AxesConvention.NORMALIZED);
+        assertEqualsIgnoreMetadata(createCS(expectedX, expectedY), cs);
+    }
+
+    /**
+     * Asserts that the coordinate system made of the given axes is normalized.
+     * This method also ensures that swapping the axes and normalizing give back the original CS.
+     */
+    private static void assertNormalized(final String x, final String y) {
+        assertNormalizationEquals(x, y, x, y); // Expect no-op.
+        assertNormalizationEquals(x, y, y, x); // Expect normalization.
+    }
+
+    /**
+     * Tests {@link DefaultCartesianCS#forConvention(AxesConvention)} with {@link AxesConvention#NORMALIZED}.
+     */
+    @Test
+    @DependsOnMethod("testConstructor")
+    public void testNormalization() {
+        // ----------- Axis to test ------ Expected axis --
+        assertNormalizationEquals("East", "North",    "East", "North");
+        assertNormalizationEquals("East", "North",    "North", "East");
+        assertNormalizationEquals("East", "North",    "South", "East");
+        assertNormalizationEquals("East", "North",    "South", "West");
+
+        assertNormalized("East",                       "North");
+        assertNormalized("South-East",                 "North-East");
+        assertNormalized("North along  90 deg East",   "North along   0 deg");
+        assertNormalized("North along  90 deg East",   "North along   0 deg");
+        assertNormalized("North along  75 deg West",   "North along 165 deg West");
+        assertNormalized("South along  90 deg West",   "South along   0 deg");
+        assertNormalized("South along 180 deg",        "South along  90 deg West");
+        assertNormalized("North along 130 deg West",   "North along 140 deg East");
     }
 
     /**

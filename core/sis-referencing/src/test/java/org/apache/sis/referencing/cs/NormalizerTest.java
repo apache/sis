@@ -50,22 +50,22 @@ public final strictfp class NormalizerTest extends TestCase {
     @Test
     public void testSort() {
         assertOrdered(new CoordinateSystemAxis[] {
-            CommonAxes.LONGITUDE,
-            CommonAxes.LATITUDE,
-            CommonAxes.ELLIPSOIDAL_HEIGHT
+            HardCodedAxes.GEODETIC_LONGITUDE,
+            HardCodedAxes.GEODETIC_LATITUDE,
+            HardCodedAxes.ELLIPSOIDAL_HEIGHT
         }, new CoordinateSystemAxis[] {
-            CommonAxes.LONGITUDE,
-            CommonAxes.LATITUDE,
-            CommonAxes.ELLIPSOIDAL_HEIGHT
+            HardCodedAxes.GEODETIC_LONGITUDE,
+            HardCodedAxes.GEODETIC_LATITUDE,
+            HardCodedAxes.ELLIPSOIDAL_HEIGHT
         });
         assertOrdered(new CoordinateSystemAxis[] {
-            CommonAxes.LONGITUDE,
-            CommonAxes.LATITUDE,
-            CommonAxes.ELLIPSOIDAL_HEIGHT
+            HardCodedAxes.GEODETIC_LONGITUDE,
+            HardCodedAxes.GEODETIC_LATITUDE,
+            HardCodedAxes.ELLIPSOIDAL_HEIGHT
         }, new CoordinateSystemAxis[] {
-            CommonAxes.LATITUDE,
-            CommonAxes.ELLIPSOIDAL_HEIGHT,
-            CommonAxes.LONGITUDE
+            HardCodedAxes.GEODETIC_LATITUDE,
+            HardCodedAxes.ELLIPSOIDAL_HEIGHT,
+            HardCodedAxes.GEODETIC_LONGITUDE
         });
 
         // A plausible CS.
@@ -166,23 +166,23 @@ public final strictfp class NormalizerTest extends TestCase {
      */
     @Test
     public void testNormalizeAxis() {
-        assertSame(CommonAxes.LATITUDE,  Normalizer.normalize(CommonAxes.LATITUDE));
-        assertSame(CommonAxes.LONGITUDE, Normalizer.normalize(CommonAxes.LONGITUDE));
-        assertSame(CommonAxes.EASTING,   Normalizer.normalize(CommonAxes.EASTING));
-        assertSame(CommonAxes.NORTHING,  Normalizer.normalize(CommonAxes.NORTHING));
-        assertSame(CommonAxes.ALTITUDE,  Normalizer.normalize(CommonAxes.ALTITUDE));
-        assertSame(CommonAxes.TIME,      Normalizer.normalize(CommonAxes.TIME));
+        assertSame(HardCodedAxes.GEODETIC_LATITUDE,  Normalizer.normalize(HardCodedAxes.GEODETIC_LATITUDE));
+        assertSame(HardCodedAxes.GEODETIC_LONGITUDE, Normalizer.normalize(HardCodedAxes.GEODETIC_LONGITUDE));
+        assertSame(HardCodedAxes.EASTING,            Normalizer.normalize(HardCodedAxes.EASTING));
+        assertSame(HardCodedAxes.NORTHING,           Normalizer.normalize(HardCodedAxes.NORTHING));
+        assertSame(HardCodedAxes.ALTITUDE,           Normalizer.normalize(HardCodedAxes.ALTITUDE));
+        assertSame(HardCodedAxes.TIME,               Normalizer.normalize(HardCodedAxes.TIME));
         /*
          * Test a change of unit from centimetre to metre.
          */
         assertAxisEquals("Height", "h", AxisDirection.UP,
             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
-            Normalizer.normalize(CommonAxes.HEIGHT_cm));
+            Normalizer.normalize(HardCodedAxes.HEIGHT_cm));
         /*
          * Test a change of direction from West to East.
          */
         assertAxisEquals(Vocabulary.format(Vocabulary.Keys.Unnamed), "E",
             AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
-            Normalizer.normalize(CommonAxes.WESTING));
+            Normalizer.normalize(HardCodedAxes.WESTING));
     }
 }

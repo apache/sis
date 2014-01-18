@@ -175,7 +175,9 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
 
     /**
      * Constructs a new envelope with the same data than the specified geographic bounding box.
-     * The coordinate reference system is set to {@code "CRS:84"}.
+     * The coordinate reference system is set to the
+     * {@linkplain org.apache.sis.referencing.GeodeticObjects#defaultGeographic() default geographic CRS}.
+     * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
      * @param box The bounding box to copy.
      */
@@ -193,7 +195,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
                 ArraysExt.swap(ordinates, 1, (ordinates.length >>> 1) + 1);
             }
         }
-        crs = GeodeticObjects.WGS84.normalizedGeographic();
+        crs = GeodeticObjects.defaultGeographic();
     }
 
     /**

@@ -16,6 +16,9 @@
  */
 package org.apache.sis.referencing.cs;
 
+import javax.measure.unit.NonSI;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.test.Validators;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOnMethod;
@@ -24,7 +27,8 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.referencing.Assert.*;
-import static org.apache.sis.referencing.cs.CommonAxes.*;
+import static org.apache.sis.referencing.cs.HardCodedAxes.*;
+import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 
 
 /**
@@ -41,14 +45,14 @@ import static org.apache.sis.referencing.cs.CommonAxes.*;
 })
 public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
     /**
-     * Validates the {@link CommonAxes} constants.
+     * Validates the {@link HardCodedAxes} constants.
      */
     @Test
     public void validate() {
         Validators.validate(GEODETIC_LONGITUDE);
         Validators.validate(GEODETIC_LATITUDE);
-        Validators.validate(LONGITUDE);
-        Validators.validate(LATITUDE);
+        Validators.validate(LONGITUDE_gon);
+        Validators.validate(LATITUDE_gon);
         Validators.validate(ELLIPSOIDAL_HEIGHT);
         Validators.validate(GRAVITY_RELATED_HEIGHT);
         Validators.validate(ALTITUDE);
@@ -81,8 +85,8 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
         assertWktEquals(X,                   "AXIS[“x”, EAST]");
         assertWktEquals(Y,                   "AXIS[“y”, NORTH]");
         assertWktEquals(Z,                   "AXIS[“z”, UP]");
-        assertWktEquals(LONGITUDE,           "AXIS[“Longitude”, EAST]");
-        assertWktEquals(LATITUDE,            "AXIS[“Latitude”, NORTH]");
+        assertWktEquals(LONGITUDE_gon,       "AXIS[“Longitude”, EAST]");
+        assertWktEquals(LATITUDE_gon,        "AXIS[“Latitude”, NORTH]");
         assertWktEquals(ALTITUDE,            "AXIS[“Altitude”, UP]");
         assertWktEquals(TIME,                "AXIS[“Time”, FUTURE]");
         assertWktEquals(GEODETIC_LONGITUDE,  "AXIS[“Geodetic longitude”, EAST]");
@@ -96,12 +100,13 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
      */
     @Test
     public void testIsHeuristicMatchForName() {
-        assertTrue (LONGITUDE.isHeuristicMatchForName(GEODETIC_LONGITUDE.getName().getCode()));
-        assertFalse(LONGITUDE.isHeuristicMatchForName(GEODETIC_LATITUDE .getName().getCode()));
-        assertFalse(LONGITUDE.isHeuristicMatchForName(ALTITUDE          .getName().getCode()));
-        assertFalse(X        .isHeuristicMatchForName(LONGITUDE         .getName().getCode()));
-        assertFalse(X        .isHeuristicMatchForName(EASTING           .getName().getCode()));
-        assertFalse(X        .isHeuristicMatchForName(NORTHING          .getName().getCode()));
+        assertTrue (LONGITUDE_gon.isHeuristicMatchForName(GEODETIC_LONGITUDE.getName().getCode()));
+        assertFalse(LONGITUDE_gon.isHeuristicMatchForName(GEODETIC_LATITUDE .getName().getCode()));
+        assertFalse(LONGITUDE_gon.isHeuristicMatchForName(ALTITUDE          .getName().getCode()));
+        assertTrue (LATITUDE_gon .isHeuristicMatchForName(GEODETIC_LATITUDE .getName().getCode()));
+        assertFalse(X            .isHeuristicMatchForName(LONGITUDE_gon     .getName().getCode()));
+        assertFalse(X            .isHeuristicMatchForName(EASTING           .getName().getCode()));
+        assertFalse(X            .isHeuristicMatchForName(NORTHING          .getName().getCode()));
     }
 
     /**
@@ -110,6 +115,15 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
     @Test
     @DependsOnMethod("testIsHeuristicMatchForName")
     public void testEqualsIgnoreMetadata() {
+        /*
+         * Defines, only for the purpose of this test, axis constants identical to
+         * (GEODETIC_LONGITUDE, GEODETIC_LATITUDE) except for the name.
+         */
+        final DefaultCoordinateSystemAxis LONGITUDE = new DefaultCoordinateSystemAxis(getProperties(LONGITUDE_gon),
+                "λ", AxisDirection.EAST, NonSI.DEGREE_ANGLE, -180, 180, RangeMeaning.WRAPAROUND);
+        final DefaultCoordinateSystemAxis LATITUDE = new DefaultCoordinateSystemAxis(getProperties(LATITUDE_gon),
+                "φ", AxisDirection.NORTH, NonSI.DEGREE_ANGLE, -90, 90, RangeMeaning.EXACT);
+
         assertFalse("X",         X        .equals(GEOCENTRIC_X,        ComparisonMode.IGNORE_METADATA));
         assertFalse("Longitude", LONGITUDE.equals(GEODETIC_LONGITUDE,  ComparisonMode.STRICT));
         assertFalse("Longitude", LONGITUDE.equals(SPHERICAL_LONGITUDE, ComparisonMode.STRICT));
