@@ -17,6 +17,8 @@
 package org.apache.sis.referencing;
 
 import java.util.Date;
+import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.TemporalDatum;
@@ -78,19 +80,33 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
      */
     @Test
     public void testVertical() {
-        assertEquals(VerticalDatumType. BAROMETRIC,    type(GeodeticObjects.Vertical.BAROMETRIC));
-        assertEquals(VerticalDatumType. GEOIDAL,       type(GeodeticObjects.Vertical.GEOIDAL));
-        assertEquals(VerticalDatumTypes.ELLIPSOIDAL,   type(GeodeticObjects.Vertical.ELLIPSOIDAL));
-        assertEquals(VerticalDatumType. OTHER_SURFACE, type(GeodeticObjects.Vertical.OTHER_SURFACE));
-    }
-
-    /**
-     * Validates the datum of the given enumeration, then returns its datum type.
-     */
-    private static VerticalDatumType type(final GeodeticObjects.Vertical e) {
-        final VerticalDatum datum = e.datum();
-        Validators.validate(datum);
-        return datum.getVerticalDatumType();
+        for (final GeodeticObjects.Vertical e : GeodeticObjects.Vertical.values()) {
+            final VerticalDatumType datumType;
+            final String axisName, datumName;
+            switch (e) {
+                case BAROMETRIC:     axisName = "Barometric altitude";    datumName = "Constant pressure surface"; datumType = VerticalDatumType. BAROMETRIC;    break;
+                case MEAN_SEA_LEVEL: axisName = "Gravity-related height"; datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
+                case DEPTH:          axisName = "Depth";                  datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
+                case ELLIPSOIDAL:    axisName = "Ellipsoidal height";     datumName = "Ellipsoid";                 datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
+                case OTHER_SURFACE:  axisName = "Height";                 datumName = "Other surface";             datumType = VerticalDatumType. OTHER_SURFACE; break;
+                default: throw new AssertionError(e);
+            }
+            final String        name  = e.name();
+            final VerticalDatum datum = e.datum();
+            final VerticalCRS   crs   = e.crs();
+            if (e.isEPSG) {
+                /*
+                 * BAROMETRIC, ELLIPSOIDAL and OTHER_SURFACE uses an axis named "Height", which is not
+                 * a valid axis name according ISO 19111. We skip the validation test for those enums.
+                 */
+                Validators.validate(crs);
+            }
+            assertSame  (name, datum,          e.datum()); // Datum before CRS creation.
+            assertSame  (name, crs.getDatum(), e.datum()); // Datum after CRS creation.
+            assertEquals(name, datumName, datum.getName().getCode());
+            assertEquals(name, datumType, datum.getVerticalDatumType());
+            assertEquals(name, axisName,  crs.getCoordinateSystem().getAxis(0).getName().getCode());
+        }
     }
 
     /**
@@ -100,23 +116,29 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
      */
     @Test
     public void testTemporal() {
-        final double epoch = GeodeticObjects.Temporal.JULIAN.datum().getOrigin().getTime() / DAY_LENGTH;
-        assertTrue(epoch < 0);
-        assertEquals(2400000.5, julian("1858-11-17 00:00:00", GeodeticObjects.Temporal.MODIFIED_JULIAN)  - epoch, 0);
-        assertEquals(2440000.5, julian("1968-05-24 00:00:00", GeodeticObjects.Temporal.TRUNCATED_JULIAN) - epoch, 0);
-        assertEquals(2415020.0, julian("1899-12-31 12:00:00", GeodeticObjects.Temporal.DUBLIN_JULIAN)    - epoch, 0);
-        assertEquals(2440587.5, julian("1970-01-01 00:00:00", GeodeticObjects.Temporal.UNIX)             - epoch, 0);
-    }
-
-    /**
-     * Validates the datum of the given definition, compares its epoch with the given ISO date
-     * and returns its Julian day.
-     */
-    private static double julian(final String epoch, final GeodeticObjects.Temporal def) {
-        final TemporalDatum datum = def.datum();
-        Validators.validate(datum);
-        final Date origin = datum.getOrigin();
-        assertEquals(def.name(), epoch, format(origin));
-        return origin.getTime() / DAY_LENGTH;
+        final double julianEpoch = GeodeticObjects.Temporal.JULIAN.datum().getOrigin().getTime() / DAY_LENGTH;
+        assertTrue(julianEpoch < 0);
+        for (final GeodeticObjects.Temporal e : GeodeticObjects.Temporal.values()) {
+            final String epoch;
+            final double days;
+            switch (e) {
+                case JAVA:             // Fall through
+                case UNIX:             epoch = "1970-01-01 00:00:00"; days = 2440587.5; break;
+                case TRUNCATED_JULIAN: epoch = "1968-05-24 00:00:00"; days = 2440000.5; break;
+                case DUBLIN_JULIAN:    epoch = "1899-12-31 12:00:00"; days = 2415020.0; break;
+                case MODIFIED_JULIAN:  epoch = "1858-11-17 00:00:00"; days = 2400000.5; break;
+                case JULIAN:           epoch = "4713-01-01 12:00:00"; days = 0;         break;
+                default: throw new AssertionError(e);
+            }
+            final String        name   = e.name();
+            final TemporalDatum datum  = e.datum();
+            final TemporalCRS   crs    = e.crs();
+            final Date          origin = datum.getOrigin();
+            Validators.validate(crs);
+            assertSame  (name, datum,          e.datum()); // Datum before CRS creation.
+            assertSame  (name, crs.getDatum(), e.datum()); // Datum after CRS creation.
+            assertEquals(name, epoch, format(origin));
+            assertEquals(name, days, origin.getTime() / DAY_LENGTH - julianEpoch, 0);
+        }
     }
 }

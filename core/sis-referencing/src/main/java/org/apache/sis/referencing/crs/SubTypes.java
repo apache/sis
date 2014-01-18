@@ -86,6 +86,7 @@ final class SubTypes implements Comparator<Object> {
             if (TYPE_ORDER[i].isInstance(object)) {
                 break;
             }
+            i++;
         }
         return i;
     }

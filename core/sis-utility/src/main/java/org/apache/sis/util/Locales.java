@@ -141,8 +141,7 @@ public final class Locales extends Static {
     public static final Locales ALL = new Locales();
 
     /**
-     * Only locales available in the Apache SIS library. They are the locales for which localized
-     * resources are provided in the {@link org.apache.sis.util.resources} package.
+     * Only locales available in the Apache SIS library.
      */
     public static final Locales SIS = new Locales();
 
@@ -156,7 +155,7 @@ public final class Locales extends Static {
     /**
      * Returns the languages known to the JavaVM ({@link #ALL}) or to the Apache SIS library
      * ({@link #SIS}). In the later case, this method returns only the languages for which
-     * localized resources are provided in the {@link org.apache.sis.util.resources} package.
+     * localized resources are provided in the {@code org.apache.sis.util.resources} package.
      *
      * @return The list of supported languages.
      */
@@ -173,7 +172,7 @@ public final class Locales extends Static {
     /**
      * Returns the locales known to the JavaVM ({@link #ALL}) or to the Apache SIS library
      * ({@link #SIS}). In the later case, this method returns only the locales for which
-     * localized resources are provided in the {@link org.apache.sis.util.resources} package.
+     * localized resources are provided in the {@code org.apache.sis.util.resources} package.
      *
      * @return The list of supported locales.
      */

@@ -25,6 +25,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.CRS;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
