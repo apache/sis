@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.cs;
+package org.apache.sis.referencing.crs;
 
-import org.opengis.referencing.cs.CoordinateSystemAxis;
+import java.util.Arrays;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -24,23 +25,32 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link DefaultCompoundCS}.
+ * Tests {@link SubTypes}
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
  */
-public final strictfp class DefaultCompoundCSTest extends TestCase {
+@DependsOn(AbstractCRSTest.class)
+public final strictfp class SubTypesTest extends TestCase {
     /**
-     * Tests {@link DefaultCompoundCS#createName(StringBuilder, CoordinateSystemAxis[])}.
+     * Tests the {@link SubTypes#BY_TYPE} comparator.
      */
     @Test
-    public void testCreateName() {
-        final StringBuilder buffer = new StringBuilder("Compound CS");
-        final String name = DefaultCompoundCS.createName(buffer, new CoordinateSystemAxis[] {
-            HardCodedAxes.EASTING, HardCodedAxes.NORTHING, HardCodedAxes.HEIGHT_cm, HardCodedAxes.TIME
-        });
-        assertEquals("Compound CS: East (m), North (m), Up (cm), Future (d).", name);
+    public void testComparator() {
+        final AbstractCRS[] components = {
+            HardCodedCRS.IMAGE,
+            HardCodedCRS.TIME,
+            HardCodedCRS.WGS84,
+            HardCodedCRS.GRAVITY_RELATED_HEIGHT
+        };
+        Arrays.sort(components, SubTypes.BY_TYPE);
+        assertArrayEquals(new AbstractCRS[] {
+            HardCodedCRS.WGS84,
+            HardCodedCRS.GRAVITY_RELATED_HEIGHT,
+            HardCodedCRS.TIME,
+            HardCodedCRS.IMAGE
+        }, components);
     }
 }

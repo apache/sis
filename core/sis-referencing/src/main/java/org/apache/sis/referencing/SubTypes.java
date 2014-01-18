@@ -17,9 +17,15 @@
 package org.apache.sis.referencing;
 
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.apache.sis.referencing.crs.AbstractCRS;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
@@ -53,6 +59,15 @@ final class SubTypes {
      * @see AbstractIdentifiedObject#castOrCopy(IdentifiedObject)
      */
     static AbstractIdentifiedObject castOrCopy(final IdentifiedObject object) {
+        if (object instanceof CoordinateReferenceSystem) {
+            return AbstractCRS.castOrCopy((CoordinateReferenceSystem) object);
+        }
+        if (object instanceof CoordinateSystem) {
+            return AbstractCS.castOrCopy((CoordinateSystem) object);
+        }
+        if (object instanceof CoordinateSystemAxis) {
+            return DefaultCoordinateSystemAxis.castOrCopy((CoordinateSystemAxis) object);
+        }
         if (object instanceof Datum) {
             return AbstractDatum.castOrCopy((Datum) object);
         }
@@ -61,6 +76,14 @@ final class SubTypes {
         }
         if (object instanceof PrimeMeridian) {
             return DefaultPrimeMeridian.castOrCopy((PrimeMeridian) object);
+        }
+        /*
+         * Intentionally check for AbstractIdentifiedObject after the interfaces because user may have defined his own
+         * subclass implementing the interface. If we were checking for AbstractIdentifiedObject before the interfaces,
+         * the returned instance could have been a user subclass without the JAXB annotations required for XML marshalling.
+         */
+        if (object == null || object instanceof AbstractIdentifiedObject) {
+            return (AbstractIdentifiedObject) object;
         }
         return new AbstractIdentifiedObject(object);
     }

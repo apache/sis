@@ -166,11 +166,11 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     @Test
     public void testSwapAndScaleAxes2D() throws ConversionException {
         final CoordinateSystem λφ = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(λ,φ)"),
-                CommonAxes.GEODETIC_LONGITUDE,
-                CommonAxes.GEODETIC_LATITUDE);
+                HardCodedAxes.GEODETIC_LONGITUDE,
+                HardCodedAxes.GEODETIC_LATITUDE);
         final CoordinateSystem φλ = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(φ,λ)"),
-                CommonAxes.GEODETIC_LATITUDE,
-                CommonAxes.GEODETIC_LONGITUDE);
+                HardCodedAxes.GEODETIC_LATITUDE,
+                HardCodedAxes.GEODETIC_LONGITUDE);
         final Matrix expected = Matrices.create(3, 3, new double[] {
                 0, 1, 0,
                 1, 0, 0,
@@ -191,13 +191,13 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     @DependsOnMethod("testSwapAndScaleAxes2D")
     public void testSwapAndScaleAxes3D() throws ConversionException {
         final CoordinateSystem λφh = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(λ,φ,h)"),
-                CommonAxes.GEODETIC_LONGITUDE,
-                CommonAxes.GEODETIC_LATITUDE,
-                CommonAxes.ELLIPSOIDAL_HEIGHT);
+                HardCodedAxes.GEODETIC_LONGITUDE,
+                HardCodedAxes.GEODETIC_LATITUDE,
+                HardCodedAxes.ELLIPSOIDAL_HEIGHT);
         final CoordinateSystem φλh = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(φ,λ,h)"),
-                CommonAxes.GEODETIC_LATITUDE,
-                CommonAxes.GEODETIC_LONGITUDE,
-                CommonAxes.ELLIPSOIDAL_HEIGHT);
+                HardCodedAxes.GEODETIC_LATITUDE,
+                HardCodedAxes.GEODETIC_LONGITUDE,
+                HardCodedAxes.ELLIPSOIDAL_HEIGHT);
         final Matrix expected = Matrices.create(4, 4, new double[] {
                 0, 1, 0, 0,
                 1, 0, 0, 0,
@@ -219,13 +219,13 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     @DependsOnMethod("testSwapAndScaleAxes3D")
     public void testSwapAndScaleAxes() throws ConversionException {
         final CoordinateSystem hxy = new DefaultCartesianCS(singletonMap(NAME_KEY, "(h,x,y)"),
-                CommonAxes.HEIGHT_cm,
-                CommonAxes.EASTING,
-                CommonAxes.NORTHING);
+                HardCodedAxes.HEIGHT_cm,
+                HardCodedAxes.EASTING,
+                HardCodedAxes.NORTHING);
         final CoordinateSystem yxh = new DefaultCartesianCS(singletonMap(NAME_KEY, "(y,x,h)"),
-                CommonAxes.SOUTHING,
-                CommonAxes.EASTING,
-                CommonAxes.DEPTH);
+                HardCodedAxes.SOUTHING,
+                HardCodedAxes.EASTING,
+                HardCodedAxes.DEPTH);
         assertTrue(swapAndScaleAxes(hxy, hxy).isIdentity());
         assertTrue(swapAndScaleAxes(yxh, yxh).isIdentity());
         assertMatrixEquals("(h,x,y) → (y,x,h)", Matrices.create(4, 4, new double[] {

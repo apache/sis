@@ -138,7 +138,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The name for this object or code. Shall never be {@code null}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link Names#add(ReferenceIdentifier)}.</p>
+     * This field is modified only at unmarshalling time by {@link #addName(ReferenceIdentifier)}.</p>
      *
      * @see #getName()
      * @see #getNames()
@@ -151,7 +151,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * we may get both on unmarshalling.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link Names#add(ReferenceIdentifier)}.</p>
+     * This field is modified only at unmarshalling time by {@link #addName(ReferenceIdentifier)}.</p>
      */
     private Collection<GenericName> alias;
 
@@ -330,6 +330,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is is an instance of
+     *       {@link org.opengis.referencing.cs.CoordinateReferenceSystem},
+     *       {@link org.opengis.referencing.cs.CoordinateSystem},
+     *       {@link org.opengis.referencing.cs.CoordinateSystemAxis},
      *       {@link org.opengis.referencing.datum.Datum},
      *       {@link org.opengis.referencing.datum.Ellipsoid} or
      *       {@link org.opengis.referencing.datum.PrimeMeridian},
