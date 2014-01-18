@@ -86,6 +86,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.util.LocalizedParseExceptionTest.class,
     org.apache.sis.util.iso.AbstractNameTest.class,
     org.apache.sis.util.iso.DefaultNameFactoryTest.class,
+    org.apache.sis.internal.simple.SimpleReferenceIdentifierTest.class,
 
     // Measurements and formatting.
     org.apache.sis.measure.SexagesimalConverterTest.class,

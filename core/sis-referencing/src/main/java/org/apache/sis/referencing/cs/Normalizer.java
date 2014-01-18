@@ -28,7 +28,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
@@ -182,7 +181,7 @@ final class Normalizer implements Comparable<Normalizer> {
         if (newAbbr.equals(abbreviation)) {
             properties = IdentifiedObjects.getProperties(axis, EXCLUDES);
         } else {
-            properties = singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed));
+            properties = singletonMap(NAME_KEY, DefaultCoordinateSystemAxis.UNNAMED);
         }
         /*
          * Converts the axis range and build the new axis.

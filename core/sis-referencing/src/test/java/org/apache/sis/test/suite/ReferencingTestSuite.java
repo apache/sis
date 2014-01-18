@@ -69,8 +69,13 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.cs.DefaultEllipsoidalCSTest.class,
     org.apache.sis.referencing.cs.DefaultCompoundCSTest.class,
     org.apache.sis.referencing.cs.CoordinateSystemsTest.class,
+    org.apache.sis.referencing.cs.HardCodedCSTest.class,
     org.apache.sis.referencing.crs.AbstractCRSTest.class,
     org.apache.sis.referencing.crs.DefaultGeodeticCRSTest.class,
+    org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
+    org.apache.sis.referencing.crs.SubTypesTest.class,
+    org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
+    org.apache.sis.referencing.crs.HardCodedCRSTest.class,
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.GeodeticObjectsTest.class,
     org.apache.sis.referencing.CRSTest.class,
@@ -84,6 +89,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.SubEnvelopeTest.class,
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,
     org.apache.sis.geometry.Envelope2DTest.class,
+    org.apache.sis.geometry.EnvelopesTest.class,
 
     org.apache.sis.test.integration.ReferencingInMetadataTest.class
 })

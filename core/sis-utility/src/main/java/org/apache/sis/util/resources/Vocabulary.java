@@ -105,6 +105,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Commands = 9;
 
         /**
+         * Constant pressure surface
+         */
+        public static final short ConstantPressureSurface = 19;
+
+        /**
          * Current date and time
          */
         public static final short CurrentDateTime = 10;
@@ -145,14 +150,19 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short DublinJulian = 17;
 
         /**
-         * Ellipsoidal
+         * Ellipsoid
          */
-        public static final short Ellipsoidal = 18;
+        public static final short Ellipsoid = 70;
 
         /**
-         * Geoidal
+         * Ellipsoidal height
          */
-        public static final short Geoidal = 19;
+        public static final short EllipsoidalHeight = 18;
+
+        /**
+         * Height
+         */
+        public static final short Height = 69;
 
         /**
          * Identifier
@@ -315,9 +325,19 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short StandardDeviation = 51;
 
         /**
+         * Temporal
+         */
+        public static final short Temporal = 66;
+
+        /**
          * Temporary files
          */
         public static final short TemporaryFiles = 52;
+
+        /**
+         * Time
+         */
+        public static final short Time = 67;
 
         /**
          * {0} time
@@ -378,6 +398,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Versions
          */
         public static final short Versions = 63;
+
+        /**
+         * Vertical
+         */
+        public static final short Vertical = 68;
 
         /**
          * World

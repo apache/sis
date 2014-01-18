@@ -423,7 +423,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      *         and we can not convert from one to the other.
      *
      * @see #setSecondDefiningParameter(SecondDefiningParameter)
-     * @see #afterUnmarshal(Object, Object)
+     * @see #afterUnmarshal()
      */
     private void setSemiMajorAxisMeasure(final Measure measure) throws ConversionException {
         if (semiMajorAxis != 0) {
@@ -526,7 +526,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      *         and we can not convert from one to the other.
      *
      * @see #setSemiMajorAxisMeasure(Measure)
-     * @see #afterUnmarshal(Object, Object)
+     * @see #afterUnmarshal()
      */
     private void setSecondDefiningParameter(SecondDefiningParameter second) throws ConversionException {
         while (second.secondDefiningParameter != null) {

@@ -50,9 +50,9 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class GeodeticObjectVerifier {
     /**
-     * The tolerance factor for strict comparisons of floating point values.
+     * The tolerance threshold for strict comparisons of floating point values.
      */
-    private static final double STRICT = 0.0;
+    private static final double STRICT = 0;
 
     /**
      * Creates a new test case.
