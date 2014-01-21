@@ -134,6 +134,10 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
         assertTrue ("Longitude", LONGITUDE.equals(GEODETIC_LONGITUDE,  ComparisonMode.IGNORE_METADATA));
         assertTrue ("Latitude",  LATITUDE .equals(GEODETIC_LATITUDE,   ComparisonMode.IGNORE_METADATA));
         assertFalse("Lon/Lat",   LATITUDE .equals(LONGITUDE,           ComparisonMode.IGNORE_METADATA));
+        /*
+         * Ensures that difference in "wraparound" ranges causes the axes to be considered different.
+         */
+        assertFalse(GEODETIC_LONGITUDE.equals(SHIFTED_LONGITUDE, ComparisonMode.IGNORE_METADATA));
     }
 
     /**
