@@ -60,7 +60,7 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
     public void testWGS84() {
         final GeographicCRS geographic = GeodeticObjects.WGS84.geographic();
         Validators.validate(geographic);
-        GeodeticObjectVerifier.assertIsWGS84(geographic, false, true);
+        GeodeticObjectVerifier.assertIsWGS84(geographic, true, true);
         assertSame("Cached value", geographic, GeodeticObjects.WGS84.geographic());
         /*
          * Verifies the variant using (longitude, latitude) axis order.
