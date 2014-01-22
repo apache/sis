@@ -208,7 +208,7 @@ public final class Extents extends Static {
      * it does not specify the datum), the value returned by this method is also approximative.
      *
      * <p>The current implementation performs its computation on the
-     * {@linkplain org.apache.sis.referencing.GeodeticObjects#SPHERE GRS 1980 Authalic Sphere}.
+     * {@linkplain org.apache.sis.referencing.CommonCRS#SPHERE GRS 1980 Authalic Sphere}.
      * However this may change in any future SIS version.</p>
      *
      * @param  box The geographic bounding box for which to compute the area, or {@code null}.

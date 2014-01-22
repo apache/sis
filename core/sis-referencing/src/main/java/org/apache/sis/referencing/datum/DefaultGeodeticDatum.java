@@ -88,7 +88,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * <ol>
  *   <li>Create a {@code GeodeticDatum} from one of the static convenience shortcuts listed in
- *       {@link org.apache.sis.referencing.GeodeticObjects#datum()}.</li>
+ *       {@link org.apache.sis.referencing.CommonCRS#datum()}.</li>
  *   <li>Create a {@code GeodeticDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createGeodeticDatum(String)}.</li>
  *   <li>Create a {@code GeodeticDatum} by invoking the {@code createGeodeticDatum(…)}
@@ -100,7 +100,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * <b>Example:</b> the following code gets a <cite>World Geodetic System 1984</cite> datum:
  *
  * {@preformat java
- *     GeodeticDatum datum = GeodeticObjects.WGS84.datum();
+ *     GeodeticDatum datum = CommonCRS.WGS84.datum();
  * }
  *
  * {@section Immutability and thread safety}
@@ -116,7 +116,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
- * @see org.apache.sis.referencing.GeodeticObjects#datum()
+ * @see org.apache.sis.referencing.CommonCRS#datum()
  */
 @XmlType(name = "GeodeticDatumType", propOrder = {
     "primeMeridian",

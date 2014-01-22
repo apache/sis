@@ -114,7 +114,7 @@ public enum AxesConvention {
      * {@note The rules for normalized coordinate systems may be adjusted in future SIS versions based on experience
      *        gained. For more predictable results, consider using the <code>RIGHT_HANDED</code> enum instead.}
      *
-     * @see org.apache.sis.referencing.GeodeticObjects#normalizedGeographic()
+     * @see org.apache.sis.referencing.CommonCRS#normalizedGeographic()
      */
     NORMALIZED,
 

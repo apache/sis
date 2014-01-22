@@ -20,7 +20,7 @@ import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.referencing.GeodeticObjects;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -56,7 +56,7 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
     /**
      * The coordinate reference system used for the tests.
      */
-    static final GeographicCRS WGS84 = GeodeticObjects.WGS84.normalizedGeographic();
+    static final GeographicCRS WGS84 = CommonCRS.WGS84.normalizedGeographic();
 
     /**
      * Creates an envelope of the given type. The type shall be one of the
