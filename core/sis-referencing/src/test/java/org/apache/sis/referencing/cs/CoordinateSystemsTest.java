@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
+import javax.measure.unit.SI;
 import javax.measure.converter.ConversionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
@@ -31,6 +32,7 @@ import org.junit.Test;
 import static java.lang.Double.NaN;
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
+import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 import static org.apache.sis.referencing.cs.CoordinateSystems.*;
 import static org.apache.sis.test.Assert.*;
 
@@ -239,5 +241,32 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
                 0,    1,    0,    0,
                -1,    0,    0,    0,
                 0,    0,    0,    1}), swapAndScaleAxes(yxh, hxy), STRICT);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} with a non-square matrix.
+     *
+     * @throws ConversionException Should not happen.
+     */
+    @Test
+    @DependsOnMethod("testSwapAndScaleAxes")
+    public void testScaleAndSwapAxesNonSquare() throws ConversionException {
+        final DefaultCartesianCS cs = new DefaultCartesianCS(singletonMap(NAME_KEY, "Test"),
+                new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.SOUTHING), "y", AxisDirection.SOUTH, SI.CENTIMETRE),
+                new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.EASTING),  "x", AxisDirection.EAST,  SI.MILLIMETRE));
+
+        Matrix matrix = swapAndScaleAxes(HardCodedCS.CARTESIAN_2D, cs);
+        assertMatrixEquals("(x,y) → (y,x)", Matrices.create(3, 3, new double[] {
+                0,  -100,    0,
+                1000,  0,    0,
+                0,     0,    1
+        }), matrix, STRICT);
+
+        matrix = swapAndScaleAxes(HardCodedCS.CARTESIAN_3D, cs);
+        assertMatrixEquals("(x,y,z) → (y,x)", Matrices.create(3, 4, new double[] {
+                0,  -100,   0,   0,
+                1000,  0,   0,   0,
+                0,     0,   0,   1
+        }), matrix, STRICT);
     }
 }

@@ -29,7 +29,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.GeodeticObjects;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
@@ -176,7 +176,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     /**
      * Constructs a new envelope with the same data than the specified geographic bounding box.
      * The coordinate reference system is set to the
-     * {@linkplain org.apache.sis.referencing.GeodeticObjects#defaultGeographic() default geographic CRS}.
+     * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
      * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
      * @param box The bounding box to copy.
@@ -195,7 +195,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
                 ArraysExt.swap(ordinates, 1, (ordinates.length >>> 1) + 1);
             }
         }
-        crs = GeodeticObjects.defaultGeographic();
+        crs = CommonCRS.defaultGeographic();
     }
 
     /**

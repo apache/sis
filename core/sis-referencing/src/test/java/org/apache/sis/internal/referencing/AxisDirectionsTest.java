@@ -17,6 +17,8 @@
 package org.apache.sis.internal.referencing;
 
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -307,5 +309,14 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     public void testValueOfGeocentricZ() {
         assertSame(GEOCENTRIC_Z, AxisDirections.valueOf("Geocentre > north pole"));
         assertSame(GEOCENTRIC_Z, AxisDirections.valueOf("Geocentre>north pole "));
+    }
+
+    /**
+     * Tests {@link AxisDirections#indexOf(CoordinateSystem, AxisDirection)}.
+     */
+    @Test
+    public void testIndexOf() {
+        assertEquals(1, AxisDirections.indexOf(HardCodedCS.GEODETIC_3D, AxisDirection.NORTH));
+        assertEquals(1, AxisDirections.indexOf(HardCodedCS.GEODETIC_3D, AxisDirection.SOUTH));
     }
 }

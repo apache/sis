@@ -24,7 +24,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.referencing.GeodeticObjects;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Emptiable;
 
@@ -199,7 +199,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     /**
      * Constructs a new envelope with the same data than the specified geographic bounding box.
      * The coordinate reference system is set to the
-     * {@linkplain org.apache.sis.referencing.GeodeticObjects#defaultGeographic() default geographic CRS}.
+     * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
      * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
      * @param box The bounding box to copy (can not be {@code null}).
@@ -209,7 +209,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
              box.getSouthBoundLatitude(),
              box.getEastBoundLongitude(),
              box.getNorthBoundLatitude());
-        crs = GeodeticObjects.defaultGeographic();
+        crs = CommonCRS.defaultGeographic();
         if (Boolean.FALSE.equals(box.getInclusion())) {
             x += width;
             width = -width;
