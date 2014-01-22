@@ -124,7 +124,7 @@ public enum CommonCRS {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    WGS84((short) 4326, (short) 0, (short) 4978, (short) 6326, (short) 7030),
+    WGS84((short) 4326, (short) 4979, (short) 4978, (short) 6326, (short) 7030),
 
     /**
      * World Geodetic System 1972.
@@ -140,7 +140,7 @@ public enum CommonCRS {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    WGS72((short) 4322, (short) 0, (short) 4984, (short) 6322, (short) 7043),
+    WGS72((short) 4322, (short) 4985, (short) 4984, (short) 6322, (short) 7043),
 
     /**
      * European Terrestrial Reference System 1989.
@@ -162,7 +162,7 @@ public enum CommonCRS {
      *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses the NAD83 datum,
      *        while the <code>"IGNF:MILLER"</code> authority code uses the GRS80 datum.}
      */
-    ETRS89((short) 4258, (short) 0, (short) 4936, (short) 6258, (short) 7019),
+    ETRS89((short) 4258, (short) 4937, (short) 4936, (short) 6258, (short) 7019),
 
     /**
      * North American Datum 1983.
