@@ -41,6 +41,7 @@ import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
+import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
@@ -230,22 +231,35 @@ final class StandardDefinitions {
      * @param  code The EPSG code.
      * @return The coordinate system for the given code.
      */
+    @SuppressWarnings("fallthrough")
     static CoordinateSystem createCoordinateSystem(final short code) {
         final String name;
-        short xc, yc, zc = 0; // Not necessarily (long, lat) order.
+        final int dim;  // Number of dimension.
+        short axisCode; // Code of first axis + dim (or code after the last axis).
+        boolean isCartesian = false;
         switch (code) {
-            case 6422: name = "Ellipsoidal 2D"; xc = 106; yc = 107;           break;
-            case 6423: name = "Ellipsoidal 3D"; xc = 108; yc = 109; zc = 110; break;
+            case 6422: name = "Ellipsoidal 2D"; dim = 2; axisCode = 108; break;
+            case 6423: name = "Ellipsoidal 3D"; dim = 3; axisCode = 111; break;
+            case 6500: name = "Earth centred";  dim = 3; axisCode = 118; isCartesian = true; break;
             default:   throw new AssertionError(code);
         }
         final Map<String,?> properties = properties(code, name, null, false);
-        final CoordinateSystemAxis xAxis = createAxis(xc);
-        final CoordinateSystemAxis yAxis = createAxis(yc);
-        if (zc != 0) {
-            final CoordinateSystemAxis zAxis = createAxis(zc);
-            return new DefaultEllipsoidalCS(properties, xAxis, yAxis, zAxis);
+        CoordinateSystemAxis xAxis = null, yAxis = null, zAxis = null;
+        switch (dim) {
+            default: throw new AssertionError(dim);
+            case 3:  zAxis = createAxis(--axisCode);
+            case 2:  yAxis = createAxis(--axisCode);
+            case 1:  xAxis = createAxis(--axisCode);
+            case 0:  break;
         }
-        return new DefaultEllipsoidalCS(properties, xAxis, yAxis);
+        if (isCartesian) {
+            return new DefaultCartesianCS(properties, xAxis, yAxis, zAxis);
+        }
+        if (zAxis != null) {
+            return new DefaultEllipsoidalCS(properties, xAxis, yAxis, zAxis);
+        } else {
+            return new DefaultEllipsoidalCS(properties, xAxis, yAxis);
+        }
     }
 
     /**
@@ -256,12 +270,13 @@ final class StandardDefinitions {
      */
     static CoordinateSystemAxis createAxis(final short code) {
         final String name, abrv;
-        final Unit<?> unit;
+        Unit<?> unit = SI.METRE;
         double min = Double.NEGATIVE_INFINITY;
         double max = Double.POSITIVE_INFINITY;
         RangeMeaning rm = null;
         final AxisDirection dir;
         switch (code) {
+            case 108:  // Used in Ellipsoidal 3D.
             case 106:  name = "Geodetic latitude";
                        abrv = "φ";
                        unit = NonSI.DEGREE_ANGLE;
@@ -270,6 +285,7 @@ final class StandardDefinitions {
                        max  = Latitude.MAX_VALUE;
                        rm   = RangeMeaning.EXACT;
                        break;
+            case 109:  // Used in Ellipsoidal 3D.
             case 107:  name = "Geodetic longitude";
                        abrv = "λ";
                        unit = NonSI.DEGREE_ANGLE;
@@ -280,18 +296,27 @@ final class StandardDefinitions {
                        break;
             case 110:  name = "Ellipsoidal height";
                        abrv = "h";
-                       unit = SI.METRE;
                        dir  = AxisDirection.UP;
                        break;
             case 114:  name = "Gravity-related height";
                        abrv = "H";
-                       unit = SI.METRE;
                        dir  = AxisDirection.UP;
                        break;
             case 113:  name = "Depth";
                        abrv = "D";
-                       unit = SI.METRE;
                        dir  = AxisDirection.DOWN;
+                       break;
+            case 115:  name = "Geocentric X";
+                       abrv = "X";
+                       dir  = AxisDirection.GEOCENTRIC_X;
+                       break;
+            case 116:  name = "Geocentric Y";
+                       abrv = "Y";
+                       dir  = AxisDirection.GEOCENTRIC_Y;
+                       break;
+            case 117:  name = "Geocentric Z";
+                       abrv = "Z";
+                       dir  = AxisDirection.GEOCENTRIC_Z;
                        break;
             default:   throw new AssertionError(code);
         }
