@@ -460,11 +460,11 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * is assumed already in appropriate CRS.
      *
      * <p>When coordinate transformation is required, the target geographic CRS is not necessarily
-     * {@linkplain org.apache.sis.referencing.GeodeticObjects#WGS84 WGS84}. This method preserves
-     * the same {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} than in
-     * the envelope CRS when possible. This is because geographic bounding box are only approximative
-     * and the ISO specification do not mandates a particular CRS,
-     * so we avoid transformations that are not strictly necessary.</p>
+     * {@linkplain org.apache.sis.referencing.CommonCRS#WGS84 WGS84}. This method preserves the same
+     * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} than in the envelope
+     * CRS when possible. This is because geographic bounding box are only approximative and the ISO
+     * specification do not mandates a particular CRS, so we avoid transformations that are not
+     * strictly necessary.</p>
      *
      * <p><b>Note:</b> This method is available only if the referencing module is on the classpath.</p>
      *

@@ -72,7 +72,7 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
     public void testCreateGographicCRS() {
         final PrimeMeridian pm = StandardDefinitions.primeMeridian();
         final EllipsoidalCS cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6422);
-        for (final GeodeticObjects e : GeodeticObjects.values()) {
+        for (final CommonCRS e : CommonCRS.values()) {
             final Ellipsoid ellipsoid = StandardDefinitions.createEllipsoid(e.ellipsoid);
             switch (e) {
                 case WGS84:  compare(GeodeticDatumMock.WGS84 .getEllipsoid(), ellipsoid); break;
