@@ -86,7 +86,7 @@ import java.util.Objects;
  *
  * <ol>
  *   <li>Create an {@code Ellipsoid} from one of the static convenience shortcuts listed in
- *       {@link org.apache.sis.referencing.GeodeticObjects#ellipsoid()}.</li>
+ *       {@link org.apache.sis.referencing.CommonCRS#ellipsoid()}.</li>
  *   <li>Create an {@code Ellipsoid} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createEllipsoid(String)}.</li>
  *   <li>Create an {@code Ellipsoid} by invoking the {@code createEllipsoid(…)} or {@code createFlattenedSphere(…)}
@@ -100,7 +100,7 @@ import java.util.Objects;
  * <b>Example:</b> the following code gets the WGS84 ellipsoid:
  *
  * {@preformat java
- *     Ellipsoid e = GeodeticObjects.WGS84.ellipsoid();
+ *     Ellipsoid e = CommonCRS.WGS84.ellipsoid();
  * }
  *
  * {@section Immutability and thread safety}
@@ -114,7 +114,7 @@ import java.util.Objects;
  * @version 0.4
  * @module
  *
- * @see org.apache.sis.referencing.GeodeticObjects#ellipsoid()
+ * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
  */
 @XmlType(name="EllipsoidType", propOrder={
     "semiMajorAxisMeasure",
@@ -456,7 +456,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      *
      * @return The radius of a sphere having the same surface than this ellipsoid.
      *
-     * @see org.apache.sis.referencing.GeodeticObjects#SPHERE
+     * @see org.apache.sis.referencing.CommonCRS#SPHERE
      */
     public double getAuthalicRadius() {
         return Formulas.getAuthalicRadius(getSemiMajorAxis(), getSemiMinorAxis());

@@ -57,7 +57,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
 
 
 /**
- * Definitions of referencing objects identified by the {@link GeodeticObjects} enumeration values.
+ * Definitions of referencing objects identified by the {@link CommonCRS} enumeration values.
  * This class is used only as a fallback if the objects can not be fetched from the EPSG database.
  *
  * @author  Martin Desruisseaux (Geomatys)

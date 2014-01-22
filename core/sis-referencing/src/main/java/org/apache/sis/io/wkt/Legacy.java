@@ -19,7 +19,7 @@ package org.apache.sis.io.wkt;
 import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
-import org.apache.sis.referencing.GeodeticObjects;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.util.Static;
@@ -65,7 +65,7 @@ final class Legacy extends Static {
      * The standard three-dimensional Cartesian CS as defined by ISO 19111.
      */
     private static CartesianCS standard() {
-        return (CartesianCS) GeodeticObjects.WGS84.geocentric().getCoordinateSystem();
+        return (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
     }
 
     /**
