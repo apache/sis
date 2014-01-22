@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn({
-    GeodeticObjectsTest.class
+    CommonCRSTest.class
 })
 public final strictfp class CRSTest extends TestCase {
     /**
@@ -52,17 +52,17 @@ public final strictfp class CRSTest extends TestCase {
      */
     @Test
     public void testForEpsgCode() throws FactoryException {
-        verifyForCode(GeodeticObjects.WGS84 .geographic(), "EPSG:4326");
-        verifyForCode(GeodeticObjects.WGS84 .geographic(), "urn:ogc:def:crs:EPSG::4326");
-        verifyForCode(GeodeticObjects.WGS84 .geographic(), "http://www.opengis.net/gml/srs/epsg.xml#4326");
-        verifyForCode(GeodeticObjects.WGS72 .geographic(), "EPSG:4322");
-        verifyForCode(GeodeticObjects.SPHERE.geographic(), "EPSG:4047");
-        verifyForCode(GeodeticObjects.NAD83 .geographic(), "EPSG:4269");
-        verifyForCode(GeodeticObjects.NAD27 .geographic(), "EPSG:4267");
-        verifyForCode(GeodeticObjects.ETRS89.geographic(), "EPSG:4258");
-        verifyForCode(GeodeticObjects.ED50  .geographic(), "EPSG:4230");
-        assertSame("EPSG:5714", GeodeticObjects.Vertical.MEAN_SEA_LEVEL.crs(), CRS.forCode("EPSG:5714"));
-        assertSame("EPSG:5715", GeodeticObjects.Vertical.DEPTH.crs(), CRS.forCode("EPSG:5715"));
+        verifyForCode(CommonCRS.WGS84 .geographic(), "EPSG:4326");
+        verifyForCode(CommonCRS.WGS84 .geographic(), "urn:ogc:def:crs:EPSG::4326");
+        verifyForCode(CommonCRS.WGS84 .geographic(), "http://www.opengis.net/gml/srs/epsg.xml#4326");
+        verifyForCode(CommonCRS.WGS72 .geographic(), "EPSG:4322");
+        verifyForCode(CommonCRS.SPHERE.geographic(), "EPSG:4047");
+        verifyForCode(CommonCRS.NAD83 .geographic(), "EPSG:4269");
+        verifyForCode(CommonCRS.NAD27 .geographic(), "EPSG:4267");
+        verifyForCode(CommonCRS.ETRS89.geographic(), "EPSG:4258");
+        verifyForCode(CommonCRS.ED50  .geographic(), "EPSG:4230");
+        assertSame("EPSG:5714", CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(), CRS.forCode("EPSG:5714"));
+        assertSame("EPSG:5715", CommonCRS.Vertical.DEPTH.crs(), CRS.forCode("EPSG:5715"));
     }
 
     /**
@@ -73,8 +73,8 @@ public final strictfp class CRSTest extends TestCase {
     @Test
     @DependsOnMethod("testForEpsgCode")
     public void testForCrsCode() throws FactoryException {
-        verifyForCode(GeodeticObjects.WGS84.normalizedGeographic(), "CRS:84");
-        verifyForCode(GeodeticObjects.NAD83.normalizedGeographic(), "CRS:83");
-        verifyForCode(GeodeticObjects.NAD27.normalizedGeographic(), "CRS:27");
+        verifyForCode(CommonCRS.WGS84.normalizedGeographic(), "CRS:84");
+        verifyForCode(CommonCRS.NAD83.normalizedGeographic(), "CRS:83");
+        verifyForCode(CommonCRS.NAD27.normalizedGeographic(), "CRS:27");
     }
 }

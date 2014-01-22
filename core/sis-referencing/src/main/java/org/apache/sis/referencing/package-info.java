@@ -30,7 +30,7 @@
  * or constructor, or indirectly by specifying the identifier of an entry in a database. In particular,
  * the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many geodetic objects,
  * and Apache SIS provides convenience shortcuts for some of them in the
- * {@link org.apache.sis.referencing.GeodeticObjects} enumerations.
+ * {@link org.apache.sis.referencing.CommonCRS} enumerations.
  *
  * {@section The EPSG database}
  * The EPSG geodetic parameter dataset is a structured database required to:
@@ -53,7 +53,7 @@
  * Relationship with EPSG has two components documented in the javadoc: the object type and the EPSG code.
  * The <var>type</var> specifies which {@link org.opengis.referencing.AuthorityFactory} method to invoke, while
  * the <var>code</var> specifies the argument value to give to that method in order to get the EPSG object.
- * For example the {@link org.apache.sis.referencing.GeodeticObjects#WGS84} documentation said that object
+ * For example the {@link org.apache.sis.referencing.CommonCRS#WGS84} documentation said that object
  * of type <cite>geodetic datum</cite> is associated to code {@code EPSG:6326}.
  * This means that the EPSG object could be obtained by the following code:
  *

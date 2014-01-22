@@ -67,9 +67,9 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * Frequently-used geodetic CRS and datum that are guaranteed to be available in SIS.
  * Methods in this enumeration are shortcuts for object definitions in the EPSG database.
  * If there is no EPSG database available, or if the query failed, or if there is no EPSG definition for an object,
- * then {@code GeodeticObjects} fallback on hard-coded values. Consequently, those methods never return {@code null}.
+ * then {@code CommonCRS} fallback on hard-coded values. Consequently, those methods never return {@code null}.
  *
- * <p>Referencing objects are cached after creation. Invoking the same method on the same {@code GeodeticObjects}
+ * <p>Referencing objects are cached after creation. Invoking the same method on the same {@code CommonCRS}
  * instance twice will return the same {@link IdentifiedObject} instance, unless the internal cache has been cleared
  * (e.g. the application is running in a container environment and some modules have been installed or uninstalled).</p>
  *
@@ -77,7 +77,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * (<var>longitude</var>, <var>latitude</var>) axis order on the {@link #WGS84} geodetic datum:</p>
  *
  * {@preformat java
- *   GeographicCRS crs = GeodeticObjects.WGS84.normalizedGeographic();
+ *   GeographicCRS crs = CommonCRS.WGS84.normalizedGeographic();
  * }
  *
  * For each enumeration value, the name of the CRS, datum and ellipsoid objects may or may not be the same.
@@ -107,7 +107,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * @version 0.4
  * @module
  */
-public enum GeodeticObjects {
+public enum CommonCRS {
     /**
      * World Geodetic System 1984.
      * This is the default CRS for most {@code org.apache.sis} packages.
@@ -287,7 +287,7 @@ public enum GeodeticObjects {
      * @param datum      The EPSG code for the datum.
      * @param ellipsoid  The EPSG code for the ellipsoid.
      */
-    private GeodeticObjects(final short geographic, final short geocentric, final short datum, final short ellipsoid) {
+    private CommonCRS(final short geographic, final short geocentric, final short datum, final short ellipsoid) {
         this.geographic = geographic;
         this.geocentric = geocentric;
         this.datum      = datum;
@@ -301,7 +301,7 @@ public enum GeodeticObjects {
     static {
         SystemListener.add(new SystemListener(Modules.REFERENCING) {
             @Override protected void classpathChanged() {
-                for (final GeodeticObjects e : values()) {
+                for (final CommonCRS e : values()) {
                     e.clear();
                 }
             }
@@ -676,7 +676,7 @@ public enum GeodeticObjects {
      * above the Mean Sea Level (MSL):</p>
      *
      * {@preformat java
-     *   VerticalCRS crs = GeodeticObjects.Vertical.MEAN_SEA_LEVEL.crs();
+     *   VerticalCRS crs = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
      * }
      *
      * Below is an alphabetical list of object names available in this enumeration:
@@ -960,7 +960,7 @@ public enum GeodeticObjects {
      * <p><b>Example:</b> the following code fetches a temporal Coordinate Reference System using the Julian calendar:</p>
      *
      * {@preformat java
-     *   TemporalCRS crs = GeodeticObjects.Temporal.JULIAN.crs();
+     *   TemporalCRS crs = CommonCRS.Temporal.JULIAN.crs();
      * }
      *
      * Below is an alphabetical list of object names available in this enumeration:

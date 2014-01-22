@@ -37,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.*;
 
 
 /**
- * Tests the {@link GeodeticObjects} class.
+ * Tests the {@link CommonCRS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
@@ -49,40 +49,40 @@ import static org.apache.sis.test.TestUtilities.*;
   org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class,
   StandardDefinitionsTest.class
 })
-public final strictfp class GeodeticObjectsTest extends TestCase {
+public final strictfp class CommonCRSTest extends TestCase {
     /**
      * Length of a day in milliseconds.
      */
     private static final double DAY_LENGTH = 24 * 60 * 60 * 1000;
 
     /**
-     * Tests the {@link GeodeticObjects#WGS84} constant.
+     * Tests the {@link CommonCRS#WGS84} constant.
      */
     @Test
     public void testWGS84() {
-        final GeographicCRS geographic = GeodeticObjects.WGS84.geographic();
+        final GeographicCRS geographic = CommonCRS.WGS84.geographic();
         Validators.validate(geographic);
         GeodeticObjectVerifier.assertIsWGS84(geographic, true, true);
-        assertSame("Cached value", geographic, GeodeticObjects.WGS84.geographic());
+        assertSame("Cached value", geographic, CommonCRS.WGS84.geographic());
         /*
          * Verifies the variant using (longitude, latitude) axis order.
          */
-        final GeographicCRS normalized = GeodeticObjects.WGS84.normalizedGeographic();
+        final GeographicCRS normalized = CommonCRS.WGS84.normalizedGeographic();
         Validators.validate(normalized);
         assertSame(geographic.getDatum(), normalized.getDatum());
         final CoordinateSystem φλ = geographic.getCoordinateSystem();
         final CoordinateSystem λφ = normalized.getCoordinateSystem();
         assertSame("Longitude", φλ.getAxis(1), λφ.getAxis(0));
         assertSame("Latitude",  φλ.getAxis(0), λφ.getAxis(1));
-        assertSame("Cached value", normalized, GeodeticObjects.WGS84.normalizedGeographic());
+        assertSame("Cached value", normalized, CommonCRS.WGS84.normalizedGeographic());
     }
 
     /**
-     * Tests the {@link GeodeticObjects#geocentric()} method.
+     * Tests the {@link CommonCRS#geocentric()} method.
      */
     @Test
     public void testGeocentric() {
-        final GeocentricCRS crs = GeodeticObjects.WGS72.geocentric();
+        final GeocentricCRS crs = CommonCRS.WGS72.geocentric();
         assertEquals("WGS 72", crs.getName().getCode());
         final CoordinateSystem cs = crs.getCoordinateSystem();
         final String name = cs.getName().getCode();
@@ -98,7 +98,7 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
      */
     @Test
     public void testVertical() {
-        for (final GeodeticObjects.Vertical e : GeodeticObjects.Vertical.values()) {
+        for (final CommonCRS.Vertical e : CommonCRS.Vertical.values()) {
             final VerticalDatumType datumType;
             final String axisName, datumName;
             switch (e) {
@@ -134,9 +134,9 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
      */
     @Test
     public void testTemporal() {
-        final double julianEpoch = GeodeticObjects.Temporal.JULIAN.datum().getOrigin().getTime() / DAY_LENGTH;
+        final double julianEpoch = CommonCRS.Temporal.JULIAN.datum().getOrigin().getTime() / DAY_LENGTH;
         assertTrue(julianEpoch < 0);
-        for (final GeodeticObjects.Temporal e : GeodeticObjects.Temporal.values()) {
+        for (final CommonCRS.Temporal e : CommonCRS.Temporal.values()) {
             final String epoch;
             final double days;
             switch (e) {
