@@ -77,7 +77,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
     org.apache.sis.referencing.crs.HardCodedCRSTest.class,
     org.apache.sis.referencing.StandardDefinitionsTest.class,
-    org.apache.sis.referencing.GeodeticObjectsTest.class,
+    org.apache.sis.referencing.CommonCRSTest.class,
     org.apache.sis.referencing.CRSTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,

@@ -17,8 +17,10 @@
 package org.apache.sis.referencing.crs;
 
 import org.opengis.test.Validators;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -44,7 +46,8 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
     private static final double STRICT = 0;
 
     /**
-     * Tests the {@link DefaultGeographicCRS#forConvention(AxesConvention)} method.
+     * Tests the {@link DefaultGeographicCRS#forConvention(AxesConvention)} method
+     * for {@link AxesConvention#POSITIVE_RANGE}.
      */
     @Test
     public void testShiftLongitudeRange() {
@@ -63,5 +66,21 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
         assertEquals("longitude.maximumValue",    360.0, axis.getMaximumValue(), STRICT);
         assertSame("Expected a no-op.",         shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE));
         assertSame("Expected cached instance.", shifted, crs    .forConvention(AxesConvention.POSITIVE_RANGE));
+    }
+
+    /**
+     * Tests the {@link DefaultGeographicCRS#forConvention(AxesConvention)} method
+     * for {@link AxesConvention#NORMALIZED}.
+     */
+    @Test
+    public void testNormalize() {
+        final DefaultGeographicCRS crs = DefaultGeographicCRS.castOrCopy(CommonCRS.WGS84.geographic3D());
+        final DefaultGeographicCRS normalized = crs.forConvention(AxesConvention.NORMALIZED);
+        assertNotSame(crs, normalized);
+        final EllipsoidalCS cs = normalized.getCoordinateSystem();
+        final EllipsoidalCS ref = crs.getCoordinateSystem();
+        assertSame("longitude", ref.getAxis(1), cs.getAxis(0));
+        assertSame("latitude",  ref.getAxis(0), cs.getAxis(1));
+        assertSame("height",    ref.getAxis(2), cs.getAxis(2));
     }
 }

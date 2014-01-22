@@ -56,7 +56,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * <ol>
  *   <li>Create a {@code PrimeMeridian} from one of the static convenience shortcuts listed in
- *       {@link org.apache.sis.referencing.GeodeticObjects#primeMeridian()}.</li>
+ *       {@link org.apache.sis.referencing.CommonCRS#primeMeridian()}.</li>
  *   <li>Create a {@code PrimeMeridian} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createPrimeMeridian(String)}.</li>
  *   <li>Create a {@code PrimeMeridian} by invoking the {@code createPrimeMeridian(…)}
@@ -68,7 +68,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * <b>Example:</b> the following code gets the Greenwich prime meridian:
  *
  * {@preformat java
- *     PrimeMeridian pm = GeodeticObjects.WGS84.primeMeridian();
+ *     PrimeMeridian pm = CommonCRS.WGS84.primeMeridian();
  * }
  *
  * {@section Immutability and thread safety}
@@ -82,7 +82,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @version 0.4
  * @module
  *
- * @see org.apache.sis.referencing.GeodeticObjects#primeMeridian()
+ * @see org.apache.sis.referencing.CommonCRS#primeMeridian()
  */
 @XmlType(name = "PrimeMeridianType")
 @XmlRootElement(name = "PrimeMeridian")

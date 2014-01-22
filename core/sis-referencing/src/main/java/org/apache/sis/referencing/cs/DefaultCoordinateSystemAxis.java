@@ -571,6 +571,22 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
+     * Compares the unit and direction of this axis with the ones of the given axis.
+     * The range minimum and maximum values are compared only if {@code cr} is {@code true},
+     * i.e. it is caller responsibility to determine if range shall be considered as metadata.
+     *
+     * @param  that The axis to compare with this axis.
+     * @param  cr {@code true} for comparing also the range minimum and maximum values.
+     * @return {@code true} if unit, direction and optionally range extremum are equal.
+     */
+    private boolean equalsIgnoreMetadata(final CoordinateSystemAxis that, final boolean cr) {
+        return Objects.equals(getUnit(),      that.getUnit()) &&
+               Objects.equals(getDirection(), that.getDirection()) &&
+               (!cr || (doubleToLongBits(getMinimumValue()) == doubleToLongBits(that.getMinimumValue()) &&
+                        doubleToLongBits(getMaximumValue()) == doubleToLongBits(that.getMaximumValue())));
+    }
+
+    /**
      * Compares the specified object with this axis for equality.
      *
      * @param  object The object to compare to {@code this}.
@@ -587,21 +603,33 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (!super.equals(object, mode)) {
             return false;
         }
-        final DefaultCoordinateSystemAxis that = castOrCopy((CoordinateSystemAxis) object);
-        if (!Objects.equals(direction, that.direction) || !Objects.equals(unit, that.unit)) {
-            return false;
+        switch (mode) {
+            case STRICT: {
+                final DefaultCoordinateSystemAxis that = (DefaultCoordinateSystemAxis) object;
+                return Objects.equals(unit,         that.unit)         &&
+                       Objects.equals(direction,    that.direction)    &&
+                       Objects.equals(abbreviation, that.abbreviation) &&
+                       Objects.equals(rangeMeaning, that.rangeMeaning) &&
+                       doubleToLongBits(minimumValue) == doubleToLongBits(that.minimumValue) &&
+                       doubleToLongBits(maximumValue) == doubleToLongBits(that.maximumValue);
+            }
+            case BY_CONTRACT: {
+                final CoordinateSystemAxis that = (CoordinateSystemAxis) object;
+                return equalsIgnoreMetadata(that, true) &&
+                       Objects.equals(getAbbreviation(), that.getAbbreviation()) &&
+                       Objects.equals(getRangeMeaning(), that.getRangeMeaning());
+            }
         }
         /*
-         * It is important to NOT compare the minimum and maximum values when we are in
-         * "ignore metadata" mode,  because we want CRS with a [-180 … +180]° longitude
-         * range to be considered equivalent, from a coordinate transformation point of
-         * view, to a CRS with a [0 … 360]° longitude range.
+         * At this point the comparison is in "ignore metadata" mode. We compare the axis range
+         * only if the range meaning is "wraparound" for both axes, because only in such case a
+         * coordinate operation may shift some ordinate values (typically ±360° on longitudes).
          */
-        if (mode.ordinal() < ComparisonMode.IGNORE_METADATA.ordinal()) {
-            return Objects.equals(abbreviation, that.abbreviation) &&
-                   Objects.equals(rangeMeaning, that.rangeMeaning) &&
-                   doubleToLongBits(minimumValue) == doubleToLongBits(that.minimumValue) &&
-                   doubleToLongBits(maximumValue) == doubleToLongBits(that.maximumValue);
+        final CoordinateSystemAxis that = (CoordinateSystemAxis) object;
+        if (!equalsIgnoreMetadata(that, RangeMeaning.WRAPAROUND.equals(this.getRangeMeaning()) &&
+                                        RangeMeaning.WRAPAROUND.equals(that.getRangeMeaning())))
+        {
+            return false;
         }
         ReferenceIdentifier name = that.getName();
         if (name != UNNAMED) {
