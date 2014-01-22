@@ -19,6 +19,7 @@ package org.apache.sis.io.wkt;
 import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
+import org.apache.sis.referencing.GeodeticObjects;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.util.Static;
@@ -55,15 +56,16 @@ final class Legacy extends Static {
             new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Z"), "Z", AxisDirection.NORTH, SI.METRE));
 
     /**
-     * The standard three-dimensional Cartesian CS as defined by ISO 19111.
-     */
-    @Deprecated
-    static CartesianCS STANDARD; // TODO: Not supported yet.
-
-    /**
      * Do not allow instantiation of this class.
      */
     private Legacy() {
+    }
+
+    /**
+     * The standard three-dimensional Cartesian CS as defined by ISO 19111.
+     */
+    private static CartesianCS standard() {
+        return (CartesianCS) GeodeticObjects.WGS84.geocentric().getCoordinateSystem();
     }
 
     /**
@@ -77,7 +79,7 @@ final class Legacy extends Static {
      *         or {@code cs} if the CS axes should be used as-is.
      */
     static CartesianCS replace(final CartesianCS cs, final boolean toLegacy) {
-        final CartesianCS check = toLegacy ? STANDARD : LEGACY;
+        final CartesianCS check = toLegacy ? standard() : LEGACY;
         final int dimension = check.getDimension();
         if (cs.getDimension() != dimension) {
             return cs;
@@ -87,6 +89,6 @@ final class Legacy extends Static {
                 return cs;
             }
         }
-        return toLegacy ? LEGACY : STANDARD;
+        return toLegacy ? LEGACY : standard();
     }
 }

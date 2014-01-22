@@ -20,6 +20,8 @@ import java.util.Date;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
@@ -73,6 +75,22 @@ public final strictfp class GeodeticObjectsTest extends TestCase {
         assertSame("Longitude", φλ.getAxis(1), λφ.getAxis(0));
         assertSame("Latitude",  φλ.getAxis(0), λφ.getAxis(1));
         assertSame("Cached value", normalized, GeodeticObjects.WGS84.normalizedGeographic());
+    }
+
+    /**
+     * Tests the {@link GeodeticObjects#geocentric()} method.
+     */
+    @Test
+    public void testGeocentric() {
+        final GeocentricCRS crs = GeodeticObjects.WGS72.geocentric();
+        assertEquals("WGS 72", crs.getName().getCode());
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        final String name = cs.getName().getCode();
+        assertTrue(name, name.startsWith("Earth centred"));
+        assertEquals("dimension", 3, cs.getDimension());
+        assertEquals(AxisDirection.GEOCENTRIC_X, cs.getAxis(0).getDirection());
+        assertEquals(AxisDirection.GEOCENTRIC_Y, cs.getAxis(1).getDirection());
+        assertEquals(AxisDirection.GEOCENTRIC_Z, cs.getAxis(2).getDirection());
     }
 
     /**
