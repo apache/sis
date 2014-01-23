@@ -87,10 +87,10 @@ public final class VerticalDatumTypes implements CodeList.Filter {
 
     /**
      * Returns the vertical datum type from a legacy code. The legacy codes were defined in
-     * <a href="http://www.opengis.org/docs/01-009.pdf">Coordinate Transformation Services</a>
-     * (OGC 01-009), which also defined the
+     * <a href="http://www.opengeospatial.org/standards/ct">OGC 01-009</a>
+     * (<cite>Coordinate Transformation Services)</cite>, which also defined the version 1 of
      * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
-     * Known Text</cite> (WKT)</a> format. This method is used for WKT parsing.
+     * Known Text</cite></a> format (WKT 1). This method is used for WKT 1 parsing.
      *
      * @param  code The legacy vertical datum code.
      * @return The vertical datum type, or {@code null} if the code is unrecognized.
