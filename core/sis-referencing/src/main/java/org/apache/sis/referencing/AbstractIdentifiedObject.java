@@ -86,10 +86,10 @@ import java.util.Objects;
  * Applications should instead instantiate the most specific subclass having a name starting by {@code Default}.
  * However exceptions to this rule may occur when it is not possible to identify the exact type.
  *
- * {@example It is sometime not possible to infer the exact coordinate system from version 1 of
- *           <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
- *           Known Text</cite></a>, for example when parsing a <code>LOCAL_CS</code> element. In such exceptional
- *           situation, a plain <code>AbstractCS</code> object may be instantiated.}
+ * {@example It is sometime not possible to infer the exact coordinate system type from
+ *           <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">version 1 of
+ *           <cite>Well Known Text format</cite></a>, for example when parsing a <code>LOCAL_CS</code> element.
+ *           In such exceptional situation, a plain <code>AbstractCS</code> object may be instantiated.}
  *
  * {@code IdentifiedObject} instances are created in two main ways:
  *

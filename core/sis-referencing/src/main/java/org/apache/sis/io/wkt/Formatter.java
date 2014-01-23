@@ -826,10 +826,9 @@ public class Formatter {
     }
 
     /**
-     * Returns {@code true} if the WKT written by this formatter is not strictly compliant to the
-     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">WKT
-     * specification</a>. This method returns {@code true} if {@link #setInvalidWKT(IdentifiedObject)}
-     * has been invoked at least once. The action to take regarding invalid WKT is caller-dependent.
+     * Returns {@code true} if the WKT written by this formatter is not strictly compliant to the WKT specification.
+     * This method returns {@code true} if {@link #setInvalidWKT(IdentifiedObject)} has been invoked at least once.
+     * The action to take regarding invalid WKT is caller-dependent.
      * For example {@link FormattableObject#toString()} will accepts loose WKT formatting and ignore
      * this flag, while {@link FormattableObject#toWKT()} requires strict WKT formatting and will
      * thrown an exception if this flag is set.

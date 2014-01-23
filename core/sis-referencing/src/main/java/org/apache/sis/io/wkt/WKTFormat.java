@@ -28,4 +28,7 @@ public class WKTFormat {
      * The default indentation value.
      */
     static final byte DEFAULT_INDENTATION = 2;
+
+    private WKTFormat() {
+    }
 }

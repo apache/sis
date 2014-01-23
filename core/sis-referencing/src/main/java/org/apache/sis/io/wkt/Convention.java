@@ -33,8 +33,12 @@ import static javax.measure.unit.NonSI.DEGREE_ANGLE;
 
 /**
  * The convention to use for WKT formatting.
- * This enumeration attempts to address some of the variability documented in the Frank Warmerdam's
- * <a href="http://home.gdal.org/projects/opengis/wktproblems.html">OGC WKT Coordinate System Issues</a> page.
+ * This enumeration specifies whether to use the <cite>Well Known Text</cite> format defined by ISO 19162
+ * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
+ *
+ * {@section WKT 1 flavors}
+ * The WKT 1 format has been interpreted differently by various implementors. Some of those differences have been
+ * <a href="http://home.gdal.org/projects/opengis/wktproblems.html">documented by the GDAL project</a>.
  * The various conventions enumerated in this class differ mostly in:
  *
  * <ul>
