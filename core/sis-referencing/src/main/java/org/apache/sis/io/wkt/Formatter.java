@@ -215,7 +215,7 @@ public class Formatter {
      * Creates a new formatter instance with the default symbols, no syntax coloring and the default indentation.
      */
     public Formatter() {
-        this(Convention.OGC, Symbols.DEFAULT, null, WKTFormat.DEFAULT_INDENTATION);
+        this(Convention.DEFAULT, Symbols.DEFAULT, null, WKTFormat.DEFAULT_INDENTATION);
     }
 
     /**
@@ -247,7 +247,7 @@ public class Formatter {
      * This constructor helps to share some objects with {@link Parser}.
      */
     Formatter(final Symbols symbols, final NumberFormat numberFormat) {
-        this.convention   = Convention.OGC;
+        this.convention   = Convention.DEFAULT;
         this.symbols      = symbols;
         this.indentation  = WKTFormat.DEFAULT_INDENTATION;
         this.numberFormat = numberFormat; // No clone needed.
@@ -256,8 +256,7 @@ public class Formatter {
     }
 
     /**
-     * Returns the convention to use for formatting the WKT. The default convention is {@link Convention#OGC OGC}.
-     * A different convention will usually result in different parameter names, but may also change the WKT syntax.
+     * Returns the convention to use for formatting the WKT. The default is {@link Convention#WKT2}.
      *
      * @return The convention (never {@code null}).
      *
@@ -275,25 +274,21 @@ public class Formatter {
      * @param authority  The authority, or {@code null} for inferring it from the convention.
      */
     final void setConvention(Convention convention, final Citation authority) {
-        if (convention == null) {
-            convention = Convention.forCitation(authority, Convention.OGC);
-        }
         this.convention = convention;
-        this.authority  = (authority != null) ? authority : convention.authority; // NOT convention.getAuthority()
+        this.authority  = (authority != null) ? authority : convention.getAuthority();
     }
 
     /**
      * Returns the preferred name for the specified object.
-     * If the specified object contains a name from the preferred authority
-     * (usually {@linkplain org.apache.sis.metadata.iso.citation.Citations#OGC Open Geospatial}),
-     * then this name is returned. Otherwise, the first name found is returned.
+     * If the specified object contains a name from the preferred authority, then this name is returned.
+     * Otherwise, the first name found is returned.
      *
      * <p>The preferred authority can be set by the {@link WKTFormat#setAuthority(Citation)} method.
      * This is not necessarily the authority of the given {@linkplain IdentifiedObject#getName() object name}.</p>
      *
      * {@example The EPSG name of the <code>EPSG:6326</code> datum is "<cite>World Geodetic System 1984</cite>".
-     *           However if the preferred authority is OGC (which is the case by default), then this method usually
-     *           returns "<cite>WGS84</cite>" (the exact string to be returned depends on the object aliases).}
+     *           However if the preferred authority is OGC, then this method usually returns "<cite>WGS84</cite>"
+     *           (the exact string to be returned depends on the object aliases).}
      *
      * @param  object The object to look for a preferred name.
      * @return The preferred name, or {@code null} if the given object has no name.
@@ -311,9 +306,8 @@ public class Formatter {
 
     /**
      * Returns the preferred identifier for the specified object.
-     * If the specified object contains an identifier from the preferred authority
-     * (usually {@linkplain org.apache.sis.metadata.iso.citation.Citations#OGC Open Geospatial}),
-     * then this identifier is returned. Otherwise, the first identifier is returned.
+     * If the specified object contains an identifier from the preferred authority, then this identifier is returned.
+     * Otherwise, the first identifier is returned.
      * If the specified object contains no identifier, then this method returns {@code null}.
      *
      * @param  info The object to look for a preferred identifier, or {@code null} if none.
@@ -598,7 +592,7 @@ public class Formatter {
                 if (contextUnit!=null && unit.isCompatible(contextUnit)) {
                     unit = contextUnit;
                 } else {
-                    contextUnit = convention.forcedAngularUnit;
+                    contextUnit = convention.getForcedUnit(Angle.class);
                     if (contextUnit == null) {
                         contextUnit = angularUnit;
                     }
@@ -776,7 +770,7 @@ public class Formatter {
             if (NonSI.DEGREE_ANGLE.equals(unit)) {
                 buffer.append("degree");
             } else if (SI.METRE.equals(unit)) {
-                buffer.append(convention.unitUS ? "meter" : "metre");
+                buffer.append(convention.commonUnits ? "meter" : "metre");
             } else {
                 unitFormat.format(unit, buffer, dummy);
             }

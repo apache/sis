@@ -89,7 +89,7 @@ public class FormattableObject {
      * @see org.opengis.referencing.IdentifiedObject#toWKT()
      */
     public String toWKT() throws UnformattableObjectException {
-        return formatWKT(Convention.OGC, WKTFormat.DEFAULT_INDENTATION, false, true);
+        return formatWKT(Convention.DEFAULT, WKTFormat.DEFAULT_INDENTATION, false, true);
     }
 
     /**
@@ -101,13 +101,11 @@ public class FormattableObject {
      */
     @Override
     public String toString() {
-        return formatWKT(Convention.OGC, WKTFormat.DEFAULT_INDENTATION, false, false);
+        return formatWKT(Convention.DEFAULT, WKTFormat.DEFAULT_INDENTATION, false, false);
     }
 
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) for this object using the specified convention.
-     * The convention is usually {@link Convention#OGC OGC}, but other common conventions are
-     * {@link Convention#GEOTIFF GEOTIFF} and {@link Convention#EPSG EPSG}.
      * The {@link Convention#INTERNAL INTERNAL} convention is a special value for debugging map projections.
      *
      * @param  convention The WKT convention to use.
@@ -125,12 +123,14 @@ public class FormattableObject {
      * the console supports the ANSI escape codes (a.k.a. X3.64), then a syntax coloring will be applied.
      *
      * <p>This is a convenience method for debugging purpose and for console applications.</p>
+     *
+     * @see Colors#CONSOLE
      */
     @Debug
     public void print() {
         final Console console = System.console();
         final PrintWriter out = (console != null) ? console.writer() : null;
-        final String wkt = formatWKT(Convention.OGC, WKTFormat.DEFAULT_INDENTATION,
+        final String wkt = formatWKT(Convention.DEFAULT, WKTFormat.DEFAULT_INDENTATION,
                 (out != null) && X364.isAnsiSupported(), false);
         if (out != null) {
             out.println(wkt);
@@ -159,7 +159,7 @@ public class FormattableObject {
             formatter = new Formatter();
         }
         formatter.indentation = indentation;
-        formatter.colors = colorize ? Colors.DEFAULT : null;
+        formatter.colors = colorize ? Colors.CONSOLE : null;
         formatter.setConvention(convention, null);
         final String wkt;
         try {
