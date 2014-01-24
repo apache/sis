@@ -73,8 +73,6 @@ public class Symbols implements Localized, Serializable {
     /**
      * The default set of symbols, as documented in the class javadoc.
      * This is currently set to {@link #SQUARE_BRACKETS}.
-     *
-     * @see Colors#DEFAULT
      */
     public static final Symbols DEFAULT = SQUARE_BRACKETS;
 
