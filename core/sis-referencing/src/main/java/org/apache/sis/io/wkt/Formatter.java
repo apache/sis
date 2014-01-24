@@ -188,7 +188,7 @@ public class Formatter {
     private boolean requestNewLine;
 
     /**
-     * {@code true} if the last formatted element was invalid WKT and shall be highlighted with syntatic coloration.
+     * {@code true} if the last formatted element was invalid WKT and shall be highlighted with syntactic coloration.
      * This field has no effect if {@link #colors} is null. This field is reset to {@code false} after the invalid
      * part has been processed by {@link #append(FormattableObject)}, in order to highlight only the first erroneous
      * element without clearing the {@link #invalidElement} value.

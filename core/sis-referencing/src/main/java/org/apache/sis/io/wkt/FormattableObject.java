@@ -36,14 +36,13 @@ import org.apache.sis.internal.util.X364;
  * representation of this object:</p>
  *
  * <ul>
- *   <li>{@link #toWKT()} returns a strictly compliant WKT or throw an exception.</li>
- *   <li>{@link #toString()} is like {@code toWKT()} with some rules relaxed in order
- *       to never throw exception.</li>
+ *   <li>{@link #toWKT()} returns a strictly compliant WKT or throws {@link UnformattableObjectException}
+ *       if this object contains elements not defined by the ISO 19162 standard.</li>
+ *   <li>{@link #toString()} returns a WKT with some rules relaxed in order to never throw exception,
+ *       using non-standard representation if necessary. In some cases {@code toString()} may also use
+ *       an alternative text representation for better readability, for example a matrix instead of
+ *       a list of {@code PARAMETER["elt_…", …]} elements for linear transforms.</li>
  * </ul>
- *
- * The {@code toWKT()} method may throw {@link UnformattableObjectException} if an object
- * contains elements not defined by the official standard, while {@code toString()} can
- * fallback on a non-standard representation.
  *
  * {@section Syntax coloring}
  * A convenience {@link #print()} method is provided, which is roughly equivalent to
@@ -94,11 +93,11 @@ public class FormattableObject {
     }
 
     /**
-     * Returns a <cite>Well Known Text</cite> (WKT) using the default convention, symbols and indentation.
+     * Returns a <cite>Well Known Text</cite> (WKT) or an alternative text representation for this object.
      * If this object can not be represented in a standard way, then this method fallbacks on a non-standard
      * representation.
      *
-     * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
+     * @return The Well Known Text (WKT) or an alternative representation of this object.
      */
     @Override
     public String toString() {
@@ -144,7 +143,7 @@ public class FormattableObject {
      * Returns a WKT for this object using the specified convention.
      * If {@code strict} is true, then an exception is thrown if the WKT is not standard-compliant.
      *
-     * @param  convention  The convention for choosing WKT entities names.
+     * @param  convention  The convention for choosing WKT element names.
      * @param  indentation The indentation to apply, or {@link WKTFormat#SINGLE_LINE}.
      * @param  colorize    {@code true} for applying syntax coloring, or {@code false} otherwise.
      * @param  strict      {@code true} if an exception shall be thrown for unformattable objects,
@@ -192,7 +191,7 @@ public class FormattableObject {
      * Formats the inner part of this <cite>Well Known Text</cite> (WKT) element into the given formatter.
      * This method is automatically invoked by {@link WKTFormat} when a formattable element is found.
      *
-     * <p>Element keyword and authority code shall not be formatted here.
+     * <p>Keywords and authority codes shall not be formatted here.
      * For example if this formattable element is for a {@code GEOGCS} element,
      * then this method shall write the content starting at the insertion point shows below:</p>
      *
