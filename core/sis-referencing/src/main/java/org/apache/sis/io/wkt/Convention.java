@@ -36,21 +36,22 @@ import static javax.measure.unit.NonSI.DEGREE_ANGLE;
  * This enumeration specifies whether to use the <cite>Well Known Text</cite> format defined by ISO 19162
  * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
  *
- * {@section WKT 1 flavors}
- * The WKT 1 format has been interpreted differently by various implementors. Some of those differences have been
- * <a href="http://home.gdal.org/projects/opengis/wktproblems.html">documented by the GDAL project</a>.
- * The various conventions enumerated in this class differ mostly in:
+ * {@section WKT 1 variants}
+ * The WKT 2 format should be parsed and formatted consistently by all softwares.
+ * But the WKT 1 format has been interpreted differently by various implementors. Some of those differences
+ * are <a href="http://home.gdal.org/projects/opengis/wktproblems.html">documented by the GDAL project</a>.
+ * Apache SIS can adapt itself to different WKT variants, sometime automatically. But some aspects can not be guessed.
+ * One noticeable source of confusion is the unit of measurement of {@code PRIMEM[…]} and {@code PARAMETER[…]} elements:
  *
  * <ul>
- *   <li><em>Parameter names</em> - for example a parameter named "<cite>Longitude of natural origin</cite>"
- *       according {@linkplain #EPSG} may be named "{@code central_meridian}" according {@linkplain #OGC}
- *       and "{@code NatOriginLong}" according {@linkplain #GEOTIFF GeoTIFF}.</li>
- *   <li><em>WKT syntax</em> - for example {@linkplain #ORACLE Oracle} does not enclose Bursa-Wolf parameters in a
- *       {@code TOWGS84[…]} element.</li>
- *   <li><em>Unit of measurement</em> - for example the unit of the Prime Meridian shall be the angular unit of the
- *       enclosing Geographic CRS according the {@linkplain #OGC} standard, but is restricted to decimal degrees by
- *       {@linkplain #ESRI}.</li>
+ *   <li>The unit of the Prime Meridian shall be the angular unit of the enclosing Geographic CRS
+ *       according the OGC 01-009 (<cite>Coordinate transformation services</cite>) specification.</li>
+ *   <li>An older specification — <cite>Simple Features</cite> — was unclear on this matter and has been
+ *       interpreted by many softwares as fixing the unit to decimal degrees.</li>
  * </ul>
+ *
+ * Despite the first interpretation being specified by both OGC 01-009 and ISO 19162 standards, the second
+ * interpretation appears to be in wide use for WKT 1. Apache SIS uses the standard interpretation by default.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.20)

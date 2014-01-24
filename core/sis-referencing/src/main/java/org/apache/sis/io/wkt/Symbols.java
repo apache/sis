@@ -38,11 +38,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *   <li>Coma separator followed by a space ({@code ", "}).</li>
  * </ul>
  *
- * {@note <b>Relationship between <code>Symbols</code> locale and <code>WKTFormat</code> locale</b><br>
- *        The <code>WKTFormat</code> <code>Locale</code> property specifies the language to use when
- *        formatting <code>InternationalString</code> instances. This can be set to any value.
- *        On the contrary, the <code>Locale</code> property of this <code>Symbols</code> class controls
- *        the decimal format symbols and is very rarely set to an other locale than an English one.}
+ * {@section Relationship between <code>Symbols</code> locale and <code>WKTFormat</code> locale}
+ * The {@link WKTFormat#getLocale()} property specifies the language to use when formatting
+ * {@link org.opengis.util.InternationalString} instances. This can be set to any value.
+ * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
+ * the decimal format symbols and is very rarely set to an other locale than an English one.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4 (derived from geotk-2.1)

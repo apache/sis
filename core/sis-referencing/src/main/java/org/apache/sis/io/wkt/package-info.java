@@ -45,11 +45,12 @@
  *       <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">shown on GeoAPI</a>.</li>
  * </ul>
  *
- * The WKT 1 format has been interpreted differently by various implementors. Some of those differences have been
+ * The WKT 1 format has been interpreted differently by various implementors. Some of those differences are
  * <a href="http://home.gdal.org/projects/opengis/wktproblems.html">documented by the GDAL project</a>.
- * Mismatches between implementations is one of the main motivation behind the WKT 2 effort.
- * Apache SIS can adapt itself to different WKT 1 flavors, with the help of the
- * {@link org.apache.sis.io.wkt.Convention} enumeration for specifying which one to expect.
+ * The WKT 2 format aims to solve the inter-operability problem caused by such mismatches between implementations,
+ * but not all softwares support this new format. Consequently importing or exporting data from a software with the
+ * WKT 1 syntax require knowledge of the WKT variant used by that software. This variant can be specified by the
+ * {@link org.apache.sis.io.wkt.Convention} enumeration.
  *
  * {@section Geometry WKT}
  * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes
