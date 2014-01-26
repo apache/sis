@@ -25,6 +25,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 
@@ -222,9 +223,13 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
         formatter.append(datum);
         formatter.append(datum.getPrimeMeridian());
         formatter.append(unit);
-        final CoordinateSystem cs = formatter.getConvention().toConformCS(getCoordinateSystem());
-        if (!(cs instanceof CartesianCS)) {
-            formatter.setInvalidWKT(cs);
+        CoordinateSystem cs = getCoordinateSystem();
+        if (formatter.getConvention().isWKT1()) {
+            if (cs instanceof CartesianCS) {
+                cs = Legacy.forGeocentricCRS((CartesianCS) cs, true);
+            } else {
+                formatter.setInvalidWKT(cs);
+            }
         }
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {

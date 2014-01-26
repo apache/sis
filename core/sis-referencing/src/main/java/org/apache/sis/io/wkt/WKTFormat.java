@@ -210,18 +210,18 @@ public class WKTFormat extends Format {
 
     /**
      * Returns the preferred authority for choosing the projection and parameter names.
-     * If no authority has been {@linkplain #setAuthority(Citation) explicitly set}, then this
+     * If no authority has been {@link #setNameAuthority(Citation) explicitly set}, then this
      * method returns the authority associated to the {@linkplain #getConvention() convention}.
      *
      * @return The authority for projection and parameter names.
      *
-     * @see Convention#getAuthority()
+     * @see Convention#getNameAuthority()
      * @see Formatter#getName(IdentifiedObject)
      */
-    public Citation getAuthority() {
+    public Citation getNameAuthority() {
         Citation result = authority;
         if (result == null) {
-            result = convention.getAuthority();
+            result = convention.getNameAuthority();
         }
         return result;
     }
@@ -236,7 +236,7 @@ public class WKTFormat extends Format {
      *
      * @see Formatter#getName(IdentifiedObject)
      */
-    public void setAuthority(final Citation authority) {
+    public void setNameAuthority(final Citation authority) {
         this.authority = authority;
         updateFormatter(formatter);
         // No need to update the parser.
