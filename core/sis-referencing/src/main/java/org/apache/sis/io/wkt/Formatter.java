@@ -124,8 +124,8 @@ public class Formatter {
     /**
      * The preferred authority for objects or parameter names.
      *
-     * @see WKTFormat#getAuthority(Citation)
-     * @see WKTFormat#setAuthority(Citation)
+     * @see WKTFormat#getNameAuthority()
+     * @see WKTFormat#setNameAuthority(Citation)
      */
     private Citation authority;
 
@@ -275,7 +275,7 @@ public class Formatter {
      */
     final void setConvention(Convention convention, final Citation authority) {
         this.convention = convention;
-        this.authority  = (authority != null) ? authority : convention.getAuthority();
+        this.authority  = (authority != null) ? authority : convention.getNameAuthority();
     }
 
     /**
@@ -283,7 +283,7 @@ public class Formatter {
      * If the specified object contains a name from the preferred authority, then this name is returned.
      * Otherwise, the first name found is returned.
      *
-     * <p>The preferred authority can be set by the {@link WKTFormat#setAuthority(Citation)} method.
+     * <p>The preferred authority can be set by the {@link WKTFormat#setNameAuthority(Citation)} method.
      * This is not necessarily the authority of the given {@linkplain IdentifiedObject#getName() object name}.</p>
      *
      * {@example The EPSG name of the <code>EPSG:6326</code> datum is "<cite>World Geodetic System 1984</cite>".
@@ -293,7 +293,7 @@ public class Formatter {
      * @param  object The object to look for a preferred name.
      * @return The preferred name, or {@code null} if the given object has no name.
      *
-     * @see WKTFormat#getAuthority()
+     * @see WKTFormat#getNameAuthority()
      * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
      */
     public String getName(final IdentifiedObject object) {

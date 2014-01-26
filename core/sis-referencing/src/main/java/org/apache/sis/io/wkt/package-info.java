@@ -18,17 +18,15 @@
 /**
  * <cite>Well Known Text</cite> (WKT) parsing and formatting.
  * This package implements the services provided by the {@link org.apache.sis.referencing.CRS#parseWKT(String)}
- * and {@link org.opengis.referencing.IdentifiedObject#toWKT()} convenience methods. Using this package instead
- * than the convenience methods give more control. For example this package allows to:
+ * and {@link org.opengis.referencing.IdentifiedObject#toWKT()} convenience methods, with more control.
+ * For example this package allows to:
  *
  * <ul>
- *   <li>Format projection and parameters using the names of a chosen authority, for example
- *       {@code PROJECTION["Mercator (variant A)"]} (EPSG),
- *       {@code PROJECTION["Mercator_1SP"]} (OGC) or
- *       {@code PROJECTION["CT_Mercator"]} (GeoTIFF).</li>
- *   <li>Format the elements with curly brackets instead than square ones,
- *       for example {@code DATUM("WGS84")} instead than {@code DATUM["WGS84"]}.
- *       Both are legal WKT.</li>
+ *   <li>Format projection and parameters using the names of a chosen authority. For example the
+ *       "<cite>Mercator (variant A)</cite>" projection is named {@code "Mercator_1SP"} by OGC 01-009
+ *       and {@code "CT_Mercator"} by GeoTIFF.</li>
+ *   <li>Format the elements with curly brackets instead than square ones.
+ *       For example both {@code ID["EPSG",4326]} and {@code ID("EPSG",4326)} are legal WKT.</li>
  *   <li>Format with a different indentation or format the whole WKT on a single line.</li>
  *   <li>Apply syntactic coloring on terminal supporting <cite>ANSI escape codes</cite>
  *       (a.k.a. ECMA-48, ISO/IEC 6429 and X3.64).</li>
@@ -45,11 +43,11 @@
  *       <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">shown on GeoAPI</a>.</li>
  * </ul>
  *
- * The WKT 1 format has been interpreted differently by various implementors. Some of those differences are
- * <a href="http://home.gdal.org/projects/opengis/wktproblems.html">documented by the GDAL project</a>.
- * The WKT 2 format aims to solve the inter-operability problem caused by such mismatches between implementations,
- * but not all softwares support this new format. Consequently importing or exporting data from a software with the
- * WKT 1 syntax require knowledge of the WKT variant used by that software. This variant can be specified by the
+ * The WKT 1 format has been interpreted differently by various implementors.
+ * One noticeable difference is the unit of measurement of prime meridians and projection parameters.
+ * The WKT 2 format aims to solve the inter-operability problem caused by such mismatches,
+ * but not all softwares support this new format. Consequently importing or exporting data from/to a software with
+ * the WKT syntax require knowledge of the WKT variant used by that software. This variant can be specified by the
  * {@link org.apache.sis.io.wkt.Convention} enumeration.
  *
  * {@section Geometry WKT}
