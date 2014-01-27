@@ -35,11 +35,11 @@
  * </ul>
  *
  * {@section Referencing WKT}
- * Referencing WKT is defined in two versions:
+ * Referencing WKT is defined using Extended Backus Naur Form (EBNF) in two versions:
  * <ul>
  *   <li>ISO 19162 defines the current format, also known as “WKT 2”.</li>
  *   <li>The previous format — “WKT 1” — was defined in the <a href="http://www.opengeospatial.org/standards/ct">OGC
- *       document 01-009</a> using Extended Backus Naur Form (EBNF). This definition is
+ *       document 01-009</a>. This definition is
  *       <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">shown on GeoAPI</a>.</li>
  * </ul>
  *
@@ -49,6 +49,13 @@
  * but not all softwares support this new format. Consequently importing or exporting data from/to a software with
  * the WKT syntax require knowledge of the WKT variant used by that software. This variant can be specified by the
  * {@link org.apache.sis.io.wkt.Convention} enumeration.
+ *
+ * <p>The WKT 2 format provides more complete CRS descriptions than WKT 1 with one exception:
+ * to retain simplicity, WKT 2 does not define {@link org.opengis.referencing.crs.DerivedCRS} representations.
+ * This is because WKT 2 does not define {@link org.opengis.referencing.operation.MathTransform} representations
+ * neither, while the later were used to be contained inside {@code DerivedCRS} representations in WKT 1.
+ * Apache SIS workarounds this limitation by using the WKT 1 format for {@code MathTransform} instances,
+ * and extending the WKT 2 format with a {@code DerivedCRS} representation that contains those math transforms.</p>
  *
  * {@section Geometry WKT}
  * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes

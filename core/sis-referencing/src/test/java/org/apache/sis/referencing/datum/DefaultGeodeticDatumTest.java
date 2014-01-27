@@ -181,9 +181,10 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     @Test
     public void testToWKT() {
         final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
-        assertWktEquals(datum,
+        assertWktEquals(
                 "DATUM[“WGS84”,\n" +
-                "  SPHEROID[“WGS84”, 6378137.0, 298.257223563]]");
+                "  SPHEROID[“WGS84”, 6378137.0, 298.257223563]]",
+                datum);
     }
 
     /**

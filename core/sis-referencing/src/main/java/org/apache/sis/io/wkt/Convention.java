@@ -32,6 +32,12 @@ import static javax.measure.unit.NonSI.DEGREE_ANGLE;
  * This enumeration specifies whether to use the <cite>Well Known Text</cite> format defined by ISO 19162
  * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
  *
+ * {@section Apache SIS extensions to WKT 2}
+ * The WKT 2 format does not define any syntax for {@link org.opengis.referencing.operation.MathTransform} instances,
+ * and consequently does not provide {@link org.opengis.referencing.crs.DerivedCRS} representations. Apache SIS uses
+ * the WKT 1 format for {@code MathTransform} and extends the WKT 2 format with a {@code DerivedCRS} representation
+ * that contains those math transforms.
+ *
  * {@section WKT 1 variants}
  * The WKT 2 format should be parsed and formatted consistently by all softwares.
  * But the WKT 1 format has been interpreted differently by various implementors.
@@ -63,11 +69,8 @@ public enum Convention {
      * This is the default convention for all WKT formatting in the Apache SIS library.
      *
      * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, when using
-     * this convention SIS will favor <a href="http://www.epsg.org">EPSG</a> definitions of
-     * projection and parameter names.</p>
-     *
-     * @see Citations#ISO
-     * @see Citations#EPSG
+     * this convention SIS will favor {@linkplain Citations#EPSG EPSG} definitions of projection
+     * and parameter names.</p>
      */
     WKT2(Citations.EPSG, false, false),
 
@@ -77,19 +80,22 @@ public enum Convention {
      * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">on GeoAPI</a>.
      *
      * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, when using
-     * this convention SIS will favor OGC definitions of projection and parameter names.</p>
+     * this convention SIS will favor {@linkplain Citations#OGC OGC} definitions of projection
+     * and parameter names.</p>
      *
-     * <p>For {@link GeocentricCRS}, this convention uses the legacy set of Cartesian axes. Those axes were
-     * defined in OGC 01-009 as <var>Other</var>, <var>Easting</var> and <var>Northing</var> in metres:</p>
+     * {@section Differences compared to WKT 2}
+     * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding parameter
+     * and code list values. For {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes which were
+     * defined in OGC 01-009. Those axes use the <var>Other</var>, <var>Easting</var> and <var>Northing</var>
+     * {@linkplain org.opengis.referencing.cs.AxisDirection axis directions} instead than the geocentric ones,
+     * as shown in the following table:
      *
      * <table class="sis">
-     *   <tr><th>ISO 19111</th>    <th>OGC 01-009</th> <th>Direction</th></tr>
+     *   <tr><th>ISO 19111</th>    <th>OGC 01-009</th> <th>Description</th></tr>
      *   <tr><td>Geocentric X</td> <td>Other</td>      <td>Toward prime meridian</td></tr>
      *   <tr><td>Geocentric Y</td> <td>Easting</td>    <td>Toward 90°E longitude</td></tr>
      *   <tr><td>Geocentric Z</td> <td>Northing</td>   <td>Toward north pole</td></tr>
      * </table>
-     *
-     * @see Citations#OGC
      */
     WKT1(Citations.OGC, true, false),
 

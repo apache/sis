@@ -539,8 +539,8 @@ public class Formatter {
         final int numCol = matrix.getNumCol();
         final int openingBracket  = symbols.getOpeningBracket(0);
         final int closingBracket  = symbols.getClosingBracket(0);
-        final int openQuote       = symbols.getOpenQuote();
-        final int closeQuote      = symbols.getCloseQuote();
+        final int openQuote       = symbols.getOpeningQuote(0);
+        final int closeQuote      = symbols.getClosingQuote(0);
         final String separator    = symbols.getSeparator();
         final StringBuffer buffer = this.buffer;
         boolean columns = false;
@@ -701,7 +701,8 @@ public class Formatter {
      * Appends the given string as a quoted text.
      */
     private void quote(final String text) {
-        buffer.appendCodePoint(symbols.getOpenQuote()).append(text).appendCodePoint(symbols.getCloseQuote());
+        buffer.appendCodePoint(symbols.getOpeningQuote(0)).append(text)
+              .appendCodePoint(symbols.getClosingQuote(0));
     }
 
     /**
@@ -766,7 +767,7 @@ public class Formatter {
             appendSeparator(requestNewLine);
             buffer.append("UNIT").appendCodePoint(symbols.getOpeningBracket(0));
             setColor(ElementKind.UNIT);
-            buffer.appendCodePoint(symbols.getOpenQuote());
+            buffer.appendCodePoint(symbols.getOpeningQuote(0));
             if (NonSI.DEGREE_ANGLE.equals(unit)) {
                 buffer.append("degree");
             } else if (SI.METRE.equals(unit)) {
@@ -774,7 +775,7 @@ public class Formatter {
             } else {
                 unitFormat.format(unit, buffer, dummy);
             }
-            buffer.appendCodePoint(symbols.getCloseQuote());
+            buffer.appendCodePoint(symbols.getClosingQuote(0));
             resetColor();
             append(Units.toStandardUnit(unit));
             buffer.appendCodePoint(symbols.getClosingBracket(0));

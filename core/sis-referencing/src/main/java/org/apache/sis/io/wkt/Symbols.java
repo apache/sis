@@ -34,7 +34,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *   <li>An English locale for {@linkplain java.text.DecimalFormatSymbols decimal format symbols}.</li>
  *   <li>Square brackets, as in {@code DATUM["WGS84"]}. An alternative allowed by the WKT
  *       specification is curly brackets as in {@code DATUM("WGS84")}.</li>
- *   <li>English quotation mark ({@code '"'}).</li>
+ *   <li>English quotation mark ({@code '"'}). SIS also accepts {@code “…”} quotation marks
+ *       for more readable {@link String} constants in Java code.</li>
  *   <li>Coma separator followed by a space ({@code ", "}).</li>
  * </ul>
  *
@@ -62,13 +63,15 @@ public class Symbols implements Localized, Serializable {
      * A set of symbols with values between square brackets, like {@code DATUM["WGS84"]}.
      * This is the most frequently used WKT format.
      */
-    public static final Symbols SQUARE_BRACKETS = new Immutable('[', ']', '(', ')');
+    public static final Symbols SQUARE_BRACKETS = new Immutable(
+            new int[] {'[', ']', '(', ')'}, new int[] {'"', '"', '“', '”'});
 
     /**
      * A set of symbols with values between parentheses, like {@code DATUM("WGS84")}.
      * This is a less frequently used but legal WKT format.
      */
-    public static final Symbols CURLY_BRACKETS = new Immutable('(', ')', '[', ']');
+    public static final Symbols CURLY_BRACKETS = new Immutable(
+            new int[] {'(', ')', '[', ']'}, SQUARE_BRACKETS.quotes);
 
     /**
      * The default set of symbols, as documented in the class javadoc.
@@ -98,16 +101,23 @@ public class Symbols implements Localized, Serializable {
     private int[] brackets;
 
     /**
+     * List of characters (as Unicode code point) used for opening or closing a quoted text.
+     * The array shall comply to the following restrictions:
+     *
+     * <ul>
+     *   <li>The characters at index 0 and 1 are the preferred opening and closing quotes respectively.</li>
+     *   <li>For each even index <var>i</var>, {@code quotes[i+1]} is the closing quote matching {@code quotes[i]}.</li>
+     * </ul>
+     *
+     * Both opening and closing quotes are usually {@code '"'}.
+     */
+    private int[] quotes;
+
+    /**
      * The character (as Unicode code point) used for opening ({@code openSequence})
      * or closing ({@code closeSequence}) an array or enumeration.
      */
     private int openSequence, closeSequence;
-
-    /**
-     * The character (as Unicode code point) used for opening ({@code openQuote}) or
-     * closing ({@code closeQuote}) a quoted text. This is usually {@code '"'}.
-     */
-    private int openQuote, closeQuote;
 
     /**
      * The string used as a separator in a list of values. This is usually {@code ", "},
@@ -130,10 +140,9 @@ public class Symbols implements Localized, Serializable {
     public Symbols(final Symbols symbols) {
         locale        = symbols.locale;
         brackets      = symbols.brackets;
+        quotes        = symbols.quotes;
         openSequence  = symbols.openSequence;
         closeSequence = symbols.closeSequence;
-        openQuote     = symbols.openQuote;
-        closeQuote    = symbols.closeQuote;
         separator     = symbols.separator;
     }
 
@@ -141,13 +150,12 @@ public class Symbols implements Localized, Serializable {
      * Constructor reserved to {@link #SQUARE_BRACKETS} and {@link #CURLY_BRACKETS} constants.
      * The given array is stored by reference - it is not cloned.
      */
-    private Symbols(final int[] brackets) {
+    private Symbols(final int[] brackets, final int[] quotes) {
         this.locale        = Locale.US;
         this.brackets      = brackets;
+        this.quotes        = quotes;
         this.openSequence  = '{';
         this.closeSequence = '}';
-        this.openQuote     = '"';
-        this.closeQuote    = '"';
         this.separator     = ", ";
     }
 
@@ -162,10 +170,10 @@ public class Symbols implements Localized, Serializable {
 
         /**
          * Constructor reserved to {@link Symbols#SQUARE_BRACKETS} and {@link Symbols#CURLY_BRACKETS} constants.
-         * The given array is stored by reference - it is not cloned.
+         * The given arrays are stored by reference - they are not cloned.
          */
-        Immutable(final int... brackets) {
-            super(brackets);
+        Immutable(final int[] brackets, final int[] quotes) {
+            super(brackets, quotes);
         }
 
         /**
@@ -244,12 +252,15 @@ public class Symbols implements Localized, Serializable {
 
     /**
      * Returns the number of paired brackets. For example if the WKT parser accepts both the
-     * {@code [ ]} and {@code ( )} paired brackets, then this method returns 2.
+     * {@code […]} and {@code (…)} bracket pairs, then this method returns 2.
      *
      * @return The number of bracket pairs.
+     *
+     * @see #getOpeningBracket(int)
+     * @see #getClosingBracket(int)
      */
-    public final int getNumPairedBracket() {
-        return brackets.length / 2;
+    public final int getNumPairedBrackets() {
+        return brackets.length >>> 1;
     }
 
     /**
@@ -257,12 +268,12 @@ public class Symbols implements Localized, Serializable {
      * Index 0 stands for the default bracket used at formatting time.
      * All other index are for optional brackets accepted at parsing time.
      *
-     * @param  index Index of the opening bracket to get, from 0 to {@link #getNumPairedBracket()} exclusive.
+     * @param  index Index of the opening bracket to get, from 0 to {@link #getNumPairedBrackets()} exclusive.
      * @return The opening bracket at the given index, as a Unicode code point.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     public final int getOpeningBracket(final int index) {
-        return brackets[index*2];
+        return brackets[index << 1];
     }
 
     /**
@@ -270,47 +281,116 @@ public class Symbols implements Localized, Serializable {
      * Index 0 stands for the default bracket used at formatting time.
      * All other index are for optional brackets accepted at parsing time.
      *
-     * @param  index Index of the closing bracket to get, from 0 to {@link #getNumPairedBracket()} exclusive.
+     * @param  index Index of the closing bracket to get, from 0 to {@link #getNumPairedBrackets()} exclusive.
      * @return The closing bracket at the given index, as a Unicode code point.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     public final int getClosingBracket(final int index) {
-        return brackets[index*2 + 1];
+        return brackets[(index << 1) | 1];
     }
 
     /**
-     * Sets the opening and closing brackets to the given characters.
-     * The given arrays shall comply to the following constraints:
+     * Sets the opening and closing brackets to the given pairs.
+     * Each string shall contain exactly two code points (usually two characters).
+     * The first code point is taken as the opening bracket, and the second code point as the closing bracket.
      *
-     * <ul>
-     *   <li>The two arrays shall be non-empty and have the same length.</li>
-     *   <li>The characters at index 0 are the preferred opening and closing brackets.</li>
-     *   <li>For each index <var>i</var>, {@code closingBrackets[i]} is the closing bracket
-     *       matching {@code openingBrackets[i]}.</li>
-     * </ul>
+     * {@example The following code will instruct the WKT formatter to use the <code>(…)</code> pair of brackets
+     *           at formatting time, but still accept the more common <code>[…]</code> pair of brackets at parsing
+     *           time:
      *
-     * @param openingBrackets The opening brackets, as a Unicode code point.
-     * @param closingBrackets The closing brackets matching the opening ones.
+     *           <pre>setPairedBrackets("()", "[]");</pre>}
+     *
+     * @param preferred The preferred pair of opening and closing quotes, used at formatting time.
+     * @param alternatives Alternative pairs of opening and closing quotes accepted at parsing time.
      */
-    public void setBrackets(final int[] openingBrackets, final int[] closingBrackets) {
+    public void setPairedBrackets(final String preferred, final String... alternatives) {
         checkWritePermission();
-        ensureNonNull("openingBrackets", openingBrackets);
-        ensureNonNull("closingBrackets", closingBrackets);
-        final int length = openingBrackets.length;
-        if (closingBrackets.length != length) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
+        brackets = toCodePoints(preferred, alternatives);
+    }
+
+    /**
+     * Returns the number of paired quotes. For example if the WKT parser accepts both the
+     * {@code "…"} and {@code “…”} quote pairs, then this method returns 2.
+     *
+     * @return The number of quote pairs.
+     *
+     * @see #getOpeningQuote(int)
+     * @see #getClosingQuote(int)
+     */
+    public final int getNumPairedQuotes() {
+        return quotes.length >>> 1;
+    }
+
+    /**
+     * Returns the opening quote character at the given index.
+     * Index 0 stands for the default quote used at formatting time, which is usually {@code '"'}.
+     * All other index are for optional quotes accepted at parsing time.
+     *
+     * @param  index Index of the opening quote to get, from 0 to {@link #getNumPairedQuotes()} exclusive.
+     * @return The opening quote at the given index, as a Unicode code point.
+     * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     */
+    public final int getOpeningQuote(final int index) {
+        return quotes[index << 1];
+    }
+
+    /**
+     * Returns the closing quote character at the given index.
+     * Index 0 stands for the default quote used at formatting time, which is usually {@code '"'}.
+     * All other index are for optional quotes accepted at parsing time.
+     *
+     * @param  index Index of the closing quote to get, from 0 to {@link #getNumPairedQuotes()} exclusive.
+     * @return The closing quote at the given index, as a Unicode code point.
+     * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     */
+    public final int getClosingQuote(final int index) {
+        return quotes[(index << 1) | 1];
+    }
+
+    /**
+     * Sets the opening and closing quotes to the given pairs.
+     * Each string shall contain exactly two code points (usually two characters).
+     * The first code point is taken as the opening quote, and the second code point as the closing quote.
+     *
+     * {@example The following code will instruct the WKT formatter to use the prettier <code>“…”</code>
+     *           quotation marks at formatting time (especially useful for <code>String</code> constants
+     *           in Java code), but still accept the standard <code>"…"</code> quotation marks at parsing
+     *           time:
+     *
+     *           <pre>setPairedQuotes("“”", "\"\"");</pre>}
+     *
+     * @param preferred The preferred pair of opening and closing quotes, used at formatting time.
+     * @param alternatives Alternative pairs of opening and closing quotes accepted at parsing time.
+     */
+    public void setPairedQuotes(final String preferred, final String... alternatives) {
+        checkWritePermission();
+        quotes = toCodePoints(preferred, alternatives);
+    }
+
+    /**
+     * Packs the given pairs of bracket or quotes in a single array of code points.
+     * This method also verifies arguments validity.
+     */
+    private static int[] toCodePoints(final String preferred, final String[] alternatives) {
+        ensureNonNull("preferred", preferred);
+        final int n = (alternatives != null) ? alternatives.length : 0;
+        final int[] array = new int[(n+1) * 2];
+        String name = "preferred";
+        String pair = preferred;
+        int i=0, j=0;
+        while (true) {
+            if (pair.codePointCount(0, pair.length()) != 2) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, name, pair));
+            }
+            final int c = pair.codePointAt(0);
+            ensureValidUnicodeCodePoint(name, array[j++] = c);
+            ensureValidUnicodeCodePoint(name, array[j++] = pair.codePointAt(Character.charCount(c)));
+            if (i >= n) {
+                break;
+            }
+            ensureNonNullElement(name = "alternatives", i, pair = alternatives[i++]);
         }
-        if (length == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "openingBrackets"));
-        }
-        final int[] brackets = new int[length * 2];
-        for (int i=0,j=0; i<length; i++) {
-            ensureValidUnicodeCodePoint("openingBrackets", openingBrackets[i]);
-            ensureValidUnicodeCodePoint("closingBrackets", closingBrackets[i]);
-            brackets[j++] = openingBrackets[i];
-            brackets[j++] = closingBrackets[i];
-        }
-        this.brackets = brackets; // Store only on success.
+        return array;
     }
 
     /**
@@ -345,38 +425,6 @@ public class Symbols implements Localized, Serializable {
         ensureValidUnicodeCodePoint("closeSequence", closeSequence);
         this.openSequence  = openSequence;
         this.closeSequence = closeSequence;
-    }
-
-    /**
-     * Returns the character used for opening a quoted text. This is usually {@code '"'}.
-     *
-     * @return The character used for opening a quoted text, as a Unicode code point.
-     */
-    public final int getOpenQuote() {
-        return openQuote;
-    }
-
-    /**
-     * Returns the character used for closing a quoted text. This is usually {@code '"'}.
-     *
-     * @return The character used for closing a quoted text, as a Unicode code point.
-     */
-    public final int getCloseQuote() {
-        return closeQuote;
-    }
-
-    /**
-     * Sets the characters used for opening and closing a quoted text.
-     *
-     * @param openQuote  The character for opening a quoted text, as a Unicode code point.
-     * @param closeQuote The character for closing a quoted text, as a Unicode code point.
-     */
-    public void setQuotes(final int openQuote, final int closeQuote) {
-        checkWritePermission();
-        ensureValidUnicodeCodePoint("openQuote",  openQuote);
-        ensureValidUnicodeCodePoint("closeQuote", closeQuote);
-        this.openQuote  = openQuote;
-        this.closeQuote = closeQuote;
     }
 
     /**
@@ -426,8 +474,8 @@ public class Symbols implements Localized, Serializable {
      *
      * <ul>
      *   <li>The search is case-insensitive.</li>
-     *   <li>Characters between the {@linkplain #getOpenQuote() open quote} and the
-     *       {@linkplain #getCloseQuote() close quote} are ignored.</li>
+     *   <li>Characters between {@linkplain #getOpeningQuote(int) opening quotes} and
+     *       {@linkplain #getClosingQuote(int) closing quotes} are ignored.</li>
      *   <li>The element found in the given WKT can not be preceded by other
      *       {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier characters}.</li>
      *   <li>The element found in the given WKT must be followed, ignoring space, by an
@@ -455,12 +503,12 @@ public class Symbols implements Localized, Serializable {
      * Invoking this method is equivalent to invoking
      * <code>{@linkplain #containsElement(CharSequence, String) containsElement}(wkt, "AXIS")</code>.
      *
-     * <p>The check for axis elements is of particular interest because the axis order is a frequent cause
+     * {@section Use case}
+     * The check for axis elements is of particular interest because the axis order is a frequent cause
      * of confusion when processing geographic data. Some applications just ignore any declared axis order
      * in favor of their own hard-coded (<var>longitude</var>, <var>latitude</var>) axis order.
      * Consequently, the presence of {@code AXIS[…]} elements in a WKT is an indication that the encoded
      * object may not be understood as intended by some external softwares.
-     * See for example {@link Convention#ESRI}.</p>
      *
      * @param  wkt The WKT to inspect.
      * @return {@code true} if the given WKT contains at least one instance of the {@code AXIS[…]} element.
@@ -478,12 +526,22 @@ public class Symbols implements Localized, Serializable {
      * @param  offset  The index to start the search from.
      */
     private boolean containsElement(final CharSequence wkt, final String element, int offset) {
+        final int[] quotes = this.quotes;
         final int length = wkt.length();
         boolean isQuoting = false;
+        int closeQuote = 0;
         while (offset < length) {
             int c = Character.codePointAt(wkt, offset);
-            if (c == (isQuoting ? closeQuote : openQuote)) {
-                isQuoting = !isQuoting;
+            if (closeQuote != 0) {
+                if (c == closeQuote) {
+                    isQuoting = false;
+                }
+            } else for (int i=0; i<quotes.length; i+=2) {
+                if (c == quotes[i]) {
+                    closeQuote = quotes[i | 1];
+                    isQuoting = true;
+                    break;
+                }
             }
             if (!isQuoting && Character.isUnicodeIdentifierStart(c)) {
                 /*
