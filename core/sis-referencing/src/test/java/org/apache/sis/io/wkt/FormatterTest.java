@@ -50,16 +50,16 @@ public final strictfp class FormatterTest extends TestCase {
      */
     @Test
     public void testAppendMatrix() {
-        final Formatter formatter = new Formatter();
-        formatter.append(new Matrix4(1, 0, 4, 0,
-                                    -2, 1, 0, 0,
-                                     0, 0, 1, 7,
-                                     0, 0, 0, 1));
+        final Matrix m = new Matrix4(
+                1, 0, 4, 0,
+               -2, 1, 0, 0,
+                0, 0, 1, 7,
+                0, 0, 0, 1);
         assertWktEquals(
                 "PARAMETER[“num_row”, 4],\n"    +
                 "PARAMETER[“num_col”, 4],\n"    +
                 "PARAMETER[“elt_0_2”, 4.0],\n"  +
                 "PARAMETER[“elt_1_0”, -2.0],\n"  +
-                "PARAMETER[“elt_2_3”, 7.0]", formatter.toString());
+                "PARAMETER[“elt_2_3”, 7.0]", m);
     }
 }

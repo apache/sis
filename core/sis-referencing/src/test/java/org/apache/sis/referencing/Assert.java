@@ -30,6 +30,8 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.io.wkt.Symbols;
+import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 
@@ -50,6 +52,18 @@ public strictfp class Assert extends org.apache.sis.test.Assert {
      * The tolerance threshold for strict comparisons of floating point values.
      */
     private static final double STRICT = 0;
+
+    /**
+     * The formatter to be used by {@link #assertWktEquals(Object, String)}.
+     * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}
+     * for easier readability of {@link String} constants in Java code.
+     */
+    private static final WKTFormat WKT_FORMAT = new WKTFormat();
+    static {
+        final Symbols s = new Symbols();
+        s.setPairedQuotes("“”", "\"\"");
+        WKT_FORMAT.setSymbols(s);
+    }
 
     /**
      * For subclass constructor only.
@@ -318,38 +332,24 @@ public strictfp class Assert extends org.apache.sis.test.Assert {
     }
 
     /**
-     * Asserts that the WKT of the given object is equal to the expected one. If the given string contains
-     * {@code '“'} and {@code '”'} characters (for easier reading), then those characters will be replaced
-     * by "ordinary" quote characters ({@code '"'}).
+     * Asserts that the WKT of the given object is equal to the expected one.
+     * This method expected the {@code “…”} quotation marks instead of {@code "…"}
+     * for easier readability of {@link String} constants in Java code.
      *
-     * @param object The object to format in <cite>Well Known Text</cite> format.
      * @param expected The expected text, or {@code null} if {@code object} is expected to be null.
+     * @param object The object to format in <cite>Well Known Text</cite> format, or {@code null}.
      */
-    public static void assertWktEquals(final IdentifiedObject object, String expected) {
+    public static void assertWktEquals(final String expected, final Object object) {
         if (expected == null) {
             assertNull(object);
         } else {
             assertNotNull(object);
-            expected = expected.replace('“', '"').replace('”', '"');
-            assertMultilinesEquals(object.getName().getCode(), expected, object.toWKT());
-        }
-    }
-
-    /**
-     * Asserts that the given WKT is equal to the expected one. If the given expected string contains
-     * {@code '“'} and {@code '”'} characters (for easier reading), then those characters will be replaced
-     * by "ordinary" quote characters ({@code '"'}).
-     *
-     * @param expected The expected text, or {@code null} if {@code actual} is expected to be null.
-     * @param actual   The actual <cite>Well Known Text</cite> to compare.
-     */
-    public static void assertWktEquals(String expected, final String actual) {
-        if (expected == null) {
-            assertNull(actual);
-        } else {
-            assertNotNull(actual);
-            expected = expected.replace('“', '"').replace('”', '"');
-            assertMultilinesEquals(expected, actual);
+            final String wkt;
+            synchronized (WKT_FORMAT) {
+                wkt = WKT_FORMAT.format(object);
+            }
+            assertMultilinesEquals((object instanceof IdentifiedObject) ?
+                    ((IdentifiedObject) object).getName().getCode() : object.getClass().getSimpleName(), expected, wkt);
         }
     }
 }
