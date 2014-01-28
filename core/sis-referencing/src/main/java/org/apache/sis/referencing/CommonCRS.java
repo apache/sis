@@ -822,12 +822,11 @@ public enum CommonCRS {
          * Height measured along the normal to the ellipsoid used in the definition of horizontal datum.
          * The unit of measurement is metres.
          *
-         * <p><b>This datum is not part of ISO 19111 international standard.</b>
-         * Usage of this datum is generally not recommended since ellipsoidal heights make little sense without
+         * <p><b>Ellipsoidal height is not part of ISO 19111 international standard.</b>
+         * Such vertical CRS is usually not recommended since ellipsoidal heights make little sense without
          * their (<var>latitude</var>, <var>longitude</var>) locations. The ISO specification defines instead
-         * three-dimensional {@code GeographicCRS} for that reason. However Apache SIS provides this value
-         * because it is sometime useful to temporarily express ellipsoidal heights independently from other
-         * ordinate values.</p>
+         * three-dimensional {@code GeographicCRS} for that reason. Users are encouraged to avoid this orphan
+         * ellipsoidal height as much as possible.</p>
          */
         ELLIPSOIDAL(false, Vocabulary.Keys.EllipsoidalHeight, Vocabulary.Keys.Ellipsoid),
 

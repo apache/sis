@@ -16,19 +16,32 @@
  */
 package org.apache.sis.referencing;
 
+import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.referencing.cs.DefaultVerticalCS;
+import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Static;
@@ -38,6 +51,25 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 /**
  * Static methods working on {@linkplain CoordinateReferenceSystem Coordinate Reference Systems}.
+ * The methods defined in this class can be grouped in two categories:
+ *
+ * <ul>
+ *   <li>Factory methods, the most notable one being {@link #forCode(String)}.</li>
+ *   <li>Methods providing information, like {@link #isHorizontalCRS(CoordinateReferenceSystem)}.</li>
+ * </ul>
+ *
+ * {@section Note on kinds of CRS}
+ * The {@link #getSingleComponents(CoordinateReferenceSystem)} method decomposes an arbitrary CRS into a flat
+ * list of single components. In such flat list, vertical and temporal components can easily be identified by
+ * {@code instanceof} checks. But identifying the horizontal component is not as easy. The list below suggests
+ * ways to classify the components:
+ *
+ * <ul>
+ *   <li><code>if (crs instanceof TemporalCRS)</code> determines if the CRS is for the temporal component.</li>
+ *   <li><code>if (crs instanceof VerticalCRS)</code> determines if the CRS is for the vertical component.</li>
+ *   <li><code>if (CRS.{@linkplain #isHorizontalCRS(CoordinateReferenceSystem) isHorizontalCRS}(crs))</code>
+ *       determines if the CRS is for the horizontal component.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
@@ -91,6 +123,8 @@ public final class CRS extends Static {
      * @return The Coordinate Reference System for the given authority code.
      * @throws NoSuchAuthorityCodeException If there is no known CRS associated to the given code.
      * @throws FactoryException if the CRS creation failed for an other reason.
+     *
+     * @category factory
      */
     public static CoordinateReferenceSystem forCode(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
@@ -151,6 +185,163 @@ public final class CRS extends Static {
                 authority, value, code);
         e.initCause(cause);
         throw e;
+    }
+
+    /**
+     * Returns the valid geographic area for the given coordinate reference system, or {@code null} if unknown.
+     * This method explores the {@linkplain CoordinateReferenceSystem#getDomainOfValidity() domain of validity}
+     * associated with the given CRS. If more than one geographic bounding box is found, then they will be
+     * {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox)
+     * added} together.
+     *
+     * @param  crs The coordinate reference system, or {@code null}.
+     * @return The geographic area, or {@code null} if none.
+     *
+     * @see #getEnvelope(CoordinateReferenceSystem)
+     *
+     * @category information
+     */
+    public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateReferenceSystem crs) {
+        return (crs != null) ? Extents.getGeographicBoundingBox(crs.getDomainOfValidity()) : null;
+    }
+
+    /**
+     * Returns {@code true} if the given CRS is horizontal. The current implementation considers a
+     * CRS as horizontal if it is two-dimensional and comply with one of the following conditions:
+     *
+     * <ul>
+     *   <li>It is an instance of {@link GeographicCRS}.</li>
+     *   <li>It is an instance of {@link ProjectedCRS}.</li>
+     * </ul>
+     *
+     * @todo Future SIS implementation may extend the above condition list. For example a radar station could
+     *       use a polar coordinate system in a <code>DerivedCRS</code> instance based on a projected CRS.
+     *
+     * In case of doubt, this method conservatively returns {@code false}.
+     *
+     * @param  crs The coordinate reference system, or {@code null}.
+     * @return {@code true} if the given CRS is non-null and comply with one of the above conditions,
+     *         or {@code false} otherwise.
+     *
+     * @see #getHorizontalCRS(CoordinateReferenceSystem)
+     *
+     * @category information
+     */
+    public static boolean isHorizontalCRS(CoordinateReferenceSystem crs) {
+        if (crs instanceof GeographicCRS || crs instanceof ProjectedCRS) {
+            return crs.getCoordinateSystem().getDimension() == 2;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the first projected coordinate reference system found in a the given CRS,
+     * or {@code null} if there is none.
+     *
+     * @param  crs The coordinate reference system, or {@code null}.
+     * @return The first projected CRS, or {@code null} if none.
+     *
+     * @category information
+     */
+    public static ProjectedCRS getProjectedCRS(final CoordinateReferenceSystem crs) {
+        if (crs instanceof ProjectedCRS) {
+            return (ProjectedCRS) crs;
+        }
+        if (crs instanceof CompoundCRS) {
+            final CompoundCRS cp = (CompoundCRS) crs;
+            for (final CoordinateReferenceSystem c : cp.getComponents()) {
+                final ProjectedCRS candidate = getProjectedCRS(c);
+                if (candidate != null) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the first vertical coordinate reference system found in a the given CRS,
+     * or {@code null} if there is none.
+     *
+     * {@section Height in a three-dimensional geographic CRS}
+     * In ISO 19111 model, ellipsoidal heights are indissociable from geographic CRS because such heights
+     * without their (<var>latitude</var>, <var>longitude</var>) locations make little sense. Consequently
+     * a standard-conformant library should return {@code null} when asked for the {@code VerticalCRS}
+     * component of a geographic CRS. This is what {@code getVerticalCRS(…)} does when the
+     * {@code allowEllipsoidal} argument is {@code false}.
+     *
+     * <p>However in some exceptional cases, handling ellipsoidal heights like any other kind of heights
+     * may simplify the task. For example when computing <em>difference</em> between heights above the
+     * same datum, the impact of ignoring locations may be smaller (but not necessarily canceled).
+     * Orphan {@code VerticalCRS} may also be useful for information purpose like labeling a plot axis.
+     * If the caller feels confident that ellipsoidal heights are safe for his task, he can set the
+     * {@code allowEllipsoidal} argument to {@code true}. In such case, this {@code getVerticalCRS(…)}
+     * method will create a temporary {@code VerticalCRS} from the first three-dimensional {@code GeographicCRS}
+     * <em>in last resort</em>, only if it failed to find an existing {@code VerticalCRS} instance.
+     * <strong>Note that this is not a valid CRS according ISO 19111</strong> — use with care.</p>
+     *
+     * @param  crs The coordinate reference system, or {@code null}.
+     * @param  allowEllipsoidal {@code true} for allowing the creation of orphan CRS for ellipsoidal heights.
+     *         This is usually not recommended.
+     * @return The first vertical CRS, or {@code null} if none.
+     *
+     * @category information
+     */
+    public static VerticalCRS getVerticalCRS(final CoordinateReferenceSystem crs, final boolean allowEllipsoidal) {
+        if (crs instanceof VerticalCRS) {
+            return (VerticalCRS) crs;
+        }
+        if (crs instanceof CompoundCRS) {
+            final CompoundCRS cp = (CompoundCRS) crs;
+            boolean a = false;
+            do { // Executed at most twice.
+                for (final CoordinateReferenceSystem c : cp.getComponents()) {
+                    final VerticalCRS candidate = getVerticalCRS(c, a);
+                    if (candidate != null) {
+                        return candidate;
+                    }
+                }
+            } while ((a = !a) == allowEllipsoidal);
+        }
+        if (allowEllipsoidal && crs instanceof GeographicCRS) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
+            if (i >= 0) {
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                VerticalCRS c = CommonCRS.Vertical.ELLIPSOIDAL.crs();
+                if (!c.getCoordinateSystem().getAxis(0).equals(axis)) {
+                    final Map<String,?> properties = IdentifiedObjects.getProperties(c);
+                    c = new DefaultVerticalCRS(properties, c.getDatum(), new DefaultVerticalCS(properties, axis));
+                }
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the first temporal coordinate reference system found in the given CRS,
+     * or {@code null} if there is none.
+     *
+     * @param  crs The coordinate reference system, or {@code null}.
+     * @return The first temporal CRS, or {@code null} if none.
+     *
+     * @category information
+     */
+    public static TemporalCRS getTemporalCRS(final CoordinateReferenceSystem crs) {
+        if (crs instanceof TemporalCRS) {
+            return (TemporalCRS) crs;
+        }
+        if (crs instanceof CompoundCRS) {
+            final CompoundCRS cp = (CompoundCRS) crs;
+            for (final CoordinateReferenceSystem c : cp.getComponents()) {
+                final TemporalCRS candidate = getTemporalCRS(c);
+                if (candidate != null) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
     }
 
     /**
