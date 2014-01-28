@@ -312,11 +312,11 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     }
 
     /**
-     * Tests {@link AxisDirections#indexOf(CoordinateSystem, AxisDirection)}.
+     * Tests {@link AxisDirections#indexOfColinear(CoordinateSystem, AxisDirection)}.
      */
     @Test
-    public void testIndexOf() {
-        assertEquals(1, AxisDirections.indexOf(HardCodedCS.GEODETIC_3D, AxisDirection.NORTH));
-        assertEquals(1, AxisDirections.indexOf(HardCodedCS.GEODETIC_3D, AxisDirection.SOUTH));
+    public void testIndexOfColinear() {
+        assertEquals(1, AxisDirections.indexOfColinear(HardCodedCS.GEODETIC_3D, AxisDirection.NORTH));
+        assertEquals(1, AxisDirections.indexOfColinear(HardCodedCS.GEODETIC_3D, AxisDirection.SOUTH));
     }
 }
