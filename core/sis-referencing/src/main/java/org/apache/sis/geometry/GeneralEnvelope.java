@@ -877,6 +877,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *         or {@code false} if no change has been done.
      * @throws IllegalStateException If a upper ordinate value is less than a lower ordinate
      *         value on an axis which does not have the {@code WRAPAROUND} range meaning.
+     *
+     * @see #toSimpleEnvelopes()
      */
     public boolean simplify() throws IllegalStateException {
         boolean changed = false;

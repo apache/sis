@@ -528,6 +528,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * @return A representation of this envelope as an array of non-empty envelope.
      *
      * @see Envelope2D#toRectangles()
+     * @see GeneralEnvelope#simplify()
      *
      * @since 0.4
      */

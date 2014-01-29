@@ -101,7 +101,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     private CoordinateSystem coordinateSystem;
 
     /**
-     * Other coordinate systems derived from this coordinate systems for other axes conventions.
+     * Other coordinate reference systems derived from this CRS.
      * Created only when first needed.
      *
      * @see #forConvention(AxesConvention)
