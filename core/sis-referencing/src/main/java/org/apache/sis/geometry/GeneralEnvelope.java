@@ -91,6 +91,24 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  * </ul>
  * </td></tr></table>
  *
+ * {@section Envelope validation}
+ * If and only if this envelope is associated to a non-null CRS, then constructors and setter methods
+ * in this class perform the following checks:
+ *
+ * <ul>
+ *   <li>The number of CRS dimensions must be equals to <code>this.{@linkplain #getDimension()}</code>.</li>
+ *   <li>For each dimension <var>i</var>,
+ *       <code>{@linkplain #getLower(int) getLower}(i) &gt; {@linkplain #getUpper(int) getUpper}(i)</code> is allowed
+ *       only if the {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getRangeMeaning() coordinate
+ *       system axis range meaning} is {@code WRAPAROUND}.</li>
+ * </ul>
+ *
+ * Note that this class does <em>not</em> require the ordinate values to be between the axis minimum and
+ * maximum values. This flexibility exists because out-of-range values happen in practice, while they do
+ * not hurt the working of {@code add(…)}, {@code intersect(…)}, {@code contains(…)} and similar methods.
+ * This in contrast with the {@code lower > upper} case, which cause the above-cited methods to behave in
+ * an unexpected way if the axis does not have wraparound range meaning.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
@@ -259,21 +277,42 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Sets the coordinate reference system in which the coordinate are given.
-     * This method <strong>does not</strong> reproject the envelope, and do not
-     * check if the envelope is contained in the new domain of validity.
+     * This method <strong>does not</strong> reproject the envelope, and does
+     * not check if the envelope is contained in the new domain of validity.
      *
      * <p>If the envelope coordinates need to be transformed to the new CRS, consider
      * using {@link Envelopes#transform(Envelope, CoordinateReferenceSystem)} instead.</p>
      *
      * @param  crs The new coordinate reference system, or {@code null}.
-     * @throws MismatchedDimensionException if the specified CRS doesn't have the expected
-     *         number of dimensions.
+     * @throws MismatchedDimensionException if the specified CRS doesn't have the expected number of dimensions.
+     * @throws IllegalStateException if a range of ordinate values in this envelope is compatible with the given CRS.
+     *         See <cite>Envelope validation</cite> in class javadoc for more details.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs)
             throws MismatchedDimensionException
     {
         ensureDimensionMatches("crs", getDimension(), crs);
-        this.crs = crs;
+        /*
+         * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, ordinates)
+         * except that it may verify only a subset of the ordinate array and throws a different kind
+         * of exception in caseo of failure.
+         */
+        if (crs != null) {
+            final int beginIndex = beginIndex();
+            final int endIndex = endIndex();
+            final int d = ordinates.length >>> 1;
+            for (int i=beginIndex; i<endIndex; i++) {
+                final double lower = ordinates[i];
+                final double upper = ordinates[i + d];
+                if (lower > upper) {
+                    final int j = i - beginIndex;
+                    if (!isWrapAround(crs, j)) {
+                        throw new IllegalStateException(illegalRange(crs, j, lower, upper));
+                    }
+                }
+            }
+        }
+        this.crs = crs; // Set only on success.
     }
 
     /**
@@ -283,6 +322,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @param  lower     The limit in the direction of decreasing ordinate values.
      * @param  upper     The limit in the direction of increasing ordinate values.
      * @throws IndexOutOfBoundsException If the given index is out of bounds.
+     * @throws IllegalArgumentException If {@code lower > upper} and the axis range meaning at the given dimension
+     *         is not "wraparound". See <cite>Envelope validation</cite> in class javadoc for more details.
      */
     @Override // Must also be overridden in SubEnvelope
     public void setRange(final int dimension, final double lower, final double upper)
@@ -290,6 +331,13 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     {
         final int d = ordinates.length >>> 1;
         ensureValidIndex(d, dimension);
+        /*
+         * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, ordinates),
+         * except that there is no loop.
+         */
+        if (lower > upper && crs != null && !isWrapAround(crs, dimension)) {
+            throw new IllegalArgumentException(illegalRange(crs, dimension, lower, upper));
+        }
         ordinates[dimension + d] = upper;
         ordinates[dimension]     = lower;
     }
@@ -308,6 +356,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      */
     public void setEnvelope(final double... corners) {
         verifyArrayLength(ordinates.length >>> 1, corners);
+        verifyRanges(crs, corners);
         System.arraycopy(corners, 0, ordinates, 0, ordinates.length);
     }
 

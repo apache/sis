@@ -137,6 +137,13 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedCS.DAYS), HardCodedDatum.UNIX, HardCodedCS.DAYS);
 
     /**
+     * A (λ,φ,h,t) CRS where <var>h</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
+     * This constant uses the "geoid" term as an approximation for the gravity related height.
+     */
+    public static final DefaultCompoundCRS GEOID_4D = new DefaultCompoundCRS(
+            properties("WGS 84 + height + time"), GRAVITY_RELATED_HEIGHT, TIME);
+
+    /**
      * A two-dimensional Cartesian coordinate reference system with (column, row) axes.
      * By default, this CRS has no transformation path to any other CRS (i.e. a map using
      * this CS can't be reprojected to a geographic coordinate reference system for example).

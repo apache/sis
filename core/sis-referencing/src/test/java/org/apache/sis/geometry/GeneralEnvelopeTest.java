@@ -426,17 +426,39 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
+     * Tests {@link GeneralEnvelope#setRange(int, double, double)} with a range which is known to be invalid.
+     */
+    @Test
+    public void testSetRange() {
+        final GeneralEnvelope e = create(2, -4, 3, -3);
+        e.setRange(1, -5, 2);
+        try {
+            e.setRange(1, -10, -20);
+            fail("Invalid range shall not be allowed.");
+        } catch (IllegalArgumentException ex) {
+            // This is the expected exception.
+            final String message = ex.getMessage();
+            assertTrue(message, message.contains("Geodetic latitude"));
+        }
+        // Verify that the envelope still have the old values.
+        assertEquals( 2, e.getLower(0), STRICT);
+        assertEquals(-5, e.getLower(1), STRICT);
+        assertEquals( 3, e.getUpper(0), STRICT);
+        assertEquals( 2, e.getUpper(1), STRICT);
+    }
+
+    /**
      * Tests modifying the corner of an envelope.
      */
     @Test
     public void testCornerModifications() {
-        final GeneralEnvelope e = create(2, -2, 3, -3);
+        final GeneralEnvelope e = create(2, -4, 3, -3);
         e.getLowerCorner().setOrdinate(0,  1);
         e.getUpperCorner().setOrdinate(1, -1);
-        assertEquals( 1.0, e.getLower(0), 0.0);
-        assertEquals(-2.0, e.getLower(1), 0.0);
-        assertEquals( 3.0, e.getUpper(0), 0.0);
-        assertEquals(-1.0, e.getUpper(1), 0.0);
+        assertEquals( 1, e.getLower(0), STRICT);
+        assertEquals(-4, e.getLower(1), STRICT);
+        assertEquals( 3, e.getUpper(0), STRICT);
+        assertEquals(-1, e.getUpper(1), STRICT);
         verifyInvariants(e);
     }
 
