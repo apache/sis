@@ -1185,7 +1185,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * @param  dimension The dimension to set.
      * @param  lower     The limit in the direction of decreasing ordinate values.
      * @param  upper     The limit in the direction of increasing ordinate values.
+     * @throws UnmodifiableGeometryException If this envelope is not modifiable.
      * @throws IndexOutOfBoundsException If the given index is out of bounds.
+     * @throws IllegalArgumentException If {@code lower > upper}, this envelope has a CRS
+     *         and the axis range meaning at the given dimension is not "wraparound".
      */
     void setRange(final int dimension, final double lower, final double upper)
             throws IndexOutOfBoundsException

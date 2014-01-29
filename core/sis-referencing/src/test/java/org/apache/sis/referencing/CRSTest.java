@@ -16,14 +16,16 @@
  */
 package org.apache.sis.referencing;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -82,5 +84,69 @@ public final strictfp class CRSTest extends TestCase {
         verifyForCode(CommonCRS.WGS84.normalizedGeographic(), "CRS:84");
         verifyForCode(CommonCRS.NAD83.normalizedGeographic(), "CRS:83");
         verifyForCode(CommonCRS.NAD27.normalizedGeographic(), "CRS:27");
+    }
+
+    /**
+     * Tests {@link CRS#isHorizontalCRS(CoordinateReferenceSystem)}.
+     */
+    @Test
+    public void testIsHorizontalCRS() {
+        assertFalse(CRS.isHorizontalCRS(HardCodedCRS.TIME));
+        assertFalse(CRS.isHorizontalCRS(HardCodedCRS.ELLIPSOIDAL_HEIGHT));
+        assertTrue (CRS.isHorizontalCRS(HardCodedCRS.WGS84));
+        assertTrue (CRS.isHorizontalCRS(HardCodedCRS.WGS84_φλ));
+        assertFalse(CRS.isHorizontalCRS(HardCodedCRS.WGS84_3D));
+        assertFalse(CRS.isHorizontalCRS(HardCodedCRS.GEOID_4D));
+        assertFalse(CRS.isHorizontalCRS(HardCodedCRS.GEOCENTRIC));
+    }
+
+    /**
+     * Tests {@link CRS#getHorizontalComponent(CoordinateReferenceSystem)}.
+     */
+    @Test
+    @DependsOnMethod("testIsHorizontalCRS")
+    public void testGetHorizontalComponent() {
+        assertNull(CRS.getHorizontalComponent(HardCodedCRS.TIME));
+        assertNull(CRS.getHorizontalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT));
+        assertNull(CRS.getHorizontalComponent(HardCodedCRS.GEOCENTRIC));
+
+        assertSame(HardCodedCRS.WGS84,    CRS.getHorizontalComponent(HardCodedCRS.WGS84));
+        assertSame(HardCodedCRS.WGS84_φλ, CRS.getHorizontalComponent(HardCodedCRS.WGS84_φλ));
+
+        assertEqualsIgnoreMetadata(HardCodedCRS.WGS84, CRS.getHorizontalComponent(HardCodedCRS.WGS84_3D));
+    }
+
+    /**
+     * Tests {@link CRS#getVerticalComponent(CoordinateReferenceSystem, boolean)}.
+     */
+    @Test
+    public void testGetVerticalComponent() {
+        assertNull(CRS.getVerticalComponent(HardCodedCRS.TIME,  false));
+        assertNull(CRS.getVerticalComponent(HardCodedCRS.TIME,  true));
+        assertNull(CRS.getVerticalComponent(HardCodedCRS.WGS84, false));
+        assertNull(CRS.getVerticalComponent(HardCodedCRS.WGS84, true));
+
+        assertSame(HardCodedCRS.ELLIPSOIDAL_HEIGHT,     CRS.getVerticalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT, false));
+        assertSame(HardCodedCRS.ELLIPSOIDAL_HEIGHT,     CRS.getVerticalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT, true));
+        assertSame(HardCodedCRS.GRAVITY_RELATED_HEIGHT, CRS.getVerticalComponent(HardCodedCRS.GEOID_4D, false));
+        assertSame(HardCodedCRS.GRAVITY_RELATED_HEIGHT, CRS.getVerticalComponent(HardCodedCRS.GEOID_4D, true));
+
+        assertNull(CRS.getVerticalComponent(HardCodedCRS.WGS84_3D, false));
+        assertEqualsIgnoreMetadata(HardCodedCRS.ELLIPSOIDAL_HEIGHT,
+                CRS.getVerticalComponent(HardCodedCRS.WGS84_3D, true));
+    }
+
+    /**
+     * Tests {@link CRS#getTemporalComponent(CoordinateReferenceSystem)}.
+     */
+    @Test
+    public void testGetTemporalComponent() {
+        assertNull(CRS.getTemporalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT));
+        assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84));
+        assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84_φλ));
+        assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84_3D));
+
+        assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.TIME));
+        assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.GEOID_4D));
     }
 }

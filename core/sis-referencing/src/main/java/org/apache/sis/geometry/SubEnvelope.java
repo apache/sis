@@ -22,6 +22,7 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Arrays;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndexRange;
@@ -126,6 +127,13 @@ final class SubEnvelope extends GeneralEnvelope {
             throws IndexOutOfBoundsException
     {
         ensureValidIndex(endIndex, dimension);
+        /*
+         * The check performed here shall be identical to the super-class method, which is itself
+         * identical to ArrayEnvelope.verifyRanges(crs, ordinates) except that there is no loop.
+         */
+        if (lower > upper && crs != null && !isWrapAround(crs, dimension)) {
+            throw new IllegalArgumentException(illegalRange(crs, dimension, lower, upper));
+        }
         dimension += beginIndex;
         ordinates[dimension + (ordinates.length >>> 1)] = upper;
         ordinates[dimension] = lower;
@@ -138,6 +146,7 @@ final class SubEnvelope extends GeneralEnvelope {
     public void setEnvelope(final double... corners) {
         final int dimension = getDimension();
         verifyArrayLength(dimension, corners);
+        verifyRanges(crs, corners);
         final int d = ordinates.length >>> 1;
         System.arraycopy(corners, 0,         ordinates, beginIndex,     dimension);
         System.arraycopy(corners, dimension, ordinates, beginIndex + d, dimension);
