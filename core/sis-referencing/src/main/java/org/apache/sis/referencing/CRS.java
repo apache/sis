@@ -34,6 +34,7 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -198,6 +199,7 @@ public final class CRS extends Static {
      * @return The geographic area, or {@code null} if none.
      *
      * @see #getEnvelope(CoordinateReferenceSystem)
+     * @see Extents#getGeographicBoundingBox(Extent)
      *
      * @category information
      */
@@ -214,16 +216,16 @@ public final class CRS extends Static {
      *   <li>It is an instance of {@link ProjectedCRS}.</li>
      * </ul>
      *
+     * In case of doubt, this method conservatively returns {@code false}.
+     *
      * @todo Future SIS implementation may extend the above condition list. For example a radar station could
      *       use a polar coordinate system in a <code>DerivedCRS</code> instance based on a projected CRS.
-     *
-     * In case of doubt, this method conservatively returns {@code false}.
      *
      * @param  crs The coordinate reference system, or {@code null}.
      * @return {@code true} if the given CRS is non-null and comply with one of the above conditions,
      *         or {@code false} otherwise.
      *
-     * @see #getHorizontalCRS(CoordinateReferenceSystem)
+     * @see #getHorizontalComponent(CoordinateReferenceSystem)
      *
      * @category information
      */
@@ -235,22 +237,25 @@ public final class CRS extends Static {
     }
 
     /**
-     * Returns the first projected coordinate reference system found in a the given CRS,
-     * or {@code null} if there is none.
+     * Returns the first horizontal coordinate reference system found in the given CRS, or {@code null} if there is
+     * none. If the given CRS is already horizontal according {@link #isHorizontalCRS(CoordinateReferenceSystem)},
+     * then this method returns it as-is. Otherwise if the given CRS is compound, then this method searches for the
+     * first horizontal component in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem)
+     * single components list}.
      *
      * @param  crs The coordinate reference system, or {@code null}.
-     * @return The first projected CRS, or {@code null} if none.
+     * @return The first horizontal CRS, or {@code null} if none.
      *
      * @category information
      */
-    public static ProjectedCRS getProjectedCRS(final CoordinateReferenceSystem crs) {
-        if (crs instanceof ProjectedCRS) {
-            return (ProjectedCRS) crs;
+    public static SingleCRS getHorizontalComponent(final CoordinateReferenceSystem crs) {
+        if (isHorizontalCRS(crs)) {
+            return (SingleCRS) crs;
         }
         if (crs instanceof CompoundCRS) {
             final CompoundCRS cp = (CompoundCRS) crs;
             for (final CoordinateReferenceSystem c : cp.getComponents()) {
-                final ProjectedCRS candidate = getProjectedCRS(c);
+                final SingleCRS candidate = getHorizontalComponent(c);
                 if (candidate != null) {
                     return candidate;
                 }
@@ -260,34 +265,38 @@ public final class CRS extends Static {
     }
 
     /**
-     * Returns the first vertical coordinate reference system found in a the given CRS,
-     * or {@code null} if there is none.
+     * Returns the first vertical coordinate reference system found in the given CRS, or {@code null} if there is none.
+     * If the given CRS is already an instance of {@code VerticalCRS}, then this method returns it as-is.
+     * Otherwise if the given CRS is compound, then this method searches for the first vertical component
+     * in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem) single components list}.
      *
      * {@section Height in a three-dimensional geographic CRS}
      * In ISO 19111 model, ellipsoidal heights are indissociable from geographic CRS because such heights
      * without their (<var>latitude</var>, <var>longitude</var>) locations make little sense. Consequently
      * a standard-conformant library should return {@code null} when asked for the {@code VerticalCRS}
-     * component of a geographic CRS. This is what {@code getVerticalCRS(…)} does when the
-     * {@code allowEllipsoidal} argument is {@code false}.
+     * component of a geographic CRS. This is what {@code getVerticalComponent(…)} does when the
+     * {@code allowCreateEllipsoidal} argument is {@code false}.
      *
      * <p>However in some exceptional cases, handling ellipsoidal heights like any other kind of heights
      * may simplify the task. For example when computing <em>difference</em> between heights above the
      * same datum, the impact of ignoring locations may be smaller (but not necessarily canceled).
      * Orphan {@code VerticalCRS} may also be useful for information purpose like labeling a plot axis.
      * If the caller feels confident that ellipsoidal heights are safe for his task, he can set the
-     * {@code allowEllipsoidal} argument to {@code true}. In such case, this {@code getVerticalCRS(…)}
+     * {@code allowCreateEllipsoidal} argument to {@code true}. In such case, this {@code getVerticalComponent(…)}
      * method will create a temporary {@code VerticalCRS} from the first three-dimensional {@code GeographicCRS}
-     * <em>in last resort</em>, only if it failed to find an existing {@code VerticalCRS} instance.
+     * <em>in last resort</em>, only if it can not find an existing {@code VerticalCRS} instance.
      * <strong>Note that this is not a valid CRS according ISO 19111</strong> — use with care.</p>
      *
      * @param  crs The coordinate reference system, or {@code null}.
-     * @param  allowEllipsoidal {@code true} for allowing the creation of orphan CRS for ellipsoidal heights.
-     *         This is usually not recommended.
+     * @param  allowCreateEllipsoidal {@code true} for allowing the creation of orphan CRS for ellipsoidal heights.
+     *         The recommended value is {@code false}.
      * @return The first vertical CRS, or {@code null} if none.
      *
      * @category information
      */
-    public static VerticalCRS getVerticalCRS(final CoordinateReferenceSystem crs, final boolean allowEllipsoidal) {
+    public static VerticalCRS getVerticalComponent(final CoordinateReferenceSystem crs,
+            final boolean allowCreateEllipsoidal)
+    {
         if (crs instanceof VerticalCRS) {
             return (VerticalCRS) crs;
         }
@@ -296,14 +305,14 @@ public final class CRS extends Static {
             boolean a = false;
             do { // Executed at most twice.
                 for (final CoordinateReferenceSystem c : cp.getComponents()) {
-                    final VerticalCRS candidate = getVerticalCRS(c, a);
+                    final VerticalCRS candidate = getVerticalComponent(c, a);
                     if (candidate != null) {
                         return candidate;
                     }
                 }
-            } while ((a = !a) == allowEllipsoidal);
+            } while ((a = !a) == allowCreateEllipsoidal);
         }
-        if (allowEllipsoidal && crs instanceof GeographicCRS) {
+        if (allowCreateEllipsoidal && crs instanceof GeographicCRS) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
             final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
             if (i >= 0) {
@@ -320,22 +329,24 @@ public final class CRS extends Static {
     }
 
     /**
-     * Returns the first temporal coordinate reference system found in the given CRS,
-     * or {@code null} if there is none.
+     * Returns the first temporal coordinate reference system found in the given CRS, or {@code null} if there is none.
+     * If the given CRS is already an instance of {@code TemporalCRS}, then this method returns it as-is.
+     * Otherwise if the given CRS is compound, then this method searches for the first temporal component
+     * in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem) single components list}.
      *
      * @param  crs The coordinate reference system, or {@code null}.
      * @return The first temporal CRS, or {@code null} if none.
      *
      * @category information
      */
-    public static TemporalCRS getTemporalCRS(final CoordinateReferenceSystem crs) {
+    public static TemporalCRS getTemporalComponent(final CoordinateReferenceSystem crs) {
         if (crs instanceof TemporalCRS) {
             return (TemporalCRS) crs;
         }
         if (crs instanceof CompoundCRS) {
             final CompoundCRS cp = (CompoundCRS) crs;
             for (final CoordinateReferenceSystem c : cp.getComponents()) {
-                final TemporalCRS candidate = getTemporalCRS(c);
+                final TemporalCRS candidate = getTemporalComponent(c);
                 if (candidate != null) {
                     return candidate;
                 }
