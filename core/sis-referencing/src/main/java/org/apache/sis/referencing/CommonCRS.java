@@ -238,6 +238,13 @@ public enum CommonCRS {
     SPHERE((short) 4047, (short) 0, (short) 0, (short) 6047, (short) 7048);
 
     /**
+     * The enum for the default CRS.
+     *
+     * @see #defaultGeographic()
+     */
+    static final CommonCRS DEFAULT = WGS84;
+
+    /**
      * The EPSG code of the two-dimensional geographic CRS.
      */
     final short geographic;
@@ -358,7 +365,7 @@ public enum CommonCRS {
      * @return The default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.
      */
     public static GeographicCRS defaultGeographic() {
-        return WGS84.normalizedGeographic();
+        return DEFAULT.normalizedGeographic();
     }
 
     /**
@@ -438,14 +445,14 @@ public enum CommonCRS {
                     }
                     /*
                      * All constants defined in this enumeration use the same coordinate system, EPSG:6422.
-                     * We will arbitrarily create this CS only for WGS84 (the most frequently created CRS),
+                     * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
                     final EllipsoidalCS cs;
-                    if (this == WGS84) {
+                    if (this == DEFAULT) {
                         cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6422);
                     } else {
-                        cs = WGS84.geographic().getCoordinateSystem();
+                        cs = DEFAULT.geographic().getCoordinateSystem();
                     }
                     object = StandardDefinitions.createGeographicCRS(geographic, datum(), cs);
                     cached = object;
@@ -494,14 +501,14 @@ public enum CommonCRS {
                     }
                     /*
                      * All constants defined in this enumeration use the same coordinate system, EPSG:6423.
-                     * We will arbitrarily create this CS only for WGS84 (the most frequently created CRS),
+                     * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
                     final EllipsoidalCS cs;
-                    if (this == WGS84) {
+                    if (this == DEFAULT) {
                         cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6423);
                     } else {
-                        cs = WGS84.geographic3D().getCoordinateSystem();
+                        cs = DEFAULT.geographic3D().getCoordinateSystem();
                     }
                     // Use same name and datum than the geographic CRS.
                     final GeographicCRS base = geographic();
@@ -551,14 +558,14 @@ public enum CommonCRS {
                     }
                     /*
                      * All constants defined in this enumeration use the same coordinate system, EPSG:6500.
-                     * We will arbitrarily create this CS only for WGS84 (the most frequently created CRS),
+                     * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
                     final CartesianCS cs;
-                    if (this == WGS84) {
+                    if (this == DEFAULT) {
                         cs = (CartesianCS) StandardDefinitions.createCoordinateSystem((short) 6500);
                     } else {
-                        cs = (CartesianCS) WGS84.geocentric().getCoordinateSystem();
+                        cs = (CartesianCS) DEFAULT.geocentric().getCoordinateSystem();
                     }
                     // Use same name and datum than the geographic CRS.
                     final GeographicCRS base = geographic();
@@ -675,8 +682,8 @@ public enum CommonCRS {
             synchronized (this) {
                 object = primeMeridian(cached);
                 if (object == null) {
-                    if (this != WGS84) {
-                        object = WGS84.primeMeridian(); // Share the same instance for all constants.
+                    if (this != DEFAULT) {
+                        object = DEFAULT.primeMeridian(); // Share the same instance for all constants.
                     } else {
                         final DatumAuthorityFactory factory = datumFactory();
                         if (factory != null) try {

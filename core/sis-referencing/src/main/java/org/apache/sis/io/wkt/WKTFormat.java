@@ -176,7 +176,7 @@ public class WKTFormat extends Format {
      * <p>Newly created {@code WKTFormat}s have no syntax coloring. If a non-null argument like
      * {@link Colors#CONSOLE} is given to this method, then the {@link #format(Object) format(…)}
      * method tries to highlight most of the elements that are relevant to
-     * {@link org.apache.sis.referencing.CRS#equalsIgnoreMetadata(Object, Object)}.</p>
+     * {@link org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)}.</p>
      *
      * @param colors The colors for syntax coloring, or {@code null} if none.
      */

@@ -23,6 +23,7 @@ import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -40,13 +41,17 @@ import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
+import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
 
+import static java.util.Collections.singletonMap;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
@@ -220,6 +225,7 @@ public final class CRS extends Static {
      *
      * @todo Future SIS implementation may extend the above condition list. For example a radar station could
      *       use a polar coordinate system in a <code>DerivedCRS</code> instance based on a projected CRS.
+     *       See <a href="http://issues.apache.org/jira/browse/SIS-161">SIS-161</a>.
      *
      * @param  crs The coordinate reference system, or {@code null}.
      * @return {@code true} if the given CRS is non-null and comply with one of the above conditions,
@@ -229,7 +235,7 @@ public final class CRS extends Static {
      *
      * @category information
      */
-    public static boolean isHorizontalCRS(CoordinateReferenceSystem crs) {
+    public static boolean isHorizontalCRS(final CoordinateReferenceSystem crs) {
         if (crs instanceof GeographicCRS || crs instanceof ProjectedCRS) {
             return crs.getCoordinateSystem().getDimension() == 2;
         }
@@ -243,6 +249,9 @@ public final class CRS extends Static {
      * first horizontal component in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem)
      * single components list}.
      *
+     * <p>In the special case where a three-dimensional geographic CRS is found, this method will create a
+     * two-dimensional geographic CRS without the vertical axis.</p>
+     *
      * @param  crs The coordinate reference system, or {@code null}.
      * @return The first horizontal CRS, or {@code null} if none.
      *
@@ -251,6 +260,23 @@ public final class CRS extends Static {
     public static SingleCRS getHorizontalComponent(final CoordinateReferenceSystem crs) {
         if (isHorizontalCRS(crs)) {
             return (SingleCRS) crs;
+        }
+        if (crs instanceof GeographicCRS) {
+            EllipsoidalCS cs = ((GeographicCRS) crs).getCoordinateSystem();
+            final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
+            if (i >= 0) {
+                final CoordinateSystemAxis xAxis = cs.getAxis(i > 0 ? 0 : 1);
+                final CoordinateSystemAxis yAxis = cs.getAxis(i > 1 ? 1 : 2);
+                cs = CommonCRS.DEFAULT.geographic().getCoordinateSystem();
+                if (!Utilities.equalsIgnoreMetadata(cs.getAxis(0), xAxis) ||
+                    !Utilities.equalsIgnoreMetadata(cs.getAxis(1), yAxis))
+                {
+                    // We can not reuse the name of the existing CS, because it typically
+                    // contains text about axes including the axis that we just dropped.
+                    cs = new DefaultEllipsoidalCS(singletonMap(EllipsoidalCS.NAME_KEY, "Ellipsoidal 2D"), xAxis, yAxis);
+                }
+                return new DefaultGeographicCRS(IdentifiedObjects.getProperties(crs), ((GeographicCRS) crs).getDatum(), cs);
+            }
         }
         if (crs instanceof CompoundCRS) {
             final CompoundCRS cp = (CompoundCRS) crs;
