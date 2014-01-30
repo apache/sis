@@ -208,6 +208,21 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     @Test
     @DependsOnMethod("testTreeTableFormat")
     public void testLocalizedFormat() {
+        final Locale locale = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.ENGLISH);
+            testLocalizedFormatInEnglishEnvironment();
+        } finally {
+            Locale.setDefault(locale);
+        }
+    }
+
+    /**
+     * Implementation of {@link #testLocalizedFormat()}, to be executed only after the default locale
+     * has been forced to English. The later is necessary as long as the GeoAPI elements tested below
+     * do not have translations in all tested languages.
+     */
+    private static void testLocalizedFormatInEnglishEnvironment() {
         final DefaultInternationalString i18n = new DefaultInternationalString();
         i18n.add(Locale.ENGLISH,  "An English sentence");
         i18n.add(Locale.FRENCH,   "Une phrase en français");
