@@ -16,8 +16,9 @@
  */
 package org.apache.sis.io.wkt;
 
-import org.opengis.metadata.citation.Citation;
-import org.apache.sis.metadata.iso.citation.Citations;
+import javax.measure.unit.NonSI;
+import javax.measure.quantity.Angle;
+import javax.measure.quantity.Duration;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -34,43 +35,13 @@ import static org.junit.Assert.*;
  */
 public final strictfp class ConventionTest extends TestCase {
     /**
-     * Tests all citations associated with enum values.
+     * Tests {@link Convention#getForcedUnit(Class)}.
      */
     @Test
-    public void testGetCitation() {
-        for (final Convention convention : Convention.values()) {
-            final Citation citation = convention.getAuthority();
-            if (convention != Convention.PROJ4 && convention != Convention.INTERNAL) {
-                assertTrue(convention.name(), convention.name().equalsIgnoreCase(Citations.getIdentifier(citation)));
-            }
-        }
-    }
-
-    /**
-     * Tests {@link Convention#forCitation(Citation, Convention)}.
-     */
-    @Test
-    public void testForCitation() {
-        assertSame(Convention.OGC,     Convention.forCitation(Citations.OGC,     null));
-        assertSame(Convention.EPSG,    Convention.forCitation(Citations.EPSG,    null));
-        assertSame(Convention.ESRI,    Convention.forCitation(Citations.ESRI,    null));
-        assertSame(Convention.ORACLE,  Convention.forCitation(Citations.ORACLE,  null));
-        assertSame(Convention.NETCDF,  Convention.forCitation(Citations.NETCDF,  null));
-        assertSame(Convention.GEOTIFF, Convention.forCitation(Citations.GEOTIFF, null));
-        assertSame(Convention.PROJ4,   Convention.forCitation(Citations.PROJ4,   null));
-    }
-
-    /**
-     * Tests {@link Convention#forIdentifier(String, Convention)}.
-     */
-    @Test
-    public void testForIdentifier() {
-        assertSame(Convention.OGC,     Convention.forIdentifier("OGC",     null));
-        assertSame(Convention.EPSG,    Convention.forIdentifier("EPSG",    null));
-        assertSame(Convention.ESRI,    Convention.forIdentifier("ESRI",    null));
-        assertSame(Convention.ORACLE,  Convention.forIdentifier("ORACLE",  null));
-        assertSame(Convention.NETCDF,  Convention.forIdentifier("NETCDF",  null));
-        assertSame(Convention.GEOTIFF, Convention.forIdentifier("GEOTIFF", null));
-        assertSame(Convention.PROJ4,   Convention.forIdentifier("PROJ4",   null));
+    public void testGetForcedUnit() {
+        assertNull(Convention.WKT2.getForcedUnit(Angle.class));
+        assertNull(Convention.WKT1.getForcedUnit(Angle.class));
+        assertEquals(NonSI.DEGREE_ANGLE, Convention.WKT1_COMMON_UNITS.getForcedUnit(Angle.class));
+        assertNull(Convention.WKT1_COMMON_UNITS.getForcedUnit(Duration.class));
     }
 }

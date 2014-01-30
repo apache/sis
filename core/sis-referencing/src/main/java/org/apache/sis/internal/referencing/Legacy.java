@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.io.wkt;
+package org.apache.sis.internal.referencing;
 
 import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
@@ -37,7 +37,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * @version 0.4
  * @module
  */
-final class Legacy extends Static {
+public final class Legacy extends Static {
     /**
      * A three-dimensional Cartesian CS with the legacy set of geocentric axes.
      * OGC 01-009 defines the default geocentric axes as:
@@ -78,7 +78,7 @@ final class Legacy extends Static {
      * @return The axes to use instead of the ones in the given CS,
      *         or {@code cs} if the CS axes should be used as-is.
      */
-    static CartesianCS replace(final CartesianCS cs, final boolean toLegacy) {
+    public static CartesianCS forGeocentricCRS(final CartesianCS cs, final boolean toLegacy) {
         final CartesianCS check = toLegacy ? standard() : LEGACY;
         final int dimension = check.getDimension();
         if (cs.getDimension() != dimension) {

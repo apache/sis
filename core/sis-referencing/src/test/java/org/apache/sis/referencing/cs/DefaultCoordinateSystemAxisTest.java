@@ -82,17 +82,17 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        assertWktEquals(X,                   "AXIS[“x”, EAST]");
-        assertWktEquals(Y,                   "AXIS[“y”, NORTH]");
-        assertWktEquals(Z,                   "AXIS[“z”, UP]");
-        assertWktEquals(LONGITUDE_gon,       "AXIS[“Longitude”, EAST]");
-        assertWktEquals(LATITUDE_gon,        "AXIS[“Latitude”, NORTH]");
-        assertWktEquals(ALTITUDE,            "AXIS[“Altitude”, UP]");
-        assertWktEquals(TIME,                "AXIS[“Time”, FUTURE]");
-        assertWktEquals(GEODETIC_LONGITUDE,  "AXIS[“Geodetic longitude”, EAST]");
-        assertWktEquals(SPHERICAL_LONGITUDE, "AXIS[“Spherical longitude”, EAST]");
-        assertWktEquals(GEODETIC_LATITUDE,   "AXIS[“Geodetic latitude”, NORTH]");
-        assertWktEquals(SPHERICAL_LATITUDE,  "AXIS[“Spherical latitude”, NORTH]");
+        assertWktEquals("AXIS[“x”, EAST]",                   X);
+        assertWktEquals("AXIS[“y”, NORTH]",                  Y);
+        assertWktEquals("AXIS[“z”, UP]",                     Z);
+        assertWktEquals("AXIS[“Longitude”, EAST]",           LONGITUDE_gon);
+        assertWktEquals("AXIS[“Latitude”, NORTH]",           LATITUDE_gon);
+        assertWktEquals("AXIS[“Altitude”, UP]",              ALTITUDE);
+        assertWktEquals("AXIS[“Time”, FUTURE]",              TIME);
+        assertWktEquals("AXIS[“Geodetic longitude”, EAST]",  GEODETIC_LONGITUDE);
+        assertWktEquals("AXIS[“Spherical longitude”, EAST]", SPHERICAL_LONGITUDE);
+        assertWktEquals("AXIS[“Geodetic latitude”, NORTH]",  GEODETIC_LATITUDE);
+        assertWktEquals("AXIS[“Spherical latitude”, NORTH]", SPHERICAL_LATITUDE);
     }
 
     /**

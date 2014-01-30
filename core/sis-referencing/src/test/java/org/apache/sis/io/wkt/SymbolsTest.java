@@ -17,6 +17,7 @@
 package org.apache.sis.io.wkt;
 
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.StringBuilders;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -36,13 +37,26 @@ public final strictfp class SymbolsTest extends TestCase {
      */
     @Test
     public void testContainsAxis() {
-        final Symbols s = Symbols.DEFAULT;
-        assertTrue("At beginning of a line.",   s.containsAxis(                  "AXIS[\"Long\", EAST]"));
-        assertTrue("Embeded in GEOGCS.",        s.containsAxis("GEOGCS[\"WGS84\", AXIS[\"Long\", EAST]]"));
-        assertTrue("Using different brackets.", s.containsAxis("GEOGCS[\"WGS84\", AXIS (\"Long\", EAST)]"));
-        assertTrue("Mixed cases.",              s.containsAxis("GEOGCS[\"WGS84\", aXis[\"Long\", EAST]]"));
-        assertFalse("AXIS in quoted text.",     s.containsAxis("GEOGCS[\"AXIS\"]"));
-        assertFalse("Without opening bracket.", s.containsAxis("GEOGCS[\"WGS84\", AXIS]"));
-        assertFalse("No AXIS.",                 s.containsAxis("GEOGCS[\"WGS84\"]"));
+        assertContainsAxis("At beginning of a line.",   true,                  "AXIS[“Long”, EAST]");
+        assertContainsAxis("Embeded in GEOGCS.",        true,  "GEOGCS[“WGS84”, AXIS[“Long”, EAST]]");
+        assertContainsAxis("Using different brackets.", true,  "GEOGCS[“WGS84”, AXIS (“Long”, EAST)]");
+        assertContainsAxis("Mixed cases.",              true,  "GEOGCS[“WGS84”, aXis[“Long”, EAST]]");
+        assertContainsAxis("AXIS in quoted text.",      false, "GEOGCS[“AXIS”]");
+        assertContainsAxis("Without opening bracket.",  false, "GEOGCS[“WGS84”, AXIS]");
+        assertContainsAxis("No AXIS.",                  false, "GEOGCS[“WGS84”]");
+    }
+
+    /**
+     * Asserts that the call to {@link Symbols#containsAxis(CharSequence)} produce the given result.
+     * This method expects an array using the {@code “…”} quotation marks, which will be replaced by
+     * the standard {@code '"'} quotation mark after we tested the given string.
+     */
+    private static void assertContainsAxis(final String message, final boolean expected, final String wkt) {
+        assertEquals(message, expected, Symbols.DEFAULT.containsAxis(wkt));
+        final StringBuilder buffer = new StringBuilder(wkt);
+        StringBuilders.replace(buffer, '“', '"');
+        StringBuilders.replace(buffer, '”', '"');
+        assertFalse(wkt.contentEquals(buffer));
+        assertEquals(message, expected, Symbols.DEFAULT.containsAxis(buffer));
     }
 }
