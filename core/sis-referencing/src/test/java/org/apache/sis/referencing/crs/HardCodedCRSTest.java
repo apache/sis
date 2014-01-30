@@ -72,7 +72,7 @@ public final strictfp class HardCodedCRSTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        assertWktEquals(WGS84,
+        assertWktEquals(
                 "GEOGCS[“WGS 84”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563],\n" +
@@ -80,7 +80,8 @@ public final strictfp class HardCodedCRSTest extends TestCase {
                 "  PRIMEM[“Greenwich”, 0.0, AUTHORITY[“EPSG”, “8901”]],\n" +
                 "  UNIT[“degree”, 0.017453292519943295],\n" +
                 "  AXIS[“Geodetic longitude”, EAST],\n" +
-                "  AXIS[“Geodetic latitude”, NORTH]]");
+                "  AXIS[“Geodetic latitude”, NORTH]]",
+                WGS84);
     }
 
     /**
