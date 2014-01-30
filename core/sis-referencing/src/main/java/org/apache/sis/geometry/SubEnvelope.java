@@ -22,7 +22,6 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Arrays;
-import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndexRange;

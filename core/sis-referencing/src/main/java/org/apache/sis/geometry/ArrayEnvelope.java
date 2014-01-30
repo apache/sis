@@ -354,7 +354,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
                 final double lower = ordinates[i];
                 final double upper = ordinates[i + dimension];
                 if (lower > upper && !isWrapAround(crs, i)) {
-                    throw new IllegalArgumentException(illegalRange(crs, dimension, lower, upper));
+                    throw new IllegalArgumentException(illegalRange(crs, i, lower, upper));
                 }
             }
         }
