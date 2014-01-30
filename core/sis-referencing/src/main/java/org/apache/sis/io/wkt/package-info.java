@@ -17,49 +17,43 @@
 
 /**
  * <cite>Well Known Text</cite> (WKT) parsing and formatting.
- * This package provides the internal mechanism used by SIS implementation. Most users do not need to know about it,
- * except if they want to customize the parsing process or the WKT output. For example this package allows to:
+ * This package implements the services provided by the {@link org.apache.sis.referencing.CRS#parseWKT(String)}
+ * and {@link org.opengis.referencing.IdentifiedObject#toWKT()} convenience methods, with more control.
+ * For example this package allows to:
  *
  * <ul>
- *   <li>{@linkplain org.apache.sis.io.wkt.WKTFormat#setConvention Format the parameters using the names
- *       of an other authority than OGC}. For example a user may want to format map projections using the
- *       {@linkplain org.apache.sis.io.wkt.Convention#GEOTIFF GeoTIFF} parameter names.</li>
- *   <li>{@linkplain org.apache.sis.io.wkt.WKTFormat#setSymbols Use curly brackets instead than square ones},
- *       for example {@code DATUM("WGS84")} instead than {@code DATUM["WGS84"]}.
- *       The former is legal WKT, while less frequently used than the later one.</li>
- *   <li>{@linkplain org.apache.sis.io.wkt.WKTFormat#setColors Apply syntactic coloring} for output
- *       on terminal supporting <cite>ANSI escape codes</cite> (a.k.a. ECMA-48, ISO/IEC 6429 and X3.64).</li>
- *   <li>{@linkplain org.apache.sis.io.wkt.WKTFormat#setIndentation Use a different indentation}, or
- *       format the whole WKT on a {@linkplain org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE single line}.</li>
- * </ul>
- *
- * Current implementation is primarily designed for parsing and formatting referencing objects.
- * However other objects (especially the one for geometric objects) are expected to be provided
- * here in future versions.
- *
- * {@section Referencing WKT}
- * Parsing of {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System}
- * and {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform Math Transform} objects
- * are performed by the {@link org.apache.sis.io.wkt.ReferencingParser} class. The parser provides methods for:
- *
- * <ul>
- *   <li>Specifying whatever the default axis names shall be ISO identifiers or the
- *       legacy identifiers specified in the WKT specification.</li>
- *   <li>Ignoring the {@code AXIS[...]} elements. This approach can be used as a way to force
+ *   <li>Format projection and parameters using the names of a chosen authority. For example the
+ *       "<cite>Mercator (variant A)</cite>" projection is named {@code "Mercator_1SP"} by OGC 01-009
+ *       and {@code "CT_Mercator"} by GeoTIFF.</li>
+ *   <li>Format the elements with curly brackets instead than square ones.
+ *       For example both {@code ID["EPSG",4326]} and {@code ID("EPSG",4326)} are legal WKT.</li>
+ *   <li>Format with a different indentation or format the whole WKT on a single line.</li>
+ *   <li>Apply syntactic coloring on terminal supporting <cite>ANSI escape codes</cite>
+ *       (a.k.a. ECMA-48, ISO/IEC 6429 and X3.64).</li>
+ *   <li>Ignore the {@code AXIS[…]} elements at parsing time. This approach can be used as a way to force
  *       the (<var>longitude</var>, <var>latitude</var>) axes order.</li>
  * </ul>
  *
- * {@section Geometry WKT}
- * The {@link org.apache.sis.geometry.GeneralEnvelope} and
- * {@link org.apache.sis.geometry.GeneralDirectPosition} classes provide their own, limited,
- * WKT parsing and formatting services for the {@code BOX} and {@code POINT} elements.
- *
- * {@section References}
+ * {@section Referencing WKT}
+ * Referencing WKT is defined using Extended Backus Naur Form (EBNF) in two versions:
  * <ul>
- *   <li><a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Known Text specification</a></li>
- *   <li><a href="http://home.gdal.org/projects/opengis/wktproblems.html">OGC WKT Coordinate System Issues</a></li>
- *   <li><a href="http://en.wikipedia.org/wiki/Well-known_text">Wikipedia: Well Known Text</a></li>
+ *   <li>ISO 19162 defines the current format, also known as “WKT 2”.</li>
+ *   <li>The previous format — “WKT 1” — was defined in the <a href="http://www.opengeospatial.org/standards/ct">OGC
+ *       document 01-009</a>. This definition is
+ *       <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">shown on GeoAPI</a>.</li>
  * </ul>
+ *
+ * The WKT 1 format has been interpreted differently by various implementors.
+ * One noticeable difference is the unit of measurement of prime meridians and projection parameters.
+ * The WKT 2 format aims to solve the inter-operability problem caused by such mismatches,
+ * but not all softwares support this new format. Consequently importing or exporting data from/to a software with
+ * the WKT syntax require knowledge of the WKT variant used by that software. This variant can be specified by the
+ * {@link org.apache.sis.io.wkt.Convention} enumeration.
+ *
+ * {@section Geometry WKT}
+ * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes
+ * provide their own, limited, WKT parsing and formatting services for the {@code BOX} and {@code POINT} elements.
+ * A description for this WKT format can be found on <a href="http://en.wikipedia.org/wiki/Well-known_text">Wikipedia</a>.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Eve (IRD)

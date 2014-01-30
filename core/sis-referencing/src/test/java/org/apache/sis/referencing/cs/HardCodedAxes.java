@@ -262,7 +262,7 @@ public final strictfp class HardCodedAxes {
      * is {@link AxisDirection#GEOCENTRIC_X GEOCENTRIC_X}. The units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is "<cite>Geocentric X</cite>" and the abbreviation is upper case "<var>X</var>".
      *
-     * <p>In legacy OGC 01-009 specification (still in use for WKT format),
+     * <p>In legacy OGC 01-009 specification (still in use for WKT 1 format),
      * the direction was {@link AxisDirection#OTHER OTHER}).</p>
      *
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
@@ -277,7 +277,7 @@ public final strictfp class HardCodedAxes {
      * {@link AxisDirection#GEOCENTRIC_Y GEOCENTRIC_Y}. The units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is "<cite>Geocentric Y</cite>" and the abbreviation is upper case "<var>Y</var>".
      *
-     * <p>In legacy OGC 01-009 specification (still in use for WKT format),
+     * <p>In legacy OGC 01-009 specification (still in use for WKT 1 format),
      * the direction was {@link AxisDirection#EAST EAST}).</p>
      *
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
@@ -292,7 +292,7 @@ public final strictfp class HardCodedAxes {
      * {@link AxisDirection#GEOCENTRIC_Z GEOCENTRIC_Z}. The units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is "<cite>Geocentric Z</cite>" and the abbreviation is upper case "<var>Z</var>".
      *
-     * <p>In legacy OGC 01-009 specification (still in use for WKT format),
+     * <p>In legacy OGC 01-009 specification (still in use for WKT 1 format),
      * the direction was {@link AxisDirection#NORTH NORTH}).</p>
      *
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>

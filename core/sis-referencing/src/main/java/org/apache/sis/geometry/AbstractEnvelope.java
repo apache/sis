@@ -526,6 +526,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * @return A representation of this envelope as an array of non-empty envelope.
      *
      * @see Envelope2D#toRectangles()
+     * @see GeneralEnvelope#simplify()
      *
      * @since 0.4
      */
@@ -1035,11 +1036,11 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
      * The number of dimension is written only if different than 2.
      *
-     * <p>Example:</p>
-     *
-     * {@preformat wkt
-     *   BOX(-90 -180, 90 180)
-     *   BOX3D(-90 -180 0, 90 180 1)
+     * {@example
+     *   <ul>
+     *     <li><code>BOX(-90 -180, 90 180)</code></li>
+     *     <li><code>BOX3D(-90 -180 0, 90 180 1)</code></li>
+     *   </ul>
      * }
      *
      * {@note The <code>BOX</code> element is not part of the standard <cite>Well Known Text</cite>
@@ -1182,7 +1183,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * @param  dimension The dimension to set.
      * @param  lower     The limit in the direction of decreasing ordinate values.
      * @param  upper     The limit in the direction of increasing ordinate values.
+     * @throws UnmodifiableGeometryException If this envelope is not modifiable.
      * @throws IndexOutOfBoundsException If the given index is out of bounds.
+     * @throws IllegalArgumentException If {@code lower > upper}, this envelope has a CRS
+     *         and the axis range meaning at the given dimension is not "wraparound".
      */
     void setRange(final int dimension, final double lower, final double upper)
             throws IndexOutOfBoundsException

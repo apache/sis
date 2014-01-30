@@ -426,17 +426,95 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
+     * Tests {@link GeneralEnvelope#setEnvelope(double...)} with valid ranges,
+     * then with a range which is known to be invalid.
+     */
+    @Test
+    public void testSetEnvelope() {
+        final GeneralEnvelope e = create(2, -4, 3, -3);
+        e.setEnvelope(3, -5, -8, 2);
+        try {
+            e.setEnvelope(1, -10, 2, -20);
+            fail("Invalid range shall not be allowed.");
+        } catch (IllegalArgumentException ex) {
+            // This is the expected exception.
+            final String message = ex.getMessage();
+            assertTrue(message, message.contains("Geodetic latitude"));
+        }
+        // Verify that the envelope still have the old values.
+        assertEnvelopeEquals(e, 3, -5, -8, 2);
+        verifyInvariants(e);
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#setRange(int, double, double)} with a valid range,
+     * then with a range which is known to be invalid.
+     */
+    @Test
+    public void testSetRange() {
+        final GeneralEnvelope e = create(2, -4, 3, -3);
+        e.setRange(1, -5, 2);
+        try {
+            e.setRange(1, -10, -20);
+            fail("Invalid range shall not be allowed.");
+        } catch (IllegalArgumentException ex) {
+            // This is the expected exception.
+            final String message = ex.getMessage();
+            assertTrue(message, message.contains("Geodetic latitude"));
+        }
+        // Verify that the envelope still have the old values.
+        assertEnvelopeEquals(e, 2, -5, 3, 2);
+        verifyInvariants(e);
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
+     */
+    @Test
+    @DependsOnMethod("testSetRange")
+    public void testSetCoordinateReferenceSystem() {
+        final GeneralEnvelope e = create(2, -4, 3, -3);
+        e.setCoordinateReferenceSystem(null);
+        /*
+         * Set an invalid latitude range, but the Envelope can not known that fact without CRS.
+         * Only when we will specify the CRS, the envelope will realize that it contains an
+         * invalid range.
+         */
+        e.setRange(1, -10, -20);
+        try {
+            e.setCoordinateReferenceSystem(WGS84);
+            fail("Invalid range shall not be allowed.");
+        } catch (IllegalStateException ex) {
+            // This is the expected exception.
+            final String message = ex.getMessage();
+            assertTrue(message, message.contains("Geodetic latitude"));
+        }
+        /*
+         * Verify that the envelope values are unchanged.
+         * Then fix the range and try again to set the CRS.
+         */
+        assertEquals(  2, e.getLower(0), STRICT);
+        assertEquals(-10, e.getLower(1), STRICT);
+        assertEquals(  3, e.getUpper(0), STRICT);
+        assertEquals(-20, e.getUpper(1), STRICT);
+        e.setRange(1, -20, -10);
+        e.setCoordinateReferenceSystem(WGS84);
+        assertEnvelopeEquals(e, 2, -20, 3, -10);
+        verifyInvariants(e);
+    }
+
+    /**
      * Tests modifying the corner of an envelope.
      */
     @Test
     public void testCornerModifications() {
-        final GeneralEnvelope e = create(2, -2, 3, -3);
+        final GeneralEnvelope e = create(2, -4, 3, -3);
         e.getLowerCorner().setOrdinate(0,  1);
         e.getUpperCorner().setOrdinate(1, -1);
-        assertEquals( 1.0, e.getLower(0), 0.0);
-        assertEquals(-2.0, e.getLower(1), 0.0);
-        assertEquals( 3.0, e.getUpper(0), 0.0);
-        assertEquals(-1.0, e.getUpper(1), 0.0);
+        assertEquals( 1, e.getLower(0), STRICT);
+        assertEquals(-4, e.getLower(1), STRICT);
+        assertEquals( 3, e.getUpper(0), STRICT);
+        assertEquals(-1, e.getUpper(1), STRICT);
         verifyInvariants(e);
     }
 

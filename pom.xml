@@ -397,7 +397,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
        =================================================================== -->
   <properties>
     <geoapi.version>3.0.0</geoapi.version>
-    <netcdf.version>4.3.18</netcdf.version>
+    <netcdf.version>4.3.20</netcdf.version>
     <findbugs.version>2.5.3</findbugs.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>

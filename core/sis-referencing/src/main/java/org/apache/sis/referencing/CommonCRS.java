@@ -124,7 +124,7 @@ public enum CommonCRS {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    WGS84((short) 4326, (short) 0, (short) 4978, (short) 6326, (short) 7030),
+    WGS84((short) 4326, (short) 4979, (short) 4978, (short) 6326, (short) 7030),
 
     /**
      * World Geodetic System 1972.
@@ -140,7 +140,7 @@ public enum CommonCRS {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      */
-    WGS72((short) 4322, (short) 0, (short) 4984, (short) 6322, (short) 7043),
+    WGS72((short) 4322, (short) 4985, (short) 4984, (short) 6322, (short) 7043),
 
     /**
      * European Terrestrial Reference System 1989.
@@ -162,7 +162,7 @@ public enum CommonCRS {
      *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses the NAD83 datum,
      *        while the <code>"IGNF:MILLER"</code> authority code uses the GRS80 datum.}
      */
-    ETRS89((short) 4258, (short) 0, (short) 4936, (short) 6258, (short) 7019),
+    ETRS89((short) 4258, (short) 4937, (short) 4936, (short) 6258, (short) 7019),
 
     /**
      * North American Datum 1983.
@@ -236,6 +236,13 @@ public enum CommonCRS {
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */
     SPHERE((short) 4047, (short) 0, (short) 0, (short) 6047, (short) 7048);
+
+    /**
+     * The enum for the default CRS.
+     *
+     * @see #defaultGeographic()
+     */
+    static final CommonCRS DEFAULT = WGS84;
 
     /**
      * The EPSG code of the two-dimensional geographic CRS.
@@ -358,7 +365,7 @@ public enum CommonCRS {
      * @return The default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.
      */
     public static GeographicCRS defaultGeographic() {
-        return WGS84.normalizedGeographic();
+        return DEFAULT.normalizedGeographic();
     }
 
     /**
@@ -438,14 +445,14 @@ public enum CommonCRS {
                     }
                     /*
                      * All constants defined in this enumeration use the same coordinate system, EPSG:6422.
-                     * We will arbitrarily create this CS only for WGS84 (the most frequently created CRS),
+                     * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
                     final EllipsoidalCS cs;
-                    if (this == WGS84) {
+                    if (this == DEFAULT) {
                         cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6422);
                     } else {
-                        cs = WGS84.geographic().getCoordinateSystem();
+                        cs = DEFAULT.geographic().getCoordinateSystem();
                     }
                     object = StandardDefinitions.createGeographicCRS(geographic, datum(), cs);
                     cached = object;
@@ -494,14 +501,14 @@ public enum CommonCRS {
                     }
                     /*
                      * All constants defined in this enumeration use the same coordinate system, EPSG:6423.
-                     * We will arbitrarily create this CS only for WGS84 (the most frequently created CRS),
+                     * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
                     final EllipsoidalCS cs;
-                    if (this == WGS84) {
+                    if (this == DEFAULT) {
                         cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6423);
                     } else {
-                        cs = WGS84.geographic3D().getCoordinateSystem();
+                        cs = DEFAULT.geographic3D().getCoordinateSystem();
                     }
                     // Use same name and datum than the geographic CRS.
                     final GeographicCRS base = geographic();
@@ -551,14 +558,14 @@ public enum CommonCRS {
                     }
                     /*
                      * All constants defined in this enumeration use the same coordinate system, EPSG:6500.
-                     * We will arbitrarily create this CS only for WGS84 (the most frequently created CRS),
+                     * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
                     final CartesianCS cs;
-                    if (this == WGS84) {
+                    if (this == DEFAULT) {
                         cs = (CartesianCS) StandardDefinitions.createCoordinateSystem((short) 6500);
                     } else {
-                        cs = (CartesianCS) WGS84.geocentric().getCoordinateSystem();
+                        cs = (CartesianCS) DEFAULT.geocentric().getCoordinateSystem();
                     }
                     // Use same name and datum than the geographic CRS.
                     final GeographicCRS base = geographic();
@@ -675,8 +682,8 @@ public enum CommonCRS {
             synchronized (this) {
                 object = primeMeridian(cached);
                 if (object == null) {
-                    if (this != WGS84) {
-                        object = WGS84.primeMeridian(); // Share the same instance for all constants.
+                    if (this != DEFAULT) {
+                        object = DEFAULT.primeMeridian(); // Share the same instance for all constants.
                     } else {
                         final DatumAuthorityFactory factory = datumFactory();
                         if (factory != null) try {
@@ -822,12 +829,11 @@ public enum CommonCRS {
          * Height measured along the normal to the ellipsoid used in the definition of horizontal datum.
          * The unit of measurement is metres.
          *
-         * <p><b>This datum is not part of ISO 19111 international standard.</b>
-         * Usage of this datum is generally not recommended since ellipsoidal heights make little sense without
+         * <p><b>Ellipsoidal height is not part of ISO 19111 international standard.</b>
+         * Such vertical CRS is usually not recommended since ellipsoidal heights make little sense without
          * their (<var>latitude</var>, <var>longitude</var>) locations. The ISO specification defines instead
-         * three-dimensional {@code GeographicCRS} for that reason. However Apache SIS provides this value
-         * because it is sometime useful to temporarily express ellipsoidal heights independently from other
-         * ordinate values.</p>
+         * three-dimensional {@code GeographicCRS} for that reason. Users are encouraged to avoid this orphan
+         * ellipsoidal height as much as possible.</p>
          */
         ELLIPSOIDAL(false, Vocabulary.Keys.EllipsoidalHeight, Vocabulary.Keys.Ellipsoid),
 
