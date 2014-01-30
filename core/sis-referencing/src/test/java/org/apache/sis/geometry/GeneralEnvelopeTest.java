@@ -51,6 +51,13 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     private static final double EPS = 1E-4;
 
     /**
+     * {@code false} if {@link #create(double, double, double, double)} can validate the envelope.
+     * This is set to {@code true} only when we intentionally want to create an invalid envelope,
+     * for example in order to test normalization.
+     */
+    boolean skipValidation = !PENDING_NEXT_GEOAPI_RELEASE;
+
+    /**
      * Creates a new geographic envelope for the given ordinate values.
      * This method is overridden by {@link SubEnvelopeTest}.
      */
@@ -58,7 +65,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(2);
         envelope.setCoordinateReferenceSystem(WGS84);
         envelope.setEnvelope(xmin, ymin, xmax, ymax);
-        if (PENDING_NEXT_GEOAPI_RELEASE) {
+        if (!skipValidation) {
             validate(envelope);
         }
         return envelope;
@@ -372,6 +379,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      */
     @Test
     public void testNormalize() {
+        skipValidation = true;
         GeneralEnvelope e = create(-100, -100, +100, +100);
         assertTrue(e.normalize());
         assertEnvelopeEquals(e, -100, -90, +100, +90);
