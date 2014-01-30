@@ -122,7 +122,7 @@ public final class ReferencingUtilities extends Static {
     /**
      * Returns the unit used for all axes in the given coordinate system.
      * If not all axes use the same unit, then this method returns {@code null}.
-     * This convenience method is often used for Well Know Text (WKT) version 1 formatting.
+     * This convenience method is used for Well Know Text version 1 (WKT 1) formatting.
      *
      * @param cs The coordinate system for which to get the unit, or {@code null}.
      * @return The unit for all axis in the given coordinate system, or {@code null}.

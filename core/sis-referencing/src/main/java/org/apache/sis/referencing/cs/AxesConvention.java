@@ -49,8 +49,9 @@ import org.opengis.referencing.cs.CoordinateSystem;
  * {@link #RIGHT_HANDED} or {@link #NORMALIZED} enumeration value.</p>
  *
  * {@section Normalized coordinate systems}
- * The definition of <cite>normalized coordinate systems</cite> is somewhat fuzzy.
- * This concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:
+ * <cite>Right-handed</cite> coordinate systems have a precise meaning in Apache SIS.
+ * However SIS defines also <cite>normalized</cite> coordinate systems in a more heuristic way.
+ * A similar concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:
  *
  * <blockquote><font size="-1"><b>6.7.2 Map CS</b> —
  * The usual orientation of the Map CS shall be such that the <var>i</var> axis is parallel to the East-to-West axis
@@ -59,18 +60,9 @@ import org.opengis.referencing.cs.CoordinateSystem;
  * orthographic projection over the South Pole. The convention to be followed is that, wherever possible, East shall
  * be to the right edge and North shall be toward the upper edge of the Map CS.</font></blockquote>
  *
- * In addition to WMS, this method is used together with
- * {@link org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes CoordinateSystems.swapAndScaleAxes(…)}
- * for the creation of transformation steps, as in the example below:
- *
- * {@preformat java
- *     Matrix step1 = swapAndScaleAxes(sourceCS, sourceCS.forConvention(NORMALIZED));
- *     Matrix step2 = ... some coordinate operation working on normalized axes ...
- *     Matrix step3 = swapAndScaleAxes(targetCS.forConvention(NORMALIZED), targetCS);
- * }
- *
- * A rational for normalized axes order and units is explained in the <cite>Axis units and directions</cite>
- * section of {@linkplain org.apache.sis.referencing.operation.projection map projection package description}.
+ * In addition to WMS, Apache SIS uses normalized coordinate systems in map projections.
+ * More information are provided in the <cite>Axis units and directions</cite> section of
+ * {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
  *
  * {@section Range of longitude values}
  * Most geographic CRS have a longitude axis defined in the [-180 … +180]° range. All map projections in Apache SIS are

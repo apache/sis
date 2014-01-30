@@ -334,17 +334,16 @@ public final class AxisDirections extends Static {
      * @param  direction The direction of the axis to search.
      * @return The dimension of the axis using the given direction or its opposite, or -1 if none.
      */
-    public static int indexOf(final CoordinateSystem cs, final AxisDirection direction) {
+    public static int indexOfColinear(final CoordinateSystem cs, final AxisDirection direction) {
         int fallback = -1;
         if (cs != null) {
-            final AxisDirection opposite = opposite(direction);
             final int dimension = cs.getDimension();
             for (int i=0; i<dimension; i++) {
                 final AxisDirection d = cs.getAxis(i).getDirection();
                 if (direction.equals(d)) {
                     return i;
                 }
-                if (fallback < 0 && opposite != null && opposite.equals(d)) {
+                if (fallback < 0 && d.equals(opposite(direction))) {
                     fallback = i;
                 }
             }

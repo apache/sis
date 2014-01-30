@@ -119,7 +119,7 @@ public enum ComparisonMode {
      * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor scale
      * factor} value of 0.5.</font></blockquote>
      *
-     * @see org.apache.sis.referencing.CRS#equalsIgnoreMetadata(Object, Object)
+     * @see org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)
      */
     IGNORE_METADATA,
 

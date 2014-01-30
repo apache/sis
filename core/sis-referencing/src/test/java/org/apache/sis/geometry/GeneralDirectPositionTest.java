@@ -82,8 +82,8 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
         } catch (IllegalArgumentException e) {
             // This is the expected exception.
             final String message = e.getMessage();
-            assertTrue(message.contains("POINT(6 10 2"));
-            assertTrue(message.contains("‘)’"));
+            assertTrue(message, message.contains("POINT(6 10 2"));
+            assertTrue(message, message.contains("‘)’"));
         }
         try {
             new GeneralDirectPosition("POINT 6 10 2)");
@@ -97,8 +97,9 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
         } catch (IllegalArgumentException e) {
             // This is the expected exception.
             final String message = e.getMessage();
-            assertTrue(message.contains("POINT(6 10 2) x"));
-            assertTrue(message.contains("“x”"));
+            assertTrue(message, message.contains("POINT(6 10 2) x"));
+            assertTrue(message, message.contains("“x”") ||  // English locale
+                                message.contains("« x »")); // French locale
         }
     }
 

@@ -93,7 +93,7 @@ public final class Envelopes extends Static {
         ensureNonNull("wkt", wkt);
         try {
             return new GeneralEnvelope(wkt);
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             throw new FactoryException(Errors.format(
                     Errors.Keys.UnparsableStringForClass_2, Envelope.class), e);
         }

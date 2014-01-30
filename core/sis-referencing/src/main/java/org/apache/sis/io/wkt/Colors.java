@@ -50,13 +50,15 @@ public class Colors implements Serializable {
     private static final long serialVersionUID = 256160285861027191L;
 
     /**
-     * The immutable default set of colors.
+     * A map of colors for outputs to the {@link java.io.Console}.
+     * Those colors give better results on a black background.
+     * This map is immutable.
      *
-     * @see Symbols#DEFAULT
+     * @see FormattableObject#print()
      */
-    public static final Colors DEFAULT = new Immutable();
+    public static final Colors CONSOLE = new Immutable();
     static {
-        final EnumMap<ElementKind,X364> map = DEFAULT.map;
+        final EnumMap<ElementKind,X364> map = CONSOLE.map;
         map.put(ElementKind.NUMBER,     X364.FOREGROUND_YELLOW);
         map.put(ElementKind.INTEGER,    X364.FOREGROUND_YELLOW);
         map.put(ElementKind.UNIT,       X364.FOREGROUND_YELLOW);
@@ -134,7 +136,7 @@ public class Colors implements Serializable {
     }
 
     /**
-     * An immutable subclass of {@link Colors} for the {@link Colors#DEFAULT} constant
+     * An immutable subclass of {@link Colors} for the {@link Colors#CONSOLE} constant
      * or for the object to be used by {@link WKTFormat}.
      */
     private static final class Immutable extends Colors {
@@ -174,10 +176,10 @@ public class Colors implements Serializable {
         }
 
         /**
-         * Replaces the deserialized instance by {@link #DEFAULT} one if possible.
+         * Replaces the deserialized instance by {@link #CONSOLE} one if possible.
          */
         Object readResolve() throws ObjectStreamException {
-            return super.map.equals(DEFAULT.map) ? DEFAULT : this;
+            return super.map.equals(CONSOLE.map) ? CONSOLE : this;
         }
     }
 }

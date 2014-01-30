@@ -20,11 +20,7 @@ import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Quantity;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeocentricCRS;
-import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.util.Debug;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -33,20 +29,25 @@ import static javax.measure.unit.NonSI.DEGREE_ANGLE;
 
 /**
  * The convention to use for WKT formatting.
- * This enumeration attempts to address some of the variability documented in the Frank Warmerdam's
- * <a href="http://home.gdal.org/projects/opengis/wktproblems.html">OGC WKT Coordinate System Issues</a> page.
- * The various conventions enumerated in this class differ mostly in:
+ * This enumeration specifies whether to use the <cite>Well Known Text</cite> format defined by ISO 19162
+ * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
+ *
+ * {@section WKT 1 variants}
+ * The WKT 2 format should be parsed and formatted consistently by all softwares.
+ * But the WKT 1 format has been interpreted differently by various implementors.
+ * Apache SIS can adapt itself to different WKT variants, sometime automatically. But some aspects can not be guessed.
+ * One noticeable source of confusion is the unit of measurement of {@code PRIMEM[…]} and {@code PARAMETER[…]} elements:
  *
  * <ul>
- *   <li><em>Parameter names</em> - for example a parameter named "<cite>Longitude of natural origin</cite>"
- *       according {@linkplain #EPSG} may be named "{@code central_meridian}" according {@linkplain #OGC}
- *       and "{@code NatOriginLong}" according {@linkplain #GEOTIFF GeoTIFF}.</li>
- *   <li><em>WKT syntax</em> - for example {@linkplain #ORACLE Oracle} does not enclose Bursa-Wolf parameters in a
- *       {@code TOWGS84[…]} element.</li>
- *   <li><em>Unit of measurement</em> - for example the unit of the Prime Meridian shall be the angular unit of the
- *       enclosing Geographic CRS according the {@linkplain #OGC} standard, but is restricted to decimal degrees by
- *       {@linkplain #ESRI}.</li>
+ *   <li>The unit of the Prime Meridian shall be the angular unit of the enclosing Geographic CRS
+ *       according the OGC 01-009 (<cite>Coordinate transformation services</cite>) specification.</li>
+ *   <li>An older specification — <cite>Simple Features</cite> — was unclear on this matter and has been
+ *       interpreted by many softwares as fixing the unit to decimal degrees.</li>
  * </ul>
+ *
+ * Despite the first interpretation being specified by both OGC 01-009 and ISO 19162 standards, the second
+ * interpretation appears to be in wide use for WKT 1. Apache SIS uses the standard interpretation by default,
+ * but the {@link #WKT1_COMMON_UNITS} enumeration allows parsing and formatting using the older interpretation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.20)
@@ -58,219 +59,139 @@ import static javax.measure.unit.NonSI.DEGREE_ANGLE;
  */
 public enum Convention {
     /**
-     * The <a href="http://www.opengeospatial.org">Open Geospatial consortium</a> convention.
+     * The ISO 19162 format, also known as “WKT 2”.
      * This is the default convention for all WKT formatting in the Apache SIS library.
-     * Some worthy aspects to note:
      *
-     * <ul>
-     *   <li>For {@link GeocentricCRS}, this convention uses the legacy set of Cartesian axes.
-     *     Those axes were defined in OGC 01-009 as <var>Other</var>, <var>Easting</var> and <var>Northing</var>
-     *     in metres, where the "<var>Other</var>" axis is toward prime meridian.</li>
-     * </ul>
-     *
-     * @see Citations#OGC
-     * @see #toConformCS(CoordinateSystem)
+     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, when using
+     * this convention SIS will favor {@linkplain Citations#EPSG EPSG} definitions of projection
+     * and parameter names.</p>
      */
-    OGC(Citations.OGC, null, false),
+    WKT2(Citations.EPSG, false, false),
 
     /**
-     * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> convention.
-     * This convention uses the most descriptive parameter and projection names.
-     * Some worthy aspects to note:
+     * The OGC 01-009 format, also known as “WKT 1”.
+     * A definition for this format is shown in Extended Backus Naur Form (EBNF)
+     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">on GeoAPI</a>.
      *
-     * <ul>
-     *   <li>For {@link GeocentricCRS}, this convention uses the new set of Cartesian axes.
-     *     Those axes are defined in ISO 19111 as <var>Geocentric X</var>, <var>Geocentric Y</var>
-     *     and <var>Geocentric Z</var> in metres.</li>
-     * </ul>
+     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, when using
+     * this convention SIS will favor {@linkplain Citations#OGC OGC} definitions of projection
+     * and parameter names.</p>
      *
-     * @see Citations#EPSG
-     * @see #toConformCS(CoordinateSystem)
+     * {@section Differences compared to WKT 2}
+     * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding parameter
+     * and code list values. For {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes which were
+     * defined in OGC 01-009. Those axes use the <var>Other</var>, <var>Easting</var> and <var>Northing</var>
+     * {@linkplain org.opengis.referencing.cs.AxisDirection axis directions} instead than the geocentric ones,
+     * as shown in the following table:
+     *
+     * <table class="sis">
+     *   <tr><th>ISO 19111</th>    <th>OGC 01-009</th> <th>Description</th></tr>
+     *   <tr><td>Geocentric X</td> <td>Other</td>      <td>Toward prime meridian</td></tr>
+     *   <tr><td>Geocentric Y</td> <td>Easting</td>    <td>Toward 90°E longitude</td></tr>
+     *   <tr><td>Geocentric Z</td> <td>Northing</td>   <td>Toward north pole</td></tr>
+     * </table>
      */
-    EPSG(Citations.EPSG, null, false) {
-        @Override
-        public CoordinateSystem toConformCS(CoordinateSystem cs) {
-            if (cs instanceof CartesianCS) {
-                cs = Legacy.replace((CartesianCS) cs, false);
-            }
-            return cs;
-        }
-    },
+    WKT1(Citations.OGC, true, false),
 
     /**
-     * The <a href="http://www.esri.com">ESRI</a> convention.
-     * This convention is similar to the {@link #OGC} convention except in the following aspects:
+     * The <cite>Simple Feature</cite> format, also known as “WKT 1”.
+     * <cite>Simple Feature</cite> is anterior to OGC 01-009 and defines the same format,
+     * but was unclear about the unit of measurement for prime meridians and projection parameters.
+     * Consequently many implementations interpreted those angular units as fixed to degrees instead
+     * than being context-dependent.
      *
+     * <p>This convention is identical to {@link #WKT1} except for the following aspects:</p>
      * <ul>
      *   <li>The angular units of {@code PRIMEM} and {@code PARAMETER} elements are always degrees,
      *       no matter the units of the enclosing {@code GEOGCS} element.</li>
-     *   <li>The {@code AXIS} elements are ignored at parsing time.</li>
-     *   <li>Unit names use American spelling instead than the international ones
-     *       (e.g. "<cite>meter</cite>" instead than "<cite>metre</cite>").</li>
-     *   <li>At parsing time, the {@code AXIS} elements are ignored.</li>
-     * </ul>
-     *
-     * @see Citations#ESRI
-     */
-    ESRI(Citations.ESRI, DEGREE_ANGLE, true),
-
-    /**
-     * The <a href="http://www.oracle.com">Oracle</a> convention.
-     * This convention is similar to the {@link #OGC} convention except in the following aspects:
-     *
-     * <ul>
-     *   <li>The Bursa-Wolf parameters are inserted straight into the {@code DATUM} element,
-     *       without enclosing them in a {@code TOWGS84} element.</li>
-     *   <li>The {@code PROJECTION} names are {@linkplain CoordinateOperation Coordinate Operation}
-     *       names instead than {@linkplain OperationMethod Operation Method} names.</li>
      *   <li>Unit names use American spelling instead than the international ones
      *       (e.g. "<cite>meter</cite>" instead than "<cite>metre</cite>").</li>
      * </ul>
-     *
-     * @see Citations#ORACLE
      */
-    ORACLE(Citations.ORACLE, null, true),
-
-    /**
-     * The <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> convention.
-     * This convention is similar to the {@link #OGC} convention except in the following aspects:
-     *
-     * <ul>
-     *   <li>Parameter and projection names.</li>
-     * </ul>
-     *
-     * @see Citations#NETCDF
-     */
-    NETCDF(Citations.NETCDF, null, false),
-
-    /**
-     * The <a href="http://www.remotesensing.org/geotiff/geotiff.html">GeoTIFF</a> convention.
-     * This convention is similar to the {@link #OGC} convention except in the following aspects:
-     *
-     * <ul>
-     *   <li>Parameter and projection names.</li>
-     * </ul>
-     *
-     * @see Citations#GEOTIFF
-     */
-    GEOTIFF(Citations.GEOTIFF, null, false),
-
-    /**
-     * The <a href="http://trac.osgeo.org/proj/">Proj.4</a> convention.
-     * This convention is similar to the {@link #OGC} convention except in the following aspects:
-     *
-     * <ul>
-     *   <li>Very short parameter and projection names.</li>
-     *   <li>The angular units of {@code PRIMEM} and {@code PARAMETER} elements are always degrees,
-     *       no matter the units of the enclosing {@code GEOGCS} element.</li>
-     * </ul>
-     *
-     * @see Citations#PROJ4
-     */
-    PROJ4(Citations.PROJ4, DEGREE_ANGLE, false),
+    WKT1_COMMON_UNITS(Citations.OGC, true, true),
 
     /**
      * A special convention for formatting objects as stored internally by Apache SIS.
-     * In the majority of cases, the result will be identical to the one we would get using the {@link #OGC} convention.
+     * In the majority of cases, the result will be identical to the one we would get using the {@link #WKT2} convention.
      * However in the particular case of map projections, the result may be quite different because of the way
      * SIS separates the linear from the non-linear parameters.
      *
      * <p>This convention is used only for debugging purpose.</p>
      */
     @Debug
-    INTERNAL(Citations.OGC, null, false) {
-        /**
-         * Declares publicly that this convention is defined by Apache SIS, despite the
-         * package-private {@link #authority} field being set to OGC for {@link Formatter} needs.
-         */
-        @Override
-        public Citation getAuthority() {
-            return Citations.SIS;
-        }
-
-        @Override
-        public CoordinateSystem toConformCS(final CoordinateSystem cs) {
-            return cs; // Prevent any modification on the internal CS.
-        }
-    };
+    INTERNAL(Citations.OGC, false, false);
 
     /**
-     * If non-null, forces {@code PRIMEM} and {@code PARAMETER} angular units to this field
-     * value instead than inferring it from the context. The standard value is {@code null},
-     * which means that the angular units are inferred from the context as required by the
-     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html#PRIMEM">WKT specification</a>.
+     * The default conventions.
+     *
+     * @todo Make final after we completed the migration from Geotk.
+     */
+    static Convention DEFAULT = WKT2;
+
+    /**
+     * {@code true} for using WKT 1 syntax, or {@code false} for using WKT 2 syntax.
+     */
+    final boolean isWKT1;
+
+    /**
+     * {@code true} for a frequently-used convention about units instead than the standard one.
+     * <ul>
+     *   <li>If {@code true}, forces {@code PRIMEM} and {@code PARAMETER} angular units to degrees
+     *       instead than inferring the unit from the context. The standard value is {@code false},
+     *       which means that the angular units are inferred from the context as required by the
+     *       WKT 1 specification.</li>
+     *   <li>If {@code true}, uses US unit names instead of the international names.
+     *       For example Americans said {@code "meter"} instead of {@code "metre"}.</li>
+     * </ul>
      *
      * @see #getForcedUnit(Class)
      */
-    final Unit<Angle> forcedAngularUnit;
+    final boolean commonUnits;
 
     /**
-     * {@code true} if the convention uses US unit names instead of the international names.
-     * For example Americans said [@code "meter"} instead of {@code "metre"}.
+     * The organization, standard or project to look for when fetching Map Projection parameter names.
+     * Should be one of the authorities known to {@link org.apache.sis.referencing.operation.provider}.
      */
-    final boolean unitUS;
-
-    /**
-     * The organization, standard or project to use for fetching Map Projection parameter names.
-     * Shall be one of the authorities known to {@link org.apache.sis.referencing.operation.provider}.
-     */
-    final Citation authority;
+    private final Citation authority;
 
     /**
      * Creates a new enumeration value.
      */
-    private Convention(final Citation authority, final Unit<Angle> angularUnit, final boolean unitUS) {
-        this.authority         = authority;
-        this.forcedAngularUnit = angularUnit;
-        this.unitUS            = unitUS;
+    private Convention(final Citation authority, final boolean isWKT1, final boolean commonUnits) {
+        this.authority   = authority;
+        this.isWKT1      = isWKT1;
+        this.commonUnits = commonUnits;
     }
 
     /**
-     * Returns the convention for the organization, standard or project specified by the given citation.
+     * Returns {@code true} if this convention is one of the WKT 1 variants.
      *
-     * @param  authority The organization, standard or project for which to get the convention, or {@code null}.
-     * @param  defaultConvention The default convention to return if none where found for the given citation.
-     * @return The convention, or {@code null} if no matching convention were found and the
-     *         {@code defaultConvention} argument is {@code null}.
+     * @return {@code true} if this convention is one of the WKT 1 variants.
      */
-    public static Convention forCitation(final Citation authority, final Convention defaultConvention) {
-        if (authority != null) {
-            for (final Convention candidate : values()) {
-                if (Citations.identifierMatches(candidate.getAuthority(), authority)) {
-                    return candidate;
-                }
-            }
-        }
-        return defaultConvention;
+    public boolean isWKT1() {
+        return isWKT1;
     }
 
     /**
-     * Returns the convention for the organization, standard or project specified by the given identifier.
+     * Returns the default authority to look for when fetching Map Projection parameter names.
+     * The value returned by this method can be overwritten by {@link WKTFormat#setNameAuthority(Citation)}.
      *
-     * @param  authority The organization, standard or project for which to get the convention, or {@code null}.
-     * @param  defaultConvention The default convention to return if none where found for the given identifier.
-     * @return The convention, or {@code null} if no matching convention were found and the
-     *         {@code defaultConvention} argument is {@code null}.
+     * {@example The following table shows the names given by various organizations or projects for the same projection:
+     *
+     * <table class="sis">
+     *   <tr><th>Authority</th> <th>Projection name</th></tr>
+     *   <tr><td>EPSG</td>      <td>Mercator (variant A)</td></tr>
+     *   <tr><td>OGC</td>       <td>Mercator_1SP</td></tr>
+     *   <tr><td>GEOTIFF</td>   <td>CT_Mercator</td></tr>
+     * </table>}
+     *
+     * @return The organization, standard or project to look for when fetching Map Projection parameter names.
+     *
+     * @see WKTFormat#getNameAuthority()
+     * @see Citations#EPSG
+     * @see Citations#OGC
      */
-    public static Convention forIdentifier(final String authority, final Convention defaultConvention) {
-        if (authority != null) {
-            for (final Convention candidate : values()) {
-                if (Citations.identifierMatches(candidate.getAuthority(), authority)) {
-                    return candidate;
-                }
-            }
-        }
-        return defaultConvention;
-    }
-
-    /**
-     * Returns the citation for the organization, standard of project that defines this convention.
-     *
-     * @return The organization, standard or project that defines this convention.
-     *
-     * @see WKTFormat#getAuthority()
-     */
-    public Citation getAuthority() {
+    public Citation getNameAuthority() {
         return authority;
     }
 
@@ -287,35 +208,11 @@ public enum Convention {
      */
     @SuppressWarnings("unchecked")
     public <T extends Quantity> Unit<T> getForcedUnit(final Class<T> quantity) {
-        if (quantity == Angle.class) {
-            return (Unit) forcedAngularUnit;
+        if (commonUnits) {
+            if (quantity == Angle.class) {
+                return (Unit<T>) DEGREE_ANGLE;
+            }
         }
         return null;
-    }
-
-    /**
-     * Makes the given coordinate system conform to this convention. This method is used mostly
-     * for converting between the legacy (OGC 01-009) {@link GeocentricCRS} axis directions,
-     * and the new (ISO 19111) directions. Those directions are:
-     *
-     * <table class="sis">
-     *   <tr><th>ISO 19111</th>    <th>OGC 01-009</th></tr>
-     *   <tr><td>Geocentric X</td> <td>Other</td></tr>
-     *   <tr><td>Geocentric Y</td> <td>Easting</td></tr>
-     *   <tr><td>Geocentric Z</td> <td>Northing</td></tr>
-     * </table>
-     *
-     * @param  cs The coordinate system.
-     * @return A coordinate system equivalent to the given one but with conform axis names,
-     *         or the given {@code cs} if no change apply to the given coordinate system.
-     *
-     * @see #OGC
-     * @see #EPSG
-     */
-    public CoordinateSystem toConformCS(CoordinateSystem cs) {
-        if (cs instanceof CartesianCS) {
-            cs = Legacy.replace((CartesianCS) cs, true);
-        }
-        return cs;
     }
 }
