@@ -323,14 +323,14 @@ fill:   for (int i=0; ; i++) {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
-                        value = classpath(getProperty("java.ext.dirs"), null, true, null);
+                        value = classpath(getProperty("java.ext.dirs"), true);
                     }
                     break;
                 }
                 case 13: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
-                        value = classpath(getProperty("java.class.path"), null, false, null);
+                        value = classpath(getProperty("java.class.path"), false);
                     }
                     break;
                 }
@@ -422,6 +422,18 @@ pathTree:   for (int j=0; ; j++) {
     /**
      * Returns a map of all JAR files or class directories found in the given paths,
      * associated to a description obtained from their {@code META-INF/MANIFEST.MF}.
+     *
+     * @param  paths         The paths using the {@link File#pathSeparatorChar} separator.
+     * @param  asDirectories {@code true} if the paths are directories, or {@code false} for JAR files.
+     * @return The paths, or {@code null} if none.
+     */
+    private static Map<File,CharSequence> classpath(final String paths, final boolean asDirectories) {
+        final Map<File,CharSequence> files = new LinkedHashMap<>();
+        return classpath(paths, null, asDirectories, files) ? files : null;
+    }
+
+    /**
+     * Implementation of {@link #classpath(String, boolean)} to be invoked recursively.
      * The {@code paths} argument may contains many path separated by one of the
      * following separators:
      *
@@ -432,22 +444,27 @@ pathTree:   for (int j=0; ; j++) {
      *       a {@code MANIFEST.MF} attribute using space as the path separator.</li>
      * </ul>
      *
-     * @param paths         The paths using the separator described above.
-     * @param directory     The directory of {@code MANIFEST.MF} classpath, or {@code null}.
-     * @param asDirectories {@code true} if the paths are directories, or {@code false} for JAR files.
-     * @param files         Where to add the paths, or {@code null} if not yet created.
+     * @param  paths         The paths using the separator described above.
+     * @param  directory     The directory of {@code MANIFEST.MF} classpath, or {@code null}.
+     * @param  asDirectories {@code true} if the paths are directories, or {@code false} for JAR files.
+     * @param  files         Where to add the paths.
+     * @return {@code true} if the given map has been changed as a result of this method call.
      */
-    private static Map<File,CharSequence> classpath(final String paths, final File directory,
-            final boolean asDirectories, Map<File,CharSequence> files)
+    private static boolean classpath(final String paths, final File directory,
+            final boolean asDirectories, final Map<File,CharSequence> files)
     {
         if (paths == null) {
-            return files;
+            return false;
         }
+        boolean changed = false;
         for (final CharSequence path : CharSequences.split(paths, (directory == null) ? File.pathSeparatorChar : ' ')) {
             final File file = new File(directory, path.toString());
             if (file.exists()) {
                 if (!asDirectories) {
-                    files = put(files, file);
+                    if (!files.containsKey(file)) {
+                        files.put(file, null);
+                        changed = true;
+                    }
                 } else {
                     // If we are scanning extensions, then the path are directories
                     // rather than files. So we need to scan the directory content.
@@ -456,14 +473,17 @@ pathTree:   for (int j=0; ; j++) {
                     if (list != null) {
                         Arrays.sort(list);
                         for (final File ext : list) {
-                            files = put(files, ext);
+                            if (!files.containsKey(ext)) {
+                                files.put(ext, null);
+                                changed = true;
+                            }
                         }
                     }
                 }
             }
         }
-        if (files == null) {
-            return null;
+        if (!changed) {
+            return false;
         }
         /*
          * At this point, we have collected all JAR files. Now set the description from the
@@ -494,8 +514,11 @@ pathTree:   for (int j=0; ; j++) {
                                 }
                             }
                             entry.setValue(title);
-                            files = classpath(attributes.getValue(Attributes.Name.CLASS_PATH),
-                                    file.getParentFile(), false, files);
+                            if (classpath(attributes.getValue(Attributes.Name.CLASS_PATH),
+                                    file.getParentFile(), false, files))
+                            {
+                                break; // Necessary for avoiding ConcurrentModificationException.
+                            }
                         }
                     }
                 } catch (IOException e) {
@@ -510,26 +533,7 @@ pathTree:   for (int j=0; ; j++) {
         if (error != null) {
             Logging.unexpectedException(About.class, "configuration", error);
         }
-        return files;
-    }
-
-    /**
-     * Puts the given file in the given map. If a value was already associated to the given file,
-     * then that value is preserved.
-     *
-     * @param  files The map in which to add the file, or {@code null} if not yet created.
-     * @param  file  The file to add in the map.
-     * @return The given map, or a new map if the given map was null.
-     */
-    private static Map<File,CharSequence> put(Map<File,CharSequence> files, final File file) {
-        if (files == null) {
-            files = new LinkedHashMap<>();
-        }
-        final CharSequence old = files.put(file, null);
-        if (old != null) {
-            files.put(file, old);
-        }
-        return files;
+        return true;
     }
 
     /**
