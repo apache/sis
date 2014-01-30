@@ -98,7 +98,8 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
             // This is the expected exception.
             final String message = e.getMessage();
             assertTrue(message.contains("POINT(6 10 2) x"));
-            assertTrue(message.contains("“x”"));
+            assertTrue(message.contains("“x”") ||  // English locale
+                       message.contains("« x »")); // French locale
         }
     }
 
