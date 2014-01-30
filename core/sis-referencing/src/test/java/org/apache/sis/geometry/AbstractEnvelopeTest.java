@@ -98,7 +98,7 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             }
             default: throw new IllegalArgumentException(String.valueOf(type));
         }
-        if (PENDING_NEXT_GEOAPI_RELEASE) {
+        if (type != RECTANGLE) {
             validate(envelope);
         }
         return envelope;

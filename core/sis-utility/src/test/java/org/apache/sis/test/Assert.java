@@ -45,7 +45,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @version 0.3
  * @module
  */
-public strictfp class Assert extends GeoapiAssert {
+public strictfp class Assert extends org.opengis.test.Assert {
     /**
      * For subclass constructor only.
      */

@@ -1,5 +1,43 @@
 This is the root directory of NetBeans project configuration for Apache SIS.
-There is 3 important files that must be edited BY HAND for preserving user-
+This configuration is provided as a convenience for NetBeans users - this is
+not a replacement for the Maven build.
+
+
+==============================================================================
+Installation
+==============================================================================
+The configuration provided in this directory requires a checkout of GeoAPI
+source code. The recommended installation steps is as below (from the root
+directory of all SIS-related projects):
+
+  mkdir SIS
+  svn checkout https://svn.apache.org/repos/asf/sis/branches/JDK6 SIS/JDK6
+  mkdir GeoAPI
+  svn checkout https://desruisseaux@svn.code.sf.net/p/geoapi/code/trunk GeoAPI/trunk
+
+Above commands should create the following directory structure:
+
+  +-- GeoAPI
+  |   +-- trunk
+  |       +-- README.txt
+  |       +-- etc...
+  +-- SIS
+      +-- JDK6
+          +-- README
+          +-- etc...
+
+If a different directory layout is desired, this is possible provided that
+the following line is added to "nbproject/private/private.properties" file:
+
+  project.GeoAPI = <path to your GeoAPI checkout>/ide-project/NetBeans
+
+
+
+
+==============================================================================
+Recommendations for NetBeans project configuration changes
+==============================================================================
+There is 3 important files that should be edited BY HAND for preserving user-
 neutral configuration:
 
 build.xml
@@ -16,6 +54,8 @@ Contains most of the project configuration. The content of this file is
 modified by the NetBeans "Project properties" panel. PLEASE REVIEW MANUALLY
 BEFORE COMMITTING ANY CHANGE. Please preserve the formatting for easier
 reading. Ensure that all directories are relative to a variable.
+If some user-specific properties are desired (e.g. absolute paths),
+they can be declared in the "nbproject/private/private.properties" file.
 
 
 nbproject/project.xml
