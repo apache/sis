@@ -32,12 +32,6 @@ import static javax.measure.unit.NonSI.DEGREE_ANGLE;
  * This enumeration specifies whether to use the <cite>Well Known Text</cite> format defined by ISO 19162
  * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
  *
- * {@section Apache SIS extensions to WKT 2}
- * The WKT 2 format does not define any syntax for {@link org.opengis.referencing.operation.MathTransform} instances,
- * and consequently does not provide {@link org.opengis.referencing.crs.DerivedCRS} representations. Apache SIS uses
- * the WKT 1 format for {@code MathTransform} and extends the WKT 2 format with a {@code DerivedCRS} representation
- * that contains those math transforms.
- *
  * {@section WKT 1 variants}
  * The WKT 2 format should be parsed and formatted consistently by all softwares.
  * But the WKT 1 format has been interpreted differently by various implementors.

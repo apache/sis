@@ -50,13 +50,6 @@
  * the WKT syntax require knowledge of the WKT variant used by that software. This variant can be specified by the
  * {@link org.apache.sis.io.wkt.Convention} enumeration.
  *
- * <p>The WKT 2 format provides more complete CRS descriptions than WKT 1 with one exception:
- * to retain simplicity, WKT 2 does not define {@link org.opengis.referencing.crs.DerivedCRS} representations.
- * This is because WKT 2 does not define {@link org.opengis.referencing.operation.MathTransform} representations
- * neither, while the later were used to be contained inside {@code DerivedCRS} representations in WKT 1.
- * Apache SIS workarounds this limitation by using the WKT 1 format for {@code MathTransform} instances,
- * and extending the WKT 2 format with a {@code DerivedCRS} representation that contains those math transforms.</p>
- *
  * {@section Geometry WKT}
  * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes
  * provide their own, limited, WKT parsing and formatting services for the {@code BOX} and {@code POINT} elements.
