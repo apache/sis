@@ -46,11 +46,14 @@ public final strictfp class SubEnvelopeTest extends GeneralEnvelopeTest {
         final GeneralEnvelope envelope = new GeneralEnvelope(5);
         envelope.setEnvelope(1, 4, xmin, ymin, 5,
                              2, 7, xmax, ymax, 9);
-        if (PENDING_NEXT_GEOAPI_RELEASE) {
+        if (!skipValidation) {
             validate(envelope);
         }
         final GeneralEnvelope sub = envelope.subEnvelope(2, 4);
         sub.setCoordinateReferenceSystem(WGS84);
+        if (!skipValidation) {
+            validate(sub);
+        }
         return sub;
     }
 
