@@ -16,13 +16,16 @@
  */
 package org.apache.sis.io.wkt;
 
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.util.Collections.singletonMap;
 import static org.apache.sis.referencing.Assert.*;
 
 
@@ -43,6 +46,16 @@ public final strictfp class FormatterTest extends TestCase {
     public void testAnsiEscapeSequences() {
         assertEquals("FOREGROUND_DEFAULT", X364.FOREGROUND_DEFAULT.sequence(), Formatter.FOREGROUND_DEFAULT);
         assertEquals("BACKGROUND_DEFAULT", X364.BACKGROUND_DEFAULT.sequence(), Formatter.BACKGROUND_DEFAULT);
+    }
+
+    /**
+     * Tests {@link Formatter#append(IdentifiedObject)} with a name that contains the quote character.
+     * We test that the closing quote character is doubled.
+     */
+    @Test
+    public void testAppendIdentifiedObject() {
+        assertWktEquals("IdentifiedObject[“My “object””.”]",
+                new AbstractIdentifiedObject(singletonMap(IdentifiedObject.NAME_KEY, "My “object”.")));
     }
 
     /**

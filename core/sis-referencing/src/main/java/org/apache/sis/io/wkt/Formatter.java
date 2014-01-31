@@ -698,11 +698,28 @@ public class Formatter {
     }
 
     /**
-     * Appends the given string as a quoted text.
+     * Appends the given string as a quoted text. If the given string contains the closing quote character,
+     * that character will be doubled. We check for the closing quote only because it is the character that
+     * the parser will look for determining the text end.
      */
     private void quote(final String text) {
-        buffer.appendCodePoint(symbols.getOpeningQuote(0)).append(text)
-              .appendCodePoint(symbols.getClosingQuote(0));
+        final int base = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
+        buffer.append(text);
+        closeQuote(base);
+    }
+
+    /**
+     * Double any closing quote character that may appear at or after the given index,
+     * then append the closing quote character.
+     */
+    private void closeQuote(int fromIndex) {
+        final String quote = symbols.getQuote();
+        while ((fromIndex = buffer.indexOf(quote, fromIndex)) >= 0) {
+            final int n = quote.length();
+            buffer.insert(fromIndex += n, quote);
+            fromIndex += n;
+        }
+        buffer.append(quote);
     }
 
     /**
@@ -767,7 +784,7 @@ public class Formatter {
             appendSeparator(requestNewLine);
             buffer.append("UNIT").appendCodePoint(symbols.getOpeningBracket(0));
             setColor(ElementKind.UNIT);
-            buffer.appendCodePoint(symbols.getOpeningQuote(0));
+            final int fromIndex = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
             if (NonSI.DEGREE_ANGLE.equals(unit)) {
                 buffer.append("degree");
             } else if (SI.METRE.equals(unit)) {
@@ -775,7 +792,7 @@ public class Formatter {
             } else {
                 unitFormat.format(unit, buffer, dummy);
             }
-            buffer.appendCodePoint(symbols.getClosingQuote(0));
+            closeQuote(fromIndex);
             resetColor();
             append(Units.toStandardUnit(unit));
             buffer.appendCodePoint(symbols.getClosingBracket(0));
