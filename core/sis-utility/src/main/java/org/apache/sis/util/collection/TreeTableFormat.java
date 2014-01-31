@@ -190,6 +190,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * Returns the type of object formatted by this class, which is {@link TreeTable}.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     public final Class<TreeTable> getValueType() {
@@ -279,6 +281,13 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         ArgumentChecks.ensureBetween("verticalLinePosition", 0, indentation, verticalLinePosition);
         this.verticalLinePosition = verticalLinePosition;
         clearTreeSymbols();
+    }
+
+    /**
+     * Returns the locale to use for code lists, international strings and exception messages.
+     */
+    final Locale getDisplayLocale() {
+        return getLocale(Locale.Category.DISPLAY);
     }
 
     /**
@@ -420,7 +429,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                      */
                     if (--indentationLevel < 0) {
                         pos.setErrorIndex(indexOfLineStart);
-                        throw new LocalizedParseException(getLocale(),
+                        throw new LocalizedParseException(getDisplayLocale(),
                                 Errors.Keys.NodeHasNoParent_1, new Object[] {node}, 0);
                     }
                     lastNode = lastNode.getParent();
@@ -434,7 +443,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     final TreeTable.Node parent = lastNode.getParent();
                     if (parent == null) {
                         pos.setErrorIndex(indexOfLineStart);
-                        throw new LocalizedParseException(getLocale(),
+                        throw new LocalizedParseException(getDisplayLocale(),
                                 Errors.Keys.NodeHasNoParent_1, new Object[] {node}, 0);
                     }
                     parent.getChildren().add(node);
@@ -618,11 +627,11 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 }
                 text = format.format(value);
             } else if (value instanceof InternationalString) {
-                text = ((InternationalString) value).toString(getLocale());
+                text = ((InternationalString) value).toString(getDisplayLocale());
             } else if (value instanceof CharSequence) {
                 text = value.toString();
             } else if (value instanceof CodeList<?>) {
-                text = Types.getCodeTitle((CodeList<?>) value).toString(getLocale());
+                text = Types.getCodeTitle((CodeList<?>) value).toString(getDisplayLocale());
             } else if (value instanceof Enum<?>) {
                 text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
             } else {
@@ -705,7 +714,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 for (int i=0; i<level; i++) {
                     out.append(getTreeSymbols(true, isLast[i]));
                 }
-                final Locale locale = getLocale();
+                final Locale locale = getDisplayLocale();
                 out.append('(').append(Vocabulary.getResources(locale)
                    .getString(Vocabulary.Keys.CycleOmitted).toLowerCase(locale))
                    .append(')').append(lineSeparator);

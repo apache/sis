@@ -123,6 +123,28 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     }
 
     /**
+     * Returns the locale for the given category. This method implements the following mapping:
+     *
+     * <ul>
+     *   <li>{@link Locale.Category#DISPLAY} — the {@code headerLocale} given at construction time.</li>
+     *   <li>{@link Locale.Category#FORMAT} — the {@code locale} given at construction time,
+     *       used for all values below the header row.</li>
+     * </ul>
+     *
+     * @param  category The category for which a locale is desired.
+     * @return The locale for the given category (never {@code null}).
+     *
+     * @since 0.4
+     */
+    @Override
+    public Locale getLocale(final Locale.Category category) {
+        if (category == Locale.Category.DISPLAY) {
+            return headerLocale;
+        }
+        return super.getLocale(category);
+    }
+
+    /**
      * Returns the kind of objects formatted by this class.
      *
      * @return {@code Statistics.class}

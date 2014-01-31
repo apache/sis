@@ -58,7 +58,7 @@ public strictfp class Assert extends org.apache.sis.test.Assert {
      * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}
      * for easier readability of {@link String} constants in Java code.
      */
-    private static final WKTFormat WKT_FORMAT = new WKTFormat();
+    private static final WKTFormat WKT_FORMAT = new WKTFormat(null, null);
     static {
         final Symbols s = new Symbols();
         s.setPairedQuotes("“”", "\"\"");

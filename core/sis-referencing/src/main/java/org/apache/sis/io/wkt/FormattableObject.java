@@ -158,9 +158,7 @@ public class FormattableObject {
         if (formatter == null) {
             formatter = new Formatter();
         }
-        formatter.indentation = indentation;
-        formatter.colors = colorize ? Colors.CONSOLE : null;
-        formatter.setConvention(convention, null);
+        formatter.configure(convention, null, colorize ? Colors.CONSOLE : null, indentation);
         final String wkt;
         try {
             /*

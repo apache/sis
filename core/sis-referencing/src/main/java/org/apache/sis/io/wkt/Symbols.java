@@ -31,24 +31,21 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 /**
  * The set of symbols to use for <cite>Well Known Text</cite> (WKT) parsing and formatting.
- * Newly created {@code Symbols} instances use the following defaults:
+ * This class allows to specify the following properties:
  *
- * <ul>
- *   <li>An English locale for {@linkplain java.text.DecimalFormatSymbols decimal format symbols}.</li>
- *   <li>Square brackets, as in {@code DATUM["WGS84"]}. An alternative allowed by the WKT
- *       specification is curly brackets as in {@code DATUM("WGS84")}.</li>
- *   <li>English quotation mark ({@code '"'}). SIS also accepts {@code '“'} opening quote and {@code '”'}
- *       closing quote for more readable {@link String} constants in Java code, but the later are not legal WKT.</li>
- *   <li>Coma separator followed by a space ({@code ", "}).</li>
- * </ul>
+ * <table class="sis">
+ *   <tr><th>Property</th>                 <th>Standard value</th>        <th>Legal alternative</th></tr>
+ *   <tr><td>Locale for number format</td> <td>{@link Locale#ROOT}</td>   <td></td></tr>
+ *   <tr><td>Bracket symbols</td>          <td>{@code [} … {@code ]}</td> <td>{@code (} … {@code )}</td></tr>
+ *   <tr><td>Quote symbols</td>            <td>{@code "} … {@code "}</td> <td></td></tr>
+ *   <tr><td>Separator</td>                <td>{@code ,}</td>             <td></td></tr>
+ * </table>
  *
- * {@section Relationship between <code>Symbols</code> locale and <code>WKTFormat</code> locale}
- * The {@link WKTFormat#getLocale()} property specifies the language to use when formatting
- * {@link org.opengis.util.InternationalString} instances. This can be set to any value.
- * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
- * the decimal format symbols and is very rarely set to an other locale than {@link Locale#ROOT}.
+ * The two constants defined in this class, namely {@link #SQUARE_BRACKETS} and {@link #CURLY_BRACKETS},
+ * define the symbols for ISO 19162 compliant WKT formatting. Parsing can be made tolerant to alternative
+ * forms by optionally specifying additional bracket and quote symbols.
  *
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.1)
  * @version 0.4
  * @module
@@ -75,12 +72,6 @@ public class Symbols implements Localized, Serializable {
      */
     public static final Symbols CURLY_BRACKETS = new Immutable(
             new int[] {'(', ')', '[', ']'}, SQUARE_BRACKETS.quotes);
-
-    /**
-     * The default set of symbols, as documented in the class javadoc.
-     * This is currently set to {@link #SQUARE_BRACKETS}.
-     */
-    public static final Symbols DEFAULT = SQUARE_BRACKETS;
 
     /**
      * The locale of {@linkplain java.text.DecimalFormatSymbols decimal format symbols} or other symbols.
@@ -139,10 +130,20 @@ public class Symbols implements Localized, Serializable {
     private String separator;
 
     /**
-     * Creates a new set of WKT symbols initialized to the {@linkplain #DEFAULT default} values.
+     * Creates a new set of WKT symbols initialized to the default values.
+     * Newly created {@code Symbols} instances use the following defaults:
+     *
+     * <ul>
+     *   <li>{@link Locale#ROOT} for {@linkplain java.text.DecimalFormatSymbols decimal format symbols}.</li>
+     *   <li>Square brackets by default, as in {@code DATUM["WGS84"]}, but accepting also curly brackets as in
+     *       {@code DATUM("WGS84")}. Both are legal WKT.</li>
+     *   <li>English quotation mark ({@code '"'}) by default, but accepting also {@code '“'} … {@code '”'} quotes
+     *       for more readable {@link String} constants in Java code.</li>
+     *   <li>Coma separator followed by a space ({@code ", "}).</li>
+     * </ul>
      */
     public Symbols() {
-        this(DEFAULT);
+        this(SQUARE_BRACKETS);
     }
 
     /**
@@ -239,11 +240,28 @@ public class Symbols implements Localized, Serializable {
     }
 
     /**
+     * Returns the default set of symbols.
+     * This is currently set to {@link #SQUARE_BRACKETS}.
+     *
+     * @return The default set of symbols.
+     */
+    public static Symbols getDefault() {
+        return SQUARE_BRACKETS;
+    }
+
+    /**
      * Returns the locale of {@linkplain java.text.DecimalFormatSymbols decimal format symbols} or other symbols.
-     * The default value is {@link Locale#ROOT}. Note that this is not the same locale than the {@link WKTFormat}
-     * one, which is used for choosing the language of international strings.
+     * The default value is {@link Locale#ROOT}.
+     *
+     * {@section Relationship between <code>Symbols</code> locale and <code>WKTFormat</code> locale}
+     * The {@code WKTFormat.getLocale()} property specifies the language to use when formatting
+     * {@link org.opengis.util.InternationalString} instances. This can be set to any value.
+     * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
+     * the decimal format symbols and is very rarely set to an other locale than {@link Locale#ROOT}.
      *
      * @return The symbols locale.
+     *
+     * @see WKTFormat#getLocale(Locale.Category)
      */
     @Override
     public final Locale getLocale() {
