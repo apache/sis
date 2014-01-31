@@ -18,7 +18,6 @@ package org.apache.sis.io.wkt;
 
 import java.util.EnumMap;
 import java.io.Serializable;
-import java.io.ObjectStreamException;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.util.resources.Errors;
 
@@ -178,7 +177,7 @@ public class Colors implements Serializable {
         /**
          * Replaces the deserialized instance by {@link #CONSOLE} one if possible.
          */
-        Object readResolve() throws ObjectStreamException {
+        Object readResolve() {
             return super.map.equals(CONSOLE.map) ? CONSOLE : this;
         }
     }

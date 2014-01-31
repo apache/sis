@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.io.Serializable;
-import java.io.ObjectStreamException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 
@@ -271,7 +270,7 @@ public class OptionKey<T> implements Serializable {
      * Resolves this option key on deserialization. This method is invoked
      * only for instance of the exact {@code OptionKey} class, not subclasses.
      */
-    private Object readResolve() throws ObjectStreamException {
+    private Object readResolve() {
         try {
             return OptionKey.class.getField(name).get(null);
         } catch (ReflectiveOperationException e) {

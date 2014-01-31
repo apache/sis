@@ -19,7 +19,6 @@ package org.apache.sis.io;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
-import java.io.InvalidObjectException;
 import org.apache.sis.util.Classes;
 
 
@@ -72,7 +71,7 @@ final class ClassFormat extends Format {
     /**
      * Resolves to the singleton instance on deserialization.
      */
-    private Object readResolve() throws InvalidObjectException {
+    private Object readResolve() {
         return INSTANCE;
     }
 }
