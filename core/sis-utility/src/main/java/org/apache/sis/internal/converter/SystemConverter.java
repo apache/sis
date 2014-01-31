@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
-import java.io.ObjectStreamException;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.resources.Errors;
@@ -144,7 +143,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * Returns the singleton instance on deserialization, if any. If no instance already exist
      * in the virtual machine, we do not cache the instance (for now) for security reasons.
      */
-    protected final Object readResolve() throws ObjectStreamException {
+    protected final Object readResolve() {
         return unique();
     }
 

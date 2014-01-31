@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.Serializable;
-import java.io.ObjectStreamException;
 import java.lang.reflect.Field;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -273,7 +272,7 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * We need to use Java reflection because the {@code sis-metadata} module may not be in the
      * classpath.
      */
-    private static IdentifierSpace<?> getCitation(final String name) throws ObjectStreamException {
+    private static IdentifierSpace<?> getCitation(final String name) {
         try {
             final Field field = Class.forName("org.apache.sis.metadata.iso.citation.DefaultCitation").getDeclaredField(name);
             field.setAccessible(true);
@@ -298,7 +297,7 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * Invoked at deserialization time in order to replace the deserialized instance
      * by the appropriate instance defined in the {@link IdentifierSpace} interface.
      */
-    private Object readResolve() throws ObjectStreamException {
+    private Object readResolve() {
         int code = 0;
         while (true) {
             final IdentifierSpace<?> candidate;

@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -185,7 +184,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         /**
          * Returns the singleton instance on deserialization.
          */
-        Object readResolve() throws ObjectStreamException {
+        Object readResolve() {
             return INSTANCE;
         }
     };

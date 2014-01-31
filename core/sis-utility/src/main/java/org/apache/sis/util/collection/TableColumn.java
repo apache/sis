@@ -77,7 +77,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *                 this.field = field;
  *             }
  *
- *             private Object readResolve() throws InvalidObjectException {
+ *             private Object readResolve() throws ObjectStreamException {
  *                 try {
  *                     return CityLocation.class.getField(field).get(null);
  *                 } catch (Exception cause) { // Many exceptions, including unchecked ones.
