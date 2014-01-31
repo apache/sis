@@ -102,14 +102,13 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * Creates a new format for the given locale. The given locale can be {@code null} or
      * {@link Locale#ROOT} if this format shall parse and format "unlocalized" strings.
-     * See {@link #getLocale()} for more information on {@code ROOT} locale.
+     * See {@link #getLocale()} for more information about the {@code ROOT} locale.
      *
-     * @param locale   The locale to use for numbers, dates and angles formatting,
-     *                 or {@code null} for the {@linkplain Locale#ROOT root locale}.
+     * @param locale   The locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
      * @param timezone The timezone, or {@code null} for UTC.
      */
     protected CompoundFormat(final Locale locale, final TimeZone timezone) {
-        this.locale   = (locale   != null) ? locale   : Locale.ROOT;
+        this.locale   = (locale != null) ? locale : Locale.ROOT;
         this.timezone = timezone;
     }
 
@@ -119,15 +118,43 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * is implementation-dependent, but some typical examples are:
      *
      * <ul>
-     *   <li>Format {@link Number}s using {@code toString()} instead than {@code NumberFormat}.</li>
-     *   <li>Format {@link Date}s using the ISO pattern instead than the English one.</li>
+     *   <li>Format {@link Number} instances using {@code toString()} instead than {@code NumberFormat}.</li>
+     *   <li>Format {@link Date} instances using the ISO pattern instead than the English one.</li>
      * </ul>
      *
-     * @return The locale used for this format, or {@link Locale#ROOT} for unlocalized format.
+     * @return The locale of this {@code Format}, or {@code Locale.ROOT} for unlocalized format.
      */
     @Override
     public Locale getLocale() {
         return locale;
+    }
+
+    /**
+     * Returns the locale for the given category. Subclasses may override this method in order to assign
+     * different roles to the different locale categories. A typical (but not mandatory) mapping is:
+     *
+     * <ul>
+     *   <li>{@link Locale.Category#FORMAT} specifies the locale to use for numbers, dates and angles formatting.</li>
+     *   <li>{@link Locale.Category#DISPLAY} specifies the locale to use for {@link org.opengis.util.CodeList} labels
+     *       and {@link org.opengis.util.InternationalString} contents.</li>
+     * </ul>
+     *
+     * {@example The ISO 19162 (<cite>Well Known Text</cite>) standard requires a number format similar to the one
+     *           defined by <code>Locale.ROOT</code> while it allows informative texts (remarks, <i>etc.</i>) to be
+     *           formatted in the user's locale. Consequently <code>WKTFormat</code> fixes (usually) the locale for
+     *           <code>Category.FORMAT</code> to <code>Locale.ROOT</code> and let <code>Category.DISPLAY</code> be
+     *           any locale.}
+     *
+     * For subclasses that do not override this method, the default implementation returns {@link #getLocale()}.
+     *
+     * @param  category The category for which a locale is desired.
+     * @return The locale for the given category (never {@code null}).
+     *
+     * @since 0.4
+     */
+    public Locale getLocale(final Locale.Category category) {
+        ArgumentChecks.ensureNonNull("category", category);
+        return getLocale();
     }
 
     /**
@@ -143,6 +170,13 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * Returns the base type of values parsed and formatted by this {@code Format} instance.
      * The returned type may be a subclass of {@code <T>} if the format is configured in a way
      * that restrict the kind value to be parsed.
+     *
+     * {@example
+     *   <ul>
+     *     <li><code>StatisticsFormat</code> unconditionally returns <code>Statistics.class</code>.</li>
+     *     <li><code>TreeTableFormat</code> unconditionally returns <code>TreeTable.class</code>.</li>
+     *   </ul>
+     * }
      *
      * @return The base type of values parsed and formatted by this {@code Format} instance.
      */
@@ -257,7 +291,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             } while (Character.isSpaceChar(c) || Character.isISOControl(c));
             pos.setErrorIndex(i);
         }
-        throw new LocalizedParseException(getLocale(), getValueType(), text, pos);
+        throw new LocalizedParseException(getLocale(Locale.Category.DISPLAY), getValueType(), text, pos);
     }
 
     /**
@@ -379,7 +413,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
          * documented in this method javadoc. But actually it is not, since the call to
          * DefaultFormat.getInstance(…) will indirectly perform this kind of comparison.
          */
-        final Locale locale = getLocale();
+        final Locale locale = getLocale(Locale.Category.FORMAT);
         if (Number.class.isAssignableFrom(valueType)) {
             if (Locale.ROOT.equals(locale)) {
                 return DefaultFormat.getInstance(valueType);

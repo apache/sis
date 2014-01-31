@@ -55,12 +55,15 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 /**
  * Formats {@linkplain FormattableObject formattable objects} as <cite>Well Known Text</cite> (WKT).
- * Each {@code Formatter} instance if created for a given {@linkplain Symbols set of symbols}.
- * For example in order to format an object with {@linkplain Symbols#CURLY_BRACKETS curly brackets}
- * instead of square ones and the whole text on the same line (no indentation), use the following:
+ * Each {@code Formatter} instance is created for a given {@linkplain Convention convention},
+ * {@linkplain Symbols set of symbols} and indentation.
+ *
+ * {@link Example}
+ * For formatting an object with {@linkplain Symbols#CURLY_BRACKETS curly brackets} instead of
+ * square ones and the whole text on the same line (no indentation), one can use the following:
  *
  * {@preformat java
- *     Formatter formatter = new Formatter(Symbols.CURLY_BRACKETS, null, WKTFormat.SINGLE_LINE);
+ *     Formatter formatter = new Formatter(Convention.DEFAULT, Symbols.CURLY_BRACKETS, WKTFormat.SINGLE_LINE);
  *     formatter.append(theObject);
  *     String wkt = formatter.toString();
  *
@@ -68,6 +71,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
  *     formatter.clear();
  * }
  *
+ * {@section Thread safety}
  * Formatters are not synchronized. It is recommended to create separated formatter instances for each thread.
  * If multiple threads access a formatter concurrently, then the formatter must be synchronized externally.
  *
@@ -107,30 +111,29 @@ public class Formatter {
      * If non-null, the terminal must be ANSI X3.64 compatible.
      * The default value is {@code null}.
      *
-     * @see WKTFormat#getColors()
-     * @see WKTFormat#setColors(Colors)
+     * @see #configure(Convention, Citation, Colors, byte)
      */
-    Colors colors;
+    private Colors colors;
 
     /**
      * The preferred convention for objects or parameter names.
      * This field should never be {@code null}.
      *
-     * @see WKTFormat#getConvention()
-     * @see WKTFormat#setConvention(Convention)
+     * @see #configure(Convention, Citation, Colors, byte)
      */
     private Convention convention;
 
     /**
      * The preferred authority for objects or parameter names.
      *
-     * @see WKTFormat#getNameAuthority()
-     * @see WKTFormat#setNameAuthority(Citation)
+     * @see #configure(Convention, Citation, Colors, byte)
      */
     private Citation authority;
 
     /**
      * The unit for writing length, or {@code null} for the "natural" unit of each WKT element.
+     *
+     * @see #setLinearUnit(Unit)
      */
     private Unit<Length> linearUnit;
 
@@ -138,6 +141,8 @@ public class Formatter {
      * The unit for writing angles, or {@code null} for the "natural" unit of each WKT element.
      * This value is set for example by {@code "GEOGCS"}, which force its enclosing {@code "PRIMEM"}
      * to take the same units than itself.
+     *
+     * @see #setAngularUnit(Unit)
      */
     private Unit<Angle> angularUnit;
 
@@ -157,22 +162,28 @@ public class Formatter {
     private final FieldPosition dummy = new FieldPosition(0);
 
     /**
-     * The buffer in which to format. Consider this field as private and final. The only method to change
-     * the value of this field is {@link WKTFormat#format(Object, StringBuffer, FieldPosition)}.
+     * The buffer in which to format. Consider this field as final. The only method to change
+     * (indirectly) the value of this field is {@link WKTFormat#format(Object, Appendable)}.
+     *
+     * @see #setBuffer(StringBuffer)
      */
-    StringBuffer buffer;
+    private StringBuffer buffer;
 
     /**
      * The starting point in the buffer. Always 0, except when used by
-     * {@link WKTFormat#format(Object, StringBuffer, FieldPosition)}.
+     * {@link WKTFormat#format(Object, Appendable)}.
+     *
+     * @see #setBuffer(StringBuffer)
      */
-    int bufferBase;
+    private int bufferBase;
 
     /**
      * The amount of spaces to use in indentation, or {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE}
      * if indentation is disabled.
+     *
+     * @see #configure(Convention, Citation, Colors, byte)
      */
-    byte indentation;
+    private byte indentation;
 
     /**
      * The amount of space to write on the left side of each line. This amount is increased
@@ -215,7 +226,7 @@ public class Formatter {
      * Creates a new formatter instance with the default symbols, no syntax coloring and the default indentation.
      */
     public Formatter() {
-        this(Convention.DEFAULT, Symbols.DEFAULT, null, WKTFormat.DEFAULT_INDENTATION);
+        this(Convention.DEFAULT, Symbols.getDefault(), WKTFormat.DEFAULT_INDENTATION);
     }
 
     /**
@@ -223,36 +234,59 @@ public class Formatter {
      *
      * @param convention  The convention to use.
      * @param symbols     The symbols.
-     * @param colors      The syntax coloring, or {@code null} if none.
      * @param indentation The amount of spaces to use in indentation for WKT formatting,
      *        or {@link WKTFormat#SINGLE_LINE} for formatting the whole WKT on a single line.
      */
-    public Formatter(final Convention convention, final Symbols symbols, final Colors colors, final int indentation) {
+    public Formatter(final Convention convention, final Symbols symbols, final int indentation) {
         ArgumentChecks.ensureNonNull("convention",  convention);
         ArgumentChecks.ensureNonNull("symbols",     symbols);
         ArgumentChecks.ensureBetween("indentation", WKTFormat.SINGLE_LINE, Byte.MAX_VALUE, indentation);
         this.convention   = convention;
+        this.authority    = convention.getNameAuthority();
         this.symbols      = symbols.immutable();
         this.indentation  = (byte) indentation;
         this.numberFormat = symbols.createNumberFormat();
         this.unitFormat   = UnitFormat.getInstance(symbols.getLocale());
         this.buffer       = new StringBuffer();
-        if (colors != null) {
-            this.colors = colors.immutable();
-        }
     }
 
     /**
-     * Constructor for private use by {@link WKTFormat#format} only.
-     * This constructor helps to share some objects with {@link Parser}.
+     * Constructor for private use by {@link WKTFormat#getFormatter()} only. This allows to use the number
+     * format created by {@link WKTFormat#createFormat(Class)}, which may be overridden by the user.
      */
     Formatter(final Symbols symbols, final NumberFormat numberFormat) {
         this.convention   = Convention.DEFAULT;
+        this.authority    = Convention.DEFAULT.getNameAuthority();
         this.symbols      = symbols;
         this.indentation  = WKTFormat.DEFAULT_INDENTATION;
         this.numberFormat = numberFormat; // No clone needed.
         this.unitFormat   = UnitFormat.getInstance(symbols.getLocale());
-        // Do not set the buffer. It will be set by WKTFormat.format(...).
+        // Do not set the buffer. It will be set by WKTFormat.format(…).
+    }
+
+    /**
+     * Sets the destination buffer. Used by {@link WKTFormat#format(Object, Appendable)} only.
+     */
+    final void setBuffer(final StringBuffer buffer) {
+        this.buffer = buffer;
+        bufferBase = (buffer != null) ? buffer.length() : 0;
+    }
+
+    /**
+     * Sets the convention, authority, colors and indentation to use for formatting WKT elements.
+     * This method does not validate the argument — validation must be done by the caller.
+     *
+     * @param convention  The convention, or {@code null} for the default value.
+     * @param authority   The authority, or {@code null} for inferring it from the convention.
+     * @param colors      The syntax coloring, or {@code null} if none.
+     * @param indentation The amount of spaces to use in indentation for WKT formatting,
+     *                    or {@link WKTFormat#SINGLE_LINE}.
+     */
+    final void configure(Convention convention, final Citation authority, final Colors colors, final byte indentation) {
+        this.convention  = convention;
+        this.authority   = (authority != null) ? authority : convention.getNameAuthority();
+        this.colors      = colors;
+        this.indentation = indentation;
     }
 
     /**
@@ -265,17 +299,6 @@ public class Formatter {
      */
     public Convention getConvention() {
         return convention;
-    }
-
-    /**
-     * Sets the convention and the authority to use for formatting WKT elements.
-     *
-     * @param convention The convention, or {@code null} for the default value.
-     * @param authority  The authority, or {@code null} for inferring it from the convention.
-     */
-    final void setConvention(Convention convention, final Citation authority) {
-        this.convention = convention;
-        this.authority  = (authority != null) ? authority : convention.getNameAuthority();
     }
 
     /**

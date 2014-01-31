@@ -16,14 +16,18 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Locale;
+import java.util.TimeZone;
 import java.text.Format;
-import java.text.FieldPosition;
+import java.text.NumberFormat;
 import java.text.ParsePosition;
+import java.io.IOException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -75,7 +79,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.4
  * @module
  */
-public class WKTFormat extends Format {
+public class WKTFormat extends CompoundFormat<Object> {
     /**
      * For cross-version compatibility.
      */
@@ -97,7 +101,7 @@ public class WKTFormat extends Format {
      * The same object is also referenced in the {@linkplain #parser} and {@linkplain #formatter}.
      * It appears here for serialization purpose.
      */
-    private Symbols symbols = Symbols.DEFAULT;
+    private Symbols symbols;
 
     /**
      * The colors to use for this formatter, or {@code null} for no syntax coloring.
@@ -110,7 +114,7 @@ public class WKTFormat extends Format {
      * The convention to use. The same object is also referenced in the {@linkplain #formatter}.
      * It appears here for serialization purpose.
      */
-    private Convention convention = Convention.DEFAULT;
+    private Convention convention;
 
     /**
      * The preferred authority for objects or parameter names. A {@code null} value
@@ -123,18 +127,58 @@ public class WKTFormat extends Format {
      * The same value is also stored in the {@linkplain #formatter}.
      * It appears here for serialization purpose.
      */
-    private byte indentation = DEFAULT_INDENTATION;
+    private byte indentation;
 
     /**
      * A formatter using the same symbols than the {@linkplain #parser}.
-     * Will be created by the {@link #format} method when first needed.
+     * Will be created by the {@link #format(Object, Appendable)} method when first needed.
      */
     private transient Formatter formatter;
 
     /**
-     * Constructs a format using the default factories.
+     * Creates a format for the given locale and timezone. The given locale will be used for
+     * {@link org.opengis.util.InternationalString} localization; this is <strong>not</strong>
+     * the locale for number format.
+     *
+     * @param locale   The locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param timezone The timezone, or {@code null} for UTC.
      */
-    public WKTFormat() {
+    public WKTFormat(final Locale locale, final TimeZone timezone) {
+        super(locale, timezone);
+        convention  = Convention.DEFAULT;
+        symbols     = Symbols.getDefault();
+        indentation = DEFAULT_INDENTATION;
+    }
+
+    /**
+     * Returns the locale for the given category. This method implements the following mapping:
+     *
+     * <ul>
+     *   <li>{@link Locale.Category#FORMAT} — the value of {@link Symbols#getLocale()},
+     *       normally fixed to {@link Locale#ROOT}, used for number formatting.</li>
+     *   <li>{@link Locale.Category#DISPLAY} — the {@code locale} given at construction time,
+     *       used for {@code InternationalString} localization.</li>
+     * </ul>
+     *
+     * @param  category The category for which a locale is desired.
+     * @return The locale for the given category (never {@code null}).
+     */
+    @Override
+    public Locale getLocale(final Locale.Category category) {
+        if (category == Locale.Category.FORMAT) {
+            return symbols.getLocale();
+        }
+        return super.getLocale(category);
+    }
+
+    /**
+     * Returns the kind of objects formatted by this class.
+     *
+     * @return {@code Object.class}
+     */
+    @Override
+    public Class<?> getValueType() {
+        return Object.class;
     }
 
     /**
@@ -174,17 +218,18 @@ public class WKTFormat extends Format {
      * This property applies only when formatting text.
      *
      * <p>Newly created {@code WKTFormat}s have no syntax coloring. If a non-null argument like
-     * {@link Colors#CONSOLE} is given to this method, then the {@link #format(Object) format(…)}
+     * {@link Colors#CONSOLE} is given to this method, then the {@link #format(Object, Appendable) format(…)}
      * method tries to highlight most of the elements that are relevant to
      * {@link org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)}.</p>
      *
      * @param colors The colors for syntax coloring, or {@code null} if none.
      */
-    public void setColors(final Colors colors) {
-        this.colors = colors;
-        if (formatter != null) {
-            formatter.colors = colors;
+    public void setColors(Colors colors) {
+        if (colors != null) {
+            colors = colors.immutable();
         }
+        this.colors = colors;
+        updateFormatter(formatter);
     }
 
     /**
@@ -243,13 +288,13 @@ public class WKTFormat extends Format {
     }
 
     /**
-     * Updates the formatter convention and authority according the current state of this
-     * {@code WKTFormat}. The authority may be null, in which case it will be inferred from
-     * the convention when first needed.
+     * Updates the formatter convention, authority, colors and indentation according the current state of this
+     * {@code WKTFormat}. The authority may be null, in which case it will be inferred from the convention when
+     * first needed.
      */
     private void updateFormatter(final Formatter formatter) {
         if (formatter != null) {
-            formatter.setConvention(convention, authority);
+            formatter.configure(convention, authority, colors, indentation);
         }
     }
 
@@ -270,11 +315,9 @@ public class WKTFormat extends Format {
      * @param indentation The new indentation to use.
      */
     public void setIndentation(final int indentation) {
-        ArgumentChecks.ensureBetween("indentation", WKTFormat.SINGLE_LINE, Byte.MAX_VALUE, indentation);
+        ArgumentChecks.ensureBetween("indentation", SINGLE_LINE, Byte.MAX_VALUE, indentation);
         this.indentation = (byte) indentation;
-        if (formatter != null) {
-            formatter.indentation = this.indentation;
-        }
+        updateFormatter(formatter);
     }
 
     /**
@@ -285,7 +328,7 @@ public class WKTFormat extends Format {
      * @return The parsed object, or {@code null} in case of failure.
      */
     @Override
-    public Object parseObject(final String text, final ParsePosition position) {
+    public Object parse(final CharSequence text, final ParsePosition position) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -295,7 +338,7 @@ public class WKTFormat extends Format {
     private Formatter getFormatter() {
         Formatter formatter = this.formatter;
         if (formatter == null) {
-            formatter = new Formatter(Convention.DEFAULT, symbols, colors, indentation);
+            formatter = new Formatter(symbols, (NumberFormat) createFormat(Number.class));
             updateFormatter(formatter);
             this.formatter = formatter;
         }
@@ -309,21 +352,22 @@ public class WKTFormat extends Format {
      *
      * @param  object     The object to format.
      * @param  toAppendTo Where the text is to be appended.
-     * @param  pos        An identification of a field in the formatted text.
-     * @return The given {@code toAppendTo} buffer.
+     * @throws IOException If an error occurred while writing to {@code toAppendTo}.
      *
      * @see #getWarning()
      */
     @Override
-    public StringBuffer format(final Object        object,
-                               final StringBuffer  toAppendTo,
-                               final FieldPosition pos)
-    {
+    public void format(final Object object, final Appendable toAppendTo) throws IOException {
+        final StringBuffer buffer;
+        if (toAppendTo instanceof StringBuffer) {
+            buffer = (StringBuffer) toAppendTo;
+        } else {
+            buffer = new StringBuffer(500);
+        }
         final Formatter formatter = getFormatter();
         try {
             formatter.clear();
-            formatter.buffer = toAppendTo;
-            formatter.bufferBase = toAppendTo.length();
+            formatter.setBuffer(buffer);
             if (object instanceof FormattableObject) {
                 formatter.append((FormattableObject) object);
             } else if (object instanceof IdentifiedObject) {
@@ -342,19 +386,56 @@ public class WKTFormat extends Format {
                 throw new ClassCastException(Errors.format(
                         Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
             }
-            return toAppendTo;
         } finally {
-            formatter.buffer = null;
+            formatter.setBuffer(null);
+        }
+        if (buffer != toAppendTo) {
+            toAppendTo.append(buffer);
         }
     }
 
     /**
-     * If a warning occurred during the last WKT {@linkplain #format formatting}, returns the warning.
-     * Otherwise returns {@code null}. The warning is cleared every time a new object is formatted.
+     * Creates a new format to use for parsing and formatting values of the given type.
+     * This method is invoked the first time that a format is needed for the given type.
+     * The {@code valueType} can be one of the following classes:
+     *
+     * <table class="sis">
+     *   <tr><th>Value type</th>     <th>Format to create</th></tr>
+     *   <tr><td>{@link Number}</td> <td>{@link NumberFormat}</td></tr>
+     *   <tr><td>{@link Date}</td>   <td>{@link DateFormat}</td></tr>
+     *   <tr><td>{@link Angle}</td>  <td>{@link AngleFormat}</td></tr>
+     * </table>
+     *
+     * @param  valueType The base type of values to parse or format.
+     * @return The format to use for parsing of formatting values of the given type, or {@code null} if none.
+     */
+    @Override
+    protected Format createFormat(final Class<?> valueType) {
+        if (valueType == Number.class) {
+            return symbols.createNumberFormat();
+        }
+        return super.createFormat(valueType);
+    }
+
+    /**
+     * If a warning occurred during the last WKT {@linkplain #format(Object, Appendable) formatting}, returns
+     * the warning. Otherwise returns {@code null}. The warning is cleared every time a new object is formatted.
      *
      * @return The last warning, or {@code null} if none.
      */
     public String getWarning() {
         return (formatter != null) ? formatter.getErrorMessage() : null;
+    }
+
+    /**
+     * Returns a clone of this format.
+     *
+     * @return A clone of this format.
+     */
+    @Override
+    public WKTFormat clone() {
+        final WKTFormat clone = (WKTFormat) super.clone();
+        clone.formatter = null; // Do not share the formatter.
+        return clone;
     }
 }

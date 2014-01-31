@@ -53,12 +53,12 @@ public final strictfp class SymbolsTest extends TestCase {
      * the standard {@code '"'} quotation mark after we tested the given string.
      */
     private static void assertContainsAxis(final String message, final boolean expected, final String wkt) {
-        assertEquals(message, expected, Symbols.DEFAULT.containsAxis(wkt));
+        assertEquals(message, expected, Symbols.getDefault().containsAxis(wkt));
         final StringBuilder buffer = new StringBuilder(wkt);
         StringBuilders.replace(buffer, '“', '"');
         StringBuilders.replace(buffer, '”', '"');
         assertFalse(wkt.contentEquals(buffer));
-        assertEquals(message, expected, Symbols.DEFAULT.containsAxis(buffer));
+        assertEquals(message, expected, Symbols.getDefault().containsAxis(buffer));
     }
 
     /**
