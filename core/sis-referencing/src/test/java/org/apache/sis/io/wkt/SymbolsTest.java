@@ -16,11 +16,12 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Locale;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.StringBuilders;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -58,5 +59,48 @@ public final strictfp class SymbolsTest extends TestCase {
         StringBuilders.replace(buffer, '”', '"');
         assertFalse(wkt.contentEquals(buffer));
         assertEquals(message, expected, Symbols.DEFAULT.containsAxis(buffer));
+    }
+
+    /**
+     * Ensures that the static constants are immutable.
+     */
+    @Test
+    public void testImmutability() {
+        try {
+            Symbols.SQUARE_BRACKETS.setPairedBrackets("()", "[]");
+            fail("Constant shall be immutable.");
+        } catch (UnsupportedOperationException e) {
+            // This is the expected exception.
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("Symbols"));
+        }
+        try {
+            Symbols.CURLY_BRACKETS.setLocale(Locale.FRENCH);
+            fail("Constant shall be immutable.");
+        } catch (UnsupportedOperationException e) {
+            // This is the expected exception.
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("Symbols"));
+        }
+    }
+
+    /**
+     * Tests {@link Symbols} serialization.
+     */
+    @Test
+    public void testSerialization() {
+        assertSame(Symbols.SQUARE_BRACKETS, assertSerializedEquals(Symbols.SQUARE_BRACKETS));
+        assertSame(Symbols.CURLY_BRACKETS,  assertSerializedEquals(Symbols.CURLY_BRACKETS));
+        /*
+         * Test with a new instance using a closing quote symbol different than the opening one.
+         * This is necessary in order to ensure that the symbol is recomputed correctly.
+         */
+        final Symbols symbols = new Symbols(Symbols.CURLY_BRACKETS);
+        assertEquals("quote", "\"", symbols.getQuote());
+        symbols.setPairedQuotes("“”", "\"\"");
+        assertEquals("quote", "”", symbols.getQuote());
+        final Symbols c = assertSerializedEquals(symbols);
+        assertNotSame(symbols, c); // Expect a new instance.
+        assertEquals("quote", "”", c.getQuote()); // Verify the recomputed value.
     }
 }

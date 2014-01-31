@@ -16,7 +16,10 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Arrays;
 import java.util.Locale;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.NumberFormat;
 import org.apache.sis.util.Localized;
@@ -34,8 +37,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *   <li>An English locale for {@linkplain java.text.DecimalFormatSymbols decimal format symbols}.</li>
  *   <li>Square brackets, as in {@code DATUM["WGS84"]}. An alternative allowed by the WKT
  *       specification is curly brackets as in {@code DATUM("WGS84")}.</li>
- *   <li>English quotation mark ({@code '"'}). SIS also accepts {@code “…”} quotation marks
- *       for more readable {@link String} constants in Java code.</li>
+ *   <li>English quotation mark ({@code '"'}). SIS also accepts {@code '“'} opening quote and {@code '”'}
+ *       closing quote for more readable {@link String} constants in Java code, but the later are not legal WKT.</li>
  *   <li>Coma separator followed by a space ({@code ", "}).</li>
  * </ul>
  *
@@ -43,7 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * The {@link WKTFormat#getLocale()} property specifies the language to use when formatting
  * {@link org.opengis.util.InternationalString} instances. This can be set to any value.
  * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
- * the decimal format symbols and is very rarely set to an other locale than an English one.
+ * the decimal format symbols and is very rarely set to an other locale than {@link Locale#ROOT}.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4 (derived from geotk-2.1)
@@ -114,6 +117,16 @@ public class Symbols implements Localized, Serializable {
     private int[] quotes;
 
     /**
+     * The preferred closing quote character ({@code quotes[1]}) as a string.
+     * We use the closing quote because this is the character that the parser
+     * will look for determining the text end.
+     *
+     * @see #getQuote()
+     * @see #readObject(ObjectInputStream)
+     */
+    private transient String quote;
+
+    /**
      * The character (as Unicode code point) used for opening ({@code openSequence})
      * or closing ({@code closeSequence}) an array or enumeration.
      */
@@ -141,6 +154,7 @@ public class Symbols implements Localized, Serializable {
         locale        = symbols.locale;
         brackets      = symbols.brackets;
         quotes        = symbols.quotes;
+        quote         = symbols.quote;
         openSequence  = symbols.openSequence;
         closeSequence = symbols.closeSequence;
         separator     = symbols.separator;
@@ -151,9 +165,10 @@ public class Symbols implements Localized, Serializable {
      * The given array is stored by reference - it is not cloned.
      */
     private Symbols(final int[] brackets, final int[] quotes) {
-        this.locale        = Locale.US;
+        this.locale        = Locale.ROOT;
         this.brackets      = brackets;
         this.quotes        = quotes;
+        this.quote         = "\"";
         this.openSequence  = '{';
         this.closeSequence = '}';
         this.separator     = ", ";
@@ -198,6 +213,15 @@ public class Symbols implements Localized, Serializable {
         void checkWritePermission() throws UnsupportedOperationException {
             throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Symbols"));
         }
+
+        /**
+         * Invoked on deserialization for replacing the deserialized instance by the constant instance.
+         */
+        Object readResolve() {
+            if (equals(SQUARE_BRACKETS)) return SQUARE_BRACKETS;
+            if (equals(CURLY_BRACKETS))  return CURLY_BRACKETS;
+            return this;
+        }
     }
 
     /**
@@ -215,9 +239,9 @@ public class Symbols implements Localized, Serializable {
     }
 
     /**
-     * Returns the locale of {@linkplain java.text.DecimalFormatSymbols decimal format symbols}
-     * or other symbols. This is usually an English locale. Note that this is not the same locale
-     * than the {@link WKTFormat} one, which is used for choosing the language of international strings.
+     * Returns the locale of {@linkplain java.text.DecimalFormatSymbols decimal format symbols} or other symbols.
+     * The default value is {@link Locale#ROOT}. Note that this is not the same locale than the {@link WKTFormat}
+     * one, which is used for choosing the language of international strings.
      *
      * @return The symbols locale.
      */
@@ -228,6 +252,8 @@ public class Symbols implements Localized, Serializable {
 
     /**
      * Sets the locale of decimal format symbols or other symbols.
+     * Note that any non-English locale is likely to produce WKT that do not conform to ISO 19162.
+     * Such WKT should be used for human reading only, not for data export.
      *
      * @param locale The new symbols locale.
      */
@@ -348,6 +374,15 @@ public class Symbols implements Localized, Serializable {
     }
 
     /**
+     * Returns the preferred closing quote character as a string. This is the quote to double if it
+     * appears in a Unicode string to format. We check for the closing quote because this is the one
+     * that the parser will look for determining the text end.
+     */
+    final String getQuote() {
+        return quote;
+    }
+
+    /**
      * Sets the opening and closing quotes to the given pairs.
      * Each string shall contain exactly two code points (usually two characters).
      * The first code point is taken as the opening quote, and the second code point as the closing quote.
@@ -365,6 +400,7 @@ public class Symbols implements Localized, Serializable {
     public void setPairedQuotes(final String preferred, final String... alternatives) {
         checkWritePermission();
         quotes = toCodePoints(preferred, alternatives);
+        quote = preferred.substring(Character.charCount(quotes[0])).trim();
     }
 
     /**
@@ -372,7 +408,7 @@ public class Symbols implements Localized, Serializable {
      * This method also verifies arguments validity.
      */
     private static int[] toCodePoints(final String preferred, final String[] alternatives) {
-        ensureNonNull("preferred", preferred);
+        ensureNonEmpty("preferred", preferred);
         final int n = (alternatives != null) ? alternatives.length : 0;
         final int[] array = new int[(n+1) * 2];
         String name = "preferred";
@@ -573,5 +609,44 @@ public class Symbols implements Localized, Serializable {
             offset += Character.charCount(c);
         }
         return false;
+    }
+
+    /**
+     * Compares this {@code Symbols} with the given object for equality.
+     *
+     * @param  other The object to compare with this {@code Symbols}.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other instanceof Symbols) {
+            final Symbols that = (Symbols) other;
+            return Arrays.equals(brackets, that.brackets) &&
+                   Arrays.equals(quotes, that.quotes) &&
+                   // no need to compare 'quote' because it is computed from 'quotes'.
+                   openSequence  == that.openSequence &&
+                   closeSequence == that.closeSequence &&
+                   separator.equals(that.separator) &&
+                   locale.equals(that.locale);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this object.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(new Object[] {brackets, quotes, openSequence, closeSequence, separator, locale});
+    }
+
+    /**
+     * Invoked on deserialization for recomputing the {@link #quote} field.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        quote = String.valueOf(Character.toChars(quotes[1]));
     }
 }
