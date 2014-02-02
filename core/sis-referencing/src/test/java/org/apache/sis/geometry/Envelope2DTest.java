@@ -90,7 +90,6 @@ public final strictfp class Envelope2DTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testToRectanglesOnSimpleEnvelope")
-    @org.junit.Ignore("The tested envelope needs to be associated to CRS:84")
     public void testToRectanglesOverAntiMeridian() {
         final Envelope2D envelope = new Envelope2D(WGS84, 155, 0, -150 - 155, 50);
         final Rectangle2D[] rectangles = envelope.toRectangles();
