@@ -122,21 +122,29 @@ public final class ReferencingUtilities extends Static {
     /**
      * Returns the unit used for all axes in the given coordinate system.
      * If not all axes use the same unit, then this method returns {@code null}.
-     * This convenience method is used for Well Know Text version 1 (WKT 1) formatting.
+     *
+     * <p>This method is used either when the coordinate system is expected to contain exactly one axis,
+     * or for operations that support only one units for all axes, for example Well Know Text version 1
+     * (WKT 1) formatting.</p>
      *
      * @param cs The coordinate system for which to get the unit, or {@code null}.
      * @return The unit for all axis in the given coordinate system, or {@code null}.
+     *
+     * @since 0.4
      */
     public static Unit<?> getUnit(final CoordinateSystem cs) {
         Unit<?> unit = null;
         if (cs != null) {
             for (int i=cs.getDimension(); --i>=0;) {
-                final Unit<?> candidate = cs.getAxis(i).getUnit();
-                if (candidate != null) {
-                    if (unit == null) {
-                        unit = candidate;
-                    } else if (!unit.equals(candidate)) {
-                        return null;
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                if (axis != null) { // Paranoiac check.
+                    final Unit<?> candidate = axis.getUnit();
+                    if (candidate != null) {
+                        if (unit == null) {
+                            unit = candidate;
+                        } else if (!unit.equals(candidate)) {
+                            return null;
+                        }
                     }
                 }
             }

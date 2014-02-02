@@ -131,7 +131,7 @@ public enum Convention {
     /**
      * {@code true} for using WKT 1 syntax, or {@code false} for using WKT 2 syntax.
      */
-    final boolean isWKT1;
+    private final boolean isWKT1;
 
     /**
      * {@code true} for a frequently-used convention about units instead than the standard one.

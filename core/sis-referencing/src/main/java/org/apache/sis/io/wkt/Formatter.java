@@ -16,10 +16,12 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Locale;
 import java.util.Collection;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.lang.reflect.Array;
+import java.math.RoundingMode;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -27,15 +29,21 @@ import javax.measure.unit.UnitFormat;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.CodeList;
@@ -48,6 +56,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -93,6 +102,12 @@ public class Formatter {
      * {@link org.apache.sis.internal.util.X364} class loading.
      */
     static final String BACKGROUND_DEFAULT = "\u001B[49m";
+
+    /**
+     * The locale for the localization of international strings.
+     * This is not the same than {@link Symbols#getLocale()}.
+     */
+    private final Locale locale;
 
     /**
      * The symbols to use for this formatter.
@@ -237,6 +252,7 @@ public class Formatter {
         ArgumentChecks.ensureNonNull("convention",  convention);
         ArgumentChecks.ensureNonNull("symbols",     symbols);
         ArgumentChecks.ensureBetween("indentation", WKTFormat.SINGLE_LINE, Byte.MAX_VALUE, indentation);
+        this.locale       = Locale.getDefault(Locale.Category.DISPLAY);
         this.convention   = convention;
         this.authority    = convention.getNameAuthority();
         this.symbols      = symbols.immutable();
@@ -250,7 +266,8 @@ public class Formatter {
      * Constructor for private use by {@link WKTFormat#getFormatter()} only. This allows to use the number
      * format created by {@link WKTFormat#createFormat(Class)}, which may be overridden by the user.
      */
-    Formatter(final Symbols symbols, final NumberFormat numberFormat, final UnitFormat unitFormat) {
+    Formatter(final Locale locale, final Symbols symbols, final NumberFormat numberFormat, final UnitFormat unitFormat) {
+        this.locale       = locale;
         this.convention   = Convention.DEFAULT;
         this.authority    = Convention.DEFAULT.getNameAuthority();
         this.symbols      = symbols;
@@ -410,9 +427,17 @@ public class Formatter {
 
     /**
      * Appends the given {@code FormattableObject}.
-     * This method will automatically append the keyword (e.g. {@code "GEOCS"}), the name and the authority code,
-     * and will invoke <code>formattable.{@linkplain FormattableObject#formatTo(Formatter) formatTo}(this)</code>
-     * for completing the inner part of the WKT.
+     * This method performs the following steps:
+     *
+     * <ul>
+     *   <li>Invoke <code>formattable.{@linkplain FormattableObject#formatTo(Formatter) formatTo}(this)</code>.</li>
+     *   <li>Prepend the keyword returned by the above method call (e.g. {@code "GEOCS"}).</li>
+     *   <li>Append the {@code SCOPE[…]} element, if any (WKT 2 only).</li>
+     *   <li>Append the {@code AREA[…]} element, if any (WKT 2 only).</li>
+     *   <li>Append the {@code BBOX[…]} element, if any (WKT 2 only).</li>
+     *   <li>Append the {@code ID[…]} (WKT 2) or {@code AUTHORITY[…]}} (WKT 1) element, if any.</li>
+     *   <li>Append the {@code REMARKS[…]} element, if any (WKT 2 only).</li>
+     * </ul>
      *
      * @param object The formattable object to append to the WKT, or {@code null} if none.
      */
@@ -467,6 +492,14 @@ public class Formatter {
         }
         buffer.insert(base, keyword);
         /*
+         * Format the SCOPE["…"] and AREA["…"] elements (WKT 2 only). Those information
+         * are available only for Datum, CoordinateOperation and ReferenceSystem objects.
+         */
+        final boolean isWKT1 = convention.isWKT1();
+        if (!isWKT1) {
+            appendScopeAndArea(object);
+        }
+        /*
          * Formats the AUTHORITY[<name>,<code>] entity, if there is one. The entity
          * will be on the same line than the enclosing one if no line separator were
          * added (e.g. SPHEROID["Clarke 1866", ..., AUTHORITY["EPSG","7008"]]), or on
@@ -502,13 +535,48 @@ public class Formatter {
                 buffer.appendCodePoint(close);
             }
         }
+        /*
+         * Format remarks if any, and close the element.
+         */
+        if (info != null) {
+            append("REMARKS", info.getRemarks());
+        }
         buffer.appendCodePoint(close);
         requestNewLine = true;
         indent(-1);
     }
 
     /**
-     * Appends the given {@code IdentifiedObject} object.
+     * Appends the scope and domain of validity of the given object. Those information are available
+     * only for {@link ReferenceSystem}, {@link Datum} and {@link CoordinateOperation} objects.
+     */
+    private void appendScopeAndArea(final Object object) {
+        final InternationalString scope;
+        final Extent area;
+        if (object instanceof ReferenceSystem) {
+            scope = ((ReferenceSystem) object).getScope();
+            area  = ((ReferenceSystem) object).getDomainOfValidity();
+        } else if (object instanceof Datum) {
+            scope = ((Datum) object).getScope();
+            area  = ((Datum) object).getDomainOfValidity();
+        } else if (object instanceof CoordinateOperation) {
+            scope = ((CoordinateOperation) object).getScope();
+            area  = ((CoordinateOperation) object).getDomainOfValidity();
+        } else {
+            return;
+        }
+        append("SCOPE", scope);
+        if (area != null) {
+            append("AREA", area.getDescription());
+            append(Extents.getGeographicBoundingBox(area), 2);
+        }
+    }
+
+    /**
+     * Appends the given {@code IdentifiedObject}.
+     *
+     * <p>The default implementation delegates to {@link #append(FormattableObject)},
+     * after wrapping the given object in an adapter if necessary.</p>
      *
      * @param object The identified object to append to the WKT, or {@code null} if none.
      */
@@ -516,6 +584,36 @@ public class Formatter {
         if (object != null) {
             append(object instanceof FormattableObject ? (FormattableObject) object :
                    AbstractIdentifiedObject.castOrCopy(object));
+        }
+    }
+
+    /**
+     * Appends the given geographic bounding box in a {@code BBOX[…]} element.
+     * Longitude and latitude values will be formatted in decimal degrees.
+     * Longitudes are relative to the Greenwich meridian, with values increasing toward East.
+     * Latitudes values are increasing toward North.
+     *
+     * {@section Numerical precision}
+     * The ISO 19162 standards recommends to format those values with only 2 decimal digits.
+     * This is because {@code GeographicBoundingBox} does not specify the datum, so this box
+     * is an approximative information only.
+     *
+     * @param bbox The geographic bounding box to append to the WKT, or {@code null}.
+     * @param fractionDigits The number of fraction digits to use. The recommended value is 2.
+     */
+    public void append(final GeographicBoundingBox bbox, final int fractionDigits) {
+        if (bbox != null) {
+            appendSeparator(requestNewLine);
+            buffer.append("BBOX").appendCodePoint(symbols.getOpeningBracket(0));
+            numberFormat.setMinimumFractionDigits(fractionDigits);
+            numberFormat.setMaximumFractionDigits(fractionDigits);
+            numberFormat.setRoundingMode(RoundingMode.FLOOR);
+            appendPreset(bbox.getSouthBoundLatitude());
+            appendPreset(bbox.getWestBoundLongitude());
+            numberFormat.setRoundingMode(RoundingMode.CEILING);
+            appendPreset(bbox.getNorthBoundLatitude());
+            appendPreset(bbox.getEastBoundLongitude());
+            buffer.appendCodePoint(symbols.getClosingBracket(0));
         }
     }
 
@@ -717,6 +815,33 @@ public class Formatter {
     }
 
     /**
+     * Appends an international text in an element having the given keyword. Since this method
+     * is typically invoked for long descriptions, the element will be written on its own line.
+     *
+     * {@example
+     *   <ul>
+     *     <li><code>SCOPE["Large scale topographic mapping and cadastre."]</code></li>
+     *     <li><code>AREA["Netherlands offshore."]</code></li>
+     *   </ul>
+     * }
+     *
+     * @param keyword The keyword. Example: {@code "SCOPE"}, {@code "AREA"} or {@code "REMARKS"}.
+     * @param text The text, or {@code null} if none.
+     */
+    private void append(final String keyword, final InternationalString text) {
+        if (text != null) {
+            final String localized = CharSequences.trimWhitespaces(text.toString(locale));
+            if (localized != null && !localized.isEmpty()) {
+                appendSeparator(true);
+                buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0));
+                quote(localized);
+                buffer.appendCodePoint(symbols.getClosingBracket(0));
+                requestNewLine = true;
+            }
+        }
+    }
+
+    /**
      * Appends the given string as a quoted text. If the given string contains the closing quote character,
      * that character will be doubled. We check for the closing quote only because it is the character that
      * the parser will look for determining the text end.
@@ -787,6 +912,24 @@ public class Formatter {
          */
         numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number, 2));
         numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
+        numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
+        numberFormat.format(number, buffer, dummy);
+        resetColor();
+    }
+
+    /**
+     * Appends the given number without any change to the {@link NumberFormat} setting.
+     * Caller shall ensure that the following method has been invoked prior this method call:
+     *
+     * <ul>
+     *   <li>{@link NumberFormat#setMinimumFractionDigits(int)}</li>
+     *   <li>{@link NumberFormat#setMaximumFractionDigits(int)}</li>
+     *   <li>{@link NumberFormat#setRoundingMode(RoundingMode)}</li>
+     * </ul>
+     */
+    private void appendPreset(final double number) {
+        appendSeparator(false);
+        setColor(ElementKind.NUMBER);
         numberFormat.format(number, buffer, dummy);
         resetColor();
     }
