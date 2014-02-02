@@ -367,7 +367,7 @@ public class WKTFormat extends CompoundFormat<Object> {
          */
         Formatter formatter = this.formatter;
         if (formatter == null) {
-            formatter = new Formatter(symbols,
+            formatter = new Formatter(getLocale(), symbols,
                     (NumberFormat) getFormat(Number.class),
                     (UnitFormat)   getFormat(Unit.class));
             updateFormatter(formatter);

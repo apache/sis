@@ -80,7 +80,9 @@ public final strictfp class HardCodedCRSTest extends TestCase {
                 "  PRIMEM[“Greenwich”, 0.0, AUTHORITY[“EPSG”, “8901”]],\n" +
                 "  UNIT[“degree”, 0.017453292519943295],\n" +
                 "  AXIS[“Geodetic longitude”, EAST],\n" +
-                "  AXIS[“Geodetic latitude”, NORTH]]",
+                "  AXIS[“Geodetic latitude”, NORTH],\n" +
+                "  AREA[“World”],\n" +
+                "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
                 WGS84);
     }
 
