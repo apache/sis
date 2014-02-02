@@ -54,22 +54,18 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 
 /**
- * Formats {@linkplain FormattableObject formattable objects} as <cite>Well Known Text</cite> (WKT).
- * Each {@code Formatter} instance is created for a given {@linkplain Convention convention},
- * {@linkplain Symbols set of symbols} and indentation.
+ * Formats an object as <cite>Well Known Text</cite> (WKT). {@code Formatter} instances are created by
+ * {@link WKTFormat} and given to the {@link FormattableObject#formatTo(Formatter)} method of the object
+ * to format. {@code Formatter} provides the following services:
  *
- * {@link Example}
- * For formatting an object with {@linkplain Symbols#CURLY_BRACKETS curly brackets} instead of
- * square ones and the whole text on the same line (no indentation), one can use the following:
- *
- * {@preformat java
- *     Formatter formatter = new Formatter(Convention.DEFAULT, Symbols.CURLY_BRACKETS, WKTFormat.SINGLE_LINE);
- *     formatter.append(theObject);
- *     String wkt = formatter.toString();
- *
- *     // Following is needed only if you want to reuse the formatter again for other objects.
- *     formatter.clear();
- * }
+ * <ul>
+ *   <li>A series of {@code append(…)} methods to be invoked by the {@code formatTo(Formatter)} implementations.</li>
+ *   <li>Information about the context: {@link #getConvention()}, {@link #getAngularUnit()}, {@link #getLinearUnit()}.
+ *       Some of those information (e.g. the angular units) depend on the enclosing WKT element.</li>
+ *   <li>Convenience methods for fetching relevant information from the object to format:
+ *       {@link #getName(IdentifiedObject)}, {@link #getIdentifier(IdentifiedObject)}.</li>
+ *   <li>A flag for declaring the object unformattable.</li>
+ * </ul>
  *
  * {@section Thread safety}
  * Formatters are not synchronized. It is recommended to create separated formatter instances for each thread.
@@ -254,13 +250,13 @@ public class Formatter {
      * Constructor for private use by {@link WKTFormat#getFormatter()} only. This allows to use the number
      * format created by {@link WKTFormat#createFormat(Class)}, which may be overridden by the user.
      */
-    Formatter(final Symbols symbols, final NumberFormat numberFormat) {
+    Formatter(final Symbols symbols, final NumberFormat numberFormat, final UnitFormat unitFormat) {
         this.convention   = Convention.DEFAULT;
         this.authority    = Convention.DEFAULT.getNameAuthority();
         this.symbols      = symbols;
         this.indentation  = WKTFormat.DEFAULT_INDENTATION;
         this.numberFormat = numberFormat; // No clone needed.
-        this.unitFormat   = UnitFormat.getInstance(symbols.getLocale());
+        this.unitFormat   = unitFormat;   // No clone needed.
         // Do not set the buffer. It will be set by WKTFormat.format(…).
     }
 
@@ -940,7 +936,7 @@ public class Formatter {
      * Clears this formatter before formatting a new object. This method clears the
      * {@linkplain #getLinearUnit() linear unit} and {@linkplain #isInvalidWKT() WKT validity flag}.
      */
-    public void clear() {
+    final void clear() {
         /*
          * Configuration options (indentation, colors, conventions) are left unchanged.
          * We do not mention that fact in the Javadoc because those options do not appear
