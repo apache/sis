@@ -47,6 +47,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
     org.apache.sis.io.wkt.ConventionTest.class,
     org.apache.sis.io.wkt.SymbolsTest.class,
+    org.apache.sis.io.wkt.ColorsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
     org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class,

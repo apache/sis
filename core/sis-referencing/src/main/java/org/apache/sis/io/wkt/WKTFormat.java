@@ -16,12 +16,17 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import javax.measure.unit.Unit;
+import javax.measure.unit.UnitFormat;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.IdentifiedObject;
@@ -39,11 +44,11 @@ import org.apache.sis.util.resources.Errors;
  * {@code WKTFormat} objects allow the following configuration:
  *
  * <ul>
- *   <li>The {@linkplain Symbols symbols} to use (curly braces or brackets, <i>etc.</i>)</li>
+ *   <li>The {@linkplain Symbols symbols} to use (curly braces or brackets, <i>etc</i>).</li>
  *   <li>The preferred authority of {@linkplain IdentifiedObject#getName() object name} to
- *       format (see {@link Formatter#getName(IdentifiedObject)} for more information)</li>
- *   <li>Whatever ANSI X3.64 colors are allowed or not (default is not)</li>
- *   <li>The indentation</li>
+ *       format (see {@link Formatter#getName(IdentifiedObject)} for more information).</li>
+ *   <li>Whatever ANSI X3.64 colors are allowed or not (default is not).</li>
+ *   <li>The indentation.</li>
  * </ul>
  *
  * {@section String expansion}
@@ -198,7 +203,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     public void setSymbols(final Symbols symbols) {
         ArgumentChecks.ensureNonNull("symbols", symbols);
         if (!symbols.equals(this.symbols)) {
-            this.symbols = symbols;
+            this.symbols = symbols.immutable();
             formatter = null;
         }
     }
@@ -333,19 +338,6 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns the formatter, creating it if needed.
-     */
-    private Formatter getFormatter() {
-        Formatter formatter = this.formatter;
-        if (formatter == null) {
-            formatter = new Formatter(symbols, (NumberFormat) createFormat(Number.class));
-            updateFormatter(formatter);
-            this.formatter = formatter;
-        }
-        return formatter;
-    }
-
-    /**
      * Formats the specified object as a Well Know Text. The given object shall be an instance of one of
      * {@link FormattableObject}, {@link IdentifiedObject}, {@link MathTransform}, {@link GeneralParameterValue}
      * or {@link Matrix}.
@@ -358,15 +350,30 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
+        /*
+         * If the given Appendable is not a StringBuffer, creates a temporary StringBuffer.
+         * We can not write directly in an arbitrary Appendable because Formatter needs the
+         * ability to go backward ("append only" is not sufficient), and because it passes
+         * the buffer to other java.text.Format instances which work only with StringBuffer.
+         */
         final StringBuffer buffer;
         if (toAppendTo instanceof StringBuffer) {
             buffer = (StringBuffer) toAppendTo;
         } else {
             buffer = new StringBuffer(500);
         }
-        final Formatter formatter = getFormatter();
+        /*
+         * Creates the Formatter when first needed.
+         */
+        Formatter formatter = this.formatter;
+        if (formatter == null) {
+            formatter = new Formatter(symbols,
+                    (NumberFormat) getFormat(Number.class),
+                    (UnitFormat)   getFormat(Unit.class));
+            updateFormatter(formatter);
+            this.formatter = formatter;
+        }
         try {
-            formatter.clear();
             formatter.setBuffer(buffer);
             if (object instanceof FormattableObject) {
                 formatter.append((FormattableObject) object);
@@ -388,6 +395,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             }
         } finally {
             formatter.setBuffer(null);
+            formatter.clear();
         }
         if (buffer != toAppendTo) {
             toAppendTo.append(buffer);
@@ -403,7 +411,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <tr><th>Value type</th>     <th>Format to create</th></tr>
      *   <tr><td>{@link Number}</td> <td>{@link NumberFormat}</td></tr>
      *   <tr><td>{@link Date}</td>   <td>{@link DateFormat}</td></tr>
-     *   <tr><td>{@link Angle}</td>  <td>{@link AngleFormat}</td></tr>
+     *   <tr><td>{@link Unit}</td>   <td>{@link UnitFormat}</td></tr>
      * </table>
      *
      * @param  valueType The base type of values to parse or format.
@@ -413,6 +421,14 @@ public class WKTFormat extends CompoundFormat<Object> {
     protected Format createFormat(final Class<?> valueType) {
         if (valueType == Number.class) {
             return symbols.createNumberFormat();
+        }
+        if (valueType == Unit.class) {
+            return UnitFormat.getInstance(symbols.getLocale());
+        }
+        if (valueType == Date.class) {
+            final DateFormat format = new SimpleDateFormat("yyyy-MM-dd", symbols.getLocale());
+            format.setTimeZone(getTimeZone());
+            return format;
         }
         return super.createFormat(valueType);
     }

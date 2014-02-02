@@ -18,8 +18,6 @@ package org.apache.sis.io.wkt;
 
 import java.util.Arrays;
 import java.util.Locale;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.NumberFormat;
 import org.apache.sis.util.Localized;
@@ -53,7 +51,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @see WKTFormat#getSymbols()
  * @see WKTFormat#setSymbols(Symbols)
  */
-public class Symbols implements Localized, Serializable {
+public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -63,14 +61,14 @@ public class Symbols implements Localized, Serializable {
      * A set of symbols with values between square brackets, like {@code DATUM["WGS84"]}.
      * This is the most frequently used WKT format.
      */
-    public static final Symbols SQUARE_BRACKETS = new Immutable(
+    public static final Symbols SQUARE_BRACKETS = new Symbols(
             new int[] {'[', ']', '(', ')'}, new int[] {'"', '"', '“', '”'});
 
     /**
      * A set of symbols with values between parentheses, like {@code DATUM("WGS84")}.
      * This is a less frequently used but legal WKT format.
      */
-    public static final Symbols CURLY_BRACKETS = new Immutable(
+    public static final Symbols CURLY_BRACKETS = new Symbols(
             new int[] {'(', ')', '[', ']'}, SQUARE_BRACKETS.quotes);
 
     /**
@@ -113,7 +111,7 @@ public class Symbols implements Localized, Serializable {
      * will look for determining the text end.
      *
      * @see #getQuote()
-     * @see #readObject(ObjectInputStream)
+     * @see #readResolve()
      */
     private transient String quote;
 
@@ -128,6 +126,11 @@ public class Symbols implements Localized, Serializable {
      * but may be different if a non-English locale is used for formatting numbers.
      */
     private String separator;
+
+    /**
+     * {@code true} if this instance shall be considered as immutable.
+     */
+    private boolean isImmutable;
 
     /**
      * Creates a new set of WKT symbols initialized to the default values.
@@ -173,70 +176,16 @@ public class Symbols implements Localized, Serializable {
         this.openSequence  = '{';
         this.closeSequence = '}';
         this.separator     = ", ";
-    }
-
-    /**
-     * An immutable set of symbols.
-     */
-    private static final class Immutable extends Symbols {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = -3252233734797811448L;
-
-        /**
-         * Constructor reserved to {@link Symbols#SQUARE_BRACKETS} and {@link Symbols#CURLY_BRACKETS} constants.
-         * The given arrays are stored by reference - they are not cloned.
-         */
-        Immutable(final int[] brackets, final int[] quotes) {
-            super(brackets, quotes);
-        }
-
-        /**
-         * Creates an immutable copy of the given set of symbols.
-         */
-        Immutable(final Symbols symbols) {
-            super(symbols);
-        }
-
-        /**
-         * Returns {@code this} since this set of symbols is already immutable.
-         */
-        @Override
-        Symbols immutable() {
-            return this;
-        }
-
-        /**
-         * Unconditionally throws an exception since instance of this class are immutable.
-         */
-        @Override
-        void checkWritePermission() throws UnsupportedOperationException {
-            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Symbols"));
-        }
-
-        /**
-         * Invoked on deserialization for replacing the deserialized instance by the constant instance.
-         */
-        Object readResolve() {
-            if (equals(SQUARE_BRACKETS)) return SQUARE_BRACKETS;
-            if (equals(CURLY_BRACKETS))  return CURLY_BRACKETS;
-            return this;
-        }
+        this.isImmutable   = true;
     }
 
     /**
      * Throws an exception if this set of symbols is immutable.
-     * To be overridden by the {@link Immutable} subclass only.
      */
-    void checkWritePermission() throws UnsupportedOperationException {
-    }
-
-    /**
-     * Returns an immutable copy of this set of symbols, or {@code this} if this instance is already immutable.
-     */
-    Symbols immutable() {
-        return new Immutable(this);
+    final void checkWritePermission() throws UnsupportedOperationException {
+        if (isImmutable) {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Symbols"));
+        }
     }
 
     /**
@@ -630,6 +579,39 @@ public class Symbols implements Localized, Serializable {
     }
 
     /**
+     * Returns an immutable copy of this set of symbols, or {@code this} if this instance is already immutable.
+     */
+    final Symbols immutable() {
+        if (isImmutable) {
+            return this;
+        }
+        final Symbols clone = clone();
+        clone.isImmutable = true;
+        return clone;
+    }
+
+    /**
+     * Returns a clone of this {@code Symbols}.
+     *
+     * @return A clone of this {@code Symbols}.
+     */
+    @Override
+    public Symbols clone() {
+        final Symbols clone;
+        try {
+            clone = (Symbols) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+        /*
+         * No needs to copy the arrays, because their content are never modified.
+         * Instead, the setter methods create new arrays.
+         */
+        clone.isImmutable = false;
+        return clone;
+    }
+
+    /**
      * Compares this {@code Symbols} with the given object for equality.
      *
      * @param  other The object to compare with this {@code Symbols}.
@@ -661,10 +643,15 @@ public class Symbols implements Localized, Serializable {
     }
 
     /**
-     * Invoked on deserialization for recomputing the {@link #quote} field.
+     * Invoked on deserialization for replacing the deserialized instance by the constant instance.
+     * This method also opportunistically recompute the {@link #quote} field if no replacement is done.
      */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
+    final Object readResolve() {
+        if (isImmutable) {
+            if (equals(SQUARE_BRACKETS)) return SQUARE_BRACKETS;
+            if (equals(CURLY_BRACKETS))  return CURLY_BRACKETS;
+        }
         quote = String.valueOf(Character.toChars(quotes[1]));
+        return this;
     }
 }
