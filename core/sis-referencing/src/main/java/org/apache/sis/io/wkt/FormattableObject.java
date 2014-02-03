@@ -83,6 +83,8 @@ public class FormattableObject {
      * symbols and indentation. If this object can not be represented in a standard way, then this
      * method throws an {@link UnformattableObjectException}.
      *
+     * <p>By default this method formats this object according the {@link Convention#WKT2} rules.</p>
+     *
      * @return The default Well Know Text representation of this object.
      * @throws UnformattableObjectException If this object can not be formatted as a standard WKT.
      *
@@ -97,11 +99,13 @@ public class FormattableObject {
      * If this object can not be represented in a standard way, then this method fallbacks on a non-standard
      * representation.
      *
+     * <p>By default this method formats this object according the {@link Convention#WKT2_SIMPLIFIED} rules.</p>
+     *
      * @return The Well Known Text (WKT) or an alternative representation of this object.
      */
     @Override
     public String toString() {
-        return formatWKT(Convention.DEFAULT, WKTFormat.DEFAULT_INDENTATION, false, false);
+        return formatWKT(Convention.DEFAULT_SIMPLIFIED, WKTFormat.DEFAULT_INDENTATION, false, false);
     }
 
     /**
@@ -130,7 +134,7 @@ public class FormattableObject {
     public void print() {
         final Console console = System.console();
         final PrintWriter out = (console != null) ? console.writer() : null;
-        final String wkt = formatWKT(Convention.DEFAULT, WKTFormat.DEFAULT_INDENTATION,
+        final String wkt = formatWKT(Convention.DEFAULT_SIMPLIFIED, WKTFormat.DEFAULT_INDENTATION,
                 (out != null) && X364.isAnsiSupported(), false);
         if (out != null) {
             out.println(wkt);

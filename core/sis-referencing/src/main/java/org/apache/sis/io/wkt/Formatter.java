@@ -638,7 +638,7 @@ public class Formatter {
     }
 
     /**
-     * Appends the given math transform.
+     * Appends the given math transform, typically (but not necessarily) in a {@code PARAM_MT[…]} element.
      *
      * @param transform The transform object to append to the WKT, or {@code null} if none.
      */
@@ -705,7 +705,7 @@ public class Formatter {
     }
 
     /**
-     * Appends a {@linkplain ParameterValue parameter} in WKT form.
+     * Appends a {@linkplain ParameterValue parameter} in a {@code PARAMETER[…]} element.
      * If the supplied parameter is actually a {@linkplain ParameterValueGroup parameter group},
      * all contained parameters will flattened in a single list.
      *
@@ -722,16 +722,11 @@ public class Formatter {
             final ParameterDescriptor<?> descriptor = param.getDescriptor();
             Unit<?> unit = descriptor.getUnit();
             if (unit != null && !Unit.ONE.equals(unit)) {
-                Unit<?> contextUnit = linearUnit;
-                if (contextUnit!=null && unit.isCompatible(contextUnit)) {
-                    unit = contextUnit;
+                if (linearUnit != null && unit.isCompatible(linearUnit)) {
+                    unit = linearUnit;
                 } else {
-                    contextUnit = convention.getForcedUnit(Angle.class);
-                    if (contextUnit == null) {
-                        contextUnit = angularUnit;
-                    }
-                    if (contextUnit!=null && unit.isCompatible(contextUnit)) {
-                        unit = contextUnit;
+                    if (angularUnit != null && unit.isCompatible(angularUnit)) {
+                        unit = angularUnit;
                     }
                 }
             }
@@ -951,8 +946,11 @@ public class Formatter {
     }
 
     /**
-     * Appends a unit in WKT form.
-     * For example {@code append(SI.KILOMETRE)} will append "{@code UNIT["km", 1000]}" to the WKT.
+     * Appends a unit in a {@code UNIT[…]} element or one of the specialized elements. Specialized elements are
+     * {@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT} and {@code TIMEUNIT}.
+     * Specialization is used in WKT 2 format except the <cite>simplified WKT 2</cite> one.
+     *
+     * {@example <code>append(SI.KILOMETRE)</code> will append "<code>LENGTHUNIT["km", 1000]</code>" to the WKT.}
      *
      * @param unit The unit to append to the WKT, or {@code null} if none.
      */
@@ -960,13 +958,25 @@ public class Formatter {
         if (unit != null) {
             final StringBuffer buffer = this.buffer;
             appendSeparator(requestNewLine);
-            buffer.append("UNIT").appendCodePoint(symbols.getOpeningBracket(0));
+            String keyword = "UNIT";
+            if (!convention.isSimple()) {
+                if (Units.isLinear(unit)) {
+                    keyword = "LENGTHUNIT";
+                } else if (Units.isAngular(unit)) {
+                    keyword = "ANGLEUNIT";
+                } else if (Units.isScale(unit)) {
+                    keyword = "SCALEUNIT";
+                } else if (Units.isTemporal(unit)) {
+                    keyword = "TIMEUNIT";
+                }
+            }
+            buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0));
             setColor(ElementKind.UNIT);
             final int fromIndex = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
             if (NonSI.DEGREE_ANGLE.equals(unit)) {
                 buffer.append("degree");
             } else if (SI.METRE.equals(unit)) {
-                buffer.append(convention.commonUnits ? "meter" : "metre");
+                buffer.append(convention.usesCommonUnits() ? "meter" : "metre");
             } else {
                 unitFormat.format(unit, buffer, dummy);
             }
@@ -978,41 +988,63 @@ public class Formatter {
     }
 
     /**
-     * Returns the linear unit for expressing lengths, or {@code null} for the "natural" unit of each WKT element.
+     * Returns the linear unit for expressing lengths, or {@code null} for the default unit of each WKT element.
+     * If {@code null}, then the default value depends on the object to format.
      *
-     * @return The unit for linear measurements. Default value is {@code null}.
+     * <p>This method may return a non-null value if the next WKT elements to format are enclosed in a larger WKT
+     * element, and the child elements shall inherit the linear unit of the enclosing element. The most typical
+     * cases are the {@code PARAMETER[…]} elements enclosed in a {@code PROJCS[…]} element.</p>
+     *
+     * <p>The value returned by this method can be ignored if the WKT element to format contains an explicit
+     * {@code UNIT[…]} element.</p>
+     *
+     * @return The unit for linear measurements, or {@code null} for the default unit.
      */
     public Unit<Length> getLinearUnit() {
         return linearUnit;
     }
 
     /**
-     * Sets the unit to use for expressing lengths.
+     * Sets the unit to use for the next lengths to format. If non-null, the given unit will apply to all WKT elements
+     * that do not define their own {@code UNIT[…]}, until this {@code setLinearUnit(…)} method is invoked again.
      *
-     * @param unit The new unit, or {@code null}.
+     * @param unit The new unit, or {@code null} for letting element uses their own default.
      */
     public void setLinearUnit(final Unit<Length> unit) {
         linearUnit = unit;
     }
 
     /**
-     * Returns the angular unit for expressing angles, or {@code null} for the "natural" unit of each WKT element.
-     * This value is set for example when formatting the {@code GEOGCS} element, in which case the enclosed
-     * {@code PRIMEM} element shall use the unit of the enclosing {@code GEOGCS}.
+     * Returns the angular unit for expressing angles, or {@code null} for the default unit of each WKT element.
+     * If {@code null}, then the default value depends on the object to format.
      *
-     * @return The unit for angle measurement. Default value is {@code null}.
+     * <p>This method may return a non-null value if the next WKT elements to format are enclosed in a larger WKT
+     * element, and the child elements shall inherit the linear unit of the enclosing element. A typical case is
+     * the {@code PRIMEM[…]} element enclosed in a {@code GEOGCS[…]} element.</p>
+     *
+     * <p>The value returned by this method can be ignored if the WKT element to format contains an explicit
+     * {@code UNIT[…]} element.</p>
+     *
+     * @return The unit for angular measurement, or {@code null} for the default unit.
      */
     public Unit<Angle> getAngularUnit() {
         return angularUnit;
     }
 
     /**
-     * Sets the angular unit for formatting measures.
+     * Sets the unit to use for the next angles to format. If non-null, the given unit will apply to all WKT elements
+     * that do not define their own {@code UNIT[…]}, until this {@code setAngularUnit(…)} method is invoked again.
      *
-     * @param unit The new unit, or {@code null}.
+     * {@section Special case}
+     * If the WKT conventions are {@code WKT1_COMMON_UNITS}, then this method ignores the given unit.
+     * See {@link Convention#WKT1_COMMON_UNITS} javadoc for more information.
+     *
+     * @param unit The new unit, or {@code null} for letting element uses their own default.
      */
     public void setAngularUnit(final Unit<Angle> unit) {
-        angularUnit = unit;
+        if (!convention.usesCommonUnits()) {
+            angularUnit = unit;
+        }
     }
 
     /**

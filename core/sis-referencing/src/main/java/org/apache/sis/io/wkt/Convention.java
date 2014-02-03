@@ -16,15 +16,10 @@
  */
 package org.apache.sis.io.wkt;
 
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Angle;
-import javax.measure.quantity.Quantity;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.apache.sis.util.Debug;
 import org.apache.sis.metadata.iso.citation.Citations;
-
-import static javax.measure.unit.NonSI.DEGREE_ANGLE;
 
 
 /**
@@ -66,7 +61,25 @@ public enum Convention {
      * this convention SIS will favor {@linkplain Citations#EPSG EPSG} definitions of projection
      * and parameter names.</p>
      */
-    WKT2(Citations.EPSG, false, false),
+    WKT2(false),
+
+    /**
+     * The ISO 19162 format with omission of some optional elements. This convention is identical
+     * to the {@link #WKT2} convention except for the following aspects:
+     *
+     * <ul>
+     *   <li>{@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT} and
+     *       {@code TIMEUNIT} are formatted as plain {@code UNIT} elements.</li>
+     *   <li>In {@code AXIS} elements, the {@code ORDER} elements are omitted.</li>
+     * </ul>
+     *
+     * Those simplifications are allowed by the ISO 19162 standard and do not cause any information lost.
+     * The omitted elements are not needed by Apache SIS WKT parser and often distractive for the human reader.
+     *
+     * <p>By default this simplified format is used by {@link FormattableObject#toString()}, while the stricter
+     * {@link #WKT2} convention is used by {@link FormattableObject#toWKT()}.</p>
+     */
+    WKT2_SIMPLIFIED(false),
 
     /**
      * The OGC 01-009 format, also known as “WKT 1”.
@@ -91,7 +104,7 @@ public enum Convention {
      *   <tr><td>Geocentric Z</td> <td>Northing</td>   <td>Toward north pole</td></tr>
      * </table>
      */
-    WKT1(Citations.OGC, true, false),
+    WKT1(true),
 
     /**
      * The <cite>Simple Feature</cite> format, also known as “WKT 1”.
@@ -108,7 +121,7 @@ public enum Convention {
      *       (e.g. "<cite>meter</cite>" instead than "<cite>metre</cite>").</li>
      * </ul>
      */
-    WKT1_COMMON_UNITS(Citations.OGC, true, true),
+    WKT1_COMMON_UNITS(true),
 
     /**
      * A special convention for formatting objects as stored internally by Apache SIS.
@@ -119,19 +132,42 @@ public enum Convention {
      * <p>This convention is used only for debugging purpose.</p>
      */
     @Debug
-    INTERNAL(Citations.OGC, false, false);
+    INTERNAL(false);
 
     /**
      * The default conventions.
      *
      * @todo Make final after we completed the migration from Geotk.
      */
-    static Convention DEFAULT = WKT2;
+    static Convention DEFAULT = WKT2, DEFAULT_SIMPLIFIED = WKT2_SIMPLIFIED;
 
     /**
      * {@code true} for using WKT 1 syntax, or {@code false} for using WKT 2 syntax.
      */
     private final boolean isWKT1;
+
+    /**
+     * Creates a new enumeration value.
+     */
+    private Convention(final boolean isWKT1) {
+        this.isWKT1 = isWKT1;
+    }
+
+    /**
+     * Returns {@code true} if this convention is one of the WKT 1 variants.
+     *
+     * @return {@code true} if this convention is one of the WKT 1 variants.
+     */
+    public boolean isWKT1() {
+        return isWKT1;
+    }
+
+    /**
+     * {@code true} for a simplified WKT. The simplifications are documented in the {@link #WKT2_SIMPLIFIED} javadoc.
+     */
+    final boolean isSimple() {
+        return this != WKT2;
+    }
 
     /**
      * {@code true} for a frequently-used convention about units instead than the standard one.
@@ -143,33 +179,9 @@ public enum Convention {
      *   <li>If {@code true}, uses US unit names instead of the international names.
      *       For example Americans said {@code "meter"} instead of {@code "metre"}.</li>
      * </ul>
-     *
-     * @see #getForcedUnit(Class)
      */
-    final boolean commonUnits;
-
-    /**
-     * The organization, standard or project to look for when fetching Map Projection parameter names.
-     * Should be one of the authorities known to {@link org.apache.sis.referencing.operation.provider}.
-     */
-    private final Citation authority;
-
-    /**
-     * Creates a new enumeration value.
-     */
-    private Convention(final Citation authority, final boolean isWKT1, final boolean commonUnits) {
-        this.authority   = authority;
-        this.isWKT1      = isWKT1;
-        this.commonUnits = commonUnits;
-    }
-
-    /**
-     * Returns {@code true} if this convention is one of the WKT 1 variants.
-     *
-     * @return {@code true} if this convention is one of the WKT 1 variants.
-     */
-    public boolean isWKT1() {
-        return isWKT1;
+    final boolean usesCommonUnits() {
+        return this == WKT1_COMMON_UNITS;
     }
 
     /**
@@ -192,27 +204,6 @@ public enum Convention {
      * @see Citations#OGC
      */
     public Citation getNameAuthority() {
-        return authority;
-    }
-
-    /**
-     * If non-null, {@code PRIMEM} and {@code PARAMETER} values shall unconditionally use the returned units.
-     * The standard value is {@code null}, which means that units are inferred from the context as required by the
-     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html#PRIMEM">WKT specification</a>.
-     * However some conventions ignore the above WKT specification and use hard-coded units instead.
-     *
-     * @param  <T>       The compile-time type specified by the {@code quantity} argument.
-     * @param  quantity  The kind of quantity for which to get the unit.
-     *                   The most typical value for this argument is <code>{@linkplain Angle}.class</code>.
-     * @return The unit to use for the given kind of quantity, or {@code null} for inferring the unit in the standard way.
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends Quantity> Unit<T> getForcedUnit(final Class<T> quantity) {
-        if (commonUnits) {
-            if (quantity == Angle.class) {
-                return (Unit<T>) DEGREE_ANGLE;
-            }
-        }
-        return null;
+        return isWKT1 ? Citations.OGC : Citations.EPSG;
     }
 }
