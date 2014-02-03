@@ -16,9 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
-import javax.measure.unit.NonSI;
-import javax.measure.quantity.Angle;
-import javax.measure.quantity.Duration;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -35,13 +33,38 @@ import static org.junit.Assert.*;
  */
 public final strictfp class ConventionTest extends TestCase {
     /**
-     * Tests {@link Convention#getForcedUnit(Class)}.
+     * Tests {@link Convention#getNameAuthority()}.
      */
     @Test
-    public void testGetForcedUnit() {
-        assertNull(Convention.WKT2.getForcedUnit(Angle.class));
-        assertNull(Convention.WKT1.getForcedUnit(Angle.class));
-        assertEquals(NonSI.DEGREE_ANGLE, Convention.WKT1_COMMON_UNITS.getForcedUnit(Angle.class));
-        assertNull(Convention.WKT1_COMMON_UNITS.getForcedUnit(Duration.class));
+    public void testGetNameAuthority() {
+        assertSame(Citations.EPSG, Convention.WKT2.getNameAuthority());
+        assertSame(Citations.EPSG, Convention.WKT2_SIMPLIFIED.getNameAuthority());
+        assertSame(Citations.OGC,  Convention.WKT1.getNameAuthority());
+        assertSame(Citations.OGC,  Convention.WKT1_COMMON_UNITS.getNameAuthority());
+        assertSame(Citations.EPSG, Convention.INTERNAL.getNameAuthority());
+    }
+
+    /**
+     * Tests {@link Convention#isWKT1()}.
+     */
+    @Test
+    public void testIsWKT1() {
+        assertFalse(Convention.WKT2.isWKT1());
+        assertFalse(Convention.WKT2_SIMPLIFIED.isWKT1());
+        assertTrue (Convention.WKT1.isWKT1());
+        assertTrue (Convention.WKT1_COMMON_UNITS.isWKT1());
+        assertFalse(Convention.INTERNAL.isWKT1());
+    }
+
+    /**
+     * Tests {@link Convention#isSimple()}.
+     */
+    @Test
+    public void testIsSimple() {
+        assertFalse(Convention.WKT2.isSimple());
+        assertTrue (Convention.WKT2_SIMPLIFIED.isSimple());
+        assertTrue (Convention.WKT1.isSimple());
+        assertTrue (Convention.WKT1_COMMON_UNITS.isSimple());
+        assertTrue (Convention.INTERNAL.isSimple());
     }
 }

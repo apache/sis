@@ -30,6 +30,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.geometry.AbstractEnvelope;
@@ -60,6 +61,7 @@ public strictfp class Assert extends org.apache.sis.test.Assert {
      */
     private static final WKTFormat WKT_FORMAT = new WKTFormat(null, null);
     static {
+        WKT_FORMAT.setConvention(Convention.WKT2_SIMPLIFIED);
         final Symbols s = new Symbols(Symbols.SQUARE_BRACKETS);
         s.setPairedQuotes("“”", "\"\"");
         WKT_FORMAT.setSymbols(s);

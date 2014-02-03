@@ -338,19 +338,11 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        /*
-         * If the PrimeMeridian is written inside a "GEOGCS", then OGC say that it must be
-         * written in the unit of the enclosing geographic coordinate system. Otherwise,
-         * default to decimal degrees. Note that ESRI and GDAL don't follow this rule.
-         */
-        Unit<Angle> context = formatter.getConvention().getForcedUnit(Angle.class);
-        if (context == null) {
-            context = formatter.getAngularUnit();
-            if (context == null) {
-                context = NonSI.DEGREE_ANGLE;
-            }
+        Unit<Angle> unit = formatter.getAngularUnit();
+        if (unit == null) {
+            unit = NonSI.DEGREE_ANGLE;
         }
-        formatter.append(getGreenwichLongitude(context));
+        formatter.append(getGreenwichLongitude(unit));
         return "PRIMEM";
     }
 }
