@@ -44,7 +44,8 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * This class provides methods for:
  *
  * <ul>
- *   <li>{@link #getGeographicBoundingBox(Extent)} and {@link #getDate(Extent, double)}
+ *   <li>{@link #getGeographicBoundingBox(Extent)}, {@link #getVerticalRange(Extent)}
+ *       and {@link #getDate(Extent, double)}
  *       for fetching geographic or temporal components in a convenient form.</li>
  *   <li>Methods for computing {@linkplain #intersection intersection} of bounding boxes
  *       and {@linkplain #area area} estimations.</li>

@@ -16,7 +16,11 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
+import java.util.Arrays;
+import javax.measure.unit.SI;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -39,6 +43,26 @@ public final strictfp class ExtentsTest extends TestCase {
      * One minute of angle, in degrees.
      */
     private static final double MINUTE = 1./60;
+
+    /**
+     * Tests {@link Extents#getVerticalRange(Extent)}.
+     */
+    @Test
+    public void testGetVerticalRange() {
+        final DefaultExtent extent = new DefaultExtent();
+        extent.setVerticalElements(Arrays.asList(
+                new DefaultVerticalExtent( -200,  -100, VerticalCRSMock.HEIGHT),
+                new DefaultVerticalExtent(  150,   300, VerticalCRSMock.DEPTH),
+                new DefaultVerticalExtent(  0.1,   0.2, VerticalCRSMock.SIGMA_LEVEL),
+                new DefaultVerticalExtent( -600,  -300, VerticalCRSMock.HEIGHT_ft), // [91.44 182.88] metres
+                new DefaultVerticalExtent(10130, 20260, VerticalCRSMock.BAROMETRIC_HEIGHT)
+        ));
+        final MeasurementRange<Double> range = Extents.getVerticalRange(extent);
+        assertNotNull("getVerticalRange", range);
+        assertEquals("unit", SI.METRE,  range.unit());
+        assertEquals("minimum", -300,   range.getMinDouble(), 0.001);
+        assertEquals("maximum", -91.44, range.getMaxDouble(), 0.001);
+    }
 
     /**
      * Tests {@link Extents#intersection(GeographicBoundingBox, GeographicBoundingBox)}.
