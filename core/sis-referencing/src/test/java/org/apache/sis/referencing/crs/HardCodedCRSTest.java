@@ -78,7 +78,7 @@ public final strictfp class HardCodedCRSTest extends TestCase {
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563],\n" +
                 "    AUTHORITY[“EPSG”, “6326”]],\n" +
                 "  PRIMEM[“Greenwich”, 0.0, AUTHORITY[“EPSG”, “8901”]],\n" +
-                "  UNIT[“degree”, 0.017453292519943295],\n" +
+                "  ANGLEUNIT[“degree”, 0.017453292519943295],\n" +
                 "  AXIS[“Geodetic longitude”, EAST],\n" +
                 "  AXIS[“Geodetic latitude”, NORTH],\n" +
                 "  AREA[“World”],\n" +

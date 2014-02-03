@@ -55,11 +55,13 @@ import org.apache.sis.metadata.iso.citation.Citations;
 public enum Convention {
     /**
      * The ISO 19162 format, also known as “WKT 2”.
-     * This is the default convention for all WKT formatting in the Apache SIS library.
      *
-     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, when using
-     * this convention SIS will favor {@linkplain Citations#EPSG EPSG} definitions of projection
-     * and parameter names.</p>
+     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, projections
+     * and parameters formatted with this convention will use the {@linkplain Citations#EPSG EPSG}
+     * names when available.</p>
+     *
+     * <p>This is the default convention used by {@link FormattableObject#toWKT()}
+     * and for new {@link WKTFormat} instances.</p>
      */
     WKT2(false),
 
@@ -76,8 +78,7 @@ public enum Convention {
      * Those simplifications are allowed by the ISO 19162 standard and do not cause any information lost.
      * The omitted elements are not needed by Apache SIS WKT parser and often distractive for the human reader.
      *
-     * <p>By default this simplified format is used by {@link FormattableObject#toString()}, while the stricter
-     * {@link #WKT2} convention is used by {@link FormattableObject#toWKT()}.</p>
+     * <p>This is the default convention used by {@link FormattableObject#toString()}.</p>
      */
     WKT2_SIMPLIFIED(false),
 
@@ -86,9 +87,9 @@ public enum Convention {
      * A definition for this format is shown in Extended Backus Naur Form (EBNF)
      * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">on GeoAPI</a>.
      *
-     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, when using
-     * this convention SIS will favor {@linkplain Citations#OGC OGC} definitions of projection
-     * and parameter names.</p>
+     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, projections
+     * and parameters formatted with this convention will use the {@linkplain Citations#OGC OGC}
+     * names when available.</p>
      *
      * {@section Differences compared to WKT 2}
      * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding parameter
