@@ -60,7 +60,7 @@ public strictfp class Assert extends org.apache.sis.test.Assert {
      */
     private static final WKTFormat WKT_FORMAT = new WKTFormat(null, null);
     static {
-        final Symbols s = new Symbols();
+        final Symbols s = new Symbols(Symbols.SQUARE_BRACKETS);
         s.setPairedQuotes("“”", "\"\"");
         WKT_FORMAT.setSymbols(s);
     }

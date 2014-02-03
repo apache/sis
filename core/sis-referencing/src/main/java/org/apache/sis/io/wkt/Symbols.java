@@ -32,11 +32,30 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * This class allows to specify the following properties:
  *
  * <table class="sis">
- *   <tr><th>Property</th>                 <th>Standard value</th>        <th>Legal alternative</th></tr>
- *   <tr><td>Locale for number format</td> <td>{@link Locale#ROOT}</td>   <td></td></tr>
- *   <tr><td>Bracket symbols</td>          <td>{@code [} … {@code ]}</td> <td>{@code (} … {@code )}</td></tr>
- *   <tr><td>Quote symbols</td>            <td>{@code "} … {@code "}</td> <td></td></tr>
- *   <tr><td>Separator</td>                <td>{@code ,}</td>             <td></td></tr>
+ *   <tr>
+ *     <th>Property</th>
+ *     <th>Standard value</th>
+ *     <th>Remarks</th>
+ *   </tr>
+ *   <tr>
+ *     <td>Locale for number format</td>
+ *     <td>{@link Locale#ROOT}</td>
+ *     <td></td>
+ *   </tr>
+ *   <tr>
+ *     <td>Bracket symbols</td>
+ *     <td>{@code [}…{@code ]} or {@code (}…{@code )}</td>
+ *     <td>The former is more common in referencing WKT, while the later is more common in geometry WKT.</td>
+ *   </tr>
+ *   <tr>
+ *     <td>Quote symbols</td>
+ *     <td>{@code "}…{@code "}</td>
+ *     <td>Apache SIS also accepts {@code “}…{@code ”}, but this is non-standard.</td>
+ *   </tr>
+ *   <tr><td>Separator</td>
+ *     <td>{@code ,}</td>
+ *     <td></td>
+ *   </tr>
  * </table>
  *
  * The two constants defined in this class, namely {@link #SQUARE_BRACKETS} and {@link #CURLY_BRACKETS},
@@ -59,14 +78,29 @@ public class Symbols implements Localized, Cloneable, Serializable {
 
     /**
      * A set of symbols with values between square brackets, like {@code DATUM["WGS84"]}.
-     * This is the most frequently used WKT format.
+     * This instance defines:
+     *
+     * <ul>
+     *   <li>{@link Locale#ROOT} for {@linkplain java.text.DecimalFormatSymbols decimal format symbols}.</li>
+     *   <li>Square brackets by default, as in {@code DATUM["WGS84"]}, but accepting also curly brackets as in
+     *       {@code DATUM("WGS84")}. Both are legal WKT.</li>
+     *   <li>English quotation mark ({@code '"'}) by default, but accepting also “…” quotes
+     *       for more readable {@link String} constants in Java code.</li>
+     *   <li>Coma separator followed by a space ({@code ", "}).</li>
+     * </ul>
+     *
+     * This is the most frequently used WKT format for referencing objects.
      */
     public static final Symbols SQUARE_BRACKETS = new Symbols(
             new int[] {'[', ']', '(', ')'}, new int[] {'"', '"', '“', '”'});
 
     /**
      * A set of symbols with values between parentheses, like {@code DATUM("WGS84")}.
-     * This is a less frequently used but legal WKT format.
+     * This instance is identical to {@link #SQUARE_BRACKETS} except that the default
+     * brackets are the curly ones instead than the square ones (but both are still
+     * accepted at parsing time).
+     *
+     * <p>This format is rare with referencing objects but common with geometry objects.</p>
      */
     public static final Symbols CURLY_BRACKETS = new Symbols(
             new int[] {'(', ')', '[', ']'}, SQUARE_BRACKETS.quotes);
@@ -133,28 +167,12 @@ public class Symbols implements Localized, Cloneable, Serializable {
     private boolean isImmutable;
 
     /**
-     * Creates a new set of WKT symbols initialized to the default values.
-     * Newly created {@code Symbols} instances use the following defaults:
-     *
-     * <ul>
-     *   <li>{@link Locale#ROOT} for {@linkplain java.text.DecimalFormatSymbols decimal format symbols}.</li>
-     *   <li>Square brackets by default, as in {@code DATUM["WGS84"]}, but accepting also curly brackets as in
-     *       {@code DATUM("WGS84")}. Both are legal WKT.</li>
-     *   <li>English quotation mark ({@code '"'}) by default, but accepting also {@code '“'} … {@code '”'} quotes
-     *       for more readable {@link String} constants in Java code.</li>
-     *   <li>Coma separator followed by a space ({@code ", "}).</li>
-     * </ul>
-     */
-    public Symbols() {
-        this(SQUARE_BRACKETS);
-    }
-
-    /**
-     * Creates a copy of the given set of WKT symbols.
+     * Creates a new set of WKT symbols initialized to a copy of the given symbols.
      *
      * @param symbols The symbols to copy.
      */
     public Symbols(final Symbols symbols) {
+        ensureNonNull("symbols", symbols);
         locale        = symbols.locale;
         brackets      = symbols.brackets;
         quotes        = symbols.quotes;

@@ -56,6 +56,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -63,22 +64,20 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 
 /**
- * Formats an object as <cite>Well Known Text</cite> (WKT). {@code Formatter} instances are created by
- * {@link WKTFormat} and given to the {@link FormattableObject#formatTo(Formatter)} method of the object
- * to format. {@code Formatter} provides the following services:
+ * Provides support methods for formatting a <cite>Well Known Text</cite> (WKT).
+ *
+ * <p>{@code Formatter} instances are created by {@link WKTFormat} and given to the
+ * {@link FormattableObject#formatTo(Formatter)} method of the object to format.
+ * {@code Formatter} provides the following services:</p>
  *
  * <ul>
  *   <li>A series of {@code append(…)} methods to be invoked by the {@code formatTo(Formatter)} implementations.</li>
- *   <li>Information about the context: {@link #getConvention()}, {@link #getAngularUnit()}, {@link #getLinearUnit()}.
- *       Some of those information (e.g. the angular units) depend on the enclosing WKT element.</li>
- *   <li>Convenience methods for fetching relevant information from the object to format:
- *       {@link #getName(IdentifiedObject)}, {@link #getIdentifier(IdentifiedObject)}.</li>
+ *   <li>Contextual information. In particular, the {@linkplain #getLinearUnit() linear unit} and the
+ *       {@linkplain #getAngularUnit() angular unit} depend on the enclosing WKT element.</li>
+ *   <li>Convenience methods for fetching relevant information from the object to format, like
+ *       {@linkplain #getName(IdentifiedObject) name} and {@linkplain #getIdentifier(IdentifiedObject) identifier}.</li>
  *   <li>A flag for declaring the object unformattable.</li>
  * </ul>
- *
- * {@section Thread safety}
- * Formatters are not synchronized. It is recommended to create separated formatter instances for each thread.
- * If multiple threads access a formatter concurrently, then the formatter must be synchronized externally.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
@@ -234,14 +233,14 @@ public class Formatter {
     Exception errorCause;
 
     /**
-     * Creates a new formatter instance with the default symbols, no syntax coloring and the default indentation.
+     * Creates a new formatter instance with the default configuration.
      */
     public Formatter() {
         this(Convention.DEFAULT, Symbols.getDefault(), WKTFormat.DEFAULT_INDENTATION);
     }
 
     /**
-     * Creates a new formatter instance with the specified convention, colors and indentation.
+     * Creates a new formatter instance with the specified convention, symbols and indentation.
      *
      * @param convention  The convention to use.
      * @param symbols     The symbols.
@@ -426,6 +425,23 @@ public class Formatter {
     }
 
     /**
+     * Appends a separator if needed, then opens a new element.
+     *
+     * @param keyword The element keyword (e.g. {@code "DATUM"}, {@code "AXIS"}, <i>etc</i>).
+     */
+    private void openElement(final String keyword) {
+        appendSeparator(requestNewLine);
+        buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0));
+    }
+
+    /**
+     * Closes the element opened by {@link #openElement(String)}.
+     */
+    private void closeElement() {
+        buffer.appendCodePoint(symbols.getClosingBracket(0));
+    }
+
+    /**
      * Appends the given {@code FormattableObject}.
      * This method performs the following steps:
      *
@@ -446,8 +462,6 @@ public class Formatter {
             return;
         }
         final StringBuffer buffer = this.buffer;
-        final int open  = symbols.getOpeningBracket(0);
-        final int close = symbols.getClosingBracket(0);
         /*
          * Formats the opening bracket and the object name (e.g. "NAD27").
          * The WKT entity name (e.g. "PROJCS") will be formatted later.
@@ -458,7 +472,7 @@ public class Formatter {
          */
         appendSeparator(true);
         int base = buffer.length();
-        buffer.appendCodePoint(open);
+        buffer.appendCodePoint(symbols.getOpeningBracket(0));
         final IdentifiedObject info = (object instanceof IdentifiedObject) ? (IdentifiedObject) object : null;
         if (info != null) {
             final ElementKind type = ElementKind.forType(info.getClass());
@@ -524,15 +538,14 @@ public class Formatter {
                 }
             }
             if (codeSpace != null) {
-                appendSeparator(requestNewLine);
-                buffer.append("AUTHORITY").appendCodePoint(open);
+                openElement("AUTHORITY");
                 quote(codeSpace);
                 final String code = identifier.getCode();
                 if (code != null) {
                     buffer.append(symbols.getSeparator());
                     quote(code);
                 }
-                buffer.appendCodePoint(close);
+                closeElement();
             }
         }
         /*
@@ -541,7 +554,7 @@ public class Formatter {
         if (info != null) {
             append("REMARKS", info.getRemarks());
         }
-        buffer.appendCodePoint(close);
+        buffer.appendCodePoint(symbols.getClosingBracket(0));
         requestNewLine = true;
         indent(-1);
     }
@@ -569,6 +582,14 @@ public class Formatter {
         if (area != null) {
             append("AREA", area.getDescription());
             append(Extents.getGeographicBoundingBox(area), 2);
+            final MeasurementRange<Double> range = Extents.getVerticalRange(area);
+            if (range != null) {
+                openElement("VERTICALEXTENT");
+                append(range.getMinDouble());
+                append(range.getMaxDouble());
+                append(range.unit());
+                closeElement();
+            }
         }
     }
 
@@ -603,8 +624,7 @@ public class Formatter {
      */
     public void append(final GeographicBoundingBox bbox, final int fractionDigits) {
         if (bbox != null) {
-            appendSeparator(requestNewLine);
-            buffer.append("BBOX").appendCodePoint(symbols.getOpeningBracket(0));
+            openElement("BBOX");
             numberFormat.setMinimumFractionDigits(fractionDigits);
             numberFormat.setMaximumFractionDigits(fractionDigits);
             numberFormat.setRoundingMode(RoundingMode.FLOOR);
@@ -613,7 +633,7 @@ public class Formatter {
             numberFormat.setRoundingMode(RoundingMode.CEILING);
             appendPreset(bbox.getNorthBoundLatitude());
             appendPreset(bbox.getEastBoundLongitude());
-            buffer.appendCodePoint(symbols.getClosingBracket(0));
+            closeElement();
         }
     }
 
@@ -654,34 +674,31 @@ public class Formatter {
         }
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
-        final int openingBracket  = symbols.getOpeningBracket(0);
-        final int closingBracket  = symbols.getClosingBracket(0);
-        final int openQuote       = symbols.getOpeningQuote(0);
-        final int closeQuote      = symbols.getClosingQuote(0);
-        final String separator    = symbols.getSeparator();
+        final int openQuote    = symbols.getOpeningQuote(0);
+        final int closeQuote   = symbols.getClosingQuote(0);
+        final String separator = symbols.getSeparator();
         final StringBuffer buffer = this.buffer;
         boolean columns = false;
+        requestNewLine = true;
         do {
-            appendSeparator(true);
-            buffer.append("PARAMETER").appendCodePoint(openingBracket);
+            openElement("PARAMETER");
             quote(columns ? "num_col" : "num_row");
             buffer.append(separator);
             format(columns ? numCol : numRow);
-            buffer.appendCodePoint(closingBracket);
+            closeElement();
         } while ((columns = !columns) == true);
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 final double element = matrix.getElement(j, i);
                 if (element != (i == j ? 1 : 0)) {
-                    appendSeparator(true);
-                    buffer.append("PARAMETER").appendCodePoint(openingBracket);
+                    openElement("PARAMETER");
                     setColor(ElementKind.PARAMETER);
                     buffer.appendCodePoint(openQuote).append("elt_").append(j)
                             .append('_').append(i).appendCodePoint(closeQuote);
                     resetColor();
                     buffer.append(separator);
                     format(element);
-                    buffer.appendCodePoint(closingBracket);
+                    closeElement();
                 }
             }
         }
@@ -832,11 +849,10 @@ public class Formatter {
         if (text != null) {
             final String localized = CharSequences.trimWhitespaces(text.toString(locale));
             if (localized != null && !localized.isEmpty()) {
-                appendSeparator(true);
-                buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0));
-                quote(localized);
-                buffer.appendCodePoint(symbols.getClosingBracket(0));
                 requestNewLine = true;
+                openElement(keyword);
+                quote(localized);
+                closeElement();
             }
         }
     }
@@ -936,7 +952,7 @@ public class Formatter {
 
     /**
      * Appends a unit in WKT form.
-     * For example {@code append(SI.KILO(SI.METRE))} will append "{@code UNIT["km", 1000]}" to the WKT.
+     * For example {@code append(SI.KILOMETRE)} will append "{@code UNIT["km", 1000]}" to the WKT.
      *
      * @param unit The unit to append to the WKT, or {@code null} if none.
      */
@@ -957,7 +973,7 @@ public class Formatter {
             closeQuote(fromIndex);
             resetColor();
             append(Units.toStandardUnit(unit));
-            buffer.appendCodePoint(symbols.getClosingBracket(0));
+            closeElement();
         }
     }
 
