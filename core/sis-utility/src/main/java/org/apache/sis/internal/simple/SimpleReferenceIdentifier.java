@@ -207,9 +207,9 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
      * @return Pseudo Well Known Text for this identifier.
      */
     public String toWKT() {
-        final StringBuilder buffer = new StringBuilder(40).append("AUTHORITY[");
+        final StringBuilder buffer = new StringBuilder(40).append("ID[");
         append(buffer, Citations.getIdentifier(authority)); // Do not invoke getCodeSpace().
-        append(buffer.append(','), code);
+        append(buffer.append(", "), code);
         return buffer.append(']').toString();
     }
 

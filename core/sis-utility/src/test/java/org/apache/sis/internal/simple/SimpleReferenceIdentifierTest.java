@@ -49,9 +49,9 @@ public final strictfp class SimpleReferenceIdentifierTest extends TestCase {
     @Test
     public void testToWKT() {
         final SimpleCitation authority = new SimpleCitation("EPSG");
-        assertEquals("AUTHORITY[\"EPSG\",\"4326\"]", new SimpleReferenceIdentifier(authority, "4326").toWKT());
-        assertEquals("AUTHORITY[\"EPSG\",null]",     new SimpleReferenceIdentifier(authority,  null ).toWKT());
-        assertEquals("AUTHORITY[null,\"4326\"]",     new SimpleReferenceIdentifier(null,      "4326").toWKT());
-        assertEquals("AUTHORITY[null,null]",         new SimpleReferenceIdentifier(null,       null ).toWKT());
+        assertEquals("ID[\"EPSG\", \"4326\"]", new SimpleReferenceIdentifier(authority, "4326").toWKT());
+        assertEquals("ID[\"EPSG\", null]",     new SimpleReferenceIdentifier(authority,  null ).toWKT());
+        assertEquals("ID[null, \"4326\"]",     new SimpleReferenceIdentifier(null,      "4326").toWKT());
+        assertEquals("ID[null, null]",         new SimpleReferenceIdentifier(null,       null ).toWKT());
     }
 }

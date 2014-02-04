@@ -198,7 +198,7 @@ public class FormattableObject {
      * then this method shall write the content starting at the insertion point shows below:</p>
      *
      * {@preformat text
-     *     GEOGCS["WGS 84", AUTHORITY["EPSG","4326"]]
+     *     GEOGCS["WGS 84", ID["EPSG", 4326]]
      *                    ↑
      *            (insertion point)
      * }
