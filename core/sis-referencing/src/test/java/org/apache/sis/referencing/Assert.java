@@ -32,6 +32,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 
@@ -332,7 +333,7 @@ public strictfp class Assert extends org.apache.sis.test.Assert {
     }
 
     /**
-     * Asserts that the WKT of the given object is equal to the expected one.
+     * Asserts that the WKT 2 of the given object is equal to the expected one.
      * This method expected the {@code “…”} quotation marks instead of {@code "…"}
      * for easier readability of {@link String} constants in Java code.
      *
@@ -340,12 +341,26 @@ public strictfp class Assert extends org.apache.sis.test.Assert {
      * @param object The object to format in <cite>Well Known Text</cite> format, or {@code null}.
      */
     public static void assertWktEquals(final String expected, final Object object) {
+        assertWktEquals(Convention.WKT2, expected, object);
+    }
+
+    /**
+     * Asserts that the WKT of the given object according the given convention is equal to the expected one.
+     * This method expected the {@code “…”} quotation marks instead of {@code "…"} for easier readability of
+     * {@link String} constants in Java code.
+     *
+     * @param convention The WKT convention to use.
+     * @param expected   The expected text, or {@code null} if {@code object} is expected to be null.
+     * @param object     The object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     */
+    public static void assertWktEquals(final Convention convention, final String expected, final Object object) {
         if (expected == null) {
             assertNull(object);
         } else {
             assertNotNull(object);
             final String wkt;
             synchronized (WKT_FORMAT) {
+                WKT_FORMAT.setConvention(convention);
                 wkt = WKT_FORMAT.format(object);
             }
             assertMultilinesEquals((object instanceof IdentifiedObject) ?

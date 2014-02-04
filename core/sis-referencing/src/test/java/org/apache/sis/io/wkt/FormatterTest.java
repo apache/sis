@@ -18,11 +18,14 @@ package org.apache.sis.io.wkt;
 
 import java.util.Map;
 import java.util.HashMap;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -65,18 +68,38 @@ public final strictfp class FormatterTest extends TestCase {
         assertNull(properties.put(NAME_KEY, "My “object”."));
         assertNull(properties.put(SCOPE_KEY, "Large scale topographic mapping and cadastre."));
         assertNull(properties.put(REMARKS_KEY, "注です。"));
+        assertNull(properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(
+                HardCodedCitations.OGP, "EPSG", "4326", "8.2", null)));
         assertNull(properties.put(DOMAIN_OF_VALIDITY_KEY, new DefaultExtent("Netherlands offshore.",
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77),
                 new DefaultVerticalExtent(10, 1000, HardCodedCRS.DEPTH),
                 new DefaultTemporalExtent()))); // TODO: needs sis-temporal module for testing that one.
-        assertWktEquals(
+        final IdentifiedObject object = new AbstractReferenceSystem(properties);
+
+        assertWktEquals(Convention.WKT1,
+                // Closing quote conservatively omitted for WKT 1.
+                "ReferenceSystem[“My “object.”, AUTHORITY[“EPSG”, “4326”]]",
+                object);
+
+        assertWktEquals(Convention.WKT2,
                 "ReferenceSystem[“My “object””.”,\n" +
                 "  SCOPE[“Large scale topographic mapping and cadastre.”],\n" +
                 "  AREA[“Netherlands offshore.”],\n" +
                 "  BBOX[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VERTICALEXTENT[-1000, -10, LENGTHUNIT[“metre”, 1.0]],\n" +
+                "  ID[“EPSG”, 4326, “8.2”, “OGP”],\n" +
                 "  REMARKS[“注です。”]]",
-                new AbstractReferenceSystem(properties));
+                object);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
+                "ReferenceSystem[“My “object””.”,\n" +
+                "  SCOPE[“Large scale topographic mapping and cadastre.”],\n" +
+                "  AREA[“Netherlands offshore.”],\n" +
+                "  BBOX[51.43, 2.54, 55.77, 6.40],\n" +
+                "  VERTICALEXTENT[-1000, -10],\n" +
+                "  ID[“EPSG”, 4326, “8.2”, “OGP”],\n" +
+                "  REMARKS[“注です。”]]",
+                object);
     }
 
     /**

@@ -90,9 +90,9 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
  */
 public class Formatter {
     /**
-     * Do not format an {@code "AUTHORITY"} element for instance of this class.
+     * Do not format an {@code ID[…]} element for instance of this class.
      */
-    private static final Class<? extends IdentifiedObject> AUTHORITY_EXCLUDE = CoordinateSystemAxis.class;
+    private static final Class<? extends IdentifiedObject> ID_EXCLUDE = CoordinateSystemAxis.class;
 
     /**
      * Accuracy of geographic bounding boxes, in number of fraction digits.
@@ -231,7 +231,7 @@ public class Formatter {
 
     /**
      * {@code true} if a new line were requested during the execution of {@link #append(FormattableObject)}.
-     * This is used to determine if the next {@code UNIT} and {@code AUTHORITY} elements shall appear on a new line.
+     * This is used to determine if the next {@code UNIT} and {@code ID} elements shall appear on a new line.
      */
     private boolean requestNewLine;
 
@@ -453,7 +453,7 @@ public class Formatter {
                 return; // We are the first item inside a new keyword.
             }
             length -= Character.charCount(c);
-        } while (Character.isWhitespace(c));
+        } while (Character.isSpaceChar(c) || c < 32); // c < 32 is for ignoring all control characters.
         buffer.append(symbols.getSeparator());
         if (newLine && indentation > WKTFormat.SINGLE_LINE) {
             buffer.append(System.lineSeparator()).append(CharSequences.spaces(margin));
@@ -552,39 +552,17 @@ public class Formatter {
             appendScopeAndArea(object);
         }
         /*
-         * Formats the AUTHORITY[<name>,<code>] entity, if there is one. The entity
-         * will be on the same line than the enclosing one if no line separator were
-         * added (e.g. SPHEROID["Clarke 1866", ..., AUTHORITY["EPSG","7008"]]), or on
-         * a new line otherwise. After this block, the result looks like the following:
+         * Formats the ID[<name>,<code>,…] element. The element will be on the same line than the enclosing
+         * one if no line separator were requested (e.g. SPHEROID["Clarke 1866", …, ID["EPSG", 7008]]), or
+         * on a new line otherwise. Example:
          *
-         *         <previous text>,
          *           PROJCS["NAD27 / Idaho Central",
          *             GEOGCS[...etc...],
          *             ...etc...
-         *             AUTHORITY["EPSG","26769"]]
+         *             ID["EPSG", 26769]]
          */
-        final Identifier identifier = getIdentifier(info);
-        if (identifier != null && !AUTHORITY_EXCLUDE.isInstance(info)) {
-            String codeSpace = null;
-            if (identifier instanceof ReferenceIdentifier) {
-                codeSpace = ((ReferenceIdentifier) identifier).getCodeSpace();
-            }
-            if (codeSpace == null) {
-                final Citation authority = identifier.getAuthority();
-                if (authority != null) {
-                    codeSpace = Citations.getIdentifier(authority);
-                }
-            }
-            if (codeSpace != null) {
-                openElement("AUTHORITY");
-                quote(codeSpace);
-                final String code = identifier.getCode();
-                if (code != null) {
-                    buffer.append(symbols.getSeparator());
-                    quote(code);
-                }
-                closeElement();
-            }
+        if (!ID_EXCLUDE.isInstance(info)) {
+            append(getIdentifier(info));
         }
         /*
          * Format remarks if any, and close the element.
@@ -637,6 +615,7 @@ public class Formatter {
                 }
                 resetColor();
                 closeElement();
+                requestNewLine = true;
             }
             final Range<Date> timeRange = Extents.getTimeRange(area);
             if (timeRange != null) {
@@ -646,6 +625,7 @@ public class Formatter {
                 append(timeRange.getMaxValue());
                 resetColor();
                 closeElement();
+                requestNewLine = true;
             }
         }
     }
@@ -662,6 +642,58 @@ public class Formatter {
         if (object != null) {
             append(object instanceof FormattableObject ? (FormattableObject) object :
                    AbstractIdentifiedObject.castOrCopy(object));
+        }
+    }
+
+    /**
+     * Appends the given identifier in an {@code ID[…]} (WKT 2) or {@code AUTHORITY[…]} (WKT 1) element.
+     * The identifier may be added on the same line then the previous element or in a new line depending
+     * on the enclosing element.
+     *
+     * {@example Identifier added on the same line:
+     * <blockquote><pre>SPHEROID["Clarke 1866", …, <b>ID["EPSG", 7008]</b>]</pre></blockquote>}
+     *
+     * {@example Identifier added on a new line:
+     * <blockquote><pre>PROJCS["NAD27 / Idaho Central",
+     *   GEOGCS[...etc...],
+     *   ...etc...
+     *   <b>ID["EPSG", 26769]</b>]</pre></blockquote>}
+     *
+     * @param identifier The identifier to append to the WKT, or {@code null} if none.
+     */
+    public void append(final Identifier identifier) {
+        if (identifier != null) {
+            final String code = identifier.getCode();
+            if (code != null) {
+                String citation  = Citations.getIdentifier(identifier.getAuthority());
+                String codeSpace = null;
+                if (identifier instanceof ReferenceIdentifier) {
+                    codeSpace = ((ReferenceIdentifier) identifier).getCodeSpace();
+                }
+                if (codeSpace == null) {
+                    codeSpace = citation;
+                    citation  = null;
+                }
+                if (codeSpace != null) {
+                    if (convention.isWKT1()) {
+                        openElement("AUTHORITY");
+                        append(codeSpace);
+                        append(code);
+                    } else {
+                        openElement("ID");
+                        append(codeSpace);
+                        appendIntegerOrText(code);
+                        if (identifier instanceof ReferenceIdentifier) {
+                            final String version = ((ReferenceIdentifier) identifier).getVersion();
+                            if (version != null) {
+                                appendIntegerOrText(version);
+                                append(citation);
+                            }
+                        }
+                    }
+                    closeElement();
+                }
+            }
         }
     }
 
@@ -733,17 +765,14 @@ public class Formatter {
         }
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
-        final int openQuote    = symbols.getOpeningQuote(0);
-        final int closeQuote   = symbols.getClosingQuote(0);
-        final String separator = symbols.getSeparator();
-        final StringBuffer buffer = this.buffer;
+        final int openQuote  = symbols.getOpeningQuote(0);
+        final int closeQuote = symbols.getClosingQuote(0);
         boolean columns = false;
         requestNewLine = true;
         do {
             openElement("PARAMETER");
             quote(columns ? "num_col" : "num_row");
-            buffer.append(separator);
-            format(columns ? numCol : numRow);
+            append(columns ? numCol : numRow);
             closeElement();
         } while ((columns = !columns) == true);
         for (int j=0; j<numRow; j++) {
@@ -755,8 +784,7 @@ public class Formatter {
                     buffer.appendCodePoint(openQuote).append("elt_").append(j)
                             .append('_').append(i).appendCodePoint(closeQuote);
                     resetColor();
-                    buffer.append(separator);
-                    format(element);
+                    append(element);
                     closeElement();
                 }
             }
@@ -797,7 +825,6 @@ public class Formatter {
             setColor(ElementKind.PARAMETER);
             quote(getName(descriptor));
             resetColor();
-            buffer.append(symbols.getSeparator());
             if (unit != null) {
                 double value;
                 try {
@@ -815,7 +842,7 @@ public class Formatter {
                     errorCause = exception;
                     value = Double.NaN;
                 }
-                format(value);
+                append(value);
             } else {
                 appendObject(param.getValue());
             }
@@ -829,16 +856,14 @@ public class Formatter {
      * array elements are appended recursively (i.e. the array may contains sub-array).
      */
     private void appendObject(final Object value) {
-        final StringBuffer buffer = this.buffer;
         if (value == null) {
+            appendSeparator(false);
             buffer.append("null");
         } else if (value.getClass().isArray()) {
+            appendSeparator(false);
             buffer.appendCodePoint(symbols.getOpenSequence());
             final int length = Array.getLength(value);
             for (int i=0; i<length; i++) {
-                if (i != 0) {
-                    buffer.append(symbols.getSeparator());
-                }
                 appendObject(Array.get(value, i));
             }
             buffer.appendCodePoint(symbols.getCloseSequence());
@@ -847,14 +872,15 @@ public class Formatter {
         } else if (value instanceof Number) {
             final Number number = (Number) value;
             if (Numbers.isInteger(number.getClass())) {
-                format(number.longValue());
+                append(number.longValue());
             } else {
-                format(number.doubleValue());
+                append(number.doubleValue());
             }
         } else if (value instanceof Boolean) {
-            buffer.append(((Boolean) value).booleanValue() ? "TRUE" : "FALSE");
+            append(((Boolean) value).booleanValue());
         } else {
-            quote(value.toString());
+            append((value instanceof InternationalString) ?
+                    ((InternationalString) value).toString(locale) : value.toString());
         }
     }
 
@@ -915,8 +941,8 @@ public class Formatter {
 
     /**
      * Appends the given string as a quoted text. If the given string contains the closing quote character,
-     * that character will be doubled. We check for the closing quote only because it is the character that
-     * the parser will look for determining the text end.
+     * that character will be doubled (WKT 2) or deleted (WKT 1). We check for the closing quote only because
+     * it is the character that the parser will look for determining the text end.
      */
     private void quote(final String text) {
         final int base = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
@@ -925,17 +951,46 @@ public class Formatter {
     }
 
     /**
-     * Double any closing quote character that may appear at or after the given index,
-     * then append the closing quote character.
+     * Double or delete any closing quote character that may appear at or after the given index,
+     * then append the closing quote character. The action taken for the quote character depends
+     * on the WKT version:
+     *
+     * <ul>
+     *   <li>For WKT 2, double the quote as specified in the standard.</li>
+     *   <li>For WKT 1, conservatively delete the quote because the standard does not said what to do.</li>
+     * </ul>
      */
     private void closeQuote(int fromIndex) {
         final String quote = symbols.getQuote();
         while ((fromIndex = buffer.indexOf(quote, fromIndex)) >= 0) {
             final int n = quote.length();
-            buffer.insert(fromIndex += n, quote);
-            fromIndex += n;
+            if (convention.isWKT1()) {
+                buffer.delete(fromIndex, fromIndex + n);
+            } else {
+                buffer.insert(fromIndex += n, quote);
+                fromIndex += n;
+            }
         }
         buffer.append(quote);
+    }
+
+    /**
+     * Appends the given text as an integer if possible, or as a text otherwise.
+     *
+     * {@note ISO 19162 specifies "number or text". In Apache SIS, we restrict the numbers to integers
+     *        because handling version numbers like "8.2" as floating point numbers can be confusing.}
+     */
+    private void appendIntegerOrText(final String text) {
+        if (text != null) {
+            final long n;
+            try {
+                n = Long.parseLong(text);
+            } catch (NumberFormatException e) {
+                append(text);
+                return;
+            }
+            append(n);
+        }
     }
 
     /**
@@ -952,6 +1007,17 @@ public class Formatter {
     }
 
     /**
+     * Appends a boolean value.
+     * The {@linkplain Symbols#getSeparator() element separator} will be written before the boolean if needed.
+     *
+     * @param value The boolean to append to the WKT.
+     */
+    public void append(final boolean value) {
+        appendSeparator(false);
+        buffer.append(value ? "TRUE" : "FALSE");
+    }
+
+    /**
      * Appends an integer value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
      *
@@ -959,7 +1025,10 @@ public class Formatter {
      */
     public void append(final long number) {
         appendSeparator(false);
-        format(number);
+        setColor(ElementKind.INTEGER);
+        numberFormat.setMaximumFractionDigits(0);
+        numberFormat.format(number, buffer, dummy);
+        resetColor();
     }
 
     /**
@@ -970,23 +1039,6 @@ public class Formatter {
      */
     public void append(final double number) {
         appendSeparator(false);
-        format(number);
-    }
-
-    /**
-     * Formats an integer number.
-     */
-    private void format(final long number) {
-        setColor(ElementKind.INTEGER);
-        numberFormat.setMaximumFractionDigits(0);
-        numberFormat.format(number, buffer, dummy);
-        resetColor();
-    }
-
-    /**
-     * Formats a floating point number.
-     */
-    private void format(double number) {
         setColor(ElementKind.NUMBER);
         /*
          * The 2 below is for using two less fraction digits than the expected number accuracy.

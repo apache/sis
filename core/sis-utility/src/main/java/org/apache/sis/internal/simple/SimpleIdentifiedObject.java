@@ -229,9 +229,9 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * Returns a pseudo-WKT representation.
      *
      * @param  type       The WKT heading text.
-     * @param  authority  The authority to write in the {@code "AUTHORITY"} element.
+     * @param  authority  The authority to write in the {@code "ID"} element.
      * @param  codespace  Usually an abbreviation of the authority name.
-     * @param  code       The code to write in the {@code "AUTHORITY"} element, or {@code null} if none.
+     * @param  code       The code to write in the {@code "ID"} element, or {@code null} if none.
      * @param  deprecated {@code true} if the object to format is deprecated.
      * @return The pseudo-WKT.
      */
@@ -244,7 +244,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
         }
         buffer.append(code).append('"');
         if (authority != null) {
-            buffer.append(", AUTHORITY[\"").append(Citations.getIdentifier(authority)).append("\"]");
+            buffer.append(", ID[\"").append(Citations.getIdentifier(authority)).append("\"]");
         }
         if (deprecated) {
             buffer.append(", DEPRECATED");
