@@ -16,16 +16,22 @@
  */
 package org.apache.sis.io.wkt;
 
-import org.opengis.referencing.IdentifiedObject;
+import java.util.Map;
+import java.util.HashMap;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
+import static org.opengis.referencing.ReferenceSystem.*;
 import static org.apache.sis.referencing.Assert.*;
 
 
@@ -49,13 +55,28 @@ public final strictfp class FormatterTest extends TestCase {
     }
 
     /**
-     * Tests {@link Formatter#append(IdentifiedObject)} with a name that contains the quote character.
-     * We test that the closing quote character is doubled.
+     * Tests {@link Formatter#append(IdentifiedObject)} with a name that contains the quote character
+     * and optional information. We test that the closing quote character is doubled and the optional
+     * information properly formatted.
      */
     @Test
     public void testAppendIdentifiedObject() {
-        assertWktEquals("IdentifiedObject[“My “object””.”]",
-                new AbstractIdentifiedObject(singletonMap(IdentifiedObject.NAME_KEY, "My “object”.")));
+        final Map<String,Object> properties = new HashMap<>(8);
+        assertNull(properties.put(NAME_KEY, "My “object”."));
+        assertNull(properties.put(SCOPE_KEY, "Large scale topographic mapping and cadastre."));
+        assertNull(properties.put(REMARKS_KEY, "注です。"));
+        assertNull(properties.put(DOMAIN_OF_VALIDITY_KEY, new DefaultExtent("Netherlands offshore.",
+                new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77),
+                new DefaultVerticalExtent(10, 1000, HardCodedCRS.DEPTH),
+                new DefaultTemporalExtent()))); // TODO: needs sis-temporal module for testing that one.
+        assertWktEquals(
+                "ReferenceSystem[“My “object””.”,\n" +
+                "  SCOPE[“Large scale topographic mapping and cadastre.”],\n" +
+                "  AREA[“Netherlands offshore.”],\n" +
+                "  BBOX[51.43, 2.54, 55.77, 6.40],\n" +
+                "  VERTICALEXTENT[-1000.0, -10.0, LENGTHUNIT[“metre”, 1.0]],\n" +
+                "  REMARKS[“注です。”]]",
+                new AbstractReferenceSystem(properties));
     }
 
     /**

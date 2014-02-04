@@ -30,6 +30,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Range;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
@@ -204,6 +205,39 @@ public final class Extents extends Static {
             }
         }
         return range;
+    }
+
+    /**
+     * Returns the union of all time ranges found in the given extent, or {@code null} if none.
+     *
+     * @param  extent The extent to convert to a time range, or {@code null}.
+     * @return A time range created from the given extent, or {@code null} if none.
+     *
+     * @since 0.4
+     */
+    public static Range<Date> getTimeRange(final Extent extent) {
+        Date min = null;
+        Date max = null;
+        if (extent != null) {
+            for (final TemporalExtent t : extent.getTemporalElements()) {
+                final Date startTime, endTime;
+                if (t instanceof DefaultTemporalExtent) {
+                    final DefaultTemporalExtent dt = (DefaultTemporalExtent) t;
+                    startTime = dt.getStartTime(); // Maybe user has overridden those methods.
+                    endTime   = dt.getEndTime();
+                } else {
+                    final TemporalPrimitive p = t.getExtent();
+                    startTime = DefaultTemporalExtent.getTime(p, true);
+                    endTime   = DefaultTemporalExtent.getTime(p, false);
+                }
+                if (startTime != null && (min == null || startTime.before(min))) min = startTime;
+                if (  endTime != null && (max == null ||   endTime.after (max))) max =   endTime;
+            }
+        }
+        if (min == null && max == null) {
+            return null;
+        }
+        return new Range<>(Date.class, min, true, max, true);
     }
 
     /**

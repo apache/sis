@@ -19,12 +19,12 @@ package org.apache.sis.io.wkt;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
-import java.text.ParsePosition;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.text.ParsePosition;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.metadata.citation.Citation;
@@ -100,6 +100,13 @@ public class WKTFormat extends CompoundFormat<Object> {
      * The default indentation value.
      */
     static final byte DEFAULT_INDENTATION = 2;
+
+    /**
+     * The pattern of dates.
+     *
+     * @see #createFormat(Class)
+     */
+    static final String DATE_PATTERN = "yyyy-MM-dd";
 
     /**
      * The symbols to use for this formatter.
@@ -369,6 +376,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         if (formatter == null) {
             formatter = new Formatter(getLocale(), symbols,
                     (NumberFormat) getFormat(Number.class),
+                    (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class));
             updateFormatter(formatter);
             this.formatter = formatter;
@@ -426,7 +434,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             return UnitFormat.getInstance(symbols.getLocale());
         }
         if (valueType == Date.class) {
-            final DateFormat format = new SimpleDateFormat("yyyy-MM-dd", symbols.getLocale());
+            final DateFormat format = new SimpleDateFormat(DATE_PATTERN, symbols.getLocale());
             format.setTimeZone(getTimeZone());
             return format;
         }
