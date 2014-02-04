@@ -188,6 +188,12 @@ public class Formatter {
     private int bufferBase;
 
     /**
+     * Incremented when {@link #setColor(ElementKind)} is invoked, and decremented when {@link #resetColor()}
+     * is invoked. Used in order to prevent child elements to overwrite the colors decided by enclosing elements.
+     */
+    private int colorApplied;
+
+    /**
      * The amount of spaces to use in indentation, or {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE}
      * if indentation is disabled.
      *
@@ -372,10 +378,14 @@ public class Formatter {
      */
     private void setColor(final ElementKind type) {
         if (colors != null) {
-            final String color = colors.getAnsiSequence(type);
-            if (color != null) {
+            if (colorApplied == 0) {
+                final String color = colors.getAnsiSequence(type);
+                if (color == null) {
+                    return; // Do not increment 'colorApplied' for giving a chance to children to apply their colors.
+                }
                 buffer.append(color);
             }
+            colorApplied++;
         }
     }
 
@@ -384,7 +394,8 @@ public class Formatter {
      * This method does nothing unless syntax coloring has been explicitly enabled.
      */
     private void resetColor() {
-        if (colors != null) {
+        if (colors != null && --colorApplied <= 0) {
+            colorApplied = 0;
             buffer.append(FOREGROUND_DEFAULT);
         }
     }
@@ -552,7 +563,7 @@ public class Formatter {
          * Format remarks if any, and close the element.
          */
         if (info != null) {
-            append("REMARKS", info.getRemarks());
+            append("REMARKS", info.getRemarks(), ElementKind.REMARKS);
         }
         buffer.appendCodePoint(symbols.getClosingBracket(0));
         requestNewLine = true;
@@ -578,16 +589,18 @@ public class Formatter {
         } else {
             return;
         }
-        append("SCOPE", scope);
+        append("SCOPE", scope, ElementKind.SCOPE);
         if (area != null) {
-            append("AREA", area.getDescription());
+            append("AREA", area.getDescription(), ElementKind.EXTENT);
             append(Extents.getGeographicBoundingBox(area), 2);
             final MeasurementRange<Double> range = Extents.getVerticalRange(area);
             if (range != null) {
                 openElement("VERTICALEXTENT");
+                setColor(ElementKind.EXTENT);
                 append(range.getMinDouble());
                 append(range.getMaxDouble());
                 append(range.unit());
+                resetColor();
                 closeElement();
             }
         }
@@ -625,6 +638,7 @@ public class Formatter {
     public void append(final GeographicBoundingBox bbox, final int fractionDigits) {
         if (bbox != null) {
             openElement("BBOX");
+            setColor(ElementKind.EXTENT);
             numberFormat.setMinimumFractionDigits(fractionDigits);
             numberFormat.setMaximumFractionDigits(fractionDigits);
             numberFormat.setRoundingMode(RoundingMode.FLOOR);
@@ -633,6 +647,7 @@ public class Formatter {
             numberFormat.setRoundingMode(RoundingMode.CEILING);
             appendPreset(bbox.getNorthBoundLatitude());
             appendPreset(bbox.getEastBoundLongitude());
+            resetColor();
             closeElement();
         }
     }
@@ -840,13 +855,15 @@ public class Formatter {
      * @param keyword The keyword. Example: {@code "SCOPE"}, {@code "AREA"} or {@code "REMARKS"}.
      * @param text The text, or {@code null} if none.
      */
-    private void append(final String keyword, final InternationalString text) {
+    private void append(final String keyword, final InternationalString text, final ElementKind type) {
         if (text != null) {
             final String localized = CharSequences.trimWhitespaces(text.toString(locale));
             if (localized != null && !localized.isEmpty()) {
                 requestNewLine = true;
                 openElement(keyword);
+                setColor(type);
                 quote(localized);
+                resetColor();
                 closeElement();
             }
         }

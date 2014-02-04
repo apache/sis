@@ -52,7 +52,7 @@ public enum ElementKind {
     UNIT,
 
     /**
-     * {@linkplain org.opengis.referencing.cs.CoordinateSystemAxis Axes},
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis Coordinate system axes},
      * often represented by {@code AXIS[…]} elements.
      */
     AXIS,
@@ -63,22 +63,40 @@ public enum ElementKind {
     CODE_LIST,
 
     /**
-     * {@linkplain org.opengis.parameter.ParameterValue Parameter values},
+     * {@linkplain org.apache.sis.parameter.DefaultParameterValue Parameter values},
      * often represented by {@code PARAMETER[…]} elements.
      */
     PARAMETER,
 
     /**
-     * {@linkplain org.opengis.referencing.operation.OperationMethod Operation methods},
+     * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod Operation methods},
      * often represented by {@code PROJECTION[…]} elements.
      */
     METHOD,
 
     /**
-     * {@linkplain org.opengis.referencing.datum.Datum Datum},
+     * {@linkplain org.apache.sis.referencing.datum.AbstractDatum Datum},
      * often represented by {@code DATUM[…]} elements.
      */
     DATUM,
+
+    /**
+     * CRS, datum or operation {@linkplain org.apache.sis.referencing.AbstractReferenceSystem#getScope() scope},
+     * often represented by {@code SCOPE[…]} elements.
+     */
+    SCOPE,
+
+    /**
+     * CRS, datum or operation {@linkplain org.apache.sis.referencing.AbstractReferenceSystem#getDomainOfValidity()
+     * domain of validity}, often represented by {@code AREA[…]} or {@code BBOX[…]} elements.
+     */
+    EXTENT,
+
+    /**
+     * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getRemarks() Remarks},
+     * often represented by {@code REMARKS[…]} elements.
+     */
+    REMARKS,
 
     /**
      * Unformattable elements.
