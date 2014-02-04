@@ -74,7 +74,7 @@ public final strictfp class FormatterTest extends TestCase {
                 "  SCOPE[“Large scale topographic mapping and cadastre.”],\n" +
                 "  AREA[“Netherlands offshore.”],\n" +
                 "  BBOX[51.43, 2.54, 55.77, 6.40],\n" +
-                "  VERTICALEXTENT[-1000.0, -10.0, LENGTHUNIT[“metre”, 1.0]],\n" +
+                "  VERTICALEXTENT[-1000, -10, LENGTHUNIT[“metre”, 1.0]],\n" +
                 "  REMARKS[“注です。”]]",
                 new AbstractReferenceSystem(properties));
     }
