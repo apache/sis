@@ -16,9 +16,12 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Date;
 import java.util.Locale;
 import java.util.Collection;
 import java.text.NumberFormat;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.text.FieldPosition;
 import java.lang.reflect.Array;
 import java.math.RoundingMode;
@@ -56,6 +59,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -162,6 +166,11 @@ public class Formatter {
     private final NumberFormat numberFormat;
 
     /**
+     * The object to use for formatting dates.
+     */
+    private final DateFormat dateFormat;
+
+    /**
      * The object to use for formatting unit symbols.
      */
     private final UnitFormat unitFormat;
@@ -263,6 +272,7 @@ public class Formatter {
         this.symbols      = symbols.immutable();
         this.indentation  = (byte) indentation;
         this.numberFormat = symbols.createNumberFormat();
+        this.dateFormat   = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
         this.unitFormat   = UnitFormat.getInstance(symbols.getLocale());
         this.buffer       = new StringBuffer();
     }
@@ -271,13 +281,16 @@ public class Formatter {
      * Constructor for private use by {@link WKTFormat#getFormatter()} only. This allows to use the number
      * format created by {@link WKTFormat#createFormat(Class)}, which may be overridden by the user.
      */
-    Formatter(final Locale locale, final Symbols symbols, final NumberFormat numberFormat, final UnitFormat unitFormat) {
+    Formatter(final Locale locale, final Symbols symbols, final NumberFormat numberFormat,
+            final DateFormat dateFormat, final UnitFormat unitFormat)
+    {
         this.locale       = locale;
         this.convention   = Convention.DEFAULT;
         this.authority    = Convention.DEFAULT.getNameAuthority();
         this.symbols      = symbols;
         this.indentation  = WKTFormat.DEFAULT_INDENTATION;
         this.numberFormat = numberFormat; // No clone needed.
+        this.dateFormat   = dateFormat;   // No clone needed.
         this.unitFormat   = unitFormat;   // No clone needed.
         // Do not set the buffer. It will be set by WKTFormat.format(…).
     }
@@ -601,7 +614,20 @@ public class Formatter {
                 setColor(ElementKind.EXTENT);
                 append(range.getMinDouble());
                 append(range.getMaxDouble());
-                append(range.unit());
+                final Unit<?> unit = range.unit();
+                if (!convention.isSimple() || !SI.METRE.equals(unit)) {
+                    requestNewLine = false;
+                    append(unit); // Unit are optional if they are metres.
+                }
+                resetColor();
+                closeElement();
+            }
+            final Range<Date> timeRange = Extents.getTimeRange(area);
+            if (timeRange != null) {
+                openElement("TIMEEXTENT");
+                setColor(ElementKind.EXTENT);
+                append(timeRange.getMinValue());
+                append(timeRange.getMaxValue());
                 resetColor();
                 closeElement();
             }
@@ -894,6 +920,19 @@ public class Formatter {
             fromIndex += n;
         }
         buffer.append(quote);
+    }
+
+    /**
+     * Appends a date.
+     * The {@linkplain Symbols#getSeparator() element separator} will be written before the date if needed.
+     *
+     * @param date The date to append to the WKT, or {@code null} if none.
+     */
+    public void append(final Date date) {
+        if (date != null) {
+            appendSeparator(false);
+            dateFormat.format(date, buffer, dummy);
+        }
     }
 
     /**

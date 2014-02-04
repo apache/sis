@@ -131,6 +131,12 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedCS.GRAVITY_RELATED_HEIGHT), HardCodedDatum.MEAN_SEA_LEVEL, HardCodedCS.GRAVITY_RELATED_HEIGHT);
 
     /**
+     * A vertical coordinate reference system using Mean Sea Level datum.
+     */
+    public static final DefaultVerticalCRS DEPTH = new DefaultVerticalCRS(
+            getProperties(HardCodedCS.DEPTH), HardCodedDatum.MEAN_SEA_LEVEL, HardCodedCS.DEPTH);
+
+    /**
      * A temporal coordinate reference system for time in days elapsed since the Unix epoch.
      */
     public static final DefaultTemporalCRS TIME = new DefaultTemporalCRS(

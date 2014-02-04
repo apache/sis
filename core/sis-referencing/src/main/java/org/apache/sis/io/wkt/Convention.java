@@ -73,6 +73,8 @@ public enum Convention {
      *   <li>{@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT} and
      *       {@code TIMEUNIT} are formatted as plain {@code UNIT} elements.</li>
      *   <li>In {@code AXIS} elements, the {@code ORDER} elements are omitted.</li>
+     *   <li>In {@code VERTICALEXTENT} elements, the {@code UNIT} element is omitted
+     *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
      * </ul>
      *
      * Those simplifications are allowed by the ISO 19162 standard and do not cause any information lost.
