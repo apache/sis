@@ -462,6 +462,8 @@ public class Formatter {
      *   <li>Append the {@code SCOPE[…]} element, if any (WKT 2 only).</li>
      *   <li>Append the {@code AREA[…]} element, if any (WKT 2 only).</li>
      *   <li>Append the {@code BBOX[…]} element, if any (WKT 2 only).</li>
+     *   <li>Append the {@code VERTICALEXTENT[…]} element, if any (WKT 2 only).</li>
+     *   <li>Append the {@code TIMEEXTENT[…]} element, if any (WKT 2 only).</li>
      *   <li>Append the {@code ID[…]} (WKT 2) or {@code AUTHORITY[…]}} (WKT 1) element, if any.</li>
      *   <li>Append the {@code REMARKS[…]} element, if any (WKT 2 only).</li>
      * </ul>
@@ -562,7 +564,7 @@ public class Formatter {
         /*
          * Format remarks if any, and close the element.
          */
-        if (info != null) {
+        if (!isWKT1 && info != null) {
             append("REMARKS", info.getRemarks(), ElementKind.REMARKS);
         }
         buffer.appendCodePoint(symbols.getClosingBracket(0));
