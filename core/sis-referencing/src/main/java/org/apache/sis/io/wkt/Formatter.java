@@ -95,6 +95,18 @@ public class Formatter {
     private static final Class<? extends IdentifiedObject> AUTHORITY_EXCLUDE = CoordinateSystemAxis.class;
 
     /**
+     * Accuracy of geographic bounding boxes, in number of fraction digits.
+     * We use the accuracy recommended by ISO 19162.
+     */
+    private static final int BBOX_ACCURACY = 2;
+
+    /**
+     * Maximal accuracy of vertical extents, in number of fraction digits.
+     * The value used here is arbitrary and may change in any future SIS version.
+     */
+    private static final int VERTICAL_ACCURACY = 3;
+
+    /**
      * The value of {@code X364.FOREGROUND_DEFAULT.sequence()}, hard-coded for avoiding
      * {@link org.apache.sis.internal.util.X364} class loading.
      */
@@ -607,13 +619,17 @@ public class Formatter {
         append("SCOPE", scope, ElementKind.SCOPE);
         if (area != null) {
             append("AREA", area.getDescription(), ElementKind.EXTENT);
-            append(Extents.getGeographicBoundingBox(area), 2);
+            append(Extents.getGeographicBoundingBox(area), BBOX_ACCURACY);
             final MeasurementRange<Double> range = Extents.getVerticalRange(area);
             if (range != null) {
                 openElement("VERTICALEXTENT");
                 setColor(ElementKind.EXTENT);
-                append(range.getMinDouble());
-                append(range.getMaxDouble());
+                numberFormat.setMinimumFractionDigits(0);
+                numberFormat.setMaximumFractionDigits(VERTICAL_ACCURACY);
+                numberFormat.setRoundingMode(RoundingMode.FLOOR);
+                appendPreset(range.getMinDouble());
+                numberFormat.setRoundingMode(RoundingMode.CEILING);
+                appendPreset(range.getMaxDouble());
                 final Unit<?> unit = range.unit();
                 if (!convention.isSimple() || !SI.METRE.equals(unit)) {
                     requestNewLine = false;
@@ -1201,5 +1217,6 @@ public class Formatter {
         highlightError = false;
         requestNewLine = false;
         margin         = 0;
+        colorApplied   = 0;
     }
 }
