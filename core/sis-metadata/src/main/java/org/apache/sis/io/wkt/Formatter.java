@@ -33,7 +33,6 @@ import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -63,6 +62,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
 
 
@@ -249,7 +249,7 @@ public class Formatter {
      * @see #isInvalidWKT()
      * @see #getErrorMessage()
      */
-    String invalidElement;
+    private String invalidElement;
 
     /**
      * Error that occurred during WKT formatting, or {@code null} if none.
@@ -378,12 +378,12 @@ public class Formatter {
      * @param  info The object to look for a preferred identifier, or {@code null} if none.
      * @return The preferred identifier, or {@code null} if none.
      */
-    public Identifier getIdentifier(final IdentifiedObject info) {
-        Identifier first = null;
+    public ReferenceIdentifier getIdentifier(final IdentifiedObject info) {
+        ReferenceIdentifier first = null;
         if (info != null) {
-            final Collection<? extends Identifier> identifiers = info.getIdentifiers();
+            final Collection<ReferenceIdentifier> identifiers = info.getIdentifiers();
             if (identifiers != null) {
-                for (final Identifier id : identifiers) {
+                for (final ReferenceIdentifier id : identifiers) {
                     if (Citations.identifierMatches(authority, id.getAuthority())) {
                         return id;
                     }
@@ -499,31 +499,13 @@ public class Formatter {
             return;
         }
         final StringBuffer buffer = this.buffer;
-        /*
-         * Formats the opening bracket and the object name (e.g. "NAD27").
-         * The WKT entity name (e.g. "PROJCS") will be formatted later.
-         * The result of this code portion looks like the following:
-         *
-         *         <previous text>,
-         *           ["NAD27 / Idaho Central"
-         */
-        appendSeparator(true);
+        appendSeparator(requestNewLine || !(object instanceof ReferenceIdentifier));
         int base = buffer.length();
         buffer.appendCodePoint(symbols.getOpeningBracket(0));
         final IdentifiedObject info = (object instanceof IdentifiedObject) ? (IdentifiedObject) object : null;
-        if (info != null) {
-            final ElementKind type = ElementKind.forType(info.getClass());
-            if (type != null) {
-                setColor(type);
-            }
-            quote(getName(info));
-            if (type != null) {
-                resetColor();
-            }
-        }
         /*
-         * Formats the part after the object name, then insert the WKT element name in front of them.
-         * The result of this code portion looks like the following:
+         * Formats the inner part, then prepend the WKT keyword.
+         * The result looks like the following:
          *
          *         <previous text>,
          *           PROJCS["NAD27 / Idaho Central",
@@ -533,6 +515,15 @@ public class Formatter {
         indent(+1);
         requestNewLine = false;
         String keyword = object.formatTo(this);
+        if (keyword == null) {
+            if (info != null) {
+                setInvalidWKT(info);
+                keyword = getName(info.getClass());
+            } else {
+                setInvalidWKT(object.getClass());
+                keyword = invalidElement;
+            }
+        }
         if (colors != null && highlightError) {
             highlightError = false;
             final String color = colors.getAnsiSequence(ElementKind.ERROR);
@@ -561,7 +552,11 @@ public class Formatter {
          *             ID["EPSG", 26769]]
          */
         if (!ID_EXCLUDE.isInstance(info)) {
-            append(getIdentifier(info));
+            ReferenceIdentifier id = getIdentifier(info);
+            if (!(id instanceof FormattableObject)) {
+                id = ImmutableIdentifier.castOrCopy(id);
+            }
+            append((FormattableObject) id);
         }
         /*
          * Format remarks if any, and close the element.
@@ -643,58 +638,6 @@ public class Formatter {
                 object = ReferencingServices.getInstance().toFormattableObject(object);
             }
             append((FormattableObject) object);
-        }
-    }
-
-    /**
-     * Appends the given identifier in an {@code ID[…]} (WKT 2) or {@code AUTHORITY[…]} (WKT 1) element.
-     * The identifier may be added on the same line then the previous element or in a new line depending
-     * on the enclosing element.
-     *
-     * {@example Identifier added on the same line:
-     * <blockquote><pre>SPHEROID["Clarke 1866", …, <b>ID["EPSG", 7008]</b>]</pre></blockquote>}
-     *
-     * {@example Identifier added on a new line:
-     * <blockquote><pre>PROJCS["NAD27 / Idaho Central",
-     *   GEOGCS[...etc...],
-     *   ...etc...
-     *   <b>ID["EPSG", 26769]</b>]</pre></blockquote>}
-     *
-     * @param identifier The identifier to append to the WKT, or {@code null} if none.
-     */
-    public void append(final Identifier identifier) {
-        if (identifier != null) {
-            final String code = identifier.getCode();
-            if (code != null) {
-                String citation  = Citations.getIdentifier(identifier.getAuthority());
-                String codeSpace = null;
-                if (identifier instanceof ReferenceIdentifier) {
-                    codeSpace = ((ReferenceIdentifier) identifier).getCodeSpace();
-                }
-                if (codeSpace == null) {
-                    codeSpace = citation;
-                    citation  = null;
-                }
-                if (codeSpace != null) {
-                    if (convention.isWKT1()) {
-                        openElement("AUTHORITY");
-                        append(codeSpace);
-                        append(code);
-                    } else {
-                        openElement("ID");
-                        append(codeSpace);
-                        appendIntegerOrText(code);
-                        if (identifier instanceof ReferenceIdentifier) {
-                            final String version = ((ReferenceIdentifier) identifier).getVersion();
-                            if (version != null) {
-                                appendIntegerOrText(version);
-                                append(citation);
-                            }
-                        }
-                    }
-                    closeElement();
-                }
-            }
         }
     }
 
@@ -884,7 +827,7 @@ public class Formatter {
             append(((Boolean) value).booleanValue());
         } else {
             append((value instanceof InternationalString) ?
-                    ((InternationalString) value).toString(locale) : value.toString());
+                    ((InternationalString) value).toString(locale) : value.toString(), null);
         }
     }
 
@@ -907,11 +850,14 @@ public class Formatter {
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the text if needed.
      *
      * @param text The string to format to the WKT, or {@code null} if none.
+     * @param type The key of the colors to apply if syntax coloring is enabled.
      */
-    public void append(final String text) {
+    public void append(final String text, final ElementKind type) {
         if (text != null) {
             appendSeparator(false);
+            setColor(type);
             quote(text);
+            resetColor();
         }
     }
 
@@ -976,25 +922,6 @@ public class Formatter {
             }
         }
         buffer.append(quote);
-    }
-
-    /**
-     * Appends the given text as an integer if possible, or as a text otherwise.
-     *
-     * {@note ISO 19162 specifies "number or text". In Apache SIS, we restrict the numbers to integers
-     *        because handling version numbers like "8.2" as floating point numbers can be confusing.}
-     */
-    private void appendIntegerOrText(final String text) {
-        if (text != null) {
-            final long n;
-            try {
-                n = Long.parseLong(text);
-            } catch (NumberFormatException e) {
-                append(text);
-                return;
-            }
-            append(n);
-        }
     }
 
     /**
@@ -1206,12 +1133,11 @@ public class Formatter {
     public void setInvalidWKT(final IdentifiedObject unformattable) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
         String name = getName(unformattable);
-        if (name != null) {
-            invalidElement = name;
-            highlightError = true;
-        } else {
-            setInvalidWKT(unformattable.getClass());
+        if (name == null) {
+            name = getName(unformattable.getClass());
         }
+        invalidElement = name;
+        highlightError = true;
     }
 
     /**
@@ -1221,8 +1147,17 @@ public class Formatter {
      *
      * @param unformattable The class of the object that can not be formatted,
      */
-    public void setInvalidWKT(Class<?> unformattable) {
+    public void setInvalidWKT(final Class<?> unformattable) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
+        invalidElement = getName(unformattable);
+        highlightError = true;
+    }
+
+    /**
+     * Returns the name of the GeoAPI interface implemented by the given class.
+     * If no GeoAPI interface is found, fallback on the class name.
+     */
+    private static String getName(Class<?> unformattable) {
         if (!unformattable.isInterface()) {
             for (final Class<?> candidate : unformattable.getInterfaces()) {
                 if (candidate.getName().startsWith("org.opengis.")) {
@@ -1231,8 +1166,7 @@ public class Formatter {
                 }
             }
         }
-        invalidElement = Classes.getShortName(unformattable);
-        highlightError = true;
+        return Classes.getShortName(unformattable);
     }
 
     /**

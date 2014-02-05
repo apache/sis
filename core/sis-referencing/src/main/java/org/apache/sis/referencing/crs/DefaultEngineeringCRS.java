@@ -258,8 +258,8 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * @return The name of the WKT element type, which is {@code "LOCAL_CS"}.
      */
     @Override
-    public String formatTo(final Formatter formatter) { // TODO: should be protected.
-        formatDefaultWKT(formatter);
+    protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
         return "LOCAL_CS";
     }
 }

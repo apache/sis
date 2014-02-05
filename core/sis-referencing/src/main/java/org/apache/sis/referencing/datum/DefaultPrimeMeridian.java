@@ -338,6 +338,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
         Unit<Angle> unit = formatter.getAngularUnit();
         if (unit == null) {
             unit = NonSI.DEGREE_ANGLE;

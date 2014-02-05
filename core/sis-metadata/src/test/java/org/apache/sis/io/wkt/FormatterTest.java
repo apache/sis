@@ -57,7 +57,7 @@ public final strictfp class FormatterTest extends TestCase {
     }
 
     /**
-     * Tests {@link Formatter#append(Matrix)}.
+     * Tests (indirectly) {@link Formatter#append(Matrix)}.
      */
     @Test
     public void testAppendMatrix() {

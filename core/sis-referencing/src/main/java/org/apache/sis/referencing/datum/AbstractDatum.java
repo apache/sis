@@ -31,7 +31,6 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 
@@ -450,7 +449,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        final String keyword = super.formatTo(formatter);
         formatter.append(getLegacyDatumType());
-        return Classes.getShortClassName(this);
+        return keyword;
     }
 }

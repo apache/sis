@@ -218,6 +218,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        formatter.append(formatter.getName(this), null);
         final Unit<?> unit = getUnit();
         final GeodeticDatum datum = getDatum();
         formatter.append(datum);

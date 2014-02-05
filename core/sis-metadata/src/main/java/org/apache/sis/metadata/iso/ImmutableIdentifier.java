@@ -21,17 +21,16 @@ import java.util.Locale;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.simple.SimpleIdentifiedObject;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
@@ -125,7 +124,7 @@ import java.util.Objects;
  * @see DefaultIdentifier
  */
 @XmlRootElement(name = "RS_Identifier")
-public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
+public class ImmutableIdentifier extends FormattableObject implements ReferenceIdentifier, Deprecable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -524,19 +523,58 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
     }
 
     /**
-     * Returns a string representation of this identifier.
-     * The string representation is mostly for debugging purpose and may change in any future SIS version.
-     * The default implementation returns a pseudo-WKT format.
+     * Formats a <cite>Well Known Text</cite> representation of this identifier.
      *
-     * {@note The <code>NamedIdentifier</code> subclass overrides this method with a different behavior,
-     *        in order to be compliant with the contract of the <code>GenericName</code> interface.}
-     *
-     * @see org.apache.sis.referencing.IdentifiedObjects#toString(Identifier)
-     * @see org.apache.sis.referencing.NamedIdentifier#toString()
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return The WKT keyword: {@code "ID"} (WKT 2) or {@code "AUTHORITY"} (WKT 1).
      */
-    @Debug
     @Override
-    public String toString() {
-        return SimpleIdentifiedObject.toString("IDENTIFIER", authority, codeSpace, code, isDeprecated());
+    protected String formatTo(Formatter formatter) {
+        String keyword = null;
+        final String code = getCode();
+        if (code != null) {
+            String citation = Citations.getIdentifier(getAuthority());
+            String codeSpace = getCodeSpace();
+            if (codeSpace == null) {
+                codeSpace = citation;
+                citation  = null;
+            }
+            if (codeSpace != null) {
+                if (formatter.getConvention().isWKT1()) {
+                    keyword = "AUTHORITY";
+                    formatter.append(codeSpace, null);
+                    formatter.append(code, null);
+                } else {
+                    keyword = "ID";
+                    formatter.append(codeSpace, null);
+                    append(formatter, code);
+                    final String version = getVersion();
+                    if (version != null) {
+                        append(formatter, version);
+                        formatter.append(citation, null);
+                    }
+                }
+            }
+        }
+        return keyword;
+    }
+
+    /**
+     * Appends the given text as an integer if possible, or as a text otherwise.
+     *
+     * {@note ISO 19162 specifies "number or text". In Apache SIS, we restrict the numbers to integers
+     *        because handling version numbers like "8.2" as floating point numbers can be confusing.}
+     */
+    private static void append(final Formatter formatter, final String text) {
+        if (text != null) {
+            final long n;
+            try {
+                n = Long.parseLong(text);
+            } catch (NumberFormatException e) {
+                formatter.append(text, null);
+                return;
+            }
+            formatter.append(n);
+        }
     }
 }
