@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.internal.metadata;
 
 import java.util.Collection;
+import java.util.Iterator;
 import javax.measure.unit.Unit;
 import org.opengis.parameter.*;
 import org.opengis.referencing.*;
@@ -24,9 +25,14 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.util.resources.Errors;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.util.GenericName;
+import org.opengis.util.NameSpace;
 import org.apache.sis.util.Static;
+
+import static org.apache.sis.internal.util.Citations.iterator;
+import static org.apache.sis.internal.util.Citations.identifierMatches;
 
 
 /**
@@ -103,20 +109,93 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Retrieves the value at the specified row and column of the given matrix, wrapped in a {@code Number}.
-     * The {@code Number} type depends on the matrix accuracy.
+     * Returns an object name according the given authority. This method is {@code null}-safe:
+     * every properties are checked for null values, even the properties that are supposed to
+     * be mandatory (not all implementation defines all mandatory values).
      *
-     * @param matrix The matrix from which to get the number.
-     * @param row    The row index, from 0 inclusive to {@link Matrix#getNumRow()} exclusive.
-     * @param column The column index, from 0 inclusive to {@link Matrix#getNumCol()} exclusive.
-     * @return       The current value at the given row and column.
+     * @param  object    The object to get the name from, or {@code null}.
+     * @param  authority The authority for the name to return, or {@code null} for any authority.
+     * @param  addTo     If non-null, the collection where to add all names found.
+     * @return The object's name (either an {@linkplain ReferenceIdentifier#getCode() identifier code}
+     *         or a {@linkplain GenericName#tip() name tip}), or {@code null} if no name matching the
+     *         specified authority has been found.
      */
-    public static Number getNumber(final Matrix matrix, final int row, final int column) {
-        if (matrix instanceof MatrixSIS) {
-            return ((MatrixSIS) matrix).getNumber(row, column);
-        } else {
-            return matrix.getElement(row, column);
+    public static String getName(final IdentifiedObject object, final Citation authority, final Collection<String> addTo) {
+        if (object != null) {
+            Identifier identifier = object.getName();
+            if (authority == null) {
+                if (identifier != null) {
+                    final String name = identifier.getCode();
+                    if (name != null) {
+                        if (addTo == null) {
+                            return name;
+                        }
+                        addTo.add(name);
+                    }
+                }
+                final Iterator<GenericName> it = iterator(object.getAlias());
+                if (it != null) while (it.hasNext()) {
+                    final GenericName alias = it.next();
+                    if (alias != null) {
+                        final String name = (alias instanceof Identifier) ?
+                                ((Identifier) alias).getCode() : alias.toString();
+                        if (name != null) {
+                            if (addTo == null) {
+                                return name;
+                            }
+                            addTo.add(name);
+                        }
+                    }
+                }
+            } else {
+                if (identifier != null) {
+                    if (identifierMatches(authority, identifier.getAuthority())) {
+                        final String name = identifier.getCode();
+                        if (name != null) {
+                            if (addTo == null) {
+                                return name;
+                            }
+                            addTo.add(name);
+                        }
+                    }
+                }
+                final Iterator<GenericName> it = iterator(object.getAlias());
+                if (it != null) while (it.hasNext()) {
+                    final GenericName alias = it.next();
+                    if (alias != null) {
+                        if (alias instanceof Identifier) {
+                            identifier = (Identifier) alias;
+                            if (identifierMatches(authority, identifier.getAuthority())) {
+                                final String name = identifier.getCode();
+                                if (name != null) {
+                                    if (addTo == null) {
+                                        return name;
+                                    }
+                                    addTo.add(name);
+                                }
+                            }
+                        } else {
+                            final NameSpace ns = alias.scope();
+                            if (ns != null) {
+                                final GenericName scope = ns.name();
+                                if (scope != null) {
+                                    if (identifierMatches(authority, scope.toString())) {
+                                        final String name = alias.toString();
+                                        if (name != null) {
+                                            if (addTo == null) {
+                                                return name;
+                                            }
+                                            addTo.add(name);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+        return null;
     }
 
     /**
@@ -129,8 +208,6 @@ public final class ReferencingUtilities extends Static {
      *
      * @param cs The coordinate system for which to get the unit, or {@code null}.
      * @return The unit for all axis in the given coordinate system, or {@code null}.
-     *
-     * @since 0.4
      */
     public static Unit<?> getUnit(final CoordinateSystem cs) {
         Unit<?> unit = null;
@@ -181,31 +258,5 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return sameContent;
-    }
-
-    /**
-     * Ensures that the given argument value is {@code false}. This method is invoked by private setter methods,
-     * which are themselves invoked by JAXB at unmarshalling time. Invoking this method from those setter methods
-     * serves two purposes:
-     *
-     * <ul>
-     *   <li>Make sure that a singleton property is not defined twice in the XML document.</li>
-     *   <li>Protect ourselves against changes in immutable objects outside unmarshalling. It should
-     *       not be necessary since the setter methods shall not be public, but we are paranoiac.</li>
-     *   <li>Be a central point where we can trace all setter methods, in case we want to improve
-     *       warning or error messages in future SIS versions.</li>
-     * </ul>
-     *
-     * @param  name The property name, used only in case of error message to format.
-     * @param  isDefined Whether the property in the caller object is current defined.
-     * @return {@code true} if the caller can set the property.
-     * @throws IllegalStateException If {@code isDefined} is {@code true}.
-     */
-    public static boolean canSetProperty(final String name, final boolean isDefined) throws IllegalStateException {
-        if (isDefined) {
-            // Future SIS version could log a warning instead if a unmarshalling is in progress.
-            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));
-        }
-        return true;
     }
 }

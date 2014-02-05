@@ -51,7 +51,7 @@ import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;

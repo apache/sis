@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.internal.metadata;
 
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
@@ -24,7 +24,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
+import static org.apache.sis.internal.metadata.ReferencingUtilities.*;
 
 
 /**

@@ -31,7 +31,7 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 

@@ -25,14 +25,10 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
-import org.apache.sis.io.wkt.Symbols;
-import org.apache.sis.io.wkt.WKTFormat;
-import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 
@@ -48,23 +44,11 @@ import static java.lang.StrictMath.*;
  * @version 0.4
  * @module
  */
-public strictfp class Assert extends org.apache.sis.test.Assert {
+public strictfp class Assert extends org.apache.sis.test.MetadataAssert {
     /**
      * The tolerance threshold for strict comparisons of floating point values.
      */
     private static final double STRICT = 0;
-
-    /**
-     * The formatter to be used by {@link #assertWktEquals(Object, String)}.
-     * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}
-     * for easier readability of {@link String} constants in Java code.
-     */
-    private static final WKTFormat WKT_FORMAT = new WKTFormat(null, null);
-    static {
-        final Symbols s = new Symbols(Symbols.SQUARE_BRACKETS);
-        s.setPairedQuotes("“”", "\"\"");
-        WKT_FORMAT.setSymbols(s);
-    }
 
     /**
      * For subclass constructor only.
@@ -329,42 +313,6 @@ public strictfp class Assert extends org.apache.sis.test.Assert {
             }
             assertEquals(0, n); // Opportunist check of this assert method.
             assertFalse("e1.contains(" + pos + ')', e1.contains(pos));
-        }
-    }
-
-    /**
-     * Asserts that the WKT 2 of the given object is equal to the expected one.
-     * This method expected the {@code “…”} quotation marks instead of {@code "…"}
-     * for easier readability of {@link String} constants in Java code.
-     *
-     * @param expected The expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object The object to format in <cite>Well Known Text</cite> format, or {@code null}.
-     */
-    public static void assertWktEquals(final String expected, final Object object) {
-        assertWktEquals(Convention.WKT2, expected, object);
-    }
-
-    /**
-     * Asserts that the WKT of the given object according the given convention is equal to the expected one.
-     * This method expected the {@code “…”} quotation marks instead of {@code "…"} for easier readability of
-     * {@link String} constants in Java code.
-     *
-     * @param convention The WKT convention to use.
-     * @param expected   The expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object     The object to format in <cite>Well Known Text</cite> format, or {@code null}.
-     */
-    public static void assertWktEquals(final Convention convention, final String expected, final Object object) {
-        if (expected == null) {
-            assertNull(object);
-        } else {
-            assertNotNull(object);
-            final String wkt;
-            synchronized (WKT_FORMAT) {
-                WKT_FORMAT.setConvention(convention);
-                wkt = WKT_FORMAT.format(object);
-            }
-            assertMultilinesEquals((object instanceof IdentifiedObject) ?
-                    ((IdentifiedObject) object).getName().getCode() : object.getClass().getSimpleName(), expected, wkt);
         }
     }
 }

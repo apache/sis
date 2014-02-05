@@ -38,7 +38,7 @@ import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -57,7 +57,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;

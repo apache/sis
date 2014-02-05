@@ -59,12 +59,11 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 
 /**
@@ -98,7 +97,7 @@ public class Formatter {
      * Accuracy of geographic bounding boxes, in number of fraction digits.
      * We use the accuracy recommended by ISO 19162.
      */
-    private static final int BBOX_ACCURACY = 2;
+    static final int BBOX_ACCURACY = 2;
 
     /**
      * Maximal accuracy of vertical extents, in number of fraction digits.
@@ -360,12 +359,12 @@ public class Formatter {
      * @return The preferred name, or {@code null} if the given object has no name.
      *
      * @see WKTFormat#getNameAuthority()
-     * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
+     * @see org.apache.sis.referencing.IdentifiedObjects#getName(IdentifiedObject, Citation)
      */
     public String getName(final IdentifiedObject object) {
-        String name = IdentifiedObjects.getName(object, authority);
+        String name = ReferencingUtilities.getName(object, authority, null);
         if (name == null) {
-            name = IdentifiedObjects.getName(object, null);
+            name = ReferencingUtilities.getName(object, null, null);
         }
         return name;
     }
@@ -638,10 +637,12 @@ public class Formatter {
      *
      * @param object The identified object to append to the WKT, or {@code null} if none.
      */
-    public void append(final IdentifiedObject object) {
+    public void append(IdentifiedObject object) {
         if (object != null) {
-            append(object instanceof FormattableObject ? (FormattableObject) object :
-                   AbstractIdentifiedObject.castOrCopy(object));
+            if (!(object instanceof FormattableObject)) {
+                object = ReferencingServices.getInstance().toFormattableObject(object);
+            }
+            append((FormattableObject) object);
         }
     }
 
@@ -737,17 +738,20 @@ public class Formatter {
         if (transform != null) {
             if (transform instanceof FormattableObject) {
                 append((FormattableObject) transform);
-            } else if (transform instanceof LinearTransform) {
-                appendSeparator(true);
-                buffer.append("PARAM_MT").appendCodePoint(symbols.getOpeningBracket(0));
-                quote("Affine");
-                indent(+1);
-                append(((LinearTransform) transform).getMatrix());
-                indent(-1);
-                buffer.appendCodePoint(symbols.getClosingBracket(0));
             } else {
-                throw new UnformattableObjectException(Errors.format(
-                        Errors.Keys.IllegalClass_2, FormattableObject.class, transform.getClass()));
+                final Matrix matrix = ReferencingServices.getInstance().getMatrix(transform);
+                if (matrix != null) {
+                    appendSeparator(true);
+                    buffer.append("PARAM_MT").appendCodePoint(symbols.getOpeningBracket(0));
+                    quote("Affine");
+                    indent(+1);
+                    append(matrix);
+                    indent(-1);
+                    buffer.appendCodePoint(symbols.getClosingBracket(0));
+                } else {
+                    throw new UnformattableObjectException(Errors.format(
+                            Errors.Keys.IllegalClass_2, FormattableObject.class, transform.getClass()));
+                }
             }
         }
     }

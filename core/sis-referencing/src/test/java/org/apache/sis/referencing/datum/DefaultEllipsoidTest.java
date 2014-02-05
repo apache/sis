@@ -30,7 +30,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**

@@ -25,7 +25,7 @@ import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 
-import static org.apache.sis.internal.referencing.ReferencingUtilities.toURNType;
+import static org.apache.sis.internal.metadata.ReferencingUtilities.toURNType;
 
 
 /**
