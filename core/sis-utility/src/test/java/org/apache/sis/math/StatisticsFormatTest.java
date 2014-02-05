@@ -25,7 +25,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link StatisticsFormat}.
+ * Tests the {@link StatisticsFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)

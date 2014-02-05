@@ -34,7 +34,7 @@ import static org.apache.sis.test.mock.GeodeticDatumMock.WGS84;
 
 
 /**
- * Tests {@link BursaWolfParameters}.
+ * Tests the {@link BursaWolfParameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-2.2)

@@ -29,7 +29,7 @@ import static org.apache.sis.util.CharSequences.*;
 
 
 /**
- * Tests {@link CharSequences} methods.
+ * Tests the {@link CharSequences} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)

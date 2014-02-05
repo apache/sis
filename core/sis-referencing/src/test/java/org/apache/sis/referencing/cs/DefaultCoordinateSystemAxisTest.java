@@ -32,7 +32,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 
 
 /**
- * Tests {@link DefaultCoordinateSystemAxis}.
+ * Tests the {@link DefaultCoordinateSystemAxis} class.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4 (derived from geotk-2.2)

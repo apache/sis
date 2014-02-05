@@ -32,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link DefaultCompoundCRS}
+ * Tests the {@link DefaultCompoundCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
