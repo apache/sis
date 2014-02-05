@@ -43,6 +43,8 @@ import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.ComparisonMode;
@@ -891,5 +893,41 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     protected long computeHashCode() {
         return Objects.hash(name, nonNull(alias), nonNull(identifiers), remarks) ^ getInterface().hashCode();
+    }
+
+    /**
+     * Formats the inner part of this <cite>Well Known Text</cite> (WKT) element into the given formatter.
+     * The default implementation writes the following elements:
+     *
+     * <ul>
+     *   <li>The object {@linkplain #getName() name}.</li>
+     * </ul>
+     *
+     * <p>Keywords and authority codes shall not be formatted here.
+     * For example if this formattable element is for a {@code GEOGCS} element,
+     * then this method shall write the content starting at the insertion point shows below:</p>
+     *
+     * {@preformat text
+     *     GEOGCS["WGS 84", ID["EPSG", 4326]]
+     *                    ↑
+     *            (insertion point)
+     * }
+     *
+     * {@section Declaring the WKT as invalid}
+     * If the implementation can not format a strictly compliant WKT, then it shall declare the WKT
+     * as invalid using <em>one</em> of the following ways:
+     *
+     * <ul>
+     *   <li>Invoke one of the {@link Formatter#setInvalidWKT(Class) Formatter#setInvalidWKT(…)} methods, or</li>
+     *   <li>Returns {@code null}.</li>
+     * </ul>
+     *
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return The WKT element keyword (e.g. {@code "GEOGCS"}), or {@code null} if none.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        formatter.append(formatter.getName(this), ElementKind.forType(getClass()));
+        return null;
     }
 }

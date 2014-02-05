@@ -401,6 +401,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * The default implementation writes the following elements:
      *
      * <ul>
+     *   <li>The object {@linkplain #getName() name}.</li>
      *   <li>The datum, if any.</li>
      *   <li>The unit if all axes use the same unit. Otherwise the unit is omitted and the WKT format
      *       is {@linkplain Formatter#setInvalidWKT(IdentifiedObject) flagged as invalid}.</li>
@@ -412,16 +413,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        formatDefaultWKT(formatter);
-        // Will declares the WKT as invalid.
-        return super.formatTo(formatter);
-    }
-
-    /**
-     * Default implementation of {@link #formatTo(Formatter)}.
-     * For {@link DefaultEngineeringCRS} and {@link DefaultVerticalCRS} use only.
-     */
-    final void formatDefaultWKT(final Formatter formatter) {
+        final String keyword = super.formatTo(formatter);
         formatter.append(getDatum());
         final Unit<?> unit = getUnit();
         formatter.append(unit);
@@ -433,5 +425,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         if (unit == null) {
             formatter.setInvalidWKT(cs);
         }
+        return keyword;
     }
 }

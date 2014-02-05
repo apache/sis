@@ -759,6 +759,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
         final double ivf = getInverseFlattening();
         formatter.append(getAxisUnit().getConverterTo(SI.METRE).convert(getSemiMajorAxis()));
         formatter.append(isInfinite(ivf) ? 0 : ivf);

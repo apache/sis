@@ -28,7 +28,7 @@ import org.apache.sis.internal.util.X364;
 
 /**
  * Base class for objects that can be formatted as <cite>Well Known Text</cite> (WKT).
- * {@link WKTFormat} checks for this interface at formatting time for each element to format.
+ * {@link WKTFormat} checks for this class at formatting time for each element to format.
  * When a {@code FormattableObject} element is found, its {@link #formatTo(Formatter)} method
  * is invoked for allowing the element to control its formatting.
  *
@@ -38,10 +38,9 @@ import org.apache.sis.internal.util.X364;
  * <ul>
  *   <li>{@link #toWKT()} returns a strictly compliant WKT or throws {@link UnformattableObjectException}
  *       if this object contains elements not defined by the ISO 19162 standard.</li>
- *   <li>{@link #toString()} returns a WKT with some rules relaxed in order to never throw exception,
- *       using non-standard representation if necessary. In some cases {@code toString()} may also use
- *       an alternative text representation for better readability, for example a matrix instead of
- *       a list of {@code PARAMETER["elt_…", …]} elements for linear transforms.</li>
+ *   <li>{@link #toString()} returns a WKT with some redundant information omitted and some constraints relaxed.
+ *       This method never throw {@code UnformattableObjectException};
+ *       it will rather use non-standard representation if necessary.</li>
  * </ul>
  *
  * {@section Syntax coloring}
@@ -55,7 +54,7 @@ import org.apache.sis.internal.util.X364;
  * @module
  */
 @XmlTransient
-public class FormattableObject {
+public abstract class FormattableObject {
     /**
      * The formatter for the {@link #toWKT()} and {@link #toString()} methods. Formatters are not
      * thread-safe, consequently we must make sure that only one thread uses a given instance.
@@ -203,22 +202,20 @@ public class FormattableObject {
      *            (insertion point)
      * }
      *
-     * The default implementation declares that this object produces an invalid WKT.
-     * Subclasses shall override this method for proper WKT formatting and shall <strong>not</strong>
-     * invoke {@code super.formatTo(formatter)} if they can use a standard WKT syntax.
+     * {@section Declaring the WKT as invalid}
+     * If the implementation can not format a strictly compliant WKT, then it shall declare the WKT
+     * as invalid using <em>one</em> of the following ways:
+     *
+     * <ul>
+     *   <li>invoke one of the {@link Formatter#setInvalidWKT(Class) Formatter#setInvalidWKT(…)} methods, or</li>
+     *   <li>returns {@code null}.</li>
+     * </ul>
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The WKT element keyword (e.g. {@code "GEOGCS"}).
+     * @return The WKT element keyword (e.g. {@code "GEOGCS"}), or {@code null} if none.
      *
      * @see #toWKT()
      * @see #toString()
      */
-    protected String formatTo(final Formatter formatter) {
-        formatter.setInvalidWKT(getClass());
-        String name = formatter.invalidElement;
-        if (name == null) { // May happen if the user override Formatter.setInvalidWKT(Class).
-            name = "UNKNOWN";
-        }
-        return name;
-    }
+    protected abstract String formatTo(Formatter formatter);
 }

@@ -388,6 +388,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        formatter.append(formatter.getName(this), null);
         for (final CoordinateReferenceSystem element : components) {
             formatter.append(element);
         }

@@ -39,6 +39,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.ElementKind;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -506,6 +507,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     protected String formatTo(final Formatter formatter) {
         // Do NOT invokes the super-class method, because
         // horizontal datum do not write the datum type.
+        formatter.append(formatter.getName(this), ElementKind.DATUM);
         formatter.append(ellipsoid instanceof FormattableObject ? (FormattableObject) ellipsoid :
                          DefaultEllipsoid.castOrCopy(ellipsoid));
         if (bursaWolf != null) {

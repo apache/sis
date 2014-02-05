@@ -223,6 +223,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        formatter.append(formatter.getName(this), null);
         final Unit<Angle> oldUnit = formatter.getAngularUnit();
         final Unit<Angle> unit = getAngularUnit(getCoordinateSystem());
         final GeodeticDatum datum = getDatum();

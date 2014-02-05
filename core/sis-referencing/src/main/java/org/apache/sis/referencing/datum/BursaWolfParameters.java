@@ -641,12 +641,12 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         if (isToWGS84()) {
             return "TOWGS84";
         }
-        String keyword = super.formatTo(formatter); // Declare the WKT as invalid.
-        final String name = IdentifiedObjects.getUnicodeIdentifier(targetDatum);
-        if (name != null) {
-            // We may try to build something better here in future SIS versions, if there is a need for that.
-            keyword = "TO" + name;
+        formatter.setInvalidWKT(BursaWolfParameters.class);
+        String name = IdentifiedObjects.getUnicodeIdentifier(targetDatum);
+        if (name == null) {
+            name = "Unknown";
         }
-        return keyword;
+        // We may try to build something better here in future SIS versions, if there is a need for that.
+        return "To" + name;
     }
 }

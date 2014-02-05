@@ -693,6 +693,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
         formatter.append(direction);
         return "AXIS";
     }
