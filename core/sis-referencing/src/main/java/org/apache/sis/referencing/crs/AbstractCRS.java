@@ -28,7 +28,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -38,6 +38,7 @@ import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;
@@ -284,7 +285,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @throws IllegalStateException If the coordinate system has already been set.
      */
     final void setCoordinateSystem(final String name, final CoordinateSystem cs) {
-        if (cs != null && ReferencingUtilities.canSetProperty(name, coordinateSystem != null)) {
+        if (cs != null && canSetProperty(name, coordinateSystem != null)) {
             coordinateSystem = cs;
         }
     }

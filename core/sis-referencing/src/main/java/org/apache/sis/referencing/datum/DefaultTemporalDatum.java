@@ -31,7 +31,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;

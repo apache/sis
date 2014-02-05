@@ -34,7 +34,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.mock.GeodeticDatumMock.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 

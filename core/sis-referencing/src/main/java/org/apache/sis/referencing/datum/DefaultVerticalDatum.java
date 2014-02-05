@@ -32,7 +32,7 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Related to JDK7
 import java.util.Objects;

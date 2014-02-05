@@ -39,7 +39,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;

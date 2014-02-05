@@ -30,11 +30,11 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
 import static java.lang.Math.abs;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.getNumber;
 
 // Related to JDK7
 import java.util.Objects;
@@ -531,6 +531,23 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
                     case 6: rX =  value; break;
                 }
             }
+        }
+    }
+
+    /**
+     * Retrieves the value at the specified row and column of the given matrix, wrapped in a {@code Number}.
+     * The {@code Number} type depends on the matrix accuracy.
+     *
+     * @param matrix The matrix from which to get the number.
+     * @param row    The row index, from 0 inclusive to {@link Matrix#getNumRow()} exclusive.
+     * @param column The column index, from 0 inclusive to {@link Matrix#getNumCol()} exclusive.
+     * @return       The current value at the given row and column.
+     */
+    private static Number getNumber(final Matrix matrix, final int row, final int column) {
+        if (matrix instanceof MatrixSIS) {
+            return ((MatrixSIS) matrix).getNumber(row, column);
+        } else {
+            return matrix.getElement(row, column);
         }
     }
 

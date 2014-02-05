@@ -28,6 +28,7 @@ import java.text.ParsePosition;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
@@ -346,8 +347,8 @@ public class WKTFormat extends CompoundFormat<Object> {
 
     /**
      * Formats the specified object as a Well Know Text. The given object shall be an instance of one of
-     * {@link FormattableObject}, {@link IdentifiedObject}, {@link MathTransform}, {@link GeneralParameterValue}
-     * or {@link Matrix}.
+     * {@link FormattableObject}, {@link IdentifiedObject}, {@link GeographicBoundingBox},
+     * {@link MathTransform}, {@link GeneralParameterValue} or {@link Matrix}.
      *
      * @param  object     The object to format.
      * @param  toAppendTo Where the text is to be appended.
@@ -397,6 +398,8 @@ public class WKTFormat extends CompoundFormat<Object> {
                 formatter.append((GeneralParameterValue) object);
             } else if (object instanceof Matrix) {
                 formatter.append((Matrix) object);
+            } else if (object instanceof GeographicBoundingBox) {
+                formatter.append((GeographicBoundingBox) object, Formatter.BBOX_ACCURACY);
             } else {
                 throw new ClassCastException(Errors.format(
                         Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
