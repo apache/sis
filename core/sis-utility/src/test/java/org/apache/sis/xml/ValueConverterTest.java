@@ -24,7 +24,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link ValueConverter}.
+ * Tests the {@link ValueConverter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

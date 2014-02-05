@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link SpecialCases}.
+ * Test the {@link SpecialCases} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

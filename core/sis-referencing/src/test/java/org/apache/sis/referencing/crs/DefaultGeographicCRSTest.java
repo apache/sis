@@ -29,7 +29,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link DefaultGeographicCRS}
+ * Tests the {@link DefaultGeographicCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.20)

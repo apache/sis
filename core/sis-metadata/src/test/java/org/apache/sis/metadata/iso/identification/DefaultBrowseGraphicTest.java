@@ -36,7 +36,7 @@ import static java.util.Collections.singletonMap;
 
 
 /**
- * Test {@link DefaultBrowseGraphic}.
+ * Tests {@link DefaultBrowseGraphic}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
