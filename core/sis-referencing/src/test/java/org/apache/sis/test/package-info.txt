@@ -1,0 +1,3 @@
+Different modules provide classes in this package - be careful about collisions.
+This package is initially defined by the sis-utility module, which also provides
+the package-info.java file.

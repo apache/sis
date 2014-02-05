@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing;
+package org.apache.sis.test;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
@@ -44,7 +44,7 @@ import static java.lang.StrictMath.*;
  * @version 0.4
  * @module
  */
-public strictfp class Assert extends org.apache.sis.test.MetadataAssert {
+public strictfp class ReferencingAssert extends MetadataAssert {
     /**
      * The tolerance threshold for strict comparisons of floating point values.
      */
@@ -53,7 +53,7 @@ public strictfp class Assert extends org.apache.sis.test.MetadataAssert {
     /**
      * For subclass constructor only.
      */
-    protected Assert() {
+    protected ReferencingAssert() {
     }
 
     /**

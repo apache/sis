@@ -672,11 +672,11 @@ Apache SIS is a free software, Java language library for developing geospatial a
             </group>
             <group>
               <title>Referencing</title>
-              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*:org.apache.sis.io.wkt</packages>
+              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
             </group>
             <group>
               <title>Metadata</title>
-              <packages>org.apache.sis.metadata*</packages>
+              <packages>org.apache.sis.metadata*:org.apache.sis.io.wkt</packages>
             </group>
             <group>
               <title>Utilities</title>

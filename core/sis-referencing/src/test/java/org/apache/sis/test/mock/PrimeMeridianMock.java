@@ -19,6 +19,7 @@ package org.apache.sis.test.mock;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
+import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.opengis.referencing.datum.PrimeMeridian;
 
 
