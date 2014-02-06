@@ -376,7 +376,7 @@ public class Formatter implements Localized {
      * @param  info The object to look for a preferred identifier, or {@code null} if none.
      * @return The preferred identifier, or {@code null} if none.
      */
-    public ReferenceIdentifier getIdentifier(final IdentifiedObject info) {
+    private ReferenceIdentifier getIdentifier(final IdentifiedObject info) {
         ReferenceIdentifier first = null;
         if (info != null) {
             final Collection<ReferenceIdentifier> identifiers = info.getIdentifiers();
@@ -739,6 +739,11 @@ public class Formatter implements Localized {
     /**
      * Appends a code list.
      *
+     * <blockquote><table class="compact" style="text-align:left">
+     *   <tr><th>Position:</th>  <td>current line</td></tr>
+     *   <tr><th>Color key:</th> <td>{@link ElementKind#CODE_LIST}</td></tr>
+     * </table></blockquote>
+     *
      * @param code The code list to append to the WKT, or {@code null} if none.
      */
     public void append(final CodeList<?> code) {
@@ -753,6 +758,11 @@ public class Formatter implements Localized {
     /**
      * Appends a character string between quotes.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the text if needed.
+     *
+     * <blockquote><table class="compact" style="text-align:left">
+     *   <tr><th>Position:</th>  <td>current line</td></tr>
+     *   <tr><th>Color key:</th> <td>given</td></tr>
+     * </table></blockquote>
      *
      * @param text The string to format to the WKT, or {@code null} if none.
      * @param type The key of the colors to apply if syntax coloring is enabled.
@@ -833,6 +843,11 @@ public class Formatter implements Localized {
      * Appends a date.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the date if needed.
      *
+     * <blockquote><table class="compact" style="text-align:left">
+     *   <tr><th>Position:</th>  <td>current line</td></tr>
+     *   <tr><th>Color key:</th> <td>none</td></tr>
+     * </table></blockquote>
+     *
      * @param date The date to append to the WKT, or {@code null} if none.
      */
     public void append(final Date date) {
@@ -846,6 +861,11 @@ public class Formatter implements Localized {
      * Appends a boolean value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the boolean if needed.
      *
+     * <blockquote><table class="compact" style="text-align:left">
+     *   <tr><th>Position:</th>  <td>current line</td></tr>
+     *   <tr><th>Color key:</th> <td>none</td></tr>
+     * </table></blockquote>
+     *
      * @param value The boolean to append to the WKT.
      */
     public void append(final boolean value) {
@@ -856,6 +876,11 @@ public class Formatter implements Localized {
     /**
      * Appends an integer value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
+     *
+     * <blockquote><table class="compact" style="text-align:left">
+     *   <tr><th>Position:</th>  <td>current line</td></tr>
+     *   <tr><th>Color key:</th> <td>{@link ElementKind#INTEGER}</td></tr>
+     * </table></blockquote>
      *
      * @param number The integer to append to the WKT.
      */
@@ -870,6 +895,11 @@ public class Formatter implements Localized {
     /**
      * Appends an floating point value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
+     *
+     * <blockquote><table class="compact" style="text-align:left">
+     *   <tr><th>Position:</th>  <td>current line</td></tr>
+     *   <tr><th>Color key:</th> <td>{@link ElementKind#NUMBER}</td></tr>
+     * </table></blockquote>
      *
      * @param number The floating point value to append to the WKT.
      */
@@ -913,6 +943,11 @@ public class Formatter implements Localized {
      * Specialization is used in WKT 2 format except the <cite>simplified WKT 2</cite> one.
      *
      * {@example <code>append(SI.KILOMETRE)</code> will append "<code>LENGTHUNIT["km", 1000]</code>" to the WKT.}
+     *
+     * <blockquote><table class="compact" style="text-align:left">
+     *   <tr><th>Position:</th>  <td>depending the previous element</td></tr>
+     *   <tr><th>Color key:</th> <td>none</td></tr>
+     * </table></blockquote>
      *
      * @param unit The unit to append to the WKT, or {@code null} if none.
      */
