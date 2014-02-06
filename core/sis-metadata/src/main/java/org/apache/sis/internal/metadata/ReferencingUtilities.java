@@ -17,7 +17,6 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Collection;
-import java.util.Iterator;
 import javax.measure.unit.Unit;
 import org.opengis.parameter.*;
 import org.opengis.referencing.*;
@@ -25,14 +24,7 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.util.GenericName;
-import org.opengis.util.NameSpace;
 import org.apache.sis.util.Static;
-
-import static org.apache.sis.internal.util.Citations.iterator;
-import static org.apache.sis.internal.util.Citations.identifierMatches;
 
 
 /**
@@ -103,96 +95,6 @@ public final class ReferencingUtilities extends Static {
         for (int i=0; i<TYPES.length; i++) {
             if (TYPES[i].isAssignableFrom(type)) {
                 return URN_TYPES[i];
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns an object name according the given authority. This method is {@code null}-safe:
-     * every properties are checked for null values, even the properties that are supposed to
-     * be mandatory (not all implementation defines all mandatory values).
-     *
-     * @param  object    The object to get the name from, or {@code null}.
-     * @param  authority The authority for the name to return, or {@code null} for any authority.
-     * @param  addTo     If non-null, the collection where to add all names found.
-     * @return The object's name (either an {@linkplain ReferenceIdentifier#getCode() identifier code}
-     *         or a {@linkplain GenericName#tip() name tip}), or {@code null} if no name matching the
-     *         specified authority has been found.
-     */
-    public static String getName(final IdentifiedObject object, final Citation authority, final Collection<String> addTo) {
-        if (object != null) {
-            Identifier identifier = object.getName();
-            if (authority == null) {
-                if (identifier != null) {
-                    final String name = identifier.getCode();
-                    if (name != null) {
-                        if (addTo == null) {
-                            return name;
-                        }
-                        addTo.add(name);
-                    }
-                }
-                final Iterator<GenericName> it = iterator(object.getAlias());
-                if (it != null) while (it.hasNext()) {
-                    final GenericName alias = it.next();
-                    if (alias != null) {
-                        final String name = (alias instanceof Identifier) ?
-                                ((Identifier) alias).getCode() : alias.toString();
-                        if (name != null) {
-                            if (addTo == null) {
-                                return name;
-                            }
-                            addTo.add(name);
-                        }
-                    }
-                }
-            } else {
-                if (identifier != null) {
-                    if (identifierMatches(authority, identifier.getAuthority())) {
-                        final String name = identifier.getCode();
-                        if (name != null) {
-                            if (addTo == null) {
-                                return name;
-                            }
-                            addTo.add(name);
-                        }
-                    }
-                }
-                final Iterator<GenericName> it = iterator(object.getAlias());
-                if (it != null) while (it.hasNext()) {
-                    final GenericName alias = it.next();
-                    if (alias != null) {
-                        if (alias instanceof Identifier) {
-                            identifier = (Identifier) alias;
-                            if (identifierMatches(authority, identifier.getAuthority())) {
-                                final String name = identifier.getCode();
-                                if (name != null) {
-                                    if (addTo == null) {
-                                        return name;
-                                    }
-                                    addTo.add(name);
-                                }
-                            }
-                        } else {
-                            final NameSpace ns = alias.scope();
-                            if (ns != null) {
-                                final GenericName scope = ns.name();
-                                if (scope != null) {
-                                    if (identifierMatches(authority, scope.toString())) {
-                                        final String name = alias.toString();
-                                        if (name != null) {
-                                            if (addTo == null) {
-                                                return name;
-                                            }
-                                            addTo.add(name);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
         return null;
