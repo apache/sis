@@ -29,38 +29,39 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 /**
  * The set of symbols to use for <cite>Well Known Text</cite> (WKT) parsing and formatting.
- * This class allows to specify the following properties:
- *
- * <table class="sis">
- *   <tr>
- *     <th>Property</th>
- *     <th>Standard value</th>
- *     <th>Remarks</th>
- *   </tr>
- *   <tr>
- *     <td>Locale for number format</td>
- *     <td>{@link Locale#ROOT}</td>
- *     <td></td>
- *   </tr>
- *   <tr>
- *     <td>Bracket symbols</td>
- *     <td>{@code [}…{@code ]} or {@code (}…{@code )}</td>
- *     <td>The former is more common in referencing WKT, while the later is more common in geometry WKT.</td>
- *   </tr>
- *   <tr>
- *     <td>Quote symbols</td>
- *     <td>{@code "}…{@code "}</td>
- *     <td>Apache SIS also accepts {@code “}…{@code ”}, but this is non-standard.</td>
- *   </tr>
- *   <tr><td>Separator</td>
- *     <td>{@code ,}</td>
- *     <td></td>
- *   </tr>
- * </table>
- *
  * The two constants defined in this class, namely {@link #SQUARE_BRACKETS} and {@link #CURLY_BRACKETS},
- * define the symbols for ISO 19162 compliant WKT formatting. Parsing can be made tolerant to alternative
- * forms by optionally specifying additional bracket and quote symbols.
+ * define the symbols for ISO 19162 compliant WKT formatting. Their properties are:
+ *
+ * <blockquote><table class="compact">
+ *   <tr>
+ *     <td>Locale for number format:</td>
+ *     <td>{@link Locale#ROOT}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>Bracket symbols:</td>
+ *     <td>{@code [}…{@code ]} or {@code (}…{@code )}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>Quote symbols:</td>
+ *     <td>{@code "}…{@code "}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>Sequence symbols:</td>
+ *     <td><code>{</code>…<code>}</code></td>
+ *   </tr>
+ *   <tr>
+ *     <td>Separator:</td>
+ *     <td>{@code ,}</td>
+ *   </tr>
+ * </table></blockquote>
+ *
+ * {@note The <code>[…]</code> brackets are common in referencing WKT,
+ *        while the <code>(…)</code> brackets are common in geometry WKT.}
+ *
+ * {@note Apache SIS also accepts <code>“…”</code> quotes for more readable <code>String</code> literals
+ *        in Java code, but this is non-standard.}
+ *
+ * Users can create their own {@code Symbols} instance for parsing or formatting a WKT with different symbols.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.1)

@@ -42,6 +42,7 @@ import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;
@@ -903,31 +904,42 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <li>The object {@linkplain #getName() name}.</li>
      * </ul>
      *
-     * <p>Keywords and authority codes shall not be formatted here.
-     * For example if this formattable element is for a {@code GEOGCS} element,
-     * then this method shall write the content starting at the insertion point shows below:</p>
+     * Keywords and metadata (scope, extent, identifier and remarks) shall not be formatted here.
+     * For example if this formattable element is for a {@code GEOGCS[…]} element,
+     * then subclasses shall write the content starting at the insertion point shown below:
      *
+     * <table class="compact">
+     * <tr>
+     *   <th>WKT example</th>
+     *   <th>Java code example</th>
+     * </tr><tr><td>
      * {@preformat text
      *     GEOGCS["WGS 84", ID["EPSG", 4326]]
      *                    ↑
      *            (insertion point)
      * }
+     * </td><td>
+     * {@preformat java
+     *     super.formatTo(formatter);
+     *     // ... write the elements at the insertion point ...
+     *     return "GEOGCS";
+     * }
+     * </td></tr></table>
      *
-     * {@section Declaring the WKT as invalid}
-     * If the implementation can not format a strictly compliant WKT, then it shall declare the WKT
-     * as invalid using <em>one</em> of the following ways:
+     * {@section Formatting non-standard WKT}
+     * If the implementation can not represent this object without violating some WKT constraints,
+     * it can uses its own (non-standard) keywords but shall declare that it did so by invoking one
+     * of the {@link Formatter#setInvalidWKT(IdentifiedObject) Formatter.setInvalidWKT(…)} methods.
      *
-     * <ul>
-     *   <li>Invoke one of the {@link Formatter#setInvalidWKT(Class) Formatter#setInvalidWKT(…)} methods, or</li>
-     *   <li>Returns {@code null}.</li>
-     * </ul>
+     * <p>Alternatively, the implementation may also have no WKT keyword for this object.
+     * In such case, this method shall return {@code null}.</p>
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The WKT element keyword (e.g. {@code "GEOGCS"}), or {@code null} if none.
+     * @return The WKT element keyword, or {@code null} if none.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        formatter.append(formatter.getName(this), ElementKind.forType(getClass()));
+        WKTUtilities.appendName(this, formatter, ElementKind.forType(getClass()));
         return null;
     }
 }

@@ -25,6 +25,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
@@ -218,7 +219,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        formatter.append(formatter.getName(this), null);
+        WKTUtilities.appendName(this, formatter, null);
         final Unit<?> unit = getUnit();
         final GeodeticDatum datum = getDatum();
         formatter.append(datum);
