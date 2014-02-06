@@ -29,7 +29,6 @@ import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -47,7 +46,7 @@ import org.apache.sis.util.resources.Errors;
  * <ul>
  *   <li>The {@linkplain Symbols symbols} to use (curly braces or brackets, <i>etc</i>).</li>
  *   <li>The preferred authority of {@linkplain IdentifiedObject#getName() object name} to
- *       format (see {@link Formatter#getName(IdentifiedObject)} for more information).</li>
+ *       format (see {@link Formatter#getNameAuthority()} for more information).</li>
  *   <li>Whatever ANSI X3.64 colors are allowed or not (default is not).</li>
  *   <li>The indentation.</li>
  * </ul>
@@ -274,7 +273,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @return The authority for projection and parameter names.
      *
      * @see Convention#getNameAuthority()
-     * @see Formatter#getName(IdentifiedObject)
+     * @see Formatter#getNameAuthority()
      */
     public Citation getNameAuthority() {
         Citation result = authority;
@@ -292,7 +291,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @param authority The new authority, or {@code null} for inferring it from the convention.
      *
-     * @see Formatter#getName(IdentifiedObject)
+     * @see Formatter#getNameAuthority()
      */
     public void setNameAuthority(final Citation authority) {
         this.authority = authority;
@@ -348,7 +347,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Formats the specified object as a Well Know Text. The given object shall be an instance of one of
      * {@link FormattableObject}, {@link IdentifiedObject}, {@link GeographicBoundingBox},
-     * {@link MathTransform}, {@link GeneralParameterValue} or {@link Matrix}.
+     * {@link MathTransform} or {@link Matrix}.
      *
      * @param  object     The object to format.
      * @param  toAppendTo Where the text is to be appended.
@@ -390,12 +389,6 @@ public class WKTFormat extends CompoundFormat<Object> {
                 formatter.append((IdentifiedObject) object);
             } else if (object instanceof MathTransform) {
                 formatter.append((MathTransform) object);
-            } else if (object instanceof GeneralParameterValue) {
-                /*
-                 * Special processing for parameter values, which is formatted directly in 'Formatter'.
-                 * Note that this interface doesn't share the same parent interface than other interfaces.
-                 */
-                formatter.append((GeneralParameterValue) object);
             } else if (object instanceof Matrix) {
                 formatter.append((Matrix) object);
             } else if (object instanceof GeographicBoundingBox) {

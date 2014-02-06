@@ -20,7 +20,6 @@ import java.io.Console;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.xml.bind.annotation.XmlTransient;
-import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.X364;
@@ -47,6 +46,16 @@ import org.apache.sis.internal.util.X364;
  * A convenience {@link #print()} method is provided, which is roughly equivalent to
  * {@code System.out.println(this)} except that syntax coloring is automatically applied
  * if the terminal seems to support the ANSI escape codes.
+ *
+ * {@section Non-standard WKT}
+ * If this object can not be formatted without violating some WKT constraints,
+ * then the behavior depends on the method invoked:
+ *
+ * <ul>
+ *   <li>{@link #toWKT()} will throw a {@link UnformattableObjectException}.</li>
+ *   <li>{@link #toString()} will ignore the problem and uses non-standard elements if needed.</li>
+ *   <li>{@link #print()} will show the non-standard elements in red if syntax coloring is enabled.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
@@ -90,7 +99,7 @@ public abstract class FormattableObject {
      * @see org.opengis.referencing.IdentifiedObject#toWKT()
      */
     public String toWKT() throws UnformattableObjectException {
-        return formatWKT(Convention.DEFAULT, WKTFormat.DEFAULT_INDENTATION, false, true);
+        return formatWKT(Convention.DEFAULT, false, true);
     }
 
     /**
@@ -104,7 +113,7 @@ public abstract class FormattableObject {
      */
     @Override
     public String toString() {
-        return formatWKT(Convention.DEFAULT_SIMPLIFIED, WKTFormat.DEFAULT_INDENTATION, false, false);
+        return formatWKT(Convention.DEFAULT_SIMPLIFIED, false, false);
     }
 
     /**
@@ -116,7 +125,7 @@ public abstract class FormattableObject {
      */
     public String toString(final Convention convention) {
         ArgumentChecks.ensureNonNull("convention", convention);
-        return formatWKT(convention, WKTFormat.DEFAULT_INDENTATION, false, false);
+        return formatWKT(convention, false, false);
     }
 
     /**
@@ -133,8 +142,7 @@ public abstract class FormattableObject {
     public void print() {
         final Console console = System.console();
         final PrintWriter out = (console != null) ? console.writer() : null;
-        final String wkt = formatWKT(Convention.DEFAULT_SIMPLIFIED, WKTFormat.DEFAULT_INDENTATION,
-                (out != null) && X364.isAnsiSupported(), false);
+        final String wkt = formatWKT(Convention.DEFAULT_SIMPLIFIED, (out != null) && X364.isAnsiSupported(), false);
         if (out != null) {
             out.println(wkt);
         } else {
@@ -147,33 +155,23 @@ public abstract class FormattableObject {
      * If {@code strict} is true, then an exception is thrown if the WKT is not standard-compliant.
      *
      * @param  convention  The convention for choosing WKT element names.
-     * @param  indentation The indentation to apply, or {@link WKTFormat#SINGLE_LINE}.
      * @param  colorize    {@code true} for applying syntax coloring, or {@code false} otherwise.
      * @param  strict      {@code true} if an exception shall be thrown for unformattable objects,
      *                     or {@code false} for providing a non-standard formatting instead.
      * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
      * @throws UnformattableObjectException If {@code strict} is {@code true} and this object can not be formatted.
      */
-    final String formatWKT(final Convention convention, final byte indentation, final boolean colorize, final boolean strict)
+    final String formatWKT(final Convention convention, final boolean colorize, final boolean strict)
              throws UnformattableObjectException
     {
         Formatter formatter = FORMATTER.getAndSet(null);
         if (formatter == null) {
             formatter = new Formatter();
         }
-        formatter.configure(convention, null, colorize ? Colors.CONSOLE : null, indentation);
+        formatter.configure(convention, null, colorize ? Colors.CONSOLE : null, WKTFormat.DEFAULT_INDENTATION);
         final String wkt;
         try {
-            /*
-             * Special processing for parameter values, which is formatted
-             * directly in 'Formatter'. Note that in GeoAPI, that interface
-             * doesn't share the same parent interface than other interfaces.
-             */
-            if (this instanceof GeneralParameterValue) {
-                formatter.append((GeneralParameterValue) this);
-            } else {
-                formatter.append(this);
-            }
+            formatter.append(this);
             if (strict) {
                 final String message = formatter.getErrorMessage();
                 if (message != null) {
@@ -192,27 +190,28 @@ public abstract class FormattableObject {
      * Formats the inner part of this <cite>Well Known Text</cite> (WKT) element into the given formatter.
      * This method is automatically invoked by {@link WKTFormat} when a formattable element is found.
      *
-     * <p>Keywords and authority codes shall not be formatted here.
-     * For example if this formattable element is for a {@code GEOGCS} element,
-     * then this method shall write the content starting at the insertion point shows below:</p>
+     * <p>Keywords, opening and closing brackets shall not be formatted here.
+     * For example if this formattable element is for a {@code ID[…]} element,
+     * then this method shall write the content starting at the insertion point shown below:</p>
      *
      * {@preformat text
-     *     GEOGCS["WGS 84", ID["EPSG", 4326]]
-     *                    ↑
-     *            (insertion point)
+     *        ID[ ]
+     *           ↑
+     *   (insertion point)
      * }
      *
-     * {@section Declaring the WKT as invalid}
-     * If the implementation can not format a strictly compliant WKT, then it shall declare the WKT
-     * as invalid using <em>one</em> of the following ways:
+     * {@section Formatting non-standard WKT}
+     * If the implementation can not represent this object without violating some WKT constraints,
+     * it can uses its own (non-standard) keywords but shall declare that it did so by invoking one
+     * of the {@link Formatter#setInvalidWKT(IdentifiedObject) Formatter.setInvalidWKT(…)} methods.
      *
-     * <ul>
-     *   <li>invoke one of the {@link Formatter#setInvalidWKT(Class) Formatter#setInvalidWKT(…)} methods, or</li>
-     *   <li>returns {@code null}.</li>
-     * </ul>
+     * <p>Alternatively, the implementation may also have no WKT keyword for this object.
+     * This happen frequently when an abstract class defines a base implementation,
+     * but the keyword is defined by the concrete subclasses.
+     * In such case, the method in the abstract class shall return {@code null}.</p>
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The WKT element keyword (e.g. {@code "GEOGCS"}), or {@code null} if none.
+     * @return The WKT element keyword, or {@code null} if none.
      *
      * @see #toWKT()
      * @see #toString()

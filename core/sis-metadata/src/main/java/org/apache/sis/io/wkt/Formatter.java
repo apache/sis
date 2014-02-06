@@ -36,10 +36,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterValue;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.ReferenceSystem;
@@ -54,12 +50,12 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
@@ -77,8 +73,6 @@ import org.apache.sis.metadata.iso.extent.Extents;
  *   <li>A series of {@code append(…)} methods to be invoked by the {@code formatTo(Formatter)} implementations.</li>
  *   <li>Contextual information. In particular, the {@linkplain #getLinearUnit() linear unit} and the
  *       {@linkplain #getAngularUnit() angular unit} depend on the enclosing WKT element.</li>
- *   <li>Convenience methods for fetching relevant information from the object to format, like
- *       {@linkplain #getName(IdentifiedObject) name} and {@linkplain #getIdentifier(IdentifiedObject) identifier}.</li>
  *   <li>A flag for declaring the object unformattable.</li>
  * </ul>
  *
@@ -87,7 +81,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * @version 0.4
  * @module
  */
-public class Formatter {
+public class Formatter implements Localized {
     /**
      * Do not format an {@code ID[…]} element for instance of this class.
      */
@@ -344,29 +338,33 @@ public class Formatter {
     }
 
     /**
-     * Returns the preferred name for the specified object.
-     * If the specified object contains a name from the preferred authority, then this name is returned.
-     * Otherwise, the first name found is returned.
+     * Returns the preferred authority for choosing the projection and parameter names.
      *
      * <p>The preferred authority can be set by the {@link WKTFormat#setNameAuthority(Citation)} method.
-     * This is not necessarily the authority of the given {@linkplain IdentifiedObject#getName() object name}.</p>
+     * This is not necessarily the authority who created the object to format.</p>
      *
      * {@example The EPSG name of the <code>EPSG:6326</code> datum is "<cite>World Geodetic System 1984</cite>".
-     *           However if the preferred authority is OGC, then this method usually returns "<cite>WGS84</cite>"
-     *           (the exact string to be returned depends on the object aliases).}
+     *           However if the preferred authority is OGC, then the formatted datum name will rather look like
+     *           "<cite>WGS84</cite>" (the exact string depends on the object aliases).}
      *
-     * @param  object The object to look for a preferred name.
-     * @return The preferred name, or {@code null} if the given object has no name.
+     * @return The authority for projection and parameter names.
      *
      * @see WKTFormat#getNameAuthority()
      * @see org.apache.sis.referencing.IdentifiedObjects#getName(IdentifiedObject, Citation)
      */
-    public String getName(final IdentifiedObject object) {
-        String name = ReferencingUtilities.getName(object, authority, null);
-        if (name == null) {
-            name = ReferencingUtilities.getName(object, null, null);
-        }
-        return name;
+    public Citation getNameAuthority() {
+        return authority;
+    }
+
+    /**
+     * Returns the locale to use for localizing {@link InternationalString} instances.
+     * This is <em>not</em> the locale for formatting dates and numbers.
+     *
+     * @return The locale to use for localizing international strings.
+     */
+    @Override
+    public Locale getLocale() {
+        return locale;
     }
 
     /**
@@ -739,99 +737,6 @@ public class Formatter {
     }
 
     /**
-     * Appends a {@linkplain ParameterValue parameter} in a {@code PARAMETER[…]} element.
-     * If the supplied parameter is actually a {@linkplain ParameterValueGroup parameter group},
-     * all contained parameters will flattened in a single list.
-     *
-     * @param parameter The parameter to append to the WKT, or {@code null} if none.
-     */
-    public void append(final GeneralParameterValue parameter) {
-        if (parameter instanceof ParameterValueGroup) {
-            for (final GeneralParameterValue param : ((ParameterValueGroup)parameter).values()) {
-                append(param);
-            }
-        }
-        if (parameter instanceof ParameterValue<?>) {
-            final ParameterValue<?> param = (ParameterValue<?>) parameter;
-            final ParameterDescriptor<?> descriptor = param.getDescriptor();
-            Unit<?> unit = descriptor.getUnit();
-            if (unit != null && !Unit.ONE.equals(unit)) {
-                if (linearUnit != null && unit.isCompatible(linearUnit)) {
-                    unit = linearUnit;
-                } else {
-                    if (angularUnit != null && unit.isCompatible(angularUnit)) {
-                        unit = angularUnit;
-                    }
-                }
-            }
-            appendSeparator(true);
-            final StringBuffer buffer = this.buffer;
-            final int start = buffer.length();
-            final int stop = buffer.append("PARAMETER").length();
-            buffer.appendCodePoint(symbols.getOpeningBracket(0));
-            setColor(ElementKind.PARAMETER);
-            quote(getName(descriptor));
-            resetColor();
-            if (unit != null) {
-                double value;
-                try {
-                    value = param.doubleValue(unit);
-                } catch (IllegalStateException exception) {
-                    // May happen if a parameter is mandatory (e.g. "semi-major")
-                    // but no value has been set for this parameter.
-                    if (colors != null) {
-                        final String c = colors.getAnsiSequence(ElementKind.ERROR);
-                        if (c != null) {
-                            buffer.insert(stop, BACKGROUND_DEFAULT).insert(start, c);
-                        }
-                    }
-                    setInvalidWKT(descriptor);
-                    errorCause = exception;
-                    value = Double.NaN;
-                }
-                append(value);
-            } else {
-                appendObject(param.getValue());
-            }
-            buffer.appendCodePoint(symbols.getClosingBracket(0));
-            requestNewLine = true;
-        }
-    }
-
-    /**
-     * Appends the specified value to a string buffer. If the value is an array, then the
-     * array elements are appended recursively (i.e. the array may contains sub-array).
-     */
-    private void appendObject(final Object value) {
-        if (value == null) {
-            appendSeparator(false);
-            buffer.append("null");
-        } else if (value.getClass().isArray()) {
-            appendSeparator(false);
-            buffer.appendCodePoint(symbols.getOpenSequence());
-            final int length = Array.getLength(value);
-            for (int i=0; i<length; i++) {
-                appendObject(Array.get(value, i));
-            }
-            buffer.appendCodePoint(symbols.getCloseSequence());
-        } else if (value instanceof CodeList<?>) {
-            append((CodeList<?>) value);
-        } else if (value instanceof Number) {
-            final Number number = (Number) value;
-            if (Numbers.isInteger(number.getClass())) {
-                append(number.longValue());
-            } else {
-                append(number.doubleValue());
-            }
-        } else if (value instanceof Boolean) {
-            append(((Boolean) value).booleanValue());
-        } else {
-            append((value instanceof InternationalString) ?
-                    ((InternationalString) value).toString(locale) : value.toString(), null);
-        }
-    }
-
-    /**
      * Appends a code list.
      *
      * @param code The code list to append to the WKT, or {@code null} if none.
@@ -1045,6 +950,54 @@ public class Formatter {
     }
 
     /**
+     * Appends an object or an array of objects.
+     * This method performs the following choices:
+     *
+     * <ul>
+     *   <li>If the given value is {@code null}, then this method appends the "{@code null}" string (without quotes).</li>
+     *   <li>Otherwise if the given value is an array, then this method appends the opening sequence symbol, formats all
+     *       elements by invoking this method recursively, then appends the closing sequence symbol.</li>
+     *   <li>Otherwise if the value type is assignable to the argument type of one of the {@code append(…)} methods
+     *       in this class, then the formatting will be delegated to that method.</li>
+     *   <li>Otherwise the given value is appended as a quoted text with its {@code toString()} representation.</li>
+     * </ul>
+     *
+     * @param value The value to append to the WKT, or {@code null}.
+     */
+    public void appendAny(final Object value) {
+        if (value == null) {
+            appendSeparator(false);
+            buffer.append("null");
+        } else if (value.getClass().isArray()) {
+            appendSeparator(false);
+            buffer.appendCodePoint(symbols.getOpenSequence());
+            final int length = Array.getLength(value);
+            for (int i=0; i<length; i++) {
+                appendAny(Array.get(value, i));
+            }
+            buffer.appendCodePoint(symbols.getCloseSequence());
+        } else if (value instanceof Number) {
+            final Number number = (Number) value;
+            if (Numbers.isInteger(number.getClass())) {
+                append(number.longValue());
+            } else {
+                append(number.doubleValue());
+            }
+        }
+        else if (value instanceof CodeList<?>)           append((CodeList<?>)           value);
+        else if (value instanceof Date)                  append((Date)                  value);
+        else if (value instanceof Boolean)               append((Boolean)               value);
+        else if (value instanceof Unit<?>)               append((Unit<?>)               value);
+        else if (value instanceof FormattableObject)     append((FormattableObject)     value);
+        else if (value instanceof IdentifiedObject)      append((IdentifiedObject)      value);
+        else if (value instanceof GeographicBoundingBox) append((GeographicBoundingBox) value, BBOX_ACCURACY);
+        else if (value instanceof MathTransform)         append((MathTransform)         value);
+        else if (value instanceof Matrix)                append((Matrix)                value);
+        else append((value instanceof InternationalString) ?
+                ((InternationalString) value).toString(locale) : value.toString(), null);
+    }
+
+    /**
      * Returns the linear unit for expressing lengths, or {@code null} for the default unit of each WKT element.
      * If {@code null}, then the default value depends on the object to format.
      *
@@ -1132,8 +1085,9 @@ public class Formatter {
      */
     public void setInvalidWKT(final IdentifiedObject unformattable) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
-        String name = getName(unformattable);
-        if (name == null) {
+        String name;
+        final ReferenceIdentifier id = unformattable.getName();
+        if (id == null || (name = id.getCode()) == null) {
             name = getName(unformattable.getClass());
         }
         invalidElement = name;

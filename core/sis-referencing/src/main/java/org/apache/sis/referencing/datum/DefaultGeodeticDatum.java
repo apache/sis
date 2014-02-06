@@ -34,6 +34,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.ExtentSelector;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
@@ -507,7 +508,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     protected String formatTo(final Formatter formatter) {
         // Do NOT invokes the super-class method, because
         // horizontal datum do not write the datum type.
-        formatter.append(formatter.getName(this), ElementKind.DATUM);
+        WKTUtilities.appendName(this, formatter, ElementKind.DATUM);
         formatter.append(ellipsoid instanceof FormattableObject ? (FormattableObject) ellipsoid :
                          DefaultEllipsoid.castOrCopy(ellipsoid));
         if (bursaWolf != null) {

@@ -32,6 +32,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.collection.CheckedContainer;
@@ -388,7 +389,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        formatter.append(formatter.getName(this), null);
+        WKTUtilities.appendName(this, formatter, null);
         for (final CoordinateReferenceSystem element : components) {
             formatter.append(element);
         }

@@ -30,6 +30,7 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 
@@ -223,7 +224,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        formatter.append(formatter.getName(this), null);
+        WKTUtilities.appendName(this, formatter, null);
         final Unit<Angle> oldUnit = formatter.getAngularUnit();
         final Unit<Angle> unit = getAngularUnit(getCoordinateSystem());
         final GeodeticDatum datum = getDatum();

@@ -72,9 +72,10 @@ import java.util.Objects;
  * }
  *
  * </li><li><p><b><cite>Well Known Text</cite> (WKT) version 2</b></p>
- * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code} and
- * the {@linkplain #getVersion() version} if available. The WKT can optionally provides a {@code URI} element,
- * which expresses the same information in a different way (the URN syntax is described in the next item below).
+ * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code},
+ * the {@linkplain #getVersion() version} and the {@linkplain #getAuthority() authority} title if available.
+ * The WKT can optionally provides a {@code URI} element, which expresses the same information in a different way
+ * (the URN syntax is described in the next item below).
  * Example:
  *
  * {@preformat wkt
@@ -524,6 +525,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
 
     /**
      * Formats a <cite>Well Known Text</cite> representation of this identifier.
+     * See class javadoc for more information on the WKT format.
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return The WKT keyword: {@code "ID"} (WKT 2) or {@code "AUTHORITY"} (WKT 1).
