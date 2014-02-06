@@ -256,6 +256,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalMemberType_2 = 37;
 
         /**
+         * This operation can not be applied to values of class ‘{0}’.
+         */
+        public static final short IllegalOperationForValueClass_1 = 141;
+
+        /**
          * Option ‘{0}’ can not take the “{1}” value.
          */
         public static final short IllegalOptionValue_2 = 38;
@@ -266,7 +271,13 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalOrdinateRange_3 = 39;
 
         /**
-         * Property ‘{0}’ does not accept instances of ‘{1}’.
+         * Parameter “{0}” does not accept instances of ‘{2}’. Expected an instance of ‘{1}’ or derived
+         * type.
+         */
+        public static final short IllegalParameterClass_3 = 138;
+
+        /**
+         * Property “{0}” does not accept instances of ‘{1}’.
          */
         public static final short IllegalPropertyClass_2 = 40;
 
@@ -294,6 +305,11 @@ public final class Errors extends IndexedResourceBundle {
          * Property “{0}” has an incompatible value.
          */
         public static final short IncompatiblePropertyValue_1 = 45;
+
+        /**
+         * Unit “{0}” is incompatible with current value.
+         */
+        public static final short IncompatibleUnit_1 = 140;
 
         /**
          * Units “{0}” and “{1}” are incompatible.
@@ -389,6 +405,11 @@ public final class Errors extends IndexedResourceBundle {
          * Missing value for option “{0}”.
          */
         public static final short MissingValueForOption_1 = 63;
+
+        /**
+         * Missing value for parameter “{0}”.
+         */
+        public static final short MissingValueForParameter_1 = 142;
 
         /**
          * Missing value for property “{0}”.
@@ -639,6 +660,11 @@ public final class Errors extends IndexedResourceBundle {
          * File “{1}” seems to be encoded in an other format than {0}.
          */
         public static final short UnexpectedFileFormat_2 = 111;
+
+        /**
+         * Parameter “{0}” has no unit.
+         */
+        public static final short UnitlessParameter_1 = 139;
 
         /**
          * Authority “{0}” is unknown.
