@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import javax.measure.unit.Unit;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterTypeException;
@@ -43,18 +44,22 @@ import java.nio.file.Path;
  * {@link #setValue(Object)} methods. The type and constraints on parameter values are given by
  * the {@linkplain #getDescriptor() descriptor}.
  *
- * <p>The following table summarizes the ISO attributes with the corresponding getter and setter methods:</p>
+ * <p>The following table summarizes the ISO 19111 attributes with the corresponding getter and
+ * setter methods:</p>
+ *
  * <table class="sis">
- *   <tr><th>ISO attributes</th>   <th>Setter methods</th>                    <th>Getter methods</th></tr>
- *   <tr><td>booleanValue</td>     <td>{@link #setValue(boolean)}</td>        <td>{@link #booleanValue()}    : {@code boolean}</td></tr>
- *   <tr><td>integerValue</td>     <td>{@link #setValue(int)}</td>            <td>{@link #intValue()}        : {@code int}</td></tr>
- *   <tr><td></td>                 <td>{@link #setValue(double)}</td>         <td>{@link #doubleValue()}     : {@code double}</td></tr>
- *   <tr><td>value</td>            <td>{@link #setValue(double, Unit)}</td>   <td>{@link #doubleValue(Unit)} : {@code double}</td></tr>
- *   <tr><td>valueList</td>        <td>{@link #setValue(double[], Unit)}</td> <td>{@link #doubleValueList()} : {@code double[]}</td></tr>
- *   <tr><td></td>                 <td>{@link #setValue(Object)}</td>         <td>{@link #getValue()}        : {@code Object}</td></tr>
- *   <tr><td>stringValue</td>      <td></td>                                  <td>{@link #stringValue()}     : {@code String}</td></tr>
- *   <tr><td>integerValueList</td> <td></td>                                  <td>{@link #intValueList()}    : {@code int[]}</td></tr>
- *   <tr><td>valueFile</td>        <td></td>                                  <td>{@link #valueFile()}       : {@code URI}</td></tr>
+ *   <tr><th>ISO attribute</th>             <th>Java type</th>        <th>Getter method</th>                  <th>Setter method</th></tr>
+ *   <tr><td></td>                          <td>{@link Object}</td>   <td>{@link #getValue()}</td>            <td>{@link #setValue(Object)}</td></tr>
+ *   <tr><td>{@code stringValue}</td>       <td>{@link String}</td>   <td>{@link #stringValue()}</td>         <td>{@code  setValue(Object)}</td></tr>
+ *   <tr><td>{@code value}</td>             <td>{@code double}</td>   <td>{@link #doubleValue()}</td>         <td>{@link #setValue(double)}</td></tr>
+ *   <tr><td></td>                          <td>{@code double}</td>   <td>{@link #doubleValue(Unit)}</td>     <td>{@link #setValue(double, Unit)}</td></tr>
+ *   <tr><td>{@code valueList}</td>         <td>{@code double[]}</td> <td>{@link #doubleValueList()}</td>     <td>{@code  setValue(Object)}</td></tr>
+ *   <tr><td></td>                          <td>{@code double[]}</td> <td>{@link #doubleValueList(Unit)}</td> <td>{@link #setValue(double[], Unit)}</td></tr>
+ *   <tr><td>{@code integerValue}</td>      <td>{@code int}</td>      <td>{@link #intValue()}</td>            <td>{@link #setValue(int)}</td></tr>
+ *   <tr><td>{@code integerValueList}</td>  <td>{@code int[]}</td>    <td>{@link #intValueList()}</td>        <td>{@code  setValue(Object)}</td></tr>
+ *   <tr><td>{@code booleanValue}</td>      <td>{@code boolean}</td>  <td>{@link #booleanValue()}</td>        <td>{@link #setValue(boolean)}</td></tr>
+ *   <tr><td>{@code valueFile}</td>         <td>{@link URI}</td>      <td>{@link #valueFile()}</td>           <td>{@code  setValue(Object)}</td></tr>
+ *   <tr><td>{@code valueFileCitation}</td> <td>{@link Citation}</td> <td>{@code  getValue()}</td>            <td>{@code  setValue(Object)}</td></tr>
  * </table>
  *
  * Instances of {@code ParameterValue} are created by the {@link ParameterDescriptor#createValue()} method.
@@ -69,10 +74,9 @@ import java.nio.file.Path;
  * ultimately delegates to the following methods:
  *
  * <ul>
- *   <li>All getter methods will invoke {@link #getValue()} and - if needed - {@link #getUnit()},
+ *   <li>All getter methods will invoke {@link #getValue()} and {@link #getUnit()} (if needed),
  *       then perform their processing on the values returned by those methods.</li>
- *   <li>All setter methods will first convert (if needed) and verify the argument validity,
- *       then pass the values to the {@link #setValue(Object)} method.</li>
+ *   <li>All setter methods delegates to the {@link #setValue(Object, Unit)} method.</li>
  * </ul>
  *
  * Consequently, the above-cited methods provide single points that subclasses can override
@@ -81,7 +85,7 @@ import java.nio.file.Path;
  * @param <T> The value type.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from Geotk-2.0)
+ * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  *
@@ -97,15 +101,14 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     /**
      * The value, or {@code null} if undefined.
      * Except for the constructors, the {@link #equals(Object)} and the {@link #hashCode()} methods,
-     * this field shall be read only by {@link #getValue()} and written by {@link #setValue(Object)}.
+     * this field shall be read only by {@link #getValue()} and written by {@link #setValue(Object, Unit)}.
      */
     private T value;
 
     /**
      * The unit of measure for the value, or {@code null} if it doesn't apply.
      * Except for the constructors, the {@link #equals(Object)} and the {@link #hashCode()} methods,
-     * this field shall be read only by {@link #getUnit()} and written by {@link #setValue(double, Unit)}
-     * or {@link #setValue(double[], Unit)}.
+     * this field shall be read only by {@link #getUnit()} and written by {@link #setValue(Object, Unit)}.
      */
     private Unit<?> unit;
 
@@ -115,10 +118,25 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      *
      * @param descriptor The abstract definition of this parameter.
      */
-    protected DefaultParameterValue(final ParameterDescriptor<T> descriptor) {
+    public DefaultParameterValue(final ParameterDescriptor<T> descriptor) {
         super(descriptor);
         value = descriptor.getDefaultValue();
         unit  = descriptor.getUnit();
+    }
+
+    /**
+     * Creates a new instance initialized with the values from the specified parameter object.
+     * This is a <cite>shallow</cite> copy constructor, since the value contained in the given
+     * object is not cloned.
+     *
+     * @param parameter The parameter to copy values from, or {@code null} if none.
+     *
+     * @see #castOrCopy(ParameterValue)
+     */
+    public DefaultParameterValue(final ParameterValue<T> parameter) {
+        super(parameter); // Require <T>, not <? extends T>.
+        value = parameter.getValue();
+        unit  = parameter.getUnit();
     }
 
     /**
@@ -153,7 +171,7 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     /**
      * Returns the parameter value as an object.
      * If no value has been set, then this method returns the
-     * {@linkplain ParameterDescriptor#getDefaultValue() default value} (which may be null).
+     * {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} (which may be null).
      *
      * {@section Implementation note for subclasses}
      * All getter methods will invoke this {@code getValue()} method.
@@ -173,6 +191,9 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      * Returns the boolean value of this parameter.
      * A boolean value does not have an associated unit of measure.
      *
+     * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
+     * or throws an exception otherwise.</p>
+     *
      * @return The boolean value represented by this parameter.
      * @throws InvalidParameterTypeException if the value is not a boolean type.
      * @throws IllegalStateException if the value is not defined and there is no default value.
@@ -191,6 +212,9 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     /**
      * Returns the integer value of this parameter, usually used for a count.
      * An integer value does not have an associated unit of measure.
+     *
+     * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
+     * or throws an exception otherwise.</p>
      *
      * @return The numeric value represented by this parameter after conversion to type {@code int}.
      * @throws InvalidParameterTypeException if the value is not an integer type.
@@ -214,6 +238,10 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     /**
      * Returns an ordered sequence of two or more integer values of this parameter, usually used for counts.
      * These integer values do not have an associated unit of measure.
+     *
+     * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
+     * or throws an exception otherwise. Note that the returned array is a direct reference to the
+     * array stored by this parameter.</p>
      *
      * @return The sequence of values represented by this parameter.
      * @throws InvalidParameterTypeException if the value is not an array of {@code int}s.
@@ -241,6 +269,9 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      *        way for consistency will other methods defined in this class, since all of them except
      *        <code>getValue()</code> throw an exception in such case.}
      *
+     * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
+     * or throws an exception otherwise.</p>
+     *
      * @return The numeric value represented by this parameter after conversion to type {@code double}.
      *         This method returns {@link Double#NaN} only if such "value" has been explicitely set.
      * @throws InvalidParameterTypeException if the value is not a numeric type.
@@ -262,6 +293,10 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     /**
      * Returns an ordered sequence of two or more numeric values of this parameter,
      * where each value has the same associated unit of measure.
+     *
+     * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
+     * or throws an exception otherwise. Note that the returned array is a direct reference to the
+     * array stored by this parameter.</p>
      *
      * @return The sequence of values represented by this parameter.
      * @throws InvalidParameterTypeException if the value is not an array of {@code double}s.
@@ -306,6 +341,9 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      * Returns the numeric value of this parameter in the given unit of measure.
      * This convenience method applies unit conversions on the fly as needed.
      *
+     * <p>The default implementation invokes {@link #doubleValue()} and {@link #getUnit()},
+     * then converts the values to the given unit of measurement.</p>
+     *
      * @param  unit The unit of measure for the value to be returned.
      * @return The numeric value represented by this parameter after conversion to type
      *         {@code double} and conversion to {@code unit}.
@@ -325,6 +363,9 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     /**
      * Returns an ordered sequence of numeric values in the specified unit of measure.
      * This convenience method applies unit conversions on the fly as needed.
+     *
+     * <p>The default implementation invokes {@link #doubleValueList()} and {@link #getUnit()},
+     * clone the array, then converts the values to the given unit of measurement.</p>
      *
      * @param  unit The unit of measure for the value to be returned.
      * @return The sequence of values represented by this parameter after conversion to type
@@ -429,6 +470,8 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      * Sets the parameter value as an object. The object type is typically a {@link Double}, {@link Integer},
      * {@link Boolean}, {@link String}, {@link URI}, {@code double[]} or {@code int[]}.
      *
+     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
+     *
      * @param  value The parameter value, or {@code null} to restore the default value.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
@@ -436,13 +479,16 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      * @see #getValue()
      */
     @Override
-    @SuppressWarnings("unchecked") // Safe because type was checked by the constructor.
     public void setValue(final Object value) throws InvalidParameterValueException {
-        this.value = ensureValidValue((ParameterDescriptor<T>) descriptor, value, unit);
+        setValue(value, unit);
+        // Really 'unit', not 'getUnit()' since units are not expected to be involved in this method.
+        // We just want the current unit setting to be unchanged.
     }
 
     /**
      * Sets the parameter value as a boolean.
+     *
+     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
      * @param  value The parameter value.
      * @throws InvalidParameterValueException if the boolean type is inappropriate for this parameter.
@@ -451,11 +497,13 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final boolean value) throws InvalidParameterValueException {
-        setValue((Object) Boolean.valueOf(value));
+        setValue(value, unit); // Same comment than setValue(Object).
     }
 
     /**
      * Sets the parameter value as an integer.
+     *
+     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
      * @param  value The parameter value.
      * @throws InvalidParameterValueException if the integer type is inappropriate for this parameter,
@@ -465,11 +513,13 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final int value) throws InvalidParameterValueException {
-        setValue(value);
+        setValue(value, unit); // Same comment than setValue(Object).
     }
 
     /**
      * Sets the parameter value as a floating point. The unit, if any, stay unchanged.
+     *
+     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
      * @param value The parameter value.
      * @throws InvalidParameterValueException if the floating point type is inappropriate for this
@@ -481,11 +531,13 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final double value) throws InvalidParameterValueException {
-        setValue(value);
+        setValue(value, unit); // Same comment than setValue(Object).
     }
 
     /**
      * Sets the parameter value as a floating point and its associated unit.
+     *
+     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
      * @param  value The parameter value.
      * @param  unit The unit for the specified value.
@@ -497,18 +549,13 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final double value, final Unit<?> unit) throws InvalidParameterValueException {
-        final Unit<?> old = this.unit;
-        this.unit = unit;
-        try {
-            setValue(value);
-        } catch (InvalidParameterValueException e) {
-            this.unit = old;
-            throw e;
-        }
+        setValue(value, unit);
     }
 
     /**
      * Sets the parameter value as an array of floating point and their associated unit.
+     *
+     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
      * @param  values The parameter values.
      * @param  unit The unit for the specified value.
@@ -517,14 +564,24 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final double[] values, final Unit<?> unit) throws InvalidParameterValueException {
-        final Unit<?> old = this.unit;
-        this.unit = unit;
-        try {
-            setValue(value);
-        } catch (InvalidParameterValueException e) {
-            this.unit = old;
-            throw e;
-        }
+        setValue(value, unit);
+    }
+
+    /**
+     * Sets the parameter value and its associated unit.
+     * This method is invoked by all setter methods in this class, thus providing a single point that
+     * subclasses can override if they want to perform more processing on the value before its storage,
+     * or to be notified about value changes.
+     *
+     * @param  value The parameter value, or {@code null} to restore the default value.
+     * @param  unit  The unit associated to the new parameter value, or {@code null}.
+     * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
+     *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
+     */
+    @SuppressWarnings("unchecked") // Safe because descriptor type is enforced by constructor signature.
+    protected void setValue(final Object value, final Unit<?> unit) throws InvalidParameterValueException {
+        this.value = ensureValidValue((ParameterDescriptor<T>) descriptor, value, unit);
+        this.unit  = unit; // Assign only on success.
     }
 
     /**

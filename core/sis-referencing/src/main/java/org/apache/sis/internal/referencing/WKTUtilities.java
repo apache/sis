@@ -21,6 +21,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -69,7 +70,7 @@ public final class WKTUtilities extends Static {
      * @param parameter The parameter to append to the WKT, or {@code null} if none.
      * @param formatter The formatter where to append the parameter.
      */
-    public static void append(final GeneralParameterValue parameter, final Formatter formatter) {
+    public static void append(GeneralParameterValue parameter, final Formatter formatter) {
         if (parameter instanceof ParameterValueGroup) {
             for (final GeneralParameterValue param : ((ParameterValueGroup) parameter).values()) {
                 append(param, formatter);
@@ -77,7 +78,7 @@ public final class WKTUtilities extends Static {
         }
         if (parameter instanceof ParameterValue<?>) {
             if (!(parameter instanceof FormattableObject)) {
-                // TODO - wrap in a SIS implementation.
+                parameter = new DefaultParameterValue<>((ParameterValue<?>) parameter);
             }
             formatter.append((FormattableObject) parameter);
         }
