@@ -17,7 +17,7 @@
 
 /**
  * Coordinate reference system definitions as coordinate systems related to the earth through datum.
- * An explanation for this package is provided in the {@linkplain org.opengis.referencing.crs OpenGIS&reg; javadoc}.
+ * An explanation for this package is provided in the {@linkplain org.opengis.referencing.crs OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
  * <p>The root class for this package is {@link org.apache.sis.referencing.crs.AbstractCRS}.

@@ -17,7 +17,7 @@
 
 /**
  * Coordinate system definitions as the set of coordinate system axes that spans the coordinate space.
- * An explanation for this package is provided in the {@linkplain org.opengis.referencing.cs OpenGIS&reg; javadoc}.
+ * An explanation for this package is provided in the {@linkplain org.opengis.referencing.cs OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
  * <p>The root class in this package is {@link org.apache.sis.referencing.cs.AbstractCS}.

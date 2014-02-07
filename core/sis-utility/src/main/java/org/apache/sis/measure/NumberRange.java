@@ -18,6 +18,7 @@ package org.apache.sis.measure;
 
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -206,7 +207,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
         if (Double.isNaN(value)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, name));
         }
-        return (value != infinity) ? Double.valueOf(value) : null;
+        return (value != infinity) ? Numerics.valueOf(value) : null;
     }
 
     /**
