@@ -260,7 +260,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         ensureNonNull("direction",    direction);
         ensureNonNull("unit",         unit);
         if (!(minimumValue < maximumValue)) { // Use '!' for catching NaN
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimumValue, maximumValue));
+            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    Errors.Keys.IllegalRange_2, minimumValue, maximumValue));
         }
         if ((minimumValue != NEGATIVE_INFINITY) || (maximumValue != POSITIVE_INFINITY)) {
             ensureNonNull("rangeMeaning", rangeMeaning);

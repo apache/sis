@@ -21,6 +21,7 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -70,6 +71,14 @@ import org.apache.sis.util.logging.Logging;
  * @module
  */
 public class IndexedResourceBundle extends ResourceBundle implements Localized {
+    /**
+     * Key used in properties map for localizing some aspects of the operation being executed.
+     * The {@code getResources(Map<?,?>)} methods defined in some sub-classes will look for this property.
+     *
+     * @see org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY
+     */
+    public static final String LOCALE_KEY = "locale";
+
     /**
      * Maximum string length for text inserted into another text. This parameter is used by
      * {@link #summarize}. Resource strings are never cut to this length. However, text replacing
@@ -661,6 +670,25 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                                         final Object arg3)
     {
         return getLogRecord(level, key, new Object[] {arg0, arg1, arg2, arg3});
+    }
+
+    /**
+     * Returns the locale specified in the given map, or {@code null} if none.
+     * Value of unexpected type are ignored.
+     *
+     * @param  properties The map of properties, or {@code null} if none.
+     * @return The locale found in the given map, or {@code null} if none.
+     *
+     * @since 0.4
+     */
+    static Locale getLocale(final Map<?,?> properties) {
+        if (properties != null) {
+            final Object candidate = properties.get(LOCALE_KEY);
+            if (candidate instanceof Locale) {
+                return (Locale) candidate;
+            }
+        }
+        return null;
     }
 
     /**

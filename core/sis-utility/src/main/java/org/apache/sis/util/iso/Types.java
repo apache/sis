@@ -649,15 +649,15 @@ public final class Types extends Static {
                 try {
                     locale = Locales.parse(key, s);
                 } catch (IllformedLocaleException e) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalLanguageCode_1,
-                            '(' + key.substring(0, s) + '）' + key.substring(s), e));
+                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                            Errors.Keys.IllegalLanguageCode_1, '(' + key.substring(0, s) + '）' + key.substring(s), e));
                 }
             }
             final Object value = entry.getValue();
             if (value != null) {
                 if (!(value instanceof CharSequence)) {
-                    throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                    throw new IllegalArgumentException(Errors.getResources(properties)
+                            .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
                 }
                 if (i18n == null) {
                     i18n = (CharSequence) value;

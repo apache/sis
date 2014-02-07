@@ -95,7 +95,8 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
         super(properties);
         this.minimumOccurs = minimumOccurs;
         if (minimumOccurs < 0  || minimumOccurs > maximumOccurs) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
+            throw new IllegalArgumentException(Errors.getResources(properties)
+                    .getString(Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
         }
     }
 

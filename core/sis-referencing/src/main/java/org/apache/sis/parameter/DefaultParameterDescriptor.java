@@ -29,6 +29,7 @@ import org.opengis.referencing.IdentifiedObject;
 
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
@@ -53,8 +54,8 @@ import java.util.Objects;
  *
  * @param <T> The type of elements to be returned by {@link DefaultParameterValue#getValue()}.
  *
- * @author Martin Desruisseaux (IRD, Geomatys)
- * @author Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
@@ -161,15 +162,27 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
         ensureCanCast("defaultValue", valueClass, defaultValue);
         ensureCanCast("minimum",      valueClass, minimum);
         ensureCanCast("maximum",      valueClass, maximum);
+        if (unit != null) {
+            Class<?> componentType = valueClass;
+            for (Class<?> c; (c = componentType.getComponentType()) != null;) {
+                componentType = c;
+            }
+            componentType = Numbers.primitiveToWrapper(componentType);
+            if (!Number.class.isAssignableFrom(componentType)) {
+                throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                        Errors.Keys.IllegalUnitFor_2, super.getName().getCode(), unit));
+            }
+        }
         if (minimum != null && maximum != null) {
             if (minimum.compareTo(valueClass.cast(maximum)) > 0) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimum, maximum));
+                throw new IllegalArgumentException(Errors.getResources(properties)
+                        .getString(Errors.Keys.IllegalRange_2, minimum, maximum));
             }
         }
         if (validValues != null) {
             final Set<T> valids = new HashSet<>(hashMapCapacity(validValues.length));
-            for (int i=0; i<validValues.length; i++) {
-                final T value = Numerics.cached(validValues[i]);
+            for (T value : validValues) {
+                value = Numerics.cached(value);
                 ensureCanCast("validValues", valueClass, value);
                 valids.add(value);
             }
@@ -177,7 +190,10 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
         } else {
             this.validValues = null;
         }
-        AbstractParameterValue.ensureValidValue(this, defaultValue, unit);
+        final Verifier error = Verifier.ensureValidValue(valueClass, this.validValues, minimum, maximum, defaultValue);
+        if (error != null) {
+            throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), defaultValue));
+        }
     }
 
     /**

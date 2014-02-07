@@ -95,6 +95,33 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     }
 
     /**
+     * Tests the {@link AbstractIdentifiedObject#AbstractIdentifiedObject(Map)} constructor without name.
+     * This is invalid and should thrown an exception.
+     */
+    @Test
+    public void testMissingName() {
+        final Map<String,Object> properties = new HashMap<>(4);
+        assertNull(properties.put(AbstractIdentifiedObject.REMARKS_KEY, "Not a name."));
+        try {
+            new AbstractIdentifiedObject(properties);
+            fail("Should not allow unnamed object.");
+        } catch (IllegalArgumentException e) {
+            // The message may be in any language, but shall
+            // contain at least the missing property name.
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("code"));
+        }
+        // Try again, with error messages forced to English.
+        assertNull(properties.put(AbstractIdentifiedObject.LOCALE_KEY, Locale.US));
+        try {
+            new AbstractIdentifiedObject(properties);
+            fail("Should not allow unnamed object.");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Missing value for “code” property.", e.getMessage());
+        }
+    }
+
+    /**
      * Tests the {@link AbstractIdentifiedObject#AbstractIdentifiedObject(Map)} constructor without identifier.
      * This method compares the property values against the expected values.
      */
