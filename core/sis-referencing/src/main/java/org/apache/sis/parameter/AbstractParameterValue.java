@@ -42,7 +42,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.4
  * @module
  */
-public class AbstractParameterValue extends FormattableObject
+public abstract class AbstractParameterValue extends FormattableObject
         implements GeneralParameterValue, Serializable, Cloneable
 {
     /**
@@ -67,12 +67,10 @@ public class AbstractParameterValue extends FormattableObject
 
     /**
      * Creates a new instance initialized with the values from the specified parameter object.
-     * This is a <cite>shallow</cite> copy constructor, since the values contained in the given
+     * This is a <em>shallow</em> copy constructor, since the values contained in the given
      * object are not cloned.
      *
-     * @param parameter The parameter to copy values from, or {@code null} if none.
-     *
-     * @see #castOrCopy(GeneralParameterValue)
+     * @param parameter The parameter to copy values from.
      */
     protected AbstractParameterValue(final GeneralParameterValue parameter) {
         ensureNonNull("parameter", parameter);
