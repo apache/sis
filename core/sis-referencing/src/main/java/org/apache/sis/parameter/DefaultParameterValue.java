@@ -126,12 +126,10 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
 
     /**
      * Creates a new instance initialized with the values from the specified parameter object.
-     * This is a <cite>shallow</cite> copy constructor, since the value contained in the given
+     * This is a <em>shallow</em> copy constructor, since the value contained in the given
      * object is not cloned.
      *
-     * @param parameter The parameter to copy values from, or {@code null} if none.
-     *
-     * @see #castOrCopy(ParameterValue)
+     * @param parameter The parameter to copy values from.
      */
     public DefaultParameterValue(final ParameterValue<T> parameter) {
         super(parameter); // Require <T>, not <? extends T>.
