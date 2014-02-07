@@ -38,7 +38,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * The base class of single parameter value or group of parameter values.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4 (derived from Geotk-2.0)
+ * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */
@@ -67,44 +67,19 @@ public class AbstractParameterValue extends FormattableObject
 
     /**
      * Creates a new instance initialized with the values from the specified parameter object.
-     * This is a <cite>shallow</cite> copy constructor, since the properties contained in the
-     * given object are not recursively copied.
+     * This is a <cite>shallow</cite> copy constructor, since the values contained in the given
+     * object are not cloned.
      *
-     * @param object The parameter to copy values from, or {@code null} if none.
+     * @param parameter The parameter to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GeneralParameterValue)
      */
-    protected AbstractParameterValue(final GeneralParameterValue object) {
-        ensureNonNull("object", object);
-        descriptor = object.getDescriptor();
+    protected AbstractParameterValue(final GeneralParameterValue parameter) {
+        ensureNonNull("parameter", parameter);
+        descriptor = parameter.getDescriptor();
         if (descriptor == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, "descriptor"));
         }
-    }
-
-    /**
-     * Returns a SIS parameter implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
-     *
-     * <ul>
-     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is already an instance of
-     *       {@code AbstractParameterValue}, then it is returned unchanged.</li>
-     *   <li>Otherwise a new {@code AbstractParameterValue} instance is created using the
-     *       {@linkplain #AbstractParameterValue(GeneralParameterValue) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since
-     *       the other properties contained in the given object are not recursively copied.</li>
-     * </ul>
-     *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
-     *         given object itself), or {@code null} if the argument was null.
-     */
-    public static AbstractParameterValue castOrCopy(final GeneralParameterValue object) {
-        if (object == null || object instanceof AbstractParameterValue) {
-            return (AbstractParameterValue) object;
-        }
-        return new AbstractParameterValue(object);
     }
 
     /**
@@ -148,15 +123,9 @@ public class AbstractParameterValue extends FormattableObject
             return null;
         }
         final String error;
-        /*
-         * Note: the implementation below is similar (except for different error message) to the
-         * one in Parameters.isValidValue(ParameterDescriptor, Object). If one implementation is
-         * modified, the other should be updated accordingly. The main difference is that null
-         * values are replaced by the default value instead than being a conformance error.
-         */
         final Class<T> type = descriptor.getValueClass();
         if (!type.isInstance(value)) {
-            error = Errors.format(Errors.Keys.IllegalParameterClass_3, getName(descriptor), type, value.getClass());
+            error = Errors.format(Errors.Keys.IllegalParameterValueClass_3, getName(descriptor), type, value.getClass());
         } else {
             /*
              * Before to verify if the given value is inside the bounds, we need to convert the value
@@ -195,10 +164,10 @@ public class AbstractParameterValue extends FormattableObject
             if ((minimum != null && minimum.compareTo(converted) > 0) ||
                 (maximum != null && maximum.compareTo(converted) < 0))
             {
-                error = Errors.format(Errors.Keys.ValueOutOfRange_4, getName(descriptor), minimum, maximum, value);
+                error = Errors.format(Errors.Keys.ValueOutOfRange_4, getName(descriptor), minimum, maximum, converted);
             } else {
                 final Set<T> validValues = descriptor.getValidValues();
-                if (validValues!=null && !validValues.contains(value)) {
+                if (validValues!=null && !validValues.contains(converted)) {
                     error = Errors.format(Errors.Keys.IllegalArgumentValue_2, getName(descriptor), value);
                 } else {
                     /*

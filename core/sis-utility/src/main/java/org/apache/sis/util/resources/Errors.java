@@ -271,10 +271,15 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalOrdinateRange_3 = 39;
 
         /**
-         * Parameter “{0}” does not accept instances of ‘{2}’. Expected an instance of ‘{1}’ or derived
-         * type.
+         * Parameter ‘{0}’ can’t be of type ‘{1}’.
          */
-        public static final short IllegalParameterClass_3 = 138;
+        public static final short IllegalParameterType_2 = 143;
+
+        /**
+         * Parameter “{0}” does not accept values of ‘{2}’ type. Expected an instance of ‘{1}’ or
+         * derived type.
+         */
+        public static final short IllegalParameterValueClass_3 = 138;
 
         /**
          * Property “{0}” does not accept instances of ‘{1}’.
