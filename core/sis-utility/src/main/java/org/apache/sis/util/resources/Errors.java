@@ -17,6 +17,7 @@
 package org.apache.sis.util.resources;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.opengis.util.InternationalString;
@@ -407,17 +408,17 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MissingSchemeInURI = 62;
 
         /**
-         * Missing value for option “{0}”.
+         * Missing value for “{0}” option.
          */
         public static final short MissingValueForOption_1 = 63;
 
         /**
-         * Missing value for parameter “{0}”.
+         * Missing value for “{0}” parameter.
          */
         public static final short MissingValueForParameter_1 = 142;
 
         /**
-         * Missing value for property “{0}”.
+         * Missing value for “{0}” property.
          */
         public static final short MissingValueForProperty_1 = 64;
 
@@ -817,6 +818,21 @@ public final class Errors extends IndexedResourceBundle {
     }
 
     /**
+     * Returns resources in the locale specified in the given property map. This convenience method looks
+     * for the {@link #LOCALE_KEY} entry. If the given map is null, or contains no entry for the locale key,
+     * or the value is not an instance of {@link Locale}, then this method fallback on the default locale.
+     *
+     * @param  properties The map of properties, or {@code null} if none.
+     * @return Resources in the given locale.
+     * @throws MissingResourceException if resources can't be found.
+     *
+     * @since 0.4
+     */
+    public static Errors getResources(final Map<?,?> properties) throws MissingResourceException {
+        return getResources(getLocale(properties));
+    }
+
+    /**
      * Gets a string for the given key from this resource bundle or one of its parents.
      *
      * @param  key The key for the desired string.
@@ -824,7 +840,7 @@ public final class Errors extends IndexedResourceBundle {
      * @throws MissingResourceException If no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
-        return getResources(null).getString(key);
+        return getResources((Locale) null).getString(key);
     }
 
     /**
@@ -839,7 +855,7 @@ public final class Errors extends IndexedResourceBundle {
     public static String format(final short  key,
                                 final Object arg0) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0);
+        return getResources((Locale) null).getString(key, arg0);
     }
 
     /**
@@ -856,7 +872,7 @@ public final class Errors extends IndexedResourceBundle {
                                 final Object arg0,
                                 final Object arg1) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0, arg1);
+        return getResources((Locale) null).getString(key, arg0, arg1);
     }
 
     /**
@@ -875,7 +891,7 @@ public final class Errors extends IndexedResourceBundle {
                                 final Object arg1,
                                 final Object arg2) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0, arg1, arg2);
+        return getResources((Locale) null).getString(key, arg0, arg1, arg2);
     }
 
     /**
@@ -896,7 +912,7 @@ public final class Errors extends IndexedResourceBundle {
                                 final Object arg2,
                                 final Object arg3) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0, arg1, arg2, arg3);
+        return getResources((Locale) null).getString(key, arg0, arg1, arg2, arg3);
     }
 
     /**

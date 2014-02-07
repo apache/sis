@@ -138,6 +138,19 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private static final long serialVersionUID = -5173281694258483264L;
 
     /**
+     * Optional key which can be given to the {@linkplain #AbstractIdentifiedObject(Map) constructor} for specifying
+     * the locale to use for producing error messages. Notes:
+     *
+     * <ul>
+     *   <li>The locale is not stored in any {@code AbstractIdentifiedObject} property;
+     *       its value is ignored if no error occurred at construction time.</li>
+     *   <li>The locale is used on a <cite>best effort</cite> basis;
+     *       not all error messages may be localized.</li>
+     * </ul>
+     */
+    public static final String LOCALE_KEY = Errors.LOCALE_KEY;
+
+    /**
      * The name for this object or code. Shall never be {@code null}.
      *
      * <p><b>Consider this field as final!</b>
@@ -245,6 +258,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
+     *   <tr>
+     *     <td>{@value #LOCALE_KEY}</td>
+     *     <td>{@link Locale}</td>
+     *     <td>(none)</td>
+     *   </tr>
      * </table>
      *
      * Additionally, all localizable attributes like {@code "remarks"} may have a language and country code suffix.
@@ -269,7 +287,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         } else if (value instanceof ReferenceIdentifier) {
             name = (ReferenceIdentifier) value;
         } else {
-            throw illegalPropertyType(NAME_KEY, value);
+            throw illegalPropertyType(properties, NAME_KEY, value);
         }
 
         // -------------------------------------------------------------------
@@ -279,7 +297,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         try {
             alias = immutableSet(true, Types.toGenericNames(value, null));
         } catch (ClassCastException e) {
-            throw (IllegalArgumentException) illegalPropertyType(ALIAS_KEY, value).initCause(e);
+            throw (IllegalArgumentException) illegalPropertyType(properties, ALIAS_KEY, value).initCause(e);
         }
 
         // -----------------------------------------------------------
@@ -293,7 +311,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         } else if (value instanceof ReferenceIdentifier[]) {
             identifiers = immutableSet(true, (ReferenceIdentifier[]) value);
         } else {
-            throw illegalPropertyType(IDENTIFIERS_KEY, value);
+            throw illegalPropertyType(properties, IDENTIFIERS_KEY, value);
         }
 
         // ----------------------------------------
@@ -303,10 +321,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Returns the exception to be thrown when a property if of illegal type.
+     * Returns the exception to be thrown when a property is of illegal type.
      */
-    private static IllegalArgumentException illegalPropertyType(final String key, final Object value) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+    private static IllegalArgumentException illegalPropertyType(
+            final Map<String,?> properties, final String key, final Object value)
+    {
+        return new IllegalArgumentException(Errors.getResources(properties)
+                .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
     }
 
     /**

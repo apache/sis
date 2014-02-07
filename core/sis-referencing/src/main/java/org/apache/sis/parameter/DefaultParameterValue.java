@@ -28,6 +28,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterTypeException;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -35,6 +36,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 // Related to JDK7
 import java.util.Objects;
 import java.nio.file.Path;
+import org.apache.sis.util.Numbers;
 
 
 /**
@@ -321,11 +323,11 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     private UnitConverter getConverterTo(final Unit<?> unit) {
         final Unit<?> source = getUnit();
         if (source == null) {
-            throw unitlessParameter(descriptor);
+            throw Verifier.unitlessParameter(descriptor);
         }
         ensureNonNull("unit", unit);
-        final short expectedID = getUnitMessageID(source);
-        if (getUnitMessageID(unit) != expectedID) {
+        final short expectedID = Verifier.getUnitMessageID(source);
+        if (Verifier.getUnitMessageID(unit) != expectedID) {
             throw new IllegalArgumentException(Errors.format(expectedID, unit));
         }
         try {
@@ -438,7 +440,7 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
         } catch (URISyntaxException exception) {
             cause = exception;
         }
-        final String name = getName(descriptor);
+        final String name = Verifier.getName(descriptor);
         if (value != null) {
             throw new InvalidParameterTypeException(getClassTypeError(), name);
         }
@@ -449,7 +451,7 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      * Returns the exception to throw when an incompatible method is invoked for the value type.
      */
     private IllegalStateException incompatibleValue(final Object value) {
-        final String name = getName(descriptor);
+        final String name = Verifier.getName(descriptor);
         if (value != null) {
             return new InvalidParameterTypeException(getClassTypeError(), name);
         }
@@ -478,9 +480,9 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final Object value) throws InvalidParameterValueException {
+        // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
+        // to be involved in this method. We just want the current unit setting to be unchanged.
         setValue(value, unit);
-        // Really 'unit', not 'getUnit()' since units are not expected to be involved in this method.
-        // We just want the current unit setting to be unchanged.
     }
 
     /**
@@ -495,13 +497,16 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final boolean value) throws InvalidParameterValueException {
-        setValue(value, unit); // Same comment than setValue(Object).
+        // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
+        // to be involved in this method. We just want the current unit setting to be unchanged.
+        setValue(Boolean.valueOf(value), unit);
     }
 
     /**
      * Sets the parameter value as an integer.
      *
-     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
+     * <p>The default implementation wraps the given integer in an object of the type specified by the
+     * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
      *
      * @param  value The parameter value.
      * @throws InvalidParameterValueException if the integer type is inappropriate for this parameter,
@@ -511,13 +516,37 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final int value) throws InvalidParameterValueException {
-        setValue(value, unit); // Same comment than setValue(Object).
+        Number n = Integer.valueOf(value);
+        final Class<?> valueClass = ((ParameterDescriptor<?>) descriptor).getValueClass();
+        if (Number.class.isAssignableFrom(valueClass)) {
+            @SuppressWarnings("unchecked")
+            final Number c = Numbers.cast(value, (Class<? extends Number>) valueClass);
+            if (c.intValue() == value) {
+                n = c;
+            }
+        }
+        setValue(n, unit);
+        // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
+        // to be involved in this method. We just want the current unit setting to be unchanged.
+    }
+
+    /**
+     * Wraps the given value in a type compatible with the expected value class, if possible.
+     */
+    @SuppressWarnings("unchecked")
+    private static Number wrap(final double value, final Class<?> valueClass) {
+        if (Number.class.isAssignableFrom(valueClass)) {
+            return Numbers.wrap(value, (Class<? extends Number>) valueClass);
+        } else {
+            return Numerics.valueOf(value);
+        }
     }
 
     /**
      * Sets the parameter value as a floating point. The unit, if any, stay unchanged.
      *
-     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
+     * <p>The default implementation wraps the given number in an object of the type specified by the
+     * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
      *
      * @param value The parameter value.
      * @throws InvalidParameterValueException if the floating point type is inappropriate for this
@@ -529,13 +558,16 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final double value) throws InvalidParameterValueException {
-        setValue(value, unit); // Same comment than setValue(Object).
+        // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
+        // to be involved in this method. We just want the current unit setting to be unchanged.
+        setValue(wrap(value, ((ParameterDescriptor<?>) descriptor).getValueClass()), unit);
     }
 
     /**
      * Sets the parameter value as a floating point and its associated unit.
      *
-     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
+     * <p>The default implementation wraps the given number in an object of the type specified by the
+     * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
      *
      * @param  value The parameter value.
      * @param  unit The unit for the specified value.
@@ -547,7 +579,7 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final double value, final Unit<?> unit) throws InvalidParameterValueException {
-        setValue(value, unit);
+        setValue(wrap(value, ((ParameterDescriptor<?>) descriptor).getValueClass()), unit);
     }
 
     /**
@@ -578,7 +610,7 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @SuppressWarnings("unchecked") // Safe because descriptor type is enforced by constructor signature.
     protected void setValue(final Object value, final Unit<?> unit) throws InvalidParameterValueException {
-        this.value = ensureValidValue((ParameterDescriptor<T>) descriptor, value, unit);
+        this.value = Verifier.ensureValidValue((ParameterDescriptor<T>) descriptor, value, unit);
         this.unit  = unit; // Assign only on success.
     }
 

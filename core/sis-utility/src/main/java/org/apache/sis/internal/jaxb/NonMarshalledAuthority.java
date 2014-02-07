@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.Serializable;
@@ -280,7 +281,7 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
         } catch (ReflectiveOperationException e) {
             if (!warningLogged) {
                 warningLogged = true;
-                final LogRecord record = Errors.getResources(null).getLogRecord(Level.WARNING,
+                final LogRecord record = Errors.getResources((Locale) null).getLogRecord(Level.WARNING,
                         Errors.Keys.MissingRequiredModule_1, "sis-metadata");
                 /*
                  * Log directly the the logger rather than invoking the Context.warningOccured(…) method because

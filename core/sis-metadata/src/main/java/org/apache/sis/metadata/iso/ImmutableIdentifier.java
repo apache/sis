@@ -205,7 +205,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
         } else {
             remarks = null;
         }
-        validate();
+        validate(null);
     }
 
     /**
@@ -252,7 +252,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
         this.authority = authority;
         this.version   = version;
         this.remarks   = remarks;
-        validate();
+        validate(null);
     }
 
     /**
@@ -292,6 +292,11 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
+     *     <td>{@link Locale}</td>
+     *     <td>(none)</td>
+     *   </tr>
      * </table>
      *
      * {@code "remarks"} is a localizable attributes which may have a language and country
@@ -317,7 +322,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
         } else if (value == null || value instanceof Citation) {
             authority = (Citation) value;
         } else {
-            throw illegalPropertyType(AUTHORITY_KEY, value);
+            throw illegalPropertyType(properties, AUTHORITY_KEY, value);
         }
         /*
          * Complete the code space if it was not explicitly set. We take a short identifier (preferred) or title
@@ -331,27 +336,30 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
         } else if (value instanceof String) {
             codeSpace = trimWhitespaces((String) value);
         } else {
-            throw illegalPropertyType(CODESPACE_KEY, value);
+            throw illegalPropertyType(properties, CODESPACE_KEY, value);
         }
-        validate();
+        validate(properties);
     }
 
     /**
      * Ensures that the properties of this {@code ImmutableIdentifier} are valid.
      */
-    private void validate() {
+    private void validate(final Map<String,?> properties) {
         if (code == null || code.isEmpty()) {
-            throw new IllegalArgumentException(Errors.format((code == null)
-                    ? Errors.Keys.MissingValueForProperty_1
-                    : Errors.Keys.EmptyProperty_1, CODE_KEY));
+            throw new IllegalArgumentException(Errors.getResources(properties)
+                    .getString((code == null) ? Errors.Keys.MissingValueForProperty_1
+                                              : Errors.Keys.EmptyProperty_1, CODE_KEY));
         }
     }
 
     /**
      * Returns the exception to be thrown when a property if of illegal type.
      */
-    private static IllegalArgumentException illegalPropertyType(final String key, final Object value) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+    private static IllegalArgumentException illegalPropertyType(
+            final Map<String,?> properties, final String key, final Object value)
+    {
+        return new IllegalArgumentException(Errors.getResources(properties)
+                .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
     }
 
     /**
