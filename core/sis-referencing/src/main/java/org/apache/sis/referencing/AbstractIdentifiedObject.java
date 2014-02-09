@@ -209,8 +209,12 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     /**
      * Constructs an object from the given properties. Keys are strings from the table below.
      * The map given in argument shall contain an entry at least for the
-     * {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} key.
+     * {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} or
+     * {@value org.opengis.referencing.ReferenceIdentifier#CODE_KEY} key.
      * Other properties listed in the table below are optional.
+     * In particular, {@code "authority"}, {@code "code"}, {@code "codespace"} and {@code "version"}
+     * are convenience properties for building a name, and are ignored if the {@code "name"} property
+     * is already a {@link ReferenceIdentifier} object instead than a {@link String}.
      *
      * <table class="sis">
      *   <tr>
@@ -265,12 +269,14 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   </tr>
      * </table>
      *
-     * Additionally, all localizable attributes like {@code "remarks"} may have a language and country code suffix.
+     * {@section Localization}
+     * All localizable attributes like {@code "remarks"} may have a language and country code suffix.
      * For example the {@code "remarks_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
      * the {@code "remarks_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
      *
-     * <p>Note that the {@code "authority"} and {@code "version"} properties are ignored if the {@code "name"}
-     * property is already a {@link ReferenceIdentifier} object instead than a {@link String}.</p>
+     * <p>The {@code "locale"} property applies only to exception messages, if any.
+     * After successful construction, {@code AbstractIdentifiedObject} instances do not keep the locale
+     * since localizations are deferred to the {@link InternationalString#toString(Locale)} method.</p>
      *
      * @param  properties The properties to be given to this identified object.
      * @throws IllegalArgumentException if a property has an invalid value.

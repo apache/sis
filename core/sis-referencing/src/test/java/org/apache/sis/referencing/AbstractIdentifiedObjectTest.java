@@ -119,6 +119,9 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
         } catch (IllegalArgumentException e) {
             assertEquals("Missing value for “code” property.", e.getMessage());
         }
+        // "code" with String value is accepted as well.
+        assertNull(properties.put("code", "Test"));
+        assertEquals("Test", new AbstractIdentifiedObject(properties).getName().getCode());
     }
 
     /**

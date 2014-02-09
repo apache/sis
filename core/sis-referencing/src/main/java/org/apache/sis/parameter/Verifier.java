@@ -94,12 +94,6 @@ final class Verifier {
     static <T> T ensureValidValue(final ParameterDescriptor<T> descriptor, final Object value, final Unit<?> unit)
             throws InvalidParameterValueException
     {
-        if (value == null) {
-            if (descriptor.getMinimumOccurs() != 0) {
-                return descriptor.getDefaultValue();
-            }
-            return null;
-        }
         final Class<T> type = descriptor.getValueClass();
         /*
          * Before to verify if the given value is inside the bounds, we need to convert the value
@@ -109,20 +103,21 @@ final class Verifier {
         if (unit != null) {
             final Unit<?> def = descriptor.getUnit();
             if (def == null) {
-                throw unitlessParameter(descriptor);
+                final String name = getName(descriptor);
+                throw new InvalidParameterValueException(Errors.format(Errors.Keys.UnitlessParameter_1, name), name, unit);
             }
             if (!unit.equals(def)) {
                 final short expectedID = getUnitMessageID(def);
                 if (getUnitMessageID(unit) != expectedID) {
                     throw new IllegalArgumentException(Errors.format(expectedID, unit));
                 }
-                final UnitConverter converter;
-                try {
-                    converter = unit.getConverterToAny(def);
-                } catch (ConversionException e) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2, unit, def), e);
-                }
-                if (Number.class.isAssignableFrom(type)) {
+                if (value != null && Number.class.isAssignableFrom(type)) {
+                    final UnitConverter converter;
+                    try {
+                        converter = unit.getConverterToAny(def);
+                    } catch (ConversionException e) {
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2, unit, def), e);
+                    }
                     Number n = (Number) value; // Given value.
                     n = converter.convert(n.doubleValue()); // Value in units that we can compare.
                     try {
@@ -133,13 +128,16 @@ final class Verifier {
                 }
             }
         }
-        final Comparable<T> minimum = descriptor.getMinimumValue();
-        final Comparable<T> maximum = descriptor.getMaximumValue();
-        final Verifier error = ensureValidValue(descriptor.getValueClass(),
-                    descriptor.getValidValues(), minimum, maximum, convertedValue);
-        if (error != null) {
-            final String name = getName(descriptor);
-            throw new InvalidParameterValueException(error.message(null, name, value), name, value);
+        if (convertedValue != null) {
+            final Comparable<T> minimum = descriptor.getMinimumValue();
+            final Comparable<T> maximum = descriptor.getMaximumValue();
+            final Verifier error = ensureValidValue(type, descriptor.getValidValues(), minimum, maximum, convertedValue);
+            if (error != null) {
+                final String name = getName(descriptor);
+                throw new InvalidParameterValueException(error.message(null, name, value), name, value);
+            }
+        } else if (descriptor.getMinimumOccurs() != 0) {
+            return descriptor.getDefaultValue();
         }
         /*
          * Passed every tests - the value is valid.
@@ -168,8 +166,8 @@ final class Verifier {
         {
             return new Verifier(Errors.Keys.ValueOutOfRange_4, true, null, minimum, maximum, convertedValue);
         }
-        if (validValues!=null && !validValues.contains(convertedValue)) {
-            return new Verifier(Errors.Keys.IllegalArgumentValue_2, true, null, convertedValue);
+        if (validValues != null && !validValues.contains(convertedValue)) {
+            return new Verifier(Errors.Keys.IllegalParameterValue_2, true, null, convertedValue);
         }
         return null;
     }
@@ -187,13 +185,6 @@ final class Verifier {
             arguments[arguments.length - 1] = value;
         }
         return Errors.getResources(properties).getString(errorKey, arguments);
-    }
-
-    /**
-     * Returns an exception initialized with a "Unitless parameter" error message for the specified descriptor.
-     */
-    static IllegalStateException unitlessParameter(final GeneralParameterDescriptor descriptor) {
-        return new IllegalStateException(Errors.format(Errors.Keys.UnitlessParameter_1, getName(descriptor)));
     }
 
     /**

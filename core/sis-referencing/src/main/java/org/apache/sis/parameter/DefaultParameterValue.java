@@ -323,7 +323,7 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     private UnitConverter getConverterTo(final Unit<?> unit) {
         final Unit<?> source = getUnit();
         if (source == null) {
-            throw Verifier.unitlessParameter(descriptor);
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnitlessParameter_1, Verifier.getName(descriptor)));
         }
         ensureNonNull("unit", unit);
         final short expectedID = Verifier.getUnitMessageID(source);
@@ -467,12 +467,19 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     }
 
     /**
-     * Sets the parameter value as an object. The object type is typically a {@link Double}, {@link Integer},
-     * {@link Boolean}, {@link String}, {@link URI}, {@code double[]} or {@code int[]}.
+     * Sets the parameter value as an object. The object type is typically (but not limited to) {@link Double},
+     * {@link Integer}, {@link Boolean}, {@link String}, {@link URI}, {@code double[]} or {@code int[]}.
+     * If the given value is {@code null}, then there is a choice:
      *
-     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
+     * <ul>
+     *   <li>If this parameter is mandatory, then the value is set to the
+     *       {@linkplain DefaultParameterDescriptor#getDefaultValue() default value}.</li>
+     *   <li>If this parameter is optional, then the value is set to {@code null} as requested.</li>
+     * </ul>
      *
-     * @param  value The parameter value, or {@code null} to restore the default value.
+     * The default implementation delegates to {@link #setValue(Object, Unit)}.
+     *
+     * @param  value The parameter value, or {@code null}.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
      *
@@ -532,9 +539,11 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
 
     /**
      * Wraps the given value in a type compatible with the expected value class, if possible.
+     *
+     * @throws IllegalArgumentException If the given value can not be converted to the given type.
      */
     @SuppressWarnings("unchecked")
-    private static Number wrap(final double value, final Class<?> valueClass) {
+    private static Number wrap(final double value, final Class<?> valueClass) throws IllegalArgumentException {
         if (Number.class.isAssignableFrom(valueClass)) {
             return Numbers.wrap(value, (Class<? extends Number>) valueClass);
         } else {
@@ -558,9 +567,13 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final double value) throws InvalidParameterValueException {
-        // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
-        // to be involved in this method. We just want the current unit setting to be unchanged.
-        setValue(wrap(value, ((ParameterDescriptor<?>) descriptor).getValueClass()), unit);
+        try {
+            // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
+            // to be involved in this method. We just want the current unit setting to be unchanged.
+            setValue(wrap(value, ((ParameterDescriptor<?>) descriptor).getValueClass()), unit);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getName(descriptor), value);
+        }
     }
 
     /**
@@ -579,7 +592,11 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public void setValue(final double value, final Unit<?> unit) throws InvalidParameterValueException {
-        setValue(wrap(value, ((ParameterDescriptor<?>) descriptor).getValueClass()), unit);
+        try {
+            setValue(wrap(value, ((ParameterDescriptor<?>) descriptor).getValueClass()), unit);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getName(descriptor), value);
+        }
     }
 
     /**
@@ -599,11 +616,19 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
 
     /**
      * Sets the parameter value and its associated unit.
+     * If the given value is {@code null}, then there is a choice:
+     * <ul>
+     *   <li>If this parameter is mandatory, then the value is set to the
+     *       {@linkplain DefaultParameterDescriptor#getDefaultValue() default value}.</li>
+     *   <li>If this parameter is optional, then the value is set to {@code null} as requested.</li>
+     * </ul>
+     *
+     * {@section Implementation note for subclasses}
      * This method is invoked by all setter methods in this class, thus providing a single point that
      * subclasses can override if they want to perform more processing on the value before its storage,
      * or to be notified about value changes.
      *
-     * @param  value The parameter value, or {@code null} to restore the default value.
+     * @param  value The parameter value, or {@code null}.
      * @param  unit  The unit associated to the new parameter value, or {@code null}.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).

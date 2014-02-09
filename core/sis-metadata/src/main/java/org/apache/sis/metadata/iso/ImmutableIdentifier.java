@@ -299,10 +299,15 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *   </tr>
      * </table>
      *
+     * {@section Localization}
      * {@code "remarks"} is a localizable attributes which may have a language and country
      * code suffix. For example the {@code "remarks_fr"} property stands for remarks in
      * {@linkplain Locale#FRENCH French} and the {@code "remarks_fr_CA"} property stands
      * for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
+     *
+     * <p>The {@code "locale"} property applies only to exception messages, if any.
+     * After successful construction, {@code ImmutableIdentifier} instances do not keep the locale
+     * since localizations are deferred to the {@link InternationalString#toString(Locale)} method.</p>
      *
      * @param  properties The properties to be given to this identifier.
      * @throws InvalidParameterValueException if a property has an invalid value.
