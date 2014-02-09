@@ -19,7 +19,7 @@ package org.apache.sis.parameter;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import javax.measure.unit.Unit;
 
 import org.opengis.util.CodeList;
@@ -180,7 +180,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
             }
         }
         if (validValues != null) {
-            final Set<T> valids = new HashSet<>(hashMapCapacity(validValues.length));
+            final Set<T> valids = new LinkedHashSet<>(hashMapCapacity(validValues.length));
             for (T value : validValues) {
                 value = Numerics.cached(value);
                 ensureCanCast("validValues", valueClass, value);
@@ -190,9 +190,11 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
         } else {
             this.validValues = null;
         }
-        final Verifier error = Verifier.ensureValidValue(valueClass, this.validValues, minimum, maximum, defaultValue);
-        if (error != null) {
-            throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), defaultValue));
+        if (defaultValue != null) {
+            final Verifier error = Verifier.ensureValidValue(valueClass, this.validValues, minimum, maximum, defaultValue);
+            if (error != null) {
+                throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), defaultValue));
+            }
         }
     }
 

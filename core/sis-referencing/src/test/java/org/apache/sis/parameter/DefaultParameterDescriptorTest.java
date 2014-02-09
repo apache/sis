@@ -56,7 +56,31 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     private static final double EPS = 1E-10;
 
     /**
-     * Constructs a descriptor for a mandatory parameter in a range of integer values.
+     * Creates the map of properties to be given to {@link DefaultParameterDescriptor} constructor.
+     *
+     * @param  name The parameter name.
+     * @return The properties to be given to descriptor constructor.
+     */
+    private static Map<String,Object> properties(final String name) {
+        final Map<String,Object> properties = new HashMap<>(4);
+        assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, name));
+        assertNull(properties.put(DefaultParameterDescriptor.LOCALE_KEY, Locale.US));
+        return properties;
+    }
+
+    /**
+     * Creates a descriptor for an optional parameter without default value, minimum or maximum value.
+     *
+     * @param  name The parameter name.
+     * @param  type The type of values.
+     * @return The parameter descriptor.
+     */
+    static <T> DefaultParameterDescriptor<T> createSimpleOptional(final String name, final Class<T> type) {
+        return new DefaultParameterDescriptor<>(properties(name), type, null, null, null, null, null, false);
+    }
+
+    /**
+     * Creates a descriptor for a mandatory parameter in a range of integer values.
      *
      * @param  name         The parameter name.
      * @param  defaultValue The default value for the parameter.
@@ -64,19 +88,16 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * @param  maximum      The maximum parameter value.
      * @return The parameter descriptor for the given range of values.
      */
-    private static DefaultParameterDescriptor<Integer> create(final String name,
+    static DefaultParameterDescriptor<Integer> create(final String name,
             final int defaultValue, final int minimum, final int maximum)
     {
-        final Map<String,Object> properties = new HashMap<>(4);
-        assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, name));
-        assertNull(properties.put(DefaultParameterDescriptor.LOCALE_KEY, Locale.US));
-        return new DefaultParameterDescriptor<>(properties,
+        return new DefaultParameterDescriptor<>(properties(name),
                  Integer.class, null, Integer.valueOf(defaultValue),
                  Integer.valueOf(minimum), Integer.valueOf(maximum), null, true);
     }
 
     /**
-     * Constructs a descriptor for a mandatory parameter in a range of floating point values.
+     * Creates a descriptor for a mandatory parameter in a range of floating point values.
      *
      * @param  name         The parameter name.
      * @param  defaultValue The default value for the parameter, or {@link Double#NaN} if none.
@@ -85,16 +106,45 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * @param  unit         The unit for default, minimum and maximum values.
      * @return The parameter descriptor for the given range of values.
      */
-    private static DefaultParameterDescriptor<Double> create(final String name,
+    static DefaultParameterDescriptor<Double> create(final String name,
             final double defaultValue, final double minimum, final double maximum, final Unit<?> unit)
     {
-        final Map<String,Object> properties = new HashMap<>(4);
-        assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, name));
-        assertNull(properties.put(DefaultParameterDescriptor.LOCALE_KEY, Locale.US));
-        return new DefaultParameterDescriptor<>(properties, Double.class, null,
+        return new DefaultParameterDescriptor<>(properties(name), Double.class, null,
                 Double.isNaN(defaultValue)          ? null : Double.valueOf(defaultValue),
                 minimum == Double.NEGATIVE_INFINITY ? null : Double.valueOf(minimum),
                 maximum == Double.POSITIVE_INFINITY ? null : Double.valueOf(maximum), unit, true);
+    }
+
+    /**
+     * Creates a descriptor for a parameter restricted to a set of valid values.
+     * This is typically (but not necessarily) a code list parameter.
+     *
+     * @param  name         The parameter name.
+     * @param  type         The type of values.
+     * @param  validValues  The valid values.
+     * @param  defaultValue The default value for the parameter.
+     * @return The parameter descriptor for the given range of values.
+     */
+    static <T> DefaultParameterDescriptor<T> create(final String name, final Class<T> type,
+            final T[] validValues, final T defaultValue)
+    {
+        return new DefaultParameterDescriptor<>(properties(name), type, validValues, defaultValue, null, null, null, true);
+    }
+
+    /**
+     * Tests the creation of a simple descriptor for an optional parameter without minimum or maximum value.
+     */
+    @Test
+    public void testOptionalInteger() {
+        final ParameterDescriptor<Integer> descriptor = createSimpleOptional("Simple param", Integer.class);
+        assertEquals("name",      "Simple param", descriptor.getName().getCode());
+        assertEquals("valueClass", Integer.class, descriptor.getValueClass());
+        assertNull  ("validValues",               descriptor.getValidValues());
+        assertNull  ("defaultValue",              descriptor.getDefaultValue());
+        assertNull  ("minimumValue",              descriptor.getMinimumValue());
+        assertNull  ("maximumValue",              descriptor.getMaximumValue());
+        assertEquals("minimumOccurs", 0,          descriptor.getMinimumOccurs());
+        assertEquals("maximumOccurs", 1,          descriptor.getMaximumOccurs());
     }
 
     /**
@@ -102,6 +152,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * with valid and invalid minimum and maximum values.
      */
     @Test
+    @DependsOnMethod("testOptionalInteger")
     public void testRangeValidation() {
         try {
             create("Test range", 12, 20, 4);
@@ -110,7 +161,9 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
             assertEquals("Range [20 … 4] is not valid.", exception.getMessage());
         }
         final ParameterDescriptor<Integer> descriptor = create("Test range", 12, 4, 20);
-        assertEquals("name", "Test range", descriptor.getName().getCode());
+        assertEquals("name",          "Test range",        descriptor.getName().getCode());
+        assertEquals("valueClass",    Integer.class,       descriptor.getValueClass());
+        assertNull  ("validValues",                        descriptor.getValidValues());
         assertEquals("defaultValue",  Integer.valueOf(12), descriptor.getDefaultValue());
         assertEquals("minimumValue",  Integer.valueOf( 4), descriptor.getMinimumValue());
         assertEquals("maximumValue",  Integer.valueOf(20), descriptor.getMaximumValue());
@@ -138,15 +191,15 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      */
     @Test
     public void testDoubleType() {
-        final ParameterDescriptor<Double> descriptor = create("Test", 12, 4, 20, METRE);
-        assertEquals("name",         "Test",             descriptor.getName().getCode());
+        final ParameterDescriptor<Double> descriptor = create("Length measure", 12, 4, 20, METRE);
+        assertEquals("name",         "Length measure",   descriptor.getName().getCode());
         assertEquals("unit",         METRE,              descriptor.getUnit());
         assertEquals("class",        Double.class,       descriptor.getValueClass());
         assertEquals("defaultValue", Double.valueOf(12), descriptor.getDefaultValue());
         assertEquals("minimum",      Double.valueOf( 4), descriptor.getMinimumValue());
         assertEquals("maximum",      Double.valueOf(20), descriptor.getMaximumValue());
         validate(descriptor);
-        assertEquals("DefaultParameterDescriptor[\"Test\", mandatory, class=Double, " +
+        assertEquals("DefaultParameterDescriptor[\"Length measure\", mandatory, class=Double, " +
                 "valid=[4.0 … 20.0], default=12.0, unit=m]", descriptor.toString());
 
         testDoubleValue(new DefaultParameterValue<>(descriptor));
@@ -175,19 +228,73 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
             parameter.setValue(3.0);
             fail("setValue(< min)");
         } catch (InvalidParameterValueException exception) {
-            assertEquals("Test", exception.getParameterName());
+            assertEquals("Length measure", exception.getParameterName());
         }
         try {
             parameter.setValue("12");
             fail("setValue(Sring)");
         } catch (InvalidParameterValueException exception) {
-            assertEquals("Test", exception.getParameterName());
+            assertEquals("Length measure", exception.getParameterName());
         }
         for (int i=400; i<=2000; i+=100) {
             parameter.setValue(i, CENTIMETRE);
             assertEquals("value", Double.valueOf(i), parameter.getValue());
             assertEquals("unit",  CENTIMETRE,        parameter.getUnit());
             assertEquals("value", i/100,             parameter.doubleValue(METRE), EPS);
+        }
+    }
+
+    /**
+     * Verifies that we can not assign unit of measurements to non-numerical values.
+     */
+    @Test
+    public void testStringType() {
+        final ParameterDescriptor<String> descriptor = new DefaultParameterDescriptor<>(
+                properties("String param"), String.class, null, "ABC", "AAA", "BBB", null, false);
+        assertEquals("name", "String param",     descriptor.getName().getCode());
+        assertEquals("valueClass", String.class, descriptor.getValueClass());
+        assertNull  ("validValues",              descriptor.getValidValues());
+        assertEquals("defaultValue",  "ABC",     descriptor.getDefaultValue());
+        assertEquals("minimumValue",  "AAA",     descriptor.getMinimumValue());
+        assertEquals("maximumValue",  "BBB",     descriptor.getMaximumValue());
+        assertEquals("minimumOccurs", 0,         descriptor.getMinimumOccurs());
+        assertEquals("maximumOccurs", 1,         descriptor.getMaximumOccurs());
+        /*
+         * Same construction than above, except that we specify a unit of measurement.
+         * This operation shall be invalid for non-numerical types.
+         */
+        try {
+            new DefaultParameterDescriptor<>(properties("Invalid param"),
+                     String.class, null, "ABC", "AAA", "BBB", METRE, false);
+        } catch (IllegalArgumentException e) {
+            assertEquals("Unit of measurement “m” is not valid for “Invalid param” values.", e.getMessage());
+        }
+    }
+
+    /**
+     * Tests a descriptor for a parameter restricted to some values.
+     * This is typically (but not necessarily) a code list parameter.
+     */
+    @Test
+    public void testEnumeration() {
+        final String[] enumeration = {"Apple", "Orange", "りんご"};
+        final ParameterDescriptor<String> descriptor = create(
+                "Enumeration param", String.class, enumeration, "Apple");
+        assertEquals     ("name", "Enumeration param", descriptor.getName().getCode());
+        assertEquals     ("valueClass", String.class,  descriptor.getValueClass());
+        assertArrayEquals("validValues", enumeration,  descriptor.getValidValues().toArray());
+        assertEquals     ("defaultValue",  "Apple",    descriptor.getDefaultValue());
+        assertNull       ("minimumValue",              descriptor.getMinimumValue());
+        assertNull       ("maximumValue",              descriptor.getMaximumValue());
+        assertEquals     ("minimumOccurs", 1,          descriptor.getMinimumOccurs());
+        assertEquals     ("maximumOccurs", 1,          descriptor.getMaximumOccurs());
+        /*
+         * Invalid operation: element not in the list of valid elements.
+         */
+        try {
+            create("Enumeration param", String.class, enumeration, "Pear");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Parameter “Enumeration param” can not take the “Pear” value.", e.getMessage());
         }
     }
 }
