@@ -320,6 +320,10 @@ final class StandardDefinitions {
                        break;
             default:   throw new AssertionError(code);
         }
-        return new DefaultCoordinateSystemAxis(properties(code, name, null, false), abrv, dir, unit, min, max, rm);
+        final Map<String,Object> properties = properties(code, name, null, false);
+        properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, min);
+        properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, max);
+        properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY, rm);
+        return new DefaultCoordinateSystemAxis(properties, abrv, dir, unit);
     }
 }

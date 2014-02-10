@@ -16,13 +16,13 @@
  */
 package org.apache.sis.referencing.cs;
 
+import java.util.Map;
+import java.util.HashMap;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
-
-import static java.util.Collections.singletonMap;
 
 
 /**
@@ -419,8 +419,12 @@ public final strictfp class HardCodedAxes {
             final AxisDirection direction, final Unit<?> unit, final double minimum, final double maximum,
             final RangeMeaning meaning)
     {
-        return new DefaultCoordinateSystemAxis(singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, name),
-                abbreviation, direction, unit, minimum, maximum, meaning);
+        final Map<String,Object> properties = new HashMap<>(8);
+        properties.put(DefaultCoordinateSystemAxis.NAME_KEY, name);
+        properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, minimum);
+        properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, maximum);
+        properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY, meaning);
+        return new DefaultCoordinateSystemAxis(properties, abbreviation, direction, unit);
     }
 
     /**

@@ -170,6 +170,10 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *   </tr>
      * </table>
      *
+     * Generally speaking, information provided in the {@code properties} map are considered ignorable metadata
+     * (except the parameter name) while information provided as explicit arguments may have an impact on coordinate
+     * transformation results. See {@link #equals(Object, ComparisonMode)} for more information.
+     *
      * @param properties   The properties to be given to the identified object.
      * @param valueClass   The class that describes the type of the parameter value.
      * @param defaultValue The default value for the parameter, or {@code null} if none.

@@ -29,6 +29,7 @@ import org.junit.Test;
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.referencing.cs.HardCodedAxes.*;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
+import static org.apache.sis.referencing.cs.CoordinateSystemsTest.STRICT;
 
 
 /**
@@ -120,10 +121,21 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
          * (GEODETIC_LONGITUDE, GEODETIC_LATITUDE) except for the name.
          */
         final DefaultCoordinateSystemAxis LONGITUDE = new DefaultCoordinateSystemAxis(getProperties(LONGITUDE_gon),
-                "λ", AxisDirection.EAST, NonSI.DEGREE_ANGLE, -180, 180, RangeMeaning.WRAPAROUND);
+                "λ", AxisDirection.EAST, NonSI.DEGREE_ANGLE);
         final DefaultCoordinateSystemAxis LATITUDE = new DefaultCoordinateSystemAxis(getProperties(LATITUDE_gon),
-                "φ", AxisDirection.NORTH, NonSI.DEGREE_ANGLE, -90, 90, RangeMeaning.EXACT);
-
+                "φ", AxisDirection.NORTH, NonSI.DEGREE_ANGLE);
+        /*
+         * Verifies the properties inferred by the constructor.
+         */
+        assertEquals("minimumValue", -180, LONGITUDE.getMinimumValue(), STRICT);
+        assertEquals("maximumValue", +180, LONGITUDE.getMaximumValue(), STRICT);
+        assertEquals("rangeMeaning", RangeMeaning.WRAPAROUND, LONGITUDE.getRangeMeaning());
+        assertEquals("minimumValue", -90, LATITUDE.getMinimumValue(), STRICT);
+        assertEquals("maximumValue", +90, LATITUDE.getMaximumValue(), STRICT);
+        assertEquals("rangeMeaning", RangeMeaning.EXACT, LATITUDE.getRangeMeaning());
+        /*
+         * Those axes shall be considered different.
+         */
         assertFalse("X",         X        .equals(GEOCENTRIC_X,        ComparisonMode.IGNORE_METADATA));
         assertFalse("Longitude", LONGITUDE.equals(GEODETIC_LONGITUDE,  ComparisonMode.STRICT));
         assertFalse("Longitude", LONGITUDE.equals(SPHERICAL_LONGITUDE, ComparisonMode.STRICT));
