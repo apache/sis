@@ -19,17 +19,15 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
-import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static javax.measure.unit.SI.*;
 import static org.opengis.test.Validators.*;
 
 
@@ -43,18 +41,6 @@ import static org.opengis.test.Validators.*;
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
 public final strictfp class DefaultParameterDescriptorTest extends TestCase {
-    /**
-     * Strict tolerance factor for floating point comparisons. In the particular
-     * case of this test suite, we can afford to be strict since we will perform
-     * arithmetic only on integer values.
-     */
-    private static final double STRICT = 0.0;
-
-    /**
-     * Small tolerance factor for floating point comparisons resulting from some calculation.
-     */
-    private static final double EPS = 1E-10;
-
     /**
      * Creates the map of properties to be given to {@link DefaultParameterDescriptor} constructor.
      *
@@ -187,13 +173,12 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
 
     /**
      * Tests {@code DefaultParameterDescriptor} construction for {@link Double} type.
-     * Also tests the {@link Parameter} created from the {@code createValue} method.
      */
     @Test
     public void testDoubleType() {
-        final ParameterDescriptor<Double> descriptor = create("Length measure", 12, 4, 20, METRE);
+        final ParameterDescriptor<Double> descriptor = create("Length measure", 12, 4, 20, SI.METRE);
         assertEquals("name",         "Length measure",   descriptor.getName().getCode());
-        assertEquals("unit",         METRE,              descriptor.getUnit());
+        assertEquals("unit",         SI.METRE,           descriptor.getUnit());
         assertEquals("class",        Double.class,       descriptor.getValueClass());
         assertEquals("defaultValue", Double.valueOf(12), descriptor.getDefaultValue());
         assertEquals("minimum",      Double.valueOf( 4), descriptor.getMinimumValue());
@@ -201,47 +186,6 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         validate(descriptor);
         assertEquals("DefaultParameterDescriptor[\"Length measure\", mandatory, class=Double, " +
                 "valid=[4.0 … 20.0], default=12.0, unit=m]", descriptor.toString());
-
-        testDoubleValue(new DefaultParameterValue<>(descriptor));
-    }
-
-    /**
-     * Helper method for {@link #testDoubleType()}.
-     * This method tests a parameter value associated to the descriptor of the above test.
-     *
-     * @return The class of the given parameter, for convenience.
-     */
-    private static void testDoubleValue(final ParameterValue<Double> parameter) {
-        assertEquals("value",    Double.valueOf(12), parameter.getValue());
-        assertEquals("intValue", 12,                 parameter.intValue());
-        assertEquals("unit",     METRE,              parameter.getUnit());
-        validate(parameter);
-
-        for (int i=4; i<=20; i++) {
-            parameter.setValue(i);
-            assertEquals("value", Double.valueOf(i), parameter.getValue());
-            assertEquals("unit",  METRE,             parameter.getUnit());
-            assertEquals("value", i,                 parameter.doubleValue(METRE), STRICT);
-            assertEquals("value", 100*i,             parameter.doubleValue(CENTIMETRE), STRICT);
-        }
-        try {
-            parameter.setValue(3.0);
-            fail("setValue(< min)");
-        } catch (InvalidParameterValueException exception) {
-            assertEquals("Length measure", exception.getParameterName());
-        }
-        try {
-            parameter.setValue("12");
-            fail("setValue(Sring)");
-        } catch (InvalidParameterValueException exception) {
-            assertEquals("Length measure", exception.getParameterName());
-        }
-        for (int i=400; i<=2000; i+=100) {
-            parameter.setValue(i, CENTIMETRE);
-            assertEquals("value", Double.valueOf(i), parameter.getValue());
-            assertEquals("unit",  CENTIMETRE,        parameter.getUnit());
-            assertEquals("value", i/100,             parameter.doubleValue(METRE), EPS);
-        }
     }
 
     /**
@@ -265,7 +209,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
          */
         try {
             new DefaultParameterDescriptor<>(properties("Invalid param"),
-                     String.class, null, "ABC", "AAA", "BBB", METRE, false);
+                     String.class, null, "ABC", "AAA", "BBB", SI.METRE, false);
         } catch (IllegalArgumentException e) {
             assertEquals("Unit of measurement “m” is not valid for “Invalid param” values.", e.getMessage());
         }
