@@ -753,7 +753,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The strictness level is controlled by the second argument,
      * from stricter to more permissive values:
      *
-     * <blockquote><table class="compact">
+     * <table class="compact">
      *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>Verifies if the two objects are of the same {@linkplain #getClass() class}
      *            and compares all public properties, including SIS-specific (non standard) properties.</td></tr>
@@ -770,7 +770,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       <td>Same as {@code IGNORE_METADATA}, with some tolerance threshold on numerical values.</td></tr>
      *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
-     * </table></blockquote>
+     * </table>
      *
      * The main guideline is that if {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true},
      * then the transformation from {@code sourceCRS} to {@code targetCRS} should be the identity transform
@@ -790,7 +790,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * {@section Conformance to the <code>equals(Object)</code> method contract}
      * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.
      * For all other modes, the comparison is not guaranteed to be <cite>symmetric</cite> neither
-     * <cite>transitive</cite>. See {@link LenientComparable#equals(Object, ComparisonMode)} for more information.
+     * <cite>transitive</cite>. See {@link LenientComparable#equals(Object, ComparisonMode) LenientComparable}
+     * for more information.
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode The strictness level of the comparison.
