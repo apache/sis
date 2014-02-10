@@ -47,9 +47,13 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * @param  name The parameter name.
      * @return The properties to be given to descriptor constructor.
      */
-    private static Map<String,Object> properties(final String name) {
-        final Map<String,Object> properties = new HashMap<>(4);
+    private static Map<String,Object> properties(final String name,
+            final Object minimumValue, final Object maximumValue)
+    {
+        final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, name));
+        assertNull(properties.put(DefaultParameterDescriptor.MINIMUM_VALUE_KEY, minimumValue));
+        assertNull(properties.put(DefaultParameterDescriptor.MAXIMUM_VALUE_KEY, maximumValue));
         assertNull(properties.put(DefaultParameterDescriptor.LOCALE_KEY, Locale.US));
         return properties;
     }
@@ -62,7 +66,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * @return The parameter descriptor.
      */
     static <T> DefaultParameterDescriptor<T> createSimpleOptional(final String name, final Class<T> type) {
-        return new DefaultParameterDescriptor<>(properties(name), type, null, null, null, null, null, false);
+        return new DefaultParameterDescriptor<>(properties(name, null, null), type, null, null, false);
     }
 
     /**
@@ -70,16 +74,15 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      *
      * @param  name         The parameter name.
      * @param  defaultValue The default value for the parameter.
-     * @param  minimum      The minimum parameter value.
-     * @param  maximum      The maximum parameter value.
+     * @param  minimumValue The minimum parameter value.
+     * @param  maximumValue The maximum parameter value.
      * @return The parameter descriptor for the given range of values.
      */
     static DefaultParameterDescriptor<Integer> create(final String name,
-            final int defaultValue, final int minimum, final int maximum)
+            final int defaultValue, final int minimumValue, final int maximumValue)
     {
-        return new DefaultParameterDescriptor<>(properties(name),
-                 Integer.class, null, Integer.valueOf(defaultValue),
-                 Integer.valueOf(minimum), Integer.valueOf(maximum), null, true);
+        return new DefaultParameterDescriptor<>(properties(name, minimumValue, maximumValue),
+                 Integer.class, Integer.valueOf(defaultValue), null, true);
     }
 
     /**
@@ -87,18 +90,18 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      *
      * @param  name         The parameter name.
      * @param  defaultValue The default value for the parameter, or {@link Double#NaN} if none.
-     * @param  minimum      The minimum parameter value, or {@link Double#NEGATIVE_INFINITY} if none.
-     * @param  maximum      The maximum parameter value, or {@link Double#POSITIVE_INFINITY} if none.
+     * @param  minimum      The minimum parameter value, or {@link minimumValue#NEGATIVE_INFINITY} if none.
+     * @param  maximumValue The maximum parameter value, or {@link Double#POSITIVE_INFINITY} if none.
      * @param  unit         The unit for default, minimum and maximum values.
      * @return The parameter descriptor for the given range of values.
      */
     static DefaultParameterDescriptor<Double> create(final String name,
-            final double defaultValue, final double minimum, final double maximum, final Unit<?> unit)
+            final double defaultValue, final double minimumValue, final double maximumValue, final Unit<?> unit)
     {
-        return new DefaultParameterDescriptor<>(properties(name), Double.class, null,
-                Double.isNaN(defaultValue)          ? null : Double.valueOf(defaultValue),
-                minimum == Double.NEGATIVE_INFINITY ? null : Double.valueOf(minimum),
-                maximum == Double.POSITIVE_INFINITY ? null : Double.valueOf(maximum), unit, true);
+        return new DefaultParameterDescriptor<>(properties(name,
+                minimumValue == Double.NEGATIVE_INFINITY ? null : Double.valueOf(minimumValue),
+                maximumValue == Double.POSITIVE_INFINITY ? null : Double.valueOf(maximumValue)),
+                Double.class, Double.isNaN(defaultValue) ? null : Double.valueOf(defaultValue), unit, true);
     }
 
     /**
@@ -114,7 +117,9 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     static <T> DefaultParameterDescriptor<T> create(final String name, final Class<T> type,
             final T[] validValues, final T defaultValue)
     {
-        return new DefaultParameterDescriptor<>(properties(name), type, validValues, defaultValue, null, null, null, true);
+        final Map<String,Object> properties = properties(name, null, null);
+        assertNull(properties.put(DefaultParameterDescriptor.VALID_VALUES_KEY, validValues));
+        return new DefaultParameterDescriptor<>(properties, type, defaultValue, null, true);
     }
 
     /**
@@ -194,7 +199,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     @Test
     public void testStringType() {
         final ParameterDescriptor<String> descriptor = new DefaultParameterDescriptor<>(
-                properties("String param"), String.class, null, "ABC", "AAA", "BBB", null, false);
+                properties("String param", "AAA", "BBB"), String.class, "ABC", null, false);
         assertEquals("name", "String param",     descriptor.getName().getCode());
         assertEquals("valueClass", String.class, descriptor.getValueClass());
         assertNull  ("validValues",              descriptor.getValidValues());
@@ -208,8 +213,8 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
          * This operation shall be invalid for non-numerical types.
          */
         try {
-            new DefaultParameterDescriptor<>(properties("Invalid param"),
-                     String.class, null, "ABC", "AAA", "BBB", SI.METRE, false);
+            new DefaultParameterDescriptor<>(properties("Invalid param", "AAA", "BBB"),
+                     String.class, "ABC", SI.METRE, false);
         } catch (IllegalArgumentException e) {
             assertEquals("Unit of measurement “m” is not valid for “Invalid param” values.", e.getMessage());
         }

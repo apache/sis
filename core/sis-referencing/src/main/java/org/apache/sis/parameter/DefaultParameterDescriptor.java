@@ -19,6 +19,7 @@ package org.apache.sis.parameter;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import javax.measure.unit.Unit;
 
@@ -31,6 +32,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -69,6 +71,24 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     private static final long serialVersionUID = -295668622297737705L;
 
     /**
+     * Key for the {@value} property to be given to the constructor.
+     * This is used for setting the value to be returned by {@link #getMinimumValue()}.
+     */
+    public static final String MINIMUM_VALUE_KEY = "minimumValue";
+
+    /**
+     * Key for the {@value} property to be given to the constructor.
+     * This is used for setting the value to be returned by {@link #getMaximumValue()}.
+     */
+    public static final String MAXIMUM_VALUE_KEY = "maximumValue";
+
+    /**
+     * Key for the {@value} property to be given to the constructor.
+     * This is used for setting the value to be returned by {@link #getValidValues()}.
+     */
+    public static final String VALID_VALUES_KEY = "validValues";
+
+    /**
      * The class that describe the type of parameter values.
      */
     private final Class<T> valueClass;
@@ -87,12 +107,12 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     /**
      * The minimum parameter value, or {@code null}.
      */
-    private final Comparable<T> minimum;
+    private final Comparable<T> minimumValue;
 
     /**
      * The maximum parameter value, or {@code null}.
      */
-    private final Comparable<T> maximum;
+    private final Comparable<T> maximumValue;
 
     /**
      * The unit for default, minimum and maximum values, or {@code null}.
@@ -100,15 +120,33 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     private final Unit<?> unit;
 
     /**
-     * Constructs a descriptor from a set of properties. The properties map is given unchanged to the
-     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
-     * The following table is a reminder of main (not all) properties:
+     * Constructs a descriptor from a set of properties. The properties given in argument follow the same rules
+     * than for the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
+     * Additionally, the following properties are understood by this constructor:
      *
      * <table class="sis">
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value #MINIMUM_VALUE_KEY}</td>
+     *     <td>{@code Comparable<T>}</td>
+     *     <td>{@link #getMinimumValue()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value #MAXIMUM_VALUE_KEY}</td>
+     *     <td>{@code Comparable<T>}</td>
+     *     <td>{@link #getMaximumValue()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value #VALID_VALUES_KEY}</td>
+     *     <td>{@code Collection<T>} or {@code T[]}</td>
+     *     <td>{@link #getValidValues()}</td>
+     *   </tr>
+     *   <tr>
+     *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
@@ -134,33 +172,33 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *
      * @param properties   The properties to be given to the identified object.
      * @param valueClass   The class that describes the type of the parameter value.
-     * @param validValues  A finite set of valid values (usually from a {@link CodeList}),
-     *                     or {@code null} if it doesn't apply.
      * @param defaultValue The default value for the parameter, or {@code null} if none.
-     * @param minimum      The minimum parameter value (inclusive), or {@code null} if none.
-     * @param maximum      The maximum parameter value (inclusive), or {@code null} if none.
      * @param unit         The unit of measurement for the default, minimum and maximum values, or {@code null} if none.
-     * @param required     {@code true} if this parameter is required, or {@code false} if it is optional.
+     * @param required     {@code true} if this parameter is mandatory, or {@code false} if it is optional.
      */
+    @SuppressWarnings("unchecked")
     public DefaultParameterDescriptor(final Map<String,?> properties,
                                       final Class<T>      valueClass,
-                                      final T[]           validValues,
                                       final T             defaultValue,
-                                      final Comparable<T> minimum,
-                                      final Comparable<T> maximum,
                                       final Unit<?>       unit,
                                       final boolean       required)
     {
         super(properties, required ? 1 : 0, 1);
+        final Comparable<T> minimumValue = Containers.property(properties, MINIMUM_VALUE_KEY, Comparable.class);
+        final Comparable<T> maximumValue = Containers.property(properties, MAXIMUM_VALUE_KEY, Comparable.class);
+        ensureNonNull("valueClass",      valueClass);
+        ensureCanCast("defaultValue",    valueClass, defaultValue);
+        ensureCanCast(MINIMUM_VALUE_KEY, valueClass, minimumValue);
+        ensureCanCast(MAXIMUM_VALUE_KEY, valueClass, maximumValue);
         this.valueClass   = valueClass;
         this.defaultValue = Numerics.cached(defaultValue);
-        this.minimum      = Numerics.cached(minimum);
-        this.maximum      = Numerics.cached(maximum);
+        this.minimumValue = Numerics.cached(minimumValue);
+        this.maximumValue = Numerics.cached(maximumValue);
         this.unit         = unit;
-        ensureNonNull("valueClass",   valueClass);
-        ensureCanCast("defaultValue", valueClass, defaultValue);
-        ensureCanCast("minimum",      valueClass, minimum);
-        ensureCanCast("maximum",      valueClass, maximum);
+        /*
+         * If the caller specified a unit of measurement, then
+         * verify that the values are of some numerical type.
+         */
         if (unit != null) {
             Class<?> componentType = valueClass;
             for (Class<?> c; (c = componentType.getComponentType()) != null;) {
@@ -172,25 +210,51 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                         Errors.Keys.IllegalUnitFor_2, super.getName().getCode(), unit));
             }
         }
-        if (minimum != null && maximum != null) {
-            if (minimum.compareTo(valueClass.cast(maximum)) > 0) {
+        /*
+         * If the caller specified minimum and maximum values, then
+         * verify that the minimum is not greater than the maximum.
+         */
+        if (minimumValue != null && maximumValue != null) {
+            if (minimumValue.compareTo(valueClass.cast(maximumValue)) > 0) {
                 throw new IllegalArgumentException(Errors.getResources(properties)
-                        .getString(Errors.Keys.IllegalRange_2, minimum, maximum));
+                        .getString(Errors.Keys.IllegalRange_2, minimumValue, maximumValue));
             }
         }
-        if (validValues != null) {
-            final Set<T> valids = new LinkedHashSet<>(hashMapCapacity(validValues.length));
-            for (T value : validValues) {
-                value = Numerics.cached(value);
-                ensureCanCast("validValues", valueClass, value);
-                valids.add(value);
+        /*
+         * If the caller specified a set of valid values, then copy the values in
+         * a new set and verify their type and inclusion in the [min … max] range.
+         */
+        final Object values = properties.get(VALID_VALUES_KEY);
+        if (values != null) {
+            final Object[] array;
+            if (values instanceof Object[]) {
+                array = (Object[]) values;
+            } else if (values instanceof Collection<?>) {
+                array = ((Collection<?>) values).toArray();
+            } else {
+                throw new IllegalArgumentException(Errors.getResources(properties)
+                        .getString(Errors.Keys.IllegalPropertyClass_2, VALID_VALUES_KEY, values.getClass()));
             }
-            this.validValues = unmodifiableOrCopy(valids);
+            final Set<T> valids = new LinkedHashSet<>(hashMapCapacity(array.length));
+            for (Object value : array) {
+                if (value != null) {
+                    value = Numerics.cached(value);
+                    final Verifier error = Verifier.ensureValidValue(valueClass, null, minimumValue, maximumValue, value);
+                    if (error != null) {
+                        throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), value));
+                    }
+                }
+                valids.add((T) value);
+            }
+            validValues = unmodifiableOrCopy(valids);
         } else {
-            this.validValues = null;
+            validValues = null;
         }
+        /*
+         * Finally, verify the default value if any.
+         */
         if (defaultValue != null) {
-            final Verifier error = Verifier.ensureValidValue(valueClass, this.validValues, minimum, maximum, defaultValue);
+            final Verifier error = Verifier.ensureValidValue(valueClass, validValues, minimumValue, maximumValue, defaultValue);
             if (error != null) {
                 throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), defaultValue));
             }
@@ -211,8 +275,8 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
         valueClass   = descriptor.getValueClass();
         validValues  = descriptor.getValidValues();
         defaultValue = descriptor.getDefaultValue();
-        minimum      = descriptor.getMinimumValue();
-        maximum      = descriptor.getMaximumValue();
+        minimumValue = descriptor.getMinimumValue();
+        maximumValue = descriptor.getMaximumValue();
         unit         = descriptor.getUnit();
     }
 
@@ -301,7 +365,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      */
     @Override
     public Comparable<T> getMinimumValue() {
-        return minimum;
+        return minimumValue;
     }
 
     /**
@@ -313,7 +377,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      */
     @Override
     public Comparable<T> getMaximumValue() {
-        return maximum;
+        return maximumValue;
     }
 
     /**
@@ -384,8 +448,8 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                     return                    this.valueClass == that.valueClass    &&
                            Objects.    equals(this.validValues,  that.validValues)  &&
                            Objects.deepEquals(this.defaultValue, that.defaultValue) &&
-                           Objects.    equals(this.minimum,      that.minimum)      &&
-                           Objects.    equals(this.maximum,      that.maximum)      &&
+                           Objects.    equals(this.minimumValue, that.minimumValue)      &&
+                           Objects.    equals(this.maximumValue, that.maximumValue)      &&
                            Objects.    equals(this.unit,         that.unit);
                 }
             }
@@ -400,7 +464,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      */
     @Override
     protected long computeHashCode() {
-        return Arrays.deepHashCode(new Object[] {valueClass, defaultValue, minimum, maximum, unit})
+        return Arrays.deepHashCode(new Object[] {valueClass, defaultValue, minimumValue, maximumValue, unit})
                 + super.computeHashCode();
     }
 
@@ -415,9 +479,9 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                 .append("[\"").append(getName().getCode()).append("\", ")
                 .append(getMinimumOccurs() == 0 ? "optional" : "mandatory");
         buffer.append(", class=").append(Classes.getShortName(valueClass));
-        if (minimum != null || maximum != null) {
-            buffer.append(", valid=[").append(minimum != null ? minimum : "-∞")
-                  .append(" … ") .append(maximum != null ? maximum :  "∞").append(']');
+        if (minimumValue != null || maximumValue != null) {
+            buffer.append(", valid=[").append(minimumValue != null ? minimumValue : "-∞")
+                  .append(" … ") .append(maximumValue != null ? maximumValue :  "∞").append(']');
         } else if (validValues != null) {
             buffer.append(", valid=").append(validValues);
         }

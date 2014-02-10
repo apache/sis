@@ -74,6 +74,7 @@
   border-spacing: 0pt;
   padding:        0pt;
   line-height:    1em;
+  text-align:     left;
 }
 
 .contentContainer .block table.compact tr td
@@ -82,6 +83,7 @@
   padding-bottom: 0pt;
   padding-right:  3pt;
   padding-left:   3pt;
+  vertical-align: text-top;
 }
 
 /*

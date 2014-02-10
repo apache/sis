@@ -739,7 +739,7 @@ public class Formatter implements Localized {
     /**
      * Appends a code list.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>Position:</th>  <td>current line</td></tr>
      *   <tr><th>Color key:</th> <td>{@link ElementKind#CODE_LIST}</td></tr>
      * </table></blockquote>
@@ -759,7 +759,7 @@ public class Formatter implements Localized {
      * Appends a character string between quotes.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the text if needed.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>Position:</th>  <td>current line</td></tr>
      *   <tr><th>Color key:</th> <td>given</td></tr>
      * </table></blockquote>
@@ -843,7 +843,7 @@ public class Formatter implements Localized {
      * Appends a date.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the date if needed.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>Position:</th>  <td>current line</td></tr>
      *   <tr><th>Color key:</th> <td>none</td></tr>
      * </table></blockquote>
@@ -861,7 +861,7 @@ public class Formatter implements Localized {
      * Appends a boolean value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the boolean if needed.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>Position:</th>  <td>current line</td></tr>
      *   <tr><th>Color key:</th> <td>none</td></tr>
      * </table></blockquote>
@@ -877,7 +877,7 @@ public class Formatter implements Localized {
      * Appends an integer value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>Position:</th>  <td>current line</td></tr>
      *   <tr><th>Color key:</th> <td>{@link ElementKind#INTEGER}</td></tr>
      * </table></blockquote>
@@ -896,7 +896,7 @@ public class Formatter implements Localized {
      * Appends an floating point value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>Position:</th>  <td>current line</td></tr>
      *   <tr><th>Color key:</th> <td>{@link ElementKind#NUMBER}</td></tr>
      * </table></blockquote>
@@ -944,7 +944,7 @@ public class Formatter implements Localized {
      *
      * {@example <code>append(SI.KILOMETRE)</code> will append "<code>LENGTHUNIT["km", 1000]</code>" to the WKT.}
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>Position:</th>  <td>depending the previous element</td></tr>
      *   <tr><th>Color key:</th> <td>none</td></tr>
      * </table></blockquote>

@@ -273,10 +273,16 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * All localizable attributes like {@code "remarks"} may have a language and country code suffix.
      * For example the {@code "remarks_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
      * the {@code "remarks_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
+     * They are convenience properties for building the {@code InternationalString} value.
      *
-     * <p>The {@code "locale"} property applies only to exception messages, if any.
-     * After successful construction, {@code AbstractIdentifiedObject} instances do not keep the locale
-     * since localizations are deferred to the {@link InternationalString#toString(Locale)} method.</p>
+     * <p>The {@code "locale"} property applies only in case of exception for formatting the error message, and
+     * is used only on a <cite>best effort</cite> basis. The locale is discarded after successful construction
+     * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
+     *
+     * {@section Properties map versus explicit arguments}
+     * Generally speaking, information provided in the {@code properties} map are considered ignorable metadata
+     * while information provided in explicit arguments to the sub-class constructors have an impact on coordinate
+     * transformation results. See {@link #equals(Object, ComparisonMode)} for more information.
      *
      * @param  properties The properties to be given to this identified object.
      * @throws IllegalArgumentException if a property has an invalid value.
@@ -748,23 +754,27 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * from stricter to more permissive values:
      *
      * <blockquote><table class="compact">
-     *   <tr><td>{@link ComparisonMode#STRICT STRICT} –</td>
+     *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>Verifies if the two objects are of the same {@linkplain #getClass() class}
      *            and compares all public properties, including SIS-specific (non standard) properties.</td></tr>
-     *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} –</td>
+     *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</td>
      *       <td>Verifies if the two objects implement the same {@linkplain #getInterface() GeoAPI interface}
      *           and compares all properties defined by that interface: {@linkplain #getName() name},
      *           {@linkplain #getRemarks() remarks}, {@linkplain #getIdentifiers() identifiers}, <i>etc</i>.</td></tr>
-     *   <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} –</td>
-     *       <td>Compares only the properties needed for computing transformations.
-     *           In other words, {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true}
-     *           if the transformation from {@code sourceCRS} to {@code targetCRS} would be the
-     *           identity transform, no matter what {@link #getName()} said.</td></tr>
-     *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} –</td>
+     *   <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}:</td>
+     *       <td>Compares only the properties relevant to coordinate transformations. Generally speaking, the content
+     *           of the {@code properties} map given at {@linkplain #AbstractIdentifiedObject(Map) construction time}
+     *           is considered ignorable metadata while the explicit arguments given to the constructor (if any) are
+     *           considered non-ignorable.</td></tr>
+     *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</td>
      *       <td>Same as {@code IGNORE_METADATA}, with some tolerance threshold on numerical values.</td></tr>
-     *   <tr><td>{@link ComparisonMode#DEBUG DEBUG} –</td>
+     *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
      * </table></blockquote>
+     *
+     * The main guideline is that if {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true},
+     * then the transformation from {@code sourceCRS} to {@code targetCRS} should be the identity transform
+     * no matter what {@link #getName()} said.
      *
      * {@section Exceptions to the above rules}
      * Some subclasses (especially

@@ -112,7 +112,7 @@ public enum CommonCRS {
      * World Geodetic System 1984.
      * This is the default CRS for most {@code org.apache.sis} packages.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>WMS identifier:</th>          <td>CRS:84</td></tr>
      *   <tr><th>EPSG identifiers:</th>        <td>4326 &nbsp;(<i>datum:</i> 6326, &nbsp;<i>ellipsoid:</i> 7030)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"WGS 84" &nbsp;(<i>datum:</i> "World Geodetic System 1984")</td></tr>
@@ -129,7 +129,7 @@ public enum CommonCRS {
     /**
      * World Geodetic System 1972.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>EPSG identifiers:</th>        <td>4322 &nbsp;(<i>datum:</i> 6322, &nbsp;<i>ellipsoid:</i> 7043)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"WGS 72" &nbsp;(<i>datum:</i> "World Geodetic System 1972")</td></tr>
      *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "WGS 72", &nbsp;<i>ellipsoid:</i> "NWL 10D")</td></tr>
@@ -147,7 +147,7 @@ public enum CommonCRS {
      * The ellipsoid is <cite>"GRS 1980"</cite>, also known as <cite>"International 1979"</cite>.
      * This ellipsoid is very close, but not identical, to the {@linkplain #WGS84} one.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>EPSG identifiers:</th>        <td>4258 &nbsp;(<i>datum:</i> 6258, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"ETRS89" &nbsp;(<i>datum:</i> "European Terrestrial Reference System 1989", &nbsp;<i>ellipsoid:</i> "GRS 1980")</td></tr>
      *   <tr><th>Abbreviations or aliases:</th><td>"ETRF89", "EUREF89", "ETRS89-GRS80" &nbsp;(<i>ellipsoid:</i> "International 1979")</td></tr>
@@ -169,7 +169,7 @@ public enum CommonCRS {
      * The ellipsoid is <cite>"GRS 1980"</cite>, also known as <cite>"International 1979"</cite>.
      * This ellipsoid is very close, but not identical, to the {@linkplain #WGS84} one.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>WMS identifier:</th>          <td>CRS:83</td></tr>
      *   <tr><th>EPSG identifiers:</th>        <td>4269 &nbsp;(<i>datum:</i> 6269, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"NAD83" &nbsp;(<i>datum:</i> "North American Datum 1983", &nbsp;<i>ellipsoid:</i> "GRS 1980")</td></tr>
@@ -190,7 +190,7 @@ public enum CommonCRS {
     /**
      * North American Datum 1927.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>WMS identifier:</th>          <td>CRS:27</td></tr>
      *   <tr><th>EPSG identifiers:</th>        <td>4267 &nbsp;(<i>datum:</i> 6267, &nbsp;<i>ellipsoid:</i> 7008)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"NAD27" &nbsp;(<i>datum:</i> "North American Datum 1927", &nbsp;<i>ellipsoid:</i> "Clarke 1866")</td></tr>
@@ -206,7 +206,7 @@ public enum CommonCRS {
     /**
      * European Datum 1950.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>EPSG identifiers:</th>        <td>4230 &nbsp;(<i>datum:</i> 6230, &nbsp;<i>ellipsoid:</i> 7022)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"ED50" &nbsp;(<i>datum:</i> "European Datum 1950", &nbsp;<i>ellipsoid:</i> "International 1924")</td></tr>
      *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "ED50", <i>ellipsoid:</i> "Hayford 1909")</td></tr>
@@ -224,7 +224,7 @@ public enum CommonCRS {
      * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#orthodromicDistance
      * orthodromic distance computation}, which may be faster and more robust.
      *
-     * <blockquote><table class="compact" style="text-align:left">
+     * <blockquote><table class="compact">
      *   <tr><th>EPSG identifiers:</th>        <td>4047 &nbsp;(<i>datum:</i> 6047, &nbsp;<i>ellipsoid:</i> 7048)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"Unspecified datum based upon the GRS 1980 Authalic Sphere"</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
@@ -798,7 +798,7 @@ public enum CommonCRS {
          * Height measured above the Mean Sea Level (MSL) in metres. Can be used as an approximation of geoidal heights
          * (height measured above an equipotential surface), except that MSL are not specific to any location or epoch.
          *
-         * <blockquote><table class="compact" style="text-align:left">
+         * <blockquote><table class="compact">
          *   <tr><th>EPSG identifiers:</th>         <td>5714 &nbsp;(<i>datum:</i> 5100)</td></tr>
          *   <tr><th>Primary names:</th>            <td>"MSL height" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
          *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level height" &nbsp;(<i>datum:</i> "MSL")</td></tr>
@@ -813,7 +813,7 @@ public enum CommonCRS {
         /**
          * Depth measured below the Mean Sea Level (MSL) in metres.
          *
-         * <blockquote><table class="compact" style="text-align:left">
+         * <blockquote><table class="compact">
          *   <tr><th>EPSG identifiers:</th>         <td>5715 &nbsp;(<i>datum:</i> 5100)</td></tr>
          *   <tr><th>Primary names:</th>            <td>"MSL depth" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
          *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level depth" &nbsp;(<i>datum:</i> "MSL")</td></tr>

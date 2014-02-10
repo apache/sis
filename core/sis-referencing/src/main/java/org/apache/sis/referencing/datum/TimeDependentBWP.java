@@ -34,7 +34,6 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * by {@link #getTimeReference()}. Those values vary at a rate given by the parameters listed in the
  * table below (codes, names and abbreviations are from the EPSG database):
  *
- * <table class="compact"><tr><td>
  * <table class="sis">
  *   <tr><th>Code</th> <th>Name</th>                                 <th>Abbr.</th></tr>
  *   <tr><td>1040</td> <td>Rate of change of X-axis translation</td> <td>{@link #dtX}</td></tr>
