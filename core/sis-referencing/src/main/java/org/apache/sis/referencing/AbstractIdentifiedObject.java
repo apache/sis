@@ -743,23 +743,28 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Compares this object with the specified object for equality.
-     * The strictness level is controlled by the second argument:
+     * Compares this object with the given object for equality.
+     * The strictness level is controlled by the second argument,
+     * from stricter to more permissive values:
      *
-     * <ul>
-     *   <li>If {@code mode} is {@link ComparisonMode#STRICT STRICT}, then this method verifies if the two
-     *       objects are of the same {@linkplain #getClass() class} and compares all public properties,
-     *       including SIS-specific (non standard) properties.</li>
-     *   <li>If {@code mode} is {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then this method verifies if the two
-     *       objects implement the same {@linkplain #getInterface() GeoAPI interface} and compares all properties
-     *       defined by that interface ({@linkplain #getName() name}, {@linkplain #getRemarks() remarks},
-     *       {@linkplain #getIdentifiers() identifiers}, <i>etc</i>).</li>
-     *   <li>If {@code mode} is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA},
-     *       then this method compares only the properties needed for computing transformations.
-     *       In other words, {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true}
-     *       if the transformation from {@code sourceCRS} to {@code targetCRS} would be the
-     *       identity transform, no matter what {@link #getName()} said.</li>
-     * </ul>
+     * <blockquote><table class="compact">
+     *   <tr><td>{@link ComparisonMode#STRICT STRICT} –</td>
+     *        <td>Verifies if the two objects are of the same {@linkplain #getClass() class}
+     *            and compares all public properties, including SIS-specific (non standard) properties.</td></tr>
+     *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} –</td>
+     *       <td>Verifies if the two objects implement the same {@linkplain #getInterface() GeoAPI interface}
+     *           and compares all properties defined by that interface: {@linkplain #getName() name},
+     *           {@linkplain #getRemarks() remarks}, {@linkplain #getIdentifiers() identifiers}, <i>etc</i>.</td></tr>
+     *   <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} –</td>
+     *       <td>Compares only the properties needed for computing transformations.
+     *           In other words, {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true}
+     *           if the transformation from {@code sourceCRS} to {@code targetCRS} would be the
+     *           identity transform, no matter what {@link #getName()} said.</td></tr>
+     *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} –</td>
+     *       <td>Same as {@code IGNORE_METADATA}, with some tolerance threshold on numerical values.</td></tr>
+     *   <tr><td>{@link ComparisonMode#DEBUG DEBUG} –</td>
+     *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
+     * </table></blockquote>
      *
      * {@section Exceptions to the above rules}
      * Some subclasses (especially
@@ -772,9 +777,14 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The name comparison may be lenient however, i.e. the rules may accept a name matching an alias.
      * See {@link #isHeuristicMatchForName(String)} for more information.
      *
+     * {@section Conformance to the <code>equals(Object)</code> method contract}
+     * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.
+     * For all other modes, the comparison is not guaranteed to be <cite>symmetric</cite> neither
+     * <cite>transitive</cite>. See {@link LenientComparable#equals(Object, ComparisonMode)} for more information.
+     *
      * @param  object The object to compare to {@code this}.
      * @param  mode The strictness level of the comparison.
-     * @return {@code true} if both objects are equal.
+     * @return {@code true} if both objects are equal according the given comparison mode.
      *
      * @see #computeHashCode()
      * @see org.apache.sis.util.Utilities#deepEquals(Object, Object, ComparisonMode)

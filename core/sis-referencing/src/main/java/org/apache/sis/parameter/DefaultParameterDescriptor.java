@@ -25,7 +25,6 @@ import javax.measure.unit.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.referencing.IdentifiedObject;
 
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
@@ -333,15 +332,24 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
 
     /**
      * Compares the specified object with this parameter for equality.
+     * The strictness level is controlled by the second argument.
+     * This method compares the following properties in every cases:
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
-     * @return {@code true} if both objects are equal.
+     * <ul>
+     *   <li>{@link #getName()}</li>
+     *   <li>{@link #getMinimumOccurs()}</li>
+     *   <li>{@link #getMaximumOccurs()}</li>
+     *   <li>{@link #getValueClass()}</li>
+     *   <li>{@link #getDefaultValue()}</li>
+     *   <li>{@link #getUnit()}</li>
+     * </ul>
+     *
+     * All other properties (minimum, maximum and valid values) are compared only
+     * for modes stricter than {@link ComparisonMode#IGNORE_METADATA}.
+     *
+     * @return {@inheritDoc}
      */
     @Override
-    @SuppressWarnings("fallthrough")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;
@@ -355,17 +363,17 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                      * except the name. We do not perform this comparison if the user asked for metadata
                      * comparison, because in such case the names have already been compared by the super-class.
                      */
-                    final IdentifiedObject that = (IdentifiedObject) object;
-                    if (!isHeuristicMatchForName(that. getName().getCode()) &&
-                        !IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode()))
-                    {
-                        return false;
-                    }
-                    // Fall through
+                    final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
+                    return getValueClass() == that.getValueClass() &&
+                           Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
+                           Objects.equals(getUnit(), that.getUnit()) &&
+                           (isHeuristicMatchForName(that.getName().getCode()) ||
+                            IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode()));
                 }
                 case BY_CONTRACT: {
                     final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
-                    return Objects.    equals(getValidValues(),  that.getValidValues())  &&
+                    return                    getValueClass() == that.getValueClass()    &&
+                           Objects.    equals(getValidValues(),  that.getValidValues())  &&
                            Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
                            Objects.    equals(getMinimumValue(), that.getMinimumValue()) &&
                            Objects.    equals(getMaximumValue(), that.getMaximumValue()) &&
@@ -373,7 +381,8 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                 }
                 case STRICT: {
                     final DefaultParameterDescriptor<?> that = (DefaultParameterDescriptor<?>) object;
-                    return Objects.    equals(this.validValues,  that.validValues)  &&
+                    return                    this.valueClass == that.valueClass    &&
+                           Objects.    equals(this.validValues,  that.validValues)  &&
                            Objects.deepEquals(this.defaultValue, that.defaultValue) &&
                            Objects.    equals(this.minimum,      that.minimum)      &&
                            Objects.    equals(this.maximum,      that.maximum)      &&
