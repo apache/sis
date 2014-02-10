@@ -94,7 +94,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * invalid operations on it. We test that the invalid operations throw the expected exceptions.
      */
     @Test
-    public void testIntegerType() {
+    public void testInteger() {
         final ParameterValue<Integer> parameter = createOptional("Integer param", 14);
         final ParameterDescriptor<Integer> descriptor = parameter.getDescriptor();
         validate(parameter);
@@ -145,11 +145,12 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     }
 
     /**
-     * Creates a parameter bounded by some range of integer numbers, and tests values
-     * inside and outside that range. Tests also the usage of values of the wrong type.
+     * Tests a parameter bounded by some range of integer numbers. This method try to set values inside and
+     * outside the range of valid values, and verify that invalid values causes an exception to be thrown.
+     * This method tests also the usage of values of the wrong type.
      */
     @Test
-    @DependsOnMethod("testIntegerType")
+    @DependsOnMethod("testInteger")
     public void testBoundedInteger() {
         final DefaultParameterValue<Integer> parameter = new DefaultParameterValue<>(
                 DefaultParameterDescriptorTest.create("Bounded param", 15, -30, +40));
@@ -223,7 +224,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * Tests a parameter for a floating point value with a unit of measurement.
      */
     @Test
-    public void testDoubleType() {
+    public void testMeasure() {
         final DefaultParameterValue<Double> parameter = create("Numerical param", 3, SI.METRE);
         final ParameterDescriptor<Double> descriptor = parameter.getDescriptor();
         validate(parameter);
@@ -264,11 +265,11 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     }
 
     /**
-     * Creates a parameter bounded by some range of floating point numbers, and tests values
+     * Tests a parameter bounded by some range of floating point numbers, and tests values
      * inside and outside that range. Tests also the usage of values of the wrong type.
      */
     @Test
-    @DependsOnMethod("testDoubleType")
+    @DependsOnMethod("testMeasure")
     public void testBoundedDouble() {
         final DefaultParameterValue<Double> parameter = new DefaultParameterValue<>(
                 DefaultParameterDescriptorTest.create("Bounded param", 15.0, -30.0, +40.0, null));
@@ -305,6 +306,46 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
             final String message = exception.getMessage();
             assertTrue(message, message.contains("Bounded param"));
             assertEquals("Bounded param", exception.getParameterName());
+        }
+    }
+
+    /**
+     * Tests a floating point parameter with a unit of measurement bounded by a minimum and maximum values.
+     */
+    @Test
+    @DependsOnMethod({"testMeasure", "testBoundedDouble"})
+    public void testBoundedMeasure() {
+        final DefaultParameterValue<Double> parameter = new DefaultParameterValue<>(
+                DefaultParameterDescriptorTest.create("Length measure", 12, 4, 20, SI.METRE));
+        assertEquals("value",    Double.valueOf(12), parameter.getValue());
+        assertEquals("intValue", 12,                 parameter.intValue());
+        assertEquals("unit",     SI.METRE,           parameter.getUnit());
+        validate(parameter);
+
+        for (int i=4; i<=20; i++) {
+            parameter.setValue(i);
+            assertEquals("value", Double.valueOf(i), parameter.getValue());
+            assertEquals("unit",  SI.METRE,          parameter.getUnit());
+            assertEquals("value", i,                 parameter.doubleValue(SI.METRE), STRICT);
+            assertEquals("value", 100*i,             parameter.doubleValue(SI.CENTIMETRE), STRICT);
+        }
+        try {
+            parameter.setValue(3.0);
+            fail("setValue(< min)");
+        } catch (InvalidParameterValueException exception) {
+            assertEquals("Length measure", exception.getParameterName());
+        }
+        try {
+            parameter.setValue("12");
+            fail("setValue(Sring)");
+        } catch (InvalidParameterValueException exception) {
+            assertEquals("Length measure", exception.getParameterName());
+        }
+        for (int i=400; i<=2000; i+=100) {
+            parameter.setValue(i, SI.CENTIMETRE);
+            assertEquals("value", Double.valueOf(i), parameter.getValue());
+            assertEquals("unit",  SI.CENTIMETRE,     parameter.getUnit());
+            assertEquals("value", i/100,             parameter.doubleValue(SI.METRE), EPS);
         }
     }
 
