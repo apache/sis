@@ -164,12 +164,10 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
 
     /**
      * Compares the specified object with this parameter for equality.
+     * The strictness level is controlled by the second argument.
+     * See {@link AbstractIdentifiedObject#equals(Object, ComparisonMode)} for more information.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
-     * @return {@code true} if both objects are equal.
+     * @return {@inheritDoc}
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
