@@ -110,7 +110,7 @@ public interface LenientComparable {
      * The strictness level is controlled by the second argument,
      * from stricter to more permissive values:
      *
-     * <blockquote><table class="compact" >
+     * <table class="compact" >
      *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>All attributes of the compared objects shall be strictly equal.</td></tr>
      *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</td>
@@ -122,20 +122,20 @@ public interface LenientComparable {
      *           with some tolerance threshold on numerical values.</td></tr>
      *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
-     * </table></blockquote>
+     * </table>
      *
      * {@section Conformance to the <code>equals(Object)</code> method contract}
      * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.
-     * For all other modes, the comparison is not guaranteed to be <cite>symmetric</cite> neither
+     * For all other modes <var>m</var>, the comparison is not guaranteed to be <cite>symmetric</cite> neither
      * <cite>transitive</cite>:
      *
      * <ul>
-     *   <li>{@code x.equals(y, mode)} is <strong>not</strong> guaranteed to be equal to {@code y.equals(x, mode)}.
+     *   <li>{@code x.equals(y,m)} is <strong>not</strong> guaranteed to be equal to {@code y.equals(x,m)}.
      *       In particular, the {@code BY_CONTRACT} mode and all modes below it will typically compare only the
      *       properties known to {@code this} instance, ignoring any properties that may be known only by the other
      *       instance.</li>
-     *   <li>{@code x.equals(y, mode)} and {@code y.equals(z, mode)} does <strong>not</strong> implies
-     *       {@code x.equals(z, mode)}. In particular, the use of a comparison threshold for the
+     *   <li>{@code x.equals(y,m)} and {@code y.equals(z,m)} does <strong>not</strong> implies
+     *       {@code x.equals(z,m)}. In particular, the use of a comparison threshold for the
      *       {@code APPROXIMATIVE} mode is incompatible with the transitivity contract.</li>
      * </ul>
      *
