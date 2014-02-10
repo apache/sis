@@ -110,17 +110,17 @@ public interface LenientComparable {
      * The strictness level is controlled by the second argument,
      * from stricter to more permissive values:
      *
-     * <blockquote><table class="compact">
-     *   <tr><td>{@link ComparisonMode#STRICT STRICT} –</td>
+     * <blockquote><table class="compact" >
+     *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>All attributes of the compared objects shall be strictly equal.</td></tr>
-     *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} –</td>
+     *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</td>
      *       <td>Only the attributes published in the interface contract need to be compared.</td></tr>
-     *   <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} –</td>
+     *   <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}:</td>
      *       <td>Only the attributes relevant to the object functionality are compared.</td></tr>
-     *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} –</td>
+     *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</td>
      *       <td>Only the attributes relevant to the object functionality are compared,
      *           with some tolerance threshold on numerical values.</td></tr>
-     *   <tr><td>{@link ComparisonMode#DEBUG DEBUG} –</td>
+     *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
      * </table></blockquote>
      *
