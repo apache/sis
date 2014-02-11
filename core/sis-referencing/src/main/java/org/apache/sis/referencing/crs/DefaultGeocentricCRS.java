@@ -230,7 +230,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
             if (cs instanceof CartesianCS) {
                 cs = Legacy.forGeocentricCRS((CartesianCS) cs, true);
             } else {
-                formatter.setInvalidWKT(cs);
+                formatter.setInvalidWKT(cs, null);
             }
         }
         final int dimension = cs.getDimension();
@@ -238,7 +238,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
             formatter.append(cs.getAxis(i));
         }
         if (unit == null) {
-            formatter.setInvalidWKT(this);
+            formatter.setInvalidWKT(this, null);
         }
         return "GEOCCS";
     }

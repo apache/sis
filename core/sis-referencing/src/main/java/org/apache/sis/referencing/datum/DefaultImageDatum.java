@@ -240,7 +240,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.append(pixelInCell);
-        formatter.setInvalidWKT(this);
+        formatter.setInvalidWKT(this, null);
         return "GENDATUM"; // Generic datum (WKT 2)
     }
 }

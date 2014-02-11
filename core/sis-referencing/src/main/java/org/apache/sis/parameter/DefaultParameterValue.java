@@ -31,6 +31,8 @@ import org.opengis.parameter.InvalidParameterTypeException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
@@ -686,8 +688,40 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         }
     }
 
+    /**
+     * Formats this parameter as a <cite>Well Known Text</cite>.
+     *
+     * @return The {@code "PARAMETER"} keyword.
+     */
     @Override
     protected String formatTo(final Formatter formatter) {
-        return null;
+        Unit<?> unit = descriptor.getUnit();
+        if (unit != null && !Unit.ONE.equals(unit)) {
+            final Unit<?> linearUnit = formatter.getLinearUnit();
+            if (linearUnit != null && unit.isCompatible(linearUnit)) {
+                unit = linearUnit;
+            } else {
+                final Unit<?> angularUnit = formatter.getAngularUnit();
+                if (angularUnit != null && unit.isCompatible(angularUnit)) {
+                    unit = angularUnit;
+                }
+            }
+        }
+        WKTUtilities.appendName(descriptor, formatter, ElementKind.PARAMETER);
+        if (unit != null) {
+            double value;
+            try {
+                value = doubleValue(unit);
+            } catch (IllegalStateException exception) {
+                // May happen if a parameter is mandatory (e.g. "semi-major")
+                // but no value has been set for this parameter.
+                formatter.setInvalidWKT(descriptor, exception);
+                value = Double.NaN;
+            }
+            formatter.append(value);
+        } else {
+            formatter.appendAny(getValue());
+        }
+        return "PARAMETER";
     }
 }
