@@ -16,6 +16,7 @@
  */
 package org.apache.sis.parameter;
 
+import java.io.Serializable;
 import java.io.File;
 import java.net.URL;
 import java.net.URI;
@@ -28,7 +29,10 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterTypeException;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -36,7 +40,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 // Related to JDK7
 import java.util.Objects;
 import java.nio.file.Path;
-import org.apache.sis.util.Numbers;
 
 
 /**
@@ -94,11 +97,16 @@ import org.apache.sis.util.Numbers;
  * @see DefaultParameterDescriptor
  * @see DefaultParameterGroup
  */
-public class DefaultParameterValue<T> extends AbstractParameterValue implements ParameterValue<T> {
+public class DefaultParameterValue<T> extends FormattableObject implements ParameterValue<T>, Serializable, Cloneable {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -5837826787089486776L;
+
+    /**
+     * The definition of this parameter.
+     */
+    private final ParameterDescriptor<T> descriptor;
 
     /**
      * The value, or {@code null} if undefined.
@@ -121,9 +129,10 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      * @param descriptor The abstract definition of this parameter.
      */
     public DefaultParameterValue(final ParameterDescriptor<T> descriptor) {
-        super(descriptor);
-        value = descriptor.getDefaultValue();
-        unit  = descriptor.getUnit();
+        ensureNonNull("descriptor", descriptor);
+        this.descriptor = descriptor;
+        this.value      = descriptor.getDefaultValue();
+        this.unit       = descriptor.getUnit();
     }
 
     /**
@@ -134,18 +143,20 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      * @param parameter The parameter to copy values from.
      */
     public DefaultParameterValue(final ParameterValue<T> parameter) {
-        super(parameter); // Require <T>, not <? extends T>.
-        value = parameter.getValue();
-        unit  = parameter.getUnit();
+        ensureNonNull("parameter", parameter);
+        descriptor = parameter.getDescriptor();
+        value      = parameter.getValue();
+        unit       = parameter.getUnit();
     }
 
     /**
-     * Returns the abstract definition of this parameter.
+     * Returns the definition of this parameter.
+     *
+     * @return The definition of this parameter.
      */
     @Override
-    @SuppressWarnings("unchecked") // Type checked by the constructor.
     public ParameterDescriptor<T> getDescriptor() {
-        return (ParameterDescriptor<T>) super.getDescriptor();
+        return descriptor;
     }
 
     /**
@@ -524,7 +535,7 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     @Override
     public void setValue(final int value) throws InvalidParameterValueException {
         Number n = Integer.valueOf(value);
-        final Class<?> valueClass = ((ParameterDescriptor<?>) descriptor).getValueClass();
+        final Class<T> valueClass = descriptor.getValueClass();
         if (Number.class.isAssignableFrom(valueClass)) {
             @SuppressWarnings("unchecked")
             final Number c = Numbers.cast(value, (Class<? extends Number>) valueClass);
@@ -570,7 +581,7 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
         try {
             // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
             // to be involved in this method. We just want the current unit setting to be unchanged.
-            setValue(wrap(value, ((ParameterDescriptor<?>) descriptor).getValueClass()), unit);
+            setValue(wrap(value, descriptor.getValueClass()), unit);
         } catch (IllegalArgumentException e) {
             throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getName(descriptor), value);
         }
@@ -593,7 +604,7 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     @Override
     public void setValue(final double value, final Unit<?> unit) throws InvalidParameterValueException {
         try {
-            setValue(wrap(value, ((ParameterDescriptor<?>) descriptor).getValueClass()), unit);
+            setValue(wrap(value, descriptor.getValueClass()), unit);
         } catch (IllegalArgumentException e) {
             throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getName(descriptor), value);
         }
@@ -633,9 +644,8 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
      */
-    @SuppressWarnings("unchecked") // Safe because descriptor type is enforced by constructor signature.
     protected void setValue(final Object value, final Unit<?> unit) throws InvalidParameterValueException {
-        this.value = Verifier.ensureValidValue((ParameterDescriptor<T>) descriptor, value, unit);
+        this.value = Verifier.ensureValidValue(descriptor, value, unit);
         this.unit  = unit; // Assign only on success.
     }
 
@@ -651,10 +661,11 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
             // Slight optimization
             return true;
         }
-        if (super.equals(object)) {
+        if (object != null && getClass() == object.getClass()) {
             final DefaultParameterValue<?> that = (DefaultParameterValue<?>) object;
-            return Objects.equals(this.value, that.value) &&
-                   Objects.equals(this.unit,  that.unit);
+            return Objects.equals(descriptor, that.descriptor) &&
+                   Objects.equals(value,      that.value) &&
+                   Objects.equals(unit,       that.unit);
         }
         return false;
     }
@@ -667,7 +678,7 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
      */
     @Override
     public int hashCode() {
-        int code = 37 * super.hashCode();
+        int code = 37 * descriptor.hashCode();
         if (value != null) code +=   value.hashCode();
         if (unit  != null) code += 31*unit.hashCode();
         return code;
@@ -679,6 +690,15 @@ public class DefaultParameterValue<T> extends AbstractParameterValue implements 
     @Override
     @SuppressWarnings("unchecked")
     public DefaultParameterValue<T> clone() {
-        return (DefaultParameterValue<T>) super.clone();
+        try {
+            return (DefaultParameterValue<T>) super.clone();
+        } catch (CloneNotSupportedException exception) {
+            throw new AssertionError(exception); // Should not happen, since we are cloneable
+        }
+    }
+
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        return null;
     }
 }
