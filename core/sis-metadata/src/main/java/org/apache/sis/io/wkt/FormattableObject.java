@@ -175,10 +175,10 @@ public abstract class FormattableObject {
             if (strict) {
                 final String message = formatter.getErrorMessage();
                 if (message != null) {
-                    throw new UnformattableObjectException(message, formatter.errorCause);
+                    throw new UnformattableObjectException(message, formatter.getErrorCause());
                 }
             }
-            wkt = formatter.toString();
+            wkt = formatter.toWKT();
         } finally {
             formatter.clear();
         }

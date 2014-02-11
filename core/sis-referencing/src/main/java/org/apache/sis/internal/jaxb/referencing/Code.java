@@ -148,7 +148,7 @@ public final class Code {
                 }
             }
             /*
-             * If no "urn:" or "http:" form has been found, try to create a "urn:" form from the first identifier.
+             * If no "urn:" or "http:" form has been found, try to create a "urn:" form the first identifier.
              * For example "EPSG:4326" may be converted to "urn:ogc:def:crs:EPSG:8.2:4326". If the first identifier
              * can not be converted to a "urn:" form, then it will be returned as-is.
              */

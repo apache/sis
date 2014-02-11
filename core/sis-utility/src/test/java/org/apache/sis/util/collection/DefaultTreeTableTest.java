@@ -50,7 +50,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      *         after this one.
      */
     @TestStep
-    private static DefaultTreeTable testTableCreation() {
+    public static DefaultTreeTable testTableCreation() {
         final DefaultTreeTable table = new DefaultTreeTable(NAME, TYPE);
         assertEquals("Number of columns:",      2,                  table.columnIndices.size());
         assertEquals("Index of first column:",  Integer.valueOf(0), table.columnIndices.get(NAME));
@@ -71,7 +71,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      * @return The root node produced by this method.
      */
     @TestStep
-    private static DefaultTreeTable.Node testNodeCreation(final DefaultTreeTable table) {
+    public static DefaultTreeTable.Node testNodeCreation(final DefaultTreeTable table) {
         /*
          * Create a root node with an initially empty list of children.
          */
@@ -114,7 +114,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      * @param root The root node where to move children.
      */
     @TestStep
-    private static void testNodeDisplacement(final TreeTable.Node root) {
+    public static void testNodeDisplacement(final TreeTable.Node root) {
         final Collection<TreeTable.Node> rootChildren, nodeChildren;
         final TreeTable.Node node1 = getSingleton(rootChildren = root .getChildren());
         final TreeTable.Node node2 = getSingleton(nodeChildren = node1.getChildren());
@@ -142,10 +142,11 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      * <p>This method is part of a chain.
      * The previous method is {@link #testNodeDisplacement(TreeTable.Node)}.</p>
      *
+     * @param  table The table to clone.
      * @throws CloneNotSupportedException Should never happen.
      */
     @TestStep
-    private void testClone(final DefaultTreeTable table) throws CloneNotSupportedException {
+    public static void testClone(final DefaultTreeTable table) throws CloneNotSupportedException {
         final TreeTable newTable = table.clone();
         assertNotSame("clone", table, newTable);
         assertEquals("newTable.equals(table)", table, newTable);
@@ -159,9 +160,11 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      *
      * <p>This method is part of a chain.
      * The previous method is {@link #testNodeDisplacement(TreeTable.Node)}.</p>
+     *
+     * @param table The table to serialize.
      */
     @TestStep
-    private void testSerialization(final TreeTable table) {
+    public static void testSerialization(final TreeTable table) {
         final TreeTable newTable = assertSerializedEquals(table);
         getChildrenList(newTable).get(1).setValue(NAME, "New name");
         assertFalse("newTable.equals(table)", newTable.equals(table));

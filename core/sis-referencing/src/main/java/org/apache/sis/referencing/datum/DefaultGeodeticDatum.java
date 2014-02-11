@@ -509,16 +509,19 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         // Do NOT invokes the super-class method, because
         // horizontal datum do not write the datum type.
         WKTUtilities.appendName(this, formatter, ElementKind.DATUM);
+        formatter.newLine();
         formatter.append(ellipsoid instanceof FormattableObject ? (FormattableObject) ellipsoid :
                          DefaultEllipsoid.castOrCopy(ellipsoid));
         if (bursaWolf != null) {
             for (final BursaWolfParameters candidate : bursaWolf) {
                 if (candidate.isToWGS84()) {
+                    formatter.newLine();
                     formatter.append(candidate);
                     break;
                 }
             }
         }
+        formatter.newLine(); // For writing the ID[…] element on its own line.
         return "DATUM";
     }
 }

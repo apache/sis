@@ -125,6 +125,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotSetPropertyValue_1 = 11;
 
         /**
+         * Circular reference.
+         */
+        public static final short CircularReference = 52;
+
+        /**
          * Class ‘{0}’ is not final.
          */
         public static final short ClassNotFinal_1 = 12;
@@ -351,11 +356,6 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ can not take an infinite value.
          */
         public static final short InfiniteArgumentValue_1 = 51;
-
-        /**
-         * Infinite recursivity.
-         */
-        public static final short InfiniteRecursivity = 52;
 
         /**
          * Argument ‘{0}’ shall contain at least {1} elements. A number of {2} is insufficient.

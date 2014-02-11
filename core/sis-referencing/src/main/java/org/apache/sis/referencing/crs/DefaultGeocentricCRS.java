@@ -222,8 +222,11 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
         WKTUtilities.appendName(this, formatter, null);
         final Unit<?> unit = getUnit();
         final GeodeticDatum datum = getDatum();
+        formatter.newLine();
         formatter.append(datum);
+        formatter.newLine();
         formatter.append(datum.getPrimeMeridian());
+        formatter.newLine();
         formatter.append(unit);
         CoordinateSystem cs = getCoordinateSystem();
         if (formatter.getConvention().isWKT1()) {
@@ -235,11 +238,13 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
         }
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
+            formatter.newLine();
             formatter.append(cs.getAxis(i));
         }
         if (unit == null) {
             formatter.setInvalidWKT(this, null);
         }
+        formatter.newLine(); // For writing the ID[…] element on its own line.
         return "GEOCCS";
     }
 }

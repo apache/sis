@@ -29,8 +29,11 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
+import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
@@ -544,7 +547,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * @return The WKT keyword: {@code "ID"} (WKT 2) or {@code "AUTHORITY"} (WKT 1).
      */
     @Override
-    protected String formatTo(Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         String keyword = null;
         final String code = getCode();
         if (code != null) {
@@ -555,18 +558,39 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
                 citation  = null;
             }
             if (codeSpace != null) {
-                if (formatter.getConvention().isWKT1()) {
+                final Convention convention = formatter.getConvention();
+                if (convention.isWKT1()) {
                     keyword = "AUTHORITY";
                     formatter.append(codeSpace, null);
                     formatter.append(code, null);
                 } else {
                     keyword = "ID";
                     formatter.append(codeSpace, null);
-                    append(formatter, code);
+                    appendCode(formatter, code);
                     final String version = getVersion();
                     if (version != null) {
-                        append(formatter, version);
+                        appendCode(formatter, version);
                         formatter.append(citation, null);
+                    }
+                    /*
+                     * Do not format the optional URI element for internal convention,
+                     * because this property is currently computed rather than stored.
+                     * Simplified convention formats only for the ID of root element.
+                     */
+                    final boolean shownURI;
+                    switch (convention) {
+                        default:              shownURI = true;  break;
+                        case INTERNAL:        shownURI = false; break;
+                        case WKT2_SIMPLIFIED: shownURI = formatter.getEnclosingElement(2) == null; break;
+                    }
+                    if (shownURI) {
+                        final FormattableObject parent = formatter.getEnclosingElement(1);
+                        if (parent != null && ReferencingUtilities.usesURN(codeSpace)) {
+                            final String type = ReferencingUtilities.toURNType(parent.getClass());
+                            if (type != null) {
+                                formatter.append(new URI(type, codeSpace, version, code));
+                            }
+                        }
                     }
                 }
             }
@@ -575,12 +599,12 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     }
 
     /**
-     * Appends the given text as an integer if possible, or as a text otherwise.
+     * Appends the given code or version number as an integer if possible, or as a text otherwise.
      *
      * {@note ISO 19162 specifies "number or text". In Apache SIS, we restrict the numbers to integers
      *        because handling version numbers like "8.2" as floating point numbers can be confusing.}
      */
-    private static void append(final Formatter formatter, final String text) {
+    private static void appendCode(final Formatter formatter, final String text) {
         if (text != null) {
             final long n;
             try {
@@ -590,6 +614,37 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
                 return;
             }
             formatter.append(n);
+        }
+    }
+
+    /**
+     * The {@code URI[…]} element inside an {@code ID[…]}.
+     */
+    private static final class URI extends FormattableObject {
+        /** The components of the URI to format. */
+        private final String type, codeSpace, version, code;
+
+        /** Creates a new URI with the given components. */
+        URI(final String type, final String codeSpace, final String version, final String code) {
+            this.type      = type;
+            this.codeSpace = codeSpace;
+            this.version   = version;
+            this.code      = code;
+        }
+
+        /** Formats the URI. */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            final StringBuilder buffer = new StringBuilder(DefinitionURI.PREFIX)
+                    .append(DefinitionURI.SEPARATOR).append(type)
+                    .append(DefinitionURI.SEPARATOR).append(codeSpace)
+                    .append(DefinitionURI.SEPARATOR);
+            if (version != null) {
+                buffer.append(version);
+            }
+            buffer.append(DefinitionURI.SEPARATOR).append(code);
+            formatter.append(buffer.toString(), null);
+            return "URI";
         }
     }
 }
