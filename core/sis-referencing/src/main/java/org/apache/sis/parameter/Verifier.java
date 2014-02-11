@@ -87,7 +87,7 @@ final class Verifier {
      * @param  unit       The unit of the value to check, or {@code null}.
      * @return The value casted to the descriptor parameterized type, or the
      *         {@linkplain ParameterDescriptor#getDefaultValue() default value}
-     *         if the given value was null while the parameter is mandatory.
+     *         if the given value was null.
      * @throws InvalidParameterValueException if the parameter value is invalid.
      */
     @SuppressWarnings("unchecked")
@@ -128,16 +128,15 @@ final class Verifier {
                 }
             }
         }
-        if (convertedValue != null) {
-            final Comparable<T> minimum = descriptor.getMinimumValue();
-            final Comparable<T> maximum = descriptor.getMaximumValue();
-            final Verifier error = ensureValidValue(type, descriptor.getValidValues(), minimum, maximum, convertedValue);
-            if (error != null) {
-                final String name = getName(descriptor);
-                throw new InvalidParameterValueException(error.message(null, name, value), name, value);
-            }
-        } else if (descriptor.getMinimumOccurs() != 0) {
+        if (convertedValue == null) {
             return descriptor.getDefaultValue();
+        }
+        final Comparable<T> minimum = descriptor.getMinimumValue();
+        final Comparable<T> maximum = descriptor.getMaximumValue();
+        final Verifier error = ensureValidValue(type, descriptor.getValidValues(), minimum, maximum, convertedValue);
+        if (error != null) {
+            final String name = getName(descriptor);
+            throw new InvalidParameterValueException(error.message(null, name, value), name, value);
         }
         /*
          * Passed every tests - the value is valid.
