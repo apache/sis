@@ -414,17 +414,21 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     @Override
     protected String formatTo(final Formatter formatter) {
         final String keyword = super.formatTo(formatter);
+        formatter.newLine();
         formatter.append(getDatum());
         final Unit<?> unit = getUnit();
+        formatter.newLine();
         formatter.append(unit);
         final CoordinateSystem cs = coordinateSystem;
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
+            formatter.newLine();
             formatter.append(cs.getAxis(i));
         }
         if (unit == null) {
             formatter.setInvalidWKT(cs, null);
         }
+        formatter.newLine(); // For writing the ID[…] element on its own line.
         return keyword;
     }
 }

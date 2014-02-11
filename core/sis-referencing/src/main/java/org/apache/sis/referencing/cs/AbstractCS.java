@@ -423,6 +423,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     protected String formatTo(final Formatter formatter) {
         final String keyword = super.formatTo(formatter);
         for (final CoordinateSystemAxis axe : axes) {
+            formatter.newLine();
             formatter.append(axe);
         }
         return keyword;

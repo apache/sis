@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import org.opengis.test.ValidatorContainer;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -72,13 +73,48 @@ public final strictfp class HardCodedCRSTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        assertWktEquals(
+        assertWktEquals(Convention.WKT1,
+                "GEOGCS[“WGS 84”,\n" +
+                "  DATUM[“World Geodetic System 1984”,\n" +
+                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "  PRIMEM[“Greenwich”, 0.0],\n" +
+                "  UNIT[“degree”, 0.017453292519943295],\n" +
+                "  AXIS[“Geodetic longitude”, EAST],\n" +
+                "  AXIS[“Geodetic latitude”, NORTH]]",
+                WGS84);
+
+        assertWktEquals(Convention.WKT2,
+                "GEOGCS[“WGS 84”,\n" +
+                "  DATUM[“World Geodetic System 1984”,\n" +
+                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "  PRIMEM[“Greenwich”, 0.0],\n" +
+                "  ANGLEUNIT[“degree”, 0.017453292519943295],\n" +
+                "  AXIS[“Geodetic longitude”, EAST],\n" +
+                "  AXIS[“Geodetic latitude”, NORTH],\n" +
+                "  AREA[“World”],\n" +
+                "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
+                WGS84);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GEOGCS[“WGS 84”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563],\n" +
                 "    ID[“EPSG”, 6326]],\n" +
                 "  PRIMEM[“Greenwich”, 0.0, ID[“EPSG”, 8901]],\n" +
-                "  ANGLEUNIT[“degree”, 0.017453292519943295],\n" +
+                "  UNIT[“degree”, 0.017453292519943295],\n" +
+                "  AXIS[“Geodetic longitude”, EAST],\n" +
+                "  AXIS[“Geodetic latitude”, NORTH],\n" +
+                "  AREA[“World”],\n" +
+                "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
+                WGS84);
+
+        assertWktEquals(Convention.INTERNAL,
+                "GEOGCS[“WGS 84”,\n" +
+                "  DATUM[“World Geodetic System 1984”,\n" +
+                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563],\n" +
+                "    ID[“EPSG”, 6326]],\n" +
+                "  PRIMEM[“Greenwich”, 0.0, ID[“EPSG”, 8901]],\n" +
+                "  UNIT[“degree”, 0.017453292519943295],\n" +
                 "  AXIS[“Geodetic longitude”, EAST],\n" +
                 "  AXIS[“Geodetic latitude”, NORTH],\n" +
                 "  AREA[“World”],\n" +

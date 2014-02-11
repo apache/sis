@@ -695,19 +695,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        Unit<?> unit = descriptor.getUnit();
-        if (unit != null && !Unit.ONE.equals(unit)) {
-            final Unit<?> linearUnit = formatter.getLinearUnit();
-            if (linearUnit != null && unit.isCompatible(linearUnit)) {
-                unit = linearUnit;
-            } else {
-                final Unit<?> angularUnit = formatter.getAngularUnit();
-                if (angularUnit != null && unit.isCompatible(angularUnit)) {
-                    unit = angularUnit;
-                }
-            }
-        }
         WKTUtilities.appendName(descriptor, formatter, ElementKind.PARAMETER);
+        final Unit<?> unit = formatter.toContextualUnit(descriptor.getUnit());
         if (unit != null) {
             double value;
             try {

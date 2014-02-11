@@ -72,12 +72,15 @@ public enum Convention {
      * <ul>
      *   <li>{@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT} and
      *       {@code TIMEUNIT} are formatted as plain {@code UNIT} elements.</li>
-     *   <li>In {@code AXIS} elements, the {@code ORDER} elements are omitted.</li>
-     *   <li>In {@code VERTICALEXTENT} elements, the {@code UNIT} element is omitted
+     *   <li>In {@code AXIS} elements, the {@code ORDER} sub-element is omitted.</li>
+     *   <li>In {@code VERTICALEXTENT} elements, the {@code UNIT} sub-element is omitted
      *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
+     *   <li>{@code ID[…]} elements are formatted for child elements in addition to the root one.
+     *       This <em>addition</em> apparently goes against the simplification goal, but is often
+     *       a helpful information when using Apache SIS.</li>
      * </ul>
      *
-     * Those simplifications are allowed by the ISO 19162 standard and do not cause any information lost.
+     * Those modifications are allowed by the ISO 19162 standard and do not cause any information lost.
      * The omitted elements are not needed by Apache SIS WKT parser and often distractive for the human reader.
      *
      * <p>This is the default convention used by {@link FormattableObject#toString()}.</p>
@@ -128,11 +131,17 @@ public enum Convention {
 
     /**
      * A special convention for formatting objects as stored internally by Apache SIS.
-     * In the majority of cases, the result will be identical to the one we would get using the {@link #WKT2} convention.
-     * However in the particular case of map projections, the result may be quite different because of the way
-     * SIS separates the linear from the non-linear parameters.
+     * The result is similar to the one produced using the {@link #WKT2_SIMPLIFIED} convention,
+     * with the following differences:
      *
-     * <p>This convention is used only for debugging purpose.</p>
+     * <ul>
+     *   <li>In {@code ID[…]} elements, the {@code URI[…]} sub-element is omitted if the sub-element
+     *       was derived by Apache SIS from the other {@code ID[…]} properties.</li>
+     *   <li>Map projections are shown as SIS stores them internally, i.e. with the separation between
+     *       linear and non-linear steps, rather than as a single operation.</li>
+     * </ul>
+     *
+     * This convention is used only for debugging purpose.
      */
     @Debug
     INTERNAL(false);
@@ -170,6 +179,13 @@ public enum Convention {
      */
     final boolean isSimple() {
         return this != WKT2;
+    }
+
+    /**
+     * {@code true} if the identifiers should be formatted for all elements instead of only the last one.
+     */
+    final boolean showIdentifiers() {
+        return this == WKT2_SIMPLIFIED || this == INTERNAL;
     }
 
     /**

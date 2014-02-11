@@ -225,22 +225,27 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
-        final Unit<Angle> oldUnit = formatter.getAngularUnit();
+        final Unit<Angle> oldUnit = formatter.getContextualUnit(Angle.class);
         final Unit<Angle> unit = getAngularUnit(getCoordinateSystem());
         final GeodeticDatum datum = getDatum();
-        formatter.setAngularUnit(unit);
+        formatter.setContextualUnit(Angle.class, unit);
+        formatter.newLine();
         formatter.append(datum);
+        formatter.newLine();
         formatter.append(datum.getPrimeMeridian());
+        formatter.newLine();
         formatter.append(unit);
         final EllipsoidalCS cs = getCoordinateSystem();
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
+            formatter.newLine();
             formatter.append(cs.getAxis(i));
         }
         if (!unit.equals(getUnit())) {
             formatter.setInvalidWKT(this, null);
         }
-        formatter.setAngularUnit(oldUnit);
+        formatter.setContextualUnit(Angle.class, oldUnit);
+        formatter.newLine(); // For writing the ID[…] element on its own line.
         return "GEOGCS";
     }
 }

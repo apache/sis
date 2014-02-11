@@ -27,11 +27,13 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestStep;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -221,10 +223,14 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     /**
      * Tests unmarshalling.
      *
+     * <p>This method is part of a chain.
+     * The next method is {@link #testWKT()}.</p>
+     *
+     * @return The unmarshalled datum.
      * @throws JAXBException If an error occurred during unmarshalling.
      */
-    @Test
-    public void testUnmarshalling() throws JAXBException {
+    @TestStep
+    public DefaultGeodeticDatum testUnmarshalling() throws JAXBException {
         final DefaultGeodeticDatum datum = unmarshalFile(DefaultGeodeticDatum.class, XML_FILE);
         assertIsWGS84(datum, true);
         /*
@@ -241,5 +247,43 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
                 datum.getRealizationEpoch());
         assertEquals("remarks", "Defining parameters cited in EPSG database.",
                 datum.getEllipsoid().getRemarks().toString());
+        return datum;
+    }
+
+    /**
+     * Tests the WKT formatting of the datum created by {@link #testUnmarshalling()}.
+     *
+     * @throws JAXBException If an error occurred during unmarshalling.
+     */
+    @Test
+    public void testWKT() throws JAXBException {
+        final DefaultGeodeticDatum datum = testUnmarshalling();
+        assertWktEquals(Convention.WKT1,
+                "DATUM[“World Geodetic System 1984”,\n" +
+                "  SPHEROID[“WGS 84”, 6378137.0, 298.257223563],\n" +
+                "  AUTHORITY[“EPSG”, “6326”]]",
+                datum);
+
+        assertWktEquals(Convention.WKT2,
+                "DATUM[“World Geodetic System 1984”,\n" +
+                "  SPHEROID[“WGS 84”, 6378137.0, 298.257223563,\n" +
+                "    REMARKS[“Defining parameters cited in EPSG database.”]],\n" +
+                "  SCOPE[“Satellite navigation.”],\n" +
+                "  AREA[“World.”],\n" +
+                "  BBOX[-90.00, -180.00, 90.00, 180.00],\n" +
+                "  ID[“EPSG”, 6326, URI[“urn:ogc:def:datum:EPSG::6326”]],\n" +
+                "  REMARKS[“No distinction between the original and subsequent WGS 84 frames.”]]",
+                datum);
+
+        assertWktEquals(Convention.INTERNAL,
+                "DATUM[“World Geodetic System 1984”,\n" +
+                "  SPHEROID[“WGS 84”, 6378137.0, 298.257223563, ID[“EPSG”, 7030],\n" +
+                "    REMARKS[“Defining parameters cited in EPSG database.”]],\n" +
+                "  SCOPE[“Satellite navigation.”],\n" +
+                "  AREA[“World.”],\n" +
+                "  BBOX[-90.00, -180.00, 90.00, 180.00],\n" +
+                "  ID[“EPSG”, 6326],\n" +
+                "  REMARKS[“No distinction between the original and subsequent WGS 84 frames.”]]",
+                datum);
     }
 }

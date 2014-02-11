@@ -83,6 +83,18 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns {@code true} if codes in the given code space are often represented using the URN syntax.
+     * Current implementation conservatively returns {@code true} only for {@code "EPSG"}.
+     * The list of accepted code spaces may be expanded in any future SIS version.
+     *
+     * @param  codeSpace The code space (can be {@code null}).
+     * @return {@code true} if the given code space is known to use the URN syntax.
+     */
+    public static boolean usesURN(final String codeSpace) {
+        return (codeSpace != null) && codeSpace.equalsIgnoreCase("EPSG");
+    }
+
+    /**
      * Returns the URN type for the given class, or {@code null} if unknown.
      * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of URN types.
      *

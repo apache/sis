@@ -391,8 +391,10 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
         for (final CoordinateReferenceSystem element : components) {
+            formatter.newLine();
             formatter.append(element);
         }
+        formatter.newLine(); // For writing the ID[…] element on its own line.
         return "COMPD_CS";
     }
 }
