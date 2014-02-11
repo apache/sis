@@ -97,19 +97,19 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     private static final long serialVersionUID = -7883614853277827689L;
 
     /**
-     * Key for the {@value} property to be given to the constructor.
+     * Key for the <code>{@value}</code> property to be given to the constructor.
      * This is used for setting the value to be returned by {@link #getMinimumValue()}.
      */
     public static final String MINIMUM_VALUE_KEY = "minimumValue";
 
     /**
-     * Key for the {@value} property to be given to the constructor.
+     * Key for the <code>{@value}</code> property to be given to the constructor.
      * This is used for setting the value to be returned by {@link #getMaximumValue()}.
      */
     public static final String MAXIMUM_VALUE_KEY = "maximumValue";
 
     /**
-     * Key for the {@value} property to be given to the constructor.
+     * Key for the <code>{@value}</code> property to be given to the constructor.
      * This is used for setting the value to be returned by {@link #getRangeMeaning()}.
      */
     public static final String RANGE_MEANING_KEY = "rangeMeaning";
