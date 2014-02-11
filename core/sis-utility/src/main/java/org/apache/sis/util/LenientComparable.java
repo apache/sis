@@ -110,7 +110,7 @@ public interface LenientComparable {
      * The strictness level is controlled by the second argument,
      * from stricter to more permissive values:
      *
-     * <table class="compact" >
+     * <p><table class="compact" >
      *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>All attributes of the compared objects shall be strictly equal.</td></tr>
      *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</td>
@@ -122,7 +122,7 @@ public interface LenientComparable {
      *           with some tolerance threshold on numerical values.</td></tr>
      *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
-     * </table>
+     * </table></p>
      *
      * {@section Conformance to the <code>equals(Object)</code> method contract}
      * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.

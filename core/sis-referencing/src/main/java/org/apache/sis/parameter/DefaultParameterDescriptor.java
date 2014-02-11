@@ -36,6 +36,7 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
@@ -50,8 +51,19 @@ import java.util.Objects;
  * The definition of a parameter used by an operation method.
  * For {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems}
  * most parameter values are numeric, but other types of parameter values are possible.
- * The {@linkplain #getValueClass() value class} for such numeric parameters is usually
- * {@link Double} or {@link Integer}, but other number types are accepted as well.
+ *
+ * <p>A parameter descriptor contains the following properties:</p>
+ * <ul>
+ *   <li>The parameter {@linkplain #getName() name}.</li>
+ *   <li>The {@linkplain #getValueClass() class of values}. This is usually {@link Double}, {@code double[]},
+ *       {@link Integer}, {@code int[]}, {@link Boolean}, {@link String} or {@link java.net.URI},
+ *       but other types are allowed as well.</li>
+ *   <li>Whether this parameter is optional or mandatory. This is specified by the {@linkplain #getMinimumOccurs()
+ *       minimum occurences} number, which can be 0 or 1 respectively.</li>
+ *   <li>The {@linkplain #getDefaultValue() default value} and its {@linkplain #getUnit() unit of measurement}.</li>
+ *   <li>The domain of values, as a {@linkplain #getMinimumValue() minimum value}, {@linkplain #getMaximumValue()
+ *       maximum value} or an enumeration of {@linkplain #getValidValues() valid values}.</li>
+ * </ul>
  *
  * @param <T> The type of elements to be returned by {@link DefaultParameterValue#getValue()}.
  *
@@ -64,29 +76,34 @@ import java.util.Objects;
  * @see Parameter
  * @see DefaultParameterDescriptorGroup
  */
-public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor implements ParameterDescriptor<T> {
+public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject implements ParameterDescriptor<T> {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -295668622297737705L;
 
     /**
-     * Key for the {@value} property to be given to the constructor.
+     * Key for the <code>{@value}</code> property to be given to the constructor.
      * This is used for setting the value to be returned by {@link #getMinimumValue()}.
      */
     public static final String MINIMUM_VALUE_KEY = "minimumValue";
 
     /**
-     * Key for the {@value} property to be given to the constructor.
+     * Key for the <code>{@value}</code> property to be given to the constructor.
      * This is used for setting the value to be returned by {@link #getMaximumValue()}.
      */
     public static final String MAXIMUM_VALUE_KEY = "maximumValue";
 
     /**
-     * Key for the {@value} property to be given to the constructor.
+     * Key for the <code>{@value}</code> property to be given to the constructor.
      * This is used for setting the value to be returned by {@link #getValidValues()}.
      */
     public static final String VALID_VALUES_KEY = "validValues";
+
+    /**
+     * {@code true} if this parameter is mandatory, or {@code false} if it is optional.
+     */
+    private final boolean required;
 
     /**
      * The class that describe the type of parameter values.
@@ -187,13 +204,14 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                                       final Unit<?>       unit,
                                       final boolean       required)
     {
-        super(properties, required ? 1 : 0, 1);
+        super(properties);
         final Comparable<T> minimumValue = Containers.property(properties, MINIMUM_VALUE_KEY, Comparable.class);
         final Comparable<T> maximumValue = Containers.property(properties, MAXIMUM_VALUE_KEY, Comparable.class);
         ensureNonNull("valueClass",      valueClass);
         ensureCanCast("defaultValue",    valueClass, defaultValue);
         ensureCanCast(MINIMUM_VALUE_KEY, valueClass, minimumValue);
         ensureCanCast(MAXIMUM_VALUE_KEY, valueClass, maximumValue);
+        this.required     = required;
         this.valueClass   = valueClass;
         this.defaultValue = Numerics.cached(defaultValue);
         this.minimumValue = Numerics.cached(minimumValue);
@@ -276,6 +294,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      */
     public DefaultParameterDescriptor(final ParameterDescriptor<T> descriptor) {
         super(descriptor);
+        required     = descriptor.getMinimumOccurs() != 0;
         valueClass   = descriptor.getValueClass();
         validValues  = descriptor.getValidValues();
         defaultValue = descriptor.getDefaultValue();
@@ -301,8 +320,19 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     }
 
     /**
+     * The minimum number of times that values for this parameter group or parameter are required.
+     * A value of 0 means an optional parameter and a value of 1 means a mandatory parameter.
+     *
+     * @see #getMaximumOccurs()
+     */
+    @Override
+    public int getMinimumOccurs() {
+        return required ? 1 : 0;
+    }
+
+    /**
      * The maximum number of times that values for this parameter group or parameter can be included.
-     * For a {@linkplain DefaultParameterDescriptor single parameter}, the value is always 1.
+     * For a {@code ParameterDescriptor}, the value is always 1.
      *
      * @return The maximum occurrence.
      *
@@ -404,16 +434,15 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * This method compares the following properties in every cases:
      *
      * <ul>
-     *   <li>{@link #getName()}</li>
-     *   <li>{@link #getMinimumOccurs()}</li>
-     *   <li>{@link #getMaximumOccurs()}</li>
+     *   <li>{@link #getName()}, compared {@linkplain #isHeuristicMatchForName(String) heuristically}
+     *       in {@code IGNORE_METADATA} or less strict mode.</li>
      *   <li>{@link #getValueClass()}</li>
      *   <li>{@link #getDefaultValue()}</li>
      *   <li>{@link #getUnit()}</li>
      * </ul>
      *
-     * All other properties (minimum, maximum and valid values) are compared only
-     * for modes stricter than {@link ComparisonMode#IGNORE_METADATA}.
+     * All other properties (minimum and maximum occurrences, minimum, maximum and valid values)
+     * are compared only for modes stricter than {@link ComparisonMode#IGNORE_METADATA}.
      *
      * @return {@inheritDoc}
      */
@@ -440,7 +469,9 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                 }
                 case BY_CONTRACT: {
                     final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
-                    return                    getValueClass() == that.getValueClass()    &&
+                    return getMinimumOccurs() == that.getMinimumOccurs() &&
+                           getMaximumOccurs() == that.getMaximumOccurs() &&
+                           getValueClass()    == that.getValueClass()    &&
                            Objects.    equals(getValidValues(),  that.getValidValues())  &&
                            Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
                            Objects.    equals(getMinimumValue(), that.getMinimumValue()) &&
@@ -449,11 +480,12 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                 }
                 case STRICT: {
                     final DefaultParameterDescriptor<?> that = (DefaultParameterDescriptor<?>) object;
-                    return                    this.valueClass == that.valueClass    &&
+                    return                    this.required   == that.required      &&
+                                              this.valueClass == that.valueClass    &&
                            Objects.    equals(this.validValues,  that.validValues)  &&
                            Objects.deepEquals(this.defaultValue, that.defaultValue) &&
-                           Objects.    equals(this.minimumValue, that.minimumValue)      &&
-                           Objects.    equals(this.maximumValue, that.maximumValue)      &&
+                           Objects.    equals(this.minimumValue, that.minimumValue) &&
+                           Objects.    equals(this.maximumValue, that.maximumValue) &&
                            Objects.    equals(this.unit,         that.unit);
                 }
             }
@@ -468,8 +500,21 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      */
     @Override
     protected long computeHashCode() {
-        return Arrays.deepHashCode(new Object[] {valueClass, defaultValue, minimumValue, maximumValue, unit})
+        return Arrays.deepHashCode(new Object[] {required, valueClass, defaultValue, minimumValue, maximumValue, unit})
                 + super.computeHashCode();
+    }
+
+    /**
+     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     *
+     * @param  formatter The formatter to use.
+     * @return The WKT element name.
+     *
+     * @todo Not yet implemented.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        return null;
     }
 
     /**

@@ -210,7 +210,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Constructs an object from the given properties. Keys are strings from the table below.
      * The map given in argument shall contain an entry at least for the
      * {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} or
-     * {@value org.opengis.referencing.ReferenceIdentifier#CODE_KEY} key.
+     * {@value org.opengis.metadata.Identifier#CODE_KEY} key.
      * Other properties listed in the table below are optional.
      * In particular, {@code "authority"}, {@code "code"}, {@code "codespace"} and {@code "version"}
      * are convenience properties for building a name, and are ignored if the {@code "name"} property
@@ -714,7 +714,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * two objects that can be differentiated only by some identifier (name or alias), like
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axes},
      * {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum},
-     * {@linkplain org.apache.sis.parameter.AbstractParameterDescriptor parameters} and
+     * {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameters} and
      * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod operation methods}.
      * See {@link #equals(Object, ComparisonMode)} for more information.
      *
@@ -753,34 +753,37 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The strictness level is controlled by the second argument,
      * from stricter to more permissive values:
      *
-     * <table class="compact">
+     * <p><table class="compact">
      *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>Verifies if the two objects are of the same {@linkplain #getClass() class}
      *            and compares all public properties, including SIS-specific (non standard) properties.</td></tr>
      *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</td>
      *       <td>Verifies if the two objects implement the same {@linkplain #getInterface() GeoAPI interface}
-     *           and compares all properties defined by that interface: {@linkplain #getName() name},
-     *           {@linkplain #getRemarks() remarks}, {@linkplain #getIdentifiers() identifiers}, <i>etc</i>.</td></tr>
+     *           and compares all properties defined by that interface ({@linkplain #getName() name},
+     *           {@linkplain #getIdentifiers() identifiers}, {@linkplain #getRemarks() remarks}, <i>etc</i>).
+     *           The two objects do not need to be instances of the same implementation class
+     *           and SIS-specific properties are ignored.</td></tr>
      *   <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}:</td>
      *       <td>Compares only the properties relevant to coordinate transformations. Generally speaking, the content
      *           of the {@code properties} map given at {@linkplain #AbstractIdentifiedObject(Map) construction time}
      *           is considered ignorable metadata while the explicit arguments given to the constructor (if any) are
-     *           considered non-ignorable.</td></tr>
+     *           considered non-ignorable. Note that there is some exceptions to this rule of thumb — see
+     *           <cite>When object name matter</cite> below.</td></tr>
      *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</td>
      *       <td>Same as {@code IGNORE_METADATA}, with some tolerance threshold on numerical values.</td></tr>
      *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
-     * </table>
+     * </table></p>
      *
      * The main guideline is that if {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true},
      * then the transformation from {@code sourceCRS} to {@code targetCRS} should be the identity transform
-     * no matter what {@link #getName()} said.
+     * even if the two CRS do not have the same name.
      *
-     * {@section Exceptions to the above rules}
+     * {@section When object name matter}
      * Some subclasses (especially
      * {@link org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis},
      * {@link org.apache.sis.referencing.datum.AbstractDatum} and
-     * {@link org.apache.sis.parameter.AbstractParameterDescriptor}) will compare the
+     * {@link org.apache.sis.parameter.DefaultParameterDescriptor}) will compare the
      * {@linkplain #getName() name} even in {@code IGNORE_METADATA} mode,
      * because objects of those types with different names have completely different meaning.
      * For example nothing differentiate the {@code "semi_major"} and {@code "semi_minor"} parameters except the name.
