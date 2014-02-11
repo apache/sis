@@ -238,7 +238,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
             formatter.append(cs.getAxis(i));
         }
         if (!unit.equals(getUnit())) {
-            formatter.setInvalidWKT(this);
+            formatter.setInvalidWKT(this, null);
         }
         formatter.setAngularUnit(oldUnit);
         return "GEOGCS";

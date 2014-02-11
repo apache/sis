@@ -423,7 +423,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             formatter.append(cs.getAxis(i));
         }
         if (unit == null) {
-            formatter.setInvalidWKT(cs);
+            formatter.setInvalidWKT(cs, null);
         }
         return keyword;
     }

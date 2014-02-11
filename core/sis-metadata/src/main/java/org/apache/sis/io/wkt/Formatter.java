@@ -515,10 +515,10 @@ public class Formatter implements Localized {
         String keyword = object.formatTo(this);
         if (keyword == null) {
             if (info != null) {
-                setInvalidWKT(info);
+                setInvalidWKT(info, null);
                 keyword = getName(info.getClass());
             } else {
-                setInvalidWKT(object.getClass());
+                setInvalidWKT(object.getClass(), null);
                 keyword = invalidElement;
             }
         }
@@ -1116,16 +1116,23 @@ public class Formatter implements Localized {
      * to format is more complex than what the WKT specification allows.
      * Applications can test {@link #isInvalidWKT()} later for checking WKT validity.
      *
+     * <p>If any {@code setInvalidWKT(…)} method is invoked more than once during formatting,
+     * then only information about the first failure will be retained.</p>
+     *
      * @param unformattable The object that can not be formatted,
+     * @param cause The cause for the failure to format, or {@code null} if the cause is not an exception.
      */
-    public void setInvalidWKT(final IdentifiedObject unformattable) {
+    public void setInvalidWKT(final IdentifiedObject unformattable, final Exception cause) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
-        String name;
-        final ReferenceIdentifier id = unformattable.getName();
-        if (id == null || (name = id.getCode()) == null) {
-            name = getName(unformattable.getClass());
+        if (invalidElement == null) {
+            String name;
+            final ReferenceIdentifier id = unformattable.getName();
+            if (id == null || (name = id.getCode()) == null) {
+                name = getName(unformattable.getClass());
+            }
+            invalidElement = name;
+            errorCause     = cause;
         }
-        invalidElement = name;
         highlightError = true;
     }
 
@@ -1134,11 +1141,18 @@ public class Formatter implements Localized {
      * This method can be used as an alternative to {@link #setInvalidWKT(IdentifiedObject)} when the problematic
      * object is not an instance of {@code IdentifiedObject}.
      *
+     * <p>If any {@code setInvalidWKT(…)} method is invoked more than once during formatting,
+     * then only information about the first failure will be retained.</p>
+     *
      * @param unformattable The class of the object that can not be formatted,
+     * @param cause The cause for the failure to format, or {@code null} if the cause is not an exception.
      */
-    public void setInvalidWKT(final Class<?> unformattable) {
+    public void setInvalidWKT(final Class<?> unformattable, final Exception cause) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
-        invalidElement = getName(unformattable);
+        if (invalidElement == null) {
+            invalidElement = getName(unformattable);
+            errorCause     = cause;
+        }
         highlightError = true;
     }
 

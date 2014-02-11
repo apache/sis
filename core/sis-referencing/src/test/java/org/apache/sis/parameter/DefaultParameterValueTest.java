@@ -31,8 +31,8 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.test.Assert.*;
 import static org.opengis.test.Validators.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
@@ -509,5 +509,14 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     public void testSerialization() {
         final DefaultParameterValue<Double> parameter = create("Serialization test", 3, SI.METRE);
         assertNotSame(parameter, assertSerializedEquals(parameter));
+    }
+
+    /**
+     * Tests WKT formatting.
+     */
+    @Test
+    public void testWKT() {
+        assertWktEquals("PARAMETER[“WKT test”, 4]", createOptional("WKT test", 4));
+        assertWktEquals("PARAMETER[“WKT test”, 30.0]", create("WKT test", 30, SI.CENTIMETRE));
     }
 }
