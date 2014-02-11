@@ -71,7 +71,7 @@ import java.nio.file.Path;
  * The parameter type can be fetch with the following idiom:
  *
  * {@preformat java
- *     Class<? extends T> valueClass = parameter.getDescriptor().getValueClass();
+ *     Class<T> valueClass = parameter.getDescriptor().getValueClass();
  * }
  *
  * {@section Implementation note for subclasses}
@@ -248,13 +248,12 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * Returns an ordered sequence of two or more integer values of this parameter, usually used for counts.
-     * These integer values do not have an associated unit of measure.
      *
      * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
-     * or throws an exception otherwise. Note that the returned array is a direct reference to the
-     * array stored by this parameter.</p>
+     * or throws an exception otherwise. If the value can be casted, then the array is cloned before
+     * to be returned.</p>
      *
-     * @return The sequence of values represented by this parameter.
+     * @return A copy of the sequence of values represented by this parameter.
      * @throws InvalidParameterTypeException if the value is not an array of {@code int}s.
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
@@ -265,7 +264,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     public int[] intValueList() throws IllegalStateException {
         final T value = getValue();
         if (value instanceof int[]) {
-            return (int[]) value;
+            return ((int[]) value).clone();
         }
         throw incompatibleValue(value);
     }
@@ -273,12 +272,6 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     /**
      * Returns the numeric value of this parameter.
      * The units of measurement are specified by {@link #getUnit()}.
-     *
-     * {@note The behavior of this method is slightly different than the equivalent method in
-     *        the <code>FloatParameter</code> class, since this method throws an exception instead than
-     *        returning <code>NaN</code> if no value has been explicitely set. This method behaves that
-     *        way for consistency will other methods defined in this class, since all of them except
-     *        <code>getValue()</code> throw an exception in such case.}
      *
      * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
      * or throws an exception otherwise.</p>
@@ -306,10 +299,10 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * where each value has the same associated unit of measure.
      *
      * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
-     * or throws an exception otherwise. Note that the returned array is a direct reference to the
-     * array stored by this parameter.</p>
+     * or throws an exception otherwise. If the value can be casted, then the array is cloned before
+     * to be returned.</p>
      *
-     * @return The sequence of values represented by this parameter.
+     * @return A copy of the sequence of values represented by this parameter.
      * @throws InvalidParameterTypeException if the value is not an array of {@code double}s.
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
@@ -321,7 +314,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     public double[] doubleValueList() throws IllegalStateException {
         final T value = getValue();
         if (value instanceof double[]) {
-            return (double[]) value;
+            return ((double[]) value).clone();
         }
         throw incompatibleValue(value);
     }
@@ -376,7 +369,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * This convenience method applies unit conversions on the fly as needed.
      *
      * <p>The default implementation invokes {@link #doubleValueList()} and {@link #getUnit()},
-     * clone the array, then converts the values to the given unit of measurement.</p>
+     * then converts the values to the given unit of measurement.</p>
      *
      * @param  unit The unit of measure for the value to be returned.
      * @return The sequence of values represented by this parameter after conversion to type
@@ -392,7 +385,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     @Override
     public double[] doubleValueList(final Unit<?> unit) throws IllegalArgumentException, IllegalStateException {
         final UnitConverter converter = getConverterTo(unit);
-        final double[] values = doubleValueList().clone();
+        final double[] values = doubleValueList();
         for (int i=0; i<values.length; i++) {
             values[i] = converter.convert(values[i]);
         }
@@ -479,18 +472,15 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * Sets the parameter value as an object. The object type is typically (but not limited to) {@link Double},
-     * {@link Integer}, {@link Boolean}, {@link String}, {@link URI}, {@code double[]} or {@code int[]}.
-     * If the given value is {@code null}, then there is a choice:
+     * {@code double[]}, {@link Integer}, {@code int[]}, {@link Boolean}, {@link String} or {@link URI}.
+     * If the given value is {@code null}, then this parameter is set to the
+     * {@linkplain DefaultParameterDescriptor#getDefaultValue() default value}.
      *
-     * <ul>
-     *   <li>If this parameter is mandatory, then the value is set to the
-     *       {@linkplain DefaultParameterDescriptor#getDefaultValue() default value}.</li>
-     *   <li>If this parameter is optional, then the value is set to {@code null} as requested.</li>
-     * </ul>
+     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.
+     * This implementation does not clone the given value. In particular, references to {@code int[]}
+     * and {@code double[]} arrays are stored <cite>as-is</cite>.</p>
      *
-     * The default implementation delegates to {@link #setValue(Object, Unit)}.
-     *
-     * @param  value The parameter value, or {@code null}.
+     * @param  value The parameter value, or {@code null} to restore the default.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
      *
@@ -627,19 +617,18 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * Sets the parameter value and its associated unit.
-     * If the given value is {@code null}, then there is a choice:
-     * <ul>
-     *   <li>If this parameter is mandatory, then the value is set to the
-     *       {@linkplain DefaultParameterDescriptor#getDefaultValue() default value}.</li>
-     *   <li>If this parameter is optional, then the value is set to {@code null} as requested.</li>
-     * </ul>
+     * If the given value is {@code null}, then this parameter is set to the
+     * {@linkplain DefaultParameterDescriptor#getDefaultValue() default value}.
+     *
+     * <p>Current implementation does not clone the given value. In particular, references to
+     * {@code int[]} and {@code double[]} arrays are stored <cite>as-is</cite>.</p>
      *
      * {@section Implementation note for subclasses}
      * This method is invoked by all setter methods in this class, thus providing a single point that
      * subclasses can override if they want to perform more processing on the value before its storage,
      * or to be notified about value changes.
      *
-     * @param  value The parameter value, or {@code null}.
+     * @param  value The parameter value, or {@code null} to restore the default.
      * @param  unit  The unit associated to the new parameter value, or {@code null}.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
