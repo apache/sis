@@ -48,7 +48,7 @@ public final strictfp class FormatterTest extends TestCase {
     }
 
     /**
-     * Tests {@link Formatter#append(GeographicBoundingBox, int)}.
+     * Tests (indirectly) {@link Formatter#append(GeographicBoundingBox, int)}.
      */
     @Test
     public void testAppendGeographicBoundingBox() {

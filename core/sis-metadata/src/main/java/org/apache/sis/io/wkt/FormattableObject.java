@@ -118,7 +118,6 @@ public abstract class FormattableObject {
 
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) for this object using the specified convention.
-     * The {@link Convention#INTERNAL INTERNAL} convention is a special value for debugging map projections.
      *
      * @param  convention The WKT convention to use.
      * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
@@ -136,13 +135,16 @@ public abstract class FormattableObject {
      *
      * <p>This is a convenience method for debugging purpose and for console applications.</p>
      *
+     * @param convention The WKT convention to use.
+     *
      * @see Colors#CONSOLE
      */
     @Debug
-    public void print() {
+    public void print(final Convention convention) {
+        ArgumentChecks.ensureNonNull("convention", convention);
         final Console console = System.console();
         final PrintWriter out = (console != null) ? console.writer() : null;
-        final String wkt = formatWKT(Convention.DEFAULT_SIMPLIFIED, (out != null) && X364.isAnsiSupported(), false);
+        final String wkt = formatWKT(convention, (out != null) && X364.isAnsiSupported(), false);
         if (out != null) {
             out.println(wkt);
         } else {
@@ -203,7 +205,8 @@ public abstract class FormattableObject {
      * {@section Formatting non-standard WKT}
      * If the implementation can not represent this object without violating some WKT constraints,
      * it can uses its own (non-standard) keywords but shall declare that it did so by invoking one
-     * of the {@link Formatter#setInvalidWKT(IdentifiedObject) Formatter.setInvalidWKT(…)} methods.
+     * of the {@link Formatter#setInvalidWKT(IdentifiedObject, Exception) Formatter.setInvalidWKT(…)}
+     * methods.
      *
      * <p>Alternatively, the implementation may also have no WKT keyword for this object.
      * This happen frequently when an abstract class defines a base implementation,
