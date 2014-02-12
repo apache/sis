@@ -33,6 +33,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -414,18 +415,26 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
 
     /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
-     * Note that WKT version 1 does not define any keyword for coordinate system.
+     *
+     * {@example <blockquote><pre>CS[ellipsoidal,3],
+     *    AXIS["latitude",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],
+     *    AXIS["longitude",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]]</pre></blockquote>
+     * }
+     *
+     * This is supported only for version 2 of WKT.
      *
      * @param  formatter The formatter to use.
-     * @return The WKT element name.
+     * @return The WKT element name, which is {@code "CS"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final String keyword = super.formatTo(formatter);
+        formatter.append(ReferencingUtilities.toWKTType(CoordinateSystem.class, getInterface()), null);
+        formatter.append(getDimension());
+        // TODO: Axes need to be formatted outside CS.
         for (final CoordinateSystemAxis axe : axes) {
             formatter.newLine();
             formatter.append(axe);
         }
-        return keyword;
+        return "CS";
     }
 }
