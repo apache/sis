@@ -25,6 +25,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -147,7 +148,9 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
         assertNull("name.codeSpace", pm.getName().getCodeSpace());
         assertWktEquals(
-                "PRIMEM[“Paris”, 2.33722917, ID[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]],\n" +
+                "PRIMEM[“Paris”, 2.33722917, ID[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+        assertWktEquals(Convention.INTERNAL,
+                "PRIMEM[“Paris”, 2.33722917, ID[“EPSG”, 8903],\n" +
                 "  REMARKS[“Equivalent to 2°20′14.025″.”]]", pm);
         assertXmlEquals(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +

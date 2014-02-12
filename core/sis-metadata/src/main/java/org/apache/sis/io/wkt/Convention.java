@@ -70,16 +70,14 @@ public enum Convention {
      * to the {@link #WKT2} convention except for the following aspects:
      *
      * <ul>
-     *   <li>{@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT} and
-     *       {@code TIMEUNIT} are formatted as plain {@code UNIT} elements.</li>
-     *   <li>In {@code AXIS} elements, the {@code ORDER} sub-element is omitted.</li>
-     *   <li>In {@code VERTICALEXTENT} elements, the {@code UNIT} sub-element is omitted
+     *   <li>{@code AXIS} element omits the {@code ORDER} sub-element.</li>
+     *   <li>{@code VERTICALEXTENT} element omits the {@code UNIT} sub-element
      *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
-     *   <li>{@code ID} elements are formatted for child elements in addition to the root one.</li>
+     *   <li>{@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT}
+     *       and {@code TIMEUNIT} are formatted as plain {@code UNIT} elements.</li>
+     *   <li>{@code ID} is formatted only for the root element
+     *       (omit parameters and operation methods {@code ID}).</li>
      * </ul>
-     *
-     * {@note The additional <code>ID[…]</code> elements apparently go against the simplification goal,
-     *        but are often helpful information when using Apache SIS.}
      *
      * Those modifications are allowed by the ISO 19162 standard and do not cause any information lost.
      * The omitted elements are not needed by Apache SIS WKT parser and often distractive for the human reader.
@@ -136,10 +134,14 @@ public enum Convention {
      * with the following differences:
      *
      * <ul>
-     *   <li>In {@code ID[…]} elements, the {@code URI[…]} sub-element is omitted if the sub-element
-     *       was derived by Apache SIS from the other {@code ID[…]} properties.</li>
      *   <li>Map projections are shown as SIS stores them internally, i.e. with the separation between
      *       linear and non-linear steps, rather than as a single operation.</li>
+     *   <li>{@code ID} elements are formatted for child elements in addition to the root one.</li>
+     *   <li>{@code ID} element omits the {@code URI} sub-element if the later is derived by Apache SIS
+     *       from the {@code ID} properties.</li>
+     *   <li>{@code REMARKS} element is formatted for all
+     *       {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject identified objects},
+     *       not only CRS or coordinate operations.</li>
      * </ul>
      *
      * This convention is used only for debugging purpose.

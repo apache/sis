@@ -266,13 +266,8 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
 
         assertWktEquals(Convention.WKT2,
                 "DATUM[“World Geodetic System 1984”,\n" +
-                "  SPHEROID[“WGS 84”, 6378137.0, 298.257223563,\n" +
-                "    REMARKS[“Defining parameters cited in EPSG database.”]],\n" +
-                "  SCOPE[“Satellite navigation.”],\n" +
-                "  AREA[“World.”],\n" +
-                "  BBOX[-90.00, -180.00, 90.00, 180.00],\n" +
-                "  ID[“EPSG”, 6326, URI[“urn:ogc:def:datum:EPSG::6326”]],\n" +
-                "  REMARKS[“No distinction between the original and subsequent WGS 84 frames.”]]",
+                "  SPHEROID[“WGS 84”, 6378137.0, 298.257223563],\n" +
+                "  ID[“EPSG”, 6326, URI[“urn:ogc:def:datum:EPSG::6326”]]]",
                 datum);
 
         assertWktEquals(Convention.INTERNAL,

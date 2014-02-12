@@ -21,6 +21,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Date;
 import java.text.DateFormat;
@@ -41,10 +42,12 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
@@ -389,33 +392,6 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Returns the preferred identifier for the specified object.
-     * If the specified object contains an identifier from the preferred authority, then this identifier is returned.
-     * Otherwise, the first identifier is returned.
-     * If the specified object contains no identifier, then this method returns {@code null}.
-     *
-     * @param  info The object to look for a preferred identifier, or {@code null} if none.
-     * @return The preferred identifier, or {@code null} if none.
-     */
-    private ReferenceIdentifier getIdentifier(final IdentifiedObject info) {
-        ReferenceIdentifier first = null;
-        if (info != null) {
-            final Collection<ReferenceIdentifier> identifiers = info.getIdentifiers();
-            if (identifiers != null) {
-                for (final ReferenceIdentifier id : identifiers) {
-                    if (Citations.identifierMatches(authority, id.getAuthority())) {
-                        return id;
-                    }
-                    if (first == null) {
-                        first = id;
-                    }
-                }
-            }
-        }
-        return first;
-    }
-
-    /**
      * Appends in the {@linkplain #buffer} the ANSI escape sequence for the given kind of element.
      * This method does nothing unless syntax coloring has been explicitly enabled.
      */
@@ -517,13 +493,17 @@ public class Formatter implements Localized {
      * <ul>
      *   <li>Invoke <code>formattable.{@linkplain FormattableObject#formatTo(Formatter) formatTo}(this)</code>.</li>
      *   <li>Prepend the keyword returned by the above method call (e.g. {@code "GEOCS"}).</li>
-     *   <li>Append the {@code SCOPE[…]} element, if any (WKT 2 only).</li>
-     *   <li>Append the {@code AREA[…]} element, if any (WKT 2 only).</li>
-     *   <li>Append the {@code BBOX[…]} element, if any (WKT 2 only).</li>
-     *   <li>Append the {@code VERTICALEXTENT[…]} element, if any (WKT 2 only).</li>
-     *   <li>Append the {@code TIMEEXTENT[…]} element, if any (WKT 2 only).</li>
-     *   <li>Append the {@code ID[…]} (WKT 2) or {@code AUTHORITY[…]}} (WKT 1) element, if any.</li>
-     *   <li>Append the {@code REMARKS[…]} element, if any (WKT 2 only).</li>
+     *   <li>If the given object is an instance of {@link IdentifiedObject}, then append complementary information:
+     *     <ul>
+     *       <li>{@code SCOPE[…]} (WKT 2 only)</li>
+     *       <li>{@code AREA[…]}  (WKT 2 only)</li>
+     *       <li>{@code BBOX[…]}  (WKT 2 only)</li>
+     *       <li>{@code VERTICALEXTENT[…]} (WKT 2 only)</li>
+     *       <li>{@code TIMEEXTENT[…]} (WKT 2 only)</li>
+     *       <li>{@code ID[…]} (WKT 2) or {@code AUTHORITY[…]}} (WKT 1)</li>
+     *       <li>{@code REMARKS[…]} ({@link ReferenceSystem} and {@link CoordinateOperation} in WKT 2 only)</li>
+     *     </ul>
+     *   </li>
      * </ul>
      *
      * @param object The formattable object to append to the WKT, or {@code null} if none.
@@ -601,7 +581,7 @@ public class Formatter implements Localized {
      *
      * <p>The {@code ID[<name>,<code>,…]} element is written only for the root element, unless the convention are
      * INTERNAL. If formatted, the ID element will be on the same line than the enclosing one if no line separator
-     * were requested (e.g. SPHEROID["Clarke 1866", …, ID["EPSG", 7008]]), or on a new line otherwise. Example:
+     * were requested (e.g. SPHEROID["Clarke 1866", …, ID["EPSG", 7008]]), or on a new line otherwise. Example:</p>
      *
      * {@preformat text
      *   PROJCS["NAD27 / Idaho Central",
@@ -609,21 +589,72 @@ public class Formatter implements Localized {
      *     ...etc...
      *     ID["EPSG", 26769]]
      * }
+     *
+     * For non-internal conventions, all elements other than {@code ID[…]} are formatted
+     * only for {@link CoordinateOperation} and {@link ReferenceSystem} types.
+     * In the later case, we also require that the CRS is not the base of a derived CRS.
+     * Those restrictions are our interpretation of the following ISO 19162 requirement:
+     *
+     * <blockquote>(…snip…) {@code <scope extent identifier remark>} is a collection of four optional attributes
+     * which may be applied to a coordinate reference system, a coordinate operation or a boundCRS. (…snip…)
+     * Identifier (…snip…) may also be utilised for components of these objects although this is not recommended
+     * except for coordinate operation methods (including map projections) and parameters. (…snip…)
+     * A {@code <remark>} can be included within the descriptions of source and target CRS embedded within
+     * a coordinate transformation as well as within the coordinate transformation itself.</blockquote>
      */
     private void appendComplement(final IdentifiedObject object, final boolean isRoot) {
         isComplement = true;
-        final boolean isWKT1 = convention.isWKT1();
-        if (!isWKT1) {
+        final boolean showIDs;      // Whether to format ID[…] elements.
+        final boolean filterID;     // Whether we shall limit to a single ID[…] element.
+        final boolean showOthers;   // Whether to format any element other than ID[…].
+        if (convention == Convention.INTERNAL) {
+            showIDs    = true;
+            filterID   = false;
+            showOthers = true;
+        } else {
+            if (convention == Convention.WKT2_SIMPLIFIED) {
+                showIDs = isRoot;
+            } else {
+                showIDs = isRoot || (object instanceof OperationMethod) || (object instanceof GeneralParameterDescriptor);
+            }
+            if (convention.isWKT1()) {
+                filterID   = true;
+                showOthers = false;
+            } else {
+                filterID = !isRoot;
+                if (object instanceof CoordinateOperation) {
+                    showOthers = true;
+                } else if (object instanceof ReferenceSystem) {
+                    showOthers = !(getEnclosingElement(1) instanceof ReferenceSystem);
+                } else {
+                    showOthers = false; // Mandated by ISO 19162.
+                }
+            }
+    }
+        if (showOthers) {
             appendScopeAndArea(object);
         }
-        if (isRoot || convention.showIdentifiers()) {
-            ReferenceIdentifier id = getIdentifier(object);
-            if (!(id instanceof FormattableObject)) {
-                id = ImmutableIdentifier.castOrCopy(id);
+        if (showIDs) {
+            Collection<ReferenceIdentifier> identifiers = object.getIdentifiers();
+            if (identifiers != null) { // Paranoiac check
+                if (filterID) {
+                    for (ReferenceIdentifier id : identifiers) {
+                        if (Citations.identifierMatches(authority, id.getAuthority())) {
+                            identifiers = Collections.singleton(id);
+                            break;
+                        }
+                    }
+                }
+                for (ReferenceIdentifier id : identifiers) {
+                    if (!(id instanceof FormattableObject)) {
+                        id = ImmutableIdentifier.castOrCopy(id);
+                    }
+                    append((FormattableObject) id);
+                    if (filterID) break;
+                }
             }
-            append((FormattableObject) id);
         }
-        if (!isWKT1) {
+        if (showOthers) {
             appendOnNewLine("REMARKS", object.getRemarks(), ElementKind.REMARKS);
         }
         isComplement = false;
@@ -1298,6 +1329,7 @@ public class Formatter implements Localized {
         }
         enclosingElements.clear();
         units.clear();
+        elementStart   = 0;
         colorApplied   = 0;
         margin         = 0;
         requestNewLine = false;

@@ -98,9 +98,8 @@ public final strictfp class HardCodedCRSTest extends TestCase {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GEOGCS[“WGS 84”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
-                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563],\n" +
-                "    ID[“EPSG”, 6326]],\n" +
-                "  PRIMEM[“Greenwich”, 0.0, ID[“EPSG”, 8901]],\n" +
+                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "  PRIMEM[“Greenwich”, 0.0],\n" +
                 "  UNIT[“degree”, 0.017453292519943295],\n" +
                 "  AXIS[“Geodetic longitude”, EAST],\n" +
                 "  AXIS[“Geodetic latitude”, NORTH],\n" +
