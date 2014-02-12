@@ -552,14 +552,14 @@ public class Formatter implements Localized {
                 keyword = invalidElement;
             }
         }
-        if (colors != null && highlightError) {
-            highlightError = false;
+        if (highlightError && colors != null) {
             final String color = colors.getAnsiSequence(ElementKind.ERROR);
             if (color != null) {
                 buffer.insert(base, color + BACKGROUND_DEFAULT);
                 base += color.length();
             }
         }
+        highlightError = false;
         buffer.insert(base, keyword);
         /*
          * Format the SCOPE["…"], AREA["…"] and other elements. Some of those information
@@ -1004,7 +1004,7 @@ public class Formatter implements Localized {
     private void appendExact(final double number) {
         if (Locale.ROOT.equals(locale)) {
             appendSeparator();
-            setColor(ElementKind.NUMBER);
+            setColor(highlightError ? ElementKind.ERROR : ElementKind.NUMBER);
             final int i = (int) number;
             if (i == number) {
                 buffer.append(i);
@@ -1015,6 +1015,7 @@ public class Formatter implements Localized {
         } else {
             append(number);
         }
+        highlightError = false;
     }
 
     /**
@@ -1054,7 +1055,11 @@ public class Formatter implements Localized {
             }
             closeQuote(fromIndex);
             resetColor();
-            appendExact(Units.toStandardUnit(unit));
+            final double conversion = Units.toStandardUnit(unit);
+            if (!(conversion > 0)) { // ISO 19162 requires the conversion factor to be positive.
+                setInvalidWKT(Unit.class, null);
+            }
+            appendExact(conversion);
             closeElement(false);
         }
     }
