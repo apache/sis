@@ -491,7 +491,7 @@ public class Formatter implements Localized {
      * This method performs the following steps:
      *
      * <ul>
-     *   <li>Invoke <code>formattable.{@linkplain FormattableObject#formatTo(Formatter) formatTo}(this)</code>.</li>
+     *   <li>Invoke <code>object.{@linkplain FormattableObject#formatTo(Formatter) formatTo}(this)</code>.</li>
      *   <li>Prepend the keyword returned by the above method call (e.g. {@code "GEOCS"}).</li>
      *   <li>If the given object is an instance of {@link IdentifiedObject}, then append complementary information:
      *     <ul>
@@ -500,7 +500,7 @@ public class Formatter implements Localized {
      *       <li>{@code BBOX[…]}  (WKT 2 only)</li>
      *       <li>{@code VERTICALEXTENT[…]} (WKT 2 only)</li>
      *       <li>{@code TIMEEXTENT[…]} (WKT 2 only)</li>
-     *       <li>{@code ID[…]} (WKT 2) or {@code AUTHORITY[…]}} (WKT 1)</li>
+     *       <li>{@code ID[…]} (WKT 2) or {@code AUTHORITY[…]} (WKT 1)</li>
      *       <li>{@code REMARKS[…]} ({@link ReferenceSystem} and {@link CoordinateOperation} in WKT 2 only)</li>
      *     </ul>
      *   </li>
@@ -630,7 +630,7 @@ public class Formatter implements Localized {
                     showOthers = false; // Mandated by ISO 19162.
                 }
             }
-    }
+        }
         if (showOthers) {
             appendScopeAndArea(object);
         }
@@ -638,7 +638,7 @@ public class Formatter implements Localized {
             Collection<ReferenceIdentifier> identifiers = object.getIdentifiers();
             if (identifiers != null) { // Paranoiac check
                 if (filterID) {
-                    for (ReferenceIdentifier id : identifiers) {
+                    for (final ReferenceIdentifier id : identifiers) {
                         if (Citations.identifierMatches(authority, id.getAuthority())) {
                             identifiers = Collections.singleton(id);
                             break;
@@ -787,7 +787,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends a sequence of {@code PARAMETER[…]} elements for the given matrix.
+     * Appends the given matrix as a sequence of {@code PARAMETER[…]} elements.
      * Only elements different than the default values are appended.
      * The default values are 1 on the matrix diagonal and 0 elsewhere.
      *
@@ -827,11 +827,6 @@ public class Formatter implements Localized {
     /**
      * Appends a code list.
      *
-     * <blockquote><table class="compact">
-     *   <tr><th>Position:</th>  <td>current line</td></tr>
-     *   <tr><th>Color key:</th> <td>{@link ElementKind#CODE_LIST}</td></tr>
-     * </table></blockquote>
-     *
      * @param code The code list to append to the WKT, or {@code null} if none.
      */
     public void append(final CodeList<?> code) {
@@ -846,11 +841,6 @@ public class Formatter implements Localized {
     /**
      * Appends a character string between quotes.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the text if needed.
-     *
-     * <blockquote><table class="compact">
-     *   <tr><th>Position:</th>  <td>current line</td></tr>
-     *   <tr><th>Color key:</th> <td>given</td></tr>
-     * </table></blockquote>
      *
      * @param text The string to format to the WKT, or {@code null} if none.
      * @param type The key of the colors to apply if syntax coloring is enabled.
@@ -930,11 +920,6 @@ public class Formatter implements Localized {
      * Appends a date.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the date if needed.
      *
-     * <blockquote><table class="compact">
-     *   <tr><th>Position:</th>  <td>current line</td></tr>
-     *   <tr><th>Color key:</th> <td>none</td></tr>
-     * </table></blockquote>
-     *
      * @param date The date to append to the WKT, or {@code null} if none.
      */
     public void append(final Date date) {
@@ -948,11 +933,6 @@ public class Formatter implements Localized {
      * Appends a boolean value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the boolean if needed.
      *
-     * <blockquote><table class="compact">
-     *   <tr><th>Position:</th>  <td>current line</td></tr>
-     *   <tr><th>Color key:</th> <td>none</td></tr>
-     * </table></blockquote>
-     *
      * @param value The boolean to append to the WKT.
      */
     public void append(final boolean value) {
@@ -963,11 +943,6 @@ public class Formatter implements Localized {
     /**
      * Appends an integer value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
-     *
-     * <blockquote><table class="compact">
-     *   <tr><th>Position:</th>  <td>current line</td></tr>
-     *   <tr><th>Color key:</th> <td>{@link ElementKind#INTEGER}</td></tr>
-     * </table></blockquote>
      *
      * @param number The integer to append to the WKT.
      */
@@ -982,11 +957,6 @@ public class Formatter implements Localized {
     /**
      * Appends an floating point value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
-     *
-     * <blockquote><table class="compact">
-     *   <tr><th>Position:</th>  <td>current line</td></tr>
-     *   <tr><th>Color key:</th> <td>{@link ElementKind#NUMBER}</td></tr>
-     * </table></blockquote>
      *
      * @param number The floating point value to append to the WKT.
      */
@@ -1025,16 +995,34 @@ public class Formatter implements Localized {
     }
 
     /**
+     * Appends a number which is assumed to have no rounding error greater than the limit of IEEE 754 accuracy.
+     * This method is invoked for formatting the unit conversion factors, which are defined by the Unit library
+     * rather than specified by the user. The given number is formatted by {@link Double#toString(double)} both
+     * for accuracy and for automatic usage of scientific notation.  If the given number is an integer, then it
+     * formatted without the trailing ".0".
+     */
+    private void appendExact(final double number) {
+        if (Locale.ROOT.equals(locale)) {
+            appendSeparator();
+            setColor(ElementKind.NUMBER);
+            final int i = (int) number;
+            if (i == number) {
+                buffer.append(i);
+            } else {
+                buffer.append(number);
+            }
+            resetColor();
+        } else {
+            append(number);
+        }
+    }
+
+    /**
      * Appends a unit in a {@code UNIT[…]} element or one of the specialized elements. Specialized elements are
      * {@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT} and {@code TIMEUNIT}.
      * Specialization is used in WKT 2 format except the <cite>simplified WKT 2</cite> one.
      *
      * {@example <code>append(SI.KILOMETRE)</code> will append "<code>LENGTHUNIT["km", 1000]</code>" to the WKT.}
-     *
-     * <blockquote><table class="compact">
-     *   <tr><th>Position:</th>  <td>depending the previous element</td></tr>
-     *   <tr><th>Color key:</th> <td>none</td></tr>
-     * </table></blockquote>
      *
      * @param unit The unit to append to the WKT, or {@code null} if none.
      */
@@ -1059,12 +1047,14 @@ public class Formatter implements Localized {
                 buffer.append("degree");
             } else if (SI.METRE.equals(unit)) {
                 buffer.append(convention.usesCommonUnits() ? "meter" : "metre");
+            } else if (Units.PPM.equals(unit)) {
+                buffer.append("parts per million");
             } else {
                 unitFormat.format(unit, buffer, dummy);
             }
             closeQuote(fromIndex);
             resetColor();
-            append(Units.toStandardUnit(unit));
+            appendExact(Units.toStandardUnit(unit));
             closeElement(false);
         }
     }
@@ -1155,7 +1145,7 @@ public class Formatter implements Localized {
      * of each WKT element. If {@code null}, then the default value depends on the object to format.
      *
      * <p>This method may return a non-null value if the next WKT elements to format are enclosed in a larger WKT
-     * element, and the child elements shall inherit the linear unit of the enclosing element. A typical case is
+     * element, and the child elements shall inherit the unit of the enclosing element. A typical case is
      * the angular unit of the {@code PRIMEM[…]} element enclosed in a {@code GEOGCS[…]} element.</p>
      *
      * <p>The value returned by this method can be ignored if the WKT element to format contains an explicit
