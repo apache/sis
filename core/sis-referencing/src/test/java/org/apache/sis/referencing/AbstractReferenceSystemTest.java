@@ -119,7 +119,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  SCOPE[“Large scale topographic mapping and cadastre.”],\n" +
                 "  AREA[“Netherlands offshore.”],\n" +
                 "  BBOX[51.43, 2.54, 55.77, 6.40],\n" +
-                "  VERTICALEXTENT[-1000, -10, LENGTHUNIT[“metre”, 1.0]],\n" +
+                "  VERTICALEXTENT[-1000, -10, LENGTHUNIT[“metre”, 1]],\n" +
                 "  ID[“EPSG”, 4326, “8.2”, “OGP”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
                 "  REMARKS[“注です。”]]",
                 object);

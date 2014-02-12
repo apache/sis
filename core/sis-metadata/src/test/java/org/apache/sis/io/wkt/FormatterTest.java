@@ -16,9 +16,12 @@
  */
 package org.apache.sis.io.wkt;
 
+import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.measure.Units;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.test.mock.MatrixMock;
 import org.apache.sis.test.DependsOn;
@@ -72,5 +75,15 @@ public final strictfp class FormatterTest extends TestCase {
                 "PARAMETER[“elt_0_2”, 4.0],\n"  +
                 "PARAMETER[“elt_1_0”, -2.0],\n"  +
                 "PARAMETER[“elt_2_3”, 7.0]", m);
+    }
+
+    /**
+     * Tests (indirectly) {@link Formatter#append(Unit)}.
+     */
+    @Test
+    public void testAppendUnit() {
+        assertWktEquals("LENGTHUNIT[“metre”, 1]", SI.METRE);
+        assertWktEquals("ANGLEUNIT[“degree”, 0.017453292519943295]", NonSI.DEGREE_ANGLE);
+        assertWktEquals("SCALEUNIT[“parts per million”, 1.0E-6]", Units.PPM);
     }
 }
