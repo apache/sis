@@ -37,7 +37,7 @@ import static org.apache.sis.internal.metadata.ReferencingUtilities.*;
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {
     /**
-     * Tests {@link ReferencingUtilities#toURNType()}.
+     * Tests {@link ReferencingUtilities#toURNType(Class)}.
      */
     @Test
     public void testToURNType() {
@@ -54,5 +54,23 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertEquals("cs",              toURNType(CartesianCS         .class));
         assertEquals("axis",            toURNType(CoordinateSystemAxis.class));
         assertEquals("referenceSystem", toURNType(ReferenceSystem     .class));
+    }
+
+    /**
+     * Tests {@link ReferencingUtilities#toWKTType(Class, Class)}.
+     */
+    @Test
+    public void testType() {
+        assertNull  (               toWKTType(CoordinateSystem.class, CoordinateSystem.class));
+        assertEquals("affine",      toWKTType(CoordinateSystem.class, AffineCS        .class));
+        assertEquals("Cartesian",   toWKTType(CoordinateSystem.class, CartesianCS     .class));
+        assertEquals("cylindrical", toWKTType(CoordinateSystem.class, CylindricalCS   .class));
+        assertEquals("ellipsoidal", toWKTType(CoordinateSystem.class, EllipsoidalCS   .class));
+        assertEquals("linear",      toWKTType(CoordinateSystem.class, LinearCS        .class));
+//      assertEquals("parametric",  toWKTType(CoordinateSystem.class, ParametricCS    .class));
+        assertEquals("polar",       toWKTType(CoordinateSystem.class, PolarCS         .class));
+        assertEquals("spherical",   toWKTType(CoordinateSystem.class, SphericalCS     .class));
+        assertEquals("temporal",    toWKTType(CoordinateSystem.class, TimeCS          .class));
+        assertEquals("vertical",    toWKTType(CoordinateSystem.class, VerticalCS      .class));
     }
 }

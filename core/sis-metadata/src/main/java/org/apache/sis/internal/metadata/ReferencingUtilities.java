@@ -18,6 +18,8 @@ package org.apache.sis.internal.metadata;
 
 import java.util.Collection;
 import javax.measure.unit.Unit;
+import org.opengis.annotation.UML;
+import org.opengis.annotation.Specification;
 import org.opengis.parameter.*;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
@@ -107,6 +109,47 @@ public final class ReferencingUtilities extends Static {
         for (int i=0; i<TYPES.length; i++) {
             if (TYPES[i].isAssignableFrom(type)) {
                 return URN_TYPES[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the WKT type of the given interface.
+     *
+     * For {@link CoordinateSystem} base type, the returned value shall be one of
+     * {@code affine}, {@code Cartesian}, {@code cylindrical}, {@code ellipsoidal}, {@code linear},
+     * {@code parametric}, {@code polar}, {@code spherical}, {@code temporal} or {@code vertical}.
+     *
+     * @param  base The abstract base interface.
+     * @param  type The interface or classes for which to get the WKT type.
+     * @return The WKT type for the given class or interface, or {@code null} if none.
+     */
+    public static String toWKTType(final Class<?> base, final Class<?> type) {
+        if (type != base) {
+            final UML uml = type.getAnnotation(UML.class);
+            if (uml != null && uml.specification() == Specification.ISO_19111) {
+                String name = uml.identifier();
+                final int length = name.length() - 5; // Length without "CS_" and "CS".
+                if (length >= 1 && name.startsWith("CS_") && name.endsWith("CS")) {
+                    final StringBuilder buffer = new StringBuilder(length).append(name, 3, 3 + length);
+                    if (!name.regionMatches(3, "Cartesian", 0, 9)) {
+                        buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
+                    }
+                    name = buffer.toString();
+                    if (name.equals("time")) {
+                        name = "temporal";
+                    }
+                    return name;
+                }
+            }
+            for (final Class<?> c : type.getInterfaces()) {
+                if (base.isAssignableFrom(c)) {
+                    final String name = toWKTType(base, c);
+                    if (name != null) {
+                        return name;
+                    }
+                }
             }
         }
         return null;
