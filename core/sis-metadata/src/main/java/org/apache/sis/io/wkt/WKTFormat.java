@@ -166,10 +166,10 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Returns the locale for the given category. This method implements the following mapping:
      *
      * <ul>
-     *   <li>{@link Locale.Category#FORMAT} — the value of {@link Symbols#getLocale()},
+     *   <li>{@link java.util.Locale.Category#FORMAT}: the value of {@link Symbols#getLocale()},
      *       normally fixed to {@link Locale#ROOT}, used for number formatting.</li>
-     *   <li>{@link Locale.Category#DISPLAY} — the {@code locale} given at construction time,
-     *       used for {@code InternationalString} localization.</li>
+     *   <li>{@link java.util.Locale.Category#DISPLAY}: the {@code locale} given at construction time,
+     *       used for {@link org.opengis.util.InternationalString} localization.</li>
      * </ul>
      *
      * @param  category The category for which a locale is desired.

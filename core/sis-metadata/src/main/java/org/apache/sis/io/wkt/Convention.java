@@ -75,10 +75,11 @@ public enum Convention {
      *   <li>In {@code AXIS} elements, the {@code ORDER} sub-element is omitted.</li>
      *   <li>In {@code VERTICALEXTENT} elements, the {@code UNIT} sub-element is omitted
      *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
-     *   <li>{@code ID[…]} elements are formatted for child elements in addition to the root one.
-     *       This <em>addition</em> apparently goes against the simplification goal, but is often
-     *       a helpful information when using Apache SIS.</li>
+     *   <li>{@code ID} elements are formatted for child elements in addition to the root one.</li>
      * </ul>
+     *
+     * {@note The additional <code>ID[…]</code> elements apparently go against the simplification goal,
+     *        but are often helpful information when using Apache SIS.}
      *
      * Those modifications are allowed by the ISO 19162 standard and do not cause any information lost.
      * The omitted elements are not needed by Apache SIS WKT parser and often distractive for the human reader.

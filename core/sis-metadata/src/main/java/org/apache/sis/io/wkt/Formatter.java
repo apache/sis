@@ -126,6 +126,12 @@ public class Formatter implements Localized {
     private final Symbols symbols;
 
     /**
+     * The value of {@link Symbols#getSeparator()} without trailing spaces, followed by the system line separator.
+     * Computed by {@link Symbols#lineSeparator()} and stored for reuse.
+     */
+    private final String lineSeparator;
+
+    /**
      * The colors to use for this formatter, or {@code null} for no syntax coloring.
      * If non-null, the terminal must be ANSI X3.64 compatible.
      * The default value is {@code null}.
@@ -196,12 +202,13 @@ public class Formatter implements Localized {
     private StringBuffer buffer;
 
     /**
-     * The starting point in the buffer. Always 0, except when used by
-     * {@link WKTFormat#format(Object, Appendable)}.
+     * Index of the first character in the buffer where the element content will be formatted.
+     * This is set after the opening bracket and is used for determining if a separator needs
+     * to be appended.
      *
      * @see #setBuffer(StringBuffer)
      */
-    private int bufferBase;
+    private int elementStart;
 
     /**
      * Incremented when {@link #setColor(ElementKind)} is invoked, and decremented when {@link #resetColor()}
@@ -283,15 +290,16 @@ public class Formatter implements Localized {
         ArgumentChecks.ensureNonNull("convention",  convention);
         ArgumentChecks.ensureNonNull("symbols",     symbols);
         ArgumentChecks.ensureBetween("indentation", WKTFormat.SINGLE_LINE, Byte.MAX_VALUE, indentation);
-        this.locale       = Locale.getDefault(Locale.Category.DISPLAY);
-        this.convention   = convention;
-        this.authority    = convention.getNameAuthority();
-        this.symbols      = symbols.immutable();
-        this.indentation  = (byte) indentation;
-        this.numberFormat = symbols.createNumberFormat();
-        this.dateFormat   = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
-        this.unitFormat   = UnitFormat.getInstance(symbols.getLocale());
-        this.buffer       = new StringBuffer();
+        this.locale        = Locale.getDefault(Locale.Category.DISPLAY);
+        this.convention    = convention;
+        this.authority     = convention.getNameAuthority();
+        this.symbols       = symbols.immutable();
+        this.lineSeparator = this.symbols.lineSeparator();
+        this.indentation   = (byte) indentation;
+        this.numberFormat  = symbols.createNumberFormat();
+        this.dateFormat    = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
+        this.unitFormat    = UnitFormat.getInstance(symbols.getLocale());
+        this.buffer        = new StringBuffer();
     }
 
     /**
@@ -301,14 +309,15 @@ public class Formatter implements Localized {
     Formatter(final Locale locale, final Symbols symbols, final NumberFormat numberFormat,
             final DateFormat dateFormat, final UnitFormat unitFormat)
     {
-        this.locale       = locale;
-        this.convention   = Convention.DEFAULT;
-        this.authority    = Convention.DEFAULT.getNameAuthority();
-        this.symbols      = symbols;
-        this.indentation  = WKTFormat.DEFAULT_INDENTATION;
-        this.numberFormat = numberFormat; // No clone needed.
-        this.dateFormat   = dateFormat;   // No clone needed.
-        this.unitFormat   = unitFormat;   // No clone needed.
+        this.locale        = locale;
+        this.convention    = Convention.DEFAULT;
+        this.authority     = Convention.DEFAULT.getNameAuthority();
+        this.symbols       = symbols;
+        this.lineSeparator = this.symbols.lineSeparator();
+        this.indentation   = WKTFormat.DEFAULT_INDENTATION;
+        this.numberFormat  = numberFormat; // No clone needed.
+        this.dateFormat    = dateFormat;   // No clone needed.
+        this.unitFormat    = unitFormat;   // No clone needed.
         // Do not set the buffer. It will be set by WKTFormat.format(…).
     }
 
@@ -317,7 +326,7 @@ public class Formatter implements Localized {
      */
     final void setBuffer(final StringBuffer buffer) {
         this.buffer = buffer;
-        bufferBase = (buffer != null) ? buffer.length() : 0;
+        elementStart = (buffer != null) ? buffer.length() : 0;
     }
 
     /**
@@ -465,26 +474,14 @@ public class Formatter implements Localized {
      * This method does nothing if there is currently no element at the buffer end.
      */
     private void appendSeparator() {
-        final StringBuffer buffer = this.buffer;
-        int length = buffer.length();
-        int c;
-        do {
-            if (length <= bufferBase) {
-                requestNewLine = false;
-                return; // We are at the buffer beginning.
+        if (buffer.length() != elementStart) {
+            if (requestNewLine) {
+                buffer.append(lineSeparator).append(CharSequences.spaces(margin));
+            } else {
+                buffer.append(symbols.getSeparator());
             }
-            c = buffer.codePointBefore(length);
-            if (symbols.matchingBracket(c) >= 0 || c == symbols.getOpenSequence()) {
-                requestNewLine = false;
-                return; // We are the first item inside a new keyword.
-            }
-            length -= Character.charCount(c);
-        } while (Character.isSpaceChar(c) || c < 32); // c < 32 is for ignoring all control characters.
-        buffer.append(symbols.getSeparator());
-        if (requestNewLine) {
-            buffer.append(System.lineSeparator()).append(CharSequences.spaces(margin));
-            requestNewLine = false;
         }
+        requestNewLine = false;
     }
 
     /**
@@ -498,7 +495,7 @@ public class Formatter implements Localized {
             newLine();
         }
         appendSeparator();
-        buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0));
+        elementStart = buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0)).length();
     }
 
     /**
@@ -553,7 +550,7 @@ public class Formatter implements Localized {
          */
         appendSeparator();
         int base = buffer.length();
-        buffer.appendCodePoint(symbols.getOpeningBracket(0));
+        elementStart = buffer.appendCodePoint(symbols.getOpeningBracket(0)).length();
         indent(+1);
         /*
          * Formats the inner part, then prepend the WKT keyword.
@@ -744,13 +741,12 @@ public class Formatter implements Localized {
             } else {
                 final Matrix matrix = ReferencingServices.getInstance().getMatrix(transform);
                 if (matrix != null) {
-                    appendSeparator();
-                    buffer.append("PARAM_MT").appendCodePoint(symbols.getOpeningBracket(0));
+                    openElement(true, "PARAM_MT");
                     quote("Affine");
                     indent(+1);
                     append(matrix);
                     indent(-1);
-                    buffer.appendCodePoint(symbols.getClosingBracket(0));
+                    closeElement(true);
                 } else {
                     throw new UnformattableObjectException(Errors.format(
                             Errors.Keys.IllegalClass_2, FormattableObject.class, transform.getClass()));
@@ -1013,8 +1009,6 @@ public class Formatter implements Localized {
      */
     public void append(final Unit<?> unit) {
         if (unit != null) {
-            final StringBuffer buffer = this.buffer;
-            appendSeparator();
             String keyword = "UNIT";
             if (!convention.isSimple()) {
                 if (Units.isLinear(unit)) {
@@ -1027,7 +1021,7 @@ public class Formatter implements Localized {
                     keyword = "TIMEUNIT";
                 }
             }
-            buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0));
+            openElement(false, keyword);
             setColor(ElementKind.UNIT);
             final int fromIndex = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
             if (NonSI.DEGREE_ANGLE.equals(unit)) {
@@ -1170,8 +1164,8 @@ public class Formatter implements Localized {
 
     /**
      * Returns {@code true} if the WKT written by this formatter is not strictly compliant to the WKT specification.
-     * This method returns {@code true} if {@link #setInvalidWKT(IdentifiedObject)} has been invoked at least once.
-     * The action to take regarding invalid WKT is caller-dependent.
+     * This method returns {@code true} if {@link #setInvalidWKT(IdentifiedObject, Exception)} has been invoked at
+     * least once. The action to take regarding invalid WKT is caller-dependent.
      * For example {@link FormattableObject#toString()} will accepts loose WKT formatting and ignore
      * this flag, while {@link FormattableObject#toWKT()} requires strict WKT formatting and will
      * thrown an exception if this flag is set.
@@ -1214,8 +1208,8 @@ public class Formatter implements Localized {
 
     /**
      * Marks the current WKT representation of the given class as not strictly compliant to the WKT specification.
-     * This method can be used as an alternative to {@link #setInvalidWKT(IdentifiedObject)} when the problematic
-     * object is not an instance of {@code IdentifiedObject}.
+     * This method can be used as an alternative to {@link #setInvalidWKT(IdentifiedObject, Exception)} when the
+     * problematic object is not an instance of {@code IdentifiedObject}.
      *
      * <p>If any {@code setInvalidWKT(…)} method is invoked more than once during formatting,
      * then only information about the first failure will be retained.</p>

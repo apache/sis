@@ -577,13 +577,13 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
                      * because this property is currently computed rather than stored.
                      * Simplified convention formats only for the ID of root element.
                      */
-                    final boolean shownURI;
+                    final boolean showURI;
                     switch (convention) {
-                        default:              shownURI = true;  break;
-                        case INTERNAL:        shownURI = false; break;
-                        case WKT2_SIMPLIFIED: shownURI = formatter.getEnclosingElement(2) == null; break;
+                        default:              showURI = true;  break;
+                        case INTERNAL:        showURI = false; break;
+                        case WKT2_SIMPLIFIED: showURI = formatter.getEnclosingElement(2) == null; break;
                     }
-                    if (shownURI) {
+                    if (showURI) {
                         final FormattableObject parent = formatter.getEnclosingElement(1);
                         if (parent != null && ReferencingUtilities.usesURN(codeSpace)) {
                             final String type = ReferencingUtilities.toURNType(parent.getClass());

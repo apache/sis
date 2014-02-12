@@ -36,30 +36,31 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *   <tr>
  *     <td>Locale for number format:</td>
  *     <td>{@link Locale#ROOT}</td>
+ *     <td></td>
  *   </tr>
  *   <tr>
  *     <td>Bracket symbols:</td>
  *     <td>{@code [}…{@code ]} or {@code (}…{@code )}</td>
+ *     <td><font size="-1"><b>Note:</b> the {@code […]} brackets are common in referencing WKT,
+ *         while the {@code (…)} brackets are common in geometry WKT.</font></td>
  *   </tr>
  *   <tr>
  *     <td>Quote symbols:</td>
  *     <td>{@code "}…{@code "}</td>
+ *     <td><font size="-1"><b>Note:</b> Apache SIS accepts also {@code “…”} quotes for more readable
+ *         {@code String} literals in Java code, but this is non-standard.</font></td>
  *   </tr>
  *   <tr>
  *     <td>Sequence symbols:</td>
  *     <td><code>{</code>…<code>}</code></td>
+ *     <td></td>
  *   </tr>
  *   <tr>
  *     <td>Separator:</td>
  *     <td>{@code ,}</td>
+ *     <td></td>
  *   </tr>
  * </table></blockquote>
- *
- * {@note The <code>[…]</code> brackets are common in referencing WKT,
- *        while the <code>(…)</code> brackets are common in geometry WKT.}
- *
- * {@note Apache SIS also accepts <code>“…”</code> quotes for more readable <code>String</code> literals
- *        in Java code, but this is non-standard.}
  *
  * Users can create their own {@code Symbols} instance for parsing or formatting a WKT with different symbols.
  *
@@ -218,16 +219,16 @@ public class Symbols implements Localized, Cloneable, Serializable {
     }
 
     /**
-     * Returns the locale of {@linkplain java.text.DecimalFormatSymbols decimal format symbols} or other symbols.
+     * Returns the locale for formatting dates and numbers.
      * The default value is {@link Locale#ROOT}.
      *
      * {@section Relationship between <code>Symbols</code> locale and <code>WKTFormat</code> locale}
-     * The {@code WKTFormat.getLocale()} property specifies the language to use when formatting
-     * {@link org.opengis.util.InternationalString} instances. This can be set to any value.
+     * The {@code WKTFormat.getLocale(Locale.DISPLAY)} property specifies the language to use when
+     * formatting {@link org.opengis.util.InternationalString} instances and can be set to any value.
      * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
-     * the decimal format symbols and is very rarely set to an other locale than {@link Locale#ROOT}.
+     * the decimal format symbols and is very rarely set to an other locale than {@code Locale.ROOT}.
      *
-     * @return The symbols locale.
+     * @return The locale for dates and numbers.
      *
      * @see WKTFormat#getLocale(Locale.Category)
      */
@@ -239,7 +240,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * Sets the locale of decimal format symbols or other symbols.
      * Note that any non-English locale is likely to produce WKT that do not conform to ISO 19162.
-     * Such WKT should be used for human reading only, not for data export.
+     * Such WKT can be used for human reading, but not for data export.
      *
      * @param locale The new symbols locale.
      */
@@ -470,6 +471,16 @@ public class Symbols implements Localized, Cloneable, Serializable {
         checkWritePermission();
         ensureNonEmpty("separator", separator);
         this.separator = separator;
+    }
+
+    /**
+     * Returns the value of {@link #getSeparator()} without trailing spaces,
+     * followed by the system line separator.
+     */
+    final String lineSeparator() {
+        final String separator = getSeparator();
+        return separator.substring(0, CharSequences.skipTrailingWhitespaces(separator, 0, separator.length()))
+                .concat(System.lineSeparator());
     }
 
     /**
