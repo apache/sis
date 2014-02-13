@@ -36,9 +36,13 @@ import java.util.Objects;
 
 /**
  * Description of a spatial and temporal reference system used by a dataset.
- * This class inherits the {@linkplain #getName() name}, {@linkplain #getAlias() aliases},
+ * Reference systems do not necessarily use coordinates. For example a reference system could use postal codes.
+ * The specialized case of referencing by coordinates is handled by the
+ * {@link org.apache.sis.referencing.crs.AbstractCRS} subclass.
+ *
+ * <p>This class inherits the {@linkplain #getName() name}, {@linkplain #getAlias() aliases},
  * {@linkplain #getIdentifiers() identifiers} and {@linkplain #getRemarks() remarks} from
- * the parent class, and adds the following information:
+ * the parent class, and adds the following information:</p>
  *
  * <ul>
  *   <li>a {@linkplain #getDomainOfValidity() domain of validity}, the area for which the reference system is valid,</li>
