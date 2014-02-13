@@ -415,26 +415,31 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
 
     /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * This method does <strong>not</strong> format the axes, because they shall appear outside
+     * the {@code CS[…]} element for historical reasons. Axes shall be formatted by the enclosing
+     * element (usually an {@link org.apache.sis.referencing.crs.AbstractCRS}).
      *
-     * {@example <blockquote><pre>CS[ellipsoidal,3],
-     *    AXIS["latitude",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],
-     *    AXIS["longitude",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]]</pre></blockquote>
+     * {@example Well Known Text of a two-dimensional <code>EllipsoidalCS</code> having (φ,λ) axes
+     *           in a unit defined by the enclosing CRS (usually degrees):
+     *
+     * <pre>CS[ellipsoidal, 2],
+     *  AXIS["latitude", north],
+     *  AXIS["longitude", east]</pre>
      * }
      *
-     * This is supported only for version 2 of WKT.
+     * This Well Known Text is valid only for version 2 of WKT.
      *
      * @param  formatter The formatter to use.
      * @return The WKT element name, which is {@code "CS"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        formatter.append(ReferencingUtilities.toWKTType(CoordinateSystem.class, getInterface()), null);
-        formatter.append(getDimension());
-        // TODO: Axes need to be formatted outside CS.
-        for (final CoordinateSystemAxis axe : axes) {
-            formatter.newLine();
-            formatter.append(axe);
+        final String type = ReferencingUtilities.toWKTType(CoordinateSystem.class, getInterface());
+        if (type == null) {
+            formatter.setInvalidWKT(this, null);
         }
+        formatter.append(type, null);
+        formatter.append(getDimension());
         return "CS";
     }
 }
