@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
+import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -46,9 +47,6 @@ import org.apache.sis.internal.referencing.AxisDirections;
  * </tr><tr>
  *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultVerticalCRS Vertical}</td>
  *   <td>“Gravity-related height” or “Depth”</td>
- * </tr><tr>
- *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering}</td>
- *   <td>unspecified</td>
  * </tr></table>
  *
  * {@section Immutability and thread safety}
@@ -166,16 +164,21 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time.
      * The current implementation accepts only temporal directions (i.e. {@link AxisDirection#UP}
      * and {@link AxisDirection#DOWN}).
-     *
-     * <p>We currently put no restriction on the unit because it may be linear, temporal (time
-     * needed for echo to travel), pressure, or dimensionless (sigma-level).</p>
      */
     @Override
-    final int validateAxis(final AxisDirection direction, final Unit<?> unit) {
+    final int validateAxis(final AxisDirection direction, Unit<?> unit) {
         if (!AxisDirection.UP.equals(AxisDirections.absolute(direction))) {
             return INVALID_DIRECTION;
         }
-        return VALID;
+        unit = unit.toSI();
+        if (unit.equals(SI.METRE)   ||  // Most usual case.
+            unit.equals(SI.PASCAL)  ||  // Height or depth estimated by the atmospheric or ocean pressure.
+            unit.equals(SI.SECOND)  ||  // Depth estimated by the time needed for an echo to travel.
+            unit.equals(Unit.ONE))      // Sigma-level (percentage from sea surface to ocean floor).
+        {
+            return VALID;
+        }
+        return INVALID_UNIT;
     }
 
     /**

@@ -26,6 +26,14 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 /**
  * A 2- or 3-dimensional coordinate system for any combination of coordinate axes not covered by other CS types.
  *
+ * <table class="sis"><tr>
+ *   <th>Used with CRS</th>
+ *   <th>Permitted axis names</th>
+ * </tr><tr>
+ *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering}</td>
+ *   <td>unspecified</td>
+ * </tr></table>
+ *
  * {@section Immutability and thread safety}
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * and the {@link CoordinateSystemAxis} instances given to the constructor are also immutable. Unless otherwise

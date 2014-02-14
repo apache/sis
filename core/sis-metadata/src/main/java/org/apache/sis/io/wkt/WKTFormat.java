@@ -28,10 +28,7 @@ import java.text.ParsePosition;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -346,9 +343,11 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Formats the specified object as a Well Know Text. The given object shall be an instance of one of
-     * {@link FormattableObject}, {@link IdentifiedObject}, {@link GeographicBoundingBox},
-     * {@link MathTransform}, {@link Matrix} or {@link Unit}.
+     * Formats the specified object as a Well Know Text. The formatter accepts at least the following types:
+     * {@link FormattableObject}, {@link IdentifiedObject},
+     * {@link org.opengis.metadata.extent.GeographicBoundingBox},
+     * {@link org.opengis.referencing.operation.MathTransform},
+     * {@link org.opengis.referencing.operation.Matrix} and {@link Unit}.
      *
      * @param  object     The object to format.
      * @param  toAppendTo Where the text is to be appended.
@@ -358,6 +357,8 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
+        ArgumentChecks.ensureNonNull("object",     object);
+        ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
         /*
          * If the given Appendable is not a StringBuffer, creates a temporary StringBuffer.
          * We can not write directly in an arbitrary Appendable because Formatter needs the
@@ -382,27 +383,17 @@ public class WKTFormat extends CompoundFormat<Object> {
             updateFormatter(formatter);
             this.formatter = formatter;
         }
+        final boolean valid;
         try {
             formatter.setBuffer(buffer);
-            if (object instanceof FormattableObject) {
-                formatter.append((FormattableObject) object);
-            } else if (object instanceof IdentifiedObject) {
-                formatter.append((IdentifiedObject) object);
-            } else if (object instanceof MathTransform) {
-                formatter.append((MathTransform) object);
-            } else if (object instanceof Matrix) {
-                formatter.append((Matrix) object);
-            } else if (object instanceof GeographicBoundingBox) {
-                formatter.append((GeographicBoundingBox) object, Formatter.BBOX_ACCURACY);
-            } else if (object instanceof Unit<?>) {
-                formatter.append((Unit<?>) object);
-            } else {
-                throw new ClassCastException(Errors.format(
-                        Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
-            }
+            valid = formatter.appendElement(object) || formatter.appendValue(object);
         } finally {
             formatter.setBuffer(null);
             formatter.clear();
+        }
+        if (!valid) {
+            throw new ClassCastException(Errors.format(
+                    Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
         }
         if (buffer != toAppendTo) {
             toAppendTo.append(buffer);

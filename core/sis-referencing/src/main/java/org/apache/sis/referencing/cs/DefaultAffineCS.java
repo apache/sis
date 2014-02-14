@@ -29,7 +29,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * A 2- or 3-dimensional coordinate system made of straight axes (not necessarily orthogonal).
+ * A 2- or 3-dimensional coordinate system with straight axes that are not necessarily orthogonal.
  *
  * <table class="sis"><tr>
  *   <th>Used with CRS</th>
