@@ -762,6 +762,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         super.formatTo(formatter);
         formatter.append(unit.getConverterTo(SI.METRE).convert(semiMajorAxis));
         formatter.append(isInfinite(inverseFlattening) ? 0 : inverseFlattening);
-        return "SPHEROID";
+        return "Spheroid";
     }
 }

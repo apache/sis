@@ -559,11 +559,11 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
             if (cs != null) {
                 final Convention convention = formatter.getConvention();
                 if (convention.versionOfWKT() == 1) {
-                    keyword = "AUTHORITY";
+                    keyword = "Authority";
                     formatter.append(cs, null);
                     formatter.append(code, null);
                 } else {
-                    keyword = "ID";
+                    keyword = "Id";
                     formatter.append(cs, null);
                     appendCode(formatter, code);
                     if (version != null) {

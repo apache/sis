@@ -395,6 +395,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             formatter.append(element);
         }
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return "COMPD_CS";
+        return "Compd_CS";
     }
 }

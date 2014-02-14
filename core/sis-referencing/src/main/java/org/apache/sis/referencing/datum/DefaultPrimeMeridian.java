@@ -344,6 +344,6 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
             targetUnit = NonSI.DEGREE_ANGLE;
         }
         formatter.append(getGreenwichLongitude(targetUnit));
-        return "PRIMEM";
+        return "PrimeM";
     }
 }

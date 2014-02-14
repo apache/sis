@@ -781,6 +781,6 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         }
         formatter.append(name, ElementKind.AXIS);
         formatter.append(direction);
-        return "AXIS";
+        return "Axis";
     }
 }

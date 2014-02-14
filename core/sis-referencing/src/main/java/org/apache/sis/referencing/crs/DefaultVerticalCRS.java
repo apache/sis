@@ -237,6 +237,6 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return "VERT_CS";
+        return "Vert_CS";
     }
 }

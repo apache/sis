@@ -196,7 +196,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
     @Test
     public void testToString() {
         final BursaWolfParameters bursaWolf = createED87_to_WGS84();
-        assertEquals("TOWGS84[-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143]", bursaWolf.toString());
+        assertEquals("ToWGS84[-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143]", bursaWolf.toString());
     }
 
     /**

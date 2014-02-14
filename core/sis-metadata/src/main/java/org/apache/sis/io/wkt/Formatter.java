@@ -140,7 +140,7 @@ public class Formatter implements Localized {
      * If non-null, the terminal must be ANSI X3.64 compatible.
      * The default value is {@code null}.
      *
-     * @see #configure(Convention, Citation, Colors, byte)
+     * @see #configure(Convention, Citation, Colors, boolean, byte)
      */
     private Colors colors;
 
@@ -148,14 +148,14 @@ public class Formatter implements Localized {
      * The preferred convention for objects or parameter names.
      * This field should never be {@code null}.
      *
-     * @see #configure(Convention, Citation, Colors, byte)
+     * @see #configure(Convention, Citation, Colors, boolean, byte)
      */
     private Convention convention;
 
     /**
      * The preferred authority for objects or parameter names.
      *
-     * @see #configure(Convention, Citation, Colors, byte)
+     * @see #configure(Convention, Citation, Colors, boolean, byte)
      */
     private Citation authority;
 
@@ -215,6 +215,13 @@ public class Formatter implements Localized {
     private int elementStart;
 
     /**
+     * {@code true} if keywords shall be converted to upper cases.
+     *
+     * @see #configure(Convention, Citation, Colors, boolean, byte)
+     */
+    private boolean toUpperCase;
+
+    /**
      * Incremented when {@link #setColor(ElementKind)} is invoked, and decremented when {@link #resetColor()}
      * is invoked. Used in order to prevent child elements to overwrite the colors decided by enclosing elements.
      */
@@ -224,7 +231,7 @@ public class Formatter implements Localized {
      * The amount of spaces to use in indentation, or {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE}
      * if indentation is disabled.
      *
-     * @see #configure(Convention, Citation, Colors, byte)
+     * @see #configure(Convention, Citation, Colors, boolean, byte)
      */
     private byte indentation;
 
@@ -340,13 +347,17 @@ public class Formatter implements Localized {
      * @param convention  The convention, or {@code null} for the default value.
      * @param authority   The authority, or {@code null} for inferring it from the convention.
      * @param colors      The syntax coloring, or {@code null} if none.
+     * @param toUpperCase Whether keywords shall be converted to upper cases.
      * @param indentation The amount of spaces to use in indentation for WKT formatting,
      *                    or {@link WKTFormat#SINGLE_LINE}.
      */
-    final void configure(Convention convention, final Citation authority, final Colors colors, final byte indentation) {
+    final void configure(Convention convention, final Citation authority, final Colors colors,
+            final boolean toUpperCase, final byte indentation)
+    {
         this.convention  = convention;
         this.authority   = (authority != null) ? authority : convention.getNameAuthority();
         this.colors      = colors;
+        this.toUpperCase = toUpperCase;
         this.indentation = indentation;
     }
 
@@ -467,11 +478,14 @@ public class Formatter implements Localized {
      * @param newLine {@code true} for invoking {@link #newLine()} first.
      * @param keyword The element keyword (e.g. {@code "DATUM"}, {@code "AXIS"}, <i>etc</i>).
      */
-    private void openElement(final boolean newLine, final String keyword) {
+    private void openElement(final boolean newLine, String keyword) {
         if (newLine) {
             newLine();
         }
         appendSeparator();
+        if (toUpperCase) {
+            keyword = keyword.toUpperCase(symbols.getLocale());
+        }
         elementStart = buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0)).length();
     }
 
@@ -552,6 +566,8 @@ public class Formatter implements Localized {
                 setInvalidWKT(object.getClass(), null);
                 keyword = invalidElement;
             }
+        } else if (toUpperCase) {
+            keyword = keyword.toUpperCase(symbols.getLocale());
         }
         if (highlightError && colors != null) {
             final String color = colors.getAnsiSequence(ElementKind.ERROR);
@@ -656,7 +672,7 @@ public class Formatter implements Localized {
             }
         }
         if (showOthers) {
-            appendOnNewLine("REMARKS", object.getRemarks(), ElementKind.REMARKS);
+            appendOnNewLine("Remarks", object.getRemarks(), ElementKind.REMARKS);
         }
         isComplement = false;
     }
@@ -680,13 +696,13 @@ public class Formatter implements Localized {
         } else {
             return;
         }
-        appendOnNewLine("SCOPE", scope, ElementKind.SCOPE);
+        appendOnNewLine("Scope", scope, ElementKind.SCOPE);
         if (area != null) {
-            appendOnNewLine("AREA", area.getDescription(), ElementKind.EXTENT);
+            appendOnNewLine("Area", area.getDescription(), ElementKind.EXTENT);
             append(Extents.getGeographicBoundingBox(area), BBOX_ACCURACY);
             final MeasurementRange<Double> range = Extents.getVerticalRange(area);
             if (range != null) {
-                openElement(true, "VERTICALEXTENT");
+                openElement(true, "VerticalExtent");
                 setColor(ElementKind.EXTENT);
                 numberFormat.setMinimumFractionDigits(0);
                 numberFormat.setMaximumFractionDigits(VERTICAL_ACCURACY);
@@ -703,7 +719,7 @@ public class Formatter implements Localized {
             }
             final Range<Date> timeRange = Extents.getTimeRange(area);
             if (timeRange != null) {
-                openElement(true, "TIMEEXTENT");
+                openElement(true, "TimeExtent");
                 setColor(ElementKind.EXTENT);
                 append(timeRange.getMinValue());
                 append(timeRange.getMaxValue());
@@ -746,7 +762,7 @@ public class Formatter implements Localized {
      */
     public void append(final GeographicBoundingBox bbox, final int fractionDigits) {
         if (bbox != null) {
-            openElement(isComplement, "BBOX");
+            openElement(isComplement, "BBox");
             setColor(ElementKind.EXTENT);
             numberFormat.setMinimumFractionDigits(fractionDigits);
             numberFormat.setMaximumFractionDigits(fractionDigits);
@@ -773,7 +789,7 @@ public class Formatter implements Localized {
             } else {
                 final Matrix matrix = ReferencingServices.getInstance().getMatrix(transform);
                 if (matrix != null) {
-                    openElement(true, "PARAM_MT");
+                    openElement(true, "Param_MT");
                     quote("Affine");
                     indent(+1);
                     append(matrix);
@@ -804,7 +820,7 @@ public class Formatter implements Localized {
         final int closeQuote = symbols.getClosingQuote(0);
         boolean columns = false;
         do {
-            openElement(true, "PARAMETER");
+            openElement(true, "Parameter");
             quote(columns ? "num_col" : "num_row");
             append(columns ? numCol : numRow);
             closeElement(false);
@@ -813,7 +829,7 @@ public class Formatter implements Localized {
             for (int i=0; i<numCol; i++) {
                 final double element = matrix.getElement(j, i);
                 if (element != (i == j ? 1 : 0)) {
-                    openElement(true, "PARAMETER");
+                    openElement(true, "Parameter");
                     setColor(ElementKind.PARAMETER);
                     buffer.appendCodePoint(openQuote).append("elt_").append(j)
                             .append('_').append(i).appendCodePoint(closeQuote);
@@ -1030,16 +1046,16 @@ public class Formatter implements Localized {
      */
     public void append(final Unit<?> unit) {
         if (unit != null) {
-            String keyword = "UNIT";
+            String keyword = "Unit";
             if (!convention.isSimple()) {
                 if (Units.isLinear(unit)) {
-                    keyword = "LENGTHUNIT";
+                    keyword = "LengthUnit";
                 } else if (Units.isAngular(unit)) {
-                    keyword = "ANGLEUNIT";
+                    keyword = "AngleUnit";
                 } else if (Units.isScale(unit)) {
-                    keyword = "SCALEUNIT";
+                    keyword = "ScaleUnit";
                 } else if (Units.isTemporal(unit)) {
-                    keyword = "TIMEUNIT";
+                    keyword = "TimeUnit";
                 }
             }
             openElement(false, keyword);

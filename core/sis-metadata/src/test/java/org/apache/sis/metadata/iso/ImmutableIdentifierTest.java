@@ -176,7 +176,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
     @Test
     public void testWKT() {
         final ImmutableIdentifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326", "8.2", null);
-        assertWktEquals(Convention.WKT2, "ID[“EPSG”, 4326, “8.2”, “OGP”]", id);
+        assertWktEquals(Convention.WKT2, "Id[“EPSG”, 4326, “8.2”, “OGP”]", id);
         assertWktEquals(Convention.WKT1, "AUTHORITY[“EPSG”, “4326”]", id);
     }
 }

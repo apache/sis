@@ -245,6 +245,6 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
             formatter.setInvalidWKT(this, null);
         }
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return "GEOCCS";
+        return "GeocCS";
     }
 }
