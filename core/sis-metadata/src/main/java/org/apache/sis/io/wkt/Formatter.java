@@ -617,7 +617,7 @@ public class Formatter implements Localized {
             } else {
                 showIDs = isRoot || (object instanceof OperationMethod) || (object instanceof GeneralParameterDescriptor);
             }
-            if (convention.isWKT1()) {
+            if (convention.versionOfWKT() == 1) {
                 filterID   = true;
                 showOthers = false;
             } else {
@@ -906,7 +906,7 @@ public class Formatter implements Localized {
         final String quote = symbols.getQuote();
         while ((fromIndex = buffer.indexOf(quote, fromIndex)) >= 0) {
             final int n = quote.length();
-            if (convention.isWKT1()) {
+            if (convention.versionOfWKT() == 1) {
                 buffer.delete(fromIndex, fromIndex + n);
             } else {
                 buffer.insert(fromIndex += n, quote);

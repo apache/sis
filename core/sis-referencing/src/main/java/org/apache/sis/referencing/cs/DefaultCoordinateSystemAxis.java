@@ -30,6 +30,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -45,11 +47,13 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.io.wkt.ElementKind;
 
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
 import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
@@ -291,9 +295,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         this.abbreviation = abbreviation;
         this.direction    = direction;
         this.unit         = unit;
-        ensureNonNull("abbreviation", abbreviation);
-        ensureNonNull("direction",    direction);
-        ensureNonNull("unit",         unit);
+        ensureNonEmpty("abbreviation", abbreviation);
+        ensureNonNull ("direction",    direction);
+        ensureNonNull ("unit",         unit);
         Number  minimum = property(properties, MINIMUM_VALUE_KEY, Number.class);
         Number  maximum = property(properties, MAXIMUM_VALUE_KEY, Number.class);
         RangeMeaning rm = property(properties, RANGE_MEANING_KEY, RangeMeaning.class);
@@ -714,14 +718,68 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
+     * Returns {@code true} if writing an axis in the given formatter should omit the axis name.
+     * From ISO 19162: For geodetic CRSs having a geocentric Cartesian coordinate system,
+     * the axis name should be omitted as it is given through the mandatory axis direction,
+     * but the axis abbreviation, respectively ‘X’, 'Y' and ‘Z’, shall be given.
+     */
+    private static boolean omitName(final Formatter formatter) {
+        if (formatter.getEnclosingElement(2) instanceof GeodeticCRS) {
+            if (formatter.getEnclosingElement(1) instanceof CartesianCS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     *
+     * {@section Constraints for WKT validity}
+     * The ISO 19162 specification puts many constraints on axis names, abbreviations and directions allowed in WKT.
+     * Most of those constraints are inherited from ISO 19111 - see {@link CoordinateSystemAxis} javadoc for some of
+     * those. The current Apache SIS implementation does not verify whether this axis name and abbreviation are
+     * compliant; we assume that the user created a valid axis.
+     * The only exceptions are:
+     *
+     * <ul>
+     *   <li>“<cite>Geodetic latitude</cite>” and “<cite>Geodetic longitude</cite>” name (case insensitive)
+     *       are replaced by “<cite>Latitude</cite>” and “<cite>Longitude</cite>” respectively.</li>
+     * </ul>
      *
      * @param  formatter The formatter to use.
      * @return The WKT element name, which is {@code "AXIS"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = convention.versionOfWKT() == 1;
+        final boolean isInternal = (convention == Convention.INTERNAL);
+        String name = null;
+        if (isWKT1 || isInternal || !omitName(formatter)) {
+            name = IdentifiedObjects.getName(this, formatter.getNameAuthority());
+            if (name == null) {
+                name = IdentifiedObjects.getName(this, null);
+            }
+            if (!isInternal && name != null) {
+                if (name.equalsIgnoreCase("Geodetic latitude")) {
+                    name = "Latitude";
+                } else if (name.equalsIgnoreCase("Geodetic longitude")) {
+                    name = "Longitude";
+                }
+            }
+        }
+        /*
+         * ISO 19162 suggests to put abbreviation in parentheses, e.g. "Easting (x)".
+         */
+        if (!isWKT1 && (name == null || !name.equals(abbreviation))) {
+            final StringBuilder buffer = new StringBuilder();
+            if (name != null) {
+                buffer.append(name).append(' ');
+            }
+            name = buffer.append('(').append(abbreviation).append(')').toString();
+        }
+        formatter.append(name, ElementKind.AXIS);
         formatter.append(direction);
         return "AXIS";
     }

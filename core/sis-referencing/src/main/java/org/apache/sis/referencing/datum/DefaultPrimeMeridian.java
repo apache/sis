@@ -339,11 +339,11 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        Unit<Angle> unit = formatter.getContextualUnit(Angle.class);
-        if (unit == null) {
-            unit = NonSI.DEGREE_ANGLE;
+        Unit<Angle> targetUnit = formatter.getContextualUnit(Angle.class);
+        if (targetUnit == null) {
+            targetUnit = NonSI.DEGREE_ANGLE;
         }
-        formatter.append(getGreenwichLongitude(unit));
+        formatter.append(getGreenwichLongitude(targetUnit));
         return "PRIMEM";
     }
 }

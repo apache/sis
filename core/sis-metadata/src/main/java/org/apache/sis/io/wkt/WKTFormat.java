@@ -266,7 +266,8 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns the preferred authority for choosing the projection and parameter names.
+     * Returns the preferred authority to look for when fetching identified object names and identifiers.
+     * The difference between various authorities are most easily seen in projection and parameter names.
      * If no authority has been {@link #setNameAuthority(Citation) explicitly set}, then this
      * method returns the authority associated to the {@linkplain #getConvention() convention}.
      *

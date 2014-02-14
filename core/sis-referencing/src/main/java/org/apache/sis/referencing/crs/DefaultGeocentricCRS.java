@@ -229,7 +229,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
         formatter.newLine();
         formatter.append(unit);
         CoordinateSystem cs = getCoordinateSystem();
-        if (formatter.getConvention().isWKT1()) {
+        if (formatter.getConvention().versionOfWKT() == 1) {
             if (cs instanceof CartesianCS) {
                 cs = Legacy.forGeocentricCRS((CartesianCS) cs, true);
             } else {
