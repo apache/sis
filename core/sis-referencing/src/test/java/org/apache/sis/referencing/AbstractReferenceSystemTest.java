@@ -120,7 +120,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  Area[“Netherlands offshore.”],\n" +
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10, LengthUnit[“metre”, 1]],\n" +
-                "  Id[“EPSG”, 4326, “8.2”, “OGP”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
+                "  Id[“EPSG”, 4326, “8.2”, Citation[“OGP”], URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
                 "  Remarks[“注です。”]]",
                 object);
 
@@ -130,7 +130,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  Area[“Netherlands offshore.”],\n" +
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10],\n" +
-                "  Id[“EPSG”, 4326, “8.2”, “OGP”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
+                "  Id[“EPSG”, 4326, “8.2”, Citation[“OGP”], URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
                 "  Remarks[“注です。”]]",
                 object);
     }

@@ -148,9 +148,9 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
         assertNull("name.codeSpace", pm.getName().getCodeSpace());
         assertWktEquals(
-                "PrimeM[“Paris”, 2.33722917, Id[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+                "PrimeM[“Paris”, 2.33722917, Id[“EPSG”, 8903, Citation[“OGP”], URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
         assertWktEquals(Convention.INTERNAL,
-                "PrimeM[“Paris”, 2.33722917, Id[“EPSG”, 8903],\n" +
+                "PrimeM[“Paris”, 2.33722917, Id[“EPSG”, 8903, Citation[“OGP”]],\n" +
                 "  Remarks[“Equivalent to 2°20′14.025″.”]]", pm);
         assertXmlEquals(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +

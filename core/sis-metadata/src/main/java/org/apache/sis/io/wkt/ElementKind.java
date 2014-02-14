@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import javax.measure.unit.Unit;
 import org.opengis.util.CodeList;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.OperationMethod;
@@ -35,6 +36,11 @@ import org.apache.sis.util.Numbers;
  * @module
  */
 public enum ElementKind {
+    /**
+     * Object name, typically written immediately after the WKT keyword and its opening bracket.
+     */
+    NAME,
+
     /**
      * Floating point numbers (excluding integer types).
      */
@@ -93,6 +99,12 @@ public enum ElementKind {
     EXTENT,
 
     /**
+     * Citation (typically for the {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()
+     * authority}), often represented by {@code CITATION[…]} elements.
+     */
+    CITATION,
+
+    /**
      * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getRemarks() Remarks},
      * often represented by {@code REMARKS[…]} elements.
      */
@@ -113,6 +125,7 @@ public enum ElementKind {
      *   <tr><td>{@link OperationMethod}</td>       <td>{@link #METHOD}</td></tr>
      *   <tr><td>{@link GeneralParameterValue}</td> <td>{@link #PARAMETER}</td></tr>
      *   <tr><td>{@link CoordinateSystemAxis}</td>  <td>{@link #AXIS}</td></tr>
+     *   <tr><td>{@link Citation}</td>              <td>{@link #CITATION}</td></tr>
      *   <tr><td>{@link CodeList}</td>              <td>{@link #CODE_LIST}</td></tr>
      *   <tr><td>{@link Unit}</td>                  <td>{@link #UNIT}</td></tr>
      *   <tr><td>{@link Number}</td>                <td>{@link #INTEGER} or {@link #NUMBER}</td></tr>
@@ -130,6 +143,7 @@ public enum ElementKind {
             if (OperationMethod      .class.isAssignableFrom(type)) return METHOD;
             if (GeneralParameterValue.class.isAssignableFrom(type)) return PARAMETER;
             if (CoordinateSystemAxis .class.isAssignableFrom(type)) return AXIS;
+            if (Citation             .class.isAssignableFrom(type)) return CITATION;
             if (CodeList             .class.isAssignableFrom(type)) return CODE_LIST;
             if (Unit                 .class.isAssignableFrom(type)) return UNIT;
             if (Number.class.isAssignableFrom(type)) {

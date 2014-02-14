@@ -34,6 +34,7 @@ import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.io.wkt.ElementKind;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
@@ -568,7 +569,9 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
                     appendCode(formatter, code);
                     if (version != null) {
                         appendCode(formatter, version);
-                        formatter.append(citation, null);
+                    }
+                    if (citation != null && !citation.equals(cs)) {
+                        formatter.append(new Cite(citation));
                     }
                     /*
                      * Do not format the optional URI element for internal convention,
@@ -606,6 +609,26 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
                 return;
             }
             formatter.append(n);
+        }
+    }
+
+    /**
+     * The {@code CITATION[…]} element inside an {@code ID[…]}.
+     */
+    private static final class Cite extends FormattableObject {
+        /** The component of the citation to format. */
+        private final String identifier;
+
+        /** Creates a new citation with the given component. */
+        Cite(final String identifier) {
+            this.identifier = identifier;
+        }
+
+        /** Formats the citation. */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            formatter.append(identifier, ElementKind.CITATION);
+            return "Citation";
         }
     }
 

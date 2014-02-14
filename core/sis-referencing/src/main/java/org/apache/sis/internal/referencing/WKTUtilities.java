@@ -59,7 +59,7 @@ public final class WKTUtilities extends Static {
                 name = Vocabulary.getResources(formatter.getLocale()).getString(Vocabulary.Keys.Unnamed);
             }
         }
-        formatter.append(name, type);
+        formatter.append(name, (type != null) ? type : ElementKind.NAME);
     }
 
     /**
