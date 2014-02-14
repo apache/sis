@@ -55,6 +55,13 @@ import org.apache.sis.metadata.iso.citation.Citations;
 public enum Convention {
     /**
      * The ISO 19162 format, also known as “WKT 2”.
+     * This convention follows the ISO recommendations except the following ones:
+     *
+     * <ul>
+     *   <li>{@code AXIS} element omits the {@code ORDER} sub-element.</li>
+     * </ul>
+     *
+     * Since the {@code ORDER} element is optional, the WKT is still valid.
      *
      * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, projections
      * and parameters formatted with this convention will use the {@linkplain Citations#EPSG EPSG}
@@ -70,7 +77,6 @@ public enum Convention {
      * to the {@link #WKT2} convention except for the following aspects:
      *
      * <ul>
-     *   <li>{@code AXIS} element omits the {@code ORDER} sub-element.</li>
      *   <li>{@code VERTICALEXTENT} element omits the {@code UNIT} sub-element
      *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
      *   <li>{@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT}
@@ -79,8 +85,7 @@ public enum Convention {
      *       (omit parameters and operation methods {@code ID}).</li>
      * </ul>
      *
-     * Those modifications are allowed by the ISO 19162 standard and do not cause any information lost.
-     * The omitted elements are not needed by Apache SIS WKT parser and often distractive for the human reader.
+     * Those modifications are allowed by the ISO 19162 standard, so the WKT is still valid.
      *
      * <p>This is the default convention used by {@link FormattableObject#toString()}.</p>
      */
@@ -179,9 +184,15 @@ public enum Convention {
     }
 
     /**
-     * {@code true} for a simplified WKT. The simplifications are documented in the {@link #WKT2_SIMPLIFIED} javadoc.
+     * Returns {@code true} if this convention is one of the simplified variants of WKT.
+     * The simplifications are documented in the {@link #WKT2_SIMPLIFIED} javadoc.
+     *
+     * <p>This methods consider version 1 of WKT as a “simplified” convention,
+     * since this version was indeed simpler than version 2.</p>
+     *
+     * @return {@code true} it this convention uses a simplified variant of WKT.
      */
-    final boolean isSimple() {
+    public boolean isSimplified() {
         return this != WKT2;
     }
 

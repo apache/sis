@@ -794,6 +794,14 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         }
         formatter.append(dir);
         formatter.append(meridian);
+        /*
+         * Formats the axis unit only if the enclosing CRS element does not provide one.
+         * If the enclosing CRS provided a contextual unit, then it is assumed to apply
+         * to all axes (we do not verify).
+         */
+        if (!isWKT1 && !formatter.hasContextualUnit(1)) {
+            formatter.append(unit);
+        }
         return "Axis";
     }
 }

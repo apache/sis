@@ -643,6 +643,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short TooManyArguments_2 = 105;
 
         /**
+         * Tree depth exceeds the maximum.
+         */
+        public static final short TreeDepthExceedsMaximum = 145;
+
+        /**
          * Ordering between “{0}” and “{1}” elements is undefined.
          */
         public static final short UndefinedOrderingForElements_2 = 106;
