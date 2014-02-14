@@ -439,7 +439,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
             formatter.setInvalidWKT(this, null);
         }
         formatter.append(type, null);
-        formatter.append(getDimension());
+        formatter.append(axes.length);
         return "CS";
     }
 }

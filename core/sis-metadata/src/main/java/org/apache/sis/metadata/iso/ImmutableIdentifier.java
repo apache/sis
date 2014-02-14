@@ -549,25 +549,23 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     @Override
     protected String formatTo(final Formatter formatter) {
         String keyword = null;
-        final String code = getCode();
         if (code != null) {
-            String citation = Citations.getIdentifier(getAuthority());
-            String codeSpace = getCodeSpace();
-            if (codeSpace == null) {
-                codeSpace = citation;
+            String citation = Citations.getIdentifier(authority);
+            String cs = codeSpace;
+            if (cs == null) {
+                cs = citation;
                 citation  = null;
             }
-            if (codeSpace != null) {
+            if (cs != null) {
                 final Convention convention = formatter.getConvention();
-                if (convention.isWKT1()) {
+                if (convention.versionOfWKT() == 1) {
                     keyword = "AUTHORITY";
-                    formatter.append(codeSpace, null);
+                    formatter.append(cs, null);
                     formatter.append(code, null);
                 } else {
                     keyword = "ID";
-                    formatter.append(codeSpace, null);
+                    formatter.append(cs, null);
                     appendCode(formatter, code);
-                    final String version = getVersion();
                     if (version != null) {
                         appendCode(formatter, version);
                         formatter.append(citation, null);
@@ -579,10 +577,10 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
                      */
                     if (convention != Convention.INTERNAL && formatter.getEnclosingElement(2) == null) {
                         final FormattableObject parent = formatter.getEnclosingElement(1);
-                        if (parent != null && ReferencingUtilities.usesURN(codeSpace)) {
+                        if (parent != null && ReferencingUtilities.usesURN(cs)) {
                             final String type = ReferencingUtilities.toURNType(parent.getClass());
                             if (type != null) {
-                                formatter.append(new URI(type, codeSpace, version, code));
+                                formatter.append(new URI(type, cs, version, code));
                             }
                         }
                     }

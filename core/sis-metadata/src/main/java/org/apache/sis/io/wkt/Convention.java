@@ -169,12 +169,13 @@ public enum Convention {
     }
 
     /**
-     * Returns {@code true} if this convention is one of the WKT 1 variants.
+     * Returns the version of the Well Known Text represented by this convention.
+     * In current Apache SIS implementation, this method can return only 1 or 2.
      *
-     * @return {@code true} if this convention is one of the WKT 1 variants.
+     * @return 1 if this convention is one of the WKT 1 variants, or 2 otherwise.
      */
-    public boolean isWKT1() {
-        return isWKT1;
+    public int versionOfWKT() {
+        return isWKT1 ? 1 : 2;
     }
 
     /**
@@ -207,7 +208,8 @@ public enum Convention {
     }
 
     /**
-     * Returns the default authority to look for when fetching Map Projection parameter names.
+     * Returns the default authority to look for when fetching identified object names and identifiers.
+     * The difference between various authorities are most easily seen in projection and parameter names.
      * The value returned by this method can be overwritten by {@link WKTFormat#setNameAuthority(Citation)}.
      *
      * {@example The following table shows the names given by various organizations or projects for the same projection:

@@ -46,14 +46,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </ul>
  *
  * <p><b>Used with coordinate system types:</b>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine},
- *   {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal},
- *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical},
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCylindricalCS Cylindrical},
- *   {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS Polar},
- *   {@linkplain org.apache.sis.referencing.cs.DefaultVerticalCS Vertical} or
  *   {@linkplain org.apache.sis.referencing.cs.DefaultLinearCS Linear}.
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS Polar},
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical} or
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultUserDefinedCS User Defined}.
  * </p>
  *
  * {@section Immutability and thread safety}

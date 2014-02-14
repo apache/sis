@@ -696,20 +696,20 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(descriptor, formatter, ElementKind.PARAMETER);
-        final Unit<?> unit = formatter.toContextualUnit(descriptor.getUnit());
-        if (unit != null) {
-            double value;
+        final Unit<?> targetUnit = formatter.toContextualUnit(descriptor.getUnit());
+        if (targetUnit != null) {
+            double convertedValue;
             try {
-                value = doubleValue(unit);
+                convertedValue = doubleValue(targetUnit);
             } catch (IllegalStateException exception) {
                 // May happen if a parameter is mandatory (e.g. "semi-major")
                 // but no value has been set for this parameter.
                 formatter.setInvalidWKT(descriptor, exception);
-                value = Double.NaN;
+                convertedValue = Double.NaN;
             }
-            formatter.append(value);
+            formatter.append(convertedValue);
         } else {
-            formatter.appendAny(getValue());
+            formatter.appendAny(value);
         }
         return "PARAMETER";
     }
