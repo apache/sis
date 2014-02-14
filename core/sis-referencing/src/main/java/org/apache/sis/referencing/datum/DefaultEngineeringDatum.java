@@ -172,6 +172,6 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return "LOCAL_DATUM";
+        return "Local_Datum";
     }
 }

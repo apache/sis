@@ -522,6 +522,6 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
             }
         }
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return "DATUM";
+        return "Datum";
     }
 }

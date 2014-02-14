@@ -184,8 +184,8 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     public void testToWKT() {
         final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
         assertWktEquals(
-                "DATUM[“WGS84”,\n" +
-                "  SPHEROID[“WGS84”, 6378137.0, 298.257223563]]",
+                "Datum[“WGS84”,\n" +
+                "  Spheroid[“WGS84”, 6378137.0, 298.257223563]]",
                 datum);
     }
 
@@ -265,20 +265,20 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
                 datum);
 
         assertWktEquals(Convention.WKT2,
-                "DATUM[“World Geodetic System 1984”,\n" +
-                "  SPHEROID[“WGS 84”, 6378137.0, 298.257223563],\n" +
-                "  ID[“EPSG”, 6326, URI[“urn:ogc:def:datum:EPSG::6326”]]]",
+                "Datum[“World Geodetic System 1984”,\n" +
+                "  Spheroid[“WGS 84”, 6378137.0, 298.257223563],\n" +
+                "  Id[“EPSG”, 6326, URI[“urn:ogc:def:datum:EPSG::6326”]]]",
                 datum);
 
         assertWktEquals(Convention.INTERNAL,
-                "DATUM[“World Geodetic System 1984”,\n" +
-                "  SPHEROID[“WGS 84”, 6378137.0, 298.257223563, ID[“EPSG”, 7030],\n" +
-                "    REMARKS[“Defining parameters cited in EPSG database.”]],\n" +
-                "  SCOPE[“Satellite navigation.”],\n" +
-                "  AREA[“World.”],\n" +
-                "  BBOX[-90.00, -180.00, 90.00, 180.00],\n" +
-                "  ID[“EPSG”, 6326],\n" +
-                "  REMARKS[“No distinction between the original and subsequent WGS 84 frames.”]]",
+                "Datum[“World Geodetic System 1984”,\n" +
+                "  Spheroid[“WGS 84”, 6378137.0, 298.257223563, Id[“EPSG”, 7030],\n" +
+                "    Remarks[“Defining parameters cited in EPSG database.”]],\n" +
+                "  Scope[“Satellite navigation.”],\n" +
+                "  Area[“World.”],\n" +
+                "  BBox[-90.00, -180.00, 90.00, 180.00],\n" +
+                "  Id[“EPSG”, 6326],\n" +
+                "  Remarks[“No distinction between the original and subsequent WGS 84 frames.”]]",
                 datum);
     }
 }

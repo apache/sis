@@ -58,7 +58,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     public void testToWKT() {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
         assertIsGreenwich(pm);
-        assertWktEquals("PRIMEM[“Greenwich”, 0.0]", pm);
+        assertWktEquals("PrimeM[“Greenwich”, 0.0]", pm);
     }
 
     /**
@@ -148,10 +148,10 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
         assertNull("name.codeSpace", pm.getName().getCodeSpace());
         assertWktEquals(
-                "PRIMEM[“Paris”, 2.33722917, ID[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+                "PrimeM[“Paris”, 2.33722917, Id[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
         assertWktEquals(Convention.INTERNAL,
-                "PRIMEM[“Paris”, 2.33722917, ID[“EPSG”, 8903],\n" +
-                "  REMARKS[“Equivalent to 2°20′14.025″.”]]", pm);
+                "PrimeM[“Paris”, 2.33722917, Id[“EPSG”, 8903],\n" +
+                "  Remarks[“Equivalent to 2°20′14.025″.”]]", pm);
         assertXmlEquals(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:identifier codeSpace=\"OGP\">urn:ogc:def:meridian:EPSG::8903</gml:identifier>\n" +

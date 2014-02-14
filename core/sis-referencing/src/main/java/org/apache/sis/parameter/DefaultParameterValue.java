@@ -711,6 +711,6 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         } else {
             formatter.appendAny(value);
         }
-        return "PARAMETER";
+        return "Parameter";
     }
 }

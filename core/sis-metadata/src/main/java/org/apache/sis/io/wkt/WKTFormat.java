@@ -132,6 +132,11 @@ public class WKTFormat extends CompoundFormat<Object> {
     private Citation authority;
 
     /**
+     * Whether WKT keywords shall be formatted in upper case.
+     */
+    private KeywordCase keywordCase;
+
+    /**
      * The amount of spaces to use in indentation, or {@value #SINGLE_LINE} if indentation is disabled.
      * The same value is also stored in the {@linkplain #formatter}.
      * It appears here for serialization purpose.
@@ -156,6 +161,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         super(locale, timezone);
         convention  = Convention.DEFAULT;
         symbols     = Symbols.getDefault();
+        keywordCase = KeywordCase.DEFAULT;
         indentation = DEFAULT_INDENTATION;
     }
 
@@ -181,16 +187,6 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns the kind of objects formatted by this class.
-     *
-     * @return {@code Object.class}
-     */
-    @Override
-    public Class<?> getValueType() {
-        return Object.class;
-    }
-
-    /**
      * Returns the symbols used for parsing and formatting WKT.
      *
      * @return The current set of symbols used for parsing and formatting WKT.
@@ -210,6 +206,26 @@ public class WKTFormat extends CompoundFormat<Object> {
             this.symbols = symbols.immutable();
             formatter = null;
         }
+    }
+
+    /**
+     * Returns whether WKT keywords should be written with upper cases or camel cases.
+     *
+     * @return The case to use for formatting keywords.
+     */
+    public KeywordCase getKeywordCase() {
+        return keywordCase;
+    }
+
+    /**
+     * Sets whether WKT keywords should be written with upper cases or camel cases.
+     *
+     * @param keywordCase The case to use for formatting keywords.
+     */
+    public void setKeywordCase(final KeywordCase keywordCase) {
+        ArgumentChecks.ensureNonNull("keywordCase", keywordCase);
+        this.keywordCase = keywordCase;
+        updateFormatter(formatter);
     }
 
     /**
@@ -304,7 +320,13 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     private void updateFormatter(final Formatter formatter) {
         if (formatter != null) {
-            formatter.configure(convention, authority, colors, indentation);
+            final boolean toUpperCase;
+            switch (keywordCase) {
+                case UPPER_CASE: toUpperCase = true;  break;
+                case CAMEL_CASE: toUpperCase = false; break;
+                default: toUpperCase = (convention.versionOfWKT() == 1); break;
+            }
+            formatter.configure(convention, authority, colors, toUpperCase, indentation);
         }
     }
 
@@ -328,6 +350,16 @@ public class WKTFormat extends CompoundFormat<Object> {
         ArgumentChecks.ensureBetween("indentation", SINGLE_LINE, Byte.MAX_VALUE, indentation);
         this.indentation = (byte) indentation;
         updateFormatter(formatter);
+    }
+
+    /**
+     * Returns the kind of objects formatted by this class.
+     *
+     * @return {@code Object.class}
+     */
+    @Override
+    public Class<?> getValueType() {
+        return Object.class;
     }
 
     /**

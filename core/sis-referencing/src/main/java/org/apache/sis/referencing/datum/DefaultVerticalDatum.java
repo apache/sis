@@ -324,6 +324,6 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return "VERT_DATUM";
+        return "Vert_Datum";
     }
 }

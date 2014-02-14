@@ -84,25 +84,25 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        assertWktEquals("AXIS[“x”, east]",                       X);
-        assertWktEquals("AXIS[“y”, north]",                      Y);
-        assertWktEquals("AXIS[“z”, up]",                         Z);
-        assertWktEquals("AXIS[“Longitude (λ)”, east]",           LONGITUDE_gon);
-        assertWktEquals("AXIS[“Latitude (φ)”, north]",           LATITUDE_gon);
-        assertWktEquals("AXIS[“Altitude (h)”, up]",              ALTITUDE);
-        assertWktEquals("AXIS[“Time (t)”, future]",              TIME);
-        assertWktEquals("AXIS[“Longitude (λ)”, east]",           GEODETIC_LONGITUDE);
-        assertWktEquals("AXIS[“Spherical longitude (Ω)”, east]", SPHERICAL_LONGITUDE);
-        assertWktEquals("AXIS[“Latitude (φ)”, north]",           GEODETIC_LATITUDE);
-        assertWktEquals("AXIS[“Spherical latitude (Θ)”, north]", SPHERICAL_LATITUDE);
+        assertWktEquals("Axis[“x”, east]",                       X);
+        assertWktEquals("Axis[“y”, north]",                      Y);
+        assertWktEquals("Axis[“z”, up]",                         Z);
+        assertWktEquals("Axis[“Longitude (λ)”, east]",           LONGITUDE_gon);
+        assertWktEquals("Axis[“Latitude (φ)”, north]",           LATITUDE_gon);
+        assertWktEquals("Axis[“Altitude (h)”, up]",              ALTITUDE);
+        assertWktEquals("Axis[“Time (t)”, future]",              TIME);
+        assertWktEquals("Axis[“Longitude (λ)”, east]",           GEODETIC_LONGITUDE);
+        assertWktEquals("Axis[“Spherical longitude (Ω)”, east]", SPHERICAL_LONGITUDE);
+        assertWktEquals("Axis[“Latitude (φ)”, north]",           GEODETIC_LATITUDE);
+        assertWktEquals("Axis[“Spherical latitude (Θ)”, north]", SPHERICAL_LATITUDE);
 
         assertWktEquals(Convention.WKT1,     "AXIS[“x”, EAST]",                       X);
         assertWktEquals(Convention.WKT1,     "AXIS[“y”, NORTH]",                      Y);
         assertWktEquals(Convention.WKT1,     "AXIS[“z”, UP]",                         Z);
-        assertWktEquals(Convention.INTERNAL, "AXIS[“Geodetic longitude (λ)”, east]",  GEODETIC_LONGITUDE);
-        assertWktEquals(Convention.INTERNAL, "AXIS[“Spherical longitude (Ω)”, east]", SPHERICAL_LONGITUDE);
-        assertWktEquals(Convention.INTERNAL, "AXIS[“Geodetic latitude (φ)”, north]",  GEODETIC_LATITUDE);
-        assertWktEquals(Convention.INTERNAL, "AXIS[“Spherical latitude (Θ)”, north]", SPHERICAL_LATITUDE);
+        assertWktEquals(Convention.INTERNAL, "Axis[“Geodetic longitude (λ)”, east]",  GEODETIC_LONGITUDE);
+        assertWktEquals(Convention.INTERNAL, "Axis[“Spherical longitude (Ω)”, east]", SPHERICAL_LONGITUDE);
+        assertWktEquals(Convention.INTERNAL, "Axis[“Geodetic latitude (φ)”, north]",  GEODETIC_LATITUDE);
+        assertWktEquals(Convention.INTERNAL, "Axis[“Spherical latitude (Θ)”, north]", SPHERICAL_LATITUDE);
     }
 
     /**

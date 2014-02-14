@@ -57,7 +57,9 @@ public final strictfp class FormatterTest extends TestCase {
      */
     @Test
     public void testAppendGeographicBoundingBox() {
-        assertWktEquals("BBOX[51.43, 2.54, 55.77, 6.40]",
+        assertWktEquals(Convention.WKT2, "BBox[51.43, 2.54, 55.77, 6.40]",
+                new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77));
+        assertWktEquals(Convention.WKT1, "BBOX[51.43, 2.54, 55.77, 6.40]",
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77));
     }
 
@@ -72,11 +74,11 @@ public final strictfp class FormatterTest extends TestCase {
                 0, 0, 1, 7,
                 0, 0, 0, 1);
         assertWktEquals(
-                "PARAMETER[“num_row”, 4],\n"    +
-                "PARAMETER[“num_col”, 4],\n"    +
-                "PARAMETER[“elt_0_2”, 4.0],\n"  +
-                "PARAMETER[“elt_1_0”, -2.0],\n"  +
-                "PARAMETER[“elt_2_3”, 7.0]", m);
+                "Parameter[“num_row”, 4],\n"    +
+                "Parameter[“num_col”, 4],\n"    +
+                "Parameter[“elt_0_2”, 4.0],\n"  +
+                "Parameter[“elt_1_0”, -2.0],\n"  +
+                "Parameter[“elt_2_3”, 7.0]", m);
     }
 
     /**
@@ -84,9 +86,13 @@ public final strictfp class FormatterTest extends TestCase {
      */
     @Test
     public void testAppendUnit() {
-        assertWktEquals("LENGTHUNIT[“metre”, 1]", SI.METRE);
-        assertWktEquals("ANGLEUNIT[“degree”, 0.017453292519943295]", NonSI.DEGREE_ANGLE);
-        assertWktEquals("SCALEUNIT[“parts per million”, 1.0E-6]", Units.PPM);
+        assertWktEquals("LengthUnit[“metre”, 1]", SI.METRE);
+        assertWktEquals("AngleUnit[“degree”, 0.017453292519943295]", NonSI.DEGREE_ANGLE);
+        assertWktEquals("ScaleUnit[“parts per million”, 1.0E-6]", Units.PPM);
+
+        assertWktEquals(Convention.WKT1, "UNIT[“metre”, 1]", SI.METRE);
+        assertWktEquals(Convention.WKT1, "UNIT[“degree”, 0.017453292519943295]", NonSI.DEGREE_ANGLE);
+        assertWktEquals(Convention.WKT1, "UNIT[“parts per million”, 1.0E-6]", Units.PPM);
     }
 
     /**

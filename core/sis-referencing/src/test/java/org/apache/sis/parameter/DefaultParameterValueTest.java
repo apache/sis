@@ -516,7 +516,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        assertWktEquals("PARAMETER[“WKT test”, 4]", createOptional("WKT test", 4));
-        assertWktEquals("PARAMETER[“WKT test”, 30.0]", create("WKT test", 30, SI.CENTIMETRE));
+        assertWktEquals("Parameter[“WKT test”, 4]", createOptional("WKT test", 4));
+        assertWktEquals("Parameter[“WKT test”, 30.0]", create("WKT test", 30, SI.CENTIMETRE));
     }
 }
