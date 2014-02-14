@@ -740,7 +740,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Most of those constraints are inherited from ISO 19111 — see {@link CoordinateSystemAxis} javadoc for some of
      * those. The current Apache SIS implementation does not verify whether this axis name and abbreviation are
      * compliant; we assume that the user created a valid axis.
-     * The only verifications performed by this method are:
+     * The only actions (derived from ISO 19162 rules) taken by this method are:
      *
      * <ul>
      *   <li>Replace “<cite>Geodetic latitude</cite>” and “<cite>Geodetic longitude</cite>” names (case insensitive)
@@ -763,14 +763,14 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             }
             if (!isInternal && name != null) {
                 if (name.equalsIgnoreCase("Geodetic latitude")) {
-                    name = "Latitude";
+                    name = "Latitude"; // ISO 19162 §7.5.3(ii)
                 } else if (name.equalsIgnoreCase("Geodetic longitude")) {
                     name = "Longitude";
                 }
             }
         }
         /*
-         * ISO 19162 suggests to put abbreviation in parentheses, e.g. "Easting (x)".
+         * ISO 19162 §7.5.3 suggests to put abbreviation in parentheses, e.g. "Easting (x)".
          */
         if (!isWKT1 && (name == null || !name.equals(abbreviation))) {
             final StringBuilder buffer = new StringBuilder();
@@ -780,7 +780,20 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             name = buffer.append('(').append(abbreviation).append(')').toString();
         }
         formatter.append(name, ElementKind.AXIS);
-        formatter.append(direction);
+        /*
+         * Format the axis direction, optionally followed by a MERIDIAN[…] element
+         * if the direction is of the kind "South along 90°N" for instance.
+         */
+        AxisDirection dir = direction;
+        DirectionAlongMeridian meridian = null;
+        if (!isWKT1 && AxisDirections.isUserDefined(dir)) {
+            meridian = DirectionAlongMeridian.parse(dir);
+            if (meridian != null) {
+                dir = meridian.baseDirection;
+            }
+        }
+        formatter.append(dir);
+        formatter.append(meridian);
         return "Axis";
     }
 }

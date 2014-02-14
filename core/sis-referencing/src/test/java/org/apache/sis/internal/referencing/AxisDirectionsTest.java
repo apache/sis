@@ -129,7 +129,7 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     }
 
     /**
-     * Tests {@link AxisDirections#isSpatialOrCustom(AxisDirection, boolean)} and
+     * Tests {@link AxisDirections#isSpatialOrUserDefined(AxisDirection, boolean)} and
      * {@link AxisDirections#isGrid(AxisDirection)}.
      */
     @Test
@@ -161,7 +161,7 @@ public final strictfp class AxisDirectionsTest extends TestCase {
 
     /**
      * Asserts that
-     * {@link AxisDirections#isSpatialOrCustom(AxisDirection)},
+     * {@link AxisDirections#isSpatialOrUserDefined(AxisDirection, boolean)},
      * {@link AxisDirections#isCartesianOrCustom(AxisDirection)} and
      * {@link AxisDirections#isGrid(AxisDirection)}
      * returns the expected value for all the given axis directions.
@@ -172,8 +172,8 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         for (final AxisDirection dir : directions) {
             final String name = dir.name();
             assertEquals(name, isGrid, AxisDirections.isGrid(dir));
-            assertEquals(name, isSpatial, AxisDirections.isSpatialOrCustom(dir, false));
-            assertEquals(name, isSpatial | isGrid | isDisplay, AxisDirections.isSpatialOrCustom(dir, true));
+            assertEquals(name, isSpatial, AxisDirections.isSpatialOrUserDefined(dir, false));
+            assertEquals(name, isSpatial | isGrid | isDisplay, AxisDirections.isSpatialOrUserDefined(dir, true));
         }
     }
 

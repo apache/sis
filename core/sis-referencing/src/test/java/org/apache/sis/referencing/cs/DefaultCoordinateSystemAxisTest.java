@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
+import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
@@ -27,6 +28,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.referencing.cs.HardCodedAxes.*;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
@@ -103,6 +105,17 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
         assertWktEquals(Convention.INTERNAL, "Axis[“Spherical longitude (Ω)”, east]", SPHERICAL_LONGITUDE);
         assertWktEquals(Convention.INTERNAL, "Axis[“Geodetic latitude (φ)”, north]",  GEODETIC_LATITUDE);
         assertWktEquals(Convention.INTERNAL, "Axis[“Spherical latitude (Θ)”, north]", SPHERICAL_LATITUDE);
+    }
+
+    /**
+     * Tests the WKT of axis of the kind "South along 90°W".
+     */
+    @Test
+    @DependsOnMethod("testWKT")
+    public void testMeridianWKT() {
+        assertWktEquals("Axis[“South along 90°W (x)”, south, Meridian[-90.0, AngleUnit[“degree”, 0.017453292519943295]]]",
+                new DefaultCoordinateSystemAxis(singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, "South along 90°W"),
+                        "x", DirectionAlongMeridian.parse("South along 90°W").getDirection(), SI.METRE));
     }
 
     /**
