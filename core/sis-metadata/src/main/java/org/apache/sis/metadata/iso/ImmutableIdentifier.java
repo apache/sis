@@ -77,7 +77,7 @@ import java.util.Objects;
  *
  * </li><li><p><b><cite>Well Known Text</cite> (WKT) version 2</b></p>
  * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code},
- * the {@linkplain #getVersion() version} and the {@linkplain #getAuthority() authority} title if available.
+ * the {@linkplain #getVersion() version} and the {@linkplain #getAuthority() authority} citation if available.
  * The WKT can optionally provides a {@code URI} element, which expresses the same information in a different way
  * (the URN syntax is described in the next item below).
  * Example:

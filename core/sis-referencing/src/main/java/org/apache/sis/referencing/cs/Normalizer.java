@@ -75,7 +75,8 @@ final class Normalizer implements Comparable<Normalizer> {
      */
     private Normalizer(final CoordinateSystemAxis axis) {
         this.axis = axis;
-        meridian = DirectionAlongMeridian.parse(axis.getDirection());
+        final AxisDirection dir = axis.getDirection();
+        meridian = AxisDirections.isUserDefined(dir) ? DirectionAlongMeridian.parse(dir) : null;
     }
 
     /**

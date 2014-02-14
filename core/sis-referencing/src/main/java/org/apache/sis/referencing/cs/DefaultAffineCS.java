@@ -188,7 +188,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      */
     @Override
     final int validateAxis(final AxisDirection direction, final Unit<?> unit) {
-        if (!AxisDirections.isSpatialOrCustom(direction, true)) {
+        if (!AxisDirections.isSpatialOrUserDefined(direction, true)) {
             return INVALID_DIRECTION;
         }
         if (!Units.isLinear(unit) && !Unit.ONE.equals(unit)) {

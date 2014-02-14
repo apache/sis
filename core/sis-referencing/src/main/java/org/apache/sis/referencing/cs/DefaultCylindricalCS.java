@@ -164,7 +164,7 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
      */
     @Override
     final int validateAxis(final AxisDirection direction, final Unit<?> unit) {
-        if (!AxisDirections.isSpatialOrCustom(direction, false)) {
+        if (!AxisDirections.isSpatialOrUserDefined(direction, false)) {
             return INVALID_DIRECTION;
         }
         if (!Units.isLinear(unit)) {
