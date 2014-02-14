@@ -737,14 +737,14 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *
      * {@section Constraints for WKT validity}
      * The ISO 19162 specification puts many constraints on axis names, abbreviations and directions allowed in WKT.
-     * Most of those constraints are inherited from ISO 19111 - see {@link CoordinateSystemAxis} javadoc for some of
+     * Most of those constraints are inherited from ISO 19111 — see {@link CoordinateSystemAxis} javadoc for some of
      * those. The current Apache SIS implementation does not verify whether this axis name and abbreviation are
      * compliant; we assume that the user created a valid axis.
-     * The only exceptions are:
+     * The only verifications performed by this method are:
      *
      * <ul>
-     *   <li>“<cite>Geodetic latitude</cite>” and “<cite>Geodetic longitude</cite>” name (case insensitive)
-     *       are replaced by “<cite>Latitude</cite>” and “<cite>Longitude</cite>” respectively.</li>
+     *   <li>Replace “<cite>Geodetic latitude</cite>” and “<cite>Geodetic longitude</cite>” names (case insensitive)
+     *       by “<cite>Latitude</cite>” and “<cite>Longitude</cite>” respectively.</li>
      * </ul>
      *
      * @param  formatter The formatter to use.

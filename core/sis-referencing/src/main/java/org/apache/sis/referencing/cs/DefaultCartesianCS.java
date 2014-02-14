@@ -27,7 +27,7 @@ import org.apache.sis.measure.Angle;
 
 
 /**
- * A 2-, or 3-dimensional Cartesian coordinate system made of straight orthogonal axes.
+ * A 2- or 3-dimensional Cartesian coordinate system made of straight orthogonal axes.
  * All axes shall have the same linear unit of measure.
  *
  * <table class="sis"><tr>

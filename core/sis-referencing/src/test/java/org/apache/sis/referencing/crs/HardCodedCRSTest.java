@@ -89,8 +89,8 @@ public final strictfp class HardCodedCRSTest extends TestCase {
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "  PRIMEM[“Greenwich”, 0.0],\n" +
                 "  ANGLEUNIT[“degree”, 0.017453292519943295],\n" +
-                "  AXIS[“Longitude (λ)”, EAST],\n" +
-                "  AXIS[“Latitude (φ)”, NORTH],\n" +
+                "  AXIS[“Longitude (λ)”, east],\n" +
+                "  AXIS[“Latitude (φ)”, north],\n" +
                 "  AREA[“World”],\n" +
                 "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
                 WGS84);
@@ -101,8 +101,8 @@ public final strictfp class HardCodedCRSTest extends TestCase {
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "  PRIMEM[“Greenwich”, 0.0],\n" +
                 "  UNIT[“degree”, 0.017453292519943295],\n" +
-                "  AXIS[“Longitude (λ)”, EAST],\n" +
-                "  AXIS[“Latitude (φ)”, NORTH],\n" +
+                "  AXIS[“Longitude (λ)”, east],\n" +
+                "  AXIS[“Latitude (φ)”, north],\n" +
                 "  AREA[“World”],\n" +
                 "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
                 WGS84);
@@ -114,8 +114,8 @@ public final strictfp class HardCodedCRSTest extends TestCase {
                 "    ID[“EPSG”, 6326]],\n" +
                 "  PRIMEM[“Greenwich”, 0.0, ID[“EPSG”, 8901]],\n" +
                 "  UNIT[“degree”, 0.017453292519943295],\n" +
-                "  AXIS[“Geodetic longitude (λ)”, EAST],\n" +
-                "  AXIS[“Geodetic latitude (φ)”, NORTH],\n" +
+                "  AXIS[“Geodetic longitude (λ)”, east],\n" +
+                "  AXIS[“Geodetic latitude (φ)”, north],\n" +
                 "  AREA[“World”],\n" +
                 "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
                 WGS84);

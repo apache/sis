@@ -55,6 +55,7 @@ import org.opengis.util.CodeList;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
@@ -833,7 +834,7 @@ public class Formatter implements Localized {
         if (code != null) {
             appendSeparator();
             setColor(ElementKind.CODE_LIST);
-            buffer.append(code.name());
+            buffer.append(convention.versionOfWKT() == 1 ? code.name() : Types.getCodeName(code));
             resetColor();
         }
     }
@@ -1083,7 +1084,20 @@ public class Formatter implements Localized {
         if (value == null) {
             appendSeparator();
             buffer.append("null");
-        } else if (value.getClass().isArray()) {
+        } else if (!appendValue(value) && !appendElement(value)) {
+            append(value.toString(), null);
+        }
+    }
+
+    /**
+     * Tries to append a small unit of information like number, date, boolean, code list, character string
+     * or an array of those. The key difference between this method and {@link #appendElement(Object)} is
+     * that the values formatted by this {@code appendValue(Object)} method do not have keyword.
+     *
+     * @return {@code true} on success, or {@code false} if the given type is not recognized.
+     */
+    final boolean appendValue(final Object value) {
+        if (value.getClass().isArray()) {
             appendSeparator();
             buffer.appendCodePoint(symbols.getOpenSequence());
             final int length = Array.getLength(value);
@@ -1099,17 +1113,34 @@ public class Formatter implements Localized {
                 append(number.doubleValue());
             }
         }
-        else if (value instanceof CodeList<?>)           append((CodeList<?>)           value);
-        else if (value instanceof Date)                  append((Date)                  value);
-        else if (value instanceof Boolean)               append((Boolean)               value);
-        else if (value instanceof Unit<?>)               append((Unit<?>)               value);
-        else if (value instanceof FormattableObject)     append((FormattableObject)     value);
+        else if (value instanceof CodeList<?>) append((CodeList<?>) value);
+        else if (value instanceof Date)        append((Date)        value);
+        else if (value instanceof Boolean)     append((Boolean)     value);
+        else if (value instanceof CharSequence) {
+            append((value instanceof InternationalString) ?
+                    ((InternationalString) value).toString(locale) : value.toString(), null);
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Tries to append an object of the {@code KEYWORD[something]} form. The given value is typically,
+     * but not necessarily, a {@link FormattableObject} object or an instance of an interface that can
+     * be converted to {@code FormattableObject}.
+     *
+     * @return {@code true} on success, or {@code false} if the given type is not recognized.
+     */
+    final boolean appendElement(final Object value) {
+             if (value instanceof FormattableObject)     append((FormattableObject)     value);
         else if (value instanceof IdentifiedObject)      append((IdentifiedObject)      value);
         else if (value instanceof GeographicBoundingBox) append((GeographicBoundingBox) value, BBOX_ACCURACY);
         else if (value instanceof MathTransform)         append((MathTransform)         value);
         else if (value instanceof Matrix)                append((Matrix)                value);
-        else append((value instanceof InternationalString) ?
-                ((InternationalString) value).toString(locale) : value.toString(), null);
+        else if (value instanceof Unit<?>)               append((Unit<?>)               value);
+        else return false;
+        return true;
     }
 
     /**

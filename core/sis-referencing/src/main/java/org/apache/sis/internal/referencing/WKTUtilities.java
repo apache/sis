@@ -72,7 +72,12 @@ public final class WKTUtilities extends Static {
      */
     public static void append(GeneralParameterValue parameter, final Formatter formatter) {
         if (parameter instanceof ParameterValueGroup) {
+            boolean first = true;
             for (final GeneralParameterValue param : ((ParameterValueGroup) parameter).values()) {
+                if (first) {
+                    formatter.newLine();
+                    first = false;
+                }
                 append(param, formatter);
             }
         }
@@ -81,6 +86,7 @@ public final class WKTUtilities extends Static {
                 parameter = new DefaultParameterValue<>((ParameterValue<?>) parameter);
             }
             formatter.append((FormattableObject) parameter);
+            formatter.newLine();
         }
     }
 }

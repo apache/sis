@@ -277,8 +277,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depend
      * on this object's state. This method is not in public API for that reason.</p>
      *
-     * @param  direction The direction to test for compatibility.
-     * @param  unit The unit to test for compatibility.
+     * @param  direction The direction to test for compatibility (never {@code null}).
+     * @param  unit The unit to test for compatibility (never {@code null}).
      * @return {@link #VALID} if the given direction and unit are compatible with this coordinate system,
      *         {@link #DIRECTION} if the direction is invalid or {@link #UNIT} if the unit is invalid.
      */
