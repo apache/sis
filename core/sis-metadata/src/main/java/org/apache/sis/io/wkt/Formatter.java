@@ -167,7 +167,7 @@ public class Formatter implements Localized {
     private final List<FormattableObject> enclosingElements = new ArrayList<>();
 
     /**
-     * The units for writing lengths, angles or other type of measurements.
+     * The contextual units for writing lengths, angles or other type of measurements.
      * A unit not present in this map means that the "natural" unit of the WKT element shall be used.
      * This value is set for example by {@code "GEOGCS"}, which force its enclosing {@code "PRIMEM"}
      * to take the same units than itself.
@@ -176,6 +176,15 @@ public class Formatter implements Localized {
      * @see #setContextualUnit(Class, Unit)
      */
     private final Map<Class<? extends Quantity>, Unit<?>> units = new IdentityHashMap<>(4);
+
+    /**
+     * A bits mask of elements which defined a contextual units.
+     * The rightmost bit is for the current element. The bit before the rightmost
+     * is for the parent of current element, etc.
+     *
+     * @see #hasContextualUnit(int)
+     */
+    private long hasContextualUnit;
 
     /**
      * The object to use for formatting numbers.
@@ -539,6 +548,10 @@ public class Formatter implements Localized {
             }
         }
         enclosingElements.add(object);
+        if (hasContextualUnit < 0) { // Test if leftmost bit is set to 1.
+            throw new IllegalStateException(Errors.getResources(locale).getString(Errors.Keys.TreeDepthExceedsMaximum));
+        }
+        hasContextualUnit <<= 1;
         /*
          * Add a new line if it was requested, open the bracket and increase indentation in case the
          * element to format contains other FormattableObject elements.
@@ -588,6 +601,7 @@ public class Formatter implements Localized {
         buffer.appendCodePoint(symbols.getClosingBracket(0));
         indent(-1);
         enclosingElements.remove(stackDepth);
+        hasContextualUnit >>>= 1;
     }
 
     /**
@@ -711,7 +725,7 @@ public class Formatter implements Localized {
                 numberFormat.setRoundingMode(RoundingMode.CEILING);
                 appendPreset(range.getMaxDouble());
                 final Unit<?> unit = range.unit();
-                if (!convention.isSimple() || !SI.METRE.equals(unit)) {
+                if (!convention.isSimplified() || !SI.METRE.equals(unit)) {
                     append(unit); // Unit are optional if they are metres.
                 }
                 resetColor();
@@ -1047,7 +1061,7 @@ public class Formatter implements Localized {
     public void append(final Unit<?> unit) {
         if (unit != null) {
             String keyword = "Unit";
-            if (!convention.isSimple()) {
+            if (!convention.isSimplified()) {
                 if (Units.isLinear(unit)) {
                     keyword = "LengthUnit";
                 } else if (Units.isAngular(unit)) {
@@ -1173,23 +1187,20 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Sets the unit to use for the next measurements of the given quantity. If non-null, the given unit will apply
-     * to all WKT elements that do not define their own {@code UNIT[…]}, until this {@code setUnit(…)} method is
-     * invoked again for the same quantity.
+     * Returns {@code true} if the element at the given depth specified a contextual unit.
+     * This method returns {@code true} if the formattable object given by {@code getEnclosingElement(depth)}
+     * has invoked {@link #setContextualUnit(Class, Unit) setContextualUnit(…)} with a non-null unit at least once.
      *
-     * {@section Special case}
-     * If the WKT conventions are {@code WKT1_COMMON_UNITS}, then this method ignores the given unit.
-     * See {@link Convention#WKT1_COMMON_UNITS} javadoc for more information.
+     * {@note The main purpose of this method is to allow <code>AXIS[…]</code> elements to determine if they should
+     *        inherit the unit specified by the enclosing CRS, or if they should specify their unit explicitly.}
      *
-     * @param  <Q> The compile-time type of the {@code quantity} argument.
-     * @param  quantity The quantity, typically as <code>{@linkplain Angle}.class</code> or
-     *         <code>{@linkplain Length}.class</code>.
-     * @param unit The new unit, or {@code null} for letting element uses their own default.
+     * @param  depth 1 for the immediate parent, 2 for the parent of the parent, <i>etc.</i>
+     * @return Whether the parent element at the given depth has invoked {@code setContextualUnit(…)}
+     *         with a non-null unit at least once.
      */
-    public <Q extends Quantity> void setContextualUnit(final Class<Q> quantity, final Unit<Q> unit) {
-        if (!convention.usesCommonUnits()) {
-            units.put(quantity, unit);
-        }
+    public boolean hasContextualUnit(final int depth) {
+        ArgumentChecks.ensurePositive("depth", depth);
+        return (depth < Long.SIZE) && (hasContextualUnit & (1L << depth)) != 0;
     }
 
     /**
@@ -1211,6 +1222,32 @@ public class Formatter implements Localized {
     @SuppressWarnings("unchecked")
     public <Q extends Quantity> Unit<Q> getContextualUnit(final Class<Q> quantity) {
         return (Unit<Q>) units.get(quantity);
+    }
+
+    /**
+     * Sets the unit to use for the next measurements of the given quantity. If non-null, the given unit will apply
+     * to all WKT elements that do not define their own {@code UNIT[…]}, until this {@code setUnit(…)} method is
+     * invoked again for the same quantity.
+     *
+     * {@section Special case}
+     * If the WKT conventions are {@code WKT1_COMMON_UNITS}, then this method ignores the given unit.
+     * See {@link Convention#WKT1_COMMON_UNITS} javadoc for more information.
+     *
+     * @param  <Q> The compile-time type of the {@code quantity} argument.
+     * @param  quantity The quantity, typically as <code>{@linkplain Angle}.class</code> or
+     *         <code>{@linkplain Length}.class</code>.
+     * @param unit The new contextual unit, or {@code null} for letting elements use their own default.
+     */
+    public <Q extends Quantity> void setContextualUnit(final Class<Q> quantity, final Unit<Q> unit) {
+        ArgumentChecks.ensureNonNull("quantity", quantity);
+        if (!convention.usesCommonUnits()) {
+            if (unit != null) {
+                units.put(quantity, unit);
+                hasContextualUnit |= 1;
+            } else {
+                units.remove(quantity);
+            }
+        }
     }
 
     /**
@@ -1371,13 +1408,14 @@ public class Formatter implements Localized {
         }
         enclosingElements.clear();
         units.clear();
-        elementStart   = 0;
-        colorApplied   = 0;
-        margin         = 0;
-        requestNewLine = false;
-        isComplement   = false;
-        highlightError = false;
-        invalidElement = null;
-        errorCause     = null;
+        hasContextualUnit = 0;
+        elementStart      = 0;
+        colorApplied      = 0;
+        margin            = 0;
+        requestNewLine    = false;
+        isComplement      = false;
+        highlightError    = false;
+        invalidElement    = null;
+        errorCause        = null;
     }
 }

@@ -57,14 +57,14 @@ public final strictfp class ConventionTest extends TestCase {
     }
 
     /**
-     * Tests {@link Convention#isSimple()}.
+     * Tests {@link Convention#isSimplified()}.
      */
     @Test
     public void testIsSimple() {
-        assertFalse(Convention.WKT2.isSimple());
-        assertTrue (Convention.WKT2_SIMPLIFIED.isSimple());
-        assertTrue (Convention.WKT1.isSimple());
-        assertTrue (Convention.WKT1_COMMON_UNITS.isSimple());
-        assertTrue (Convention.INTERNAL.isSimple());
+        assertFalse(Convention.WKT2.isSimplified());
+        assertTrue (Convention.WKT2_SIMPLIFIED.isSimplified());
+        assertTrue (Convention.WKT1.isSimplified());
+        assertTrue (Convention.WKT1_COMMON_UNITS.isSimplified());
+        assertTrue (Convention.INTERNAL.isSimplified());
     }
 }
