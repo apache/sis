@@ -18,21 +18,16 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlTransient;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.measure.Units;
 
 
 /**
@@ -198,54 +193,48 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
-     * Returns the angular unit of the specified coordinate system.
-     * The preference will be given to the longitude axis, if found.
-     */
-    private static Unit<Angle> getAngularUnit(final CoordinateSystem coordinateSystem) {
-        Unit<Angle> unit = NonSI.DEGREE_ANGLE;
-        for (int i=coordinateSystem.getDimension(); --i>=0;) {
-            final CoordinateSystemAxis axis = coordinateSystem.getAxis(i);
-            final Unit<?> candidate = axis.getUnit();
-            if (Units.isAngular(candidate)) {
-                unit = candidate.asType(Angle.class);
-                if (AxisDirection.EAST.equals(AxisDirections.absolute(axis.getDirection()))) {
-                    break; // Found the longitude axis.
-                }
-            }
-        }
-        return unit;
-    }
-
-    /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
      *
      * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "GEOGCS"}.
+     * @return The name of the WKT element type, which is {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
-        final Unit<Angle> oldUnit = formatter.getContextualUnit(Angle.class);
-        final Unit<Angle> unit = getAngularUnit(getCoordinateSystem());
-        final GeodeticDatum datum = getDatum();
-        formatter.setContextualUnit(Angle.class, unit);
+        final boolean isWKT1 = formatter.getConvention().versionOfWKT() == 1;
+        Unit<Angle>  oldUnit = null; // Previous contextual unit.
+        final Unit<?>   unit = getUnit();
+        if (unit != null) {
+            oldUnit = formatter.getContextualUnit(Angle.class);
+            formatter.setContextualUnit(Angle.class, unit.asType(Angle.class));
+        }
+        final CoordinateSystem cs = super.getCoordinateSystem();
+        final GeodeticDatum datum = super.getDatum();
         formatter.newLine();
         formatter.append(datum);
         formatter.newLine();
         formatter.append(datum.getPrimeMeridian());
-        formatter.newLine();
-        formatter.append(unit);
-        final EllipsoidalCS cs = getCoordinateSystem();
+        if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
+            formatter.newLine();
+            formatter.append(unit);
+            if (unit == null) {
+                formatter.setInvalidWKT(this, null);
+            }
+        } else {
+            formatter.newLine();
+            formatter.append(cs); // The concept of CoordinateSystem was not explicit in WKT 1.
+        }
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
             formatter.newLine();
             formatter.append(cs.getAxis(i));
         }
-        if (!unit.equals(getUnit())) {
-            formatter.setInvalidWKT(this, null);
+        if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
+            formatter.newLine();
+            formatter.append(unit);
         }
         formatter.setContextualUnit(Angle.class, oldUnit);
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return "GeogCS";
+        return isWKT1 ? "GeogCS" : "GeodeticCRS";
     }
 }
