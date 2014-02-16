@@ -58,10 +58,10 @@ public enum Convention {
      * This convention follows the ISO recommendations except the following ones:
      *
      * <ul>
-     *   <li>{@code AXIS} element omits the {@code ORDER} sub-element.</li>
+     *   <li>{@code Axis} element omits the {@code Order} sub-element.</li>
      * </ul>
      *
-     * Since the {@code ORDER} element is optional, the WKT is still valid.
+     * Since the {@code Order} element is optional, the WKT is still valid.
      *
      * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, projections
      * and parameters formatted with this convention will use the {@linkplain Citations#EPSG EPSG}
@@ -77,14 +77,16 @@ public enum Convention {
      * to the {@link #WKT2} convention except for the following aspects:
      *
      * <ul>
-     *   <li>{@code VERTICALEXTENT} element omits the {@code UNIT} sub-element
+     *   <li>{@code VerticalExtent} element omits the {@code LengthUnit} sub-element
      *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
-     *   <li>{@code ELLIPSOID} element omits the {@code UNIT} sub-element
+     *   <li>{@code Ellipsoid} element omits the {@code LengthUnit} sub-element
      *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
-     *   <li>{@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT}
-     *       and {@code TIMEUNIT} are formatted as plain {@code UNIT} elements.</li>
-     *   <li>{@code ID} is formatted only for the root element
-     *       (omit parameters and operation methods {@code ID}).</li>
+     *   <li>{@code PrimeMeridian} element omits the {@code AngleUnit} sub-element
+     *       if the unit is as defined by the enclosing {@code GeodeticCRS} element.</li>
+     *   <li>{@code AngleUnit}, {@code LengthUnit}, {@code ScaleUnit}, {@code ParametricUnit}
+     *       and {@code TimeUnit} are formatted as plain {@code Unit} elements.</li>
+     *   <li>{@code Id} is formatted only for the root element
+     *       (omit parameters and operation methods {@code Id}).</li>
      * </ul>
      *
      * Those modifications are allowed by the ISO 19162 standard, so the WKT is still valid.
@@ -143,10 +145,10 @@ public enum Convention {
      * <ul>
      *   <li>Map projections are shown as SIS stores them internally, i.e. with the separation between
      *       linear and non-linear steps, rather than as a single operation.</li>
-     *   <li>{@code ID} elements are formatted for child elements in addition to the root one.</li>
-     *   <li>{@code ID} element omits the {@code URI} sub-element if the later is derived by Apache SIS
-     *       from the {@code ID} properties.</li>
-     *   <li>{@code REMARKS} element is formatted for all
+     *   <li>{@code Id} elements are formatted for child elements in addition to the root one.</li>
+     *   <li>{@code Id} element omits the {@code URI} sub-element if the later is derived by Apache SIS
+     *       from the {@code Id} properties.</li>
+     *   <li>{@code Remarks} element is formatted for all
      *       {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject identified objects},
      *       not only CRS or coordinate operations.</li>
      * </ul>

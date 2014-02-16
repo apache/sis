@@ -31,6 +31,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
@@ -339,11 +340,19 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = convention.versionOfWKT() == 1;
         Unit<Angle> targetUnit = formatter.getContextualUnit(Angle.class);
         if (targetUnit == null) {
             targetUnit = NonSI.DEGREE_ANGLE;
         }
-        formatter.append(getGreenwichLongitude(targetUnit));
-        return "PrimeM";
+        formatter.append(isWKT1 ? getGreenwichLongitude(targetUnit) : greenwichLongitude);
+        if (isWKT1) {
+            return "PrimeM";
+        }
+        if (!convention.isSimplified() || !targetUnit.equals(angularUnit)) {
+            formatter.append(angularUnit);
+        }
+        return "PrimeMeridian";
     }
 }

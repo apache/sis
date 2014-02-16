@@ -58,7 +58,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     public void testToWKT() {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
         assertIsGreenwich(pm);
-        assertWktEquals("PrimeM[“Greenwich”, 0.0]", pm);
+        assertWktEquals("PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]]", pm);
     }
 
     /**
@@ -147,10 +147,12 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(NonSI.DEGREE_ANGLE), 1E-12);
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
         assertNull("name.codeSpace", pm.getName().getCodeSpace());
-        assertWktEquals(
-                "PrimeM[“Paris”, 2.33722917, Id[“EPSG”, 8903, Citation[“OGP”], URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+        assertWktEquals(Convention.WKT1,
+                "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);
+        assertWktEquals(Convention.WKT2,
+                "PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, Citation[“OGP”], URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
         assertWktEquals(Convention.INTERNAL,
-                "PrimeM[“Paris”, 2.33722917, Id[“EPSG”, 8903, Citation[“OGP”]],\n" +
+                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, Citation[“OGP”]],\n" +
                 "  Remarks[“Equivalent to 2°20′14.025″.”]]", pm);
         assertXmlEquals(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +
