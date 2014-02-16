@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.measure.unit.NonSI;
@@ -47,14 +46,7 @@ import org.apache.sis.io.wkt.Formatter;
  * @version 0.4
  * @module
  */
-final class DirectionAlongMeridian extends FormattableObject
-        implements Comparable<DirectionAlongMeridian>, Serializable
-{
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = 1602711631943838328L;
-
+final class DirectionAlongMeridian extends FormattableObject implements Comparable<DirectionAlongMeridian> {
     /**
      * A parser for EPSG axis names. Examples:
      *
@@ -250,7 +242,7 @@ final class DirectionAlongMeridian extends FormattableObject
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(serialVersionUID ^ (Double.doubleToLongBits(meridian) + baseDirection.hashCode()));
+        return Numerics.hashCode(Double.doubleToLongBits(meridian) + baseDirection.hashCode());
     }
 
     /**

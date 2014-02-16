@@ -233,7 +233,9 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
             formatter.newLine();
             formatter.append(unit);
         }
-        formatter.setContextualUnit(Angle.class, oldUnit);
+        if (unit != null) { // Really 'unit', not 'oldUnit'.
+            formatter.setContextualUnit(Angle.class, oldUnit);
+        }
         formatter.newLine(); // For writing the ID[…] element on its own line.
         return isWKT1 ? "GeogCS" : "GeodeticCRS";
     }
