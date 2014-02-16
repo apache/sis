@@ -86,7 +86,7 @@ public final strictfp class HardCodedCRSTest extends TestCase {
         assertWktEquals(Convention.WKT2,
                 "GeodeticCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
-                "    Spheroid[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
                 "  PrimeM[“Greenwich”, 0.0],\n" +
                 "  CS[“ellipsoidal”, 2],\n" +
                 "    Axis[“Longitude (λ)”, east],\n" +
@@ -99,7 +99,7 @@ public final strictfp class HardCodedCRSTest extends TestCase {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GeodeticCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
-                "    Spheroid[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "  PrimeM[“Greenwich”, 0.0],\n" +
                 "  CS[“ellipsoidal”, 2],\n" +
                 "    Axis[“Longitude (λ)”, east],\n" +
@@ -112,7 +112,7 @@ public final strictfp class HardCodedCRSTest extends TestCase {
         assertWktEquals(Convention.INTERNAL,
                 "GeodeticCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
-                "    Spheroid[“WGS84”, 6378137.0, 298.257223563],\n" +
+                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
                 "    Id[“EPSG”, 6326]],\n" +
                 "  PrimeM[“Greenwich”, 0.0, Id[“EPSG”, 8901]],\n" +
                 "  CS[“ellipsoidal”, 2],\n" +
