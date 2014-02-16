@@ -16,9 +16,11 @@
  */
 package org.apache.sis.referencing.cs;
 
+import java.util.Collections;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -91,7 +93,6 @@ public final strictfp class HardCodedCSTest extends TestCase {
     public void testNormalized() {
         AbstractCS cs;
         cs = GRID;               assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
-        cs = SPHERICAL;          assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
         cs = GEOCENTRIC;         assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
         cs = CARTESIAN_2D;       assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
         cs = CARTESIAN_3D;       assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
@@ -100,5 +101,21 @@ public final strictfp class HardCodedCSTest extends TestCase {
         cs = GEODETIC_3D;        assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
         cs = DAYS;               assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
         cs = ELLIPSOIDAL_HEIGHT; assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
+    }
+
+    /**
+     * Tests the normalization of a coordinate system.
+     */
+    @Test
+    @DependsOnMethod("testNormalized")
+    public void testNormalize() {
+        final AbstractCS normalized = SPHERICAL.forConvention(AxesConvention.NORMALIZED);
+        assertNotSame(SPHERICAL, normalized);
+        assertEquals(new DefaultSphericalCS(
+            Collections.singletonMap(AbstractCS.NAME_KEY, "Spherical CS: East (deg), North (deg), Up (m)."),
+            HardCodedAxes.SPHERICAL_LONGITUDE,
+            HardCodedAxes.SPHERICAL_LATITUDE,
+            HardCodedAxes.GEOCENTRIC_RADIUS
+        ), normalized);
     }
 }
