@@ -79,6 +79,8 @@ public enum Convention {
      * <ul>
      *   <li>{@code VERTICALEXTENT} element omits the {@code UNIT} sub-element
      *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
+     *   <li>{@code ELLIPSOID} element omits the {@code UNIT} sub-element
+     *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
      *   <li>{@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT}
      *       and {@code TIMEUNIT} are formatted as plain {@code UNIT} elements.</li>
      *   <li>{@code ID} is formatted only for the root element

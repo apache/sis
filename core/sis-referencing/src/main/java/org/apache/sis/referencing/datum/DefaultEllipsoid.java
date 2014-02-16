@@ -37,6 +37,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
@@ -760,8 +761,20 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        formatter.append(unit.getConverterTo(SI.METRE).convert(semiMajorAxis));
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = convention.versionOfWKT() == 1;
+        double length = semiMajorAxis;
+        if (isWKT1) {
+            length = unit.getConverterTo(SI.METRE).convert(length);
+        }
+        formatter.append(length);
         formatter.append(isInfinite(inverseFlattening) ? 0 : inverseFlattening);
-        return "Spheroid";
+        if (isWKT1) {
+            return "Spheroid";
+        }
+        if (!convention.isSimplified() || !SI.METRE.equals(unit)) {
+            formatter.append(unit);
+        }
+        return "Ellipsoid";
     }
 }

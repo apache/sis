@@ -178,14 +178,14 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     }
 
     /**
-     * Tests {@link DefaultEllipsoid#toWKT()}.
+     * Tests {@link DefaultGeodeticDatum#toWKT()}.
      */
     @Test
     public void testToWKT() {
         final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
         assertWktEquals(
                 "Datum[“WGS84”,\n" +
-                "  Spheroid[“WGS84”, 6378137.0, 298.257223563]]",
+                "  Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]]",
                 datum);
     }
 
@@ -256,7 +256,8 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
      * @throws JAXBException If an error occurred during unmarshalling.
      */
     @Test
-    public void testWKT() throws JAXBException {
+    @DependsOnMethod("testToWKT")
+    public void testUnmarshalledWKT() throws JAXBException {
         final DefaultGeodeticDatum datum = testUnmarshalling();
         assertWktEquals(Convention.WKT1,
                 "DATUM[“World Geodetic System 1984”,\n" +
@@ -266,13 +267,13 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
 
         assertWktEquals(Convention.WKT2,
                 "Datum[“World Geodetic System 1984”,\n" +
-                "  Spheroid[“WGS 84”, 6378137.0, 298.257223563],\n" +
+                "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]],\n" +
                 "  Id[“EPSG”, 6326, Citation[“OGP”], URI[“urn:ogc:def:datum:EPSG::6326”]]]",
                 datum);
 
         assertWktEquals(Convention.INTERNAL,
                 "Datum[“World Geodetic System 1984”,\n" +
-                "  Spheroid[“WGS 84”, 6378137.0, 298.257223563, Id[“EPSG”, 7030, Citation[“OGP”]],\n" +
+                "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, Id[“EPSG”, 7030, Citation[“OGP”]],\n" +
                 "    Remarks[“Defining parameters cited in EPSG database.”]],\n" +
                 "  Scope[“Satellite navigation.”],\n" +
                 "  Area[“World.”],\n" +
