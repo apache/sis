@@ -627,7 +627,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * is WGS 84. For other targets, the element name will be derived from the datum name.
      *
      * @param  formatter The formatter to use.
-     * @return The WKT element name, usually {@code "TOWGS84"}.
+     * @return The WKT element name, usually {@code "ToWGS84"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {

@@ -545,7 +545,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * See class javadoc for more information on the WKT format.
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The WKT keyword: {@code "ID"} (WKT 2) or {@code "AUTHORITY"} (WKT 1).
+     * @return The WKT keyword, which is {@code "Id"} (WKT 2) or {@code "Authority"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
