@@ -232,11 +232,11 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
      *
      * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "VERT_CS"}.
+     * @return The name of the WKT element type, which is {@code "VerticalCRS"} (WKT 2) or {@code "Vert_CS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return "Vert_CS";
+        return (formatter.getConvention().versionOfWKT() == 1) ? "Vert_CS" : "VerticalCRS";
     }
 }

@@ -247,7 +247,9 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Returns the legacy code for the datum type, or 0 if none.
+     * Gets the type of the datum as an enumerated code. Datum type was provided for all kind of datum
+     * in the legacy OGC 01-009 specification. Datum type became provided only for vertical datum in
+     * the ISO 19111:2003 specification, then removed completely in ISO 19111:2007.
      *
      * @see #getVerticalDatumType()
      */
@@ -319,11 +321,11 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
      *
      * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "VERT_DATUM"}.
+     * @return The WKT element name, which is {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return "Vert_Datum";
+        return (formatter.getConvention().versionOfWKT() == 1) ? "Vert_Datum" : "VerticalDatum";
     }
 }

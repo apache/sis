@@ -378,7 +378,7 @@ public class Formatter implements Localized {
      * @see WKTFormat#setConvention(Convention)
      * @see FormattableObject#toString(Convention)
      */
-    public Convention getConvention() {
+    public final Convention getConvention() {
         return convention;
     }
 
@@ -397,7 +397,7 @@ public class Formatter implements Localized {
      * @see WKTFormat#getNameAuthority()
      * @see org.apache.sis.referencing.IdentifiedObjects#getName(IdentifiedObject, Citation)
      */
-    public Citation getNameAuthority() {
+    public final Citation getNameAuthority() {
         return authority;
     }
 
@@ -408,7 +408,7 @@ public class Formatter implements Localized {
      * @return The locale to use for localizing international strings.
      */
     @Override
-    public Locale getLocale() {
+    public final Locale getLocale() {
         return locale;
     }
 
