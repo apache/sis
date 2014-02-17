@@ -502,7 +502,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
      *
      * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "DATUM"}.
+     * @return The WKT element name, which is {@code "Datum"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -512,12 +512,14 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         formatter.newLine();
         formatter.append(ellipsoid instanceof FormattableObject ? (FormattableObject) ellipsoid :
                          DefaultEllipsoid.castOrCopy(ellipsoid));
-        if (bursaWolf != null) {
-            for (final BursaWolfParameters candidate : bursaWolf) {
-                if (candidate.isToWGS84()) {
-                    formatter.newLine();
-                    formatter.append(candidate);
-                    break;
+        if (formatter.getConvention().versionOfWKT() == 1) {
+            if (bursaWolf != null) {
+                for (final BursaWolfParameters candidate : bursaWolf) {
+                    if (candidate.isToWGS84()) {
+                        formatter.newLine();
+                        formatter.append(candidate);
+                        break;
+                    }
                 }
             }
         }

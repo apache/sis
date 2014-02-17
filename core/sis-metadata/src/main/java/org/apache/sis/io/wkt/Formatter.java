@@ -517,18 +517,20 @@ public class Formatter implements Localized {
      * <ul>
      *   <li>Invoke <code>object.{@linkplain FormattableObject#formatTo(Formatter) formatTo}(this)</code>.</li>
      *   <li>Prepend the keyword returned by the above method call (e.g. {@code "GEOCS"}).</li>
-     *   <li>If the given object is an instance of {@link IdentifiedObject}, then append complementary information:
-     *     <ul>
-     *       <li>{@code SCOPE[…]} (WKT 2 only)</li>
-     *       <li>{@code AREA[…]}  (WKT 2 only)</li>
-     *       <li>{@code BBOX[…]}  (WKT 2 only)</li>
-     *       <li>{@code VERTICALEXTENT[…]} (WKT 2 only)</li>
-     *       <li>{@code TIMEEXTENT[…]} (WKT 2 only)</li>
-     *       <li>{@code ID[…]} (WKT 2) or {@code AUTHORITY[…]} (WKT 1)</li>
-     *       <li>{@code REMARKS[…]} ({@link ReferenceSystem} and {@link CoordinateOperation} in WKT 2 only)</li>
-     *     </ul>
-     *   </li>
+     *   <li>If the given object is an instance of {@link IdentifiedObject}, then append complementary information:</li>
      * </ul>
+     *
+     * <blockquote><table class="sis">
+     *   <tr><th>WKT 2 element</th><th>WKT 1 element</th><th>For types</th></tr>
+     *   <tr><td>{@code Anchor[…]}</td>        <td></td> <td>{@link Datum}</td></tr>
+     *   <tr><td>{@code Scope[…]}</td>         <td></td> <td>{@link ReferenceSystem}, {@link Datum}, {@link CoordinateOperation}</td></tr>
+     *   <tr><td>{@code Area[…]}</td>          <td></td> <td>{@link ReferenceSystem}, {@link Datum}, {@link CoordinateOperation}</td></tr>
+     *   <tr><td>{@code BBox[…]}</td>          <td></td> <td>{@link ReferenceSystem}, {@link Datum}, {@link CoordinateOperation}</td></tr>
+     *   <tr><td>{@code VerticalExtent[…]}</td><td></td> <td>{@link ReferenceSystem}, {@link Datum}, {@link CoordinateOperation}</td></tr>
+     *   <tr><td>{@code TimeExtent[…]}</td>    <td></td> <td>{@link ReferenceSystem}, {@link Datum}, {@link CoordinateOperation}</td></tr>
+     *   <tr><td>{@code Id[…]}</td><td>{@code Authority[…]}</td><td>{@link IdentifiedObject}</td></tr>
+     *   <tr><td>{@code Remarks[…]}</td>       <td></td> <td>{@link ReferenceSystem}, {@link CoordinateOperation}</td></tr>
+     * </table></blockquote>
      *
      * @param object The formattable object to append to the WKT, or {@code null} if none.
      */
@@ -605,10 +607,11 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends the optional complementary attributes common to all {@link IdentifiedObject}s.
-     * Those attributes are {@code SCOPE}, {@code AREA}, {@code BBOX}, {@code VERTICALEXTENT}, {@code TIMEEXTENT},
-     * {@code ID} (previously known as {@code AUTHORITY}) and {@code REMARKS}, and have a special treatment: they
-     * are written by {@link #append(FormattableObject))} after the {@code formatTo(Formatter)} method returned.
+     * Appends the optional complementary attributes common to many {@link IdentifiedObject} subtypes.
+     * Those attributes are {@code ANCHOR}, {@code SCOPE}, {@code AREA}, {@code BBOX}, {@code VERTICALEXTENT},
+     * {@code TIMEEXTENT}, {@code ID} (previously known as {@code AUTHORITY}) and {@code REMARKS},
+     * and have a special treatment: they are written by {@link #append(FormattableObject))}
+     * after the {@code formatTo(Formatter)} method returned.
      *
      * <p>The {@code ID[<name>,<code>,…]} element is written only for the root element, unless the convention are
      * INTERNAL. If formatted, the ID element will be on the same line than the enclosing one if no line separator
@@ -663,7 +666,7 @@ public class Formatter implements Localized {
             }
         }
         if (showOthers) {
-            appendScopeAndArea(object);
+            appendForSubtypes(object);
         }
         if (showIDs) {
             Collection<ReferenceIdentifier> identifiers = object.getIdentifiers();
@@ -692,24 +695,28 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends the scope and domain of validity of the given object. Those information are available
+     * Appends the anchor, scope and domain of validity of the given object. Those information are available
      * only for {@link ReferenceSystem}, {@link Datum} and {@link CoordinateOperation} objects.
      */
-    private void appendScopeAndArea(final IdentifiedObject object) {
-        final InternationalString scope;
+    private void appendForSubtypes(final IdentifiedObject object) {
+        final InternationalString anchor, scope;
         final Extent area;
         if (object instanceof ReferenceSystem) {
-            scope = ((ReferenceSystem) object).getScope();
-            area  = ((ReferenceSystem) object).getDomainOfValidity();
+            anchor = null;
+            scope  = ((ReferenceSystem) object).getScope();
+            area   = ((ReferenceSystem) object).getDomainOfValidity();
         } else if (object instanceof Datum) {
-            scope = ((Datum) object).getScope();
-            area  = ((Datum) object).getDomainOfValidity();
+            anchor = ((Datum) object).getAnchorPoint();
+            scope  = ((Datum) object).getScope();
+            area   = ((Datum) object).getDomainOfValidity();
         } else if (object instanceof CoordinateOperation) {
-            scope = ((CoordinateOperation) object).getScope();
-            area  = ((CoordinateOperation) object).getDomainOfValidity();
+            anchor = null;
+            scope  = ((CoordinateOperation) object).getScope();
+            area   = ((CoordinateOperation) object).getDomainOfValidity();
         } else {
             return;
         }
+        appendOnNewLine("Anchor", anchor, null);
         appendOnNewLine("Scope", scope, ElementKind.SCOPE);
         if (area != null) {
             appendOnNewLine("Area", area.getDescription(), ElementKind.EXTENT);
@@ -856,16 +863,32 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends a code list.
+     * Appends an international text in an element having the given keyword. Since this method
+     * is typically invoked for long descriptions, the element will be written on its own line.
      *
-     * @param code The code list to append to the WKT, or {@code null} if none.
+     * {@example
+     *   <ul>
+     *     <li><code>Scope["Large scale topographic mapping and cadastre."]</code></li>
+     *     <li><code>Area["Netherlands offshore."]</code></li>
+     *   </ul>
+     * }
+     *
+     * @param keyword The {@linkplain KeywordCase#CAMEL_CASE camel-case} keyword.
+     *                Example: {@code "Scope"}, {@code "Area"} or {@code "Remarks"}.
+     * @param text The text, or {@code null} if none.
+     * @param type The key of the colors to apply if syntax coloring is enabled.
      */
-    public void append(final CodeList<?> code) {
-        if (code != null) {
-            appendSeparator();
-            setColor(ElementKind.CODE_LIST);
-            buffer.append(convention.versionOfWKT() == 1 ? code.name() : Types.getCodeName(code));
-            resetColor();
+    private void appendOnNewLine(final String keyword, final InternationalString text, final ElementKind type) {
+        ArgumentChecks.ensureNonNull("keyword", keyword);
+        if (text != null) {
+            final String localized = CharSequences.trimWhitespaces(text.toString(locale));
+            if (localized != null && !localized.isEmpty()) {
+                openElement(true, keyword);
+                setColor(type);
+                quote(localized);
+                resetColor();
+                closeElement(true);
+            }
         }
     }
 
@@ -882,33 +905,6 @@ public class Formatter implements Localized {
             setColor(type);
             quote(text);
             resetColor();
-        }
-    }
-
-    /**
-     * Appends an international text in an element having the given keyword. Since this method
-     * is typically invoked for long descriptions, the element will be written on its own line.
-     *
-     * {@example
-     *   <ul>
-     *     <li><code>SCOPE["Large scale topographic mapping and cadastre."]</code></li>
-     *     <li><code>AREA["Netherlands offshore."]</code></li>
-     *   </ul>
-     * }
-     *
-     * @param keyword The keyword. Example: {@code "SCOPE"}, {@code "AREA"} or {@code "REMARKS"}.
-     * @param text The text, or {@code null} if none.
-     */
-    private void appendOnNewLine(final String keyword, final InternationalString text, final ElementKind type) {
-        if (text != null) {
-            final String localized = CharSequences.trimWhitespaces(text.toString(locale));
-            if (localized != null && !localized.isEmpty()) {
-                openElement(true, keyword);
-                setColor(type);
-                quote(localized);
-                resetColor();
-                closeElement(true);
-            }
         }
     }
 
@@ -945,6 +941,21 @@ public class Formatter implements Localized {
             }
         }
         buffer.append(quote);
+    }
+
+    /**
+     * Appends a code list.
+     * The {@linkplain Symbols#getSeparator() element separator} will be written before the code list if needed.
+     *
+     * @param code The code list to append to the WKT, or {@code null} if none.
+     */
+    public void append(final CodeList<?> code) {
+        if (code != null) {
+            appendSeparator();
+            setColor(ElementKind.CODE_LIST);
+            buffer.append(convention.versionOfWKT() == 1 ? code.name() : Types.getCodeName(code));
+            resetColor();
+        }
     }
 
     /**

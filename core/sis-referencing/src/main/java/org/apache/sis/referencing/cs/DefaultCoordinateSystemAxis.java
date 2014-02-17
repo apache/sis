@@ -748,7 +748,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * </ul>
      *
      * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "AXIS"}.
+     * @return The WKT element name, which is {@code "Axis"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
