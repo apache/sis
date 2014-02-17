@@ -254,11 +254,11 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
      *
      * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "LOCAL_CS"}.
+     * @return The name of the WKT element type, which is {@code "EngineeringCRS"} (WKT 2) or {@code "Local_CS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return "Local_CS";
+        return (formatter.getConvention().versionOfWKT() == 1) ? "Local_CS" : "EngineeringCRS";
     }
 }

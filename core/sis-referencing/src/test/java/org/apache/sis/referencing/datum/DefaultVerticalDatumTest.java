@@ -23,6 +23,7 @@ import javax.xml.bind.JAXBException;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
@@ -89,10 +90,12 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
     public void testToWKT() {
         DefaultVerticalDatum datum;
         datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Geoidal"), VerticalDatumType.GEOIDAL);
-        assertWktEquals("Vert_Datum[“Geoidal”, 2005]", datum);
+        assertWktEquals(Convention.WKT1, "VERT_DATUM[“Geoidal”, 2005]", datum);
+        assertWktEquals(Convention.WKT2, "VerticalDatum[“Geoidal”]", datum);
 
         datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Ellipsoidal"), VerticalDatumTypes.ELLIPSOIDAL);
-        assertWktEquals("Vert_Datum[“Ellipsoidal”, 2002]", datum);
+        assertWktEquals(Convention.WKT1, "VERT_DATUM[“Ellipsoidal”, 2002]", datum);
+        assertWktEquals(Convention.WKT2, "VerticalDatum[“Ellipsoidal”]", datum);
     }
 
     /**

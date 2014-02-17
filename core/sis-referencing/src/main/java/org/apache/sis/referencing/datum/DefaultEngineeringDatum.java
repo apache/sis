@@ -164,14 +164,14 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
 
     /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
-     * The keyword is "{@code LOCAL_DATUM}" in WKT 1.
      *
      * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "LOCAL_DATUM"}.
+     * @return The name of the WKT element type, which is
+     *         {@code "EngineeringDatum"} (WKT 2) or {@code "Local_Datum"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return "Local_Datum";
+        return (formatter.getConvention().versionOfWKT() == 1) ? "Local_Datum" : "EngineeringDatum";
     }
 }

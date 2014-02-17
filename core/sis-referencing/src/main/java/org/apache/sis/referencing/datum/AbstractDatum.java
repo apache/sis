@@ -335,10 +335,9 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
 
     /**
      * Gets the type of the datum as an enumerated code. Datum type was provided for all kind of datum
-     * in the legacy OGC 01-009 specification. In the new OGC 03-73 (ISO 19111) specification,
-     * datum type is provided only for vertical datum. Nevertheless, we keep this method around
-     * since it is needed for WKT formatting. Note that we return the datum type ordinal value,
-     * not the code list object.
+     * in the legacy OGC 01-009 specification. Datum types became provided only for vertical datum in
+     * the ISO 19111:2003 specification, then removed completely in the ISO 19111:2007 revision.
+     * We keep this method around only for WKT 1 formatting.
      */
     int getLegacyDatumType() {
         return 0;
@@ -440,17 +439,15 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
      *
-     * {@note All subclasses will override this method, but only <code>DefaultGeodeticDatum</code>
-     *        will <strong>not</strong> invoke this parent method, because horizontal datum do not
-     *        write the datum type.}
-     *
      * @param  formatter The formatter to use.
      * @return The WKT element name.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         final String keyword = super.formatTo(formatter);
-        formatter.append(getLegacyDatumType());
+        if (formatter.getConvention().versionOfWKT() == 1) {
+            formatter.append(getLegacyDatumType());
+        }
         return keyword;
     }
 }
