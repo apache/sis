@@ -18,9 +18,9 @@ package org.apache.sis.io.wkt;
 
 
 /**
- * Whether WKT keywords shall be written with upper cases or camel cases.
+ * Whether WKT keywords shall be written with upper case or CamelCase styles.
  * The most common usage for WKT keywords is upper case.
- * However with version 2 of Well Known Text, camel case may be easier to read
+ * However with version 2 of Well Known Text, CamelCase keywords may be easier to read
  * because WKT 2 has more keywords made by combination of words. Examples:
  *
  * <table class="sis">
@@ -53,13 +53,14 @@ public enum KeywordCase {
     DEFAULT,
 
     /**
-     * Keywords are written with camel cases. This is more useful in WKT 2 strings, which
+     * WKT formatting uses CamelCase keywords. This is more useful in WKT 2 strings, which
      * use longer keywords than WKT 1 did. Examples: {@code "TimeExtent"}, {@code "AngleUnit"}.
      */
     CAMEL_CASE,
 
     /**
-     * Keywords are written with upper cases. This is the most usual case in WKT 1 strings.
+     * WKT formatting uses upper case keywords.
+     * This is the most usual case in WKT 1 strings.
      */
     UPPER_CASE
 }

@@ -275,11 +275,11 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
-     * Format the inner part of a <cite>Well Known Text</cite> (WKT) element.
-     * {@code TimeDatum} are defined in the WKT 2 specification only.
+     * Formats this datum as a <cite>Well Known Text</cite> {@code TimeDatum[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "TimeDatum"}.
+     * {@note <code>TimeDatum</code> is defined in the WKT 2 specification only.}
+     *
+     * @return {@code "TimeDatum"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {

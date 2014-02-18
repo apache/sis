@@ -253,11 +253,11 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
-     * {@code ImageCRS} are defined in the WKT 2 specification only.
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code ImageCRS[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "ImageCRS"}.
+     * {@note <code>ImageCRS</code> are defined in the WKT 2 specification only.}
+     *
+     * @return {@code "ImageCRS"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {

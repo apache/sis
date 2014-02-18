@@ -31,6 +31,7 @@ import org.opengis.parameter.InvalidParameterTypeException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Numerics;
@@ -689,15 +690,26 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     }
 
     /**
-     * Formats this parameter as a <cite>Well Known Text</cite>.
+     * Formats this parameter as a <cite>Well Known Text</cite> {@code Parameter[…]} element.
+     * Example:
      *
-     * @return The {@code "PARAMETER"} keyword.
+     * {@preformat wkt
+     *   Parameter["False easting", 0.0, LengthUnit["metre", 1]]
+     * }
+     *
+     * {@note Version 1 of WKT format did not specified the parameter unit explicitely.
+     *        Instead, the unit was inherited from the enclosing element.}
+     *
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return {@code "Parameter"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(descriptor, formatter, ElementKind.PARAMETER);
         final Unit<?> targetUnit = formatter.toContextualUnit(descriptor.getUnit());
-        if (targetUnit != null) {
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = convention.versionOfWKT() == 1;
+        if (isWKT1 && targetUnit != null) {
             double convertedValue;
             try {
                 convertedValue = doubleValue(targetUnit);
@@ -710,6 +722,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             formatter.append(convertedValue);
         } else {
             formatter.appendAny(value);
+        }
+        if (unit != null && !isWKT1 && (!convention.isSimplified() || !unit.equals(targetUnit))) {
+            formatter.append(unit);
         }
         return "Parameter";
     }

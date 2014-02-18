@@ -497,10 +497,28 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Formats this datum as a <cite>Well Known Text</cite> {@code Datum[…]} element.
+     * Examples:
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "Datum"}.
+     * <table class="compact">
+     * <tr>
+     *   <th>WKT 2</th>
+     *   <th>WKT 1</th>
+     * </tr><tr><td>
+     * {@preformat wkt
+     *      Datum["World Geodetic System 1984",
+     *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]],
+     *      Id["EPSG", 6326, Citation["OGP"], URI["urn:ogc:def:datum:EPSG::6326"]]]
+     * }
+     * </td><td>
+     * {@preformat wkt
+     *      DATUM["World Geodetic System 1984"
+     *        SPHEROID["WGS84", 6378137.0, 298.257223563],
+     *      AUTHORITY["EPSG", "6326"]]
+     * }
+     * </td></tr></table>
+     *
+     * @return {@code "Datum"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {

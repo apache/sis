@@ -36,7 +36,6 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
@@ -502,19 +501,6 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     protected long computeHashCode() {
         return Arrays.deepHashCode(new Object[] {required, valueClass, defaultValue, minimumValue, maximumValue, unit})
                 + super.computeHashCode();
-    }
-
-    /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
-     *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name.
-     *
-     * @todo Not yet implemented.
-     */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        return null;
     }
 
     /**

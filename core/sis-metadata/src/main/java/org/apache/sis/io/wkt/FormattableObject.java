@@ -194,13 +194,13 @@ public abstract class FormattableObject {
      * This method is automatically invoked by {@link WKTFormat} when a formattable element is found.
      *
      * <p>Keywords, opening and closing brackets shall not be formatted here.
-     * For example if this formattable element is for a {@code ID[…]} element,
+     * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
      * then this method shall write the content starting at the insertion point shown below:</p>
      *
      * {@preformat text
-     *        ID[ ]
-     *           ↑
-     *   (insertion point)
+     *   GeodeticCRS[ ]
+     *               ↑
+     *       (insertion point)
      * }
      *
      * {@section Formatting non-standard WKT}
@@ -211,11 +211,11 @@ public abstract class FormattableObject {
      *
      * <p>Alternatively, the implementation may also have no WKT keyword for this object.
      * This happen frequently when an abstract class defines a base implementation,
-     * but the keyword is defined by the concrete subclasses.
+     * while the keyword needs to be defined by the concrete subclasses.
      * In such case, the method in the abstract class shall return {@code null}.</p>
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The WKT element keyword, or {@code null} if none.
+     * @return The {@linkplain KeywordCase#CAMEL_CASE CamelCase} keyword for the WKT element, or {@code null} if unknown.
      *
      * @see #toWKT()
      * @see #toString()

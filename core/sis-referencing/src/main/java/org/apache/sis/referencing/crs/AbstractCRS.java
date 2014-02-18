@@ -397,7 +397,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
+     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> CRS into the given formatter.
      * The default implementation writes the following elements:
      *
      * <ul>
@@ -408,8 +408,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *   <li>All {@linkplain #getCoordinateSystem() coordinate system}'s axis.</li>
      * </ul>
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type (e.g. {@code "GEOGCS"}).
+     * @return {@inheritDoc}
      */
     @Override
     protected String formatTo(final Formatter formatter) {

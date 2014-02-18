@@ -193,10 +193,42 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
+     * Examples:
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
+     * <table class="compact">
+     * <tr>
+     *   <th>WKT 2</th>
+     *   <th>WKT 1</th>
+     * </tr><tr><td>
+     * {@preformat wkt
+     *   GeodeticCRS["WGS 84",
+     *      Datum["World Geodetic System 1984",
+     *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]]],
+     *      PrimeMeridian["Greenwich", 0.0, AngleUnit["degree", 0.017453292519943295]],
+     *      CS["ellipsoidal", 2],
+     *        Axis["Longitude", east],
+     *        Axis["Latitude", north],
+     *        AngleUnit["degree", 0.017453292519943295],
+     *      Area["World"],
+     *      BBox[-90.00, -180.00, 90.00, 180.00],
+     *      Scope["Used by GPS satellite navigation system."]
+     *      Id["EPSG", 4326, Citation["OGP"], URI["urn:ogc:def:crs:EPSG::4326"]]]
+     * }
+     * </td><td>
+     * {@preformat wkt
+     *   GEOGCS["WGS 84"
+     *      DATUM["World Geodetic System 1984"
+     *        SPHEROID["WGS84", 6378137.0, 298.257223563]]
+     *      PRIMEM["Greenwich", 0.0]
+     *      UNIT["degree", 0.017453292519943295]
+     *      AXIS["Longitude", EAST]
+     *      AXIS["Latitude", NORTH],
+     *      AUTHORITY["EPSG", "4326"]]
+     * }
+     * </td></tr></table>
+     *
+     * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {

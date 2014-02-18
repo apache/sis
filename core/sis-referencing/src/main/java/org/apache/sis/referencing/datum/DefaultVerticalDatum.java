@@ -306,15 +306,14 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Formats this datum as a <cite>Well Known Text</cite> {@code VerticalDatum[…]} element.
      *
      * {@note OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height
      *        and 2002 for ellipsoidal height. Such codes were formatted for all <code>Datum</code> subtypes in WKT 1.
      *        Datum types became provided only for vertical datum in the ISO 19111:2003 specification, then removed
      *        completely in ISO 19111:2007.}
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
+     * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
