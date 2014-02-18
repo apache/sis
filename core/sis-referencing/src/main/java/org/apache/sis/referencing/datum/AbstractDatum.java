@@ -29,7 +29,6 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.metadata.MetadataUtilities;
@@ -334,16 +333,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Gets the type of the datum as an enumerated code. Datum type was provided for all kind of datum
-     * in the legacy OGC 01-009 specification. Datum types became provided only for vertical datum in
-     * the ISO 19111:2003 specification, then removed completely in the ISO 19111:2007 revision.
-     * We keep this method around only for WKT 1 formatting.
-     */
-    int getLegacyDatumType() {
-        return 0;
-    }
-
-    /**
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
      * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
      * This method performs the comparison documented in the
@@ -434,20 +423,5 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + Objects.hash(anchorDefinition, realizationEpoch, domainOfValidity, scope);
-    }
-
-    /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
-     *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name.
-     */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        final String keyword = super.formatTo(formatter);
-        if (formatter.getConvention().versionOfWKT() == 1) {
-            formatter.append(getLegacyDatumType());
-        }
-        return keyword;
     }
 }

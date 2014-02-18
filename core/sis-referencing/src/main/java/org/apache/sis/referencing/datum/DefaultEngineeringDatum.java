@@ -172,6 +172,16 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().versionOfWKT() == 1) ? "Local_Datum" : "EngineeringDatum";
+        if (formatter.getConvention().versionOfWKT() == 1) {
+            /*
+             * Datum type was provided for all kind of datum in the legacy OGC 01-009 specification.
+             * Datum types became provided only for vertical datum in the ISO 19111:2003 specification,
+             * then removed completely in the ISO 19111:2007 revision. We are supposed to format them
+             * in WKT 1, but do not have any indication about what the values should be.
+             */
+            formatter.append(0);
+            return "Local_Datum";
+        }
+        return "EngineeringDatum";
     }
 }

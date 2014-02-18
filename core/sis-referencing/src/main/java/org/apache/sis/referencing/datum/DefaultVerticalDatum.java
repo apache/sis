@@ -247,18 +247,6 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Gets the type of the datum as an enumerated code. Datum type was provided for all kind of datum
-     * in the legacy OGC 01-009 specification. Datum type became provided only for vertical datum in
-     * the ISO 19111:2003 specification, then removed completely in ISO 19111:2007.
-     *
-     * @see #getVerticalDatumType()
-     */
-    @Override
-    final int getLegacyDatumType() {
-        return VerticalDatumTypes.toLegacy(getVerticalDatumType().ordinal());
-    }
-
-    /**
      * Returns the type to be marshalled to XML.
      * This element was present in GML 3.0 and 3.1, but has been removed from GML 3.2.
      *
@@ -320,12 +308,21 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
      *
+     * {@note OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height
+     *        and 2002 for ellipsoidal height. Such codes were formatted for all <code>Datum</code> subtypes in WKT 1.
+     *        Datum types became provided only for vertical datum in the ISO 19111:2003 specification, then removed
+     *        completely in ISO 19111:2007.}
+     *
      * @param  formatter The formatter to use.
      * @return The WKT element name, which is {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().versionOfWKT() == 1) ? "Vert_Datum" : "VerticalDatum";
+        if (formatter.getConvention().versionOfWKT() == 1) {
+            formatter.append(VerticalDatumTypes.toLegacy(type().ordinal()));
+            return "Vert_Datum";
+        }
+        return "VerticalDatum";
     }
 }
