@@ -29,6 +29,8 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
@@ -270,5 +272,24 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + origin;
+    }
+
+    /**
+     * Format the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * {@code TimeDatum} are defined in the WKT 2 specification only.
+     *
+     * @param  formatter The formatter to use.
+     * @return The WKT element name, which is {@code "TimeDatum"}.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
+        final Convention convention = formatter.getConvention();
+        if (convention == Convention.INTERNAL) {
+            formatter.append(MetadataUtilities.toDate(origin)); // This is an extension compared to ISO 19162.
+        } else if (convention.versionOfWKT() == 1) {
+            formatter.setInvalidWKT(this, null);
+        }
+        return "TimeDatum";
     }
 }

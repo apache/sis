@@ -151,6 +151,12 @@ public enum Convention {
      *   <li>{@code Remarks} element is formatted for all
      *       {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject identified objects},
      *       not only CRS or coordinate operations.</li>
+     *   <li>Additional attributes not defined by ISO 19162 may be formatted:
+     *     <ul>
+     *       <li>{@code ImageDatum} includes the {@link org.apache.sis.referencing.datum.DefaultImageDatum#getPixelInCell() Pixel in Cell} code.</li>
+     *       <li>{@code TemporalDatum} includes the {@link org.apache.sis.referencing.datum.DefaultTemporalDatum#getOrigin() Origin} date.</li>
+     *     </ul>
+     *   </li>
      * </ul>
      *
      * This convention is used only for debugging purpose.

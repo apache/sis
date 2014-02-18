@@ -26,6 +26,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -234,13 +235,17 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * {@code ImageDatum} are defined in the WKT 2 specification only.
      *
      * @param  formatter The formatter to use.
-     * @return The WKT element name.
+     * @return The WKT element name, which is {@code "ImageDatum"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        formatter.append(pixelInCell);
-        formatter.setInvalidWKT(this, null);
-        return "GenDatum"; // Generic datum (WKT 2)
+        final Convention convention = formatter.getConvention();
+        if (convention == Convention.INTERNAL) {
+            formatter.append(pixelInCell); // This is an extension compared to ISO 19162.
+        } else if (convention.versionOfWKT() == 1) {
+            formatter.setInvalidWKT(this, null);
+        }
+        return "ImageDatum";
     }
 }

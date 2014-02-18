@@ -34,13 +34,11 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.ExtentSelector;
-import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.io.wkt.ElementKind;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -506,13 +504,15 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        // Do NOT invokes the super-class method, because
-        // horizontal datum do not write the datum type.
-        WKTUtilities.appendName(this, formatter, ElementKind.DATUM);
+        super.formatTo(formatter);
         formatter.newLine();
         formatter.append(ellipsoid instanceof FormattableObject ? (FormattableObject) ellipsoid :
                          DefaultEllipsoid.castOrCopy(ellipsoid));
         if (formatter.getConvention().versionOfWKT() == 1) {
+            /*
+             * Note that at the different of other datum (in particular vertical datum),
+             * WKT of geodetic datum do not have a numerical code for the datum type.
+             */
             if (bursaWolf != null) {
                 for (final BursaWolfParameters candidate : bursaWolf) {
                     if (candidate.isToWGS84()) {
