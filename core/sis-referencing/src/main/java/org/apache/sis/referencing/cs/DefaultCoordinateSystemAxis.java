@@ -733,7 +733,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Formats this axis as a <cite>Well Known Text</cite> {@code Axis[…]} element.
      *
      * {@section Constraints for WKT validity}
      * The ISO 19162 specification puts many constraints on axis names, abbreviations and directions allowed in WKT.
@@ -747,8 +747,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *       by “<cite>Latitude</cite>” and “<cite>Longitude</cite>” respectively.</li>
      * </ul>
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "Axis"}.
+     * @return {@code "Axis"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {

@@ -25,6 +25,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterTypeException;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -516,7 +517,11 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        assertWktEquals("Parameter[“WKT test”, 4]", createOptional("WKT test", 4));
-        assertWktEquals("Parameter[“WKT test”, 30.0]", create("WKT test", 30, SI.CENTIMETRE));
+        final DefaultParameterValue<Integer> count  = createOptional("Count", 4);
+        final DefaultParameterValue<Double>  length = create("Length", 30, SI.CENTIMETRE);
+        assertWktEquals(Convention.WKT1, "PARAMETER[“Count”, 4]", count);
+        assertWktEquals(Convention.WKT1, "PARAMETER[“Length”, 30.0]", length);
+        assertWktEquals(Convention.WKT2, "Parameter[“Count”, 4]", count);
+        assertWktEquals(Convention.WKT2, "Parameter[“Length”, 30.0, LengthUnit[“cm”, 0.01]]", length);
     }
 }

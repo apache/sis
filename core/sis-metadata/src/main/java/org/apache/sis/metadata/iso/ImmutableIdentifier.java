@@ -541,11 +541,11 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     }
 
     /**
-     * Formats a <cite>Well Known Text</cite> representation of this identifier.
+     * Formats this identifier as a <cite>Well Known Text</cite> {@code Id[…]} element.
      * See class javadoc for more information on the WKT format.
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The WKT keyword, which is {@code "Id"} (WKT 2) or {@code "Authority"} (WKT 1).
+     * @return {@code "Id"} (WKT 2) or {@code "Authority"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {

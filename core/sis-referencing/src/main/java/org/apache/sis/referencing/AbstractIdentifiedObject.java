@@ -948,7 +948,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Formats the inner part of this <cite>Well Known Text</cite> (WKT) element into the given formatter.
+     * Formats the inner part of this <cite>Well Known Text</cite> (WKT) object into the given formatter.
      * The default implementation writes the following elements:
      *
      * <ul>
@@ -956,7 +956,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </ul>
      *
      * Keywords and metadata (scope, extent, identifier and remarks) shall not be formatted here.
-     * For example if this formattable element is for a {@code GEOGCS[…]} element,
+     * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
      * then subclasses shall write the content starting at the insertion point shown below:
      *
      * <table class="compact">
@@ -965,15 +965,15 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <th>Java code example</th>
      * </tr><tr><td>
      * {@preformat text
-     *     GEOGCS["WGS 84", ID["EPSG", 4326]]
-     *                    ↑
-     *            (insertion point)
+     *   GeodeticCRS["WGS 84", ID["EPSG", 4326]]
+     *                       ↑
+     *               (insertion point)
      * }
      * </td><td>
      * {@preformat java
      *     super.formatTo(formatter);
      *     // ... write the elements at the insertion point ...
-     *     return "GEOGCS";
+     *     return "GeodeticCRS";
      * }
      * </td></tr></table>
      *
@@ -986,7 +986,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * In such case, this method shall return {@code null}.</p>
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The WKT element keyword, or {@code null} if none.
+     * @return The {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
+     *         for the WKT element, or {@code null} if unknown.
      */
     @Override
     protected String formatTo(final Formatter formatter) {

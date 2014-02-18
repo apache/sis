@@ -163,11 +163,9 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
+     * Formats this datum as a <cite>Well Known Text</cite> {@code EngineeringDatum[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is
-     *         {@code "EngineeringDatum"} (WKT 2) or {@code "Local_Datum"} (WKT 1).
+     * @return {@code "EngineeringDatum"} (WKT 2) or {@code "Local_Datum"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {

@@ -296,11 +296,11 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
-     * {@code TimeCRS} are defined in the WKT 2 specification only.
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code TimeCRS[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "TimeCRS"}.
+     * {@note <code>TimeCRS</code> is defined in the WKT 2 specification only.}
+     *
+     * @return {@code "TimeCRS"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {

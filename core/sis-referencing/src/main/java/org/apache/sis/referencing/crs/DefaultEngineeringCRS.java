@@ -251,10 +251,9 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code EngineeringCRS[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "EngineeringCRS"} (WKT 2) or {@code "Local_CS"} (WKT 1).
+     * @return {@code "EngineeringCRS"} (WKT 2) or {@code "Local_CS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {

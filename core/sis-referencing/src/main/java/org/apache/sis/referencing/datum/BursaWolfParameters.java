@@ -617,17 +617,20 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element. The WKT contains the
-     * parameters in <var>translation</var>, <var>rotation</var>, <var>scale</var> order, like below:
+     * Formats this object as a <cite>Well Known Text</cite> {@code ToWGS84[…]} element.
+     * The WKT contains the parameters in <var>translation</var>, <var>rotation</var>, <var>scale</var> order,
+     * like below:
      *
      * <blockquote><code>TOWGS84[{@linkplain #tX}, {@linkplain #tY}, {@linkplain #tZ}, {@linkplain #rX},
      * {@linkplain #rY}, {@linkplain #rZ}, {@linkplain #dS}]</code></blockquote>
      *
-     * The element name is {@code "TOWGS84"} in the common case where the {@linkplain #getTargetDatum() target datum}
+     * {@note <code>TOWGS84</code> is defined in the WKT 1 specification only.}
+     *
+     * The element name is {@code "ToWGS84"} in the common case where the {@linkplain #getTargetDatum() target datum}
      * is WGS 84. For other targets, the element name will be derived from the datum name.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, usually {@code "ToWGS84"}.
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return Usually {@code "ToWGS84"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {

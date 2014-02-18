@@ -332,10 +332,9 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Formats this prime meridian as a <cite>Well Known Text</cite> {@code PrimeMeridian[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "PrimeMeridian"} (WKT 2) or {@code "PrimeM"} (WKT 1).
+     * @return {@code "PrimeMeridian"} (WKT 2) or {@code "PrimeM"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {

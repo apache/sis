@@ -753,10 +753,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Formats this ellipsoid as a <cite>Well Known Text</cite> {@code Ellipsoid[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "Ellipsoid"} (WKT 2) or {@code "Spheroid"} (WKT 1).
+     * @return {@code "Ellipsoid"} (WKT 2) or {@code "Spheroid"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {

@@ -414,23 +414,23 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Formats the inner part of this <cite>Well Known Text</cite> (WKT) CS into the given formatter.
      * This method does <strong>not</strong> format the axes, because they shall appear outside
      * the {@code CS[…]} element for historical reasons. Axes shall be formatted by the enclosing
      * element (usually an {@link org.apache.sis.referencing.crs.AbstractCRS}).
      *
-     * {@example Well Known Text of a two-dimensional <code>EllipsoidalCS</code> having (φ,λ) axes
-     *           in a unit defined by the enclosing CRS (usually degrees):
+     * <p><b>Example:</b> Well-Known Text of a two-dimensional {@code EllipsoidalCS} having (φ,λ) axes
+     * in a unit defined by the enclosing CRS (usually degrees):</p>
      *
-     * <pre>CS[ellipsoidal, 2],
-     *  AXIS["latitude", north],
-     *  AXIS["longitude", east]</pre>
+     * {@preformat wkt
+     *   CS[ellipsoidal, 2],
+     *   Axis["latitude", north],
+     *   Axis["longitude", east]
      * }
      *
-     * This Well Known Text is valid only for version 2 of WKT.
+     * {@note <code>CS</code> is defined in the WKT 2 specification only.}
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "CS"}.
+     * @return {@code "CS"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
