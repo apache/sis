@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -26,7 +28,11 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.apache.sis.internal.referencing.Legacy;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -152,5 +158,65 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
     @Override
     AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
         return new DefaultGeodeticCRS(properties, datum, cs);
+    }
+
+    /**
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
+     * It is subclasses responsibility to overwrite this method for returning the proper keyword in WKT 1 case.
+     *
+     * @return {@code "GeodeticCRS"} (WKT 2) or {@code null} (WKT 1).
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        WKTUtilities.appendName(this, formatter, null);
+        final boolean isWKT1 = formatter.getConvention().versionOfWKT() == 1;
+        Unit<Angle>  oldUnit = null; // Previous contextual unit.
+        final Unit<?>   unit = getUnit();
+        if (Units.isAngular(unit)) {
+            oldUnit = formatter.getContextualUnit(Angle.class);
+            formatter.setContextualUnit(Angle.class, unit.asType(Angle.class));
+        }
+        formatter.newLine();
+        formatter.append(datum);
+        formatter.newLine();
+        formatter.append(datum.getPrimeMeridian());
+        CoordinateSystem cs = super.getCoordinateSystem();
+        if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
+            formatter.newLine();
+            formatter.append(unit);
+            if (unit == null) {
+                formatter.setInvalidWKT(this, null);
+            }
+            /*
+             * Replaces the given coordinate system by an instance conform to the conventions used in WKT 1.
+             * Note that we can not delegate this task to subclasses, because XML unmarshalling of a geodetic
+             * CRS will NOT create an instance of a subclass (because the distinction between geographic and
+             * geocentric CRS is not anymore in ISO 19111:2007).
+             */
+            if (!(cs instanceof EllipsoidalCS)) { // Tested first because this is the most common case.
+                if (cs instanceof CartesianCS) {
+                    cs = Legacy.forGeocentricCRS((CartesianCS) cs, true);
+                } else {
+                    formatter.setInvalidWKT(cs, null);
+                }
+            }
+        } else {
+            formatter.newLine();
+            formatter.append(cs); // The concept of CoordinateSystem was not explicit in WKT 1.
+        }
+        final int dimension = cs.getDimension();
+        for (int i=0; i<dimension; i++) {
+            formatter.newLine();
+            formatter.append(cs.getAxis(i));
+        }
+        if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
+            formatter.newLine();
+            formatter.append(unit);
+        }
+        if (unit != null) { // Really 'unit', not 'oldUnit'.
+            formatter.setContextualUnit(Angle.class, oldUnit);
+        }
+        formatter.newLine(); // For writing the ID[…] element on its own line.
+        return isWKT1 ? null : "GeodeticCRS";
     }
 }
