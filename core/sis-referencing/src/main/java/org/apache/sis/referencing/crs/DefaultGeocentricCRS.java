@@ -18,15 +18,12 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 
@@ -212,39 +209,16 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "GEOCCS"}.
+     * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeocCS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        WKTUtilities.appendName(this, formatter, null);
-        final Unit<?> unit = getUnit();
-        final GeodeticDatum datum = getDatum();
-        formatter.newLine();
-        formatter.append(datum);
-        formatter.newLine();
-        formatter.append(datum.getPrimeMeridian());
-        formatter.newLine();
-        formatter.append(unit);
-        CoordinateSystem cs = getCoordinateSystem();
-        if (formatter.getConvention().versionOfWKT() == 1) {
-            if (cs instanceof CartesianCS) {
-                cs = Legacy.forGeocentricCRS((CartesianCS) cs, true);
-            } else {
-                formatter.setInvalidWKT(cs, null);
-            }
+        String keyword = super.formatTo(formatter);
+        if (keyword == null) {
+            keyword = "GeocCS"; // WKT 1
         }
-        final int dimension = cs.getDimension();
-        for (int i=0; i<dimension; i++) {
-            formatter.newLine();
-            formatter.append(cs.getAxis(i));
-        }
-        if (unit == null) {
-            formatter.setInvalidWKT(this, null);
-        }
-        formatter.newLine(); // For writing the ID[…] element on its own line.
-        return "GeocCS";
+        return keyword;
     }
 }

@@ -17,8 +17,6 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -26,7 +24,6 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.io.wkt.Formatter;
 
 
@@ -195,7 +192,8 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
-     * <blockquote><font size="-1"><b>Example: Well-Known Text of a WGS 84 coordinate reference system.</b>
+     * <blockquote><font size="-1"><b>Example: Well-Known Text of a geographic coordinate reference system
+     * using the WGS 84 datum.</b>
      * <table class="compact">
      * <tr>
      *   <th>WKT 2</th>
@@ -233,43 +231,10 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        WKTUtilities.appendName(this, formatter, null);
-        final boolean isWKT1 = formatter.getConvention().versionOfWKT() == 1;
-        Unit<Angle>  oldUnit = null; // Previous contextual unit.
-        final Unit<?>   unit = getUnit();
-        if (unit != null) {
-            oldUnit = formatter.getContextualUnit(Angle.class);
-            formatter.setContextualUnit(Angle.class, unit.asType(Angle.class));
+        String keyword = super.formatTo(formatter);
+        if (keyword == null) {
+            keyword = "GeogCS"; // WKT 1
         }
-        final CoordinateSystem cs = super.getCoordinateSystem();
-        final GeodeticDatum datum = super.getDatum();
-        formatter.newLine();
-        formatter.append(datum);
-        formatter.newLine();
-        formatter.append(datum.getPrimeMeridian());
-        if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
-            formatter.newLine();
-            formatter.append(unit);
-            if (unit == null) {
-                formatter.setInvalidWKT(this, null);
-            }
-        } else {
-            formatter.newLine();
-            formatter.append(cs); // The concept of CoordinateSystem was not explicit in WKT 1.
-        }
-        final int dimension = cs.getDimension();
-        for (int i=0; i<dimension; i++) {
-            formatter.newLine();
-            formatter.append(cs.getAxis(i));
-        }
-        if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
-            formatter.newLine();
-            formatter.append(unit);
-        }
-        if (unit != null) { // Really 'unit', not 'oldUnit'.
-            formatter.setContextualUnit(Angle.class, oldUnit);
-        }
-        formatter.newLine(); // For writing the ID[…] element on its own line.
-        return isWKT1 ? "GeogCS" : "GeodeticCRS";
+        return keyword;
     }
 }
