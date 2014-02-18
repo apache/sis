@@ -180,9 +180,9 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
         formatter.append(datum);
         formatter.newLine();
         formatter.append(datum.getPrimeMeridian());
+        formatter.newLine();
         CoordinateSystem cs = super.getCoordinateSystem();
         if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
-            formatter.newLine();
             formatter.append(unit);
             if (unit == null) {
                 formatter.setInvalidWKT(this, null);
@@ -201,7 +201,6 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
                 }
             }
         } else {
-            formatter.newLine();
             formatter.append(cs); // The concept of CoordinateSystem was not explicit in WKT 1.
         }
         final int dimension = cs.getDimension();

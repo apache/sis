@@ -398,14 +398,20 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
 
     /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> CRS into the given formatter.
-     * The default implementation writes the following elements:
+     * The default implementation writes the following elements in WKT 2 format:
      *
      * <ul>
      *   <li>The object {@linkplain #getName() name}.</li>
      *   <li>The datum, if any.</li>
-     *   <li>The unit if all axes use the same unit. Otherwise the unit is omitted and the WKT format
-     *       is {@linkplain Formatter#setInvalidWKT(IdentifiedObject) flagged as invalid}.</li>
      *   <li>All {@linkplain #getCoordinateSystem() coordinate system}'s axis.</li>
+     *   <li>The unit if all axes use the same unit, or nothing otherwise.</li>
+     * </ul>
+     *
+     * The WKT 1 format is similar to the WKT 2 one with two differences:
+     * <ul>
+     *   <li>Units are formatted before the axes instead than after the axes.</li>
+     *   <li>If no unit can be formatted because not all axes use the same unit, then the WKT
+     *       is {@linkplain Formatter#setInvalidWKT(IdentifiedObject) flagged as invalid}.</li>
      * </ul>
      *
      * @return {@inheritDoc}
@@ -413,19 +419,28 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     @Override
     protected String formatTo(final Formatter formatter) {
         final String keyword = super.formatTo(formatter);
+        final boolean isWKT1 = formatter.getConvention().versionOfWKT() == 1;
+        final CoordinateSystem cs = coordinateSystem;
+        final Unit<?> unit = ReferencingUtilities.getUnit(cs);
         formatter.newLine();
         formatter.append(getDatum());
-        final Unit<?> unit = getUnit();
         formatter.newLine();
-        formatter.append(unit);
-        final CoordinateSystem cs = coordinateSystem;
+        if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
+            formatter.append(unit);
+            if (unit == null) {
+                formatter.setInvalidWKT(this, null);
+            }
+        } else {
+            formatter.append(cs); // The concept of CoordinateSystem was not explicit in WKT 1.
+        }
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
             formatter.newLine();
             formatter.append(cs.getAxis(i));
         }
-        if (unit == null) {
-            formatter.setInvalidWKT(cs, null);
+        if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
+            formatter.newLine();
+            formatter.append(unit);
         }
         formatter.newLine(); // For writing the ID[…] element on its own line.
         return keyword;
