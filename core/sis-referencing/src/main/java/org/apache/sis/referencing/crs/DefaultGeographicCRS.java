@@ -194,8 +194,8 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
 
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
-     * Examples:
      *
+     * <blockquote><font size="-1"><b>Example: Well-Known Text of a WGS 84 coordinate reference system.</b>
      * <table class="compact">
      * <tr>
      *   <th>WKT 2</th>
@@ -207,8 +207,8 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]]],
      *      PrimeMeridian["Greenwich", 0.0, AngleUnit["degree", 0.017453292519943295]],
      *      CS["ellipsoidal", 2],
-     *        Axis["Longitude", east],
      *        Axis["Latitude", north],
+     *        Axis["Longitude", east],
      *        AngleUnit["degree", 0.017453292519943295],
      *      Area["World"],
      *      BBox[-90.00, -180.00, 90.00, 180.00],
@@ -222,11 +222,12 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *        SPHEROID["WGS84", 6378137.0, 298.257223563]]
      *      PRIMEM["Greenwich", 0.0]
      *      UNIT["degree", 0.017453292519943295]
-     *      AXIS["Longitude", EAST]
      *      AXIS["Latitude", NORTH],
+     *      AXIS["Longitude", EAST],
      *      AUTHORITY["EPSG", "4326"]]
      * }
      * </td></tr></table>
+     * </font></blockquote>
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
      */
