@@ -16,15 +16,10 @@
  */
 package org.apache.sis.io.wkt;
 
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Angle;
-import javax.measure.quantity.Quantity;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.apache.sis.util.Debug;
 import org.apache.sis.metadata.iso.citation.Citations;
-
-import static javax.measure.unit.NonSI.DEGREE_ANGLE;
 
 
 /**
@@ -60,22 +55,54 @@ import static javax.measure.unit.NonSI.DEGREE_ANGLE;
 public enum Convention {
     /**
      * The ISO 19162 format, also known as “WKT 2”.
-     * This is the default convention for all WKT formatting in the Apache SIS library.
+     * This convention follows the ISO recommendations except the following ones:
      *
-     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, when using
-     * this convention SIS will favor {@linkplain Citations#EPSG EPSG} definitions of projection
-     * and parameter names.</p>
+     * <ul>
+     *   <li>{@code Axis} element omits the {@code Order} sub-element.</li>
+     * </ul>
+     *
+     * Since the {@code Order} element is optional, the WKT is still valid.
+     *
+     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, projections
+     * and parameters formatted with this convention will use the {@linkplain Citations#EPSG EPSG}
+     * names when available.</p>
+     *
+     * <p>This is the default convention used by {@link FormattableObject#toWKT()}
+     * and for new {@link WKTFormat} instances.</p>
      */
-    WKT2(Citations.EPSG, false, false),
+    WKT2(false),
+
+    /**
+     * The ISO 19162 format with omission of some optional elements. This convention is identical
+     * to the {@link #WKT2} convention except for the following aspects:
+     *
+     * <ul>
+     *   <li>{@code VerticalExtent} element omits the {@code LengthUnit} sub-element
+     *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
+     *   <li>{@code Ellipsoid} element omits the {@code LengthUnit} sub-element
+     *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
+     *   <li>{@code PrimeMeridian} element omits the {@code AngleUnit} sub-element
+     *       if the unit is as defined by the enclosing {@code GeodeticCRS} element.</li>
+     *   <li>{@code AngleUnit}, {@code LengthUnit}, {@code ScaleUnit}, {@code ParametricUnit}
+     *       and {@code TimeUnit} are formatted as plain {@code Unit} elements.</li>
+     *   <li>{@code Id} is formatted only for the root element
+     *       (omit parameters and operation methods {@code Id}).</li>
+     * </ul>
+     *
+     * Those modifications are allowed by the ISO 19162 standard, so the WKT is still valid.
+     *
+     * <p>This is the default convention used by {@link FormattableObject#toString()}.</p>
+     */
+    WKT2_SIMPLIFIED(false),
 
     /**
      * The OGC 01-009 format, also known as “WKT 1”.
      * A definition for this format is shown in Extended Backus Naur Form (EBNF)
      * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">on GeoAPI</a>.
      *
-     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, when using
-     * this convention SIS will favor {@linkplain Citations#OGC OGC} definitions of projection
-     * and parameter names.</p>
+     * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, projections
+     * and parameters formatted with this convention will use the {@linkplain Citations#OGC OGC}
+     * names when available.</p>
      *
      * {@section Differences compared to WKT 2}
      * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding parameter
@@ -91,7 +118,7 @@ public enum Convention {
      *   <tr><td>Geocentric Z</td> <td>Northing</td>   <td>Toward north pole</td></tr>
      * </table>
      */
-    WKT1(Citations.OGC, true, false),
+    WKT1(true),
 
     /**
      * The <cite>Simple Feature</cite> format, also known as “WKT 1”.
@@ -108,30 +135,82 @@ public enum Convention {
      *       (e.g. "<cite>meter</cite>" instead than "<cite>metre</cite>").</li>
      * </ul>
      */
-    WKT1_COMMON_UNITS(Citations.OGC, true, true),
+    WKT1_COMMON_UNITS(true),
 
     /**
      * A special convention for formatting objects as stored internally by Apache SIS.
-     * In the majority of cases, the result will be identical to the one we would get using the {@link #WKT2} convention.
-     * However in the particular case of map projections, the result may be quite different because of the way
-     * SIS separates the linear from the non-linear parameters.
+     * The result is similar to the one produced using the {@link #WKT2_SIMPLIFIED} convention,
+     * with the following differences:
      *
-     * <p>This convention is used only for debugging purpose.</p>
+     * <ul>
+     *   <li>Map projections are shown as SIS stores them internally, i.e. with the separation between
+     *       linear and non-linear steps, rather than as a single operation.</li>
+     *   <li>{@code CompoundCRS} shows nested compound CRS if any (the structure is not flattened).</li>
+     *   <li>{@code Id} elements are formatted for child elements in addition to the root one.</li>
+     *   <li>{@code Id} element omits the {@code URI} sub-element if the later is derived by Apache SIS
+     *       from the {@code Id} properties.</li>
+     *   <li>{@code Remarks} element is formatted for all
+     *       {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject identified objects},
+     *       not only CRS or coordinate operations.</li>
+     *   <li>Additional attributes not defined by ISO 19162 may be formatted:
+     *     <ul>
+     *       <li>{@code ImageDatum} includes the {@link org.apache.sis.referencing.datum.DefaultImageDatum#getPixelInCell() Pixel in Cell} code.</li>
+     *       <li>{@code TemporalDatum} includes the {@link org.apache.sis.referencing.datum.DefaultTemporalDatum#getOrigin() Origin} date.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * This convention is used only for debugging purpose.
      */
     @Debug
-    INTERNAL(Citations.OGC, false, false);
+    INTERNAL(false);
 
     /**
      * The default conventions.
-     *
-     * @todo Make final after we completed the migration from Geotk.
      */
-    static Convention DEFAULT = WKT2;
+    static final Convention DEFAULT = WKT2;
 
     /**
      * {@code true} for using WKT 1 syntax, or {@code false} for using WKT 2 syntax.
      */
-    final boolean isWKT1;
+    private final boolean isWKT1;
+
+    /**
+     * Creates a new enumeration value.
+     */
+    private Convention(final boolean isWKT1) {
+        this.isWKT1 = isWKT1;
+    }
+
+    /**
+     * Returns the major version of the Well Known Text represented by this convention.
+     * In current Apache SIS implementation, this method can return only 1 or 2.
+     *
+     * @return 1 if this convention is one of the WKT 1 variants, or 2 otherwise.
+     */
+    public int majorVersion() {
+        return isWKT1 ? 1 : 2;
+    }
+
+    /**
+     * Returns {@code true} if this convention is one of the simplified variants of WKT.
+     * The simplifications are documented in the {@link #WKT2_SIMPLIFIED} javadoc.
+     *
+     * <p>This methods consider version 1 of WKT as a “simplified” convention,
+     * since this version was indeed simpler than version 2.</p>
+     *
+     * @return {@code true} it this convention uses a simplified variant of WKT.
+     */
+    public boolean isSimplified() {
+        return this != WKT2;
+    }
+
+    /**
+     * {@code true} if the identifiers should be formatted for all elements instead of only the last one.
+     */
+    final boolean showIdentifiers() {
+        return this == WKT2_SIMPLIFIED || this == INTERNAL;
+    }
 
     /**
      * {@code true} for a frequently-used convention about units instead than the standard one.
@@ -143,37 +222,14 @@ public enum Convention {
      *   <li>If {@code true}, uses US unit names instead of the international names.
      *       For example Americans said {@code "meter"} instead of {@code "metre"}.</li>
      * </ul>
-     *
-     * @see #getForcedUnit(Class)
      */
-    final boolean commonUnits;
-
-    /**
-     * The organization, standard or project to look for when fetching Map Projection parameter names.
-     * Should be one of the authorities known to {@link org.apache.sis.referencing.operation.provider}.
-     */
-    private final Citation authority;
-
-    /**
-     * Creates a new enumeration value.
-     */
-    private Convention(final Citation authority, final boolean isWKT1, final boolean commonUnits) {
-        this.authority   = authority;
-        this.isWKT1      = isWKT1;
-        this.commonUnits = commonUnits;
+    final boolean usesCommonUnits() {
+        return this == WKT1_COMMON_UNITS;
     }
 
     /**
-     * Returns {@code true} if this convention is one of the WKT 1 variants.
-     *
-     * @return {@code true} if this convention is one of the WKT 1 variants.
-     */
-    public boolean isWKT1() {
-        return isWKT1;
-    }
-
-    /**
-     * Returns the default authority to look for when fetching Map Projection parameter names.
+     * Returns the default authority to look for when fetching identified object names and identifiers.
+     * The difference between various authorities are most easily seen in projection and parameter names.
      * The value returned by this method can be overwritten by {@link WKTFormat#setNameAuthority(Citation)}.
      *
      * {@example The following table shows the names given by various organizations or projects for the same projection:
@@ -191,28 +247,7 @@ public enum Convention {
      * @see Citations#EPSG
      * @see Citations#OGC
      */
-    public Citation getNameAuthority() {
-        return authority;
-    }
-
-    /**
-     * If non-null, {@code PRIMEM} and {@code PARAMETER} values shall unconditionally use the returned units.
-     * The standard value is {@code null}, which means that units are inferred from the context as required by the
-     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html#PRIMEM">WKT specification</a>.
-     * However some conventions ignore the above WKT specification and use hard-coded units instead.
-     *
-     * @param  <T>       The compile-time type specified by the {@code quantity} argument.
-     * @param  quantity  The kind of quantity for which to get the unit.
-     *                   The most typical value for this argument is <code>{@linkplain Angle}.class</code>.
-     * @return The unit to use for the given kind of quantity, or {@code null} for inferring the unit in the standard way.
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends Quantity> Unit<T> getForcedUnit(final Class<T> quantity) {
-        if (commonUnits) {
-            if (quantity == Angle.class) {
-                return (Unit<T>) DEGREE_ANGLE;
-            }
-        }
-        return null;
+    final Citation getNameAuthority() {
+        return isWKT1 ? Citations.OGC : Citations.EPSG;
     }
 }

@@ -206,7 +206,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     }
 
     /**
-     * Returns a pseudo-WKT representation.
+     * Returns a pseudo-WKT representation for debugging purpose.
      */
     @Override
     public String toString() {
@@ -222,32 +222,13 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
             codespace = null;
             authority = null;
         }
-        return toString("OBJECT", authority, codespace, code, false);
-    }
-
-    /**
-     * Returns a pseudo-WKT representation.
-     *
-     * @param  type       The WKT heading text.
-     * @param  authority  The authority to write in the {@code "AUTHORITY"} element.
-     * @param  codespace  Usually an abbreviation of the authority name.
-     * @param  code       The code to write in the {@code "AUTHORITY"} element, or {@code null} if none.
-     * @param  deprecated {@code true} if the object to format is deprecated.
-     * @return The pseudo-WKT.
-     */
-    public static String toString(final String type, final Citation authority,
-            final String codespace, final String code, final boolean deprecated)
-    {
-        final StringBuilder buffer = new StringBuilder(type).append("[\"");
+        final StringBuilder buffer = new StringBuilder("OBJECT[\"");
         if (codespace != null) {
             buffer.append(codespace).append(DefaultNameSpace.DEFAULT_SEPARATOR);
         }
         buffer.append(code).append('"');
         if (authority != null) {
-            buffer.append(", AUTHORITY[\"").append(Citations.getIdentifier(authority)).append("\"]");
-        }
-        if (deprecated) {
-            buffer.append(", DEPRECATED");
+            buffer.append(", ID[\"").append(Citations.getIdentifier(authority)).append("\"]");
         }
         return buffer.append(']').toString();
     }

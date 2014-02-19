@@ -313,14 +313,12 @@ public final class Logging extends Static {
          */
         if (logger==null || classe==null || method==null) {
             String paquet = (logger != null) ? logger.getName() : null;
-            final StackTraceElement[] elements = error.getStackTrace();
-            for (int i=0; i<elements.length; i++) {
+            for (final StackTraceElement element : error.getStackTrace()) {
                 /*
                  * Searches for the first stack trace element with a classname matching the
                  * expected one. We compare preferably against the name of the class given
                  * in argument, or against the logger name (taken as the package name) otherwise.
                  */
-                final StackTraceElement element = elements[i];
                 final String classname = element.getClassName();
                 if (classe != null) {
                     if (!classname.equals(classe)) {

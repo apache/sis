@@ -24,6 +24,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 
 
@@ -36,9 +37,6 @@ import org.apache.sis.measure.Units;
  * </tr><tr>
  *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS Geographic}</td>
  *   <td>“Geodetic latitude”, “Geodetic longitude”, “Ellipsoidal height” (if 3D)</td>
- * </tr><tr>
- *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering}</td>
- *   <td>unspecified</td>
  * </tr></table>
  *
  * {@section Immutability and thread safety}
@@ -120,6 +118,13 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
                                 final CoordinateSystemAxis axis1)
     {
         super(properties, axis0, axis1);
+        for (int i=0; i<2; i++) {
+            final AxisDirection direction = super.getAxis(i).getDirection();
+            if (AxisDirections.isVertical(direction)) {
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.IllegalAxisDirection_2, "EllipdoicalCS (2D)", direction));
+            }
+        }
     }
 
     /**

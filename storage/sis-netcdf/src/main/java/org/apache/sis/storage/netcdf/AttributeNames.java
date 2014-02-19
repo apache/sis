@@ -22,7 +22,6 @@ package org.apache.sis.storage.netcdf;
  * the compiled file of this class should have no dependency to the UCAR packages.
  */
 import java.io.Serializable;
-import ucar.nc2.Group;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.VariableSimpleIF;
 import ucar.nc2.constants.CF;

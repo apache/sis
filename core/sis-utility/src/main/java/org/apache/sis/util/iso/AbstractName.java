@@ -426,7 +426,7 @@ public abstract class AbstractName implements GenericName, Serializable {
             final LocalName thatNext = thatNames.next();
             if (thisNext == this && thatNext == name) {
                 // Never-ending loop: usually an implementation error
-                throw new IllegalStateException(Errors.format(Errors.Keys.InfiniteRecursivity));
+                throw new IllegalStateException(Errors.format(Errors.Keys.CircularReference));
             }
             final int compare = thisNext.compareTo(thatNext);
             if (compare != 0) {

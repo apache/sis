@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -45,13 +46,16 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.io.wkt.ElementKind;
 
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.util.collection.Containers.property;
+import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -94,6 +98,24 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -7883614853277827689L;
+
+    /**
+     * Key for the <code>{@value}</code> property to be given to the constructor.
+     * This is used for setting the value to be returned by {@link #getMinimumValue()}.
+     */
+    public static final String MINIMUM_VALUE_KEY = "minimumValue";
+
+    /**
+     * Key for the <code>{@value}</code> property to be given to the constructor.
+     * This is used for setting the value to be returned by {@link #getMaximumValue()}.
+     */
+    public static final String MAXIMUM_VALUE_KEY = "maximumValue";
+
+    /**
+     * Key for the <code>{@value}</code> property to be given to the constructor.
+     * This is used for setting the value to be returned by {@link #getRangeMeaning()}.
+     */
+    public static final String RANGE_MEANING_KEY = "rangeMeaning";
 
     /**
      * The identifier for axis of unknown name. We have to use this identifier when the axis direction changed,
@@ -200,16 +222,33 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Constructs an axis from a set of properties and a given range.
-     * The properties map is given unchanged to the
-     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
-     * The following table is a reminder of main (not all) properties:
+     * Constructs an axis from a set of properties. The properties given in argument follow the same rules
+     * than for the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
+     * Additionally, the following properties are understood by this constructor:
      *
      * <table class="sis">
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value #MINIMUM_VALUE_KEY}</td>
+     *     <td>{@link Number}</td>
+     *     <td>{@link #getMinimumValue()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value #MAXIMUM_VALUE_KEY}</td>
+     *     <td>{@link Number}</td>
+     *     <td>{@link #getMaximumValue()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value #RANGE_MEANING_KEY}</td>
+     *     <td>{@link RangeMeaning}</td>
+     *     <td>{@link #getRangeMeaning()}</td>
+     *   </tr>
+     *   <tr>
+     *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
@@ -233,47 +272,13 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *   </tr>
      * </table>
      *
-     * @param properties   The properties to be given to the identified object.
-     * @param abbreviation The {@linkplain #getAbbreviation() abbreviation} used for this coordinate system axis.
-     * @param direction    The {@linkplain #getDirection() direction} of this coordinate system axis.
-     * @param unit         The {@linkplain #getUnit() unit of measure} used for this coordinate system axis.
-     * @param minimumValue The minimum value normally allowed for this axis, or {@link Double#NEGATIVE_INFINITY} if none.
-     * @param maximumValue The maximum value normally allowed for this axis, or {@link Double#POSITIVE_INFINITY} if none.
-     * @param rangeMeaning The meaning of axis value range specified by the minimum and maximum values, or {@code null}
-     *                     if it does not apply. Shall not be null if the minimum and maximum values are not infinite.
-     */
-    public DefaultCoordinateSystemAxis(final Map<String,?> properties,
-                                       final String        abbreviation,
-                                       final AxisDirection direction,
-                                       final Unit<?>       unit,
-                                       final double        minimumValue,
-                                       final double        maximumValue,
-                                             RangeMeaning  rangeMeaning)
-    {
-        super(properties);
-        this.abbreviation = abbreviation;
-        this.direction    = direction;
-        this.unit         = unit;
-        this.minimumValue = minimumValue;
-        this.maximumValue = maximumValue;
-        ensureNonNull("abbreviation", abbreviation);
-        ensureNonNull("direction",    direction);
-        ensureNonNull("unit",         unit);
-        if (!(minimumValue < maximumValue)) { // Use '!' for catching NaN
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimumValue, maximumValue));
-        }
-        if ((minimumValue != NEGATIVE_INFINITY) || (maximumValue != POSITIVE_INFINITY)) {
-            ensureNonNull("rangeMeaning", rangeMeaning);
-        } else {
-            rangeMeaning = null;
-        }
-        this.rangeMeaning = rangeMeaning;
-    }
-
-    /**
-     * Constructs an axis from a set of properties and a range inferred from the axis unit and direction.
-     * The properties map is the same than for the {@linkplain #DefaultCoordinateSystemAxis(Map, String,
-     * AxisDirection, Unit, double, double, RangeMeaning) above constructor}.
+     * Generally speaking, information provided in the {@code properties} map are considered ignorable metadata
+     * (except the axis name) while information provided as explicit arguments may have an impact on coordinate
+     * transformation results. Exceptions to this rule are the {@code minimumValue} and {@code maximumValue} in
+     * the particular case where {@code rangeMeaning} is {@link RangeMeaning#WRAPAROUND}.
+     *
+     * <p>If no minimum, maximum and range meaning are specified, then this constructor will infer them
+     * from the axis unit and direction.</p>
      *
      * @param properties   The properties to be given to the identified object.
      * @param abbreviation The {@linkplain #getAbbreviation() abbreviation} used for this coordinate system axis.
@@ -285,39 +290,53 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                                        final AxisDirection direction,
                                        final Unit<?>       unit)
     {
-        // NOTE: we would invoke this(properties, abbreviation, ...) instead if Oracle fixed
-        // RFE #4093999 ("Relax constraint on placement of this()/super() call in constructors").
         super(properties);
         this.abbreviation = abbreviation;
         this.direction    = direction;
         this.unit         = unit;
-        ensureNonNull("abbreviation", abbreviation);
-        ensureNonNull("direction",    direction);
-        ensureNonNull("unit",         unit);
-        double min = NEGATIVE_INFINITY;
-        double max = POSITIVE_INFINITY;
-        RangeMeaning r = null;
-        if (Units.isAngular(unit)) {
-            final UnitConverter fromDegrees = NonSI.DEGREE_ANGLE.getConverterTo(unit.asType(Angle.class));
-            final AxisDirection dir = AxisDirections.absolute(direction);
-            if (dir.equals(AxisDirection.NORTH)) {
-                min = fromDegrees.convert(Latitude.MIN_VALUE);
-                max = fromDegrees.convert(Latitude.MAX_VALUE);
-                r = RangeMeaning.EXACT;
-            } else if (dir.equals(AxisDirection.EAST)) {
-                min = fromDegrees.convert(Longitude.MIN_VALUE);
-                max = fromDegrees.convert(Longitude.MAX_VALUE);
-                r = RangeMeaning.WRAPAROUND; // 180°E wraps to 180°W
+        ensureNonEmpty("abbreviation", abbreviation);
+        ensureNonNull ("direction",    direction);
+        ensureNonNull ("unit",         unit);
+        Number  minimum = property(properties, MINIMUM_VALUE_KEY, Number.class);
+        Number  maximum = property(properties, MAXIMUM_VALUE_KEY, Number.class);
+        RangeMeaning rm = property(properties, RANGE_MEANING_KEY, RangeMeaning.class);
+        if (minimum == null && maximum == null && rm == null) {
+            double min = Double.NEGATIVE_INFINITY;
+            double max = Double.POSITIVE_INFINITY;
+            if (Units.isAngular(unit)) {
+                final UnitConverter fromDegrees = NonSI.DEGREE_ANGLE.getConverterTo(unit.asType(Angle.class));
+                final AxisDirection dir = AxisDirections.absolute(direction);
+                if (dir.equals(AxisDirection.NORTH)) {
+                    min = fromDegrees.convert(Latitude.MIN_VALUE);
+                    max = fromDegrees.convert(Latitude.MAX_VALUE);
+                    rm  = RangeMeaning.EXACT;
+                } else if (dir.equals(AxisDirection.EAST)) {
+                    min = fromDegrees.convert(Longitude.MIN_VALUE);
+                    max = fromDegrees.convert(Longitude.MAX_VALUE);
+                    rm  = RangeMeaning.WRAPAROUND; // 180°E wraps to 180°W
+                }
+                if (min > max) {
+                    final double t = min;
+                    min = max;
+                    max = t;
+                }
             }
-            if (min > max) {
-                final double t = min;
-                min = max;
-                max = t;
+            minimumValue = min;
+            maximumValue = max;
+        } else {
+            minimumValue = (minimum != null) ? minimum.doubleValue() : Double.NEGATIVE_INFINITY;
+            maximumValue = (maximum != null) ? maximum.doubleValue() : Double.POSITIVE_INFINITY;
+            if (!(minimumValue < maximumValue)) { // Use '!' for catching NaN
+                throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                        Errors.Keys.IllegalRange_2, minimumValue, maximumValue));
+            }
+            if ((minimumValue != NEGATIVE_INFINITY) || (maximumValue != POSITIVE_INFINITY)) {
+                ensureNonNull(RANGE_MEANING_KEY, rm);
+            } else {
+                rm = null;
             }
         }
-        minimumValue = min;
-        maximumValue = max;
-        rangeMeaning = r;
+        rangeMeaning = rm;
     }
 
     /**
@@ -588,6 +607,18 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * Compares the specified object with this axis for equality.
+     * The strictness level is controlled by the second argument.
+     * This method compares the following properties in every cases:
+     *
+     * <ul>
+     *   <li>{@link #getName()}</li>
+     *   <li>{@link #getDirection()}</li>
+     *   <li>{@link #getUnit()}</li>
+     * </ul>
+     *
+     * In the particular case where {@link #getRangeMeaning()} is {@code WRAPAROUND}, then {@link #getMinimumValue()}
+     * and {@link #getMaximumValue()} are considered non-ignorable metadata and will be compared for every modes.
+     * All other properties are compared only for modes stricter than {@link ComparisonMode#IGNORE_METADATA}.
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
@@ -686,14 +717,84 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Returns {@code true} if writing an axis in the given formatter should omit the axis name.
+     * From ISO 19162: For geodetic CRSs having a geocentric Cartesian coordinate system,
+     * the axis name should be omitted as it is given through the mandatory axis direction,
+     * but the axis abbreviation, respectively ‘X’, 'Y' and ‘Z’, shall be given.
+     */
+    private boolean omitName(final Formatter formatter) {
+        return AxisDirections.isGeocentric(direction) && formatter.getEnclosingElement(1) instanceof GeodeticCRS;
+    }
+
+    /**
+     * Formats this axis as a <cite>Well Known Text</cite> {@code Axis[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "AXIS"}.
+     * {@section Constraints for WKT validity}
+     * The ISO 19162 specification puts many constraints on axis names, abbreviations and directions allowed in WKT.
+     * Most of those constraints are inherited from ISO 19111 — see {@link CoordinateSystemAxis} javadoc for some of
+     * those. The current Apache SIS implementation does not verify whether this axis name and abbreviation are
+     * compliant; we assume that the user created a valid axis.
+     * The only actions (derived from ISO 19162 rules) taken by this method are:
+     *
+     * <ul>
+     *   <li>Replace “<cite>Geodetic latitude</cite>” and “<cite>Geodetic longitude</cite>” names (case insensitive)
+     *       by “<cite>Latitude</cite>” and “<cite>Longitude</cite>” respectively.</li>
+     * </ul>
+     *
+     * @return {@code "Axis"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        formatter.append(direction);
-        return "AXIS";
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = convention.majorVersion() == 1;
+        final boolean isInternal = (convention == Convention.INTERNAL);
+        String name = null;
+        if (isWKT1 || isInternal || !omitName(formatter)) {
+            name = IdentifiedObjects.getName(this, formatter.getNameAuthority());
+            if (name == null) {
+                name = IdentifiedObjects.getName(this, null);
+            }
+            if (!isInternal && name != null) {
+                if (name.equalsIgnoreCase("Geodetic latitude")) {
+                    name = "Latitude"; // ISO 19162 §7.5.3(ii)
+                } else if (name.equalsIgnoreCase("Geodetic longitude")) {
+                    name = "Longitude";
+                }
+            }
+        }
+        /*
+         * ISO 19162 §7.5.3 suggests to put abbreviation in parentheses, e.g. "Easting (x)".
+         */
+        if (!isWKT1 && (name == null || !name.equals(abbreviation))) {
+            final StringBuilder buffer = new StringBuilder();
+            if (name != null) {
+                buffer.append(name).append(' ');
+            }
+            name = buffer.append('(').append(abbreviation).append(')').toString();
+        }
+        formatter.append(name, ElementKind.AXIS);
+        /*
+         * Format the axis direction, optionally followed by a MERIDIAN[…] element
+         * if the direction is of the kind "South along 90°N" for instance.
+         */
+        AxisDirection dir = direction;
+        DirectionAlongMeridian meridian = null;
+        if (!isWKT1 && AxisDirections.isUserDefined(dir)) {
+            meridian = DirectionAlongMeridian.parse(dir);
+            if (meridian != null) {
+                dir = meridian.baseDirection;
+            }
+        }
+        formatter.append(dir);
+        formatter.append(meridian);
+        /*
+         * Formats the axis unit only if the enclosing CRS element does not provide one.
+         * If the enclosing CRS provided a contextual unit, then it is assumed to apply
+         * to all axes (we do not verify).
+         */
+        if (!isWKT1 && !formatter.hasContextualUnit(1)) {
+            formatter.append(unit);
+        }
+        return "Axis";
     }
 }

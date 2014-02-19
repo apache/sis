@@ -18,14 +18,12 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 
@@ -211,33 +209,45 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "GEOCCS"}.
+     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text (version 2)
+     * of a geocentric coordinate reference system using the WGS 84 datum.
+     *
+     * {@preformat wkt
+     *   GeodeticCRS["Geocentric",
+     *     Datum["World Geodetic System 1984",
+     *       Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]]],
+     *       PrimeMeridian["Greenwich", 0.0, AngleUnit["degree", 0.017453292519943295]],
+     *     CS["Cartesian", 3],
+     *       Axis["(X)", geocentricX],
+     *       Axis["(Y)", geocentricY],
+     *       Axis["(Z)", geocentricZ],
+     *       LengthUnit["metre", 1]]
+     * }
+     *
+     * <p>Same coordinate reference system using WKT 1. Note that axis directions are totally different.</p>
+     *
+     * {@preformat wkt
+     *   GEOCCS["Geocentric",
+     *     DATUM["World Geodetic System 1984",
+     *       SPHEROID["WGS84", 6378137.0, 298.257223563]],
+     *     PRIMEM["Greenwich", 0.0],
+     *     UNIT["metre", 1],
+     *     AXIS["X", OTHER],
+     *     AXIS["Y", EAST],
+     *     AXIS["Z", NORTH]]
+     * }
+     * </font></blockquote>
+     *
+     * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeocCS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final Unit<?> unit = getUnit();
-        final GeodeticDatum datum = getDatum();
-        formatter.append(datum);
-        formatter.append(datum.getPrimeMeridian());
-        formatter.append(unit);
-        CoordinateSystem cs = getCoordinateSystem();
-        if (formatter.getConvention().isWKT1()) {
-            if (cs instanceof CartesianCS) {
-                cs = Legacy.forGeocentricCRS((CartesianCS) cs, true);
-            } else {
-                formatter.setInvalidWKT(cs);
-            }
+        String keyword = super.formatTo(formatter);
+        if (keyword == null) {
+            keyword = "GeocCS"; // WKT 1
         }
-        final int dimension = cs.getDimension();
-        for (int i=0; i<dimension; i++) {
-            formatter.append(cs.getAxis(i));
-        }
-        if (unit == null) {
-            formatter.setInvalidWKT(this);
-        }
-        return "GEOCCS";
+        return keyword;
     }
 }

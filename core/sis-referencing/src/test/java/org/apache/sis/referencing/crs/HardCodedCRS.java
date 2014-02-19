@@ -131,6 +131,12 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedCS.GRAVITY_RELATED_HEIGHT), HardCodedDatum.MEAN_SEA_LEVEL, HardCodedCS.GRAVITY_RELATED_HEIGHT);
 
     /**
+     * A vertical coordinate reference system using Mean Sea Level datum.
+     */
+    public static final DefaultVerticalCRS DEPTH = new DefaultVerticalCRS(
+            getProperties(HardCodedCS.DEPTH), HardCodedDatum.MEAN_SEA_LEVEL, HardCodedCS.DEPTH);
+
+    /**
      * A temporal coordinate reference system for time in days elapsed since the Unix epoch.
      */
     public static final DefaultTemporalCRS TIME = new DefaultTemporalCRS(
@@ -141,7 +147,7 @@ public final strictfp class HardCodedCRS {
      * This constant uses the "geoid" term as an approximation for the gravity related height.
      */
     public static final DefaultCompoundCRS GEOID_4D = new DefaultCompoundCRS(
-            properties("WGS 84 + height + time"), GRAVITY_RELATED_HEIGHT, TIME);
+            properties("WGS 84 + height + time"), WGS84, GRAVITY_RELATED_HEIGHT, TIME);
 
     /**
      * A two-dimensional Cartesian coordinate reference system with (column, row) axes.

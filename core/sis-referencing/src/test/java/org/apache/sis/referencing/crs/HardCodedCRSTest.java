@@ -21,7 +21,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.referencing.crs.HardCodedCRS.*;
 
 
@@ -63,25 +63,16 @@ public final strictfp class HardCodedCRSTest extends TestCase {
      */
     @Test
     public void testDimensions() {
-        assertEquals("WGS84 2D", 2, WGS84   .getCoordinateSystem().getDimension());
-        assertEquals("WGS84 3D", 3, WGS84_3D.getCoordinateSystem().getDimension());
-    }
-
-    /**
-     * Tests WKT formatting.
-     */
-    @Test
-    public void testWKT() {
-        assertWktEquals(
-                "GEOGCS[“WGS 84”,\n" +
-                "  DATUM[“World Geodetic System 1984”,\n" +
-                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563],\n" +
-                "    AUTHORITY[“EPSG”, “6326”]],\n" +
-                "  PRIMEM[“Greenwich”, 0.0, AUTHORITY[“EPSG”, “8901”]],\n" +
-                "  UNIT[“degree”, 0.017453292519943295],\n" +
-                "  AXIS[“Geodetic longitude”, EAST],\n" +
-                "  AXIS[“Geodetic latitude”, NORTH]]",
-                WGS84);
+        assertEquals("TIME",         1, TIME        .getCoordinateSystem().getDimension());
+        assertEquals("DEPTH",        1, DEPTH       .getCoordinateSystem().getDimension());
+        assertEquals("WGS84",        2, WGS84       .getCoordinateSystem().getDimension());
+        assertEquals("WGS84_φλ",     2, WGS84_φλ   .getCoordinateSystem().getDimension());
+        assertEquals("WGS84_3D",     3, WGS84_3D    .getCoordinateSystem().getDimension());
+        assertEquals("CARTESIAN_2D", 2, CARTESIAN_2D.getCoordinateSystem().getDimension());
+        assertEquals("CARTESIAN_3D", 3, CARTESIAN_3D.getCoordinateSystem().getDimension());
+        assertEquals("GEOCENTRIC",   3, GEOCENTRIC  .getCoordinateSystem().getDimension());
+        assertEquals("SPHERICAL",    3, SPHERICAL   .getCoordinateSystem().getDimension());
+        assertEquals("GEOID_4D",     4, GEOID_4D     .getCoordinateSystem().getDimension());
     }
 
     /**
@@ -91,5 +82,6 @@ public final strictfp class HardCodedCRSTest extends TestCase {
     public void testSerialization() {
         assertSerializedEquals(WGS84);
         assertSerializedEquals(WGS84_3D);
+        assertSerializedEquals(GEOID_4D);
     }
 }

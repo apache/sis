@@ -28,7 +28,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link Statistics}.
+ * Tests the {@link Statistics} class.
  *
  * <p>This class uses {@link Random} numbers generator with hard-coded seeds. We do not allow
  * random seeds because the tests invoke the {@link Random#nextGaussian()} method, then check

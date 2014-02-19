@@ -30,7 +30,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
@@ -166,7 +166,7 @@ public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
     @Test
     public void testToWKT() {
         final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
-        assertWktEquals("SPHEROID[“WGS84”, 6378137.0, 298.257223563]", e);
+        assertWktEquals("Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]", e);
     }
 
     /**

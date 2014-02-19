@@ -27,6 +27,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.datum.ImageDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -249,5 +250,23 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     @Override
     final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
         return new DefaultImageCRS(properties, datum, (AffineCS) cs);
+    }
+
+    /**
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code ImageCRS[…]} element.
+     *
+     * {@note <code>ImageCRS</code> are defined in the WKT 2 specification only.}
+     *
+     * @return {@code "ImageCRS"}.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        /*
+         * Note: super.formatTo(formatter) will usually format a DefaultImageDatum instance,
+         * which will declare this WKT has invalid if the formatter convention is a WKT 1 one.
+         * So we do not redo this check here.
+         */
+        super.formatTo(formatter);
+        return "ImageCRS";
     }
 }

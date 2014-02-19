@@ -17,21 +17,14 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
-import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlTransient;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.measure.Units;
 
 
 /**
@@ -197,48 +190,48 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
-     * Returns the angular unit of the specified coordinate system.
-     * The preference will be given to the longitude axis, if found.
-     */
-    private static Unit<Angle> getAngularUnit(final CoordinateSystem coordinateSystem) {
-        Unit<Angle> unit = NonSI.DEGREE_ANGLE;
-        for (int i=coordinateSystem.getDimension(); --i>=0;) {
-            final CoordinateSystemAxis axis = coordinateSystem.getAxis(i);
-            final Unit<?> candidate = axis.getUnit();
-            if (Units.isAngular(candidate)) {
-                unit = candidate.asType(Angle.class);
-                if (AxisDirection.EAST.equals(AxisDirections.absolute(axis.getDirection()))) {
-                    break; // Found the longitude axis.
-                }
-            }
-        }
-        return unit;
-    }
-
-    /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "GEOGCS"}.
+     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text (version 2)
+     * of a geographic coordinate reference system using the WGS 84 datum.
+     *
+     * {@preformat wkt
+     *   GeodeticCRS["WGS 84",
+     *      Datum["World Geodetic System 1984",
+     *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]]],
+     *        PrimeMeridian["Greenwich", 0.0, AngleUnit["degree", 0.017453292519943295]],
+     *      CS["ellipsoidal", 2],
+     *        Axis["Latitude", north],
+     *        Axis["Longitude", east],
+     *        AngleUnit["degree", 0.017453292519943295],
+     *      Area["World"],
+     *      BBox[-90.00, -180.00, 90.00, 180.00],
+     *      Scope["Used by GPS satellite navigation system."]
+     *      Id["EPSG", 4326, Citation["OGP"], URI["urn:ogc:def:crs:EPSG::4326"]]]
+     * }
+     *
+     * <p>Same coordinate reference system using WKT 1.</p>
+     *
+     * {@preformat wkt
+     *   GEOGCS["WGS 84"
+     *      DATUM["World Geodetic System 1984"
+     *        SPHEROID["WGS84", 6378137.0, 298.257223563]]
+     *      PRIMEM["Greenwich", 0.0]
+     *      UNIT["degree", 0.017453292519943295]
+     *      AXIS["Latitude", NORTH],
+     *      AXIS["Longitude", EAST],
+     *      AUTHORITY["EPSG", "4326"]]
+     * }
+     * </font></blockquote>
+     *
+     * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final Unit<Angle> oldUnit = formatter.getAngularUnit();
-        final Unit<Angle> unit = getAngularUnit(getCoordinateSystem());
-        final GeodeticDatum datum = getDatum();
-        formatter.setAngularUnit(unit);
-        formatter.append(datum);
-        formatter.append(datum.getPrimeMeridian());
-        formatter.append(unit);
-        final EllipsoidalCS cs = getCoordinateSystem();
-        final int dimension = cs.getDimension();
-        for (int i=0; i<dimension; i++) {
-            formatter.append(cs.getAxis(i));
+        String keyword = super.formatTo(formatter);
+        if (keyword == null) {
+            keyword = "GeogCS"; // WKT 1
         }
-        if (!unit.equals(getUnit())) {
-            formatter.setInvalidWKT(this);
-        }
-        formatter.setAngularUnit(oldUnit);
-        return "GEOGCS";
+        return keyword;
     }
 }

@@ -32,13 +32,15 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -381,16 +383,34 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code CompoundCRS[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "COMPD_CS"}.
+     * {@section WKT validity}
+     * The WKT version 2 format restricts compound CRS to the following components in that order:
+     *
+     * <ul>
+     *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS}
+     *       or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
+     *   <li>Optionally followed by a {@code VerticalCRS} or a {@code ParametricCRS} (but not both).</li>
+     *   <li>Optionally followed by a {@code TemporalCRS}.</li>
+     * </ul>
+     *
+     * SIS does not check if this CRS is compliant with the above-cited restrictions.
+     *
+     * @return {@code "CompoundCRS"} (WKT 2) or {@code "Compd_CS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        for (final CoordinateReferenceSystem element : components) {
+        WKTUtilities.appendName(this, formatter, null);
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = convention.majorVersion() == 1;
+        for (final CoordinateReferenceSystem element :
+                (isWKT1 || convention == Convention.INTERNAL) ? components : singles)
+        {
+            formatter.newLine();
             formatter.append(element);
         }
-        return "COMPD_CS";
+        formatter.newLine(); // For writing the ID[…] element on its own line.
+        return isWKT1 ? "Compd_CS" : "CompoundCRS";
     }
 }

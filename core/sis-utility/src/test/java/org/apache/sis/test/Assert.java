@@ -100,29 +100,45 @@ public strictfp class Assert extends org.opengis.test.Assert {
 
     /**
      * Asserts that two strings are equal, ignoring the differences in EOL characters.
-     * The comparisons is performed one a line-by-line basis. For each line, leading
-     * and trailing spaces are ignored in order to make the comparison independent of
-     * indentation.
+     * The comparisons is performed one a line-by-line basis. For each line, trailing
+     * spaces (but not leading spaces) are ignored.
      *
      * @param expected The expected string.
      * @param actual   The actual string.
      */
     public static void assertMultilinesEquals(final CharSequence expected, final CharSequence actual) {
-        assertArrayEquals(CharSequences.split(expected, '\n'), CharSequences.split(actual, '\n'));
+        assertMultilinesEquals(null, expected, actual);
     }
 
     /**
      * Asserts that two strings are equal, ignoring the differences in EOL characters.
-     * The comparisons is performed one a line-by-line basis. For each line, leading
-     * and trailing spaces are ignored in order to make the comparison independent of
-     * indentation.
+     * The comparisons is performed one a line-by-line basis. For each line, trailing
+     * spaces (but not leading spaces) are ignored.
      *
      * @param message  The message to print in case of failure, or {@code null} if none.
      * @param expected The expected string.
      * @param actual   The actual string.
      */
     public static void assertMultilinesEquals(final String message, final CharSequence expected, final CharSequence actual) {
-        assertArrayEquals(message, CharSequences.split(expected, '\n'), CharSequences.split(actual, '\n'));
+        final CharSequence[] expectedLines = CharSequences.splitOnEOL(expected);
+        final CharSequence[] actualLines   = CharSequences.splitOnEOL(actual);
+        final int length = Math.min(expectedLines.length, actualLines.length);
+        final StringBuilder buffer = new StringBuilder(message != null ? message : "Line").append('[');
+        final int base = buffer.length();
+        for (int i=0; i<length; i++) {
+            CharSequence e = expectedLines[i];
+            CharSequence a = actualLines[i];
+            e = e.subSequence(0, CharSequences.skipTrailingWhitespaces(e, 0, e.length()));
+            a = a.subSequence(0, CharSequences.skipTrailingWhitespaces(a, 0, a.length()));
+            assertEquals(buffer.append(i).append(']').toString(), e, a);
+            buffer.setLength(base);
+        }
+        if (expectedLines.length > actualLines.length) {
+            fail(buffer.append(length).append("] missing line: ").append(expectedLines[length]).toString());
+        }
+        if (expectedLines.length < actualLines.length) {
+            fail(buffer.append(length).append("] extraneous line: ").append(actualLines[length]).toString());
+        }
     }
 
     /**

@@ -108,7 +108,7 @@ public final class IdentifiedObjects extends Static {
      */
     public static Set<String> getNames(final IdentifiedObject object, final Citation authority) {
         final Set<String> names = new LinkedHashSet<String>(8);
-        name(object, authority, names);
+        getName(object, authority, names);
         return names;
     }
 
@@ -145,7 +145,7 @@ public final class IdentifiedObjects extends Static {
      * @see AbstractIdentifiedObject#getName()
      */
     public static String getName(final IdentifiedObject object, final Citation authority) {
-        return name(object, authority, null);
+        return getName(object, authority, null);
     }
 
     /**
@@ -160,7 +160,7 @@ public final class IdentifiedObjects extends Static {
      *         or a {@linkplain GenericName#tip() name tip}), or {@code null} if no name matching the
      *         specified authority has been found.
      */
-    private static String name(final IdentifiedObject object, final Citation authority, final Collection<String> addTo) {
+    private static String getName(final IdentifiedObject object, final Citation authority, final Collection<String> addTo) {
         if (object != null) {
             Identifier identifier = object.getName();
             if (authority == null) {

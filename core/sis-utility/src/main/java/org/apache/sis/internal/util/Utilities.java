@@ -32,7 +32,6 @@ import org.apache.sis.util.CharSequences;
  * @module
  */
 public final class Utilities extends Static {
-
     /**
      * Do not allow instantiation of this class.
      */

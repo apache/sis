@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.Map;
+import java.util.HashMap;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ComparisonMode;
 
@@ -32,6 +34,35 @@ import static java.lang.Math.abs;
  * @module
  */
 public final class Numerics extends Static {
+    /**
+     * Some frequently used {@link Double} values. As of Java 7, those values do not
+     * seem to be cached by {@link Double#valueOf(double)} like JDK does for integers.
+     */
+    private static final Map<Object,Object> CACHE = new HashMap<Object,Object>(32);
+    static {
+        cache(   0);
+        cache(   1);
+        cache(  10);
+        cache(  60);
+        cache(  90);
+        cache( 100);
+        cache( 180);
+        cache( 180*60*60);
+        cache( 360);
+        cache(1000);
+        cache(Double.POSITIVE_INFINITY);
+        cache(Double.NaN);
+    }
+
+    /**
+     * Helper method for the construction of the {@link #CACHE} map.
+     */
+    private static void cache(final double value) {
+        Double key;
+        key = Double.valueOf( value); CACHE.put(key, key);
+        key = Double.valueOf(-value); CACHE.put(key, key);
+    }
+
     /**
      * Relative difference tolerated when comparing floating point numbers using
      * {@link org.apache.sis.util.ComparisonMode#APPROXIMATIVE}.
@@ -92,6 +123,32 @@ public final class Numerics extends Static {
      * Do not allow instantiation of this class.
      */
     private Numerics() {
+    }
+
+    /**
+     * If the given value is presents in the cache, returns the cached value.
+     * Otherwise returns the given value as-is.
+     *
+     * @param  <T> The type of the given value.
+     * @param  value The given value for which to get a cached instance, if one exists.
+     * @return An object equals to the given value (may be the given instance itself).
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T cached(final T value) {
+        final Object candidate = CACHE.get(value);
+        return (candidate != null) ? (T) candidate : value;
+    }
+
+    /**
+     * Wraps the given {@code value} in a {@link Double} wrapper, using one of the cached instance if possible.
+     *
+     * @param  value The value to get as a {@code Double}.
+     * @return The given value as a {@code Double}.
+     */
+    public static Double valueOf(final double value) {
+        final Double n = Double.valueOf(value);
+        final Object candidate = CACHE.get(value);
+        return (candidate != null) ? (Double) candidate : n;
     }
 
     /**

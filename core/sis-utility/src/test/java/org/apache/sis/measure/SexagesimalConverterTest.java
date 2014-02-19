@@ -28,7 +28,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Test {@link SexagesimalConverter}
+ * Test the {@link SexagesimalConverter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)

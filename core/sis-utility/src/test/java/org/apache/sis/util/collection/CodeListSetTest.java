@@ -34,7 +34,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
 
 
 /**
- * Test the {@link CodeListSet} implementation.
+ * Tests the {@link CodeListSet} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3

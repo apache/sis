@@ -67,6 +67,12 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
         /*[5]*/ CoordinateOperation .DOMAIN_OF_VALIDITY_KEY, // same in Datum and ReferenceSystem
         /*[6]*/ CoordinateOperation .OPERATION_VERSION_KEY,
         /*[7]*/ CoordinateOperation .COORDINATE_OPERATION_ACCURACY_KEY
+
+        /*
+         * The current implementation does not look for minimum and maximum values in ParameterDescriptor
+         * and CoordinateSystemAxis, because their interpretation depends on the unit of measurement.
+         * Including those properties in this map causes more harm than good.
+         */
     };
 
     /**
