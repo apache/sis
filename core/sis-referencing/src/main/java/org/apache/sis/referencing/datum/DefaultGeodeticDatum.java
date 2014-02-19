@@ -499,24 +499,21 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Formats this datum as a <cite>Well Known Text</cite> {@code Datum[…]} element.
      *
-     * <blockquote><font size="-1"><b>Example: Well-Known Text of a WGS 84 datum.</b>
-     * <table class="compact">
-     * <tr>
-     *   <th>WKT 2</th>
-     *   <th>WKT 1</th>
-     * </tr><tr><td>
+     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text of a WGS 84 datum.
+     *
      * {@preformat wkt
      *      Datum["World Geodetic System 1984",
      *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]],
      *      Id["EPSG", 6326, Citation["OGP"], URI["urn:ogc:def:datum:EPSG::6326"]]]
      * }
-     * </td><td>
+     *
+     * <p>Same datum using WKT 1.</p>
+     *
      * {@preformat wkt
      *      DATUM["World Geodetic System 1984"
      *        SPHEROID["WGS84", 6378137.0, 298.257223563],
      *      AUTHORITY["EPSG", "6326"]]
      * }
-     * </td></tr></table>
      * </font></blockquote>
      *
      * @return {@code "Datum"}.

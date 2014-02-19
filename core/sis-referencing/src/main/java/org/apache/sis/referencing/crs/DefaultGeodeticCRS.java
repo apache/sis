@@ -18,7 +18,6 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import javax.measure.unit.Unit;
-import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -32,7 +31,6 @@ import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -169,13 +167,9 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
-        final boolean isWKT1 = formatter.getConvention().versionOfWKT() == 1;
-        Unit<Angle>  oldUnit = null; // Previous contextual unit.
-        final Unit<?>   unit = getUnit();
-        if (Units.isAngular(unit)) {
-            oldUnit = formatter.getContextualUnit(Angle.class);
-            formatter.setContextualUnit(Angle.class, unit.asType(Angle.class));
-        }
+        final boolean isWKT1  = formatter.getConvention().versionOfWKT() == 1;
+        final Unit<?> unit    = getUnit();
+        final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         formatter.newLine();
         formatter.append(datum);
         formatter.newLine();
@@ -212,9 +206,8 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
             formatter.newLine();
             formatter.append(unit);
         }
-        if (unit != null) { // Really 'unit', not 'oldUnit'.
-            formatter.setContextualUnit(Angle.class, oldUnit);
-        }
+        formatter.removeContextualUnit(unit);
+        formatter.addContextualUnit(oldUnit);
         formatter.newLine(); // For writing the ID[…] element on its own line.
         return isWKT1 ? null : "GeodeticCRS";
     }
