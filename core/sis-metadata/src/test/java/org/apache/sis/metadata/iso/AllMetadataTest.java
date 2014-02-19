@@ -214,6 +214,8 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * Returns the expected namespace for an element defined by the given specification.
      * For example the namespace of any type defined by {@link Specification#ISO_19115}
      * is {@code "http://www.isotc211.org/2005/gmd"}.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     protected String getExpectedNamespace(final Class<?> impl, final Specification specification) {
@@ -226,6 +228,8 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     /**
      * Returns the type of the given element, or {@code null} if the type is not yet
      * determined (the later cases could change in a future version).
+     *
+     * @return {@inheritDoc}
      */
     @Override
     protected String getExpectedTypeForElement(final Class<?> type, final Class<?> impl) {
@@ -251,6 +255,8 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     /**
      * Returns the ISO 19139 wrapper for the given GeoAPI type,
      * or {@code null} if no adapter is expected for the given type.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     protected Class<?> getWrapperFor(final Class<?> type) throws ClassNotFoundException {
@@ -272,6 +278,8 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
 
     /**
      * Return {@code false} for the Apache SIS properties which are known to have no setter methods.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     protected boolean isWritable(final Class<?> impl, final String property) {
