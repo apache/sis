@@ -72,8 +72,7 @@ import java.util.Objects;
  *
  * {@section Distance calculations}
  * This class contains an {@link #orthodromicDistance(double, double, double, double)} convenience method
- * for calculating distances on great circles. This convenience method is provided as an alternative to
- * the {@link org.apache.sis.referencing.GeodeticCalculator}.
+ * for calculating distances on great circles.
  *
  * {@section Creating new ellipsoid instances}
  * New instances can be created either directly by specifying all information to a factory method (choices 3
@@ -607,8 +606,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @param  λ2 Longitude of second point (in decimal degrees).
      * @param  φ2 Latitude  of second point (in decimal degrees).
      * @return The orthodromic distance (in the units of this ellipsoid's axis).
-     *
-     * @see org.apache.sis.referencing.GeodeticCalculator
      */
     public double orthodromicDistance(double λ1, double φ1, double λ2, double φ2) {
         λ1 = toRadians(λ1);

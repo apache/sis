@@ -167,10 +167,8 @@ public enum Convention {
 
     /**
      * The default conventions.
-     *
-     * @todo Make final after we completed the migration from Geotk.
      */
-    static Convention DEFAULT = WKT2, DEFAULT_SIMPLIFIED = WKT2_SIMPLIFIED;
+    static final Convention DEFAULT = WKT2;
 
     /**
      * {@code true} for using WKT 1 syntax, or {@code false} for using WKT 2 syntax.

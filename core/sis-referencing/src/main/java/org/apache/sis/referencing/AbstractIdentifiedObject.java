@@ -980,7 +980,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * {@section Formatting non-standard WKT}
      * If the implementation can not represent this object without violating some WKT constraints,
      * it can uses its own (non-standard) keywords but shall declare that it did so by invoking one
-     * of the {@link Formatter#setInvalidWKT(IdentifiedObject) Formatter.setInvalidWKT(…)} methods.
+     * of the {@link Formatter#setInvalidWKT(IdentifiedObject, Exception) Formatter.setInvalidWKT(…)}
+     * methods.
      *
      * <p>Alternatively, the implementation may also have no WKT keyword for this object.
      * In such case, this method shall return {@code null}.</p>

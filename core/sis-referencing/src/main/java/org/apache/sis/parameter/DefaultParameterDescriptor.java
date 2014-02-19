@@ -72,7 +72,7 @@ import java.util.Objects;
  * @version 0.4
  * @module
  *
- * @see Parameter
+ * @see DefaultParameterValue
  * @see DefaultParameterDescriptorGroup
  */
 public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject implements ParameterDescriptor<T> {

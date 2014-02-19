@@ -134,8 +134,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * different roles to the different locale categories. A typical (but not mandatory) mapping is:
      *
      * <ul>
-     *   <li>{@link Locale.Category#FORMAT} specifies the locale to use for numbers, dates and angles formatting.</li>
-     *   <li>{@link Locale.Category#DISPLAY} specifies the locale to use for {@link org.opengis.util.CodeList} labels
+     *   <li>{@link java.util.Locale.Category#FORMAT} specifies the locale to use for numbers, dates and angles formatting.</li>
+     *   <li>{@link java.util.Locale.Category#DISPLAY} specifies the locale to use for {@link org.opengis.util.CodeList} labels
      *       and {@link org.opengis.util.InternationalString} contents.</li>
      * </ul>
      *

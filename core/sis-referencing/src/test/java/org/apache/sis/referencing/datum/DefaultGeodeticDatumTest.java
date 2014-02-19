@@ -224,7 +224,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
      * Tests unmarshalling.
      *
      * <p>This method is part of a chain.
-     * The next method is {@link #testWKT()}.</p>
+     * The next method is {@link #testUnmarshalledWKT()}.</p>
      *
      * @return The unmarshalled datum.
      * @throws JAXBException If an error occurred during unmarshalling.
