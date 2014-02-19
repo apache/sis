@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.IOException;
 import java.text.FieldPosition;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 import java.util.TreeMap;
 import java.util.SortedMap;
 import java.util.Comparator;
+import java.util.ResourceBundle;
 import java.util.logging.*;
 import org.apache.sis.internal.system.OS;
 import org.apache.sis.internal.util.X364;
@@ -220,6 +222,18 @@ public class MonolineFormatter extends Formatter {
     private SimpleDateFormat timeFormat;
 
     /**
+     * The message format, or {@code null} if not yet created.
+     */
+    private transient MessageFormat messageFormat;
+
+    /**
+     * Value of the last call to {@link MessageFormat#applyPattern(String)}. Saved in order to avoid
+     * calling {@code applyPattern(String)} in the common case where the same message is logged many
+     * times with different arguments.
+     */
+    private transient String messagePattern;
+
+    /**
      * One of the following constants: {@link #NO_SOURCE}, {@link #LOGGER_SHORT},
      * {@link #LOGGER_LONG}, {@link #CLASS_SHORT} or {@link #CLASS_LONG}.
      */
@@ -228,6 +242,10 @@ public class MonolineFormatter extends Formatter {
     /**
      * Buffer for formatting messages. We will reuse this buffer in order to reduce memory allocations.
      * This is the buffer used internally by {@link #writer}.
+     *
+     * <p>This buffer is also arbitrarily chosen as our synchronization lock. The rational is that all
+     * operations on {@code StringBuffer} are synchronized anyway. So by reusing it for our lock, we
+     * will take only one monitor instead of two.</p>
      */
     private final StringBuffer buffer;
 
@@ -339,7 +357,11 @@ loop:   for (int i=0; ; i++) {
      *
      * @return The string to write on the left side of the first line of every log records, or {@code null} if none.
      */
-    public synchronized String getHeader() {
+    public String getHeader() {
+        final String header;
+        synchronized (buffer) {
+            header = this.header;
+        }
         // All other properties in MonolineFormatter are defined in such a way
         // that null means "none", so we do the same here for consistency.
         return header.isEmpty() ? null : header;
@@ -351,11 +373,13 @@ loop:   for (int i=0; ; i++) {
      * @param header The string to write on the left side of the first line of every log records,
      *        or {@code null} if none.
      */
-    public synchronized void setHeader(String header) {
+    public void setHeader(String header) {
         if (header == null) { // See comment in getHeader().
             header = "";
         }
-        this.header = header;
+        synchronized (buffer) {
+            this.header = header;
+        }
     }
 
     /**
@@ -367,8 +391,10 @@ loop:   for (int i=0; ; i++) {
      *
      * @return The time pattern, or {@code null} if elapsed time is not formatted.
      */
-    public synchronized String getTimeFormat() {
-        return (timeFormat != null) ? timeFormat.toPattern() : null;
+    public String getTimeFormat() {
+        synchronized (buffer) {
+            return (timeFormat != null) ? timeFormat.toPattern() : null;
+        }
     }
 
     /**
@@ -381,8 +407,10 @@ loop:   for (int i=0; ; i++) {
      * @param  pattern The time pattern, or {@code null} to disable time formatting.
      * @throws IllegalArgumentException If the given pattern is invalid.
      */
-    public synchronized void setTimeFormat(final String pattern) throws IllegalArgumentException {
-        timeFormat(pattern);
+    public void setTimeFormat(final String pattern) throws IllegalArgumentException {
+        synchronized (buffer) {
+            timeFormat(pattern);
+        }
     }
 
     /**
@@ -408,8 +436,10 @@ loop:   for (int i=0; ; i++) {
      *
      * @return The source format, or {@code null} if source is not formatted.
      */
-    public synchronized String getSourceFormat() {
-        return FORMAT_LABELS[sourceFormat];
+    public String getSourceFormat() {
+        synchronized (buffer) {
+            return FORMAT_LABELS[sourceFormat];
+        }
     }
 
     /**
@@ -430,8 +460,10 @@ loop:   for (int i=0; ; i++) {
      * @param  format The format for displaying the source, or {@code null} if the source shall not be formatted.
      * @throws IllegalArgumentException If the given argument is not one of the recognized format names.
      */
-    public synchronized void setSourceFormat(final String format) throws IllegalArgumentException {
-        sourceFormat(format);
+    public void setSourceFormat(final String format) throws IllegalArgumentException {
+        synchronized (buffer) {
+            sourceFormat(format);
+        }
     }
 
     /**
@@ -460,11 +492,13 @@ loop:   for (int i=0; ; i++) {
      * @param  level The level for which to get the color.
      * @return The color for the given level, or {@code null} if none.
      */
-    public synchronized String getLevelColor(final Level level) {
-        if (colors != null) {
-            final X364 code = colors.get(level);
-            if (code != null) {
-                return code.color;
+    public String getLevelColor(final Level level) {
+        synchronized (buffer) {
+            if (colors != null) {
+                final X364 code = colors.get(level);
+                if (code != null) {
+                    return code.color;
+                }
             }
         }
         return null;
@@ -483,20 +517,22 @@ loop:   for (int i=0; ; i++) {
      * @param  color The case-insensitive new color, or {@code null} if none.
      * @throws IllegalArgumentException If the given color is not one of the recognized values.
      */
-    public synchronized void setLevelColor(final Level level, final String color) throws IllegalArgumentException {
+    public void setLevelColor(final Level level, final String color) throws IllegalArgumentException {
         boolean changed = false;
-        if (color != null) {
-            final X364 code = X364.forColorName(color).background();
-            changed = (colors().put(level, code) != code);
-        } else if (colors != null) {
-            changed = (colors.remove(level) != null);
-            if (colors.isEmpty()) {
-                colors = null;
+        synchronized (buffer) {
+            if (color != null) {
+                final X364 code = X364.forColorName(color).background();
+                changed = (colors().put(level, code) != code);
+            } else if (colors != null) {
+                changed = (colors.remove(level) != null);
+                if (colors.isEmpty()) {
+                    colors = null;
+                }
             }
-        }
-        if (changed) {
-            colorLevels = null;
-            colorSequences = null;
+            if (changed) {
+                colorLevels = null;
+                colorSequences = null;
+            }
         }
     }
 
@@ -538,13 +574,15 @@ loop:   for (int i=0; ; i++) {
      *
      * @param enabled {@code true} for defining a default set of colors, or {@code false} for removing all colors.
      */
-    public synchronized void resetLevelColors(final boolean enabled) {
-        if (enabled) {
-            resetLevelColors();
-        } else {
-            colors = null;
-            colorLevels = null;
-            colorSequences = null;
+    public void resetLevelColors(final boolean enabled) {
+        synchronized (buffer) {
+            if (enabled) {
+                resetLevelColors();
+            } else {
+                colors = null;
+                colorLevels = null;
+                colorSequences = null;
+            }
         }
     }
 
@@ -577,120 +615,176 @@ loop:   for (int i=0; ; i++) {
      * @return A formatted log record.
      */
     @Override
-    public synchronized String format(final LogRecord record) {
+    public String format(final LogRecord record) {
         final Level level = record.getLevel();
-        final boolean colors  = (this.colors != null);
-        final boolean emphase = !faintSupported || (level.intValue() >= LEVEL_THRESHOLD.intValue());
         final StringBuffer buffer = this.buffer;
-        buffer.setLength(header.length());
-        /*
-         * Appends the time (e.g. "00:00:12.365"). The time pattern can be set either
-         * programmatically by a call to 'setTimeFormat(…)', or in logging.properties
-         * file with the "org.apache.sis.util.logging.MonolineFormatter.time" property.
-         */
-        if (timeFormat != null) {
-            Date time = new Date(Math.max(0, record.getMillis() - startMillis));
-            timeFormat.format(time, buffer, new FieldPosition(0));
-            buffer.append(' ');
-        }
-        /*
-         * Appends the level (e.g. "FINE"). We do not provide the option to turn level off for now.
-         * This level will be formatted with a colorized background if ANSI escape sequences are enabled.
-         */
-        int margin = buffer.length();
-        if (SHOW_LEVEL) {
-            if (colors) {
-                buffer.append(colorAt(level));
+        synchronized (buffer) {
+            final boolean colors  = (this.colors != null);
+            final boolean emphase = !faintSupported || (level.intValue() >= LEVEL_THRESHOLD.intValue());
+            buffer.setLength(header.length());
+            /*
+             * Appends the time (e.g. "00:00:12.365"). The time pattern can be set either
+             * programmatically by a call to 'setTimeFormat(…)', or in logging.properties
+             * file with the "org.apache.sis.util.logging.MonolineFormatter.time" property.
+             */
+            if (timeFormat != null) {
+                Date time = new Date(Math.max(0, record.getMillis() - startMillis));
+                timeFormat.format(time, buffer, new FieldPosition(0));
+                buffer.append(' ');
             }
-            final int offset = buffer.length();
-            buffer.append(level.getLocalizedName())
-                  .append(CharSequences.spaces(levelWidth - (buffer.length() - offset)));
-            margin += buffer.length() - offset;
-            if (colors) {
-                buffer.append(X364.BACKGROUND_DEFAULT.sequence());
+            /*
+             * Appends the level (e.g. "FINE"). We do not provide the option to turn level off for now.
+             * This level will be formatted with a colorized background if ANSI escape sequences are enabled.
+             */
+            int margin = buffer.length();
+            if (SHOW_LEVEL) {
+                if (colors) {
+                    buffer.append(colorAt(level));
+                }
+                final int offset = buffer.length();
+                buffer.append(level.getLocalizedName())
+                      .append(CharSequences.spaces(levelWidth - (buffer.length() - offset)));
+                margin += buffer.length() - offset;
+                if (colors) {
+                    buffer.append(X364.BACKGROUND_DEFAULT.sequence());
+                }
+                buffer.append(' ');
+                margin++;
             }
-            buffer.append(' ');
-            margin++;
-        }
-        /*
-         * Appends the logger name or source class name, in long of short form.
-         * The name may be formatted in bold characters if ANSI escape sequences are enabled.
-         */
-        String source;
-        switch (sourceFormat) {
-            case LOGGER_SHORT: // Fall through
-            case LOGGER_LONG:  source = record.getLoggerName(); break;
-            case CLASS_SHORT:  // Fall through
-            case CLASS_LONG:   source = record.getSourceClassName(); break;
-            default:           source = null; break;
-        }
-        if (source != null) {
+            /*
+             * Appends the logger name or source class name, in long of short form.
+             * The name may be formatted in bold characters if ANSI escape sequences are enabled.
+             */
+            String source;
             switch (sourceFormat) {
                 case LOGGER_SHORT: // Fall through
-                case CLASS_SHORT: {
-                    // Works even if there is no '.' since we get -1 as index.
-                    source = source.substring(source.lastIndexOf('.') + 1);
-                    break;
+                case LOGGER_LONG:  source = record.getLoggerName(); break;
+                case CLASS_SHORT:  // Fall through
+                case CLASS_LONG:   source = record.getSourceClassName(); break;
+                default:           source = null; break;
+            }
+            if (source != null) {
+                switch (sourceFormat) {
+                    case LOGGER_SHORT: // Fall through
+                    case CLASS_SHORT: {
+                        // Works even if there is no '.' since we get -1 as index.
+                        source = source.substring(source.lastIndexOf('.') + 1);
+                        break;
+                    }
                 }
+                if (colors && emphase) {
+                    buffer.append(X364.BOLD.sequence());
+                }
+                buffer.append('[').append(source).append(']');
+                if (colors && emphase) {
+                    buffer.append(X364.NORMAL.sequence());
+                }
+                buffer.append(' ');
             }
-            if (colors && emphase) {
-                buffer.append(X364.BOLD.sequence());
+            /*
+             * Now prepare the LineAppender for the message. We set a line separator prefixed by some
+             * amount of spaces in order to align message body on the column after the level name.
+             */
+            String bodyLineSeparator = writer.getLineSeparator();
+            final String lineSeparator = System.lineSeparator();
+            if (bodyLineSeparator.length() != lineSeparator.length() + margin) {
+                bodyLineSeparator = lineSeparator + CharSequences.spaces(margin);
+                writer.setLineSeparator(bodyLineSeparator);
             }
-            buffer.append('[').append(source).append(']');
-            if (colors && emphase) {
+            if (colors && !emphase) {
+                buffer.append(X364.FAINT.sequence());
+            }
+            final Throwable exception = record.getThrown();
+            String message = formatMessage(record);
+            int length = 0;
+            if (message != null) {
+                length = CharSequences.skipTrailingWhitespaces(message, 0, message.length());
+            }
+            /*
+             * Up to this point, we wrote directly in the StringBuilder for performance reasons.
+             * Now for the message part, we need to use the LineAppender in order to replace EOL
+             * and tabulations.
+             */
+            try {
+                if (message != null) {
+                    writer.append(message, 0, length);
+                }
+                if (exception != null) {
+                    if (message != null) {
+                        writer.append("\nCaused by: "); // LineAppender will replace '\n' by the system EOL.
+                    }
+                    if (level.intValue() >= LEVEL_THRESHOLD.intValue()) {
+                        exception.printStackTrace(printer);
+                    } else {
+                        printAbridged(exception, writer, record.getLoggerName(),
+                                record.getSourceClassName(), record.getSourceMethodName());
+                    }
+                }
+                writer.flush();
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+            buffer.setLength(CharSequences.skipTrailingWhitespaces(buffer, 0, buffer.length()));
+            if (colors && !emphase) {
                 buffer.append(X364.NORMAL.sequence());
             }
-            buffer.append(' ');
+            buffer.append(lineSeparator);
+            return buffer.toString();
         }
+    }
+
+    /**
+     * Returns the localized message from the given log record.
+     * First this method gets the {@linkplain LogRecord#getMessage() raw message} from the given record.
+     * Then there is choices:
+     *
+     * <ul>
+     *   <li>If the given record specifies a {@linkplain LogRecord#getResourceBundle() resource bundle},
+     *       then the message is used as a key for fetching the localized resources in the given bundle.</li>
+     *   <li>If the given record specifies one or more {@linkplain LogRecord#getParameters() parameters}
+     *       and if the message seems to use the {@link MessageFormat} syntax, then the message is formatted
+     *       by {@code MessageFormat}.</li>
+     * </ul>
+     *
+     * @param  record The log record from which to get a localized message.
+     * @return The localized message.
+     */
+    @Override
+    public String formatMessage(final LogRecord record) {
         /*
-         * Now prepare the LineAppender for the message. We set a line separator prefixed by some
-         * amount of spaces in order to align message body on the column after the level name.
+         * Same work than java.util.logging.Formatter.formatMessage(LogRecord) except for the synchronization lock,
+         * the reuse of existing MessageFormat and StringBuffer instances, and not catching formatting exceptions
+         * (we want to know if our messages have a problem).
          */
-        String bodyLineSeparator = writer.getLineSeparator();
-        final String lineSeparator = System.lineSeparator();
-        if (bodyLineSeparator.length() != lineSeparator.length() + margin) {
-            bodyLineSeparator = lineSeparator + CharSequences.spaces(margin);
-            writer.setLineSeparator(bodyLineSeparator);
+        String message = record.getMessage();
+        ResourceBundle resources = record.getResourceBundle();
+        if (resources != null) {
+            message = resources.getString(message);
         }
-        if (colors && !emphase) {
-            buffer.append(X364.FAINT.sequence());
-        }
-        final Throwable exception = record.getThrown();
-        String message = formatMessage(record);
-        int length = 0;
-        if (message != null) {
-            length = CharSequences.skipTrailingWhitespaces(message, 0, message.length());
-        }
-        /*
-         * Up to this point, we wrote directly in the StringBuilder for performance reasons.
-         * Now for the message part, we need to use the LineAppender in order to replace EOL
-         * and tabulations.
-         */
-        try {
-            if (message != null) {
-                writer.append(message, 0, length);
-            }
-            if (exception != null) {
-                if (message != null) {
-                    writer.append("\nCaused by: "); // LineAppender will replace '\n' by the system EOL.
-                }
-                if (level.intValue() >= LEVEL_THRESHOLD.intValue()) {
-                    exception.printStackTrace(printer);
-                } else {
-                    printAbridged(exception, writer, record.getLoggerName(),
-                            record.getSourceClassName(), record.getSourceMethodName());
+        final Object parameters[] = record.getParameters();
+        if (parameters != null && parameters.length != 0) {
+            int i = message.indexOf('{');
+            if (i >= 0 && ++i < message.length()) {
+                final char c = message.charAt(i);
+                if (c >= '0' && c <= '9') {
+                    synchronized (buffer) {
+                        if (messageFormat == null) {
+                            messageFormat = new MessageFormat(message);
+                        } else if (!message.equals(messagePattern)) {
+                            messageFormat.applyPattern(message);
+                        }
+                        messagePattern = message;
+                        final int base = buffer.length();
+                        try {
+                            message = messageFormat.format(parameters, buffer, new FieldPosition(0)).substring(base);
+                        } finally {
+                            buffer.setLength(base);
+                        }
+                    }
                 }
             }
-            writer.flush();
-        } catch (IOException e) {
-            throw new AssertionError(e);
         }
-        buffer.setLength(CharSequences.skipTrailingWhitespaces(buffer, 0, buffer.length()));
-        if (colors && !emphase) {
-            buffer.append(X364.NORMAL.sequence());
-        }
-        buffer.append(lineSeparator);
-        return buffer.toString();
+        return message;
     }
 
     /**
