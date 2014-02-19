@@ -33,6 +33,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -180,11 +181,11 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
              */
             switch (validateAxis(direction, unit)) {
                 case INVALID_DIRECTION: {
-                    throw new IllegalArgumentException(Errors.format(
+                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
                             Errors.Keys.IllegalAxisDirection_2, getClass(), direction));
                 }
                 case INVALID_UNIT: {
-                    throw new IllegalArgumentException(Errors.format(
+                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
                             Errors.Keys.IllegalUnitFor_2, name, unit));
                 }
             }
@@ -199,7 +200,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                     final AxisDirection other = axes[j].getDirection();
                     final AxisDirection abs = AxisDirections.absolute(other);
                     if (dir.equals(abs) && !abs.equals(AxisDirection.FUTURE)) {
-                        throw new IllegalArgumentException(Errors.format(
+                        throw new IllegalArgumentException(Errors.getResources(properties).getString(
                                 Errors.Keys.ColinearAxisDirections_2, direction, other));
                     }
                 }
@@ -276,8 +277,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depend
      * on this object's state. This method is not in public API for that reason.</p>
      *
-     * @param  direction The direction to test for compatibility.
-     * @param  unit The unit to test for compatibility.
+     * @param  direction The direction to test for compatibility (never {@code null}).
+     * @param  unit The unit to test for compatibility (never {@code null}).
      * @return {@link #VALID} if the given direction and unit are compatible with this coordinate system,
      *         {@link #DIRECTION} if the direction is invalid or {@link #UNIT} if the unit is invalid.
      */
@@ -413,17 +414,33 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
-     * Note that WKT version 1 does not define any keyword for coordinate system.
+     * Formats the inner part of this <cite>Well Known Text</cite> (WKT) CS into the given formatter.
+     * This method does <strong>not</strong> format the axes, because they shall appear outside
+     * the {@code CS[…]} element for historical reasons. Axes shall be formatted by the enclosing
+     * element (usually an {@link org.apache.sis.referencing.crs.AbstractCRS}).
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name.
+     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text of a two-dimensional {@code EllipsoidalCS}
+     * having (φ,λ) axes in a unit defined by the enclosing CRS (usually degrees).
+     *
+     * {@preformat wkt
+     *   CS[ellipsoidal, 2],
+     *   Axis["latitude", north],
+     *   Axis["longitude", east]
+     * }
+     * </font></blockquote>
+     *
+     * {@note <code>CS</code> is defined in the WKT 2 specification only.}
+     *
+     * @return {@code "CS"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        for (final CoordinateSystemAxis axe : axes) {
-            formatter.append(axe);
+        final String type = ReferencingUtilities.toWKTType(CoordinateSystem.class, getInterface());
+        if (type == null) {
+            formatter.setInvalidWKT(this, null);
         }
-        return super.formatTo(formatter);
+        formatter.append(type, null);
+        formatter.append(axes.length);
+        return "CS";
     }
 }

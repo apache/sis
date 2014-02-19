@@ -93,7 +93,7 @@ public final class DataStores extends Static {
      * The {@code storage} argument can be any of the following types:
      *
      * <ul>
-     *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
+     *   <li>A {@link java.io.File} for a file or a directory.</li>
      *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
      *   <li>A {@link java.lang.CharSequence} interpreted as a filename or a URL.</li>
      *   <li>A {@link java.nio.channels.Channel}, {@link java.io.DataInput}, {@link java.io.InputStream} or {@link java.io.Reader}.</li>

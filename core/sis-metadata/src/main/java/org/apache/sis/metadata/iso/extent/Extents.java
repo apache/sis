@@ -17,13 +17,20 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Date;
+import javax.measure.unit.Unit;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.BoundingPolygon;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Range;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
@@ -38,7 +45,8 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * This class provides methods for:
  *
  * <ul>
- *   <li>{@link #getGeographicBoundingBox(Extent)} and {@link #getDate(Extent, double)}
+ *   <li>{@link #getGeographicBoundingBox(Extent)}, {@link #getVerticalRange(Extent)}
+ *       and {@link #getDate(Extent, double)}
  *       for fetching geographic or temporal components in a convenient form.</li>
  *   <li>Methods for computing {@linkplain #intersection intersection} of bounding boxes
  *       and {@linkplain #area area} estimations.</li>
@@ -80,8 +88,7 @@ public final class Extents extends Static {
      * {@linkplain DefaultGeographicBoundingBox#add added} together.
      *
      * @param  extent The extent to convert to a geographic bounding box, or {@code null}.
-     * @return A geographic bounding box extracted from the given extent, or {@code null}
-     *         if the given extent was {@code null}.
+     * @return A geographic bounding box extracted from the given extent, or {@code null} in none.
      */
     public static GeographicBoundingBox getGeographicBoundingBox(final Extent extent) {
         GeographicBoundingBox candidate = null;
@@ -122,6 +129,115 @@ public final class Extents extends Static {
             }
         }
         return candidate;
+    }
+
+    /**
+     * Returns the union of all vertical ranges found in the given extent, or {@code null} if none.
+     * Depths have negative height values: if the {@linkplain CoordinateSystemAxis#getDirection() axis direction}
+     * is toward down, then this method reverses the sign of minimum and maximum values.
+     *
+     * {@section Multi-occurrences}
+     * If the given {@code Extent} object contains more than one vertical extent, then this method
+     * performs the following choices:
+     *
+     * <ul>
+     *   <li>If no range specify a unit of measurement, return the first range and ignore all others.</li>
+     *   <li>Otherwise take the first range having a unit of measurement. Then:<ul>
+     *     <li>All other ranges having an incompatible unit of measurement will be ignored.</li>
+     *     <li>All other ranges having a compatible unit of measurement will be converted to
+     *         the unit of the first retained range, and their union will be computed.</li>
+     *   </ul></li>
+     * </ul>
+     *
+     * {@example Heights or depths are often measured using some pressure units, for example hectopascals (hPa).
+     *           An <code>Extent</code> could contain two vertical elements: one with the height measurements
+     *           in hPa, and the other element with heights transformed to metres using an empirical formula.
+     *           In such case this method will select the first vertical element on the assumption that it is
+     *           the "main" one that the metadata producer intended to show. Then this method will search for
+     *           other vertical elements using pressure unit. In our example there is none. But if any were
+     *           found, this method would compute their union.}
+     *
+     * @param  extent The extent to convert to a vertical measurement range, or {@code null}.
+     * @return A vertical measurement range created from the given extent, or {@code null} if none.
+     *
+     * @since 0.4
+     */
+    public static MeasurementRange<Double> getVerticalRange(final Extent extent) {
+        MeasurementRange<Double> range = null;
+        if (extent != null) {
+            for (final VerticalExtent element : extent.getVerticalElements()) {
+                double min = element.getMinimumValue();
+                double max = element.getMaximumValue();
+                final VerticalCRS crs = element.getVerticalCRS();
+                Unit<?> unit = null;
+                if (crs != null) {
+                    final CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(0);
+                    unit = axis.getUnit();
+                    if (AxisDirection.DOWN.equals(axis.getDirection())) {
+                        final double tmp = min;
+                        min = -max;
+                        max = -tmp;
+                    }
+                }
+                if (range != null) {
+                    /*
+                     * If the new range does not specify any unit, then we do not know how to convert
+                     * the values before to perform the union operation. Conservatively do nothing.
+                     */
+                    if (unit == null) {
+                        continue;
+                    }
+                    /*
+                     * If previous range did not specify any unit, then unconditionally replace it by
+                     * the new range since it provides more information. If both ranges specify units,
+                     * then we will compute the union if we can, or ignore the new range otherwise.
+                     */
+                    final Unit<?> previous = range.unit();
+                    if (previous != null) {
+                        if (previous.isCompatible(unit)) {
+                            range = (MeasurementRange<Double>) range.union(
+                                    MeasurementRange.create(min, true, max, true, unit));
+                        }
+                        continue;
+                    }
+                }
+                range = MeasurementRange.create(min, true, max, true, unit);
+            }
+        }
+        return range;
+    }
+
+    /**
+     * Returns the union of all time ranges found in the given extent, or {@code null} if none.
+     *
+     * @param  extent The extent to convert to a time range, or {@code null}.
+     * @return A time range created from the given extent, or {@code null} if none.
+     *
+     * @since 0.4
+     */
+    public static Range<Date> getTimeRange(final Extent extent) {
+        Date min = null;
+        Date max = null;
+        if (extent != null) {
+            for (final TemporalExtent t : extent.getTemporalElements()) {
+                final Date startTime, endTime;
+                if (t instanceof DefaultTemporalExtent) {
+                    final DefaultTemporalExtent dt = (DefaultTemporalExtent) t;
+                    startTime = dt.getStartTime(); // Maybe user has overridden those methods.
+                    endTime   = dt.getEndTime();
+                } else {
+                    final TemporalPrimitive p = t.getExtent();
+                    startTime = DefaultTemporalExtent.getTime(p, true);
+                    endTime   = DefaultTemporalExtent.getTime(p, false);
+                }
+                if (startTime != null && (min == null || startTime.before(min))) min = startTime;
+                if (  endTime != null && (max == null ||   endTime.after (max))) max =   endTime;
+            }
+        }
+        if (min == null && max == null) {
+            return null;
+        }
+        return new Range<Date>(Date.class, min, true, max, true);
     }
 
     /**

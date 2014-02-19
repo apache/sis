@@ -17,6 +17,9 @@
 package org.apache.sis.internal.metadata;
 
 import org.opengis.geometry.Envelope;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -34,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  * implementation using Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.4 (derived from geotk-3.18)
  * @version 0.3
  * @module
  */
@@ -52,7 +55,7 @@ public abstract class ReferencingServices extends SystemListener {
     /**
      * The services, fetched when first needed.
      */
-    private static ReferencingServices instance;
+    private static volatile ReferencingServices instance;
 
     /**
      * For subclass only. This constructor registers this instance as a {@link SystemListener}
@@ -73,7 +76,6 @@ public abstract class ReferencingServices extends SystemListener {
         synchronized (ReferencingServices.class) {
             instance = null;
         }
-        SystemListener.remove(this);
     }
 
     /**
@@ -83,18 +85,48 @@ public abstract class ReferencingServices extends SystemListener {
      * @throws UnsupportedOperationException If the {@code "sis-referencing"} module has not
      *         been found on the classpath.
      */
-    public static synchronized ReferencingServices getInstance() throws UnsupportedOperationException {
-        if (instance == null) try {
-            instance = (ReferencingServices) Class.forName("org.apache.sis.internal.referencing.ServicesForMetadata").newInstance();
-        } catch (ClassNotFoundException exception) {
-            throw new UnsupportedOperationException(Errors.format(
-                    Errors.Keys.MissingRequiredModule_1, "sis-referencing"), exception);
-        } catch (Exception exception) { // (ReflectiveOperationException) on JDK7 branch.
-            // Should never happen if we didn't broke our helper class.
-            throw new AssertionError(exception);
+    public static ReferencingServices getInstance() throws UnsupportedOperationException {
+        ReferencingServices c = instance;
+        if (c == null) {
+            synchronized (ReferencingServices.class) {
+                c = instance;
+                if (c == null) try {
+                    instance = c = (ReferencingServices) Class.forName("org.apache.sis.internal.referencing.ServicesForMetadata").newInstance();
+                } catch (ClassNotFoundException exception) {
+                    throw new UnsupportedOperationException(Errors.format(
+                            Errors.Keys.MissingRequiredModule_1, "sis-referencing"), exception);
+                } catch (Exception exception) { // (ReflectiveOperationException) on JDK7 branch.
+                    // Should never happen if we didn't broke our helper class.
+                    throw new AssertionError(exception);
+                }
+            }
         }
-        return instance;
+        return c;
     }
+
+    /**
+     * Returns the matrix for the given transform, or {@code null} if none.
+     *
+     * @param  tr The transform for which to get the matrix.
+     * @return The matrix, or {@code null} if none.
+     *
+     * @see org.apache.sis.referencing.operation.transform.LinearTransform#getMatrix()
+     *
+     * @since 0.4
+     */
+    public abstract Matrix getMatrix(MathTransform tr);
+
+    /**
+     * Converts the given object in a {@link org.apache.sis.io.wkt.FormattableObject} instance.
+     *
+     * @param  object The object to wrap.
+     * @return The given object converted to a {@code FormattableObject} instance.
+     *
+     * @see org.apache.sis.referencing.AbstractIdentifiedObject#castOrCopy(IdentifiedObject)
+     *
+     * @since 0.4
+     */
+    public abstract IdentifiedObject toFormattableObject(IdentifiedObject object);
 
     /**
      * Sets a geographic bounding box from the specified envelope. If the envelope contains

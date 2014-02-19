@@ -37,6 +37,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
@@ -71,8 +72,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * {@section Distance calculations}
  * This class contains an {@link #orthodromicDistance(double, double, double, double)} convenience method
- * for calculating distances on great circles. This convenience method is provided as an alternative to
- * the {@link org.apache.sis.referencing.GeodeticCalculator}.
+ * for calculating distances on great circles.
  *
  * {@section Creating new ellipsoid instances}
  * New instances can be created either directly by specifying all information to a factory method (choices 3
@@ -606,8 +606,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @param  λ2 Longitude of second point (in decimal degrees).
      * @param  φ2 Latitude  of second point (in decimal degrees).
      * @return The orthodromic distance (in the units of this ellipsoid's axis).
-     *
-     * @see org.apache.sis.referencing.GeodeticCalculator
      */
     public double orthodromicDistance(double λ1, double φ1, double λ2, double φ2) {
         λ1 = toRadians(λ1);
@@ -752,16 +750,27 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Formats this ellipsoid as a <cite>Well Known Text</cite> {@code Ellipsoid[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "SPHEROID"}.
+     * @return {@code "Ellipsoid"} (WKT 2) or {@code "Spheroid"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final double ivf = getInverseFlattening();
-        formatter.append(getAxisUnit().getConverterTo(SI.METRE).convert(getSemiMajorAxis()));
-        formatter.append(isInfinite(ivf) ? 0 : ivf);
-        return "SPHEROID";
+        super.formatTo(formatter);
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = convention.majorVersion() == 1;
+        double length = semiMajorAxis;
+        if (isWKT1) {
+            length = unit.getConverterTo(SI.METRE).convert(length);
+        }
+        formatter.append(length);
+        formatter.append(isInfinite(inverseFlattening) ? 0 : inverseFlattening);
+        if (isWKT1) {
+            return "Spheroid";
+        }
+        if (!convention.isSimplified() || !SI.METRE.equals(unit)) {
+            formatter.append(unit);
+        }
+        return "Ellipsoid";
     }
 }

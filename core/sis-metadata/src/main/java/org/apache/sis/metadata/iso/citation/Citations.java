@@ -52,7 +52,6 @@ public final class Citations extends Static {
      * The <a href="http://www.opengeospatial.org">Open Geospatial Consortium</a> organization.
      * "Open Geospatial Consortium" is the new name for "OpenGIS consortium".
      *
-     * @see org.apache.sis.io.wkt.Convention#OGC
      * @category Organization
      */
     public static final Citation OGC = new SimpleCitation("OGC");
@@ -79,7 +78,6 @@ public final class Citations extends Static {
      * The <a href="http://www.esri.com">ESRI</a> organization.
      * This company defines many Coordinate Reference Systems in addition to the {@linkplain #EPSG} ones.
      *
-     * @see org.apache.sis.io.wkt.Convention#ESRI
      * @category Organization
      *
      * @since 0.4
@@ -89,7 +87,6 @@ public final class Citations extends Static {
     /**
      * The <a href="http://www.oracle.com">Oracle</a> organization.
      *
-     * @see org.apache.sis.io.wkt.Convention#ORACLE
      * @category Organization
      *
      * @since 0.4
@@ -99,7 +96,6 @@ public final class Citations extends Static {
     /**
      * The <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> specification.
      *
-     * @see org.apache.sis.io.wkt.Convention#NETCDF
      * @category Specification
      *
      * @since 0.4
@@ -109,7 +105,6 @@ public final class Citations extends Static {
     /**
      * The <a href="http://www.remotesensing.org/geotiff/geotiff.html">GeoTIFF</a> specification.
      *
-     * @see org.apache.sis.io.wkt.Convention#GEOTIFF
      * @category Specification
      *
      * @since 0.4
@@ -119,7 +114,6 @@ public final class Citations extends Static {
     /**
      * The <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
      *
-     * @see org.apache.sis.io.wkt.Convention#PROJ4
      * @category Code space
      *
      * @since 0.4
@@ -136,7 +130,6 @@ public final class Citations extends Static {
      * @see #AUTO
      * @see #AUTO2
      * @see #CRS
-     * @see org.apache.sis.io.wkt.Convention#EPSG
      * @category Code space
      *
      * @since 0.4

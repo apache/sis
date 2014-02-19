@@ -39,7 +39,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests {@link PropertyInformation}.
+ * Tests the {@link PropertyInformation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3

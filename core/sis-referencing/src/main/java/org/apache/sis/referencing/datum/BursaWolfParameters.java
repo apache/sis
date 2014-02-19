@@ -30,11 +30,11 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
 import static java.lang.Math.abs;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.getNumber;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -535,6 +535,23 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
+     * Retrieves the value at the specified row and column of the given matrix, wrapped in a {@code Number}.
+     * The {@code Number} type depends on the matrix accuracy.
+     *
+     * @param matrix The matrix from which to get the number.
+     * @param row    The row index, from 0 inclusive to {@link Matrix#getNumRow()} exclusive.
+     * @param column The column index, from 0 inclusive to {@link Matrix#getNumCol()} exclusive.
+     * @return       The current value at the given row and column.
+     */
+    private static Number getNumber(final Matrix matrix, final int row, final int column) {
+        if (matrix instanceof MatrixSIS) {
+            return ((MatrixSIS) matrix).getNumber(row, column);
+        } else {
+            return matrix.getElement(row, column);
+        }
+    }
+
+    /**
      * Returns the region or timeframe in which a coordinate transformation based on those Bursa-Wolf parameters is
      * valid, or {@code null} if unspecified. If an extent was specified at construction time, then that extent is
      * returned. Otherwise the datum domain of validity (which may be {@code null}) is returned.
@@ -600,17 +617,20 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element. The WKT contains the
-     * parameters in <var>translation</var>, <var>rotation</var>, <var>scale</var> order, like below:
+     * Formats this object as a <cite>Well Known Text</cite> {@code ToWGS84[…]} element.
+     * The WKT contains the parameters in <var>translation</var>, <var>rotation</var>, <var>scale</var> order,
+     * like below:
      *
      * <blockquote><code>TOWGS84[{@linkplain #tX}, {@linkplain #tY}, {@linkplain #tZ}, {@linkplain #rX},
      * {@linkplain #rY}, {@linkplain #rZ}, {@linkplain #dS}]</code></blockquote>
      *
-     * The element name is {@code "TOWGS84"} in the common case where the {@linkplain #getTargetDatum() target datum}
+     * {@note <code>TOWGS84</code> is defined in the WKT 1 specification only.}
+     *
+     * The element name is {@code "ToWGS84"} in the common case where the {@linkplain #getTargetDatum() target datum}
      * is WGS 84. For other targets, the element name will be derived from the datum name.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, usually {@code "TOWGS84"}.
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return Usually {@code "ToWGS84"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -622,14 +642,14 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         formatter.append(rZ);
         formatter.append(dS);
         if (isToWGS84()) {
-            return "TOWGS84";
+            return "ToWGS84";
         }
-        String keyword = super.formatTo(formatter); // Declare the WKT as invalid.
-        final String name = IdentifiedObjects.getUnicodeIdentifier(targetDatum);
-        if (name != null) {
-            // We may try to build something better here in future SIS versions, if there is a need for that.
-            keyword = "TO" + name;
+        formatter.setInvalidWKT(BursaWolfParameters.class, null);
+        String name = IdentifiedObjects.getUnicodeIdentifier(targetDatum);
+        if (name == null) {
+            name = "Unknown";
         }
-        return keyword;
+        // We may try to build something better here in future SIS versions, if there is a need for that.
+        return "To" + name;
     }
 }

@@ -22,17 +22,19 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.HardCodedAxes;
+import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
- * Tests {@link DefaultCompoundCRS}
+ * Tests the {@link DefaultCompoundCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -41,7 +43,8 @@ import static org.apache.sis.test.Assert.*;
  */
 @DependsOn({
     SubTypesTest.class,
-    DefaultGeographicCRSTest.class
+    DefaultGeographicCRSTest.class,
+    DefaultVerticalCRSTest.class
 })
 public final strictfp class DefaultCompoundCRSTest extends TestCase {
     /**
@@ -138,5 +141,61 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
         assertEquals("longitude.maximumValue",    360.0, axis.getMaximumValue(), STRICT);
         assertSame("Expected a no-op.",         shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE));
         assertSame("Expected cached instance.", shifted, crs4   .forConvention(AxesConvention.POSITIVE_RANGE));
+    }
+
+    /**
+     * Tests WKT 1 formatting.
+     */
+    @Test
+    public void testWKT1() {
+        assertWktEquals(Convention.WKT1,
+                "COMPD_CS[“WGS 84 + height + time”,\n" +
+                "  GEOGCS[“WGS 84”,\n" +
+                "    DATUM[“World Geodetic System 1984”,\n" +
+                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "    PRIMEM[“Greenwich”, 0.0],\n" +
+                "    UNIT[“degree”, 0.017453292519943295],\n" +
+                "    AXIS[“Longitude”, EAST],\n" +
+                "    AXIS[“Latitude”, NORTH]],\n" +
+                "  VERT_CS[“Gravity-related height”,\n" +
+                "    VERT_DATUM[“Mean Sea Level”, 2005],\n" +
+                "    UNIT[“metre”, 1],\n" +
+                "    AXIS[“Gravity-related height”, UP]],\n" +
+                "  TIMECRS[“Time”,\n" +
+                "    TIMEDATUM[“UNIX”],\n" +
+                "    UNIT[“day”, 86400],\n" +
+                "    AXIS[“Time”, FUTURE]]]",
+                HardCodedCRS.GEOID_4D);
+    }
+
+    /**
+     * Tests WKT 2 formatting.
+     */
+    @Test
+    @DependsOnMethod("testWKT1")
+    public void testWKT2() {
+        assertWktEquals(Convention.WKT2,
+                "CompoundCRS[“WGS 84 + height + time”,\n" +
+                "  GeodeticCRS[“WGS 84”,\n" +
+                "    Datum[“World Geodetic System 1984”,\n" +
+                "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
+                "      PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                "    CS[“ellipsoidal”, 2],\n" +
+                "      Axis[“Longitude (λ)”, east],\n" +
+                "      Axis[“Latitude (φ)”, north],\n" +
+                "      AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                "  VerticalCRS[“Gravity-related height”,\n" +
+                "    VerticalDatum[“Mean Sea Level”],\n" +
+                "    CS[“vertical”, 1],\n" +
+                "      Axis[“Gravity-related height (H)”, up],\n" +
+                "      LengthUnit[“metre”, 1]],\n" +
+                "  TimeCRS[“Time”,\n" +
+                "    TimeDatum[“UNIX”],\n" +
+                "    CS[“temporal”, 1],\n" +
+                "      Axis[“Time (t)”, future],\n" +
+                "      TimeUnit[“day”, 86400]],\n" +
+                "  Area[“World”],\n" +
+                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
+                HardCodedCRS.GEOID_4D);
     }
 }

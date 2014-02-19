@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.internal.metadata;
 
 import java.util.Collection;
 import javax.measure.unit.Unit;
+import org.opengis.annotation.UML;
+import org.opengis.annotation.Specification;
 import org.opengis.parameter.*;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Static;
 
 
@@ -85,6 +85,18 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns {@code true} if codes in the given code space are often represented using the URN syntax.
+     * Current implementation conservatively returns {@code true} only for {@code "EPSG"}.
+     * The list of accepted code spaces may be expanded in any future SIS version.
+     *
+     * @param  codeSpace The code space (can be {@code null}).
+     * @return {@code true} if the given code space is known to use the URN syntax.
+     */
+    public static boolean usesURN(final String codeSpace) {
+        return (codeSpace != null) && codeSpace.equalsIgnoreCase("EPSG");
+    }
+
+    /**
      * Returns the URN type for the given class, or {@code null} if unknown.
      * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of URN types.
      *
@@ -103,26 +115,53 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Retrieves the value at the specified row and column of the given matrix, wrapped in a {@code Number}.
-     * The {@code Number} type depends on the matrix accuracy.
+     * Returns the WKT type of the given interface.
      *
-     * @param matrix The matrix from which to get the number.
-     * @param row    The row index, from 0 inclusive to {@link Matrix#getNumRow()} exclusive.
-     * @param column The column index, from 0 inclusive to {@link Matrix#getNumCol()} exclusive.
-     * @return       The current value at the given row and column.
+     * For {@link CoordinateSystem} base type, the returned value shall be one of
+     * {@code affine}, {@code Cartesian}, {@code cylindrical}, {@code ellipsoidal}, {@code linear},
+     * {@code parametric}, {@code polar}, {@code spherical}, {@code temporal} or {@code vertical}.
+     *
+     * @param  base The abstract base interface.
+     * @param  type The interface or classes for which to get the WKT type.
+     * @return The WKT type for the given class or interface, or {@code null} if none.
      */
-    public static Number getNumber(final Matrix matrix, final int row, final int column) {
-        if (matrix instanceof MatrixSIS) {
-            return ((MatrixSIS) matrix).getNumber(row, column);
-        } else {
-            return matrix.getElement(row, column);
+    public static String toWKTType(final Class<?> base, final Class<?> type) {
+        if (type != base) {
+            final UML uml = type.getAnnotation(UML.class);
+            if (uml != null && uml.specification() == Specification.ISO_19111) {
+                String name = uml.identifier();
+                final int length = name.length() - 5; // Length without "CS_" and "CS".
+                if (length >= 1 && name.startsWith("CS_") && name.endsWith("CS")) {
+                    final StringBuilder buffer = new StringBuilder(length).append(name, 3, 3 + length);
+                    if (!name.regionMatches(3, "Cartesian", 0, 9)) {
+                        buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
+                    }
+                    name = buffer.toString();
+                    if (name.equals("time")) {
+                        name = "temporal";
+                    }
+                    return name;
+                }
+            }
+            for (final Class<?> c : type.getInterfaces()) {
+                if (base.isAssignableFrom(c)) {
+                    final String name = toWKTType(base, c);
+                    if (name != null) {
+                        return name;
+                    }
+                }
+            }
         }
+        return null;
     }
 
     /**
      * Returns the unit used for all axes in the given coordinate system.
      * If not all axes use the same unit, then this method returns {@code null}.
-     * This convenience method is used for Well Know Text version 1 (WKT 1) formatting.
+     *
+     * <p>This method is used either when the coordinate system is expected to contain exactly one axis,
+     * or for operations that support only one units for all axes, for example Well Know Text version 1
+     * (WKT 1) formatting.</p>
      *
      * @param cs The coordinate system for which to get the unit, or {@code null}.
      * @return The unit for all axis in the given coordinate system, or {@code null}.
@@ -131,12 +170,15 @@ public final class ReferencingUtilities extends Static {
         Unit<?> unit = null;
         if (cs != null) {
             for (int i=cs.getDimension(); --i>=0;) {
-                final Unit<?> candidate = cs.getAxis(i).getUnit();
-                if (candidate != null) {
-                    if (unit == null) {
-                        unit = candidate;
-                    } else if (!unit.equals(candidate)) {
-                        return null;
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                if (axis != null) { // Paranoiac check.
+                    final Unit<?> candidate = axis.getUnit();
+                    if (candidate != null) {
+                        if (unit == null) {
+                            unit = candidate;
+                        } else if (!unit.equals(candidate)) {
+                            return null;
+                        }
                     }
                 }
             }
@@ -173,31 +215,5 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return sameContent;
-    }
-
-    /**
-     * Ensures that the given argument value is {@code false}. This method is invoked by private setter methods,
-     * which are themselves invoked by JAXB at unmarshalling time. Invoking this method from those setter methods
-     * serves two purposes:
-     *
-     * <ul>
-     *   <li>Make sure that a singleton property is not defined twice in the XML document.</li>
-     *   <li>Protect ourselves against changes in immutable objects outside unmarshalling. It should
-     *       not be necessary since the setter methods shall not be public, but we are paranoiac.</li>
-     *   <li>Be a central point where we can trace all setter methods, in case we want to improve
-     *       warning or error messages in future SIS versions.</li>
-     * </ul>
-     *
-     * @param  name The property name, used only in case of error message to format.
-     * @param  isDefined Whether the property in the caller object is current defined.
-     * @return {@code true} if the caller can set the property.
-     * @throws IllegalStateException If {@code isDefined} is {@code true}.
-     */
-    public static boolean canSetProperty(final String name, final boolean isDefined) throws IllegalStateException {
-        if (isDefined) {
-            // Future SIS version could log a warning instead if a unmarshalling is in progress.
-            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));
-        }
-        return true;
     }
 }

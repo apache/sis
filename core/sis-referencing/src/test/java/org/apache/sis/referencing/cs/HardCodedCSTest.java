@@ -91,7 +91,6 @@ public final strictfp class HardCodedCSTest extends TestCase {
     public void testNormalized() {
         AbstractCS cs;
         cs = GRID;               assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
-        cs = SPHERICAL;          assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
         cs = GEOCENTRIC;         assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
         cs = CARTESIAN_2D;       assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));
         cs = CARTESIAN_3D;       assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED));

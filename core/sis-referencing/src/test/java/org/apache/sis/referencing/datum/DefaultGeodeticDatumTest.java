@@ -27,14 +27,16 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestStep;
 import org.junit.Test;
 
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.mock.GeodeticDatumMock.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
@@ -176,14 +178,14 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     }
 
     /**
-     * Tests {@link DefaultEllipsoid#toWKT()}.
+     * Tests {@link DefaultGeodeticDatum#toWKT()}.
      */
     @Test
     public void testToWKT() {
         final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
         assertWktEquals(
-                "DATUM[“WGS84”,\n" +
-                "  SPHEROID[“WGS84”, 6378137.0, 298.257223563]]",
+                "Datum[“WGS84”,\n" +
+                "  Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]]",
                 datum);
     }
 
@@ -221,10 +223,14 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     /**
      * Tests unmarshalling.
      *
+     * <p>This method is part of a chain.
+     * The next method is {@link #testUnmarshalledWKT()}.</p>
+     *
+     * @return The unmarshalled datum.
      * @throws JAXBException If an error occurred during unmarshalling.
      */
-    @Test
-    public void testUnmarshalling() throws JAXBException {
+    @TestStep
+    public DefaultGeodeticDatum testUnmarshalling() throws JAXBException {
         final DefaultGeodeticDatum datum = unmarshalFile(DefaultGeodeticDatum.class, XML_FILE);
         assertIsWGS84(datum, true);
         /*
@@ -241,5 +247,40 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
                 datum.getRealizationEpoch());
         assertEquals("remarks", "Defining parameters cited in EPSG database.",
                 datum.getEllipsoid().getRemarks().toString());
+        return datum;
+    }
+
+    /**
+     * Tests the WKT formatting of the datum created by {@link #testUnmarshalling()}.
+     *
+     * @throws JAXBException If an error occurred during unmarshalling.
+     */
+    @Test
+    @DependsOnMethod("testToWKT")
+    public void testUnmarshalledWKT() throws JAXBException {
+        final DefaultGeodeticDatum datum = testUnmarshalling();
+        assertWktEquals(Convention.WKT1,
+                "DATUM[“World Geodetic System 1984”,\n" +
+                "  SPHEROID[“WGS 84”, 6378137.0, 298.257223563],\n" +
+                "  AUTHORITY[“EPSG”, “6326”]]",
+                datum);
+
+        assertWktEquals(Convention.WKT2,
+                "Datum[“World Geodetic System 1984”,\n" +
+                "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]],\n" +
+                "  Id[“EPSG”, 6326, Citation[“OGP”], URI[“urn:ogc:def:datum:EPSG::6326”]]]",
+                datum);
+
+        assertWktEquals(Convention.INTERNAL,
+                "Datum[“World Geodetic System 1984”,\n" +
+                "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, Id[“EPSG”, 7030, Citation[“OGP”]],\n" +
+                "    Remarks[“Defining parameters cited in EPSG database.”]],\n" +
+                "  Anchor[“Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.”],\n" +
+                "  Scope[“Satellite navigation.”],\n" +
+                "  Area[“World.”],\n" +
+                "  BBox[-90.00, -180.00, 90.00, 180.00],\n" +
+                "  Id[“EPSG”, 6326, Citation[“OGP”]],\n" +
+                "  Remarks[“No distinction between the original and subsequent WGS 84 frames.”]]",
+                datum);
     }
 }

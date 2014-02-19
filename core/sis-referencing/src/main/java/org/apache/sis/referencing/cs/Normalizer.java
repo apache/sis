@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Arrays;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
@@ -74,7 +75,8 @@ final class Normalizer implements Comparable<Normalizer> {
      */
     private Normalizer(final CoordinateSystemAxis axis) {
         this.axis = axis;
-        meridian = DirectionAlongMeridian.parse(axis.getDirection());
+        final AxisDirection dir = axis.getDirection();
+        meridian = AxisDirections.isUserDefined(dir) ? DirectionAlongMeridian.parse(dir) : null;
     }
 
     /**
@@ -177,11 +179,11 @@ final class Normalizer implements Comparable<Normalizer> {
                 newAbbr = "t";
             }
         }
-        final Map<String,?> properties;
+        final Map<String,Object> properties = new HashMap<String,Object>();
         if (newAbbr.equals(abbreviation)) {
-            properties = IdentifiedObjects.getProperties(axis, EXCLUDES);
+            properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
         } else {
-            properties = singletonMap(NAME_KEY, DefaultCoordinateSystemAxis.UNNAMED);
+            properties.put(NAME_KEY, DefaultCoordinateSystemAxis.UNNAMED);
         }
         /*
          * Converts the axis range and build the new axis.
@@ -193,8 +195,10 @@ final class Normalizer implements Comparable<Normalizer> {
             // Use IllegalStateException because the public API is an AbstractCS member method.
             throw new IllegalStateException(Errors.format(Errors.Keys.IllegalUnitFor_2, "axis", unit), e);
         }
-        return new DefaultCoordinateSystemAxis(properties, newAbbr, newDir, newUnit,
-                c.convert(axis.getMinimumValue()), c.convert(axis.getMaximumValue()), axis.getRangeMeaning());
+        properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, c.convert(axis.getMinimumValue()));
+        properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, c.convert(axis.getMaximumValue()));
+        properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY, axis.getRangeMeaning());
+        return new DefaultCoordinateSystemAxis(properties, newAbbr, newDir, newUnit);
     }
 
     /**
@@ -256,8 +260,13 @@ final class Normalizer implements Comparable<Normalizer> {
                     min -= offset;
                     max -= offset;
                     if (min < max) { // Paranoiac check, but also a way to filter NaN values when offset is infinite.
-                        axis = new DefaultCoordinateSystemAxis(IdentifiedObjects.getProperties(axis, EXCLUDES),
-                                axis.getAbbreviation(), axis.getDirection(), axis.getUnit(), min, max, rangeMeaning);
+                        final Map<String,Object> properties = new HashMap<String,Object>();
+                        properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
+                        properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, min);
+                        properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, max);
+                        properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY, rangeMeaning);
+                        axis = new DefaultCoordinateSystemAxis(properties,
+                                axis.getAbbreviation(), axis.getDirection(), axis.getUnit());
                         changed = true;
                     }
                 }

@@ -28,7 +28,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.*;
 
 
 /**
- * Tests {@link IdentifiedObjects}.
+ * Tests the {@link IdentifiedObjects} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

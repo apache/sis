@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link SubTypes}
+ * Tests the {@link SubTypes} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

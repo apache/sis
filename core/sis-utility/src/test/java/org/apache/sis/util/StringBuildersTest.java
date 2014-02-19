@@ -24,7 +24,7 @@ import static org.apache.sis.util.StringBuilders.*;
 
 
 /**
- * Tests {@link StringBuilders} methods.
+ * Tests the {@link StringBuilders} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)

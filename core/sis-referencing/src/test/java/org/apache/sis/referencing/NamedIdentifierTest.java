@@ -30,7 +30,7 @@ import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
 
 
 /**
- * Tests {@link NamedIdentifier}.
+ * Tests the {@link NamedIdentifier} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

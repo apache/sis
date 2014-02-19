@@ -497,9 +497,8 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * behavior since we don't want to replace an instance of a user-defined class.</p>
      *
      * @return The unique instance.
-     * @throws ObjectStreamException Should never happen.
      */
-    Object readResolve() throws ObjectStreamException {
+    Object readResolve() {
         final DefaultNameSpace p = (parent != null) ? parent : GlobalNameSpace.GLOBAL;
         final String key = key(name);
         final WeakValueHashMap<String,Object> pool = p.childs;

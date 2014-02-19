@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**

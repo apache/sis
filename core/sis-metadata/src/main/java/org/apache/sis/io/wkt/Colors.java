@@ -18,7 +18,6 @@ package org.apache.sis.io.wkt;
 
 import java.util.EnumMap;
 import java.io.Serializable;
-import java.io.ObjectStreamException;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.util.resources.Errors;
 
@@ -43,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  * @see WKTFormat#getColors()
  * @see WKTFormat#setColors(Colors)
  */
-public class Colors implements Serializable {
+public class Colors implements Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -54,9 +53,9 @@ public class Colors implements Serializable {
      * Those colors give better results on a black background.
      * This map is immutable.
      *
-     * @see FormattableObject#print()
+     * @see FormattableObject#print(Convention)
      */
-    public static final Colors CONSOLE = new Immutable();
+    public static final Colors CONSOLE = new Colors();
     static {
         final EnumMap<ElementKind,X364> map = CONSOLE.map;
         map.put(ElementKind.NUMBER,     X364.FOREGROUND_YELLOW);
@@ -68,12 +67,23 @@ public class Colors implements Serializable {
         map.put(ElementKind.METHOD,     X364.FOREGROUND_GREEN);
         map.put(ElementKind.DATUM,      X364.FOREGROUND_GREEN);
         map.put(ElementKind.ERROR,      X364.BACKGROUND_RED);
+        map.put(ElementKind.SCOPE,      X364.BACKGROUND_GRAY);
+        map.put(ElementKind.EXTENT,     X364.BACKGROUND_GRAY);
+        map.put(ElementKind.CITATION,   X364.BACKGROUND_GRAY);
+        map.put(ElementKind.REMARKS,    X364.BACKGROUND_GRAY);
+        CONSOLE.isImmutable = true;
     }
 
     /**
      * The map of colors.
+     * Consider this field as final — it is modified only by {@link #clone()}.
      */
-    private final EnumMap<ElementKind,X364> map;
+    private EnumMap<ElementKind,X364> map;
+
+    /**
+     * {@code true} if this instance shall be considered as immutable.
+     */
+    private boolean isImmutable;
 
     /**
      * Creates a new, initially empty, set of colors.
@@ -102,6 +112,9 @@ public class Colors implements Serializable {
      * @throws IllegalArgumentException If the given color name is not recognized.
      */
     public void setName(final ElementKind key, final String color) throws IllegalArgumentException {
+        if (isImmutable) {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Colors"));
+        }
         if (color == null) {
             map.remove(key);
         } else {
@@ -115,7 +128,7 @@ public class Colors implements Serializable {
      * @param key The syntactic element for which to get the color.
      * @return The color of the specified element, or {@code null} if none.
      */
-    public String getName(final ElementKind key) {
+    public final String getName(final ElementKind key) { // Declared final for consistency with getAnsiSequence(…)
         final X364 color = map.get(key);
         return (color != null) ? color.color : null;
     }
@@ -131,55 +144,62 @@ public class Colors implements Serializable {
     /**
      * Returns an immutable copy of this set of colors, or {@code this} if this instance is already immutable.
      */
-    Colors immutable() {
-        return new Immutable(this);
+    final Colors immutable() {
+        if (isImmutable) {
+            return this;
+        }
+        final Colors clone = clone();
+        clone.isImmutable = true;
+        return clone;
     }
 
     /**
-     * An immutable subclass of {@link Colors} for the {@link Colors#CONSOLE} constant
-     * or for the object to be used by {@link WKTFormat}.
+     * Returns a clone of this {@code Colors}.
+     *
+     * @return A clone of this {@code Colors}.
      */
-    private static final class Immutable extends Colors {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = -2349530616334766576L;
-
-        /**
-         * Creates an initially empty set of colors.
-         * Callers must put colors directly in the {@link #map}.
-         */
-        Immutable() {
+    @Override
+    public Colors clone() {
+        final Colors clone;
+        try {
+            clone = (Colors) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
         }
+        clone.map = clone.map.clone();
+        clone.isImmutable = false;
+        return clone;
+    }
 
-        /**
-         * Creates a immutable copy of the given set of colors.
-         */
-        Immutable(final Colors colors) {
-            super(colors);
+    /**
+     * Compares this {@code Colors} with the given object for equality.
+     *
+     * @param  other The object to compare with this {@code Colors}.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other instanceof Colors) {
+            final Colors that = (Colors) other;
+            return map.equals(that.map);
         }
+        return false;
+    }
 
-        /**
-         * Returns {@code this} since this set of colors is already immutable.
-         */
-        @Override
-        Colors immutable() {
-            return this;
-        }
+    /**
+     * Returns a hash code value for this object.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return map.hashCode() ^ (int) serialVersionUID;
+    }
 
-        /**
-         * Do not allow color changes.
-         */
-        @Override
-        public void setName(final ElementKind key, final String color) {
-            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Colors"));
-        }
-
-        /**
-         * Replaces the deserialized instance by {@link #CONSOLE} one if possible.
-         */
-        Object readResolve() throws ObjectStreamException {
-            return super.map.equals(CONSOLE.map) ? CONSOLE : this;
-        }
+    /**
+     * Replaces the deserialized instance by {@link #CONSOLE} one if possible.
+     */
+    final Object readResolve() {
+        return isImmutable && map.equals(CONSOLE.map) ? CONSOLE : this;
     }
 }

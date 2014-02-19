@@ -497,25 +497,49 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Formats this datum as a <cite>Well Known Text</cite> {@code Datum[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "DATUM"}.
+     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text of a WGS 84 datum.
+     *
+     * {@preformat wkt
+     *      Datum["World Geodetic System 1984",
+     *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]],
+     *      Id["EPSG", 6326, Citation["OGP"], URI["urn:ogc:def:datum:EPSG::6326"]]]
+     * }
+     *
+     * <p>Same datum using WKT 1.</p>
+     *
+     * {@preformat wkt
+     *      DATUM["World Geodetic System 1984"
+     *        SPHEROID["WGS84", 6378137.0, 298.257223563],
+     *      AUTHORITY["EPSG", "6326"]]
+     * }
+     * </font></blockquote>
+     *
+     * @return {@code "Datum"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        // Do NOT invokes the super-class method, because
-        // horizontal datum do not write the datum type.
+        super.formatTo(formatter);
+        formatter.newLine();
         formatter.append(ellipsoid instanceof FormattableObject ? (FormattableObject) ellipsoid :
                          DefaultEllipsoid.castOrCopy(ellipsoid));
-        if (bursaWolf != null) {
-            for (final BursaWolfParameters candidate : bursaWolf) {
-                if (candidate.isToWGS84()) {
-                    formatter.append(candidate);
-                    break;
+        if (formatter.getConvention().majorVersion() == 1) {
+            /*
+             * Note that at the different of other datum (in particular vertical datum),
+             * WKT of geodetic datum do not have a numerical code for the datum type.
+             */
+            if (bursaWolf != null) {
+                for (final BursaWolfParameters candidate : bursaWolf) {
+                    if (candidate.isToWGS84()) {
+                        formatter.newLine();
+                        formatter.append(candidate);
+                        break;
+                    }
                 }
             }
         }
-        return "DATUM";
+        formatter.newLine(); // For writing the ID[…] element on its own line.
+        return "Datum";
     }
 }

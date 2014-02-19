@@ -16,8 +16,6 @@
  */
 package org.apache.sis.util.iso;
 
-import java.io.ObjectStreamException;
-
 
 /**
  * The global namespace. Only one instance of this class is allowed to exists. We do not expose
@@ -61,10 +59,9 @@ final class GlobalNameSpace extends DefaultNameSpace {
      * Returns the unique instance of global name space on deserialization.
      *
      * @return The unique instance.
-     * @throws ObjectStreamException Should never happen.
      */
     @Override
-    Object readResolve() throws ObjectStreamException {
+    Object readResolve() {
         return GLOBAL;
     }
 }

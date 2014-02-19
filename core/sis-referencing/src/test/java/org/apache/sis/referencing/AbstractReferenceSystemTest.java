@@ -19,17 +19,28 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.test.Validators;
+import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.opengis.referencing.ReferenceSystem.*;
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.assertWktEquals;
 
 
 /**
- * Tests {@link AbstractReferenceSystem}.
+ * Tests the {@link AbstractReferenceSystem} class.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4 (derived from geotk-2.2)
@@ -77,5 +88,50 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
         Validators.validate(object);
 
         assertNotSame(object, assertSerializedEquals(object));
+    }
+
+    /**
+     * Tests WKT formatting with a name that contains the quote character and optional information.
+     * We test that the closing quote character is doubled and the optional information properly formatted.
+     */
+    @Test
+    @DependsOnMethod("testCreateFromMap")
+    public void testWKT() {
+        final Map<String,Object> properties = new HashMap<String,Object>(8);
+        assertNull(properties.put(NAME_KEY, "My “object”."));
+        assertNull(properties.put(SCOPE_KEY, "Large scale topographic mapping and cadastre."));
+        assertNull(properties.put(REMARKS_KEY, "注です。"));
+        assertNull(properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(
+                HardCodedCitations.OGP, "EPSG", "4326", "8.2", null)));
+        assertNull(properties.put(DOMAIN_OF_VALIDITY_KEY, new DefaultExtent("Netherlands offshore.",
+                new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77),
+                new DefaultVerticalExtent(10, 1000, VerticalCRSMock.DEPTH),
+                new DefaultTemporalExtent()))); // TODO: needs sis-temporal module for testing that one.
+        final IdentifiedObject object = new AbstractReferenceSystem(properties);
+
+        assertWktEquals(Convention.WKT1,
+                // Closing quote conservatively omitted for WKT 1.
+                "ReferenceSystem[“My “object.”, AUTHORITY[“EPSG”, “4326”]]",
+                object);
+
+        assertWktEquals(Convention.WKT2,
+                "ReferenceSystem[“My “object””.”,\n" +
+                "  Scope[“Large scale topographic mapping and cadastre.”],\n" +
+                "  Area[“Netherlands offshore.”],\n" +
+                "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
+                "  VerticalExtent[-1000, -10, LengthUnit[“metre”, 1]],\n" +
+                "  Id[“EPSG”, 4326, “8.2”, Citation[“OGP”], URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
+                "  Remarks[“注です。”]]",
+                object);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
+                "ReferenceSystem[“My “object””.”,\n" +
+                "  Scope[“Large scale topographic mapping and cadastre.”],\n" +
+                "  Area[“Netherlands offshore.”],\n" +
+                "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
+                "  VerticalExtent[-1000, -10],\n" +
+                "  Id[“EPSG”, 4326, “8.2”, Citation[“OGP”], URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
+                "  Remarks[“注です。”]]",
+                object);
     }
 }

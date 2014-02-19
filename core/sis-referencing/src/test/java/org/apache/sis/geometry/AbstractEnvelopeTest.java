@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
