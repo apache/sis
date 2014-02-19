@@ -73,11 +73,15 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
 
     /**
      * Returns the SIS implementation for the given GeoAPI interface.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     protected <T> Class<? extends T> getImplementation(final Class<T> type) {
         assertTrue(standard.isMetadata(type));
-        return standard.getImplementation(type).asSubclass(type);
+        final Class<?> impl = standard.getImplementation(type);
+        assertNotNull(type.getName(), impl);
+        return impl.asSubclass(type);
     }
 
     /**

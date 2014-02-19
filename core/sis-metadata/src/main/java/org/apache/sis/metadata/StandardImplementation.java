@@ -18,6 +18,8 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
+import org.opengis.annotation.Classifier;
+import org.opengis.annotation.Stereotype;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 
@@ -41,12 +43,6 @@ final class StandardImplementation extends MetadataStandard {
      * If non-null, then this string must ends with a trailing {@code "."}.
      */
     private final String implementationPackage;
-
-    /**
-     * The prefixes that implementation classes may have.
-     * The most common prefixes should be first, since the prefixes will be tried in that order.
-     */
-    private final String[] prefix;
 
     /**
      * The acronyms that implementation classes may have, or {@code null} if none. If non-null,
@@ -77,17 +73,26 @@ final class StandardImplementation extends MetadataStandard {
      * @param citation              The title of the standard.
      * @param interfacePackage      The root package for metadata interfaces, with a trailing {@code '.'}.
      * @param implementationPackage The root package for metadata implementations. with a trailing {@code '.'}.
-     * @param prefix                The prefix of implementation class. This array is not cloned.
      * @param acronyms              An array of (full text, acronyms) pairs. This array is not cloned.
      */
     StandardImplementation(final String citation, final String interfacePackage,
-            final String implementationPackage, final String[] prefix, final String[] acronyms)
+            final String implementationPackage, final String[] acronyms)
     {
         super(citation, interfacePackage);
         this.implementationPackage = implementationPackage;
-        this.prefix                = prefix;
         this.acronyms              = acronyms;
         this.implementations       = new IdentityHashMap<Class<?>,Class<?>>();
+    }
+
+    /**
+     * Returns {@code true} if the given type is conceptually abstract.
+     * The given type is usually an interface, so here "abstract" can not be in the Java sense.
+     * If this method can not find information about whether the given type is abstract,
+     * then this method conservatively returns {@code false}.
+     */
+    private static boolean isAbstract(final Class<?> type) {
+        final Classifier c = type.getAnnotation(Classifier.class);
+        return (c != null) && c.value() == Stereotype.ABSTRACT;
     }
 
     /**
@@ -129,26 +134,19 @@ final class StandardImplementation extends MetadataStandard {
                         }
                     }
                     /*
-                     * Try to insert a prefix in front of the class name, until a match is found.
+                     * Try to instantiate the implementation class.
                      */
                     final int prefixPosition = buffer.lastIndexOf(".") + 1;
-                    int length = 0;
-                    for (final String p : prefix) {
-                        name = buffer.replace(prefixPosition, prefixPosition + length, p).toString();
-                        try {
-                            candidate = Class.forName(name);
-                        } catch (ClassNotFoundException e) {
-                            Logging.recoverableException(MetadataStandard.class, "getImplementation", e);
-                            length = p.length();
-                            continue;
+                    buffer.insert(prefixPosition, isAbstract(type) ? "Abstract" : "Default");
+                    name = buffer.toString();
+                    try {
+                        candidate = Class.forName(name);
+                        if (!candidate.isAnnotationPresent(Deprecated.class)) {
+                            implementations.put(type, candidate);
+                            return candidate;
                         }
-                        if (candidate.isAnnotationPresent(Deprecated.class)) {
-                            // Skip deprecated implementations.
-                            length = p.length();
-                            continue;
-                        }
-                        implementations.put(type, candidate);
-                        return candidate;
+                    } catch (ClassNotFoundException e) {
+                        Logging.recoverableException(MetadataStandard.class, "getImplementation", e);
                     }
                     implementations.put(type, Void.TYPE); // Marker for "class not found".
                 }
