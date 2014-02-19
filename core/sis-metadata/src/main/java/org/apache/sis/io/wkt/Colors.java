@@ -53,7 +53,7 @@ public class Colors implements Cloneable, Serializable {
      * Those colors give better results on a black background.
      * This map is immutable.
      *
-     * @see FormattableObject#print()
+     * @see FormattableObject#print(Convention)
      */
     public static final Colors CONSOLE = new Colors();
     static {

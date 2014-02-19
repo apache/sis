@@ -324,8 +324,6 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * Returns the converter to be used by {@link #doubleValue(Unit)} and {@link #doubleValueList(Unit)}.
-     *
-     * @see #getConverterFrom(Unit)
      */
     private UnitConverter getConverterTo(final Unit<?> unit) {
         final Unit<?> source = getUnit();

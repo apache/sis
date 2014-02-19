@@ -43,7 +43,6 @@ public final strictfp class HardCodedAxes {
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
      * {@link #ELLIPSOIDAL_HEIGHT} set.</p>
      *
-     * @see #LONGITUDE
      * @see #SPHERICAL_LONGITUDE
      * @see #GEODETIC_LATITUDE
      */
@@ -59,7 +58,6 @@ public final strictfp class HardCodedAxes {
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
      * {@link #ELLIPSOIDAL_HEIGHT} set.</p>
      *
-     * @see #LATITUDE
      * @see #SPHERICAL_LATITUDE
      * @see #GEODETIC_LONGITUDE
      */
@@ -80,7 +78,6 @@ public final strictfp class HardCodedAxes {
      *
      * @see #GEODETIC_LONGITUDE
      * @see #SPHERICAL_LONGITUDE
-     * @see #LATITUDE
      */
     public static final DefaultCoordinateSystemAxis LONGITUDE_gon = create("Longitude", "λ",
             AxisDirection.EAST, NonSI.GRADE, -200, 200, RangeMeaning.WRAPAROUND);
@@ -93,7 +90,6 @@ public final strictfp class HardCodedAxes {
      *
      * @see #GEODETIC_LATITUDE
      * @see #SPHERICAL_LATITUDE
-     * @see #LONGITUDE
      */
     public static final DefaultCoordinateSystemAxis LATITUDE_gon = create("Latitude", "φ",
             AxisDirection.NORTH, NonSI.GRADE, -100, 100, RangeMeaning.EXACT);
@@ -139,7 +135,8 @@ public final strictfp class HardCodedAxes {
      * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#METRE metres}.
      * The abbreviation is lower case "<var>h</var>".
      *
-     * <p>This axis is usually part of a {@link #LONGITUDE}, {@link #LATITUDE}, {@link #ALTITUDE} set.</p>
+     * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
+     * {@link #ALTITUDE} tuple.</p>
      *
      * @see #ELLIPSOIDAL_HEIGHT
      * @see #GEOCENTRIC_RADIUS
@@ -189,7 +186,6 @@ public final strictfp class HardCodedAxes {
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
      *
-     * @see #LONGITUDE
      * @see #GEODETIC_LONGITUDE
      * @see #SPHERICAL_LATITUDE
      */
@@ -206,7 +202,6 @@ public final strictfp class HardCodedAxes {
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
      *
-     * @see #LATITUDE
      * @see #GEODETIC_LATITUDE
      * @see #SPHERICAL_LONGITUDE
      */
