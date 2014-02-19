@@ -433,6 +433,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             }
         } else {
             formatter.append(cs); // The concept of CoordinateSystem was not explicit in WKT 1.
+            formatter.indent(+1);
         }
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
@@ -442,6 +443,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
             formatter.newLine();
             formatter.append(unit);
+            formatter.indent(-1);
         }
         formatter.removeContextualUnit(unit);
         formatter.addContextualUnit(oldUnit);

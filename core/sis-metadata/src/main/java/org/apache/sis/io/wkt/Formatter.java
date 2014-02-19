@@ -456,11 +456,13 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Increase or reduce the indentation. A value of {@code +1} increase
+     * Increases or decreases the indentation. A value of {@code +1} increases
      * the indentation by the amount of spaces specified at construction time,
-     * and a value of {@code -1} reduce it.
+     * and a value of {@code -1} reduces it by the same amount.
+     *
+     * @param amount +1 for increasing the indentation, or -1 for decreasing it, or 0 for no-op.
      */
-    private void indent(final int amount) {
+    public void indent(final int amount) {
         margin = Math.max(0, margin + indentation*amount);
     }
 

@@ -199,7 +199,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *   GeodeticCRS["WGS 84",
      *      Datum["World Geodetic System 1984",
      *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]]],
-     *      PrimeMeridian["Greenwich", 0.0, AngleUnit["degree", 0.017453292519943295]],
+     *        PrimeMeridian["Greenwich", 0.0, AngleUnit["degree", 0.017453292519943295]],
      *      CS["ellipsoidal", 2],
      *        Axis["Latitude", north],
      *        Axis["Longitude", east],

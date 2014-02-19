@@ -218,12 +218,12 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *   GeodeticCRS["Geocentric",
      *     Datum["World Geodetic System 1984",
      *       Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]]],
-     *     PrimeMeridian["Greenwich", 0.0, AngleUnit["degree", 0.017453292519943295]],
+     *       PrimeMeridian["Greenwich", 0.0, AngleUnit["degree", 0.017453292519943295]],
      *     CS["Cartesian", 3],
-     *     Axis["(X)", geocentricX],
-     *     Axis["(Y)", geocentricY],
-     *     Axis["(Z)", geocentricZ],
-     *     LengthUnit["metre", 1]]
+     *       Axis["(X)", geocentricX],
+     *       Axis["(Y)", geocentricY],
+     *       Axis["(Z)", geocentricZ],
+     *       LengthUnit["metre", 1]]
      * }
      *
      * <p>Same coordinate reference system using WKT 1. Note that axis directions are totally different.</p>
