@@ -214,6 +214,19 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Returns {@code true} if the given direction is {@code GEOCENTRIC_X}, {@code GEOCENTRIC_Y}
+     * or {@code GEOCENTRIC_Z}.
+     *
+     * @param  dir The direction to test, or {@code null}.
+     * @return {@code true} if the given direction is one of geocentric directions.
+     */
+    public static boolean isGeocentric(final AxisDirection dir) {
+        if (dir == null) return false;
+        final int ordinal = dir.ordinal();
+        return ordinal >= GEOCENTRIC_X.ordinal() && ordinal <= GEOCENTRIC_Z.ordinal();
+    }
+
+    /**
      * Returns {@code true} if the given direction is a spatial axis direction (including vertical and geocentric axes).
      * The current implementation conservatively returns {@code true} for every non-null directions except a hard-coded
      * set of directions which are known to be non-spatial. We conservatively accept unknown axis directions because
