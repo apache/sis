@@ -167,7 +167,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
-        final boolean isWKT1  = formatter.getConvention().versionOfWKT() == 1;
+        final boolean isWKT1  = formatter.getConvention().majorVersion() == 1;
         final Unit<?> unit    = getUnit();
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         formatter.newLine();

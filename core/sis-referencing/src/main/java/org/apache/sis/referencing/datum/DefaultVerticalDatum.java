@@ -318,7 +318,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        if (formatter.getConvention().versionOfWKT() == 1) {
+        if (formatter.getConvention().majorVersion() == 1) {
             formatter.append(VerticalDatumTypes.toLegacy(type().ordinal()));
             return "Vert_Datum";
         }

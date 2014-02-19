@@ -45,15 +45,15 @@ public final strictfp class ConventionTest extends TestCase {
     }
 
     /**
-     * Tests {@link Convention#versionOfWKT()}.
+     * Tests {@link Convention#majorVersion()}.
      */
     @Test
     public void testVersion() {
-        assertEquals(2, Convention.WKT2.versionOfWKT());
-        assertEquals(2, Convention.WKT2_SIMPLIFIED.versionOfWKT());
-        assertEquals(1, Convention.WKT1.versionOfWKT());
-        assertEquals(1, Convention.WKT1_COMMON_UNITS.versionOfWKT());
-        assertEquals(2, Convention.INTERNAL.versionOfWKT());
+        assertEquals(2, Convention.WKT2.majorVersion());
+        assertEquals(2, Convention.WKT2_SIMPLIFIED.majorVersion());
+        assertEquals(1, Convention.WKT1.majorVersion());
+        assertEquals(1, Convention.WKT1_COMMON_UNITS.majorVersion());
+        assertEquals(2, Convention.INTERNAL.majorVersion());
     }
 
     /**

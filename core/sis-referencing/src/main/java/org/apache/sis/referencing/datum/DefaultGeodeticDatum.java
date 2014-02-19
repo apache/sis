@@ -524,7 +524,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         formatter.newLine();
         formatter.append(ellipsoid instanceof FormattableObject ? (FormattableObject) ellipsoid :
                          DefaultEllipsoid.castOrCopy(ellipsoid));
-        if (formatter.getConvention().versionOfWKT() == 1) {
+        if (formatter.getConvention().majorVersion() == 1) {
             /*
              * Note that at the different of other datum (in particular vertical datum),
              * WKT of geodetic datum do not have a numerical code for the datum type.

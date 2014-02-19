@@ -761,7 +761,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = convention.versionOfWKT() == 1;
+        final boolean isWKT1 = convention.majorVersion() == 1;
         double length = semiMajorAxis;
         if (isWKT1) {
             length = unit.getConverterTo(SI.METRE).convert(length);

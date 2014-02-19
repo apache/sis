@@ -171,7 +171,7 @@ public abstract class FormattableObject {
             formatter = new Formatter();
         }
         formatter.configure(convention, null, colorize ? Colors.CONSOLE : null,
-                convention.versionOfWKT() == 1, WKTFormat.DEFAULT_INDENTATION);
+                convention.majorVersion() == 1, WKTFormat.DEFAULT_INDENTATION);
         final String wkt;
         try {
             formatter.append(this);

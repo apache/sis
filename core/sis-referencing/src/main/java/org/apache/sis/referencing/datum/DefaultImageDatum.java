@@ -243,7 +243,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
         final Convention convention = formatter.getConvention();
         if (convention == Convention.INTERNAL) {
             formatter.append(pixelInCell); // This is an extension compared to ISO 19162.
-        } else if (convention.versionOfWKT() == 1) {
+        } else if (convention.majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
         return "ImageDatum";

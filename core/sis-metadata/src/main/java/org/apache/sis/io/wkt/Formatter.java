@@ -651,7 +651,7 @@ public class Formatter implements Localized {
             } else {
                 showIDs = isRoot || (object instanceof OperationMethod) || (object instanceof GeneralParameterDescriptor);
             }
-            if (convention.versionOfWKT() == 1) {
+            if (convention.majorVersion() == 1) {
                 filterID   = true;
                 showOthers = false;
             } else {
@@ -933,7 +933,7 @@ public class Formatter implements Localized {
         final String quote = symbols.getQuote();
         while ((fromIndex = buffer.indexOf(quote, fromIndex)) >= 0) {
             final int n = quote.length();
-            if (convention.versionOfWKT() == 1) {
+            if (convention.majorVersion() == 1) {
                 buffer.delete(fromIndex, fromIndex + n);
             } else {
                 buffer.insert(fromIndex += n, quote);
@@ -953,7 +953,7 @@ public class Formatter implements Localized {
         if (code != null) {
             appendSeparator();
             setColor(ElementKind.CODE_LIST);
-            buffer.append(convention.versionOfWKT() == 1 ? code.name() : Types.getCodeName(code));
+            buffer.append(convention.majorVersion() == 1 ? code.name() : Types.getCodeName(code));
             resetColor();
         }
     }

@@ -746,7 +746,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     @Override
     protected String formatTo(final Formatter formatter) {
         final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = convention.versionOfWKT() == 1;
+        final boolean isWKT1 = convention.majorVersion() == 1;
         final boolean isInternal = (convention == Convention.INTERNAL);
         String name = null;
         if (isWKT1 || isInternal || !omitName(formatter)) {

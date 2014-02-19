@@ -340,7 +340,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = convention.versionOfWKT() == 1;
+        final boolean isWKT1 = convention.majorVersion() == 1;
         final Unit<Angle> targetUnit = formatter.toContextualUnit(NonSI.DEGREE_ANGLE);
         formatter.append(isWKT1 ? getGreenwichLongitude(targetUnit) : greenwichLongitude);
         if (isWKT1) {

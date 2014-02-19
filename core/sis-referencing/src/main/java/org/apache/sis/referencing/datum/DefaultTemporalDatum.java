@@ -287,7 +287,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         final Convention convention = formatter.getConvention();
         if (convention == Convention.INTERNAL) {
             formatter.append(MetadataUtilities.toDate(origin)); // This is an extension compared to ISO 19162.
-        } else if (convention.versionOfWKT() == 1) {
+        } else if (convention.majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
         return "TimeDatum";
