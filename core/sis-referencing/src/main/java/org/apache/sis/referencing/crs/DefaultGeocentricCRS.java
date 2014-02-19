@@ -211,6 +211,35 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
+     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text (version 2)
+     * of a geocentric coordinate reference system using the WGS 84 datum.
+     *
+     * {@preformat wkt
+     *   GeodeticCRS["Geocentric",
+     *     Datum["World Geodetic System 1984",
+     *       Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]]],
+     *     PrimeMeridian["Greenwich", 0.0, AngleUnit["degree", 0.017453292519943295]],
+     *     CS["Cartesian", 3],
+     *     Axis["(X)", geocentricX],
+     *     Axis["(Y)", geocentricY],
+     *     Axis["(Z)", geocentricZ],
+     *     LengthUnit["metre", 1]]
+     * }
+     *
+     * <p>Same coordinate reference system using WKT 1. Note that axis directions are totally different.</p>
+     *
+     * {@preformat wkt
+     *   GEOCCS["Geocentric",
+     *     DATUM["World Geodetic System 1984",
+     *       SPHEROID["WGS84", 6378137.0, 298.257223563]],
+     *     PRIMEM["Greenwich", 0.0],
+     *     UNIT["metre", 1],
+     *     AXIS["X", OTHER],
+     *     AXIS["Y", EAST],
+     *     AXIS["Z", NORTH]]
+     * }
+     * </font></blockquote>
+     *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeocCS"} (WKT 1).
      */
     @Override

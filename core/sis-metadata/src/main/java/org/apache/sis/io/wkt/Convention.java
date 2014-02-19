@@ -145,6 +145,7 @@ public enum Convention {
      * <ul>
      *   <li>Map projections are shown as SIS stores them internally, i.e. with the separation between
      *       linear and non-linear steps, rather than as a single operation.</li>
+     *   <li>{@code CompoundCRS} shows nested compound CRS if any (the structure is not flattened).</li>
      *   <li>{@code Id} elements are formatted for child elements in addition to the root one.</li>
      *   <li>{@code Id} element omits the {@code URI} sub-element if the later is derived by Apache SIS
      *       from the {@code Id} properties.</li>
