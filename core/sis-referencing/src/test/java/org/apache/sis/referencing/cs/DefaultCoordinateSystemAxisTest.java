@@ -16,23 +16,27 @@
  */
 package org.apache.sis.referencing.cs;
 
+import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.test.Validators;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.referencing.Assert.*;
+import static java.util.Collections.singletonMap;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.referencing.cs.HardCodedAxes.*;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
+import static org.apache.sis.referencing.cs.CoordinateSystemsTest.STRICT;
 
 
 /**
- * Tests {@link DefaultCoordinateSystemAxis}.
+ * Tests the {@link DefaultCoordinateSystemAxis} class.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4 (derived from geotk-2.2)
@@ -82,17 +86,36 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        assertWktEquals("AXIS[“x”, EAST]",                   X);
-        assertWktEquals("AXIS[“y”, NORTH]",                  Y);
-        assertWktEquals("AXIS[“z”, UP]",                     Z);
-        assertWktEquals("AXIS[“Longitude”, EAST]",           LONGITUDE_gon);
-        assertWktEquals("AXIS[“Latitude”, NORTH]",           LATITUDE_gon);
-        assertWktEquals("AXIS[“Altitude”, UP]",              ALTITUDE);
-        assertWktEquals("AXIS[“Time”, FUTURE]",              TIME);
-        assertWktEquals("AXIS[“Geodetic longitude”, EAST]",  GEODETIC_LONGITUDE);
-        assertWktEquals("AXIS[“Spherical longitude”, EAST]", SPHERICAL_LONGITUDE);
-        assertWktEquals("AXIS[“Geodetic latitude”, NORTH]",  GEODETIC_LATITUDE);
-        assertWktEquals("AXIS[“Spherical latitude”, NORTH]", SPHERICAL_LATITUDE);
+        assertWktEquals("Axis[“x”, east, LengthUnit[“metre”, 1]]",  X);
+        assertWktEquals("Axis[“y”, north, LengthUnit[“metre”, 1]]", Y);
+        assertWktEquals("Axis[“z”, up, LengthUnit[“metre”, 1]]",    Z);
+        assertWktEquals("Axis[“Longitude (λ)”, east, AngleUnit[“grade”, 0.015707963267948967]]",            LONGITUDE_gon);
+        assertWktEquals("Axis[“Latitude (φ)”, north, AngleUnit[“grade”, 0.015707963267948967]]",            LATITUDE_gon);
+        assertWktEquals("Axis[“Altitude (h)”, up, LengthUnit[“metre”, 1]]",                                 ALTITUDE);
+        assertWktEquals("Axis[“Time (t)”, future, TimeUnit[“day”, 86400]]",                                 TIME);
+        assertWktEquals("Axis[“Longitude (λ)”, east, AngleUnit[“degree”, 0.017453292519943295]]",           GEODETIC_LONGITUDE);
+        assertWktEquals("Axis[“Spherical longitude (Ω)”, east, AngleUnit[“degree”, 0.017453292519943295]]", SPHERICAL_LONGITUDE);
+        assertWktEquals("Axis[“Latitude (φ)”, north, AngleUnit[“degree”, 0.017453292519943295]]",           GEODETIC_LATITUDE);
+        assertWktEquals("Axis[“Spherical latitude (Θ)”, north, AngleUnit[“degree”, 0.017453292519943295]]", SPHERICAL_LATITUDE);
+
+        assertWktEquals(Convention.WKT1,     "AXIS[“x”, EAST]",  X);
+        assertWktEquals(Convention.WKT1,     "AXIS[“y”, NORTH]", Y);
+        assertWktEquals(Convention.WKT1,     "AXIS[“z”, UP]",    Z);
+        assertWktEquals(Convention.INTERNAL, "Axis[“Geodetic longitude (λ)”, east, Unit[“degree”, 0.017453292519943295]]",  GEODETIC_LONGITUDE);
+        assertWktEquals(Convention.INTERNAL, "Axis[“Spherical longitude (Ω)”, east, Unit[“degree”, 0.017453292519943295]]", SPHERICAL_LONGITUDE);
+        assertWktEquals(Convention.INTERNAL, "Axis[“Geodetic latitude (φ)”, north, Unit[“degree”, 0.017453292519943295]]",  GEODETIC_LATITUDE);
+        assertWktEquals(Convention.INTERNAL, "Axis[“Spherical latitude (Θ)”, north, Unit[“degree”, 0.017453292519943295]]", SPHERICAL_LATITUDE);
+    }
+
+    /**
+     * Tests the WKT of axis of the kind "South along 90°W".
+     */
+    @Test
+    @DependsOnMethod("testWKT")
+    public void testMeridianWKT() {
+        assertWktEquals("Axis[“South along 90°W (x)”, south, Meridian[-90.0, AngleUnit[“degree”, 0.017453292519943295]], LengthUnit[“metre”, 1]]",
+                new DefaultCoordinateSystemAxis(singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, "South along 90°W"),
+                        "x", DirectionAlongMeridian.parse("South along 90°W").getDirection(), SI.METRE));
     }
 
     /**
@@ -120,10 +143,21 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
          * (GEODETIC_LONGITUDE, GEODETIC_LATITUDE) except for the name.
          */
         final DefaultCoordinateSystemAxis LONGITUDE = new DefaultCoordinateSystemAxis(getProperties(LONGITUDE_gon),
-                "λ", AxisDirection.EAST, NonSI.DEGREE_ANGLE, -180, 180, RangeMeaning.WRAPAROUND);
+                "λ", AxisDirection.EAST, NonSI.DEGREE_ANGLE);
         final DefaultCoordinateSystemAxis LATITUDE = new DefaultCoordinateSystemAxis(getProperties(LATITUDE_gon),
-                "φ", AxisDirection.NORTH, NonSI.DEGREE_ANGLE, -90, 90, RangeMeaning.EXACT);
-
+                "φ", AxisDirection.NORTH, NonSI.DEGREE_ANGLE);
+        /*
+         * Verifies the properties inferred by the constructor.
+         */
+        assertEquals("minimumValue", -180, LONGITUDE.getMinimumValue(), STRICT);
+        assertEquals("maximumValue", +180, LONGITUDE.getMaximumValue(), STRICT);
+        assertEquals("rangeMeaning", RangeMeaning.WRAPAROUND, LONGITUDE.getRangeMeaning());
+        assertEquals("minimumValue", -90, LATITUDE.getMinimumValue(), STRICT);
+        assertEquals("maximumValue", +90, LATITUDE.getMaximumValue(), STRICT);
+        assertEquals("rangeMeaning", RangeMeaning.EXACT, LATITUDE.getRangeMeaning());
+        /*
+         * Those axes shall be considered different.
+         */
         assertFalse("X",         X        .equals(GEOCENTRIC_X,        ComparisonMode.IGNORE_METADATA));
         assertFalse("Longitude", LONGITUDE.equals(GEODETIC_LONGITUDE,  ComparisonMode.STRICT));
         assertFalse("Longitude", LONGITUDE.equals(SPHERICAL_LONGITUDE, ComparisonMode.STRICT));

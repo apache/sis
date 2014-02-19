@@ -27,11 +27,12 @@ import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
+import static org.apache.sis.referencing.cs.CoordinateSystemsTest.STRICT;
 import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link AbstractCS}.
+ * Tests the {@link AbstractCS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -90,11 +91,18 @@ public final strictfp class AbstractCSTest extends TestCase {
          * Some expected axes, identical to the ones in HardCodedAxes except for name or units.
          */
         final DefaultCoordinateSystemAxis EASTING = new DefaultCoordinateSystemAxis(
-                singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E",
-                AxisDirection.EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+                singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E", AxisDirection.EAST, SI.METRE);
         final DefaultCoordinateSystemAxis HEIGHT = new DefaultCoordinateSystemAxis(
-                singletonMap(NAME_KEY, "Height"), "h",
-            AxisDirection.UP, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+                singletonMap(NAME_KEY, "Height"), "h", AxisDirection.UP, SI.METRE);
+        /*
+         * Verifies the properties inferred by the constructor.
+         */
+        assertEquals("minimumValue", Double.NEGATIVE_INFINITY, EASTING.getMinimumValue(), STRICT);
+        assertEquals("maximumValue", Double.POSITIVE_INFINITY, EASTING.getMaximumValue(), STRICT);
+        assertNull  ("rangeMeaning", EASTING.getRangeMeaning());
+        assertEquals("minimumValue", Double.NEGATIVE_INFINITY, HEIGHT.getMinimumValue(), STRICT);
+        assertEquals("maximumValue", Double.POSITIVE_INFINITY, HEIGHT.getMaximumValue(), STRICT);
+        assertNull  ("rangeMeaning", HEIGHT.getRangeMeaning());
         /*
          * Test RIGHT_HANDED as a matter of principle before to test NORMALIZED.
          */

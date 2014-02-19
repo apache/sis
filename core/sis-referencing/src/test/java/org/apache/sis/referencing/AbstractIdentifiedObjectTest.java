@@ -38,7 +38,7 @@ import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
 
 
 /**
- * Tests {@link AbstractIdentifiedObject}.
+ * Tests the {@link AbstractIdentifiedObject} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
@@ -92,6 +92,36 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
         assertEquals("remarks_fr",  "Adopté par IUGG 1979 Canberra", object.getRemarks().toString(Locale.FRENCH));
         final Code code = object.getIdentifier();
         return (code != null) ? code.getIdentifier() : null;
+    }
+
+    /**
+     * Tests the {@link AbstractIdentifiedObject#AbstractIdentifiedObject(Map)} constructor without name.
+     * This is invalid and should thrown an exception.
+     */
+    @Test
+    public void testMissingName() {
+        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        assertNull(properties.put(AbstractIdentifiedObject.REMARKS_KEY, "Not a name."));
+        try {
+            new AbstractIdentifiedObject(properties);
+            fail("Should not allow unnamed object.");
+        } catch (IllegalArgumentException e) {
+            // The message may be in any language, but shall
+            // contain at least the missing property name.
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("code"));
+        }
+        // Try again, with error messages forced to English.
+        assertNull(properties.put(AbstractIdentifiedObject.LOCALE_KEY, Locale.US));
+        try {
+            new AbstractIdentifiedObject(properties);
+            fail("Should not allow unnamed object.");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Missing value for “code” property.", e.getMessage());
+        }
+        // "code" with String value is accepted as well.
+        assertNull(properties.put("code", "Test"));
+        assertEquals("Test", new AbstractIdentifiedObject(properties).getName().getCode());
     }
 
     /**

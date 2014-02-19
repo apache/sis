@@ -18,7 +18,6 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
-import java.io.ObjectStreamException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 
@@ -161,7 +160,7 @@ final class StandardImplementation extends MetadataStandard {
     /**
      * Invoked on deserialization. Returns one of the pre-existing constants if possible.
      */
-    Object readResolve() throws ObjectStreamException {
+    Object readResolve() {
         if (ISO_19111.citation.equals(citation)) return ISO_19111;
         if (ISO_19115.citation.equals(citation)) return ISO_19115;
         /*

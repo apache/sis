@@ -36,8 +36,22 @@ public final strictfp class AssertTest extends TestCase {
      */
     @Test
     public void testAssertEqualsMultilines() {
+        // Without trailing spaces.
         assertMultilinesEquals("Line 1\nLine 2\r\nLine 3\n\rLine 5",
                                "Line 1\rLine 2\nLine 3\n\nLine 5");
+
+        // With different trailing spaces.
+        assertMultilinesEquals("Line 1\nLine 2\r\nLine 3\n\rLine 5",
+                               "Line 1\rLine 2\nLine 3\n\nLine 5  ");
+
+        // With different leading spaces.
+        try {
+            assertMultilinesEquals("Line 1\nLine 2\r\nLine 3\n\rLine 5",
+                                   "Line 1\rLine 2\n  Line 3\n\nLine 5");
+            fail("Lines are not equal.");
+        } catch (AssertionError e) {
+            assertTrue(e.getMessage().startsWith("Line[2]"));
+        }
     }
 
     /**

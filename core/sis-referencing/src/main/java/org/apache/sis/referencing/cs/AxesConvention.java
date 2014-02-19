@@ -112,10 +112,13 @@ public enum AxesConvention {
 
     /**
      * Axes are reordered for a <cite>right-handed</cite> coordinate system. Directions, ranges and units are unchanged.
-     * This enum is often used for deriving a coordinate system with the (<var>longitude</var>, <var>latitude</var>) or
-     * (<var>x</var>,<var>y</var>) axis order. While it works in many cases, note that a right-handed coordinate system
+     * In the two-dimensional case, the handedness is defined from the point of view of an observer above the plane of
+     * the system.
+     *
+     * <p>This enum is often used for deriving a coordinate system with the (<var>longitude</var>, <var>latitude</var>)
+     * or (<var>x</var>,<var>y</var>) axis order. While it works in many cases, note that a right-handed coordinate system
      * does not guarantee that longitude or <var>x</var> axis will be first in every cases. The most notable exception
-     * is the (North, West) case.
+     * is the (North, West) case.</p>
      *
      * {@note We do not provide a "<cite>longitude or <var>x</var> axis first</cite>" enumeration value because
      *        such criterion is hard to apply to inter-cardinal directions and has no meaning for map projections

@@ -164,9 +164,12 @@ public final class CoordinateSystems extends Static {
         /*
          * Check for "South along 90° East", etc. directions. Note that this
          * check may perform a relatively costly parsing of axis direction name.
+         * (NOTE: the check for 'isUserDefined' is performed outside DirectionAlongMeridian for
+         * avoiding class initialization of the later in the common case where we do not need it).
          */
-        final DirectionAlongMeridian srcMeridian = DirectionAlongMeridian.parse(source);
-        final DirectionAlongMeridian tgtMeridian = DirectionAlongMeridian.parse(target);
+        final DirectionAlongMeridian srcMeridian, tgtMeridian;
+        srcMeridian = AxisDirections.isUserDefined(source) ? DirectionAlongMeridian.parse(source) : null;
+        tgtMeridian = AxisDirections.isUserDefined(target) ? DirectionAlongMeridian.parse(target) : null;
         if (srcMeridian != null && tgtMeridian != null) {
             return new Angle(srcMeridian.angle(tgtMeridian));
         }

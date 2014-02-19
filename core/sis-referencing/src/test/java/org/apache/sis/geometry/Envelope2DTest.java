@@ -23,7 +23,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.test.Validators.*;
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
 
@@ -90,7 +90,6 @@ public final strictfp class Envelope2DTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testToRectanglesOnSimpleEnvelope")
-    @org.junit.Ignore("The tested envelope needs to be associated to CRS:84")
     public void testToRectanglesOverAntiMeridian() {
         final Envelope2D envelope = new Envelope2D(WGS84, 155, 0, -150 - 155, 50);
         final Rectangle2D[] rectangles = envelope.toRectangles();

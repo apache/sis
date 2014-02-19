@@ -16,19 +16,27 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 
 
 /**
  * Parses {@linkplain AxisDirection axis direction} of the kind "<cite>South along 90 deg East</cite>".
  * Those directions are used in the EPSG database for polar stereographic projections.
+ *
+ * {@section Reference meridian}
+ * This class does not know whether the meridian is relative to Greenwich or any other reference meridian.
+ * The reference meridian shall be inferred from the geodetic datum of the {@code GeographicCRS} instance
+ * that contains (through its coordinate system) the axes having those directions. This is consistent with
+ * ISO 19162 §7.5.4(iv) - WKT 2 formatting.
  *
  * {@section Immutability and thread safety}
  * This final class is immutable and thus inherently thread-safe.
@@ -38,12 +46,7 @@ import org.apache.sis.internal.referencing.AxisDirections;
  * @version 0.4
  * @module
  */
-final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>, Serializable {
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = 1602711631943838328L;
-
+final class DirectionAlongMeridian extends FormattableObject implements Comparable<DirectionAlongMeridian> {
     /**
      * A parser for EPSG axis names. Examples:
      *
@@ -94,6 +97,9 @@ final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>
 
     /**
      * Returns the direction along meridian for the specified axis direction, or {@code null} if none.
+     *
+     * <p>TIP: caller can check {@link AxisDirections#isUserDefined(AxisDirection)} before to invoke this method
+     * for avoiding {@code DirectionAlongMeridian} initialization in the common case where it is not needed.</p>
      */
     public static DirectionAlongMeridian parse(final AxisDirection direction) {
         final DirectionAlongMeridian candidate = parse(direction.name());
@@ -236,7 +242,7 @@ final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(serialVersionUID ^ (Double.doubleToLongBits(meridian) + baseDirection.hashCode()));
+        return Numerics.hashCode(Double.doubleToLongBits(meridian) + baseDirection.hashCode());
     }
 
     /**
@@ -272,5 +278,22 @@ final class DirectionAlongMeridian implements Comparable<DirectionAlongMeridian>
         name = buffer.toString();
         assert EPSG.matcher(name).matches() : name;
         return name;
+    }
+
+    /**
+     * Formats this object as a <cite>Well Known Text</cite> {@code Meridian[…]} element.
+     * This element contains the meridian value and the unit of measurement.
+     * The unit is currently fixed to degrees, but this may change in any future implementation.
+     *
+     * {@note <code>Meridian</code> is defined in the WKT 2 specification only.}
+     *
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return {@code "Meridian"}.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        formatter.append(meridian);
+        formatter.append(NonSI.DEGREE_ANGLE);
+        return "Meridian";
     }
 }

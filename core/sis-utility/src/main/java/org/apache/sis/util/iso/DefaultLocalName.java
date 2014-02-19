@@ -19,7 +19,6 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Collections;
 import java.util.Locale;
-import java.io.ObjectStreamException;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -213,6 +212,8 @@ public class DefaultLocalName extends AbstractName implements LocalName {
 
     /**
      * Returns {@code this} since this object is already a local name.
+     *
+     * @return {@code this}.
      */
     @Override
     public final LocalName head() {
@@ -221,6 +222,8 @@ public class DefaultLocalName extends AbstractName implements LocalName {
 
     /**
      * Returns {@code this} since this object is already a local name.
+     *
+     * @return {@code this}.
      */
     @Override
     public final LocalName tip() {
@@ -231,6 +234,8 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * Returns a locale-independent string representation of this local name.
      * This string does not include the scope, which is consistent with the
      * {@linkplain #getParsedNames() parsed names} definition.
+     *
+     * @return A local-independent string representation of this name.
      */
     @Override
     public synchronized String toString() {
@@ -316,9 +321,8 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * to replace an instance of a user-defined class.</p>
      *
      * @return The unique instance.
-     * @throws ObjectStreamException Should never happen.
      */
-    private Object readResolve() throws ObjectStreamException {
+    private Object readResolve() {
         final DefaultNameSpace ns;
         if (scope == null) { // Not a bug: readResolve() is intentionally private.
             ns = GlobalNameSpace.GLOBAL;

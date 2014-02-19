@@ -33,7 +33,7 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
 
 
 /**
- * Tests {@link TimeDependentBWP}.
+ * Tests the {@link TimeDependentBWP} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

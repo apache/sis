@@ -25,7 +25,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Base class for the testing {@code *Appender} implementation.
+ * Base class for the testing of {@code *Appender} implementation.
  * This is public because JUnit requires it, but should be considered as an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)

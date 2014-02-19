@@ -17,7 +17,6 @@
 package org.apache.sis.storage;
 
 import java.io.Serializable;
-import java.io.ObjectStreamException;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Version;
 import org.apache.sis.internal.util.Utilities;
@@ -287,7 +286,7 @@ public class ProbeResult implements Serializable {
          * okay if all comparisons are performed by the {@code equals} method instead
          * than the {@code ==} operator.
          */
-        Object readResolve() throws ObjectStreamException {
+        Object readResolve() {
             try {
                 return ProbeResult.class.getField(name).get(null);
             } catch (Exception e) { // ReflectiveOperationException on the JDK7 branch.

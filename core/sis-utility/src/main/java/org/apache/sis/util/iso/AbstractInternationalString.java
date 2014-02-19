@@ -61,7 +61,7 @@ public abstract class AbstractInternationalString implements InternationalString
     /**
      * Constructs an international string.
      */
-    public AbstractInternationalString() {
+    protected AbstractInternationalString() {
     }
 
     /**

@@ -101,6 +101,11 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  */
 public final class DefinitionURI {
     /**
+     * The {@value} prefix used in all URI supported by this class.
+     */
+    public static final String PREFIX = "urn:ogc:def";
+
+    /**
      * The URN separator.
      */
     public static final char SEPARATOR = ':';
@@ -442,7 +447,7 @@ public final class DefinitionURI {
      * @return An identifier using the URN syntax, or {@code null} if an information is missing.
      */
     public static String format(final String type, final ReferenceIdentifier identifier) {
-        final StringBuilder buffer = new StringBuilder("urn:ogc:def");
+        final StringBuilder buffer = new StringBuilder(PREFIX);
         for (int p=0; p<4; p++) {
             final String component;
             switch (p) {
@@ -469,7 +474,7 @@ public final class DefinitionURI {
      * @return A URN representation of this URI.
      */
     public String toURN() {
-        final StringBuilder buffer = new StringBuilder("urn:ogc:def");
+        final StringBuilder buffer = new StringBuilder(PREFIX);
         int n = 4;
         if (parameters != null) {
             n += parameters.length;

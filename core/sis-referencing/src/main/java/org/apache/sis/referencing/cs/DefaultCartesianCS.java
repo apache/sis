@@ -27,7 +27,7 @@ import org.apache.sis.measure.Angle;
 
 
 /**
- * A 1-, 2-, or 3-dimensional Cartesian coordinate system made of straight orthogonal axes.
+ * A 2- or 3-dimensional Cartesian coordinate system made of straight orthogonal axes.
  * All axes shall have the same linear unit of measure.
  *
  * <table class="sis"><tr>
@@ -81,21 +81,6 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      */
     private DefaultCartesianCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         super(properties, axes);
-    }
-
-    /**
-     * Constructs a one-dimensional coordinate system from a set of properties.
-     * The properties map is given unchanged to the
-     * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
-     *
-     * @param properties The properties to be given to the identified object.
-     * @param axis The axis.
-     */
-    public DefaultCartesianCS(final Map<String,?>   properties,
-                              final CoordinateSystemAxis axis)
-    {
-        super(properties, new CoordinateSystemAxis[] {axis});
-        ensurePerpendicularAxis();
     }
 
     /**

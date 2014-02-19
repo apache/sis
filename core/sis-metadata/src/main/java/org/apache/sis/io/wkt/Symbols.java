@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.io.Serializable;
 import java.text.NumberFormat;
@@ -25,27 +26,48 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
+// Related to JDK7
+import org.apache.sis.internal.jdk7.JDK7;
+
 
 /**
  * The set of symbols to use for <cite>Well Known Text</cite> (WKT) parsing and formatting.
- * Newly created {@code Symbols} instances use the following defaults:
+ * The two constants defined in this class, namely {@link #SQUARE_BRACKETS} and {@link #CURLY_BRACKETS},
+ * define the symbols for ISO 19162 compliant WKT formatting. Their properties are:
  *
- * <ul>
- *   <li>An English locale for {@linkplain java.text.DecimalFormatSymbols decimal format symbols}.</li>
- *   <li>Square brackets, as in {@code DATUM["WGS84"]}. An alternative allowed by the WKT
- *       specification is curly brackets as in {@code DATUM("WGS84")}.</li>
- *   <li>English quotation mark ({@code '"'}). SIS also accepts {@code “…”} quotation marks
- *       for more readable {@link String} constants in Java code.</li>
- *   <li>Coma separator followed by a space ({@code ", "}).</li>
- * </ul>
+ * <blockquote><table class="compact">
+ *   <tr>
+ *     <td>Locale for number format:</td>
+ *     <td>{@link Locale#ROOT}</td>
+ *     <td></td>
+ *   </tr>
+ *   <tr>
+ *     <td>Bracket symbols:</td>
+ *     <td>{@code [}…{@code ]} or {@code (}…{@code )}</td>
+ *     <td><font size="-1"><b>Note:</b> the {@code […]} brackets are common in referencing WKT,
+ *         while the {@code (…)} brackets are common in geometry WKT.</font></td>
+ *   </tr>
+ *   <tr>
+ *     <td>Quote symbols:</td>
+ *     <td>{@code "}…{@code "}</td>
+ *     <td><font size="-1"><b>Note:</b> Apache SIS accepts also {@code “…”} quotes for more readable
+ *         {@code String} literals in Java code, but this is non-standard.</font></td>
+ *   </tr>
+ *   <tr>
+ *     <td>Sequence symbols:</td>
+ *     <td><code>{</code>…<code>}</code></td>
+ *     <td></td>
+ *   </tr>
+ *   <tr>
+ *     <td>Separator:</td>
+ *     <td>{@code ,}</td>
+ *     <td></td>
+ *   </tr>
+ * </table></blockquote>
  *
- * {@section Relationship between <code>Symbols</code> locale and <code>WKTFormat</code> locale}
- * The {@link WKTFormat#getLocale()} property specifies the language to use when formatting
- * {@link org.opengis.util.InternationalString} instances. This can be set to any value.
- * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
- * the decimal format symbols and is very rarely set to an other locale than an English one.
+ * Users can create their own {@code Symbols} instance for parsing or formatting a WKT with different symbols.
  *
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.1)
  * @version 0.4
  * @module
@@ -53,7 +75,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @see WKTFormat#getSymbols()
  * @see WKTFormat#setSymbols(Symbols)
  */
-public class Symbols implements Localized, Serializable {
+public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -61,23 +83,32 @@ public class Symbols implements Localized, Serializable {
 
     /**
      * A set of symbols with values between square brackets, like {@code DATUM["WGS84"]}.
-     * This is the most frequently used WKT format.
+     * This instance defines:
+     *
+     * <ul>
+     *   <li>{@link Locale#ROOT} for {@linkplain java.text.DecimalFormatSymbols decimal format symbols}.</li>
+     *   <li>Square brackets by default, as in {@code DATUM["WGS84"]}, but accepting also curly brackets as in
+     *       {@code DATUM("WGS84")}. Both are legal WKT.</li>
+     *   <li>English quotation mark ({@code '"'}) by default, but accepting also “…” quotes
+     *       for more readable {@link String} constants in Java code.</li>
+     *   <li>Coma separator followed by a space ({@code ", "}).</li>
+     * </ul>
+     *
+     * This is the most frequently used WKT format for referencing objects.
      */
-    public static final Symbols SQUARE_BRACKETS = new Immutable(
+    public static final Symbols SQUARE_BRACKETS = new Symbols(
             new int[] {'[', ']', '(', ')'}, new int[] {'"', '"', '“', '”'});
 
     /**
      * A set of symbols with values between parentheses, like {@code DATUM("WGS84")}.
-     * This is a less frequently used but legal WKT format.
+     * This instance is identical to {@link #SQUARE_BRACKETS} except that the default
+     * brackets are the curly ones instead than the square ones (but both are still
+     * accepted at parsing time).
+     *
+     * <p>This format is rare with referencing objects but common with geometry objects.</p>
      */
-    public static final Symbols CURLY_BRACKETS = new Immutable(
+    public static final Symbols CURLY_BRACKETS = new Symbols(
             new int[] {'(', ')', '[', ']'}, SQUARE_BRACKETS.quotes);
-
-    /**
-     * The default set of symbols, as documented in the class javadoc.
-     * This is currently set to {@link #SQUARE_BRACKETS}.
-     */
-    public static final Symbols DEFAULT = SQUARE_BRACKETS;
 
     /**
      * The locale of {@linkplain java.text.DecimalFormatSymbols decimal format symbols} or other symbols.
@@ -114,6 +145,16 @@ public class Symbols implements Localized, Serializable {
     private int[] quotes;
 
     /**
+     * The preferred closing quote character ({@code quotes[1]}) as a string.
+     * We use the closing quote because this is the character that the parser
+     * will look for determining the text end.
+     *
+     * @see #getQuote()
+     * @see #readResolve()
+     */
+    private transient String quote;
+
+    /**
      * The character (as Unicode code point) used for opening ({@code openSequence})
      * or closing ({@code closeSequence}) an array or enumeration.
      */
@@ -126,21 +167,21 @@ public class Symbols implements Localized, Serializable {
     private String separator;
 
     /**
-     * Creates a new set of WKT symbols initialized to the {@linkplain #DEFAULT default} values.
+     * {@code true} if this instance shall be considered as immutable.
      */
-    public Symbols() {
-        this(DEFAULT);
-    }
+    private boolean isImmutable;
 
     /**
-     * Creates a copy of the given set of WKT symbols.
+     * Creates a new set of WKT symbols initialized to a copy of the given symbols.
      *
      * @param symbols The symbols to copy.
      */
     public Symbols(final Symbols symbols) {
+        ensureNonNull("symbols", symbols);
         locale        = symbols.locale;
         brackets      = symbols.brackets;
         quotes        = symbols.quotes;
+        quote         = symbols.quote;
         openSequence  = symbols.openSequence;
         closeSequence = symbols.closeSequence;
         separator     = symbols.separator;
@@ -151,75 +192,48 @@ public class Symbols implements Localized, Serializable {
      * The given array is stored by reference - it is not cloned.
      */
     private Symbols(final int[] brackets, final int[] quotes) {
-        this.locale        = Locale.US;
+        this.locale        = Locale.ROOT;
         this.brackets      = brackets;
         this.quotes        = quotes;
+        this.quote         = "\"";
         this.openSequence  = '{';
         this.closeSequence = '}';
         this.separator     = ", ";
+        this.isImmutable   = true;
     }
 
     /**
-     * An immutable set of symbols.
+     * Throws an exception if this set of symbols is immutable.
      */
-    private static final class Immutable extends Symbols {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = -3252233734797811448L;
-
-        /**
-         * Constructor reserved to {@link Symbols#SQUARE_BRACKETS} and {@link Symbols#CURLY_BRACKETS} constants.
-         * The given arrays are stored by reference - they are not cloned.
-         */
-        Immutable(final int[] brackets, final int[] quotes) {
-            super(brackets, quotes);
-        }
-
-        /**
-         * Creates an immutable copy of the given set of symbols.
-         */
-        Immutable(final Symbols symbols) {
-            super(symbols);
-        }
-
-        /**
-         * Returns {@code this} since this set of symbols is already immutable.
-         */
-        @Override
-        Symbols immutable() {
-            return this;
-        }
-
-        /**
-         * Unconditionally throws an exception since instance of this class are immutable.
-         */
-        @Override
-        void checkWritePermission() throws UnsupportedOperationException {
+    final void checkWritePermission() throws UnsupportedOperationException {
+        if (isImmutable) {
             throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Symbols"));
         }
     }
 
     /**
-     * Throws an exception if this set of symbols is immutable.
-     * To be overridden by the {@link Immutable} subclass only.
-     */
-    void checkWritePermission() throws UnsupportedOperationException {
-    }
-
-    /**
-     * Returns an immutable copy of this set of symbols, or {@code this} if this instance is already immutable.
-     */
-    Symbols immutable() {
-        return new Immutable(this);
-    }
-
-    /**
-     * Returns the locale of {@linkplain java.text.DecimalFormatSymbols decimal format symbols}
-     * or other symbols. This is usually an English locale. Note that this is not the same locale
-     * than the {@link WKTFormat} one, which is used for choosing the language of international strings.
+     * Returns the default set of symbols.
+     * This is currently set to {@link #SQUARE_BRACKETS}.
      *
-     * @return The symbols locale.
+     * @return The default set of symbols.
+     */
+    public static Symbols getDefault() {
+        return SQUARE_BRACKETS;
+    }
+
+    /**
+     * Returns the locale for formatting dates and numbers.
+     * The default value is {@link Locale#ROOT}.
+     *
+     * {@section Relationship between <code>Symbols</code> locale and <code>WKTFormat</code> locale}
+     * The {@code WKTFormat.getLocale(Locale.DISPLAY)} property specifies the language to use when
+     * formatting {@link org.opengis.util.InternationalString} instances and can be set to any value.
+     * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
+     * the decimal format symbols and is very rarely set to an other locale than {@code Locale.ROOT}.
+     *
+     * @return The locale for dates and numbers.
+     *
+     * @see WKTFormat#getLocale()
      */
     @Override
     public final Locale getLocale() {
@@ -228,6 +242,8 @@ public class Symbols implements Localized, Serializable {
 
     /**
      * Sets the locale of decimal format symbols or other symbols.
+     * Note that any non-English locale is likely to produce WKT that do not conform to ISO 19162.
+     * Such WKT can be used for human reading, but not for data export.
      *
      * @param locale The new symbols locale.
      */
@@ -348,6 +364,15 @@ public class Symbols implements Localized, Serializable {
     }
 
     /**
+     * Returns the preferred closing quote character as a string. This is the quote to double if it
+     * appears in a Unicode string to format. We check for the closing quote because this is the one
+     * that the parser will look for determining the text end.
+     */
+    final String getQuote() {
+        return quote;
+    }
+
+    /**
      * Sets the opening and closing quotes to the given pairs.
      * Each string shall contain exactly two code points (usually two characters).
      * The first code point is taken as the opening quote, and the second code point as the closing quote.
@@ -365,6 +390,7 @@ public class Symbols implements Localized, Serializable {
     public void setPairedQuotes(final String preferred, final String... alternatives) {
         checkWritePermission();
         quotes = toCodePoints(preferred, alternatives);
+        quote = preferred.substring(Character.charCount(quotes[0])).trim();
     }
 
     /**
@@ -372,7 +398,7 @@ public class Symbols implements Localized, Serializable {
      * This method also verifies arguments validity.
      */
     private static int[] toCodePoints(final String preferred, final String[] alternatives) {
-        ensureNonNull("preferred", preferred);
+        ensureNonEmpty("preferred", preferred);
         final int n = (alternatives != null) ? alternatives.length : 0;
         final int[] array = new int[(n+1) * 2];
         String name = "preferred";
@@ -448,6 +474,16 @@ public class Symbols implements Localized, Serializable {
         checkWritePermission();
         ensureNonEmpty("separator", separator);
         this.separator = separator;
+    }
+
+    /**
+     * Returns the value of {@link #getSeparator()} without trailing spaces,
+     * followed by the system line separator.
+     */
+    final String lineSeparator() {
+        final String separator = getSeparator();
+        return separator.substring(0, CharSequences.skipTrailingWhitespaces(separator, 0, separator.length()))
+                .concat(JDK7.lineSeparator());
     }
 
     /**
@@ -573,5 +609,82 @@ public class Symbols implements Localized, Serializable {
             offset += Character.charCount(c);
         }
         return false;
+    }
+
+    /**
+     * Returns an immutable copy of this set of symbols, or {@code this} if this instance is already immutable.
+     */
+    final Symbols immutable() {
+        if (isImmutable) {
+            return this;
+        }
+        final Symbols clone = clone();
+        clone.isImmutable = true;
+        return clone;
+    }
+
+    /**
+     * Returns a clone of this {@code Symbols}.
+     *
+     * @return A clone of this {@code Symbols}.
+     */
+    @Override
+    public Symbols clone() {
+        final Symbols clone;
+        try {
+            clone = (Symbols) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+        /*
+         * No needs to copy the arrays, because their content are never modified.
+         * Instead, the setter methods create new arrays.
+         */
+        clone.isImmutable = false;
+        return clone;
+    }
+
+    /**
+     * Compares this {@code Symbols} with the given object for equality.
+     *
+     * @param  other The object to compare with this {@code Symbols}.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other instanceof Symbols) {
+            final Symbols that = (Symbols) other;
+            return Arrays.equals(brackets, that.brackets) &&
+                   Arrays.equals(quotes, that.quotes) &&
+                   // no need to compare 'quote' because it is computed from 'quotes'.
+                   openSequence  == that.openSequence &&
+                   closeSequence == that.closeSequence &&
+                   separator.equals(that.separator) &&
+                   locale.equals(that.locale);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this object.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(new Object[] {brackets, quotes, openSequence, closeSequence, separator, locale});
+    }
+
+    /**
+     * Invoked on deserialization for replacing the deserialized instance by the constant instance.
+     * This method also opportunistically recompute the {@link #quote} field if no replacement is done.
+     */
+    final Object readResolve() {
+        if (isImmutable) {
+            if (equals(SQUARE_BRACKETS)) return SQUARE_BRACKETS;
+            if (equals(CURLY_BRACKETS))  return CURLY_BRACKETS;
+        }
+        quote = String.valueOf(Character.toChars(quotes[1]));
+        return this;
     }
 }

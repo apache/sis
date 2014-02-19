@@ -14,34 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.io.wkt;
+package org.apache.sis.referencing.cs;
 
-import javax.measure.unit.NonSI;
-import javax.measure.quantity.Angle;
-import javax.measure.quantity.Duration;
+import java.util.Collections;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.referencing.cs.HardCodedCS.*;
 
 
 /**
- * Tests the {@link Convention} enumeration.
+ * Tests {@link DefaultSphericalCS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.20)
+ * @since   0.4
  * @version 0.4
  * @module
  */
-public final strictfp class ConventionTest extends TestCase {
+@DependsOn(AbstractCSTest.class)
+public final strictfp class DefaultSphericalCSTest extends TestCase {
     /**
-     * Tests {@link Convention#getForcedUnit(Class)}.
+     * Tests the normalization of a coordinate system.
      */
     @Test
-    public void testGetForcedUnit() {
-        assertNull(Convention.WKT2.getForcedUnit(Angle.class));
-        assertNull(Convention.WKT1.getForcedUnit(Angle.class));
-        assertEquals(NonSI.DEGREE_ANGLE, Convention.WKT1_COMMON_UNITS.getForcedUnit(Angle.class));
-        assertNull(Convention.WKT1_COMMON_UNITS.getForcedUnit(Duration.class));
+    public void testNormalize() {
+        final AbstractCS normalized = SPHERICAL.forConvention(AxesConvention.NORMALIZED);
+        assertNotSame(SPHERICAL, normalized);
+        assertEquals(new DefaultSphericalCS(
+            Collections.singletonMap(AbstractCS.NAME_KEY, "Spherical CS: East (deg), North (deg), Up (m)."),
+            HardCodedAxes.SPHERICAL_LONGITUDE,
+            HardCodedAxes.SPHERICAL_LATITUDE,
+            HardCodedAxes.GEOCENTRIC_RADIUS
+        ), normalized);
     }
 }

@@ -31,11 +31,12 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -331,26 +332,23 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Formats this prime meridian as a <cite>Well Known Text</cite> {@code PrimeMeridian[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "PRIMEM"}.
+     * @return {@code "PrimeMeridian"} (WKT 2) or {@code "PrimeM"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        /*
-         * If the PrimeMeridian is written inside a "GEOGCS", then OGC say that it must be
-         * written in the unit of the enclosing geographic coordinate system. Otherwise,
-         * default to decimal degrees. Note that ESRI and GDAL don't follow this rule.
-         */
-        Unit<Angle> context = formatter.getConvention().getForcedUnit(Angle.class);
-        if (context == null) {
-            context = formatter.getAngularUnit();
-            if (context == null) {
-                context = NonSI.DEGREE_ANGLE;
-            }
+        super.formatTo(formatter);
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = convention.majorVersion() == 1;
+        final Unit<Angle> targetUnit = formatter.toContextualUnit(NonSI.DEGREE_ANGLE);
+        formatter.append(isWKT1 ? getGreenwichLongitude(targetUnit) : greenwichLongitude);
+        if (isWKT1) {
+            return "PrimeM";
         }
-        formatter.append(getGreenwichLongitude(context));
-        return "PRIMEM";
+        if (!convention.isSimplified() || !targetUnit.equals(angularUnit)) {
+            formatter.append(angularUnit);
+        }
+        return "PrimeMeridian";
     }
 }

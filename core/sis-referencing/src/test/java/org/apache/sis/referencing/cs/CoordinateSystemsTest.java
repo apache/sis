@@ -53,7 +53,7 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     /**
      * Tolerance threshold for strict floating point comparisons.
      */
-    private static final double STRICT = 0;
+    static final double STRICT = 0;
 
     /**
      * Tests {@link CoordinateSystems#parseAxisDirection(String)}.

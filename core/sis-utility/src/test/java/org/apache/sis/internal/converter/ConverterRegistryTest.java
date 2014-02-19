@@ -58,7 +58,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
      * All converters registered in a test case. Only the converter type and properties
      * will be verified; no conversion or serialization shall be attempted.
      */
-    private Deque<ObjectConverter<?,?>> converters = new ArrayDeque<ObjectConverter<?,?>>();
+    private final Deque<ObjectConverter<?,?>> converters = new ArrayDeque<ObjectConverter<?,?>>();
 
     /**
      * Registers a converter to test.

@@ -27,7 +27,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link DefaultGeodeticCRS}
+ * Tests the {@link DefaultGeodeticCRS} class.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)

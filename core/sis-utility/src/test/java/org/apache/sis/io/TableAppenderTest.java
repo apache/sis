@@ -27,7 +27,7 @@ import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**
- * Tests the {@link TableAppender} implementations.
+ * Tests {@link TableAppender} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)

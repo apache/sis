@@ -108,30 +108,40 @@ public interface LenientComparable {
     /**
      * Compares this object with the given object for equality.
      * The strictness level is controlled by the second argument,
-     * for stricter to more permissive values:
+     * from stricter to more permissive values:
      *
-     * <ol>
-     *   <li>{@link ComparisonMode#STRICT STRICT} –
-     *        All attributes of the compared objects shall be strictly equal.</li>
-     *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} –
-     *       Only the attributes published in the interface contract need to be compared.</li>
-     *   <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} –
-     *       Only the attributes relevant to the object functionality are compared.</li>
-     *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} –
-     *       Only the attributes relevant to the object functionality are compared,
-     *       with some tolerance threshold on numerical values.</li>
-     *   <li>{@link ComparisonMode#DEBUG DEBUG} –
-     *        special mode for figuring out why two objects expected to be equal are not.</li>
-     * </ol>
+     * <p><table class="compact" >
+     *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
+     *        <td>All attributes of the compared objects shall be strictly equal.</td></tr>
+     *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</td>
+     *       <td>Only the attributes published in the interface contract need to be compared.</td></tr>
+     *   <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}:</td>
+     *       <td>Only the attributes relevant to the object functionality are compared.</td></tr>
+     *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</td>
+     *       <td>Only the attributes relevant to the object functionality are compared,
+     *           with some tolerance threshold on numerical values.</td></tr>
+     *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
+     *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
+     * </table></p>
      *
-     * Note that {@code this.equals(other, mode)} is <strong>not</strong> guaranteed to be equal
-     * to {@code other.equals(this, mode)}.  In particular, the {@code BY_CONTRACT} level and all
-     * levels below it will typically compare only the properties known to {@code this} instance,
-     * ignoring any properties that may be known only by the {@code other} instance.
+     * {@section Conformance to the <code>equals(Object)</code> method contract}
+     * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.
+     * For all other modes <var>m</var>, the comparison is not guaranteed to be <cite>symmetric</cite> neither
+     * <cite>transitive</cite>:
+     *
+     * <ul>
+     *   <li>{@code x.equals(y,m)} is <strong>not</strong> guaranteed to be equal to {@code y.equals(x,m)}.
+     *       In particular, the {@code BY_CONTRACT} mode and all modes below it will typically compare only the
+     *       properties known to {@code this} instance, ignoring any properties that may be known only by the other
+     *       instance.</li>
+     *   <li>{@code x.equals(y,m)} and {@code y.equals(z,m)} does <strong>not</strong> implies
+     *       {@code x.equals(z,m)}. In particular, the use of a comparison threshold for the
+     *       {@code APPROXIMATIVE} mode is incompatible with the transitivity contract.</li>
+     * </ul>
      *
      * @param  other The object to compare to {@code this}.
      * @param  mode The strictness level of the comparison.
-     * @return {@code true} if both objects are equal.
+     * @return {@code true} if both objects are equal according the given comparison mode.
      *
      * @see Utilities#deepEquals(Object, Object, ComparisonMode)
      */
