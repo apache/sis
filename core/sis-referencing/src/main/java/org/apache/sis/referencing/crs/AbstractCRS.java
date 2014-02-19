@@ -418,10 +418,11 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final String keyword = super.formatTo(formatter);
-        final boolean isWKT1 = formatter.getConvention().versionOfWKT() == 1;
+        final String  keyword = super.formatTo(formatter);
         final CoordinateSystem cs = coordinateSystem;
-        final Unit<?> unit = ReferencingUtilities.getUnit(cs);
+        final boolean isWKT1  = formatter.getConvention().versionOfWKT() == 1;
+        final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
+        final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         formatter.newLine();
         formatter.append(getDatum());
         formatter.newLine();
@@ -442,6 +443,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             formatter.newLine();
             formatter.append(unit);
         }
+        formatter.removeContextualUnit(unit);
+        formatter.addContextualUnit(oldUnit);
         formatter.newLine(); // For writing the ID[…] element on its own line.
         return keyword;
     }

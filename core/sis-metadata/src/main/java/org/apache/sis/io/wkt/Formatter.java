@@ -17,7 +17,7 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Map;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,8 +34,6 @@ import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
-import javax.measure.quantity.Angle;
-import javax.measure.quantity.Length;
 import javax.measure.quantity.Quantity;
 
 import org.opengis.util.InternationalString;
@@ -80,7 +78,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
  *
  * <ul>
  *   <li>A series of {@code append(…)} methods to be invoked by the {@code formatTo(Formatter)} implementations.</li>
- *   <li>Contextual information. In particular, the {@linkplain #getContextualUnit(Class) contextual units} depend on
+ *   <li>Contextual information. In particular, the {@linkplain #toContextualUnit(Unit) contextual units} depend on
  *       the {@linkplain #getEnclosingElement(int) enclosing WKT element}.</li>
  *   <li>A flag for declaring the object unformattable.</li>
  * </ul>
@@ -172,10 +170,10 @@ public class Formatter implements Localized {
      * This value is set for example by {@code "GEOGCS"}, which force its enclosing {@code "PRIMEM"}
      * to take the same units than itself.
      *
-     * @see #getContextualUnit(Class)
-     * @see #setContextualUnit(Class, Unit)
+     * @see #addContextualUnit(Unit)
+     * @see #toContextualUnit(Unit)
      */
-    private final Map<Class<? extends Quantity>, Unit<?>> units = new IdentityHashMap<>(4);
+    private final Map<Unit<?>, Unit<?>> units = new HashMap<>(4);
 
     /**
      * A bits mask of elements which defined a contextual units.
@@ -1200,14 +1198,13 @@ public class Formatter implements Localized {
     /**
      * Returns {@code true} if the element at the given depth specified a contextual unit.
      * This method returns {@code true} if the formattable object given by {@code getEnclosingElement(depth)}
-     * has invoked {@link #setContextualUnit(Class, Unit) setContextualUnit(…)} with a non-null unit at least once.
+     * has invoked {@link #addContextualUnit(Unit)} with a non-null unit at least once.
      *
      * {@note The main purpose of this method is to allow <code>AXIS[…]</code> elements to determine if they should
      *        inherit the unit specified by the enclosing CRS, or if they should specify their unit explicitly.}
      *
      * @param  depth 1 for the immediate parent, 2 for the parent of the parent, <i>etc.</i>
-     * @return Whether the parent element at the given depth has invoked {@code setContextualUnit(…)}
-     *         with a non-null unit at least once.
+     * @return Whether the parent element at the given depth has invoked {@code addContextualUnit(…)} at least once.
      */
     public boolean hasContextualUnit(final int depth) {
         ArgumentChecks.ensurePositive("depth", depth);
@@ -1215,69 +1212,57 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Returns the unit for expressing measurements of the given quantity, or {@code null} for the default unit
-     * of each WKT element. If {@code null}, then the default value depends on the object to format.
+     * Adds a unit to use for the next measurements of the quantity {@code Q}. The given unit will apply to
+     * all WKT elements containing a value of quantity {@code Q} without their own {@code UNIT[…]} element,
+     * until the {@link #removeContextualUnit(Unit)} method is invoked with a unit of the same quantity.
      *
-     * <p>This method may return a non-null value if the next WKT elements to format are enclosed in a larger WKT
-     * element, and the child elements shall inherit the unit of the enclosing element. A typical case is
-     * the angular unit of the {@code PRIMEM[…]} element enclosed in a {@code GEOGCS[…]} element.</p>
+     * <p>If the given unit is null, then this method does nothing and returns {@code null}.</p>
      *
-     * <p>The value returned by this method can be ignored if the WKT element to format contains an explicit
-     * {@code UNIT[…]} element.</p>
+     * {@section Special case}
+     * If the WKT conventions are {@code WKT1_COMMON_UNITS}, then this method ignores the given unit
+     * and returns {@code null}. See {@link Convention#WKT1_COMMON_UNITS} javadoc for more information.
      *
-     * @param  <Q> The compile-time type of the {@code quantity} argument.
-     * @param  quantity The quantity, typically as <code>{@linkplain Angle}.class</code> or
-     *         <code>{@linkplain Length}.class</code>.
-     * @return The unit for measurements of the given quantity, or {@code null} for the default unit.
+     * @param  <Q>  The unit quantity.
+     * @param  unit The contextual unit to add, or {@code null} if none.
+     * @return The previous contextual unit for quantity {@code Q}, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
-    public <Q extends Quantity> Unit<Q> getContextualUnit(final Class<Q> quantity) {
-        return (Unit<Q>) units.get(quantity);
+    public <Q extends Quantity> Unit<Q> addContextualUnit(final Unit<Q> unit) {
+        if (unit == null || convention.usesCommonUnits()) {
+            return null;
+        }
+        hasContextualUnit |= 1;
+        return (Unit<Q>) units.put(unit.toSI(), unit);
     }
 
     /**
-     * Sets the unit to use for the next measurements of the given quantity. If non-null, the given unit will apply
-     * to all WKT elements that do not define their own {@code UNIT[…]}, until this {@code setUnit(…)} method is
-     * invoked again for the same quantity.
+     * Removes the unit previously added by a call to {@code addContextualUnit(unit)}.
+     * If the given unit is null, then this method does nothing.
      *
-     * {@section Special case}
-     * If the WKT conventions are {@code WKT1_COMMON_UNITS}, then this method ignores the given unit.
-     * See {@link Convention#WKT1_COMMON_UNITS} javadoc for more information.
-     *
-     * @param  <Q> The compile-time type of the {@code quantity} argument.
-     * @param  quantity The quantity, typically as <code>{@linkplain Angle}.class</code> or
-     *         <code>{@linkplain Length}.class</code>.
-     * @param unit The new contextual unit, or {@code null} for letting elements use their own default.
+     * @param unit The contextual unit to remove, or {@code null} if none.
      */
-    public <Q extends Quantity> void setContextualUnit(final Class<Q> quantity, final Unit<Q> unit) {
-        ArgumentChecks.ensureNonNull("quantity", quantity);
-        if (!convention.usesCommonUnits()) {
-            if (unit != null) {
-                units.put(quantity, unit);
-                hasContextualUnit |= 1;
-            } else {
-                units.remove(quantity);
-            }
+    public void removeContextualUnit(final Unit<?> unit) {
+        if (unit != null) {
+            units.remove(unit.toSI());
         }
     }
 
     /**
      * Returns the unit to use instead than the given one, or the given unit if there is no replacement for it.
-     * This method searches for a unit specified by {@link #setContextualUnit(Class, Unit)} which
+     * This method searches for a unit specified by {@link #addContextualUnit(Unit)} which
      * {@linkplain Unit#isCompatible(Unit) is compatible} with the given unit.
      *
      * @param  <Q>  The quantity of the unit.
      * @param  unit The unit to replace by the contextual unit, or {@code null}.
      * @return A contextual unit compatible with the given unit, or {@code unit}
-     *         if not contextual unit has been found.
+     *         if no contextual unit has been found.
      */
-    @SuppressWarnings("unchecked")
     public <Q extends Quantity> Unit<Q> toContextualUnit(final Unit<Q> unit) {
         if (unit != null) {
-            for (final Unit<?> c : units.values()) {
-                if (unit.isCompatible(c)) {
-                    return (Unit<Q>) c;
-                }
+            @SuppressWarnings("unchecked")
+            final Unit<Q> candidate = (Unit<Q>) units.get(unit.toSI());
+            if (candidate != null) {
+                return candidate;
             }
         }
         return unit;

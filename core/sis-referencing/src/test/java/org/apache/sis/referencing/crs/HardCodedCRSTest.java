@@ -17,12 +17,11 @@
 package org.apache.sis.referencing.crs;
 
 import org.opengis.test.ValidatorContainer;
-import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.referencing.crs.HardCodedCRS.*;
 
 
@@ -66,62 +65,6 @@ public final strictfp class HardCodedCRSTest extends TestCase {
     public void testDimensions() {
         assertEquals("WGS84 2D", 2, WGS84   .getCoordinateSystem().getDimension());
         assertEquals("WGS84 3D", 3, WGS84_3D.getCoordinateSystem().getDimension());
-    }
-
-    /**
-     * Tests WKT formatting.
-     */
-    @Test
-    public void testWKT() {
-        assertWktEquals(Convention.WKT1,
-                "GEOGCS[“WGS 84”,\n" +
-                "  DATUM[“World Geodetic System 1984”,\n" +
-                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-                "  PRIMEM[“Greenwich”, 0.0],\n" +
-                "  UNIT[“degree”, 0.017453292519943295],\n" +
-                "  AXIS[“Longitude”, EAST],\n" +
-                "  AXIS[“Latitude”, NORTH]]",
-                WGS84);
-
-        assertWktEquals(Convention.WKT2,
-                "GeodeticCRS[“WGS 84”,\n" +
-                "  Datum[“World Geodetic System 1984”,\n" +
-                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
-                "  PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
-                "  CS[“ellipsoidal”, 2],\n" +
-                "    Axis[“Longitude (λ)”, east],\n" +
-                "    Axis[“Latitude (φ)”, north],\n" +
-                "    AngleUnit[“degree”, 0.017453292519943295],\n" +
-                "  Area[“World”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
-                WGS84);
-
-        assertWktEquals(Convention.WKT2_SIMPLIFIED,
-                "GeodeticCRS[“WGS 84”,\n" +
-                "  Datum[“World Geodetic System 1984”,\n" +
-                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
-                "  PrimeMeridian[“Greenwich”, 0.0],\n" +
-                "  CS[“ellipsoidal”, 2],\n" +
-                "    Axis[“Longitude (λ)”, east],\n" +
-                "    Axis[“Latitude (φ)”, north],\n" +
-                "    Unit[“degree”, 0.017453292519943295],\n" +
-                "  Area[“World”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
-                WGS84);
-
-        assertWktEquals(Convention.INTERNAL,
-                "GeodeticCRS[“WGS 84”,\n" +
-                "  Datum[“World Geodetic System 1984”,\n" +
-                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
-                "    Id[“EPSG”, 6326]],\n" +
-                "  PrimeMeridian[“Greenwich”, 0.0, Id[“EPSG”, 8901]],\n" +
-                "  CS[“ellipsoidal”, 2],\n" +
-                "    Axis[“Geodetic longitude (λ)”, east],\n" +
-                "    Axis[“Geodetic latitude (φ)”, north],\n" +
-                "    Unit[“degree”, 0.017453292519943295],\n" +
-                "  Area[“World”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
-                WGS84);
     }
 
     /**

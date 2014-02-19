@@ -959,7 +959,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
      * then subclasses shall write the content starting at the insertion point shown below:
      *
-     * <table class="compact">
+     * <p><table class="compact">
      * <tr>
      *   <th>WKT example</th>
      *   <th>Java code example</th>
@@ -975,7 +975,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     // ... write the elements at the insertion point ...
      *     return "GeodeticCRS";
      * }
-     * </td></tr></table>
+     * </td></tr></table></p>
      *
      * {@section Formatting non-standard WKT}
      * If the implementation can not represent this object without violating some WKT constraints,

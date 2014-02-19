@@ -192,13 +192,9 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
-     * <blockquote><font size="-1"><b>Example: Well-Known Text of a geographic coordinate reference system
-     * using the WGS 84 datum.</b>
-     * <table class="compact">
-     * <tr>
-     *   <th>WKT 2</th>
-     *   <th>WKT 1</th>
-     * </tr><tr><td>
+     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text (version 2)
+     * of a geographic coordinate reference system using the WGS 84 datum.
+     *
      * {@preformat wkt
      *   GeodeticCRS["WGS 84",
      *      Datum["World Geodetic System 1984",
@@ -213,7 +209,9 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *      Scope["Used by GPS satellite navigation system."]
      *      Id["EPSG", 4326, Citation["OGP"], URI["urn:ogc:def:crs:EPSG::4326"]]]
      * }
-     * </td><td>
+     *
+     * <p>Same coordinate reference system using WKT 1.</p>
+     *
      * {@preformat wkt
      *   GEOGCS["WGS 84"
      *      DATUM["World Geodetic System 1984"
@@ -224,7 +222,6 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *      AXIS["Longitude", EAST],
      *      AUTHORITY["EPSG", "4326"]]
      * }
-     * </td></tr></table>
      * </font></blockquote>
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
