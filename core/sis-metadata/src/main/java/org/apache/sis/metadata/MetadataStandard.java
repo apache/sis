@@ -130,12 +130,11 @@ public class MetadataStandard implements Serializable {
      */
     public static final MetadataStandard ISO_19123;
     static {
-        final String[] prefix = {"Default", "Abstract"};
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
 
         // If new StandardImplementation instances are added below, please update StandardImplementation.readResolve().
-        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms);
-        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", prefix, null);
+        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", acronyms);
+        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", null);
         ISO_19119 = new MetadataStandard      ("ISO 19119", "org.opengis.service.");
         ISO_19123 = new MetadataStandard      ("ISO 19123", "org.opengis.coverage.");
         INSTANCES = new MetadataStandard[] {
