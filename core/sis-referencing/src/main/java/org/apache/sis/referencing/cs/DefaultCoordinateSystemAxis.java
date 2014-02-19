@@ -31,7 +31,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -723,13 +722,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * the axis name should be omitted as it is given through the mandatory axis direction,
      * but the axis abbreviation, respectively ‘X’, 'Y' and ‘Z’, shall be given.
      */
-    private static boolean omitName(final Formatter formatter) {
-        if (formatter.getEnclosingElement(2) instanceof GeodeticCRS) {
-            if (formatter.getEnclosingElement(1) instanceof CartesianCS) {
-                return true;
-            }
-        }
-        return false;
+    private boolean omitName(final Formatter formatter) {
+        return AxisDirections.isGeocentric(direction) && formatter.getEnclosingElement(1) instanceof GeodeticCRS;
     }
 
     /**

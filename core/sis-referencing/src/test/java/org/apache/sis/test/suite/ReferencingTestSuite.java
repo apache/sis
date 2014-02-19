@@ -71,6 +71,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.cs.HardCodedCSTest.class,
     org.apache.sis.referencing.crs.AbstractCRSTest.class,
     org.apache.sis.referencing.crs.DefaultGeodeticCRSTest.class,
+    org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class,
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
     org.apache.sis.referencing.crs.DefaultVerticalCRSTest.class,
     org.apache.sis.referencing.crs.SubTypesTest.class,

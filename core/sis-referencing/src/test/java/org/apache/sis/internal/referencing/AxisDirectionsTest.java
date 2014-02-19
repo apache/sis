@@ -129,6 +129,20 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link AxisDirections#isGeocentric(AxisDirection)}.
+     */
+    @Test
+    public void testIsGeocentric() {
+        assertTrue (AxisDirections.isGeocentric(GEOCENTRIC_X));
+        assertTrue (AxisDirections.isGeocentric(GEOCENTRIC_Y));
+        assertTrue (AxisDirections.isGeocentric(GEOCENTRIC_Z));
+        assertFalse(AxisDirections.isGeocentric(NORTH));
+        assertFalse(AxisDirections.isGeocentric(UP));
+        assertFalse(AxisDirections.isGeocentric(DOWN));
+        assertFalse(AxisDirections.isGeocentric(FUTURE));
+    }
+
+    /**
      * Tests {@link AxisDirections#isSpatialOrUserDefined(AxisDirection, boolean)} and
      * {@link AxisDirections#isGrid(AxisDirection)}.
      */
