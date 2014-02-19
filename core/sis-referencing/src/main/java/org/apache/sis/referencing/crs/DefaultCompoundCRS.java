@@ -403,7 +403,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
         final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = convention.versionOfWKT() == 1;
+        final boolean isWKT1 = convention.majorVersion() == 1;
         for (final CoordinateReferenceSystem element :
                 (isWKT1 || convention == Convention.INTERNAL) ? components : singles)
         {

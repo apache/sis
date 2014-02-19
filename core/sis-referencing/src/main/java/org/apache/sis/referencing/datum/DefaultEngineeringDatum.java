@@ -170,7 +170,7 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        if (formatter.getConvention().versionOfWKT() == 1) {
+        if (formatter.getConvention().majorVersion() == 1) {
             /*
              * Datum type was provided for all kind of datum in the legacy OGC 01-009 specification.
              * Datum types became provided only for vertical datum in the ISO 19111:2003 specification,

@@ -281,12 +281,21 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Returns the preferred authority to look for when fetching identified object names and identifiers.
      * The difference between various authorities are most easily seen in projection and parameter names.
+     *
+     * {@example The following table shows the names given by various organizations or projects for the same projection:
+     *
+     * <table class="sis">
+     *   <tr><th>Authority</th> <th>Projection name</th></tr>
+     *   <tr><td>EPSG</td>      <td>Mercator (variant A)</td></tr>
+     *   <tr><td>OGC</td>       <td>Mercator_1SP</td></tr>
+     *   <tr><td>GEOTIFF</td>   <td>CT_Mercator</td></tr>
+     * </table>}
+     *
      * If no authority has been {@link #setNameAuthority(Citation) explicitly set}, then this
-     * method returns the authority associated to the {@linkplain #getConvention() convention}.
+     * method returns the default authority for the current {@linkplain #getConvention() convention}.
      *
-     * @return The authority for projection and parameter names.
+     * @return The organization, standard or project to look for when fetching projection and parameter names.
      *
-     * @see Convention#getNameAuthority()
      * @see Formatter#getNameAuthority()
      */
     public Citation getNameAuthority() {
@@ -324,7 +333,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             switch (keywordCase) {
                 case UPPER_CASE: toUpperCase = true;  break;
                 case CAMEL_CASE: toUpperCase = false; break;
-                default: toUpperCase = (convention.versionOfWKT() == 1); break;
+                default: toUpperCase = (convention.majorVersion() == 1); break;
             }
             formatter.configure(convention, authority, colors, toUpperCase, indentation);
         }

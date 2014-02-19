@@ -185,12 +185,12 @@ public enum Convention {
     }
 
     /**
-     * Returns the version of the Well Known Text represented by this convention.
+     * Returns the major version of the Well Known Text represented by this convention.
      * In current Apache SIS implementation, this method can return only 1 or 2.
      *
      * @return 1 if this convention is one of the WKT 1 variants, or 2 otherwise.
      */
-    public int versionOfWKT() {
+    public int majorVersion() {
         return isWKT1 ? 1 : 2;
     }
 
@@ -249,7 +249,7 @@ public enum Convention {
      * @see Citations#EPSG
      * @see Citations#OGC
      */
-    public Citation getNameAuthority() {
+    final Citation getNameAuthority() {
         return isWKT1 ? Citations.OGC : Citations.EPSG;
     }
 }

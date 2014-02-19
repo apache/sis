@@ -708,7 +708,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         WKTUtilities.appendName(descriptor, formatter, ElementKind.PARAMETER);
         final Unit<?> targetUnit = formatter.toContextualUnit(descriptor.getUnit());
         final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = convention.versionOfWKT() == 1;
+        final boolean isWKT1 = convention.majorVersion() == 1;
         if (isWKT1 && targetUnit != null) {
             double convertedValue;
             try {

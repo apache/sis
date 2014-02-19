@@ -420,7 +420,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     protected String formatTo(final Formatter formatter) {
         final String  keyword = super.formatTo(formatter);
         final CoordinateSystem cs = coordinateSystem;
-        final boolean isWKT1  = formatter.getConvention().versionOfWKT() == 1;
+        final boolean isWKT1  = formatter.getConvention().majorVersion() == 1;
         final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         formatter.newLine();

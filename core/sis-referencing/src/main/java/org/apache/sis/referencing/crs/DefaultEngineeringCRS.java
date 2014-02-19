@@ -258,6 +258,6 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().versionOfWKT() == 1) ? "Local_CS" : "EngineeringCRS";
+        return (formatter.getConvention().majorVersion() == 1) ? "Local_CS" : "EngineeringCRS";
     }
 }
