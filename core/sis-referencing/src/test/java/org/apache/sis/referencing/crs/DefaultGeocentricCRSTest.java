@@ -69,12 +69,12 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
                 "GeodeticCRS[“Geocentric”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
-                "  PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                "    PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
                 "  CS[“Cartesian”, 3],\n" +
-                "  Axis[“(X)”, geocentricX],\n" +
-                "  Axis[“(Y)”, geocentricY],\n" +
-                "  Axis[“(Z)”, geocentricZ],\n" +
-                "  LengthUnit[“metre”, 1]]",
+                "    Axis[“(X)”, geocentricX],\n" +
+                "    Axis[“(Y)”, geocentricY],\n" +
+                "    Axis[“(Z)”, geocentricZ],\n" +
+                "    LengthUnit[“metre”, 1]]",
                 HardCodedCRS.GEOCENTRIC);
     }
 }

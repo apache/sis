@@ -58,10 +58,19 @@ public final strictfp class MonolineFormatterTest extends TestCase {
      * The given string shall use tabulation before each line of the message.
      */
     private static String localize(final Level level, final String expected) {
-        final String label = level.getLocalizedName();
-        CharSequence text = CharSequences.replace(expected, level.getName(), label);
-        text = CharSequences.replace(text, "\t", CharSequences.spaces(MonolineFormatter.levelWidth(null) - label.length()));
-        return text.toString();
+        final String levelToReplace = level.getName();
+        final String levelLocalized = level.getLocalizedName();
+        assertTrue(expected, expected.startsWith(levelToReplace));
+        final int margin = MonolineFormatter.levelWidth(null);
+        final StringBuilder buffer = new StringBuilder(expected.length() + 40)
+                .append(levelLocalized)
+                .append(CharSequences.spaces(margin - levelLocalized.length()))
+                .append(expected, levelToReplace.length() + 1, expected.length()); // +1 is for skipping '\t'.
+        final String spaces = CharSequences.spaces(margin).toString();
+        for (int i=margin; (i=buffer.indexOf("\n\t", i)) >= 0; i += margin) {
+            buffer.replace(++i, i+1, spaces); // Replace only tabulation, leave new line.
+        }
+        return buffer.toString();
     }
 
     /**
@@ -74,8 +83,8 @@ public final strictfp class MonolineFormatterTest extends TestCase {
         final String formatted = formatter.format(record);
         assertMultilinesEquals(localize(Level.INFO,
                 "INFO\t First line\n" +
-                "    \t   Indented line\n" +
-                "    \t Last line\n"), formatted);
+                    "\t   Indented line\n" +
+                    "\t Last line\n"), formatted);
     }
 
     /**
@@ -94,9 +103,9 @@ public final strictfp class MonolineFormatterTest extends TestCase {
         String formatted = formatter.format(record);
         assertMultilinesEquals(localize(Level.WARNING,
                 "WARNING\t An exception occured.\n" +
-                "       \t   Caused by: java.lang.Exception\n" +
-                "       \t     at org.apache.sis.NonExistent.foo(NonExistent.java:10)\n" +
-                "       \t     at org.junit.WhoKnows.main(WhoKnows.java:20)\n"), formatted);
+                       "\t Caused by: java.lang.Exception\n" +
+                       "\t     at org.apache.sis.NonExistent.foo(NonExistent.java:10)\n" +
+                       "\t     at org.junit.WhoKnows.main(WhoKnows.java:20)\n"), formatted);
         /*
          * Remove the message and try again.
          */
@@ -104,7 +113,7 @@ public final strictfp class MonolineFormatterTest extends TestCase {
         formatted = formatter.format(record);
         assertMultilinesEquals(localize(Level.WARNING,
                 "WARNING\t java.lang.Exception\n" +
-                "       \t     at org.apache.sis.NonExistent.foo(NonExistent.java:10)\n" +
-                "       \t     at org.junit.WhoKnows.main(WhoKnows.java:20)\n"), formatted);
+                       "\t     at org.apache.sis.NonExistent.foo(NonExistent.java:10)\n" +
+                       "\t     at org.junit.WhoKnows.main(WhoKnows.java:20)\n"), formatted);
     }
 }

@@ -56,8 +56,8 @@ public final strictfp class DefaultVerticalCRSTest extends TestCase {
                 "VerticalCRS[“Depth”,\n" +
                 "  VerticalDatum[“Mean Sea Level”],\n" +
                 "  CS[“vertical”, 1],\n" +
-                "  Axis[“Depth (D)”, down],\n" +
-                "  LengthUnit[“metre”, 1]]",
+                "    Axis[“Depth (D)”, down],\n" +
+                "    LengthUnit[“metre”, 1]]",
                 HardCodedCRS.DEPTH);
     }
 }

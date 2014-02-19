@@ -179,7 +179,7 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "  GeodeticCRS[“WGS 84”,\n" +
                 "    Datum[“World Geodetic System 1984”,\n" +
                 "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
-                "    PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                "      PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
                 "    CS[“ellipsoidal”, 2],\n" +
                 "      Axis[“Longitude (λ)”, east],\n" +
                 "      Axis[“Latitude (φ)”, north],\n" +
