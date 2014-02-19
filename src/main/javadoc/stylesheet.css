@@ -64,6 +64,7 @@ table.compact {
   border-spacing: 0pt;
   padding:        0pt;
   line-height:    1em;
+  text-align:     left;
 }
 
 table.compact tr td {
@@ -71,6 +72,7 @@ table.compact tr td {
   padding-bottom: 0pt;
   padding-right:  3pt;
   padding-left:   3pt;
+  vertical-align: text-top;
 }
 
 table.compact tr td.onright {

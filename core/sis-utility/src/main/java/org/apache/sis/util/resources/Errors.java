@@ -17,6 +17,7 @@
 package org.apache.sis.util.resources;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.opengis.util.InternationalString;
@@ -122,6 +123,11 @@ public final class Errors extends IndexedResourceBundle {
          * Can not set a value for property “{0}”.
          */
         public static final short CanNotSetPropertyValue_1 = 11;
+
+        /**
+         * Circular reference.
+         */
+        public static final short CircularReference = 52;
 
         /**
          * Class ‘{0}’ is not final.
@@ -256,6 +262,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalMemberType_2 = 37;
 
         /**
+         * This operation can not be applied to values of class ‘{0}’.
+         */
+        public static final short IllegalOperationForValueClass_1 = 141;
+
+        /**
          * Option ‘{0}’ can not take the “{1}” value.
          */
         public static final short IllegalOptionValue_2 = 38;
@@ -266,7 +277,23 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalOrdinateRange_3 = 39;
 
         /**
-         * Property ‘{0}’ does not accept instances of ‘{1}’.
+         * Parameter “{0}” can not be of type ‘{1}’.
+         */
+        public static final short IllegalParameterType_2 = 143;
+
+        /**
+         * Parameter “{0}” does not accept values of ‘{2}’ type. Expected an instance of ‘{1}’ or
+         * derived type.
+         */
+        public static final short IllegalParameterValueClass_3 = 138;
+
+        /**
+         * Parameter “{0}” can not take the “{1}” value.
+         */
+        public static final short IllegalParameterValue_2 = 144;
+
+        /**
+         * Property “{0}” does not accept instances of ‘{1}’.
          */
         public static final short IllegalPropertyClass_2 = 40;
 
@@ -294,6 +321,11 @@ public final class Errors extends IndexedResourceBundle {
          * Property “{0}” has an incompatible value.
          */
         public static final short IncompatiblePropertyValue_1 = 45;
+
+        /**
+         * Unit “{0}” is incompatible with current value.
+         */
+        public static final short IncompatibleUnit_1 = 140;
 
         /**
          * Units “{0}” and “{1}” are incompatible.
@@ -324,11 +356,6 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ can not take an infinite value.
          */
         public static final short InfiniteArgumentValue_1 = 51;
-
-        /**
-         * Infinite recursivity.
-         */
-        public static final short InfiniteRecursivity = 52;
 
         /**
          * Argument ‘{0}’ shall contain at least {1} elements. A number of {2} is insufficient.
@@ -386,12 +413,17 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MissingSchemeInURI = 62;
 
         /**
-         * Missing value for option “{0}”.
+         * Missing value for “{0}” option.
          */
         public static final short MissingValueForOption_1 = 63;
 
         /**
-         * Missing value for property “{0}”.
+         * Missing value for “{0}” parameter.
+         */
+        public static final short MissingValueForParameter_1 = 142;
+
+        /**
+         * Missing value for “{0}” property.
          */
         public static final short MissingValueForProperty_1 = 64;
 
@@ -611,6 +643,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short TooManyArguments_2 = 105;
 
         /**
+         * Tree depth exceeds the maximum.
+         */
+        public static final short TreeDepthExceedsMaximum = 145;
+
+        /**
          * Ordering between “{0}” and “{1}” elements is undefined.
          */
         public static final short UndefinedOrderingForElements_2 = 106;
@@ -639,6 +676,11 @@ public final class Errors extends IndexedResourceBundle {
          * File “{1}” seems to be encoded in an other format than {0}.
          */
         public static final short UnexpectedFileFormat_2 = 111;
+
+        /**
+         * Parameter “{0}” has no unit.
+         */
+        public static final short UnitlessParameter_1 = 139;
 
         /**
          * Authority “{0}” is unknown.
@@ -786,6 +828,21 @@ public final class Errors extends IndexedResourceBundle {
     }
 
     /**
+     * Returns resources in the locale specified in the given property map. This convenience method looks
+     * for the {@link #LOCALE_KEY} entry. If the given map is null, or contains no entry for the locale key,
+     * or the value is not an instance of {@link Locale}, then this method fallback on the default locale.
+     *
+     * @param  properties The map of properties, or {@code null} if none.
+     * @return Resources in the given locale.
+     * @throws MissingResourceException if resources can't be found.
+     *
+     * @since 0.4
+     */
+    public static Errors getResources(final Map<?,?> properties) throws MissingResourceException {
+        return getResources(getLocale(properties));
+    }
+
+    /**
      * Gets a string for the given key from this resource bundle or one of its parents.
      *
      * @param  key The key for the desired string.
@@ -793,7 +850,7 @@ public final class Errors extends IndexedResourceBundle {
      * @throws MissingResourceException If no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
-        return getResources(null).getString(key);
+        return getResources((Locale) null).getString(key);
     }
 
     /**
@@ -808,7 +865,7 @@ public final class Errors extends IndexedResourceBundle {
     public static String format(final short  key,
                                 final Object arg0) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0);
+        return getResources((Locale) null).getString(key, arg0);
     }
 
     /**
@@ -825,7 +882,7 @@ public final class Errors extends IndexedResourceBundle {
                                 final Object arg0,
                                 final Object arg1) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0, arg1);
+        return getResources((Locale) null).getString(key, arg0, arg1);
     }
 
     /**
@@ -844,7 +901,7 @@ public final class Errors extends IndexedResourceBundle {
                                 final Object arg1,
                                 final Object arg2) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0, arg1, arg2);
+        return getResources((Locale) null).getString(key, arg0, arg1, arg2);
     }
 
     /**
@@ -865,7 +922,7 @@ public final class Errors extends IndexedResourceBundle {
                                 final Object arg2,
                                 final Object arg3) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0, arg1, arg2, arg3);
+        return getResources((Locale) null).getString(key, arg0, arg1, arg2, arg3);
     }
 
     /**

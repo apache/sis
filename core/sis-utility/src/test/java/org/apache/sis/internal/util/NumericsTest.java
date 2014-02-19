@@ -39,6 +39,34 @@ import static org.junit.Assert.*;
  */
 public final strictfp class NumericsTest extends TestCase {
     /**
+     * Tests the {@link Numerics#cached(Object)} method.
+     */
+    @Test
+    public void testCached() {
+        Double value;
+        assertEquals(value = Double.valueOf(   0), Numerics.cached(value));
+        assertEquals(value = Double.valueOf(   1), Numerics.cached(value));
+        assertEquals(value = Double.valueOf(  -1), Numerics.cached(value));
+        assertEquals(value = Double.valueOf(  10), Numerics.cached(value));
+        assertEquals(value = Double.valueOf(-150), Numerics.cached(value));
+        assertEquals(value = Double.valueOf( NaN), Numerics.cached(value));
+    }
+
+    /**
+     * Tests the {@link Numerics#valueOf(double)} method.
+     */
+    @Test
+    public void testValueOf() {
+        double value;
+        assertEquals(Double.valueOf(value =    0), Numerics.valueOf(value));
+        assertEquals(Double.valueOf(value =    1), Numerics.valueOf(value));
+        assertEquals(Double.valueOf(value =   -1), Numerics.valueOf(value));
+        assertEquals(Double.valueOf(value =   10), Numerics.valueOf(value));
+        assertEquals(Double.valueOf(value = -150), Numerics.valueOf(value));
+        assertEquals(Double.valueOf(value =  NaN), Numerics.valueOf(value));
+    }
+
+    /**
      * Tests the {@link Numerics#epsilonEqual(double, double)} method.
      */
     @Test

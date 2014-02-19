@@ -67,6 +67,8 @@ package org.apache.sis.util;
  * <tr><td>{@link org.apache.sis.referencing.cs.CoordinateSystems}</td>
  *     <td>Parses axis names and creates transforms between {@link org.opengis.referencing.cs.CoordinateSystem}
  *         instances.</td></tr>
+ * <tr><td>{@link org.apache.sis.parameter.Parameters}</td>
+ *     <td>Creates, searches or modifies {@link org.opengis.parameter.ParameterValue} instances.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
  * <tr><td>{@link org.apache.sis.io.IO}</td>

@@ -46,14 +46,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </ul>
  *
  * <p><b>Used with coordinate system types:</b>
- *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine},
- *   {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal},
- *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical},
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCylindricalCS Cylindrical},
- *   {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS Polar},
- *   {@linkplain org.apache.sis.referencing.cs.DefaultVerticalCS Vertical} or
  *   {@linkplain org.apache.sis.referencing.cs.DefaultLinearCS Linear}.
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS Polar},
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical} or
+ *   {@linkplain org.apache.sis.referencing.cs.DefaultUserDefinedCS User Defined}.
  * </p>
  *
  * {@section Immutability and thread safety}
@@ -252,14 +251,13 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
+     * Formats this CRS as a <cite>Well Known Text</cite> {@code EngineeringCRS[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The name of the WKT element type, which is {@code "LOCAL_CS"}.
+     * @return {@code "EngineeringCRS"} (WKT 2) or {@code "Local_CS"} (WKT 1).
      */
     @Override
-    public String formatTo(final Formatter formatter) { // TODO: should be protected.
-        formatDefaultWKT(formatter);
-        return "LOCAL_CS";
+    protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
+        return (formatter.getConvention().majorVersion() == 1) ? "Local_CS" : "EngineeringCRS";
     }
 }

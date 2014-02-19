@@ -38,11 +38,14 @@ import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.ComparisonMode;
@@ -57,7 +60,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -135,6 +138,19 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private static final long serialVersionUID = -5173281694258483264L;
 
     /**
+     * Optional key which can be given to the {@linkplain #AbstractIdentifiedObject(Map) constructor} for specifying
+     * the locale to use for producing error messages. Notes:
+     *
+     * <ul>
+     *   <li>The locale is not stored in any {@code AbstractIdentifiedObject} property;
+     *       its value is ignored if no error occurred at construction time.</li>
+     *   <li>The locale is used on a <cite>best effort</cite> basis;
+     *       not all error messages may be localized.</li>
+     * </ul>
+     */
+    public static final String LOCALE_KEY = Errors.LOCALE_KEY;
+
+    /**
      * The name for this object or code. Shall never be {@code null}.
      *
      * <p><b>Consider this field as final!</b>
@@ -193,8 +209,12 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     /**
      * Constructs an object from the given properties. Keys are strings from the table below.
      * The map given in argument shall contain an entry at least for the
-     * {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} key.
+     * {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} or
+     * {@value org.opengis.metadata.Identifier#CODE_KEY} key.
      * Other properties listed in the table below are optional.
+     * In particular, {@code "authority"}, {@code "code"}, {@code "codespace"} and {@code "version"}
+     * are convenience properties for building a name, and are ignored if the {@code "name"} property
+     * is already a {@link ReferenceIdentifier} object instead than a {@link String}.
      *
      * <table class="sis">
      *   <tr>
@@ -242,14 +262,27 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
+     *   <tr>
+     *     <td>{@value #LOCALE_KEY}</td>
+     *     <td>{@link Locale}</td>
+     *     <td>(none)</td>
+     *   </tr>
      * </table>
      *
-     * Additionally, all localizable attributes like {@code "remarks"} may have a language and country code suffix.
+     * {@section Localization}
+     * All localizable attributes like {@code "remarks"} may have a language and country code suffix.
      * For example the {@code "remarks_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
      * the {@code "remarks_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
+     * They are convenience properties for building the {@code InternationalString} value.
      *
-     * <p>Note that the {@code "authority"} and {@code "version"} properties are ignored if the {@code "name"}
-     * property is already a {@link ReferenceIdentifier} object instead than a {@link String}.</p>
+     * <p>The {@code "locale"} property applies only in case of exception for formatting the error message, and
+     * is used only on a <cite>best effort</cite> basis. The locale is discarded after successful construction
+     * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
+     *
+     * {@section Properties map versus explicit arguments}
+     * Generally speaking, information provided in the {@code properties} map are considered ignorable metadata
+     * while information provided in explicit arguments to the sub-class constructors have an impact on coordinate
+     * transformation results. See {@link #equals(Object, ComparisonMode)} for more information.
      *
      * @param  properties The properties to be given to this identified object.
      * @throws IllegalArgumentException if a property has an invalid value.
@@ -266,7 +299,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         } else if (value instanceof ReferenceIdentifier) {
             name = (ReferenceIdentifier) value;
         } else {
-            throw illegalPropertyType(NAME_KEY, value);
+            throw illegalPropertyType(properties, NAME_KEY, value);
         }
 
         // -------------------------------------------------------------------
@@ -276,7 +309,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         try {
             alias = immutableSet(true, Types.toGenericNames(value, null));
         } catch (ClassCastException e) {
-            throw (IllegalArgumentException) illegalPropertyType(ALIAS_KEY, value).initCause(e);
+            throw (IllegalArgumentException) illegalPropertyType(properties, ALIAS_KEY, value).initCause(e);
         }
 
         // -----------------------------------------------------------
@@ -290,7 +323,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         } else if (value instanceof ReferenceIdentifier[]) {
             identifiers = immutableSet(true, (ReferenceIdentifier[]) value);
         } else {
-            throw illegalPropertyType(IDENTIFIERS_KEY, value);
+            throw illegalPropertyType(properties, IDENTIFIERS_KEY, value);
         }
 
         // ----------------------------------------
@@ -300,10 +333,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Returns the exception to be thrown when a property if of illegal type.
+     * Returns the exception to be thrown when a property is of illegal type.
      */
-    private static IllegalArgumentException illegalPropertyType(final String key, final Object value) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+    private static IllegalArgumentException illegalPropertyType(
+            final Map<String,?> properties, final String key, final Object value)
+    {
+        return new IllegalArgumentException(Errors.getResources(properties)
+                .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
     }
 
     /**
@@ -678,7 +714,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * two objects that can be differentiated only by some identifier (name or alias), like
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axes},
      * {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum},
-     * {@linkplain org.apache.sis.parameter.AbstractParameterDescriptor parameters} and
+     * {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameters} and
      * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod operation methods}.
      * See {@link #equals(Object, ComparisonMode)} for more information.
      *
@@ -713,38 +749,56 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Compares this object with the specified object for equality.
-     * The strictness level is controlled by the second argument:
+     * Compares this object with the given object for equality.
+     * The strictness level is controlled by the second argument,
+     * from stricter to more permissive values:
      *
-     * <ul>
-     *   <li>If {@code mode} is {@link ComparisonMode#STRICT STRICT}, then this method verifies if the two
-     *       objects are of the same {@linkplain #getClass() class} and compares all public properties,
-     *       including SIS-specific (non standard) properties.</li>
-     *   <li>If {@code mode} is {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then this method verifies if the two
-     *       objects implement the same {@linkplain #getInterface() GeoAPI interface} and compares all properties
-     *       defined by that interface ({@linkplain #getName() name}, {@linkplain #getRemarks() remarks},
-     *       {@linkplain #getIdentifiers() identifiers}, <i>etc</i>).</li>
-     *   <li>If {@code mode} is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA},
-     *       then this method compares only the properties needed for computing transformations.
-     *       In other words, {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true}
-     *       if the transformation from {@code sourceCRS} to {@code targetCRS} would be the
-     *       identity transform, no matter what {@link #getName()} said.</li>
-     * </ul>
+     * <p><table class="compact">
+     *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
+     *        <td>Verifies if the two objects are of the same {@linkplain #getClass() class}
+     *            and compares all public properties, including SIS-specific (non standard) properties.</td></tr>
+     *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</td>
+     *       <td>Verifies if the two objects implement the same {@linkplain #getInterface() GeoAPI interface}
+     *           and compares all properties defined by that interface ({@linkplain #getName() name},
+     *           {@linkplain #getIdentifiers() identifiers}, {@linkplain #getRemarks() remarks}, <i>etc</i>).
+     *           The two objects do not need to be instances of the same implementation class
+     *           and SIS-specific properties are ignored.</td></tr>
+     *   <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}:</td>
+     *       <td>Compares only the properties relevant to coordinate transformations. Generally speaking, the content
+     *           of the {@code properties} map given at {@linkplain #AbstractIdentifiedObject(Map) construction time}
+     *           is considered ignorable metadata while the explicit arguments given to the constructor (if any) are
+     *           considered non-ignorable. Note that there is some exceptions to this rule of thumb — see
+     *           <cite>When object name matter</cite> below.</td></tr>
+     *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</td>
+     *       <td>Same as {@code IGNORE_METADATA}, with some tolerance threshold on numerical values.</td></tr>
+     *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
+     *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
+     * </table></p>
      *
-     * {@section Exceptions to the above rules}
+     * The main guideline is that if {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true},
+     * then the transformation from {@code sourceCRS} to {@code targetCRS} should be the identity transform
+     * even if the two CRS do not have the same name.
+     *
+     * {@section When object name matter}
      * Some subclasses (especially
      * {@link org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis},
      * {@link org.apache.sis.referencing.datum.AbstractDatum} and
-     * {@link org.apache.sis.parameter.AbstractParameterDescriptor}) will compare the
+     * {@link org.apache.sis.parameter.DefaultParameterDescriptor}) will compare the
      * {@linkplain #getName() name} even in {@code IGNORE_METADATA} mode,
      * because objects of those types with different names have completely different meaning.
      * For example nothing differentiate the {@code "semi_major"} and {@code "semi_minor"} parameters except the name.
      * The name comparison may be lenient however, i.e. the rules may accept a name matching an alias.
      * See {@link #isHeuristicMatchForName(String)} for more information.
      *
+     * {@section Conformance to the <code>equals(Object)</code> method contract}
+     * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.
+     * For all other modes, the comparison is not guaranteed to be <cite>symmetric</cite> neither
+     * <cite>transitive</cite>. See {@link LenientComparable#equals(Object, ComparisonMode) LenientComparable}
+     * for more information.
+     *
      * @param  object The object to compare to {@code this}.
      * @param  mode The strictness level of the comparison.
-     * @return {@code true} if both objects are equal.
+     * @return {@code true} if both objects are equal according the given comparison mode.
      *
      * @see #computeHashCode()
      * @see org.apache.sis.util.Utilities#deepEquals(Object, Object, ComparisonMode)
@@ -891,5 +945,54 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     protected long computeHashCode() {
         return Objects.hash(name, nonNull(alias), nonNull(identifiers), remarks) ^ getInterface().hashCode();
+    }
+
+    /**
+     * Formats the inner part of this <cite>Well Known Text</cite> (WKT) object into the given formatter.
+     * The default implementation writes the following elements:
+     *
+     * <ul>
+     *   <li>The object {@linkplain #getName() name}.</li>
+     * </ul>
+     *
+     * Keywords and metadata (scope, extent, identifier and remarks) shall not be formatted here.
+     * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
+     * then subclasses shall write the content starting at the insertion point shown below:
+     *
+     * <p><table class="compact">
+     * <tr>
+     *   <th>WKT example</th>
+     *   <th>Java code example</th>
+     * </tr><tr><td>
+     * {@preformat text
+     *   GeodeticCRS["WGS 84", ID["EPSG", 4326]]
+     *                       ↑
+     *               (insertion point)
+     * }
+     * </td><td>
+     * {@preformat java
+     *     super.formatTo(formatter);
+     *     // ... write the elements at the insertion point ...
+     *     return "GeodeticCRS";
+     * }
+     * </td></tr></table></p>
+     *
+     * {@section Formatting non-standard WKT}
+     * If the implementation can not represent this object without violating some WKT constraints,
+     * it can uses its own (non-standard) keywords but shall declare that it did so by invoking one
+     * of the {@link Formatter#setInvalidWKT(IdentifiedObject, Exception) Formatter.setInvalidWKT(…)}
+     * methods.
+     *
+     * <p>Alternatively, the implementation may also have no WKT keyword for this object.
+     * In such case, this method shall return {@code null}.</p>
+     *
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return The {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
+     *         for the WKT element, or {@code null} if unknown.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        WKTUtilities.appendName(this, formatter, ElementKind.forType(getClass()));
+        return null;
     }
 }

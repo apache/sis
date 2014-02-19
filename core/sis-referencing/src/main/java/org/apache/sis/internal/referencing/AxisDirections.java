@@ -83,6 +83,12 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Ordinal of the last element in the {@link AxisDirection} code list.
+     * This is used for differentiating the standard codes from the user-defined ones.
+     */
+    private static final int LAST_ORDINAL = DISPLAY_DOWN.ordinal();
+
+    /**
      * Do not allow instantiation of this class.
      */
     private AxisDirections() {
@@ -208,6 +214,19 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Returns {@code true} if the given direction is {@code GEOCENTRIC_X}, {@code GEOCENTRIC_Y}
+     * or {@code GEOCENTRIC_Z}.
+     *
+     * @param  dir The direction to test, or {@code null}.
+     * @return {@code true} if the given direction is one of geocentric directions.
+     */
+    public static boolean isGeocentric(final AxisDirection dir) {
+        if (dir == null) return false;
+        final int ordinal = dir.ordinal();
+        return ordinal >= GEOCENTRIC_X.ordinal() && ordinal <= GEOCENTRIC_Z.ordinal();
+    }
+
+    /**
      * Returns {@code true} if the given direction is a spatial axis direction (including vertical and geocentric axes).
      * The current implementation conservatively returns {@code true} for every non-null directions except a hard-coded
      * set of directions which are known to be non-spatial. We conservatively accept unknown axis directions because
@@ -222,10 +241,20 @@ public final class AxisDirections extends Static {
      * @param  image {@code true} for accepting grid and image axis directions in addition to spatial ones.
      * @return {@code true} if the given direction is presumed for spatial CS.
      */
-    public static boolean isSpatialOrCustom(final AxisDirection dir, final boolean image) {
+    public static boolean isSpatialOrUserDefined(final AxisDirection dir, final boolean image) {
         if (dir == null) return false;
         final int ordinal = dir.ordinal();
         return ordinal < FUTURE.ordinal() || ordinal > (image ? PAST : DISPLAY_DOWN).ordinal();
+    }
+
+    /**
+     * Returns {@code true} if the given direction is a user-defined direction (i.e. is not defined by GeoAPI).
+     *
+     * @param  dir The direction to test, or {@code null}.
+     * @return {@code true} if the given direction is user-defined.
+     */
+    public static boolean isUserDefined(final AxisDirection dir) {
+        return (dir != null) && dir.ordinal() > LAST_ORDINAL;
     }
 
     /**

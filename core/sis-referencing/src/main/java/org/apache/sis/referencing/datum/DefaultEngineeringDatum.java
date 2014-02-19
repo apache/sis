@@ -163,15 +163,23 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
-     * The keyword is "{@code LOCAL_DATUM}" in WKT 1.
+     * Formats this datum as a <cite>Well Known Text</cite> {@code EngineeringDatum[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "LOCAL_DATUM"}.
+     * @return {@code "EngineeringDatum"} (WKT 2) or {@code "Local_Datum"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return "LOCAL_DATUM";
+        if (formatter.getConvention().majorVersion() == 1) {
+            /*
+             * Datum type was provided for all kind of datum in the legacy OGC 01-009 specification.
+             * Datum types became provided only for vertical datum in the ISO 19111:2003 specification,
+             * then removed completely in the ISO 19111:2007 revision. We are supposed to format them
+             * in WKT 1, but do not have any indication about what the values should be.
+             */
+            formatter.append(0);
+            return "Local_Datum";
+        }
+        return "EngineeringDatum";
     }
 }

@@ -74,8 +74,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * The default implementation of methods listed in the right column can handle such cases.
  *
  * <table class="compact" align="center"><tr><td>
- *   <img src="doc-files/AntiMeridian.png">
- * </td><td>
+ *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png">
+ * </td><td style="vertical-align: middle">
  * Supported methods:
  * <ul>
  *   <li>{@link #getMinimum(int)}</li>

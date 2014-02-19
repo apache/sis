@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link DefaultCompoundCS}.
+ * Tests the {@link DefaultCompoundCS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

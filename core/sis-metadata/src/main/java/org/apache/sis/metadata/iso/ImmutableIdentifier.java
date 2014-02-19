@@ -21,17 +21,20 @@ import java.util.Locale;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.simple.SimpleIdentifiedObject;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
+import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.io.wkt.ElementKind;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
@@ -73,9 +76,10 @@ import org.apache.sis.internal.jdk7.Objects;
  * }
  *
  * </li><li><p><b><cite>Well Known Text</cite> (WKT) version 2</b></p>
- * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code} and
- * the {@linkplain #getVersion() version} if available. The WKT can optionally provides a {@code URI} element,
- * which expresses the same information in a different way (the URN syntax is described in the next item below).
+ * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code},
+ * the {@linkplain #getVersion() version} and the {@linkplain #getAuthority() authority} citation if available.
+ * The WKT can optionally provides a {@code URI} element, which expresses the same information in a different way
+ * (the URN syntax is described in the next item below).
  * Example:
  *
  * {@preformat wkt
@@ -125,7 +129,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see DefaultIdentifier
  */
 @XmlRootElement(name = "RS_Identifier")
-public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
+public class ImmutableIdentifier extends FormattableObject implements ReferenceIdentifier, Deprecable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -205,7 +209,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
         } else {
             remarks = null;
         }
-        validate();
+        validate(null);
     }
 
     /**
@@ -252,7 +256,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
         this.authority = authority;
         this.version   = version;
         this.remarks   = remarks;
-        validate();
+        validate(null);
     }
 
     /**
@@ -292,12 +296,22 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
+     *     <td>{@link Locale}</td>
+     *     <td>(none)</td>
+     *   </tr>
      * </table>
      *
+     * {@section Localization}
      * {@code "remarks"} is a localizable attributes which may have a language and country
      * code suffix. For example the {@code "remarks_fr"} property stands for remarks in
      * {@linkplain Locale#FRENCH French} and the {@code "remarks_fr_CA"} property stands
      * for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
+     *
+     * <p>The {@code "locale"} property applies only to exception messages, if any.
+     * After successful construction, {@code ImmutableIdentifier} instances do not keep the locale
+     * since localizations are deferred to the {@link InternationalString#toString(Locale)} method.</p>
      *
      * @param  properties The properties to be given to this identifier.
      * @throws InvalidParameterValueException if a property has an invalid value.
@@ -317,7 +331,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
         } else if (value == null || value instanceof Citation) {
             authority = (Citation) value;
         } else {
-            throw illegalPropertyType(AUTHORITY_KEY, value);
+            throw illegalPropertyType(properties, AUTHORITY_KEY, value);
         }
         /*
          * Complete the code space if it was not explicitly set. We take a short identifier (preferred) or title
@@ -331,27 +345,30 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
         } else if (value instanceof String) {
             codeSpace = trimWhitespaces((String) value);
         } else {
-            throw illegalPropertyType(CODESPACE_KEY, value);
+            throw illegalPropertyType(properties, CODESPACE_KEY, value);
         }
-        validate();
+        validate(properties);
     }
 
     /**
      * Ensures that the properties of this {@code ImmutableIdentifier} are valid.
      */
-    private void validate() {
+    private void validate(final Map<String,?> properties) {
         if (code == null || code.isEmpty()) {
-            throw new IllegalArgumentException(Errors.format((code == null)
-                    ? Errors.Keys.MissingValueForProperty_1
-                    : Errors.Keys.EmptyProperty_1, CODE_KEY));
+            throw new IllegalArgumentException(Errors.getResources(properties)
+                    .getString((code == null) ? Errors.Keys.MissingValueForProperty_1
+                                              : Errors.Keys.EmptyProperty_1, CODE_KEY));
         }
     }
 
     /**
      * Returns the exception to be thrown when a property if of illegal type.
      */
-    private static IllegalArgumentException illegalPropertyType(final String key, final Object value) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+    private static IllegalArgumentException illegalPropertyType(
+            final Map<String,?> properties, final String key, final Object value)
+    {
+        return new IllegalArgumentException(Errors.getResources(properties)
+                .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
     }
 
     /**
@@ -524,19 +541,125 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
     }
 
     /**
-     * Returns a string representation of this identifier.
-     * The string representation is mostly for debugging purpose and may change in any future SIS version.
-     * The default implementation returns a pseudo-WKT format.
+     * Formats this identifier as a <cite>Well Known Text</cite> {@code Id[…]} element.
+     * See class javadoc for more information on the WKT format.
      *
-     * {@note The <code>NamedIdentifier</code> subclass overrides this method with a different behavior,
-     *        in order to be compliant with the contract of the <code>GenericName</code> interface.}
-     *
-     * @see org.apache.sis.referencing.IdentifiedObjects#toString(Identifier)
-     * @see org.apache.sis.referencing.NamedIdentifier#toString()
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return {@code "Id"} (WKT 2) or {@code "Authority"} (WKT 1).
      */
-    @Debug
     @Override
-    public String toString() {
-        return SimpleIdentifiedObject.toString("IDENTIFIER", authority, codeSpace, code, isDeprecated());
+    protected String formatTo(final Formatter formatter) {
+        String keyword = null;
+        if (code != null) {
+            String citation = Citations.getIdentifier(authority);
+            String cs = codeSpace;
+            if (cs == null) {
+                cs = citation;
+                citation  = null;
+            }
+            if (cs != null) {
+                final Convention convention = formatter.getConvention();
+                if (convention.majorVersion() == 1) {
+                    keyword = "Authority";
+                    formatter.append(cs, null);
+                    formatter.append(code, null);
+                } else {
+                    keyword = "Id";
+                    formatter.append(cs, null);
+                    appendCode(formatter, code);
+                    if (version != null) {
+                        appendCode(formatter, version);
+                    }
+                    if (citation != null && !citation.equals(cs)) {
+                        formatter.append(new Cite(citation));
+                    }
+                    /*
+                     * Do not format the optional URI element for internal convention,
+                     * because this property is currently computed rather than stored.
+                     * Other conventions format only for the ID[…] of root element.
+                     */
+                    if (convention != Convention.INTERNAL && formatter.getEnclosingElement(2) == null) {
+                        final FormattableObject parent = formatter.getEnclosingElement(1);
+                        if (parent != null && ReferencingUtilities.usesURN(cs)) {
+                            final String type = ReferencingUtilities.toURNType(parent.getClass());
+                            if (type != null) {
+                                formatter.append(new URI(type, cs, version, code));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return keyword;
+    }
+
+    /**
+     * Appends the given code or version number as an integer if possible, or as a text otherwise.
+     *
+     * {@note ISO 19162 specifies "number or text". In Apache SIS, we restrict the numbers to integers
+     *        because handling version numbers like "8.2" as floating point numbers can be confusing.}
+     */
+    private static void appendCode(final Formatter formatter, final String text) {
+        if (text != null) {
+            final long n;
+            try {
+                n = Long.parseLong(text);
+            } catch (NumberFormatException e) {
+                formatter.append(text, null);
+                return;
+            }
+            formatter.append(n);
+        }
+    }
+
+    /**
+     * The {@code CITATION[…]} element inside an {@code ID[…]}.
+     */
+    private static final class Cite extends FormattableObject {
+        /** The component of the citation to format. */
+        private final String identifier;
+
+        /** Creates a new citation with the given component. */
+        Cite(final String identifier) {
+            this.identifier = identifier;
+        }
+
+        /** Formats the citation. */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            formatter.append(identifier, ElementKind.CITATION);
+            return "Citation";
+        }
+    }
+
+    /**
+     * The {@code URI[…]} element inside an {@code ID[…]}.
+     */
+    private static final class URI extends FormattableObject {
+        /** The components of the URI to format. */
+        private final String type, codeSpace, version, code;
+
+        /** Creates a new URI with the given components. */
+        URI(final String type, final String codeSpace, final String version, final String code) {
+            this.type      = type;
+            this.codeSpace = codeSpace;
+            this.version   = version;
+            this.code      = code;
+        }
+
+        /** Formats the URI. */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            final StringBuilder buffer = new StringBuilder(DefinitionURI.PREFIX)
+                    .append(DefinitionURI.SEPARATOR).append(type)
+                    .append(DefinitionURI.SEPARATOR).append(codeSpace)
+                    .append(DefinitionURI.SEPARATOR);
+            if (version != null) {
+                buffer.append(version);
+            }
+            buffer.append(DefinitionURI.SEPARATOR).append(code);
+            formatter.append(buffer.toString(), null);
+            return "URI";
+        }
     }
 }

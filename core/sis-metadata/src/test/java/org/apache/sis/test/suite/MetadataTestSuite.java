@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
+    org.apache.sis.internal.metadata.ReferencingUtilitiesTest.class,
 
     // Classes using Java reflection.
     org.apache.sis.metadata.PropertyInformationTest.class,
@@ -80,7 +81,12 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.ImmutableIdentifierTest.class,
     org.apache.sis.metadata.iso.DefaultMetadataTest.class,
     org.apache.sis.metadata.iso.CustomMetadataTest.class,
-    org.apache.sis.metadata.iso.AllMetadataTest.class
+    org.apache.sis.metadata.iso.AllMetadataTest.class,
+
+    org.apache.sis.io.wkt.ConventionTest.class,
+    org.apache.sis.io.wkt.SymbolsTest.class,
+    org.apache.sis.io.wkt.ColorsTest.class,
+    org.apache.sis.io.wkt.FormatterTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**

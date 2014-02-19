@@ -21,7 +21,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
@@ -104,5 +104,14 @@ public final strictfp class DirectionAlongMeridianTest extends TestCase {
         assertEquals( -1, m1.compareTo(m2));
         assertEquals( +1, m2.compareTo(m1));
         assertFalse (m1.equals(m2));
+    }
+
+    /**
+     * Test Well Known Text formatting.
+     */
+    @Test
+    public void testWKT() {
+        assertWktEquals("Meridian[-90.0, AngleUnit[“degree”, 0.017453292519943295]]",
+                DirectionAlongMeridian.parse("South along 90°W"));
     }
 }

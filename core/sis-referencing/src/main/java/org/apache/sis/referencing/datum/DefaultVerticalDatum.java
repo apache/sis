@@ -32,7 +32,7 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -247,16 +247,6 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Returns the legacy code for the datum type, or 0 if none.
-     *
-     * @see #getVerticalDatumType()
-     */
-    @Override
-    final int getLegacyDatumType() {
-        return VerticalDatumTypes.toLegacy(getVerticalDatumType().ordinal());
-    }
-
-    /**
      * Returns the type to be marshalled to XML.
      * This element was present in GML 3.0 and 3.1, but has been removed from GML 3.2.
      *
@@ -316,14 +306,22 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * Formats this datum as a <cite>Well Known Text</cite> {@code VerticalDatum[…]} element.
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "VERT_DATUM"}.
+     * {@note OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height
+     *        and 2002 for ellipsoidal height. Such codes were formatted for all <code>Datum</code> subtypes in WKT 1.
+     *        Datum types became provided only for vertical datum in the ISO 19111:2003 specification, then removed
+     *        completely in ISO 19111:2007.}
+     *
+     * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return "VERT_DATUM";
+        if (formatter.getConvention().majorVersion() == 1) {
+            formatter.append(VerticalDatumTypes.toLegacy(type().ordinal()));
+            return "Vert_Datum";
+        }
+        return "VerticalDatum";
     }
 }

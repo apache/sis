@@ -25,12 +25,13 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 import static org.apache.sis.test.mock.PrimeMeridianMock.GREENWICH;
 
@@ -57,7 +58,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     public void testToWKT() {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
         assertIsGreenwich(pm);
-        assertWktEquals("PRIMEM[“Greenwich”, 0.0]", pm);
+        assertWktEquals("PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]]", pm);
     }
 
     /**
@@ -146,10 +147,16 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(NonSI.DEGREE_ANGLE), 1E-12);
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
         assertNull("name.codeSpace", pm.getName().getCodeSpace());
-        assertWktEquals("PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);
+        assertWktEquals(Convention.WKT1,
+                "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);
+        assertWktEquals(Convention.WKT2,
+                "PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, Citation[“OGP”], URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+        assertWktEquals(Convention.INTERNAL,
+                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, Citation[“OGP”]],\n" +
+                "  Remarks[“Equivalent to 2°20′14.025″.”]]", pm);
         assertXmlEquals(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +
-                "  <gml:identifier codeSpace=\"OGP\">urn:ogc:def:meridian:EPSG::8903</gml:identifier>" +
+                "  <gml:identifier codeSpace=\"OGP\">urn:ogc:def:meridian:EPSG::8903</gml:identifier>\n" +
                 "  <gml:name>Paris</gml:name>\n" +
                 "  <gml:remarks>Equivalent to 2°20′14.025″.</gml:remarks>\n" +
                 "  <gml:greenwichLongitude uom=\"urn:ogc:def:uom:EPSG::9105\">2.5969213</gml:greenwichLongitude>\n" +
