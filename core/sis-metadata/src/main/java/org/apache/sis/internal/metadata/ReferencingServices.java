@@ -28,6 +28,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -126,7 +127,7 @@ public abstract class ReferencingServices extends SystemListener {
      *
      * @since 0.4
      */
-    public abstract IdentifiedObject toFormattableObject(IdentifiedObject object);
+    public abstract FormattableObject toFormattableObject(IdentifiedObject object);
 
     /**
      * Sets a geographic bounding box from the specified envelope. If the envelope contains
