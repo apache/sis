@@ -33,6 +33,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 
 /**
@@ -171,10 +172,10 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
         final Unit<?> unit    = getUnit();
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         formatter.newLine();
-        formatter.append(datum);
+        formatter.append(toFormattable(datum));
         formatter.newLine();
         formatter.indent(isWKT1 ? 0 : +1);
-        formatter.append(datum.getPrimeMeridian());
+        formatter.append(toFormattable(datum.getPrimeMeridian()));
         formatter.indent(isWKT1 ? 0 : -1);
         formatter.newLine();
         CoordinateSystem cs = super.getCoordinateSystem();
@@ -197,13 +198,13 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
                 }
             }
         } else {
-            formatter.append(cs); // The concept of CoordinateSystem was not explicit in WKT 1.
+            formatter.append(toFormattable(cs)); // The concept of CoordinateSystem was not explicit in WKT 1.
             formatter.indent(+1);
         }
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
             formatter.newLine();
-            formatter.append(cs.getAxis(i));
+            formatter.append(toFormattable(cs.getAxis(i)));
         }
         if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
             formatter.newLine();
