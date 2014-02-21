@@ -20,7 +20,21 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.crs.AbstractCRS;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
+import org.apache.sis.referencing.datum.AbstractDatum;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -32,6 +46,11 @@ import org.apache.sis.util.resources.Vocabulary;
 /**
  * Utility methods for referencing WKT formatting.
  *
+ * This class provides a set of {@code toFormattable(…)} for various {@link IdentifiedObject} subtypes.
+ * It is important to <strong>not</strong> provide a generic {@code toFormattable(IdentifiedObject)}
+ * method, because the user may choose to implement more than one GeoAPI interface for the same object.
+ * We need to be specific in order to select the right "aspect" of the given object.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
@@ -42,6 +61,104 @@ public final class WKTUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private WKTUtilities() {
+    }
+
+    /**
+     * Returns the given coordinate reference system as a formattable object.
+     *
+     * @param  object The coordinate reference system, or {@code null}.
+     * @return The given coordinate reference system as a formattable object, or {@code null}.
+     */
+    public static FormattableObject toFormattable(final CoordinateReferenceSystem object) {
+        if (object instanceof FormattableObject) {
+            return (FormattableObject) object;
+        } else {
+            return AbstractCRS.castOrCopy(object);
+        }
+    }
+
+    /**
+     * Returns the given coordinate system as a formattable object.
+     *
+     * @param  object The coordinate system, or {@code null}.
+     * @return The given coordinate system as a formattable object, or {@code null}.
+     */
+    public static FormattableObject toFormattable(final CoordinateSystem object) {
+        if (object instanceof FormattableObject) {
+            return (FormattableObject) object;
+        } else {
+            return AbstractCS.castOrCopy(object);
+        }
+    }
+
+    /**
+     * Returns the given coordinate system axis as a formattable object.
+     *
+     * @param  object The coordinate system axis, or {@code null}.
+     * @return The given coordinate system axis as a formattable object, or {@code null}.
+     */
+    public static FormattableObject toFormattable(final CoordinateSystemAxis object) {
+        if (object instanceof FormattableObject) {
+            return (FormattableObject) object;
+        } else {
+            return DefaultCoordinateSystemAxis.castOrCopy(object);
+        }
+    }
+
+    /**
+     * Returns the given datum as a formattable object.
+     *
+     * @param  object The datum, or {@code null}.
+     * @return The given datum as a formattable object, or {@code null}.
+     */
+    public static FormattableObject toFormattable(final Datum object) {
+        if (object instanceof FormattableObject) {
+            return (FormattableObject) object;
+        } else {
+            return AbstractDatum.castOrCopy(object);
+        }
+    }
+
+    /**
+     * Returns the given geodetic datum as a formattable object.
+     *
+     * @param  object The datum, or {@code null}.
+     * @return The given datum as a formattable object, or {@code null}.
+     */
+    public static FormattableObject toFormattable(final GeodeticDatum object) {
+        if (object instanceof FormattableObject) {
+            return (FormattableObject) object;
+        } else {
+            return DefaultGeodeticDatum.castOrCopy(object);
+        }
+    }
+
+    /**
+     * Returns the ellipsoid as a formattable object.
+     *
+     * @param  object The ellipsoid, or {@code null}.
+     * @return The given ellipsoid as a formattable object, or {@code null}.
+     */
+    public static FormattableObject toFormattable(final Ellipsoid object) {
+        if (object instanceof FormattableObject) {
+            return (FormattableObject) object;
+        } else {
+            return DefaultEllipsoid.castOrCopy(object);
+        }
+    }
+
+    /**
+     * Returns the given prime meridian as a formattable object.
+     *
+     * @param  object The prime meridian, or {@code null}.
+     * @return The given prime meridian as a formattable object, or {@code null}.
+     */
+    public static FormattableObject toFormattable(final PrimeMeridian object) {
+        if (object instanceof FormattableObject) {
+            return (FormattableObject) object;
+        } else {
+            return DefaultPrimeMeridian.castOrCopy(object);
+        }
     }
 
     /**
