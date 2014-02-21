@@ -165,9 +165,8 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
 
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
-     * It is subclasses responsibility to overwrite this method for returning the proper keyword in WKT 1 case.
      *
-     * @return {@code "GeodeticCRS"} (WKT 2) or {@code null} (WKT 1).
+     * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"}/{@code "GeocCS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -218,6 +217,16 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         formatter.removeContextualUnit(unit);
         formatter.addContextualUnit(oldUnit);
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return isWKT1 ? null : "GeodeticCRS";
+        if (!isWKT1) {
+            return "GeodeticCRS";
+        }
+        /*
+         * For WKT1, the keyword depends on the subclass: "GeogCS" for GeographicCRS,
+         * or 'GeocCS" for GeocentricCRS. However we can not rely on the subclass for
+         * choosing the keyword, because in some situations (after XML unmarhaling)
+         * we only have a GeodeticCRS. We need to make the choice here. The CS type
+         * is a sufficient criterion.
+         */
+        return (cs instanceof EllipsoidalCS) ? "GeogCS" : "GeocCS";
     }
 }

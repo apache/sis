@@ -255,10 +255,6 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        String keyword = super.formatTo(formatter);
-        if (keyword == null) {
-            keyword = "GeocCS"; // WKT 1
-        }
-        return keyword;
+        return super.formatTo(formatter);
     }
 }
