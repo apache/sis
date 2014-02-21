@@ -800,22 +800,13 @@ Apache SIS is a free software, Java language library for developing geospatial a
     </pluginRepository>
   </pluginRepositories>
 
+  <!-- Used for GeoAPI snapshots and latest vecmath releases
+       on SIS branches only. Shall be removed on SIS trunk. -->
   <repositories>
     <repository>
-      <!-- Used for GeoAPI snapshots and latest vecmath releases
-           on SIS branches only. Shall be removed on SIS trunk. -->
       <id>geotoolkit</id>
       <name>Geotoolkit.org repository</name>
       <url>http://maven.geotoolkit.org</url>
-    </repository>
-    <!--  UCAR repository from which to download the NetCDF library. -->
-    <repository>
-      <id>UCAR</id>
-      <name>UCAR repository</name>
-      <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
     </repository>
   </repositories>
 
