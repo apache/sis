@@ -555,6 +555,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
            we disable links relativization for avoiding confusing behavior. -->
       <plugin>
         <artifactId>maven-site-plugin</artifactId>
+        <version>3.3</version> <!-- TODO: Remove after parent pom.xml has upgraded. -->
         <configuration>
           <locales>${website.locale}</locales>
           <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
