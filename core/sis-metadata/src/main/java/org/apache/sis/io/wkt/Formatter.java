@@ -751,23 +751,6 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends the given {@code IdentifiedObject}.
-     *
-     * <p>The default implementation delegates to {@link #append(FormattableObject)},
-     * after wrapping the given object in an adapter if necessary.</p>
-     *
-     * @param object The identified object to append to the WKT, or {@code null} if none.
-     */
-    public void append(IdentifiedObject object) {
-        if (object != null) {
-            if (!(object instanceof FormattableObject)) {
-                object = ReferencingServices.getInstance().toFormattableObject(object);
-            }
-            append((FormattableObject) object);
-        }
-    }
-
-    /**
      * Appends the given geographic bounding box in a {@code BBOX[…]} element.
      * Longitude and latitude values will be formatted in decimal degrees.
      * Longitudes are relative to the Greenwich meridian, with values increasing toward East.
@@ -1174,8 +1157,11 @@ public class Formatter implements Localized {
      * @return {@code true} on success, or {@code false} if the given type is not recognized.
      */
     final boolean appendElement(final Object value) {
-             if (value instanceof FormattableObject)     append((FormattableObject)     value);
-        else if (value instanceof IdentifiedObject)      append((IdentifiedObject)      value);
+        if (value instanceof FormattableObject) {
+            append((FormattableObject) value);
+        } else if (value instanceof IdentifiedObject) {
+            append(ReferencingServices.getInstance().toFormattableObject((IdentifiedObject) value));
+        }
         else if (value instanceof GeographicBoundingBox) append((GeographicBoundingBox) value, BBOX_ACCURACY);
         else if (value instanceof MathTransform)         append((MathTransform)         value);
         else if (value instanceof Matrix)                append((Matrix)                value);

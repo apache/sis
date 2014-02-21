@@ -33,6 +33,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 
 /**
@@ -58,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
     "datum"
 })
 @XmlRootElement(name = "GeodeticCRS")
-class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
+class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made public, see comment in getDatum().
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -128,10 +129,14 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
     /**
      * Returns the datum.
      *
+     * This method is overridden is subclasses for documentation purpose only, mostly for showing this method in
+     * the appropriate position in javadoc (instead than at the bottom of the page). If {@code DefaultGeodeticCRS}
+     * is made public in a future SIS version, then we should make this method final and remove the overridden methods.
+     *
      * @return The datum.
      */
     @Override
-    public final GeodeticDatum getDatum() {
+    public GeodeticDatum getDatum() {
         return datum;
     }
 
@@ -160,9 +165,8 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
 
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
-     * It is subclasses responsibility to overwrite this method for returning the proper keyword in WKT 1 case.
      *
-     * @return {@code "GeodeticCRS"} (WKT 2) or {@code null} (WKT 1).
+     * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"}/{@code "GeocCS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -171,10 +175,10 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
         final Unit<?> unit    = getUnit();
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         formatter.newLine();
-        formatter.append(datum);
+        formatter.append(toFormattable(datum));
         formatter.newLine();
         formatter.indent(isWKT1 ? 0 : +1);
-        formatter.append(datum.getPrimeMeridian());
+        formatter.append(toFormattable(datum.getPrimeMeridian()));
         formatter.indent(isWKT1 ? 0 : -1);
         formatter.newLine();
         CoordinateSystem cs = super.getCoordinateSystem();
@@ -197,13 +201,13 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
                 }
             }
         } else {
-            formatter.append(cs); // The concept of CoordinateSystem was not explicit in WKT 1.
+            formatter.append(toFormattable(cs)); // The concept of CoordinateSystem was not explicit in WKT 1.
             formatter.indent(+1);
         }
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
             formatter.newLine();
-            formatter.append(cs.getAxis(i));
+            formatter.append(toFormattable(cs.getAxis(i)));
         }
         if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
             formatter.newLine();
@@ -213,6 +217,16 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
         formatter.removeContextualUnit(unit);
         formatter.addContextualUnit(oldUnit);
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return isWKT1 ? null : "GeodeticCRS";
+        if (!isWKT1) {
+            return "GeodeticCRS";
+        }
+        /*
+         * For WKT1, the keyword depends on the subclass: "GeogCS" for GeographicCRS,
+         * or 'GeocCS" for GeocentricCRS. However we can not rely on the subclass for
+         * choosing the keyword, because in some situations (after XML unmarhaling)
+         * we only have a GeodeticCRS. We need to make the choice here. The CS type
+         * is a sufficient criterion.
+         */
+        return (cs instanceof EllipsoidalCS) ? "GeogCS" : "GeocCS";
     }
 }
