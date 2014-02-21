@@ -44,6 +44,7 @@ import org.apache.sis.io.wkt.Convention;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.Utilities.deepEquals;
+import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 
 /**
@@ -408,7 +409,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
                 (isWKT1 || convention == Convention.INTERNAL) ? components : singles)
         {
             formatter.newLine();
-            formatter.append(element);
+            formatter.append(toFormattable(element));
         }
         formatter.newLine(); // For writing the ID[…] element on its own line.
         return isWKT1 ? "Compd_CS" : "CompoundCRS";

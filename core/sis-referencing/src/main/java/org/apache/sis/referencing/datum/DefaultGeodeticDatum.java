@@ -38,11 +38,11 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.io.wkt.FormattableObject;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
+import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -522,8 +522,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.newLine();
-        formatter.append(ellipsoid instanceof FormattableObject ? (FormattableObject) ellipsoid :
-                         DefaultEllipsoid.castOrCopy(ellipsoid));
+        formatter.append(toFormattable(ellipsoid));
         if (formatter.getConvention().majorVersion() == 1) {
             /*
              * Note that at the different of other datum (in particular vertical datum),

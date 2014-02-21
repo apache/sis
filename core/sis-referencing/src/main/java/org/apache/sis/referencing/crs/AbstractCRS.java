@@ -38,6 +38,7 @@ import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Related to JDK7
@@ -424,7 +425,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         formatter.newLine();
-        formatter.append(getDatum());
+        formatter.append(toFormattable(getDatum()));
         formatter.newLine();
         if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
             formatter.append(unit);
@@ -432,13 +433,13 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
                 formatter.setInvalidWKT(this, null);
             }
         } else {
-            formatter.append(cs); // The concept of CoordinateSystem was not explicit in WKT 1.
+            formatter.append(toFormattable(cs)); // The concept of CoordinateSystem was not explicit in WKT 1.
             formatter.indent(+1);
         }
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
             formatter.newLine();
-            formatter.append(cs.getAxis(i));
+            formatter.append(toFormattable(cs.getAxis(i)));
         }
         if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
             formatter.newLine();
