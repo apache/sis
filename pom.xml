@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>13</version>
+    <version>13</version> <!-- See the "TODO" in this file. -->
   </parent>
 
 
@@ -431,6 +431,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version> <!-- TODO: Remove after parent pom.xml has upgraded. -->
         <configuration>
           <source>${maven.compile.source}</source>
           <target>${maven.compile.target}</target>
@@ -442,6 +443,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.16</version> <!-- TODO: Remove after parent pom.xml has upgraded. -->
         <configuration>
           <includes>
             <include>**/*TestSuite.java</include>
@@ -486,6 +488,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- Set "*-source-release.zip" filename prefix to "sis-*" instead of "parent-*" -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.4</version> <!-- TODO: Remove after parent pom.xml has upgraded. -->
         <executions>
           <execution>
             <id>source-release-assembly</id>
