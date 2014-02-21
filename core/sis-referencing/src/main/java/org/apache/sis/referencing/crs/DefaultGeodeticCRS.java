@@ -59,7 +59,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
     "datum"
 })
 @XmlRootElement(name = "GeodeticCRS")
-class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
+class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made public, see comment in getDatum().
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -129,10 +129,14 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {
     /**
      * Returns the datum.
      *
+     * This method is overridden is subclasses for documentation purpose only, mostly for showing this method in
+     * the appropriate position in javadoc (instead than at the bottom of the page). If {@code DefaultGeodeticCRS}
+     * is made public in a future SIS version, then we should make this method final and remove the overridden methods.
+     *
      * @return The datum.
      */
     @Override
-    public final GeodeticDatum getDatum() {
+    public GeodeticDatum getDatum() {
         return datum;
     }
 
