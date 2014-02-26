@@ -27,7 +27,7 @@ import com.sun.tools.doclets.Taglet;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.2)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Module implements Taglet {
@@ -40,11 +40,6 @@ public final class Module implements Taglet {
        final Module tag = new Module();
        tagletMap.put(tag.getName(), tag);
     }
-
-    /**
-     * The base URL for Maven reports, with a trailing slash.
-     */
-    private static final String MAVEN_REPORTS_BASE_URL = WebSite.URL + '/';
 
     /**
      * The SIS module in which the <code>@module</code> taglet has been found.
@@ -180,8 +175,7 @@ public final class Module implements Taglet {
             /*
              * Appends the module link.
              */
-            buffer.append("Defined in the <a href=\"").append(MAVEN_REPORTS_BASE_URL).append(module)
-                  .append("/index.html\">").append(module).append("</a> module");
+            buffer.append("Defined in the <code>").append(module).append("</code> module");
         }
         return buffer.append("</font></p>\n").toString();
     }
