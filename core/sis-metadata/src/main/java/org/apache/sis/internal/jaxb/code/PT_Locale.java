@@ -127,8 +127,8 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          * Invoked by JAXB {@link javax.xml.bind.Marshaller} before this object is marshalled to XML.
          * This method sets the {@link #characterEncoding} to the XML encoding.
          *
-         * {@note This is totally redundant with the encoding declared in the XML header. Unfortunately,
-         *        the <code>gmd:characterEncoding</code> element is mandatory according OGC/ISO schemas.}
+         * <div class="note"><b>Note:</b> This is totally redundant with the encoding declared in the XML header.
+         * Unfortunately, the {@code <gmd:characterEncoding>} element is mandatory according OGC/ISO schemas.</div>
          */
         public void beforeMarshal(final Marshaller marshaller) {
             final String encoding;

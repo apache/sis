@@ -179,9 +179,10 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code GeocentricCRS.class}.
      *
-     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>GeocentricCRS</code> sub-interface. Overriding possibility is left mostly for
-     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     * <div class="note"><b>Note for implementors:</b>
+     * Subclasses usually do not need to override this method since GeoAPI does not define {@code GeocentricCRS}
+     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * own set of interfaces.</div>
      *
      * @return {@code GeocentricCRS.class} or a user-defined sub-interface.
      */

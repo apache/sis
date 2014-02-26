@@ -192,9 +192,10 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code TemporalCRS.class}.
      *
-     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>TemporalCRS</code> sub-interface. Overriding possibility is left mostly for
-     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     * <div class="note"><b>Note for implementors:</b>
+     * Subclasses usually do not need to override this method since GeoAPI does not define {@code TemporalCRS}
+     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * own set of interfaces.</div>
      *
      * @return {@code TemporalCRS.class} or a user-defined sub-interface.
      */
@@ -298,7 +299,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code TimeCRS[…]} element.
      *
-     * {@note <code>TimeCRS</code> is defined in the WKT 2 specification only.}
+     * <div class="note"><b>Compatibility note:</b>
+     * {@code TimeCRS} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "TimeCRS"}.
      */

@@ -170,9 +170,10 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ImageDatum.class}.
      *
-     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>ImageDatum</code> sub-interface. Overriding possibility is left mostly for
-     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     * <div class="note"><b>Note for implementors:</b>
+     * Subclasses usually do not need to override this method since GeoAPI does not define {@code ImageDatum}
+     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with
+     * their own set of interfaces.</div>
      *
      * @return {@code ImageDatum.class} or a user-defined sub-interface.
      */
@@ -233,7 +234,8 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     /**
      * Formats this datum as a <cite>Well Known Text</cite> {@code ImageDatum[…]} element.
      *
-     * {@note <code>ImageDatum</code> is defined in the WKT 2 specification only.}
+     * <div class="note"><b>Compatibility note:</b>
+     * {@code ImageDatum} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "ImageDatum"}.
      */

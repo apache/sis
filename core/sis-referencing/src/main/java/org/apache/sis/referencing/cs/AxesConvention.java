@@ -103,8 +103,9 @@ public enum AxesConvention {
      *   <li>Temporal units are set to {@link javax.measure.unit.NonSI#DAY}.</li>
      * </ul>
      *
-     * {@note The rules for normalized coordinate systems may be adjusted in future SIS versions based on experience
-     *        gained. For more predictable results, consider using the <code>RIGHT_HANDED</code> enum instead.}
+     * <div class="note"><b>Note:</b>
+     * The rules for normalized coordinate systems may be adjusted in future SIS versions based on experience gained.
+     * For more predictable results, consider using the {@link #RIGHT_HANDED} enum instead.</div>
      *
      * @see org.apache.sis.referencing.CommonCRS#normalizedGeographic()
      */
@@ -120,22 +121,22 @@ public enum AxesConvention {
      * does not guarantee that longitude or <var>x</var> axis will be first in every cases. The most notable exception
      * is the (North, West) case.</p>
      *
-     * {@note We do not provide a "<cite>longitude or <var>x</var> axis first</cite>" enumeration value because
-     *        such criterion is hard to apply to inter-cardinal directions and has no meaning for map projections
-     *        over a pole, while the right-handed rule can apply everywhere.}
+     * <div class="note"><b>Note:</b>
+     * We do not provide a "<cite>longitude or <var>x</var> axis first</cite>" enumeration value because such
+     * criterion is hard to apply to inter-cardinal directions and has no meaning for map projections over a pole,
+     * while the right-handed rule can apply everywhere.</div>
      *
-     * {@example The following table lists some axis orientations in the first column, and
-     *           how those axes are reordered in a right-handed coordinate system (second column):
-     * <ul>
-     *   <table class="sis">
-     *     <tr><th>Left-handed</th>   <th>Right-handed</th>  <th>Remarks</th></tr>
-     *     <tr><td>(North, East)</td> <td>(East, North)</td> <td>This is the most common case.</td></tr>
-     *     <tr><td>(West, North)</td> <td>(North, West)</td> <td>This right-handed system has latitude first.</td></tr>
-     *     <tr><td>(South, West)</td> <td>(West, South)</td> <td>Used for the mapping of southern Africa.</td></tr>
-     *     <tr><td>(South along 0°,<br>South along 90° West)</td>
-     *         <td>(South along 90° West,<br>South along 0°)</td> <td>Can be used for the mapping of North pole.</td></tr>
-     *   </table>
-     * </ul>}
+     * <div class="note"><b>Example:</b>
+     * The following table lists some axis orientations in the first column, and
+     * how those axes are reordered in a right-handed coordinate system (second column):
+     * <table class="sis">
+     *   <tr><th>Left-handed</th>   <th>Right-handed</th>  <th>Remarks</th></tr>
+     *   <tr><td>(North, East)</td> <td>(East, North)</td> <td>This is the most common case.</td></tr>
+     *   <tr><td>(West, North)</td> <td>(North, West)</td> <td>This right-handed system has latitude first.</td></tr>
+     *   <tr><td>(South, West)</td> <td>(West, South)</td> <td>Used for the mapping of southern Africa.</td></tr>
+     *   <tr><td>(South along 0°,<br>South along 90° West)</td>
+     *       <td>(South along 90° West,<br>South along 0°)</td> <td>Can be used for the mapping of North pole.</td></tr>
+     * </table></div>
      *
      * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
      * @see <a href="http://en.wikipedia.org/wiki/Right_hand_rule">Right-hand rule on Wikipedia</a>

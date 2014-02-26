@@ -50,9 +50,10 @@ import java.util.Objects;
  * where the <var>X</var> axis points towards the Greenwich Prime Meridian,
  * the <var>Y</var> axis points East, and the <var>Z</var> axis points North.</p>
  *
- * {@note The upper case letters are intentional. By convention, (<var>X</var>, <var>Y</var>, <var>Z</var>)
- *        stand for <cite>geocentric</cite> coordinates while (<var>x</var>, <var>y</var>, <var>z</var>)
- *        stand for <cite>projected</cite> coordinates.}
+ * <div class="note"><b>Note:</b>
+ * The upper case letters are intentional. By convention, (<var>X</var>, <var>Y</var>, <var>Z</var>)
+ * stand for <cite>geocentric</cite> coordinates while (<var>x</var>, <var>y</var>, <var>z</var>)
+ * stand for <cite>projected</cite> coordinates.</div>
  *
  * The "Bursa-Wolf" formula is expressed with 7 parameters, listed in the table below.
  * The <cite>code</cite>, <cite>name</cite> and <cite>abbreviation</cite> columns list EPSG identifiers,
@@ -157,8 +158,9 @@ import java.util.Objects;
  *       can been found in the EPSG database for a given pair of source and target CRS.</li>
  * </ol>
  *
- * {@note In EPSG terminology, Apache SIS gives precedence to the <cite>late-binding</cite> approach
- *        (case 1 above) over the <cite>early-binding</cite> approach (case 3 above).}
+ * <div class="note"><b>Note:</b>
+ * In EPSG terminology, Apache SIS gives precedence to the <cite>late-binding</cite> approach
+ * (case 1 above) over the <cite>early-binding</cite> approach (case 3 above).</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
@@ -624,7 +626,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * <blockquote><code>TOWGS84[{@linkplain #tX}, {@linkplain #tY}, {@linkplain #tZ}, {@linkplain #rX},
      * {@linkplain #rY}, {@linkplain #rZ}, {@linkplain #dS}]</code></blockquote>
      *
-     * {@note <code>TOWGS84</code> is defined in the WKT 1 specification only.}
+     * <div class="note"><b>Compatibility note:</b>
+     * {@code TOWGS84} is defined in the WKT 1 specification only.</div>
      *
      * The element name is {@code "ToWGS84"} in the common case where the {@linkplain #getTargetDatum() target datum}
      * is WGS 84. For other targets, the element name will be derived from the datum name.

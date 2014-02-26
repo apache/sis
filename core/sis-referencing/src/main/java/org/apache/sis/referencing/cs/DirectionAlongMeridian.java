@@ -285,7 +285,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * This element contains the meridian value and the unit of measurement.
      * The unit is currently fixed to degrees, but this may change in any future implementation.
      *
-     * {@note <code>Meridian</code> is defined in the WKT 2 specification only.}
+     * <div class="note"><b>Compatibility note:</b>
+     * {@code Meridian} is defined in the WKT 2 specification only.</div>
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return {@code "Meridian"}.

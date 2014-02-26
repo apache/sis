@@ -429,7 +429,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * }
      * </font></blockquote>
      *
-     * {@note <code>CS</code> is defined in the WKT 2 specification only.}
+     * <div class="note"><b>Compatibility note:</b>
+     * {@code CS} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "CS"}.
      */

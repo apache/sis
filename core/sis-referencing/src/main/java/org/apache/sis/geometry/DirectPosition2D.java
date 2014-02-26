@@ -43,9 +43,10 @@ import java.util.Objects;
  * This is not specific to this implementation; in Java2D too, the visual axis orientation depend
  * on the {@linkplain java.awt.Graphics2D#getTransform() affine transform in the graphics context}.</p>
  *
- * {@note The rational for avoiding axis orientation restriction is that other <code>DirectPosition</code>
- *        implementations do not have such restriction, and it would be hard to generalize.
- *        For example there is no clear "x" or "y" classification for North-East direction.}
+ * <div class="note"><b>Note:</b>
+ * The rational for avoiding axis orientation restriction is that other {@code DirectPosition} implementations
+ * do not have such restriction, and it would be hard to generalize. For example there is no clear "x" or "y"
+ * classification for North-East direction.</div>
  *
  * {@section Caution when used in collections}
  * Do not mix instances of this class with ordinary {@link Point2D} instances
@@ -213,11 +214,10 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Returns a sequence of numbers that hold the coordinate of this position in its
-     * reference system.
+     * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
-     * {@note This method is final for ensuring consistency with the <code>x</code>
-     *        and <code>y</code> fields, which are public.}
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
      *
      * @return The coordinate.
      */
@@ -229,8 +229,8 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     /**
      * Returns the ordinate at the specified dimension.
      *
-     * {@note This method is final for ensuring consistency with the <code>x</code>
-     *        and <code>y</code> fields, which are public.}
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
      *
      * @param  dimension The dimension in the range 0 to 1 inclusive.
      * @return The coordinate at the specified dimension.

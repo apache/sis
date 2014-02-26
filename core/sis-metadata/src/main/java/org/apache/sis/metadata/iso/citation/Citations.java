@@ -290,8 +290,9 @@ public final class Citations extends Static {
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
      *
-     * {@note This method searches in alternate titles as a fallback because ISO specification said
-     *        that those titles are often used for abbreviations.}
+     * <div class="note"><b>Note:</b>
+     * This method searches in alternate titles as a fallback because ISO specification said
+     * that those titles are often used for abbreviations.</div>
      *
      * This method ignores leading and trailing whitespaces of every character sequences.
      * Null references, empty character sequences and sequences of whitespaces only are ignored.

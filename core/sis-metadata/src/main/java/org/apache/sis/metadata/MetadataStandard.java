@@ -403,10 +403,11 @@ public class MetadataStandard implements Serializable {
      * If the given type is already an interface from this standard, then it is returned
      * unchanged.
      *
-     * {@note The word "interface" may be taken in a looser sense than the usual Java sense
-     *        because if the given type is defined in this standard package, then it is returned
-     *        unchanged. The standard package is usually made of interfaces and code lists only,
-     *        but this is not verified by this method.}
+     * <div class="note"><b>Note:</b>
+     * The word "interface" may be taken in a looser sense than the usual Java sense because
+     * if the given type is defined in this standard package, then it is returned unchanged.
+     * The standard package is usually made of interfaces and code lists only, but this is
+     * not verified by this method.</div>
      *
      * @param  type The implementation class.
      * @return The interface implemented by the given implementation class.
@@ -550,10 +551,10 @@ public class MetadataStandard implements Serializable {
      *   </li>
      * </ul>
      *
-     * {@note The rational for implementing <code>CheckedContainer</code> is to consider each
-     * <code>ExtendedElementInformation</code> instance as the set of all possible values for
-     * the property. If the information had a <code>contains(E)</code> method, it would return
-     * <code>true</code> if the given value is valid for that property.}
+     * <div class="note"><b>Note:</b>
+     * The rational for implementing {@code CheckedContainer} is to consider each {@code ExtendedElementInformation}
+     * instance as the set of all possible values for the property. If the information had a {@code contains(E)} method,
+     * it would return {@code true} if the given value is valid for that property.</div>
      *
      * In addition, for each map entry the value returned by {@link ExtendedElementInformation#getDomainValue()}
      * may optionally be an instance of any of the following classes:
@@ -653,9 +654,10 @@ public class MetadataStandard implements Serializable {
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
      *       for the first element and an other node with index 1 for the second element.</p>
      *
-     *       {@note The <code>(IDENTIFIER, INDEX)</code> pair can be used as a primary key for uniquely identifying
-     *              a node in a list of children. That uniqueness is guaranteed only for the children of a given
-     *              node; the same keys may appear in the children of any other nodes.}</li>
+     *       <div class="note"><b>Note:</b>
+     *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
+     *       in a list of children. That uniqueness is guaranteed only for the children of a given node;
+     *       the same keys may appear in the children of any other nodes.</div></li>
      *
      *   <li><p>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.

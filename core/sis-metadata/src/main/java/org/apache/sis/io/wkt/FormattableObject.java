@@ -68,15 +68,16 @@ public abstract class FormattableObject {
      * The formatter for the {@link #toWKT()} and {@link #toString()} methods. Formatters are not
      * thread-safe, consequently we must make sure that only one thread uses a given instance.
      *
-     * {@note We do not use synchronization because the formatter will call back user's code, which
-     *        introduce a risk of thread lock if the user performs his own synchronization.}
+     * <div class="note"><b>Note 1:</b>
+     * We do not use synchronization because the formatter will call back user's code, which
+     * introduce a risk of thread lock if the user performs his own synchronization.</div>
      *
-     * {@note We do not use <code>ThreadLocal</code> because <code>Formatter</code> is not reentrant
-     *        neither, so it may produce very confusing behavior when debugging a code that perform
-     *        WKT formatting (some debuggers seem to invoke <code>toString()</code> for their own
-     *        purpose in the same thread). Since <code>toString()</code> is typically invoked for
-     *        debugging purpose, a single formatter for any thread is presumed sufficient.}
-     *
+     * <div class="note"><b>Note 2:</b>
+     * We do not use {@link ThreadLocal} because {@code Formatter} is not reentrant neither,
+     * so it may produce very confusing behavior when debugging a code that perform WKT formatting
+     * (some debuggers seem to invoke {@code toString()} for their own purpose in the same thread).
+     * Since {@code toString()} is typically invoked for debugging purpose, a single formatter for
+     * any thread is presumed sufficient.</div>
      */
     private static final AtomicReference<Formatter> FORMATTER = new AtomicReference<>();
 
