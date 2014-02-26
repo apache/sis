@@ -80,20 +80,20 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * The authority for International Standard Book Number.
      *
-     * <p><b>Implementation note:</b> This field is read by reflection in
+     * <div class="note"><b>Implementation note:</b> This field is read by reflection in
      * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority#getCitation(String)}.
      * If this field is renamed or moved, then {@code NonMarshalledAuthority} needs
-     * to be updated.</p>
+     * to be updated.</div>
      */
     static final IdentifierSpace<String> ISBN = new NonMarshalledAuthority<>("ISBN", NonMarshalledAuthority.ISBN);
 
     /**
      * The authority for International Standard Serial Number.
      *
-     * <p><b>Implementation note:</b> This field is read by reflection in
+     * <div class="note"><b>Implementation note:</b> This field is read by reflection in
      * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority#getCitation(String)}.
      * If this field is renamed or moved, then {@code NonMarshalledAuthority} needs
-     * to be updated.</p>
+     * to be updated.</div>
      */
     static final IdentifierSpace<String> ISSN = new NonMarshalledAuthority<>("ISSN", NonMarshalledAuthority.ISSN);
 
@@ -369,9 +369,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * as well as the {@linkplain #getISBN() ISBN} and {@linkplain #getISSN() ISSN} codes, thus
      * providing a unified view of every kind of identifiers associated to this citation.
      *
-     * {@note The <code>&lt:gmd:identifier&gt;</code> element marshalled to XML will exclude
-     *        all the above cited identifiers, for ISO 19139 compliance. Those identifiers
-     *        will appear in other XML elements or attributes.}
+     * <div class="note"><b>XML note:</b>
+     * The {@code <gmd:identifier>} element marshalled to XML will exclude all the above cited identifiers,
+     * for ISO 19139 compliance. Those identifiers will appear in other XML elements or attributes.</div>
      *
      * @return The identifiers, or an empty collection if none.
      *

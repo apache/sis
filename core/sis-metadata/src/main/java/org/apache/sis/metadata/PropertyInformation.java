@@ -42,10 +42,10 @@ import org.apache.sis.util.logging.Logging;
  * but other types are allowed), instances of {@code PropertyInformation} are obtained
  * indirectly by the {@link MetadataStandard#asInformationMap(Class, KeyNamePolicy)} method.
  *
- * {@note The rational for implementing <code>CheckedContainer</code> is to consider each
- *        <code>ExtendedElementInformation</code> instance as the set of all possible values
- *        for the property. If the information had a <code>contains(E)</code> method, it would
- *        return <code>true</code> if the given value is valid for that property.}
+ * <div class="note"><b>API note:</b>
+ * The rational for implementing {@code CheckedContainer} is to consider each {@code ExtendedElementInformation}
+ * instance as the set of all possible values for the property. If the information had a {@code contains(E)} method,
+ * it would return {@code true} if the given value is valid for that property.</div>
  *
  * {@section Immutability and thread safety}
  * This final class is immutable and thus thread-safe.

@@ -1188,8 +1188,9 @@ public class Formatter implements Localized {
      * This method returns {@code true} if the formattable object given by {@code getEnclosingElement(depth)}
      * has invoked {@link #addContextualUnit(Unit)} with a non-null unit at least once.
      *
-     * {@note The main purpose of this method is to allow <code>AXIS[…]</code> elements to determine if they should
-     *        inherit the unit specified by the enclosing CRS, or if they should specify their unit explicitly.}
+     * <div class="note"><b>Note:</b>
+     * The main purpose of this method is to allow {@code AXIS[…]} elements to determine if they should
+     * inherit the unit specified by the enclosing CRS, or if they should specify their unit explicitly.</div>
      *
      * @param  depth 1 for the immediate parent, 2 for the parent of the parent, <i>etc.</i>
      * @return Whether the parent element at the given depth has invoked {@code addContextualUnit(…)} at least once.

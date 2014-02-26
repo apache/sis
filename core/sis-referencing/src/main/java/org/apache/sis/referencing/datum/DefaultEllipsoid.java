@@ -373,9 +373,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code Ellipsoid.class}.
      *
-     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>Ellipsoid</code> sub-interface. This method may be overridden if an implementor
-     *        extended GeoAPI with his own set of interfaces.}
+     * <div class="note"><b>Note for implementors:</b>
+     * Subclasses usually do not need to override this method since GeoAPI does not define {@code Ellipsoid}
+     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with
+     * their own set of interfaces.</div>
      *
      * @return {@code Ellipsoid.class} or a user-defined sub-interface.
      */
@@ -598,8 +599,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * The orthodromic distance is the shortest distance between two points on a ellipsoid's surface.
      * The orthodromic path is always on a great circle.
      *
-     * {@note Orthodromic distances anre different than the <cite>loxodromic distance</cite>.
-     *        The later is a longer distance on a path with a constant direction on the compass.}
+     * <div class="note"><b>Note:</b>
+     * Orthodromic distances are different than the <cite>loxodromic distance</cite>.
+     * The later is a longer distance on a path with a constant direction on the compass.</div>
      *
      * @param  λ1 Longitude of first  point (in decimal degrees).
      * @param  φ1 Latitude  of first  point (in decimal degrees).

@@ -82,11 +82,10 @@ public final class Matrices extends Static {
      * Creates a square identity matrix of size {@code size} × {@code size}.
      * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      *
-     * <blockquote><font size=-1><b>Implementation note:</b>
+     * <div class="note"><b>Implementation note:</b>
      * For sizes between {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
-     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
-     * </font></blockquote>
+     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
      * @param  size Numbers of row and columns. For an affine transform matrix, this is the number of
      *         {@linkplain MathTransform#getSourceDimensions() source} and
@@ -108,12 +107,11 @@ public final class Matrices extends Static {
      * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      * The result is an identity matrix if {@code numRow} = {@code numCol}.
      *
-     * <blockquote><font size=-1><b>Implementation note:</b>
+     * <div class="note"><b>Implementation note:</b>
      * For {@code numRow} == {@code numCol} with a value between
      * {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
-     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
-     * </font></blockquote>
+     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
      * @param numRow For a math transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
      * @param numCol For a math transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
@@ -131,12 +129,11 @@ public final class Matrices extends Static {
      * Creates a matrix of size {@code numRow} × {@code numCol} filled with zero values.
      * This constructor is convenient when the caller wants to initialize the matrix elements himself.
      *
-     * <blockquote><font size=-1><b>Implementation note:</b>
+     * <div class="note"><b>Implementation note:</b>
      * For {@code numRow} == {@code numCol} with a value between
      * {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
-     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
-     * </font></blockquote>
+     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
      * @param numRow For a math transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
      * @param numCol For a math transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
@@ -157,12 +154,11 @@ public final class Matrices extends Static {
      * Creates a matrix of size {@code numRow} × {@code numCol} initialized to the given elements.
      * The elements array size must be equals to {@code numRow*numCol}. Column indices vary fastest.
      *
-     * <blockquote><font size=-1><b>Implementation note:</b>
+     * <div class="note"><b>Implementation note:</b>
      * For {@code numRow} == {@code numCol} with a value between
      * {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
-     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
-     * </font></blockquote>
+     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
      * @param  numRow   Number of rows.
      * @param  numCol   Number of columns.
@@ -661,11 +657,10 @@ public final class Matrices extends Static {
     /**
      * Creates a new matrix which is a copy of the given matrix.
      *
-     * <blockquote><font size=-1><b>Implementation note:</b>
+     * <div class="note"><b>Implementation note:</b>
      * For square matrix with a size between {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE}
      * and {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the returned matrix is
-     * guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
-     * </font></blockquote>
+     * guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
      * @param matrix The matrix to copy, or {@code null}.
      * @return A copy of the given matrix, or {@code null} if the given matrix was null.
@@ -877,10 +872,11 @@ public final class Matrices extends Static {
      *   └                                                       ┘
      * }
      *
-     * {@note Formatting on a per-column basis is convenient for the kind of matrices used in referencing by coordinates,
-     *        because each column is typically a displacement vector in a different dimension of the source coordinate
-     *        reference system. In addition, the last column is often a translation vector having a magnitude very
-     *        different than the other columns.}
+     * <div class="note"><b>Note:</b>
+     * Formatting on a per-column basis is convenient for the kind of matrices used in referencing by coordinates,
+     * because each column is typically a displacement vector in a different dimension of the source coordinate
+     * reference system. In addition, the last column is often a translation vector having a magnitude very
+     * different than the other columns.</div>
      *
      * @param  matrix The matrix for which to get a string representation.
      * @return A string representation of the given matrix.

@@ -289,7 +289,8 @@ public final class Context extends MarshalContext {
      * The valid values are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      * If the returned value is not empty, then this method guarantees it ends with {@code '/'}.
      *
-     * {@note This method is static for the convenience of performing the check for null context.}
+     * <div class="note"><b>API note:</b>
+     * This method is static for the convenience of performing the check for null context.</div>
      *
      * @param  context The current context, or {@code null} if none.
      * @param  key One of the value documented in the "<cite>Map key</cite>" column of
@@ -321,7 +322,8 @@ public final class Context extends MarshalContext {
      * If no GML version were specified, then this method returns {@code true}, i.e. newest
      * version is assumed.
      *
-     * {@note This method is static for the convenience of performing the check for null context.}
+     * <div class="note"><b>API note:</b>
+     * This method is static for the convenience of performing the check for null context.</div>
      *
      * @param  context The current context, or {@code null} if none.
      * @param  version The version to compare to.
@@ -343,7 +345,8 @@ public final class Context extends MarshalContext {
      * Returns the reference resolver in use for the current marshalling or unmarshalling process.
      * If no resolver were explicitely set, then this method returns {@link ReferenceResolver#DEFAULT}.
      *
-     * {@note This method is static for the convenience of performing the check for null context.}
+     * <div class="note"><b>API note:</b>
+     * This method is static for the convenience of performing the check for null context.</div>
      *
      * @param  context The current context, or {@code null} if none.
      * @return The current reference resolver (never null).
@@ -362,7 +365,8 @@ public final class Context extends MarshalContext {
      * Returns the value converter in use for the current marshalling or unmarshalling process.
      * If no converter were explicitely set, then this method returns {@link ValueConverter#DEFAULT}.
      *
-     * {@note This method is static for the convenience of performing the check for null context.}
+     * <div class="note"><b>API note:</b>
+     * This method is static for the convenience of performing the check for null context.</div>
      *
      * @param  context The current context, or {@code null} if none.
      * @return The current value converter (never null).

@@ -69,6 +69,8 @@
 .contentContainer .block table.compact,
 .contentContainer ul.blockList ul.blockList li.blockList table.compact
 {
+  margin-top:     6pt;
+  margin-bottom:  6pt;
   width:          auto;
   border:         none;
   border-spacing: 0pt;
@@ -132,6 +134,16 @@ div.block pre {
   line-height: 1em;
   font-size:   1em;
   font-family: Andale Mono, Courier New, monospace;
+}
+
+/*
+ * Note, examples or warnings.
+ */
+div.note {
+  font-size: small;
+  margin-left:  30pt;
+  margin-top:    9pt;
+  margin-bottom: 9pt;
 }
 
 
