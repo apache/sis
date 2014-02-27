@@ -48,7 +48,7 @@
     <!--
         Menus to appears on the left side of home page.
     -->
-    <menu name="Quick links">
+    <menu name="Quick links" inherit="top">
       <item name="Module Javadoc" href="apidocs/index.html"/>
       <item name="Aggregated Javadoc" href="http://builds.apache.org/job/sis-jdk7/site/apidocs/index.html"/>
       <!-- Absolute URL in order to point to the aggregated Javadoc instead than module Javadoc. -->
@@ -59,8 +59,8 @@
         directory layout created by Jenkins (http://issues.apache.org/jira/browse/SIS-112).
     -->
 
-    <menu ref="parent"/>  <!-- Replaced by a link to the parent. -->
-    <menu ref="reports"/> <!-- Replaced by menus for any configured reports (mailing lists, etc.) -->
+    <menu ref="parent"  inherit="top"/> <!-- Replaced by a link to the parent. -->
+    <menu ref="reports" inherit="top"/> <!-- Replaced by menus for any configured reports (mailing lists, etc.) -->
 
   </body>
 </project>
