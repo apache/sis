@@ -85,19 +85,20 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * The actual implementation may be slightly more complicated than the above if there is
  * various subclasses to check.
  *
- * {@note A previous version provided an abstract <code>getElement()</code> method in this class
+ * <div class="note"><b>Note:</b>
+ * A previous version provided an abstract {@code getElement()} method in this class
  * for enforcing its definition in subclasses. But this has been removed for two reasons:
  * <ul>
- *   <li>While the return value is usually <code>BoundType</code>, in some situations it is
- *       rather an other type like <code>String</code>. For this raison the return type must
- *       be declared as <code>Object</code>, and subclasses have to restrict it to a more
+ *   <li>While the return value is usually {@code BoundType}, in some situations it is
+ *       rather an other type like {@code String}. For this raison the return type must
+ *       be declared as {@code Object}, and subclasses have to restrict it to a more
  *       specific type.</li>
  *   <li>The parameterized return type forces the compiler to generate bridge methods under
- *       the hood. In the particular case of typical <code>PropertyType</code> subclasses,
- *       this increases the size of <code>.class</code></li> files by approximatively 4.5%.
+ *       the hood. In the particular case of typical {@code PropertyType} subclasses,
+ *       this increases the size of {@code .class} files by approximatively 4.5%.
  *       While quite small, this is a useless overhead since we never need to invoke the
- *       abstract <code>getElement()</code> from this class.</li>
- * </ul>}
+ *       abstract {@code getElement()} from this class.</li>
+ * </ul></div>
  *
  * @param <ValueType> The adapter subclass.
  * @param <BoundType> The interface being adapted.

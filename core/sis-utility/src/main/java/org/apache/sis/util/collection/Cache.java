@@ -620,9 +620,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         /**
          * Do nothing (except checking for programming error), since we don't hold any lock.
          *
-         * {@note An alternative would have been to store the result in the map anyway.
-         *        But doing so is unsafe because we have no lock; we have no guarantee that
-         *        nothing has happened in an other thread between peek and putAndUnlock.}
+         * <div class="note"><b>Implementation note:</b>
+         * An alternative would have been to store the result in the map anyway.
+         * But doing so is unsafe because we have no lock; we have no guarantee that nothing
+         * has happened in an other thread between {@code peek} and {@code putAndUnlock}.</div>
          */
         @Override
         public void putAndUnlock(final V result) throws IllegalStateException {
@@ -732,9 +733,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
             /**
              * Do nothing (except checking for programming error), since we don't hold any lock.
              *
-             * {@note An alternative would have been to store the result in the map anyway.
-             *        But doing so is unsafe because we have no lock; we have no guarantee that
-             *        nothing has happened in an other thread between peek and putAndUnlock.}
+             * <div class="note"><b>Implementation note:</b>
+             * An alternative would have been to store the result in the map anyway.
+             * But doing so is unsafe because we have no lock; we have no guarantee that nothing
+             * has happened in an other thread between {@code peek} and {@code putAndUnlock}.</div>
              */
             @Override
             public void putAndUnlock(final V result) throws IllegalStateException {

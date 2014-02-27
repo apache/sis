@@ -277,10 +277,11 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * Sets the coordinate system to the given value. This method is invoked only by JAXB at
      * unmarshalling time and can be invoked only if the coordinate system has never been set.
      *
-     * {@note It was easy to put JAXB annotations directly on datum fields in subclasses because each CRS
-     *        type can be associated to only one datum type. But we do not have this convenience for
-     *        coordinate systems, where the same CRS may accept more than one kind of CS.
-     *        In GML, the different kinds of CS are marshalled in different XML elements.}
+     * <div class="note"><b>Implementation note:</b>
+     * It was easy to put JAXB annotations directly on datum fields in subclasses because each CRS type
+     * can be associated to only one datum type. But we do not have this convenience for coordinate systems,
+     * where the same CRS may accept more than one kind of CS. In GML, the different kinds of CS are marshalled
+     * in different XML elements.</div>
      *
      * @param  name The property name, used only in case of error message to format.
      * @throws IllegalStateException If the coordinate system has already been set.

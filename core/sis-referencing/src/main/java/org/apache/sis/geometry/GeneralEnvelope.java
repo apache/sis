@@ -46,10 +46,10 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  * (coordinate points). To encode an {@code Envelope}, it is sufficient to encode these
  * two points.
  *
- * {@note <code>Envelope</code> uses an arbitrary <cite>Coordinate Reference System</cite>, which
- * doesn't need to be geographic. This is different than the <code>GeographicBoundingBox</code>
- * class provided in the metadata package, which can be used as a kind of envelope restricted to
- * a Geographic CRS having Greenwich prime meridian.}
+ * <div class="note"><b>Note:</b>
+ * {@code Envelope} uses an arbitrary <cite>Coordinate Reference System</cite>, which does not need to be geographic.
+ * This is different than the {@code GeographicBoundingBox} class provided in the metadata package, which can be used
+ * as a kind of envelope restricted to a Geographic CRS having Greenwich prime meridian.</div>
  *
  * This particular implementation of {@code Envelope} is said "General" because it uses
  * coordinates of an arbitrary number of dimensions. This is in contrast with
@@ -237,14 +237,15 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * check that every points in a {@code LINESTRING} have the same dimension. However this
      * constructor ensures that the parenthesis are balanced, in order to catch some malformed WKT.
      *
-     * {@example The following texts can be parsed by this constructor in addition of the usual
-     * <code>BOX</code> element. This constructor creates the bounding box of those geometries:
+     * <div class="note"><b>Example:</b>
+     * The following texts can be parsed by this constructor in addition of the usual {@code BOX} element.
+     * This constructor creates the bounding box of those geometries:
      *
      * <ul>
-     *   <li><code>POINT(6 10)</code></li>
-     *   <li><code>MULTIPOLYGON(((1 1, 5 1, 1 5, 1 1),(2 2, 3 2, 3 3, 2 2)))</code></li>
-     *   <li><code>GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))</code></li>
-     * </ul>}
+     *   <li>{@code POINT(6 10)}</li>
+     *   <li>{@code MULTIPOLYGON(((1 1, 5 1, 1 5, 1 1),(2 2, 3 2, 3 3, 2 2)))}</li>
+     *   <li>{@code GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))}</li>
+     * </ul></div>
      *
      * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @throws IllegalArgumentException If the given string can not be parsed.
@@ -348,10 +349,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * this {@linkplain #getDimension() envelope dimension}, and minimum shall not be greater
      * than maximum.
      *
-     * {@example
+     * <div class="note"><b>Example:</b>
      * (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>, <var>z</var><sub>min</sub>,
      *  <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>, <var>z</var><sub>max</sub>)
-     * }
+     * </div>
      *
      * @param corners Ordinates of the new lower corner followed by the new upper corner.
      */
@@ -463,8 +464,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * with the added point as an argument will return {@code true}, except if one of the point
      * ordinates was {@link Double#NaN} in which case the corresponding ordinate has been ignored.</p>
      *
-     * {@note This method assumes that the specified point uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * {@section Pre-conditions}
+     * This method assumes that the specified point uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * This method supports envelopes spanning the anti-meridian. In such cases it is possible to
@@ -542,8 +544,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Adds an envelope object to this envelope. The resulting envelope is the union of the
      * two {@code Envelope} objects.
      *
-     * {@note This method assumes that the specified envelope uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * {@section Pre-conditions}
+     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * This method supports envelopes spanning the anti-meridian. If one or both envelopes span
@@ -668,8 +671,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     /**
      * Sets this envelope to the intersection if this envelope with the specified one.
      *
-     * {@note This method assumes that the specified envelope uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * {@section Pre-conditions}
+     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * This method supports envelopes spanning the anti-meridian.

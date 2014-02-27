@@ -55,10 +55,10 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      * Reads a metadata object from the given NetCDF file.
      * This method is invoked by the tests inherited from the {@code geoapi-test} module.
      *
-     * {@note The method name is "<code>wrap</code>" because the GeoAPI implementation maps the
-     *        metadata methods to <code>NetcdfFile.findAttribute(String)</code> method calls.
-     *        However in SIS implementation, the metadata object is fully created right at this
-     *        method invocation time.}
+     * <div class="note"><b>Note:</b>
+     * The method name is "{@code wrap}" because the GeoAPI implementation maps the metadata methods to
+     * {@code NetcdfFile.findAttribute(String)} method calls. However in SIS implementation, the metadata
+     * object is fully created right at this method invocation time.</div>
      *
      * @param  file The NetCDF file to wrap.
      * @return A metadata implementation created from the attributes found in the given file.

@@ -24,11 +24,12 @@ import org.opengis.util.InternationalString;
  * by this interface are unrelated to the entities deprecated by the Java {@link Deprecated} annotation.
  * This interface is for identifying deprecated <em>data</em> rather than language constructs.
  *
- * {@example When an error is discovered in the definition of a Coordinate Reference System (CRS) in the EPSG
- * database, the EPSG maintainers do not change the data. Instead, they deprecate the erroneous definition
- * and create a new one with a new EPSG code. The <code>isDeprecated()</code> method in this interface allows
- * users to identify CRS instances created from such deprecated database records, for example in order to log
- * a warning when data are projected to a deprecated CRS.}
+ * <div class="note"><b>Example:</b>
+ * When an error is discovered in the definition of a Coordinate Reference System (CRS) in the EPSG database,
+ * the EPSG maintainers do not change the data. Instead, they deprecate the erroneous definition and create a
+ * new one with a new EPSG code. The {@link #isDeprecated()} method in this interface allows users to identify
+ * CRS instances created from such deprecated database records, for example in order to log a warning when data
+ * are projected to a deprecated CRS.</div>
  *
  * Some examples of deprecated instances are:
  *

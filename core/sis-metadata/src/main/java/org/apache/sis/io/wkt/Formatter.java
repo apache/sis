@@ -386,9 +386,10 @@ public class Formatter implements Localized {
      * <p>The preferred authority can be set by the {@link WKTFormat#setNameAuthority(Citation)} method.
      * This is not necessarily the authority who created the object to format.</p>
      *
-     * {@example The EPSG name of the <code>EPSG:6326</code> datum is "<cite>World Geodetic System 1984</cite>".
-     *           However if the preferred authority is OGC, then the formatted datum name will rather look like
-     *           "<cite>WGS84</cite>" (the exact string depends on the object aliases).}
+     * <div class="note"><b>Example:</b>
+     * The EPSG name of the {@code EPSG:6326} datum is "<cite>World Geodetic System 1984</cite>".
+     * However if the preferred authority is OGC, then the formatted datum name will rather look like
+     * "<cite>WGS84</cite>" (the exact string depends on the object aliases).</div>
      *
      * @return The authority for projection and parameter names.
      *
@@ -849,12 +850,12 @@ public class Formatter implements Localized {
      * Appends an international text in an element having the given keyword. Since this method
      * is typically invoked for long descriptions, the element will be written on its own line.
      *
-     * {@example
+     * <div class="note"><b>Example:</b>
      *   <ul>
-     *     <li><code>Scope["Large scale topographic mapping and cadastre."]</code></li>
-     *     <li><code>Area["Netherlands offshore."]</code></li>
+     *     <li>{@code Scope["Large scale topographic mapping and cadastre."]}</li>
+     *     <li>{@code Area["Netherlands offshore."]}</li>
      *   </ul>
-     * }
+     * </div>
      *
      * @param keyword The {@linkplain KeywordCase#CAMEL_CASE camel-case} keyword.
      *                Example: {@code "Scope"}, {@code "Area"} or {@code "Remarks"}.
@@ -1048,7 +1049,8 @@ public class Formatter implements Localized {
      * {@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT} and {@code TIMEUNIT}.
      * Specialization is used in WKT 2 format except the <cite>simplified WKT 2</cite> one.
      *
-     * {@example <code>append(SI.KILOMETRE)</code> will append "<code>LENGTHUNIT["km", 1000]</code>" to the WKT.}
+     * <div class="note"><b>Example:</b>
+     * {@code append(SI.KILOMETRE)} will append "{@code LENGTHUNIT["km", 1000]}" to the WKT.</div>
      *
      * @param unit The unit to append to the WKT, or {@code null} if none.
      */
@@ -1188,8 +1190,9 @@ public class Formatter implements Localized {
      * This method returns {@code true} if the formattable object given by {@code getEnclosingElement(depth)}
      * has invoked {@link #addContextualUnit(Unit)} with a non-null unit at least once.
      *
-     * {@note The main purpose of this method is to allow <code>AXIS[…]</code> elements to determine if they should
-     *        inherit the unit specified by the enclosing CRS, or if they should specify their unit explicitly.}
+     * <div class="note"><b>Note:</b>
+     * The main purpose of this method is to allow {@code AXIS[…]} elements to determine if they should
+     * inherit the unit specified by the enclosing CRS, or if they should specify their unit explicitly.</div>
      *
      * @param  depth 1 for the immediate parent, 2 for the parent of the parent, <i>etc.</i>
      * @return Whether the parent element at the given depth has invoked {@code addContextualUnit(…)} at least once.

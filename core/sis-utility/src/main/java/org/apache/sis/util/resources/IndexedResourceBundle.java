@@ -378,7 +378,8 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Any characters sequences of length greater than {@link #MAX_STRING_LENGTH} will be shortened using
      * the {@link CharSequences#shortSentence(CharSequence, int)} method.</p>
      *
-     * {@note if more cases are added, remember to update class and package javadoc.}
+     * <div class="note"><b>Note:</b>
+     * If more cases are added, remember to update class and package javadoc.</div>
      *
      * @param  arguments The object to check.
      * @return {@code arguments} as an array, eventually with some elements replaced.

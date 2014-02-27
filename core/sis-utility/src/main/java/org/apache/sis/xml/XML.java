@@ -152,12 +152,12 @@ public final class XML extends Static {
      * Specifies the GML version of the document to be marshalled or unmarshalled.
      * The GML version may affect the set of XML elements to be marshalled and their namespaces.
      *
-     * {@note Newer versions typically have more elements, but not always.
-     * For example in <code>gml:VerticalDatum</code>, the <code>gml:verticalDatumType</code> property
-     * presents in GML 3.0 and 3.1 has been removed in GML 3.2.}
+     * <div class="note"><b>Compatibility note:</b>
+     * Newer versions typically have more elements, but not always. For example in {@code <gml:VerticalDatum>},
+     * the {@code <gml:verticalDatumType>} property presents in GML 3.0 and 3.1 has been removed in GML 3.2.</div>
      *
-     * <p>The value can be {@link String} or {@link Version} objects.
-     * If no version is specified, then the most recent GML version is assumed.</p>
+     * The value can be {@link String} or {@link Version} objects.
+     * If no version is specified, then the most recent GML version is assumed.
      *
      * {@section Supported GML versions}
      * Apache SIS currently supports GML 3.2.1 by default. SIS can read and write GML 3.2
@@ -322,10 +322,11 @@ public final class XML extends Static {
     /**
      * Returns the default (un)marshaller pool used by all methods in this class.
      *
-     * {@note Current implementation uses the double-check idiom. This is usually a deprecated
-     * practice (the recommended alterative is to use static class initialization), but in this
-     * particular case the field may be reset to <code>null</code> if OSGi modules are loaded
-     * or unloaded, so static class initialization would be a little bit too rigid.}
+     * <div class="note"><b>Implementation note:</b>
+     * Current implementation uses the double-check idiom. This is usually a deprecated practice
+     * (the recommended alterative is to use static class initialization), but in this particular
+     * case the field may be reset to {@code null} if OSGi modules are loaded or unloaded, so static
+     * class initialization would be a little bit too rigid.</div>
      */
     private static MarshallerPool getPool() throws JAXBException {
         MarshallerPool pool = POOL;

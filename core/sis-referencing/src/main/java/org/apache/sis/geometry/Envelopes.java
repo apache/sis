@@ -107,8 +107,9 @@ public final class Envelopes extends Static {
      * <blockquote>{@code BOX}<var>n</var>{@code D(}{@linkplain Envelope#getLowerCorner() lower
      * corner}{@code ,} {@linkplain Envelope#getUpperCorner() upper corner}{@code )}</blockquote>
      *
-     * {@note The <code>BOX</code> element is not part of the standard <cite>Well Known Text</cite>
-     *        (WKT) format. However it is understood by many softwares, for example GDAL and PostGIS.}
+     * <div class="note"><b>Note:</b>
+     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * However it is understood by many softwares, for example GDAL and PostGIS.</div>
      *
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence)
      * parsed} by the {@code GeneralEnvelope} constructor.

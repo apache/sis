@@ -23,9 +23,10 @@ package org.apache.sis.util;
  * the error is an illegal argument rather than an unexpected usage of a null pointer
  * inside a method body.
  *
- * {@note We could argue that this exception should extend <code>IllegalArgumentException</code>.
- *        However <code>NullPointerException</code> has become a more widely adopted practice and
- *        is now the recommended one in the <cite>Effective Java</cite> book.}
+ * <div class="note"><b>API note:</b>
+ * We could argue that this exception should extend {@link IllegalArgumentException}.
+ * However {@link NullPointerException} has become a more widely adopted practice and
+ * is now the recommended one in the <cite>Effective Java</cite> book.</div>
  *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
