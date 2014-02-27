@@ -52,7 +52,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * This class is often used for defining 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
  * coordinate reference systems as an aggregation of simpler CRS. Below is two examples of such aggregations:
  *
- * <p><table class="compact">
+ * <table class="compact">
  * <tr><th>Flat list</th><th>Hierarchical structure</th></tr>
  * <tr><td><blockquote>
  *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
@@ -66,7 +66,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  *   <code>  │   └─VerticalCRS</code> — (<var>z</var>)<br>
  *   <code>  └─TemporalCRS</code> — (<var>t</var>)
  * </blockquote></td></tr>
- * </table></p>
+ * </table>
  *
  * Strictly speaking, only the flat list on the left side is allowed by OGC/ISO specifications.
  * However Apache SIS relaxes this rule by allowing hierarchies as shown on the right side. This
@@ -256,9 +256,10 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code CompoundCRS.class}.
      *
-     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>CompoundCRS</code> sub-interface. Overriding possibility is left mostly for
-     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     * <div class="note"><b>Note for implementors:</b>
+     * Subclasses usually do not need to override this method since GeoAPI does not define {@code CompoundCRS}
+     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * own set of interfaces.</div>
      *
      * @return {@code CompoundCRS.class} or a user-defined sub-interface.
      */

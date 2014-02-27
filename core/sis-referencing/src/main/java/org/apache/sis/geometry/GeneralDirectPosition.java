@@ -100,10 +100,10 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * This constructor assigns the given array directly (without clone) to the {@link #ordinates} field.
      * Consequently, callers shall not recycle the same array for creating many instances.
      *
-     * {@note The array is not cloned because this is usually not needed, especially in the context
-     *        of variable argument lengths since the array is often created implicitly. Furthermore
-     *        the <code>ordinates</code> field is public, so cloning the array would not protect
-     *        the state of this object anyway.}
+     * <div class="note"><b>Implementation note:</b>
+     * The array is not cloned because this is usually not needed, especially in the context of variable
+     * argument lengths since the array is often created implicitly. Furthermore the {@link #ordinates}
+     * field is public, so cloning the array would not protect the state of this object anyway.</div>
      *
      * @param ordinates The ordinate values. This array is <strong>not</strong> cloned.
      */
@@ -185,11 +185,10 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     }
 
     /**
-     * Returns a sequence of numbers that hold the coordinate of this position in its
-     * reference system.
+     * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
-     * {@note This method is final for ensuring consistency with the <code>ordinates</code>,
-     *        array field, which is public.}
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@link #ordinates}, array field, which is public.</div>
      *
      * @return A copy of the {@linkplain #ordinates ordinates} array.
      */
@@ -218,8 +217,8 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Returns the ordinate at the specified dimension.
      *
-     * {@note This method is final for ensuring consistency with the <code>ordinates</code>,
-     *        array field, which is public.}
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@link #ordinates}, array field, which is public.</div>
      *
      * @param  dimension The dimension in the range 0 to {@linkplain #getDimension() dimension}-1.
      * @return The ordinate at the specified dimension.

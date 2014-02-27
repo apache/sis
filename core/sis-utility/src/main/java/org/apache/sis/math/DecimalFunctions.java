@@ -119,15 +119,14 @@ public final class DecimalFunctions extends Static {
      * fraction digits to zero.
      * For example {@code (double) 0.1f} gives 0.10000000149011612 while {@code floatToDouble(0.1f)} returns 0.1.
      *
-     * {@note This method is <strong>not</strong> more accurate than the standard Java cast –
-     *        it should be used only when the base 10 representation of the given value may be of special interest.
-     *        If the value come from a call to <code>Float.parseFloat(String)</code> (directly or indirectly),
-     *        and if that call can not be replaced by a call to <code>Double.parseDouble(String)</code>
-     *        (for example because the original <code>String</code> is not available anymore), then this method
-     *        may be useful if one consider the <code>String</code> representation in base 10 as definitive.
-     *        But if the value come from an instrument measurement or a calculation, then there is probably
-     *        no reason to use this method because base 10 is not more "real" than base 2 or any other base
-     *        for natural phenomenon.}
+     * <div class="note"><b>Note:</b>
+     * This method is <strong>not</strong> more accurate than the standard Java cast – it should be used only when
+     * the base 10 representation of the given value may be of special interest. If the value come from a call to
+     * {@link Float#parseFloat(String)} (directly or indirectly), and if that call can not be replaced by a call to
+     * {@link Double#parseDouble(String)} (for example because the original {@code String} is not available anymore),
+     * then this method may be useful if one consider the {@code String} representation in base 10 as definitive.
+     * But if the value come from an instrument measurement or a calculation, then there is probably no reason to use
+     * this method because base 10 is not more "real" than base 2 or any other base for natural phenomenon.</div>
      *
      * This method is equivalent to the following code, except that it is potentially faster since the
      * actual implementation avoid to format and parse the value:
@@ -196,7 +195,7 @@ public final class DecimalFunctions extends Static {
      * returned delta is always smaller than <code>{@linkplain Math#ulp(double) Math.ulp}(value) / 2</code>.
      * To see an effect, a type with more precision than the {@code double} type is necessary.
      *
-     * <blockquote><font size="-1"><b>Use case:</b>
+     * <div class="note"><b>Use case:</b>
      * Many international standards define values in base 10. For example the conversion factor from inches
      * to centimetres is defined as exactly 2.54 cm/inch. This is by an internationally accepted definition
      * since 1959, not an approximation. But the 2.54 value can not be represented exactly in the IEEE 754
@@ -205,7 +204,7 @@ public final class DecimalFunctions extends Static {
      * (e.g. in non-linear equations where errors can grow exponentially), this method can be useful.
      * Other examples of values defined in base 10 are conversions from feet to metres and
      * map projection parameters defined by national mapping agencies.
-     * </font></blockquote>
+     * </div>
      *
      * {@section Domain of validity}
      * The current implementation can not compute delta for {@code abs(value) < 3E-8} approximatively,
@@ -325,31 +324,32 @@ public final class DecimalFunctions extends Static {
      *   <li>If {@code accuracy} is 0, then this method returns 324 since 10<sup>-324</sup> is the first power of 10
      *       smaller than the minimal strictly positive {@code double} value ({@value java.lang.Double#MIN_VALUE}).
      *
-     *       {@note The above value can be understood in an other way: if the first 324 fraction digits are zero,
-     *              then the IEEE <code>double</code> value is guaranteed to be rounded to exactly 0 no matter
-     *              what the next fraction digits are.}</li>
+     *       <div class="note"><b>Note:</b>
+     *       The above value can be understood in an other way: if the first 324 fraction digits are zero,
+     *       then the IEEE {@code double} value is guaranteed to be rounded to exactly 0 no matter what the
+     *       next fraction digits are.</div></li>
      *
      *   <li>If {@code accuracy} is greater than 1, then this method returns
      *       the number of "unnecessary" trailing zeros as a negative number.
      *
-     *       {@example <code>fractionDigitsForDelta(100, …)</code> returns -2.}</li>
+     *       <div class="note"><b>Example:</b> {@code fractionDigitsForDelta(100, …)} returns -2.</div></li>
      *
      *   <li>If the first non-zero digits of {@code accuracy} are equal or greater than 95
      *       (e.g. 0.00099) and the {@code strict} argument is {@code true}, then this method
      *       increases the number of needed fraction digits in order to prevent the rounded
      *       number to be collapsed into the next integer value.
      *
-     *       {@example
-     *       If <code>accuracy</code> is 0.95, then a return value of 1 is not sufficient since
+     *       <div class="note"><b>Example:</b>
+     *       If {@code accuracy} is 0.95, then a return value of 1 is not sufficient since
      *       the rounded value of 0.95 with 1 fraction digit would be 1.0. Such value would be a
      *       violation of this method contract since the difference between 0 and that formatted
      *       value would be greater than the accuracy. Note that this is not an artificial rule;
-     *       this is related to the fact that 0.9999… is mathematically strictly equals to 1.}</li>
+     *       this is related to the fact that 0.9999… is mathematically strictly equals to 1.</div></li>
      * </ul>
      *
-     * <p>Invoking this method is equivalent to computing <code>(int)
+     * Invoking this method is equivalent to computing <code>(int)
      * -{@linkplain Math#floor(double) floor}({@linkplain Math#log10(double) log10}(accuracy))</code>
-     * except for the 0, {@code NaN}, infinities and {@code 0.…95} special cases.</p>
+     * except for the 0, {@code NaN}, infinities and {@code 0.…95} special cases.
      *
      * @param  accuracy The desired accuracy of numbers to format in base 10.
      * @param  strict {@code true} for checking the {@code 0.…95} special case.
@@ -388,8 +388,9 @@ public final class DecimalFunctions extends Static {
      * For example {@code fractionDigitsForValue(1.0)} returns 16,
      * because the {@code double} format can store <i>almost</i> 16 decimal digits after 1.
      *
-     * {@note We said <i>almost</i> because the very last digit may be able to store only a subset of the
-     *        [0 … 9] digits.}
+     * <div class="note"><b>Note:</b>
+     * We said <cite>almost</cite> because the very last digit may be able to store only a subset
+     * of the [0 … 9] digits.</div>
      *
      * Invoking this method is equivalent to invoking <code>{@linkplain #fractionDigitsForDelta(double, boolean)
      * fractionDigitsForDelta}(Math.{@linkplain Math#ulp(double) ulp}(value), false)</code>, except that it is
@@ -404,9 +405,9 @@ public final class DecimalFunctions extends Static {
      *       {@code Math.ulp(0)} = {@value java.lang.Double#MIN_VALUE}.</li>
      * </ul>
      *
-     * {@example This method is useful with <code>NumberFormat</code> for formatting all significant digits
-     *           of a <code>double</code> value, padding with trailing zeros if necessary, but no more than
-     *           necessary.}
+     * <div class="note"><b>Example:</b>
+     * This method is useful with {@link java.text.NumberFormat} for formatting all significant digits of a
+     * {@code double} value, padding with trailing zeros if necessary, but no more than necessary.</div>
      *
      * @param  value The value for which to get the number of significant fraction digits.
      * @return The number of significant fraction digits (may be negative), or 0 if {@code value} is NaN or infinity.
@@ -455,7 +456,8 @@ public final class DecimalFunctions extends Static {
      *       results in 179.12499997000. The condition for 4 trailing zero fraction digits is not meet.</li>
      * </ul>
      *
-     * {@note The threshold of 4 trailing fraction digits is arbitrary and may change in any future SIS version.}
+     * <div class="note"><b>Note:</b>
+     * The threshold of 4 trailing fraction digits is arbitrary and may change in any future SIS version.</div>
      *
      * @param  value The value for which to get the number of significant fraction fraction digits minus rounding error.
      * @param  uncertainDigits Number of trailing fraction digits which may be rounding error artefacts.

@@ -60,9 +60,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@link #getBundle(Locale)} method. This is recommended if the running environment
  * loads modules in isolated class loaders, as OSGi does for instance.
  *
- * {@note We do not provide <code>ClassLoader</code> argument in the constructor of this class
- *        because class loaders can often be hard-coded (thus avoiding the cost of an extra field)
- *        and are usually not serializable.}
+ * <div class="note"><b>API note:</b>
+ * We do not provide {@code ClassLoader} argument in the constructor of this class because class loaders
+ * can often be hard-coded (thus avoiding the cost of an extra field) and are usually not serializable.</div>
  *
  * {@section Apache SIS resources}
  * Apache SIS has its own resources mechanism, built on top of the standard {@code ResourceBundle}

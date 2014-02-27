@@ -28,9 +28,10 @@ import java.lang.annotation.RetentionPolicy;
  * This is marker annotation for source code only, in order to keep trace of code to revisit
  * when new versions of external libraries become available.
  *
- * {@note When only a portion of a method contains a workaround and the annotation can
- *        not be applied to that specific part, than it is applied to the whole method.
- *        Developers need to refer to code comments in order to locate the specific part.}
+ * <div class="note"><b>Usage note:</b>
+ * When only a portion of a method contains a workaround and the annotation can not be applied to that specific part,
+ * then it is applied to the whole method. Developers need to refer to code comments in order to locate the specific
+ * part.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.15)

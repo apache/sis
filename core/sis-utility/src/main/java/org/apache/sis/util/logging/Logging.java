@@ -76,10 +76,10 @@ public final class Logging extends Static {
      * The factory found on the classpath is assigned to the {@link #factory} field. If more than one factory
      * is found, then the log messages will be sent to the logging frameworks managed by all those factories.
      *
-     * {@note A previous version was providing a <code>scanForPlugins()</code> method allowing developers to
-     *        refresh the object state when new <code>LoggerFactory</code> instances become available on the
-     *        classpath of a running JVM. However it usually doesn't work since loggers are typically stored
-     *        in static final fields.}
+     * <div class="note"><b>API note:</b>
+     * A previous version was providing a {@code scanForPlugins()} method allowing developers to refresh the
+     * object state when new {@link LoggerFactory} instances become available on the classpath of a running JVM.
+     * However it usually doesn't work since loggers are typically stored in static final fields.</div>
      *
      * @see #setLoggerFactory(LoggerFactory)
      */
@@ -410,9 +410,10 @@ public final class Logging extends Static {
      * Invoked when an unexpected error occurred while configuring the system. The error shall not
      * prevent the application from working, but may change the behavior in some minor aspects.
      *
-     * {@example if the <code>org.apache.sis.util.logging.MonolineFormatter.time</code> pattern declared
-     * in the <code>jre/lib/logging.properties</code> file is illegal, then <code>MonolineFormatter</code>
-     * while log this problem and use a default time pattern.}
+     * <div class="note"><b>Example:</b>
+     * If the {@code org.apache.sis.util.logging.MonolineFormatter.time} pattern declared in the
+     * {@code jre/lib/logging.properties} file is illegal, then {@link MonolineFormatter} will log
+     * this problem and use a default time pattern.</div>
      *
      * @param classe  The class where the error occurred.
      * @param method  The method name where the error occurred.

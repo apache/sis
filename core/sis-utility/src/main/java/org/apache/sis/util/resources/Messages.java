@@ -230,9 +230,10 @@ public final class Messages extends IndexedResourceBundle {
      * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
      * when a {@link InternationalString#toString(Locale)} method is invoked.
      *
-     * {@note This method is redundant with the one expecting <code>Object...</code>, but avoid
-     *        the creation of a temporary array. There is no risk of confusion since the two
-     *        methods delegate their work to the same <code>format</code> method anyway.}
+     * <div class="note"><b>API note:</b>
+     * This method is redundant with the one expecting {@code Object...}, but avoid the creation
+     * of a temporary array. There is no risk of confusion since the two methods delegate their
+     * work to the same {@code format} method anyway.</div>
      *
      * @param  key The key for the desired string.
      * @param  arg Values to substitute to "{0}".

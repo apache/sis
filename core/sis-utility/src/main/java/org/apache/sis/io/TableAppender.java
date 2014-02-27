@@ -141,7 +141,7 @@ public class TableAppender extends Appender implements Flushable {
     /**
      * List of {@link Cell} objects, from left to right and top to bottom.
      * By convention, a {@code null} value or a {@link Cell} object with
-     * <code>{@link Cell#text} == null</code> means that we need to move
+     * <code>{@linkplain Cell#text} == null</code> means that we need to move
      * to the next line.
      */
     private final List<Cell> cells = new ArrayList<Cell>();

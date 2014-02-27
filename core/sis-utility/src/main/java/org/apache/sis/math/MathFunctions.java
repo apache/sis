@@ -107,9 +107,10 @@ public final class MathFunctions extends Static {
      * In the current implementation, this value is {@value}. However this limit may
      * change in any future Apache SIS version.
      *
-     * {@note The current value is the highest prime number representable as an unsigned 16 bits
-     *        integer. This is enough for current needs because 16 bits prime numbers are sufficient
-     *        for finding the divisors of any 32 bits integers.}
+     * <div class="note"><b>Note:</b>
+     * The current value is the highest prime number representable as an unsigned 16 bits integer.
+     * This is enough for current needs because 16 bits prime numbers are sufficient for finding
+     * the divisors of any 32 bits integers.</div>
      *
      * @see #nextPrimeNumber(int)
      */
@@ -302,12 +303,11 @@ public final class MathFunctions extends Static {
      * Computes 10 raised to the power of <var>x</var>. This method is faster and slightly more accurate
      * than invoking <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>.
      *
-     * {@note This method has been defined because the standard <code>Math.pow(10, x)</code>
-     *        method does not always return the closest IEEE floating point representation.
-     *        Slight departures (1 or 2 ULP) are often allowed in math functions for performance
-     *        reasons. The most accurate calculations are usually not necessary, but the base 10
-     *        is a special case since it is used for scaling axes or formatting human-readable
-     *        output.}
+     * <div class="note"><b>Note:</b>
+     * This method has been defined because the standard {@code Math.pow(10, x)} method does not always return
+     * the closest IEEE floating point representation. Slight departures (1 or 2 ULP) are often allowed in math
+     * functions for performance reasons. The most accurate calculations are usually not necessary, but the base
+     * 10 is a special case since it is used for scaling axes or formatting human-readable output.</div>
      *
      * Special cases:
      * <ul>

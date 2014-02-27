@@ -177,7 +177,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * {@linkplain #baseDirection base directions} don't match.
      * A positive angle denote a right-handed system.
      *
-     * {@example The angle from "<cite>North along 90 deg East</cite>" to "<cite>North along 0 deg</cite> is 90°.}
+     * <div class="note"><b>Example:</b>
+     * The angle from "<cite>North along 90 deg East</cite>" to "<cite>North along 0 deg</cite> is 90°.</div>
      */
     public double angle(final DirectionAlongMeridian other) {
         if (!baseDirection.equals(other.baseDirection)) {
@@ -285,7 +286,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * This element contains the meridian value and the unit of measurement.
      * The unit is currently fixed to degrees, but this may change in any future implementation.
      *
-     * {@note <code>Meridian</code> is defined in the WKT 2 specification only.}
+     * <div class="note"><b>Compatibility note:</b>
+     * {@code Meridian} is defined in the WKT 2 specification only.</div>
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return {@code "Meridian"}.

@@ -310,11 +310,13 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Each string shall contain exactly two code points (usually two characters).
      * The first code point is taken as the opening bracket, and the second code point as the closing bracket.
      *
-     * {@example The following code will instruct the WKT formatter to use the <code>(…)</code> pair of brackets
-     *           at formatting time, but still accept the more common <code>[…]</code> pair of brackets at parsing
-     *           time:
+     * <div class="note"><b>Example:</b>
+     * The following code will instruct the WKT formatter to use the (…) pair of brackets at formatting time,
+     * but still accept the more common […] pair of brackets at parsing time:
      *
-     *           <pre>setPairedBrackets("()", "[]");</pre>}
+     * {@preformat java
+     *   symbols.setPairedBrackets("()", "[]");
+     * }</div>
      *
      * @param preferred The preferred pair of opening and closing quotes, used at formatting time.
      * @param alternatives Alternative pairs of opening and closing quotes accepted at parsing time.
@@ -377,12 +379,14 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Each string shall contain exactly two code points (usually two characters).
      * The first code point is taken as the opening quote, and the second code point as the closing quote.
      *
-     * {@example The following code will instruct the WKT formatter to use the prettier <code>“…”</code>
-     *           quotation marks at formatting time (especially useful for <code>String</code> constants
-     *           in Java code), but still accept the standard <code>"…"</code> quotation marks at parsing
-     *           time:
+     * <div class="note"><b>Example:</b>
+     * The following code will instruct the WKT formatter to use the prettier “…” quotation marks at formatting time
+     * (especially useful for {@code String} constants in Java code), but still accept the standard "…" quotation marks
+     * at parsing time:
      *
-     *           <pre>setPairedQuotes("“”", "\"\"");</pre>}
+     * {@preformat java
+     *   symbols.setPairedQuotes("“”", "\"\"");
+     * }</div>
      *
      * @param preferred The preferred pair of opening and closing quotes, used at formatting time.
      * @param alternatives Alternative pairs of opening and closing quotes accepted at parsing time.

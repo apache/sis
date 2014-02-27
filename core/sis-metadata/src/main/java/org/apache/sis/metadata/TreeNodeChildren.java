@@ -157,9 +157,9 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * {@code index} is relative to the {@link #accessor} indexing, <strong>not</strong>
      * to this collection.
      *
-     * {@note We do not test <code>(value instanceof Collection)</code> because the value
-     *        could be any user's implementation. Nothing prevent users from implementing
-     *        the collection interface even for singleton elements if they wish.}
+     * <div class="note"><b>Implementation note:</b>
+     * We do not test {@code (value instanceof Collection)} because the value could be any user's implementation.
+     * Nothing prevent users from implementing the collection interface even for singleton elements if they wish.</div>
      *
      * @param  index The index in the accessor (<em>not</em> the index in this collection).
      * @return {@code true} if the value at the given index is a collection.
@@ -306,9 +306,10 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
          * ahead of time by {@link #hasNext()} since we need that information in order to determine
          * if the value needs to be skipped or not.
          *
-         * {@note Actually we don't really need to keep this value, since it is not used outside the
-         *        <code>hasNext()</code> method. But we keep it for allowing the <code>next()</code>
-         *        method to opportunistically update the <code>TreeNode.cachedValue</code> field.}
+         * <div class="note"><b>Note:</b>
+         * Actually we don't really need to keep this value, since it is not used outside the {@link #hasNext()}
+         * method. But we keep it for allowing the {@link #next()} method to opportunistically update the
+         * {@link TreeNode#cachedValue} field.</div>
          */
         private Object nextValue;
 
@@ -331,9 +332,10 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
          * The value of {@link TreeNodeChildren#modCount} at construction time or after
          * the last change done by this iterator. Used for concurrent modification checks.
          *
-         * {@note Actually this iterator should be robust to most concurrent modifications.
-         *        But we check anyway in order to prevent concurrent modifications in user
-         *        code, in case a future SIS version become more sensitive to such changes.}
+         * <div class="note"><b>Note:</b>
+         * Actually this iterator should be robust to most concurrent modifications.
+         * But we check anyway in order to prevent concurrent modifications in user
+         * code, in case a future SIS version become more sensitive to such changes.</div>
          */
         private int modCountCheck;
 

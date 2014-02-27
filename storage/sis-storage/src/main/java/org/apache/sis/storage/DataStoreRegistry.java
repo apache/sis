@@ -29,8 +29,9 @@ import org.apache.sis.util.resources.Errors;
  * Storage objects are typically {@link java.io.File} or {@link javax.sql.DataSource} instances, but can also
  * be any other objects documented in the {@link StorageConnector} class.
  *
- * {@note This class is package-private for now in order to get more experience about what could be a good API.
- *        This class may become public in a future SIS version.}
+ * <div class="note"><b>API note:</b>
+ * This class is package-private for now in order to get more experience about what could be a good API.
+ * This class may become public in a future SIS version.</div>
  *
  * {@section Thread safety}
  * The same {@code DataStoreRegistry} instance can be safely used by many threads without synchronization

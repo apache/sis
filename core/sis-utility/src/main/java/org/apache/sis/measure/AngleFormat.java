@@ -65,36 +65,39 @@ import org.apache.sis.internal.jdk7.Objects;
  * Upper-case letters {@code D}, {@code M} and {@code S} stand for the integer parts of degrees,
  * minutes and seconds respectively. If present, they shall appear in that order.
  *
- * {@example "<code>M′D</code>" is illegal because "<code>M</code>" and "<code>S</code>" are in reverse order.
- *           "<code>D°S</code>" is also illegal because "<code>M</code>" is missing between "<code>D</code>" and
- *           "<code>S</code>".}
+ * <div class="note"><b>Example:</b>
+ * "{@code M′D}" is illegal because "{@code M}" and "{@code S}" are in reverse order.
+ * "{@code D°S}" is also illegal because "{@code M}" is missing between "{@code D}" and "{@code S}".</div>
  *
  * Lower-case letters {@code d}, {@code m} and {@code s} stand for fractional parts of degrees, minutes and
  * seconds respectively. Only one of those can appear in a pattern. If present, they must be in the last field.
  *
- * {@example "<code>D.dd°MM′</code>" is illegal because "<code>d</code>" is followed by "<code>M</code>".
- *           "<code>D.mm</code>" is also illegal because "<code>m</code>" is not the fractional part of
- *           "<code>D</code>".}
+ * <div class="note"><b>Example:</b>
+ * "{@code D.dd°MM′}" is illegal because "{@code d}" is followed by "{@code M}".
+ * "{@code D.mm}" is also illegal because "{@code m}" is not the fractional part of "{@code D}".</div>
  *
  * The number of occurrences of {@code D}, {@code M}, {@code S} and their lower-case counterpart is the number
  * of digits to format.
  *
- * {@example "<code>DD.ddd</code>" will format angles with two digits for the integer part and three digits
- *           for the fractional part (e.g. <code>4.4578</code> will be formatted as <code>"04.458"</code>).}
+ * <div class="note"><b>Example:</b>
+ * "{@code DD.ddd}" will format angles with two digits for the integer part and three digits
+ * for the fractional part (e.g. {@code 4.4578} will be formatted as {@code "04.458"}).</div>
  *
  * Separator characters like {@code °}, {@code ′} and {@code ″} are inserted "as-is" in the formatted string,
  * except the decimal separator dot ({@code .}) which is replaced by the local-dependent decimal separator.
  * Separator characters may be completely omitted; {@code AngleFormat} will still differentiate degrees,
  * minutes and seconds fields according the pattern.
  *
- * {@example "<code>0480439</code>" with the "<code>DDDMMmm</code>" pattern will be parsed as 48°04.39′.}
+ * <div class="note"><b>Example:</b>
+ * "{@code 0480439}" with the "{@code DDDMMmm}" pattern will be parsed as 48°04.39′.</div>
  *
  * The {@code ?} modifier specifies that the preceding field can be omitted if its value is zero.
  * Any field can be omitted for {@link Angle} object, but only trailing fields are omitted for
  * {@link Longitude} and {@link Latitude}.
  *
- * {@example "<code>DD°MM′?SS″?</code>" will format an angle of 12.01° as <code>12°36″</code>,
- *           but a longitude of 12.01°N as <code>12°00′36″N</code> (not <code>12°36″N</code>).}
+ * <div class="note"><b>Example:</b>
+ * "{@code DD°MM′?SS″?}" will format an angle of 12.01° as {@code 12°36″},
+ * but a longitude of 12.01°N as {@code 12°00′36″N} (not {@code 12°36″N}).</div>
  *
  * The above special case exists because some kind of angles are expected to be very small (e.g. rotation angles in
  * {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters} are given in arc-seconds),
@@ -317,8 +320,9 @@ public class AngleFormat extends Format implements Localized {
      * If the minutes field is declared optional but the degrees and seconds are formatted,
      * then minutes will be formatted too un order to reduce the risk of confusion
      *
-     * {@example Value 12.01 is formatted as <code>12°00′36″</code> if <code>true</code>
-     *           and as <code>12°36″</code> if <code>false</code>.}
+     * <div class="note"><b>Example:</b>
+     * Value 12.01 is formatted as {@code 12°00′36″} if this field is {@code true},
+     * and as {@code 12°36″} if this field is {@code false}.</div>
      */
     private transient boolean showLeadingFields;
 

@@ -294,9 +294,10 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code GeodeticDatum.class}.
      *
-     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>GeodeticDatum</code> sub-interface. Overriding possibility is left mostly for
-     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     * <div class="note"><b>Note for implementors:</b>
+     * Subclasses usually do not need to override this method since GeoAPI does not define {@code GeodeticDatum}
+     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * own set of interfaces.</div>
      *
      * @return {@code GeodeticDatum.class} or a user-defined sub-interface.
      */
@@ -499,7 +500,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Formats this datum as a <cite>Well Known Text</cite> {@code Datum[…]} element.
      *
-     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text of a WGS 84 datum.
+     * <div class="note"><b>Example:</b> Well-Known Text of a WGS 84 datum.
      *
      * {@preformat wkt
      *      Datum["World Geodetic System 1984",
@@ -514,7 +515,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *        SPHEROID["WGS84", 6378137.0, 298.257223563],
      *      AUTHORITY["EPSG", "6326"]]
      * }
-     * </font></blockquote>
+     * </div>
      *
      * @return {@code "Datum"}.
      */

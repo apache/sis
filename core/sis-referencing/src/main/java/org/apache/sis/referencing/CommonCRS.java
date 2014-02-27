@@ -158,9 +158,10 @@ public enum CommonCRS {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      *
-     * {@note <cite>NAD83</cite> uses the same ellipsoid for a different datum.
-     *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses the NAD83 datum,
-     *        while the <code>"IGNF:MILLER"</code> authority code uses the GRS80 datum.}
+     * <div class="note"><b>Note:</b>
+     * {@link #NAD83} uses the same ellipsoid for a different datum.
+     * The <cite>Web Map Server</cite> {@code "CRS:83"} authority code uses the NAD83 datum,
+     * while the {@code "IGNF:MILLER"} authority code uses the GRS80 datum.</div>
      */
     ETRS89((short) 4258, (short) 4937, (short) 4936, (short) 6258, (short) 7019),
 
@@ -181,9 +182,10 @@ public enum CommonCRS {
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
      * </table></blockquote>
      *
-     * {@note <cite>ETRS89</cite> uses the same ellipsoid for a different datum.
-     *        The <cite>Web Map Server</cite> <code>"CRS:83"</code> authority code uses the NAD83 datum,
-     *        while the <code>"IGNF:MILLER"</code> authority code uses the GRS80 datum.}
+     * <div class="note"><b>Note:</b>
+     * {@link #ETRS89} uses the same ellipsoid for a different datum.
+     * The <cite>Web Map Server</cite> {@code "CRS:83"} authority code uses the NAD83 datum,
+     * while the {@code "IGNF:MILLER"} authority code uses the GRS80 datum.</div>
      */
     NAD83((short) 4269, (short) 0, (short) 0, (short) 6269, (short) 7019),
 
@@ -353,14 +355,15 @@ public enum CommonCRS {
      *   <li>Prime meridian in Greenwich.</li>
      * </ul>
      *
-     * {@note This method makes no guarantees about the datum. The current default datum is WGS 84,
-     *        but this may change in future SIS versions if a WGS 84 replacement become in wide use.}
+     * <div class="note"><b>Note:</b>
+     * This method makes no guarantees about the datum. The current default datum is WGS 84,
+     * but this may change in future SIS versions if a WGS 84 replacement become in wide use.</div>
      *
-     * <p>This default CRS is assigned to
+     * This default CRS is assigned to
      * {@linkplain org.apache.sis.geometry.GeneralEnvelope#GeneralEnvelope(org.opengis.metadata.extent.GeographicBoundingBox)
      * envelopes created from a geographic bounding box}.
      * Since ISO 19115 {@link org.opengis.metadata.extent.GeographicBoundingBox} is approximative by definition,
-     * their datum can be arbitrary.</p>
+     * their datum can be arbitrary.
      *
      * @return The default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.
      */
@@ -775,9 +778,10 @@ public enum CommonCRS {
      *   <tr><td>Other surface</td>             <td>CRS, Datum</td>  <td>{@link #OTHER_SURFACE}</td></tr>
      * </table></blockquote>
      *
-     * {@note We do not provide a <code>GEOIDAL</code> value because its definition depends on the realization epoch.
+     * <div class="note"><b>Note:</b>
+     * We do not provide a {@code GEOIDAL} value because its definition depends on the realization epoch.
      * For example EGM84, EGM96 and EGM2008 are applications of three different geoid models on the WGS 84 ellipsoid.
-     * The <code>MEAN_SEA_LEVEL</code> value can be used instead as an approximation of geoidal heights.}
+     * The {@link #MEAN_SEA_LEVEL} value can be used instead as an approximation of geoidal heights.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.4
@@ -871,9 +875,10 @@ public enum CommonCRS {
         /**
          * Creates a new enumeration value of the given name.
          *
-         * {@note This constructor does not expect <code>VerticalDatumType</code> constant in order to avoid too
-         *        early class initialization. In particular, we do not want early dependency to the SIS-specific
-         *        <code>VerticalDatumTypes.ELLIPSOIDAL</code> constant.}
+         * <div class="note"><b>Note:</b>
+         * This constructor does not expect {@link VerticalDatumType} constant in order to avoid too
+         * early class initialization. In particular, we do not want early dependency to the SIS-specific
+         * {@code VerticalDatumTypes.ELLIPSOIDAL} constant.</div>
          */
         private Vertical(final boolean isEPSG, final short crs, final short datum) {
             this.isEPSG = isEPSG;

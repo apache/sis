@@ -89,10 +89,11 @@ import org.apache.sis.internal.jdk7.Objects;
  * Applications should instead instantiate the most specific subclass having a name starting by {@code Default}.
  * However exceptions to this rule may occur when it is not possible to identify the exact type.
  *
- * {@example It is sometime not possible to infer the exact coordinate system type from
- *           <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">version 1 of
- *           <cite>Well Known Text format</cite></a>, for example when parsing a <code>LOCAL_CS</code> element.
- *           In such exceptional situation, a plain <code>AbstractCS</code> object may be instantiated.}
+ * <div class="note"><b>Example:</b>
+ * It is sometime not possible to infer the exact coordinate system type from
+ * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">version 1
+ * of <cite>Well Known Text format</cite></a>, for example when parsing a {@code LOCAL_CS} element.
+ * In such exceptional situation, a plain {@code AbstractCS} object may be instantiated.</div>
  *
  * {@code IdentifiedObject} instances are created in two main ways:
  *
@@ -753,7 +754,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The strictness level is controlled by the second argument,
      * from stricter to more permissive values:
      *
-     * <p><table class="compact">
+     * <table class="compact">
      *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>Verifies if the two objects are of the same {@linkplain #getClass() class}
      *            and compares all public properties, including SIS-specific (non standard) properties.</td></tr>
@@ -773,7 +774,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       <td>Same as {@code IGNORE_METADATA}, with some tolerance threshold on numerical values.</td></tr>
      *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
-     * </table></p>
+     * </table>
      *
      * The main guideline is that if {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true},
      * then the transformation from {@code sourceCRS} to {@code targetCRS} should be the identity transform
@@ -959,7 +960,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
      * then subclasses shall write the content starting at the insertion point shown below:
      *
-     * <p><table class="compact">
+     * <table class="compact">
      * <tr>
      *   <th>WKT example</th>
      *   <th>Java code example</th>
@@ -975,7 +976,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     // ... write the elements at the insertion point ...
      *     return "GeodeticCRS";
      * }
-     * </td></tr></table></p>
+     * </td></tr></table>
      *
      * {@section Formatting non-standard WKT}
      * If the implementation can not represent this object without violating some WKT constraints,

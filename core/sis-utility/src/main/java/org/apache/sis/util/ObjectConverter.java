@@ -54,11 +54,12 @@ import org.apache.sis.internal.jdk8.Function;
  *       a sequence of decreasing <var>T</var> values.</li>
  * </ul>
  *
- * {@example The function properties regarding order is important when converting <code>Range</code> objects.
+ * <div class="note"><b>Example:</b>
+ * The function properties regarding order is important when converting {@link org.apache.sis.measure.Range} objects.
  * For example if the converter reverses the value ordering (e.g. reverses the sign of numerical values), then the
- * minimum and maximum values in each <code>Range</code> instance need to be interchanged. If the ordering is not
- * preserved at all (neither directly or reversed), as for example in the conversion from <code>Number</code> to
- * <code>String</code>, then we can not convert ranges at all.}
+ * minimum and maximum values in each {@code Range} instance need to be interchanged. If the ordering is not preserved
+ * at all (neither directly or reversed), as for example in the conversion from {@link Number} to {@link String}, then
+ * we can not convert ranges at all.</div>
  *
  * Below are some guidelines about the function properties that a converter can declare:
  *
