@@ -185,9 +185,10 @@ public final class Measure {
      * Sets the unit to the given value, and returns {@code true} if the current {@link #unit} value was different.
      * A return value of {@code true} means that the caller should log a warning.
      *
-     * {@example Some users wrongly assign the "m" unit to <code>Ellipsoid.inverseFlattening</code>.
-     *           The SIS adapter forces the unit to <code>Unit.ONE</code>, but we want to let the user
-     *           know that he probably did something wrong.}
+     * <div class="note"><b>Example:</b>
+     * Some users wrongly assign the "m" unit to {@code Ellipsoid.inverseFlattening}.
+     * The SIS adapter forces the unit to {@link Unit#ONE}, but we want to let the user
+     * know that he probably did something wrong.</div>
      *
      * @param  newUnit The new unit (can not be null).
      * @return {@code true} if a different unit was defined before this method call.

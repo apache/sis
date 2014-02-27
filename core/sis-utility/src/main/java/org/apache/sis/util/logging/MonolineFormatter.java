@@ -404,8 +404,9 @@ loop:   for (int i=0; ; i++) {
      * Sets the format for elapsed time, or hides the time field. The pattern must matches the
      * format specified in {@link SimpleDateFormat}, but for the time part only (no date).
      *
-     * {@example The <code>"HH:mm:ss.SSS"</code> pattern will display the elapsed time in hours,
-     * minutes, seconds and milliseconds.}
+     * <div class="note"><b>Example:</b>
+     * The {@code "HH:mm:ss.SSS"} pattern will display the elapsed time in hours, minutes, seconds
+     * and milliseconds.</div>
      *
      * @param  pattern The time pattern, or {@code null} to disable time formatting.
      * @throws IllegalArgumentException If the given pattern is invalid.
@@ -903,8 +904,9 @@ loop:   for (int i=0; ; i++) {
      *       root logger.</li>
      * </ul>
      *
-     * {@note The current implementation does not check for duplicated <code>ConsoleHandler</code> instances,
-     *        and does not check if any child logger has a <code>ConsoleHandler</code>.}
+     * <div class="note"><b>Implementation note:</b>
+     * The current implementation does not check for duplicated {@code ConsoleHandler} instances,
+     * and does not check if any child logger has a {@code ConsoleHandler}.</div>
      *
      * @return The new or existing {@code MonolineFormatter}. The formatter output can be configured
      *         using the {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} methods.
@@ -938,8 +940,9 @@ loop:   for (int i=0; ; i++) {
      *     </ul></li>
      * </ul>
      *
-     * {@note The current implementation does not check for duplicated <code>ConsoleHandler</code> instances,
-     *        and does not check if any child logger has a <code>ConsoleHandler</code>.}
+     * <div class="note"><b>Implementation note:</b>
+     * The current implementation does not check for duplicated {@code ConsoleHandler} instances,
+     * and does not check if any child logger has a {@code ConsoleHandler}.</div>
      *
      * {@section Specifying a log level}
      * This method can opportunistically set the handler level. If the given level is non-null,

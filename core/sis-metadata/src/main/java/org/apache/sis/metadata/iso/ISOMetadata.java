@@ -90,9 +90,10 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * Returns the metadata standard implemented by subclasses,
      * which is {@linkplain MetadataStandard#ISO_19115 ISO 19115}.
      *
-     * {@note Subclasses shall not override this method in a way that depends on the object state,
-     *        since this method may be indirectly invoked by copy constructors (i.e. is may be
-     *        invoked before this metadata object is fully constructed).}
+     * {@section Note for implementors}
+     * Subclasses shall not override this method in a way that depends on the object state,
+     * since this method may be indirectly invoked by copy constructors (i.e. is may be
+     * invoked before this metadata object is fully constructed).
      *
      * @return The metadata standard, which is {@linkplain MetadataStandard#ISO_19115 ISO 19115} by default.
      */

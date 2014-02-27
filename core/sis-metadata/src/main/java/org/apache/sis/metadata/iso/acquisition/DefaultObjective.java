@@ -157,9 +157,9 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
      * thus providing a unified view of every kind of identifiers associated to this objective.
      *
-     * {@note The <code>&lt:gmd:identifier&gt;</code> element marshalled to XML will exclude
-     *        all the above cited identifiers, for ISO 19139 compliance. Those identifiers
-     *        will appear in other XML elements or attributes.}
+     * <div class="note"><b>XML note:</b>
+     * The {@code <gmd:identifier>} element marshalled to XML will exclude all the above cited identifiers,
+     * for ISO 19139 compliance. Those identifiers will appear in other XML elements or attributes.</div>
      *
      * @return Identify the objective.
      */

@@ -78,8 +78,9 @@ public final class CollectionsExt extends Static {
     /**
      * Returns a {@linkplain SortedSet sorted set} which is always empty and accepts no element.
      *
-     * {@note This method exists only on the JDK6 and JDK7 branches. This method will
-     *        be removed from the JDK8 branch, since it has been added to the JDK.}
+     * <div class="note"><b>Note:</b>
+     * This method exists only on the JDK6 and JDK7 branches. This method will
+     * be removed from the JDK8 branch, since it has been added to the JDK.</div>
      *
      * @param <E> The type of elements in the empty collection.
      * @return An empty collection.
@@ -157,10 +158,11 @@ public final class CollectionsExt extends Static {
      *   <li>Otherwise this method throws {@link IllegalArgumentException}.</li>
      * </ul>
      *
-     * {@note It would be very easy to add support for <code>value</code> argument of type <code>Object[]</code>
-     *        or collections. But we do not provide such support for now because this method is used mostly as a
-     *        helper method for constructors of <code>AbstractIdentifiedObject</code> subclasses receiving a map
-     *        of properties, and the contract of our constructors do not allow those other types for now.}
+     * <div class="note"><b>Note:</b>
+     * It would be very easy to add support for {@code value} argument of type {@code Object[]} or collections.
+     * But we do not provide such support for now because this method is used mostly as a helper method for
+     * constructors of {@code AbstractIdentifiedObject} subclasses receiving a map of properties,
+     * and the contract of our constructors do not allow those other types for now.</div>
      *
      * @param  <E>        The type of elements in the array to be returned.
      * @param  name       The parameter name, used only for formatting an error message in case of failure.

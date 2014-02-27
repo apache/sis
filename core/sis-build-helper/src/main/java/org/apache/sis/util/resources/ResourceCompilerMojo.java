@@ -30,8 +30,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * Compiles the international resources that are found in the module from which this mojo is invoked.
- * See the <code><a href="{@website}/sis-build-helper/index.html">sis-build-helper</a></code> module
- * for more information.
+ * See the <code>sis-build-helper</code> module for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Olivier Nouguier (Geomatys)

@@ -203,9 +203,10 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code VerticalDatum.class}.
      *
-     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>VerticalDatum</code> sub-interface. Overriding possibility is left mostly for
-     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     * <div class="note"><b>Note for implementors:</b>
+     * Subclasses usually do not need to override this method since GeoAPI does not define {@code VerticalDatum}
+     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * own set of interfaces.</div>
      *
      * @return {@code VerticalDatum.class} or a user-defined sub-interface.
      */
@@ -308,10 +309,11 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * Formats this datum as a <cite>Well Known Text</cite> {@code VerticalDatum[…]} element.
      *
-     * {@note OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height
-     *        and 2002 for ellipsoidal height. Such codes were formatted for all <code>Datum</code> subtypes in WKT 1.
-     *        Datum types became provided only for vertical datum in the ISO 19111:2003 specification, then removed
-     *        completely in ISO 19111:2007.}
+     * <div class="note"><b>Compatibility note:</b>
+     * OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height
+     * and 2002 for ellipsoidal height. Such codes were formatted for all {@code Datum} subtypes in WKT 1.
+     * Datum types became provided only for vertical datum in the ISO 19111:2003 specification, then removed
+     * completely in ISO 19111:2007.</div>
      *
      * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
      */

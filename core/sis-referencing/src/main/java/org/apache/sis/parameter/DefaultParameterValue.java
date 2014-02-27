@@ -691,8 +691,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *   Parameter["False easting", 0.0, LengthUnit["metre", 1]]
      * }
      *
-     * {@note Version 1 of WKT format did not specified the parameter unit explicitely.
-     *        Instead, the unit was inherited from the enclosing element.}
+     * <div class="note"><b>Compatibility note:</b>
+     * Version 1 of WKT format did not specified the parameter unit explicitely.
+     * Instead, the unit was inherited from the enclosing element.</div>
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return {@code "Parameter"}.

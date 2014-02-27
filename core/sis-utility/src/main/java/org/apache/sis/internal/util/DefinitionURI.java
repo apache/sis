@@ -129,36 +129,40 @@ public final class DefinitionURI {
     /**
      * The type part of a URI, or {@code null} if none (empty).
      *
-     * {@example In the <code>"urn:ogc:def:crs:EPSG:8.2:4326"</code> URN, this is <code>"crs"</code>}.
+     * <div class="note"><b>Example:</b>
+     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "crs"}.</div>
      */
     public String type;
 
     /**
      * The authority part of a URI, or {@code null} if none (empty).
      *
-     * {@example In the <code>"urn:ogc:def:crs:EPSG:8.2:4326"</code> URN, this is <code>"EPSG"</code>}.
+     * <div class="note"><b>Example:</b>
+     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.</div>
      */
     public String authority;
 
     /**
      * The version part of a URI, or {@code null} if none (empty).
      *
-     * {@example In the <code>"urn:ogc:def:crs:EPSG:8.2:4326"</code> URN, this is <code>"8.2"</code>}.
+     * <div class="note"><b>Example:</b>
+     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "8.2"}.</div>
      */
     public String version;
 
     /**
      * The code part of a URI, or {@code null} if none (empty).
      *
-     * {@example In the <code>"urn:ogc:def:crs:EPSG:8.2:4326"</code> URN, this is <code>"4326"</code>}.
+     * <div class="note"><b>Example:</b>
+     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "4326"}.</div>
      */
     public String code;
 
     /**
      * The parameters, or {@code null} if none.
      *
-     * {@example In the <code>"urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"</code> URN,
-     *           this is <code>{"1", "-100", "45"}</code>}.
+     * <div class="note"><b>Example:</b>
+     * In the {@code "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"} URN, this is <code>{"1", "-100", "45"}</code>}.</div>
      */
     public String[] parameters;
 

@@ -159,11 +159,11 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * Creates a new range using the same element type than this range. This method will
      * be overridden by subclasses in order to create a range of a more specific type.
      *
-     * {@note This method is invoked by all operations (union, intersection, <i>etc.</i>) that may
-     * create a new range. But despite this fact, the return type of those methods are nailed down
-     * to <code>Range</code> (i.e. subclasses shall not override the above-cited operations with
-     * covariant return type) because those operations may return the given argument directly,
-     * and we have no guarantees on the type of those arguments.}
+     * <div class="note"><b>API note:</b>
+     * This method is invoked by all operations (union, intersection, <i>etc.</i>) that may create a new range.
+     * But despite this fact, the return type of those methods are nailed down to {@code Range} (i.e. subclasses
+     * shall not override the above-cited operations with covariant return type) because those operations may return
+     * the given argument directly, and we have no guarantees on the type of those arguments.</div>
      */
     Range<E> create(final E minValue, final boolean isMinIncluded,
                     final E maxValue, final boolean isMaxIncluded)
@@ -261,8 +261,9 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * {@linkplain #getMaxValue() maximum value}, or if they are equal while
      * at least one of them is exclusive.
      *
-     * {@note This method is final because often used by the internal implementation.
-     *        Making the method final ensures that the other methods behave consistently.}
+     * <div class="note"><b>API note:</b>
+     * This method is final because often used by the internal implementation.
+     * Making the method final ensures that the other methods behave consistently.</div>
      *
      * @return {@code true} if this range is empty.
      */

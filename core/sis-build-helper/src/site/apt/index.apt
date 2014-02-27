@@ -39,13 +39,7 @@ Building Apache SIS
 *----------------------+-------------------------------------------------------------------------------------------+
 || Javadoc tag         || Description                                                                             ||
 *----------------------+-------------------------------------------------------------------------------------------+
-| <<<\{@example\}>>>   | An inline taglet for an example.                                                          |
-|                      | Examples appear as indented paragraphs with a smaller font.                               |
-*----------------------+-------------------------------------------------------------------------------------------+
 | <<<@module>>>        | Create links to the module where the class is defined, source code and Maven artifacts.   |
-*----------------------+-------------------------------------------------------------------------------------------+
-| <<<\{@note\}>>>      | An inline taglet for a remark that readers can safely ignore.                             |
-|                      | Notes appear as indented paragraphs with a smaller font.                                  |
 *----------------------+-------------------------------------------------------------------------------------------+
 | <<<\{@preformat\}>>> | An inline taglet for pre-formatted text. The first word inside the taglet shall be one of |
 |                      | <<<java>>>, <<<xml>>>, <<<sql>>>, <<<wkt>>>, <<<text>>>, <<<math>>> or <<<shell>>>.       |
@@ -54,8 +48,6 @@ Building Apache SIS
 |                      | shall be <<<metadata>>> or <<<referencing>>>.                                             |
 *----------------------+-------------------------------------------------------------------------------------------+
 | <<<\{@section\}>>>   | An inline taglet for the title of a new section in the javadoc.                           |
-*----------------------+-------------------------------------------------------------------------------------------+
-| <<<\{@website\}>>>   | An inline taglet for the URL to the Apache SIS web site (Maven reports).                  |
 *----------------------+-------------------------------------------------------------------------------------------+
 
 

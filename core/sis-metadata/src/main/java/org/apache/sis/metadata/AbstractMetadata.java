@@ -94,8 +94,9 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Subclasses will typically return a hard-coded constant such as
      * {@link MetadataStandard#ISO_19115}.
      *
-     * {@note Implementation of this method shall not depend on the object state,
-     *        since this method may be indirectly invoked by copy constructors.}
+     * {@section Note for implementors}
+     * Implementation of this method shall not depend on the object state,
+     * since this method may be indirectly invoked by copy constructors.
      *
      * @return The metadata standard implemented.
      */
@@ -216,9 +217,10 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
      *       for the first element and an other node with index 1 for the second element.</p>
      *
-     *       {@note The <code>(IDENTIFIER, INDEX)</code> pair can be used as a primary key for uniquely identifying
-     *              a node in a list of children. That uniqueness is guaranteed only for the children of a given
-     *              node; the same keys may appear in the children of any other nodes.}</li>
+     *       <div class="note"><b>Note:</b>
+     *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
+     *       in a list of children. That uniqueness is guaranteed only for the children of a given node;
+     *       the same keys may appear in the children of any other nodes.</div></li>
      *
      *   <li><p>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.
@@ -324,10 +326,10 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * the {@link java.util.Set#hashCode()} one and ensures that the hash code value is
      * insensitive to the ordering of properties.
      *
-     * {@note This method does not cache the value because current implementation has no notification
-     *        mechanism for tracking changes in children properties. If this metadata is known to be
-     *        immutable, then subclasses may consider caching the hash code value if performance is
-     *        important.}
+     * <div class="note"><b>Implementation note:</b>
+     * This method does not cache the value because current implementation has no notification mechanism
+     * for tracking changes in children properties. If this metadata is known to be immutable,
+     * then subclasses may consider caching the hash code value if performance is important.</div>
      *
      * @see MetadataStandard#hashCode(Object)
      */

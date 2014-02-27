@@ -177,9 +177,10 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code SphericalCS.class}.
      *
-     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>SphericalCS</code> sub-interface. Overriding possibility is left mostly for
-     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     * <div class="note"><b>Note for implementors:</b>
+     * Subclasses usually do not need to override this method since GeoAPI does not define {@code SphericalCS}
+     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * own set of interfaces.</div>
      *
      * @return {@code SphericalCS.class} or a user-defined sub-interface.
      */

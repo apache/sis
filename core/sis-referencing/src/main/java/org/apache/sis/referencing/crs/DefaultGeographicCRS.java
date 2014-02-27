@@ -150,9 +150,10 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code GeographicCRS.class}.
      *
-     * {@note Subclasses usually do not need to override this method since GeoAPI does not define
-     *        <code>GeographicCRS</code> sub-interface. Overriding possibility is left mostly for
-     *        implementors who wish to extend GeoAPI with their own set of interfaces.}
+     * <div class="note"><b>Note for implementors:</b>
+     * Subclasses usually do not need to override this method since GeoAPI does not define {@code GeographicCRS}
+     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * own set of interfaces.</div>
      *
      * @return {@code GeographicCRS.class} or a user-defined sub-interface.
      */
@@ -203,7 +204,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
-     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text (version 2)
+     * <div class="note"><b>Example:</b> Well-Known Text (version 2)
      * of a geographic coordinate reference system using the WGS 84 datum.
      *
      * {@preformat wkt
@@ -233,7 +234,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *      AXIS["Longitude", EAST],
      *      AUTHORITY["EPSG", "4326"]]
      * }
-     * </font></blockquote>
+     * </div>
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
      */
