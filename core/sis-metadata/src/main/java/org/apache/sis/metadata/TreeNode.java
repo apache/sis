@@ -50,12 +50,12 @@ import org.apache.sis.util.resources.Vocabulary;
  * set the identifier and the value, in that order, before any other operation on the new child.
  * See {@code newChild()} javadoc for an example.</p>
  *
- * {@note This class is not serializable because the values of the <code>indexInData</code> and
- *        <code>indexInList</code> fields may not be stable. The former may be invalid if the node
- *        is serialized and deserialized by two different versions of Apache SIS having properties
- *        in different order. The second may be invalid if the collection is not guaranteed to
- *        preserve order on serialization (e.g. <code>CodeListSet</code> with user-supplied elements,
- *        in which case the elements order depends on the instantiation order).}
+ * <div class="note"><b>API note:</b>
+ * This class is not serializable because the values of the {@link #indexInData} and {@link #indexInList} fields
+ * may not be stable. The former may be invalid if the node is serialized and deserialized by two different versions
+ * of Apache SIS having properties in different order. The second may be invalid if the collection is not guaranteed
+ * to preserve order on serialization (e.g. {@code CodeListSet} with user-supplied elements, in which case the elements
+ * order depends on the instantiation order).</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3

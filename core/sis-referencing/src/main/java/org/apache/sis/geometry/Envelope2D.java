@@ -302,13 +302,13 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * <p>The object returned by this method is a copy. Change in the returned position
      * will not affect this envelope, and conversely.</p>
      *
-     * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
-     * interpretation of the bounding box definition. In a WCS 1.1 data structure, the lower
-     * corner defines the edges region in the directions of <em>decreasing</em> coordinate
-     * values in the envelope CRS. This is usually the algebraic minimum coordinates, but not
-     * always. For example, an envelope spanning the anti-meridian could have a lower corner
-     * longitude greater than the upper corner longitude. Such extended interpretation applies
-     * mostly to axes having <code>WRAPAROUND</code> range meaning.}
+     * <div class="note"><b>Note:</b>
+     * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
+     * bounding box definition. In a WCS 1.1 data structure, the lower corner defines the edges region in the
+     * directions of <em>decreasing</em> coordinate values in the envelope CRS. This is usually the algebraic
+     * minimum coordinates, but not always. For example, an envelope spanning the anti-meridian could have a
+     * lower corner longitude greater than the upper corner longitude. Such extended interpretation applies
+     * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
      * @return A copy of the lower corner, typically (but not necessarily) containing minimal ordinate values.
      */
@@ -325,13 +325,13 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * <p>The object returned by this method is a copy. Change in the returned position
      * will not affect this envelope, and conversely.</p>
      *
-     * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
-     * interpretation of the bounding box definition. In a WCS 1.1 data structure, the upper
-     * corner defines the edges region in the directions of <em>increasing</em> coordinate
-     * values in the envelope CRS. This is usually the algebraic maximum coordinates, but not
-     * always. For example, an envelope spanning the anti-meridian could have an upper corner
-     * longitude less than the lower corner longitude. Such extended interpretation applies
-     * mostly to axes having <code>WRAPAROUND</code> range meaning.}
+     * <div class="note"><b>Note:</b>
+     * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
+     * bounding box definition. In a WCS 1.1 data structure, the upper corner defines the edges region in the
+     * directions of <em>increasing</em> coordinate values in the envelope CRS. This is usually the algebraic
+     * maximum coordinates, but not always. For example, an envelope spanning the anti-meridian could have an
+     * upper corner longitude less than the lower corner longitude. Such extended interpretation applies
+     * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
      * @return A copy of the upper corner, typically (but not necessarily) containing maximal ordinate values.
      */
@@ -559,9 +559,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *       represents this envelope as four separated rectangles.
      * </ul>
      *
-     * {@note The return type is the <code>Rectangle2D.Double</code> implementation class rather than the
-     *        <code>Rectangle2D</code> abstract class because the <code>Envelope2D</code> class hierarchy
-     *        already exposes this implementation choice.}
+     * <div class="note"><b>API note:</b>
+     * The return type is the {@code Rectangle2D.Double} implementation class rather than the {@code Rectangle2D}
+     * abstract class because the {@code Envelope2D} class hierarchy already exposes this implementation choice.</div>
      *
      * @return A representation of this envelope as an array of non-empty Java2D rectangles.
      *         The array never contains {@code this}.

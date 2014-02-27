@@ -61,7 +61,7 @@ import org.apache.sis.util.resources.Errors;
  * Note however that this class doesn't replace occurrences between quoted text, so string
  * expansion still relatively safe even when used with non-prefixed identifiers.</p>
  *
- * <blockquote><font size="-1"><b>Example:</b>
+ * <div class="note"><b>Example:</b>
  * In the example below, the {@code $WGS84} substring which appear in the argument given to the
  * {@code parseObject(…)} method will be expanded into the full {@code GEOGCS["WGS84", …]} string
  * before the parsing proceed.
@@ -69,7 +69,7 @@ import org.apache.sis.util.resources.Errors;
  * <blockquote><code>{@linkplain #definitions()}.put("$WGS84", "GEOGCS[\"WGS84\", DATUM[</code> <i>…etc…</i> <code>]]);<br>
  * Object crs = {@linkplain #parseObject(String) parseObject}("PROJCS[\"Mercator_1SP\", <strong>$WGS84</strong>,
  * PROJECTION[</code> <i>…etc…</i> <code>]]");</code></blockquote>
- * </font></blockquote>
+ * </div>
  *
  * {@section Thread safety}
  * {@code WKTFormat}s are not synchronized. It is recommended to create separated format instances for each thread.
@@ -261,14 +261,15 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Returns the preferred authority to look for when fetching identified object names and identifiers.
      * The difference between various authorities are most easily seen in projection and parameter names.
      *
-     * {@example The following table shows the names given by various organizations or projects for the same projection:
+     * <div class="note"><b>Example:</b>
+     * The following table shows the names given by various organizations or projects for the same projection:
      *
      * <table class="sis">
      *   <tr><th>Authority</th> <th>Projection name</th></tr>
      *   <tr><td>EPSG</td>      <td>Mercator (variant A)</td></tr>
      *   <tr><td>OGC</td>       <td>Mercator_1SP</td></tr>
      *   <tr><td>GEOTIFF</td>   <td>CT_Mercator</td></tr>
-     * </table>}
+     * </table></div>
      *
      * If no authority has been {@link #setNameAuthority(Citation) explicitly set}, then this
      * method returns the default authority for the current {@linkplain #getConvention() convention}.

@@ -149,13 +149,14 @@ public final class Extents extends Static {
      *   </ul></li>
      * </ul>
      *
-     * {@example Heights or depths are often measured using some pressure units, for example hectopascals (hPa).
-     *           An <code>Extent</code> could contain two vertical elements: one with the height measurements
-     *           in hPa, and the other element with heights transformed to metres using an empirical formula.
-     *           In such case this method will select the first vertical element on the assumption that it is
-     *           the "main" one that the metadata producer intended to show. Then this method will search for
-     *           other vertical elements using pressure unit. In our example there is none. But if any were
-     *           found, this method would compute their union.}
+     * <div class="note"><b>Example:</b>
+     * Heights or depths are often measured using some pressure units, for example hectopascals (hPa).
+     * An {@code Extent} could contain two vertical elements: one with the height measurements in hPa,
+     * and the other element with heights transformed to metres using an empirical formula.
+     * In such case this method will select the first vertical element on the assumption that it is
+     * the "main" one that the metadata producer intended to show. Next, this method will search for
+     * other vertical elements using pressure unit. In our example there is none, but if such elements
+     * were found, this method would compute their union.</div>
      *
      * @param  extent The extent to convert to a vertical measurement range, or {@code null}.
      * @return A vertical measurement range created from the given extent, or {@code null} if none.

@@ -24,10 +24,11 @@
  * replaces all occurrence of {@code '\t'} by the amount of spaces needed for producing a tabular
  * output.
  *
- * {@note One of the formatter classes defined in this package is a <code>java.text.Format</code>
- * subclass. While traditionally though as part of <code>text</code> packages, that {@code Format}
- * is defined in this I/O package because it can format to an <code>Appendable</code> and for
- * consistency with the <code>org.apache.sis.io.wkt</code> package.}
+ * <div class="note"><b>Note:</b>
+ * One of the formatter classes defined in this package is a {@link java.text.Format java.text.Format} subclass.
+ * While traditionally though as part of {@code text} packages, that {@code Format} is defined in this I/O package
+ * because it can format to an {@link java.lang.Appendable} and for consistency with the {@link org.apache.sis.io.wkt}
+ * package.</div>
  *
  * {@section Unicode characters}
  * Some formatters in this package make extensive use of Unicode characters. This may produce

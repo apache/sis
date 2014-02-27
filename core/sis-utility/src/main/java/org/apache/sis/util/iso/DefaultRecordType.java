@@ -248,8 +248,9 @@ public class DefaultRecordType implements RecordType, Serializable {
      *     boolean isInstance = getMembers().containsAll(attributeNames);
      * }
      *
-     * {@note We do not require that {@code record.getRecordType() == this} in order to allow record
-     *        "sub-types" to define additional fields, in a way similar to Java sub-classing.}
+     * <div class="note"><b>Implementation note:</b>
+     * We do not require that {@code record.getRecordType() == this} in order to allow record
+     * "sub-types" to define additional fields, in a way similar to Java sub-classing.</div>
      *
      * @param  record The record to test for compatibility.
      * @return {@code true} if the given record is compatible with this {@code RecordType}.

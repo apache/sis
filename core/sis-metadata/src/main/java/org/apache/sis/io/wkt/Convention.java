@@ -232,14 +232,15 @@ public enum Convention {
      * The difference between various authorities are most easily seen in projection and parameter names.
      * The value returned by this method can be overwritten by {@link WKTFormat#setNameAuthority(Citation)}.
      *
-     * {@example The following table shows the names given by various organizations or projects for the same projection:
+     * <div class="note"><b>Example:</b>
+     * The following table shows the names given by various organizations or projects for the same projection:
      *
      * <table class="sis">
      *   <tr><th>Authority</th> <th>Projection name</th></tr>
      *   <tr><td>EPSG</td>      <td>Mercator (variant A)</td></tr>
      *   <tr><td>OGC</td>       <td>Mercator_1SP</td></tr>
      *   <tr><td>GEOTIFF</td>   <td>CT_Mercator</td></tr>
-     * </table>}
+     * </table></div>
      *
      * @return The organization, standard or project to look for when fetching Map Projection parameter names.
      *

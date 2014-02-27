@@ -174,6 +174,8 @@ public class DefaultRepresentativeFraction extends Number implements Representat
 
     /**
      * Returns the scale as a {@code float} type.
+     *
+     * @return The scale.
      */
     @Override
     public float floatValue() {
@@ -183,8 +185,11 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Returns 1 if the {@linkplain #getDenominator() denominator} is equals to 1, or 0 otherwise.
      *
-     * {@note This method is defined that way because scales smaller than 1 can
-     *        only be casted to 0, and NaN values are also represented by 0.}
+     * <div class="note"><b>Rational:</b>
+     * This method is defined that way because scales smaller than 1 can
+     * only be casted to 0, and NaN values are also represented by 0.</div>
+     *
+     * @return 1 if the denominator is 1, or 0 otherwise.
      */
     @Override
     public long longValue() {
@@ -194,8 +199,11 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Returns 1 if the {@linkplain #getDenominator() denominator} is equals to 1, or 0 otherwise.
      *
-     * {@note This method is defined that way because scales smaller than 1 can
-     *        only be casted to 0, and NaN values are also represented by 0.}
+     * <div class="note"><b>Rational:</b>
+     * This method is defined that way because scales smaller than 1 can
+     * only be casted to 0, and NaN values are also represented by 0.</div>
+     *
+     * @return 1 if the denominator is 1, or 0 otherwise.
      */
     @Override
     public int intValue() {

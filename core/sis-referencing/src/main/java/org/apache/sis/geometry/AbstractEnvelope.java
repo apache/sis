@@ -257,13 +257,13 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * supports also {@linkplain DirectPosition#setOrdinate(int, double) write operations},
      * so changes in the position are reflected back in the envelope.
      *
-     * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
-     * interpretation of the bounding box definition. In a WCS 1.1 data structure, the lower
-     * corner defines the edges region in the directions of <em>decreasing</em> coordinate
-     * values in the envelope CRS. This is usually the algebraic minimum coordinates, but not
-     * always. For example, an envelope crossing the anti-meridian could have a lower corner
-     * longitude greater than the upper corner longitude. Such extended interpretation applies
-     * mostly to axes having <code>WRAPAROUND</code> range meaning.}
+     * <div class="note"><b>Note:</b>
+     * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
+     * bounding box definition. In a WCS 1.1 data structure, the lower corner defines the edges region in the
+     * directions of <em>decreasing</em> coordinate values in the envelope CRS. This is usually the algebraic
+     * minimum coordinates, but not always. For example, an envelope crossing the anti-meridian could have a
+     * lower corner longitude greater than the upper corner longitude. Such extended interpretation applies
+     * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
      * @return A view over the lower corner, typically (but not necessarily) containing minimal ordinate values.
      */
@@ -282,13 +282,13 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * supports also {@linkplain DirectPosition#setOrdinate(int, double) write operations},
      * so changes in the position are reflected back in the envelope.
      *
-     * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
-     * interpretation of the bounding box definition. In a WCS 1.1 data structure, the upper
-     * corner defines the edges region in the directions of <em>increasing</em> coordinate
-     * values in the envelope CRS. This is usually the algebraic maximum coordinates, but not
-     * always. For example, an envelope crossing the anti-meridian could have an upper corner
-     * longitude less than the lower corner longitude. Such extended interpretation applies
-     * mostly to axes having <code>WRAPAROUND</code> range meaning.}
+     * <div class="note"><b>Note:</b>
+     * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
+     * bounding box definition. In a WCS 1.1 data structure, the upper corner defines the edges region in the
+     * directions of <em>increasing</em> coordinate values in the envelope CRS. This is usually the algebraic
+     * maximum coordinates, but not always. For example, an envelope crossing the anti-meridian could have an
+     * upper corner longitude less than the lower corner longitude. Such extended interpretation applies
+     * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
      * @return A view over the upper corner, typically (but not necessarily) containing maximal ordinate values.
      */
@@ -615,9 +615,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * {@linkplain #getDimension() dimension}, or if the {@linkplain #getSpan(int) span} of
      * at least one axis is negative, 0 or {@link Double#NaN NaN}.
      *
-     * {@note Strictly speaking, there is an ambiguity if a span is <code>NaN</code> or if the envelope
-     *        contains both 0 and infinite spans (since 0⋅∞ = <code>NaN</code>). In such cases, this method
-     *        arbitrarily ignores the infinite values and returns <code>true</code>.}
+     * <div class="note"><b>Note:</b>
+     * Strictly speaking, there is an ambiguity if a span is {@code NaN} or if the envelope contains
+     * both 0 and infinite spans (since 0⋅∞ = {@code NaN}). In such cases, this method arbitrarily
+     * ignores the infinite values and returns {@code true}.</div>
      *
      * If {@code isEmpty()} returns {@code false}, then {@link #isAllNaN()} is guaranteed to
      * also return {@code false}. However the converse is not always true.
@@ -679,8 +680,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * If it least one ordinate value in the given point is {@link Double#NaN NaN},
      * then this method returns {@code false}.
      *
-     * {@note This method assumes that the specified point uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * {@section Pre-conditions}
+     * This method assumes that the specified point uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * For any dimension, if <var>upper</var> &lt; <var>lower</var> then this method uses an
@@ -730,8 +732,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * envelope, then this method returns {@code true} only if {@code edgesInclusive}
      * is {@code true}.
      *
-     * {@note This method assumes that the specified envelope uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * {@section Pre-conditions}
+     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * For every cases illustrated below, the yellow box is considered completely enclosed
@@ -824,8 +827,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * If one or more edges from the specified envelope coincide with an edge from this envelope,
      * then this method returns {@code true} only if {@code edgesInclusive} is {@code true}.
      *
-     * {@note This method assumes that the specified envelope uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * {@section Pre-conditions}
+     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * This method can handle envelopes spanning the anti-meridian.
@@ -928,10 +932,11 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *       given dimension <var>i</var> is {@code eps}.</li>
      * </ul>
      *
-     * {@note Relative tolerance value (as opposed to absolute tolerance value) help to workaround
-     * the fact that tolerance value are CRS dependent. For example the tolerance value need to be
+     * <div class="note"><b>Note:</b>
+     * Relative tolerance values (as opposed to absolute tolerance values) help to workaround the
+     * fact that tolerance value are CRS dependent. For example the tolerance value need to be
      * smaller for geographic CRS than for UTM projections, because the former typically has a
-     * [-180…180]° range while the later can have a range of thousands of meters.}
+     * [-180…180]° range while the later can have a range of thousands of meters.</div>
      *
      * {@section Coordinate Reference System}
      * To be considered equal, the two envelopes must have the same {@linkplain #getDimension() dimension}
@@ -979,9 +984,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * Returns {@code true} if the specified object is an envelope of the same class
      * with equals coordinates and {@linkplain #getCoordinateReferenceSystem() CRS}.
      *
-     * {@note This implementation requires that the provided <code>object</code> argument
-     * is of the same class than this envelope. We do not relax this rule since not every
-     * implementations in the SIS code base follow the same contract.}
+     * <div class="note"><b>Implementation note:</b>
+     * This implementation requires that the provided {@code object} argument is of the same class than this envelope.
+     * We do not relax this rule since not every implementations in the SIS code base follow the same contract.</div>
      *
      * @param object The object to compare with this envelope.
      * @return {@code true} if the given object is equal to this envelope.
@@ -1038,15 +1043,16 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
      * The number of dimension is written only if different than 2.
      *
-     * {@example
+     * <div class="note"><b>Example:</b>
      *   <ul>
-     *     <li><code>BOX(-90 -180, 90 180)</code></li>
-     *     <li><code>BOX3D(-90 -180 0, 90 180 1)</code></li>
+     *     <li>{@code BOX(-90 -180, 90 180)}</li>
+     *     <li>{@code BOX3D(-90 -180 0, 90 180 1)}</li>
      *   </ul>
-     * }
+     * </div>
      *
-     * {@note The <code>BOX</code> element is not part of the standard <cite>Well Known Text</cite>
-     *        (WKT) format. However it is understood by many softwares, for example GDAL and PostGIS.}
+     * <div class="note"><b>Note:</b>
+     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * However it is understood by many softwares, for example GDAL and PostGIS.</div>
      *
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
      * by the {@code GeneralEnvelope} constructor.
