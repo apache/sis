@@ -147,9 +147,10 @@ public final class PerformanceLevel extends Level {
      *       are also set to the given duration.</li>
      * </ul>
      *
-     * {@note The duration of the <code>PERFORMANCE</code> level can not be modified: it is
-     *        always zero. However invoking this method on the <code>PERFORMANCE</code> field will
-     *        ensure that every <code>SLOW*</code> levels will have at least the given duration.}
+     * <div class="note"><b>Usage note:</b>
+     * The duration of the {@link #PERFORMANCE} level can not be modified: it is always zero.
+     * However invoking this method on the {@code PERFORMANCE} field will ensure that every
+     * {@code SLOW*} levels will have at least the given duration.</div>
      *
      * @param  duration The minimal duration.
      * @param  unit The unit of the given duration value.

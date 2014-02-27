@@ -47,12 +47,13 @@ import static java.lang.Character.*;
  *       feeds or tabulations are entity boundaries.</li>
  * </ul>
  *
- * {@example Numbers formatted in the French locale use no-break spaces as group separators. When parsing a list
- * of numbers, ordinary spaces around the numbers may need to be ignored, but no-break spaces shall be considered as
- * part of the numbers. Consequently <code>isWhitespace(…)</code> is appropriate for skipping spaces <em>between</em>
- * the numbers. But if there is spaces to skip <em>inside</em> a single number, then <code>isSpaceChar(…)</code> is a
- * good choice for accepting no-break spaces and for stopping the parse operation at tabulations or line feed character.
- * A tabulation or line feed between two characters is very likely to separate two distinct values.}
+ * <div class="note"><b>Example:</b>
+ * Numbers formatted in the French locale use no-break spaces as group separators. When parsing a list of numbers,
+ * ordinary spaces around the numbers may need to be ignored, but no-break spaces shall be considered as part of the
+ * numbers. Consequently {@code isWhitespace(…)} is appropriate for skipping spaces <em>between</em> the numbers.
+ * But if there is spaces to skip <em>inside</em> a single number, then {@code isSpaceChar(…)} is a good choice
+ * for accepting no-break spaces and for stopping the parse operation at tabulations or line feed character.
+ * A tabulation or line feed between two characters is very likely to separate two distinct values.</div>
  *
  * In practice, the {@link java.text.Format} implementations in the SIS library typically use
  * {@code isSpaceChar(…)} while most of the rest of the SIS library, including this
@@ -683,13 +684,13 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *       {@linkplain Characters#PARAGRAPH_SEPARATOR paragraph separator}.</li>
      * </ul>
      *
-     * {@note Prior JDK8 this method was relatively cheap because all string instances created by
-     *        <code>String.substring(int,int)</code> shared the same <code>char[]</code> internal
-     *        array. However since JDK8, the new <code>String</code> implementation copies the data
-     *        in new arrays. Consequently it is better to use index rather than this method for
-     *        splitting large <code>String</code>s. However this method still useful for other
-     *        <code>CharSequence</code> implementations providing an efficient
-     *        <code>subSequence(int,int)</code> method.}
+     * <div class="note"><b>Performance note:</b>
+     * Prior JDK8 this method was relatively cheap because all string instances created by
+     * {@link String#substring(int,int)} shared the same {@code char[]} internal array.
+     * However since JDK8, the new {@code String} implementation copies the data in new arrays.
+     * Consequently it is better to use index rather than this method for splitting large {@code String}s.
+     * However this method still useful for other {@link CharSequence} implementations providing an efficient
+     * {@code subSequence(int,int)} method.</div>
      *
      * @param  text The multi-line text from which to get the individual lines, or {@code null}.
      * @return The lines in the text, or an empty array if the given text was null.
@@ -1408,9 +1409,9 @@ searchWordBreak:    while (true) {
      * one character from the same word may appear in the acronym, but they must always
      * be the first consecutive characters. The comparison is case-insensitive.
      *
-     * {@example Given the <code>"Open Geospatial Consortium"</code> words, the following strings are
-     *           recognized as acronyms: <code>"OGC"</code>, <code>"ogc"</code>, <code>"O.G.C."</code>,
-     *           <code>"OpGeoCon"</code>.}
+     * <div class="note"><b>Example:</b>
+     * Given the {@code "Open Geospatial Consortium"} words, the following strings are recognized as acronyms:
+     * {@code "OGC"}, {@code "ogc"}, {@code "O.G.C."}, {@code "OpGeoCon"}.</div>
      *
      * If any of the given arguments is {@code null}, this method returns {@code false}.
      *
@@ -1544,8 +1545,9 @@ cmp:    while (ia < lga) {
      * Returns {@code true} if every characters in the given sequence are
      * {@linkplain Character#isUpperCase(int) upper-case} letters.
      *
-     * {@note The behavior of this method regarding digits and punctuation is unspecified
-     *        and may change in future versions.}
+     * <div class="note"><b>Note:</b>
+     * The behavior of this method regarding digits and punctuation is unspecified
+     * and may change in future versions.</div>
      *
      * @param  text The character sequence to test.
      * @return {@code true} if every character are upper-case.

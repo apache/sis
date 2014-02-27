@@ -58,12 +58,12 @@ import org.apache.sis.internal.util.LocalizedParseException;
  *   <li>{@link #format(Object, Appendable)} may throws {@code IOException}.</li>
  * </ul>
  *
- * {@note In the standard <code>Format</code> class, the <code>parse</code> methods either accept
- *        a <code>ParsePosition</code> argument and returns <code>null</code> on error,
- *        or does not take position argument and throws a <code>ParseException</code> on error.
- *        In this <code>CompoundFormat</code> class, the <code>parse</code> method both takes a
- *        <code>ParsePosition</code> argument and throws a <code>ParseException</code> on error.
- *        This allows both substring parsing and more accurate exception message in case of error.}
+ * <div class="note"><b>API note:</b>
+ * In the standard {@link Format} class, the {@code parse} methods either accept a {@link ParsePosition} argument
+ * and returns {@code null} on error, or does not take position argument and throws a {@link ParseException} on error.
+ * In this {@code CompoundFormat} class, the {@code parse} method both takes a {@code ParsePosition} argument and
+ * throws a {@code ParseException} on error. This allows both substring parsing and more accurate exception message
+ * in case of error.</div>
  *
  * @param <T> The base type of objects parsed and formatted by this class.
  *
@@ -139,11 +139,11 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *       and {@link org.opengis.util.InternationalString} contents.</li>
      * </ul>
      *
-     * {@example The ISO 19162 (<cite>Well Known Text</cite>) standard requires a number format similar to the one
-     *           defined by <code>Locale.ROOT</code> while it allows informative texts (remarks, <i>etc.</i>) to be
-     *           formatted in the user's locale. Consequently <code>WKTFormat</code> fixes (usually) the locale for
-     *           <code>Category.FORMAT</code> to <code>Locale.ROOT</code> and let <code>Category.DISPLAY</code> be
-     *           any locale.}
+     * <div class="note"><b>Example:</b>
+     * The ISO 19162 (<cite>Well Known Text</cite>) standard requires a number format similar to the one defined by
+     * {@code Locale.ROOT} while it allows informative texts (remarks, <i>etc.</i>) to be formatted according the
+     * user's locale. Consequently {@code WKTFormat} fixes (usually) the locale for {@code Category.FORMAT} to
+     * {@code Locale.ROOT} and let {@code Category.DISPLAY} be any locale.</div>
      *
      * For subclasses that do not override this method, the default implementation returns {@link #getLocale()}.
      *
@@ -171,12 +171,12 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * The returned type may be a subclass of {@code <T>} if the format is configured in a way
      * that restrict the kind value to be parsed.
      *
-     * {@example
+     * <div class="note"><b>Example:</b>
      *   <ul>
-     *     <li><code>StatisticsFormat</code> unconditionally returns <code>Statistics.class</code>.</li>
-     *     <li><code>TreeTableFormat</code> unconditionally returns <code>TreeTable.class</code>.</li>
+     *     <li>{@code StatisticsFormat} unconditionally returns {@code Statistics.class}.</li>
+     *     <li>{@code TreeTableFormat} unconditionally returns {@code TreeTable.class}.</li>
      *   </ul>
-     * }
+     * </div>
      *
      * @return The base type of values parsed and formatted by this {@code Format} instance.
      */
@@ -205,10 +205,11 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *       error index</var> + <var>{@code ParseException} error offset</var>.</li>
      * </ul>
      *
-     * {@example If parsing of the <code>"30.0 40,0"</code> coordinate fails on the coma in the last number, then the
-     * <code>pos</code> error index will be set to 5 (the beginning of the <code>"40.0"</code> character sequence)
-     * while the <code>ParseException</code> error offset will be set to 2 (the coma position relative the beginning
-     * of the <code>"40.0"</code> character sequence).}
+     * <div class="note"><b>Example:</b>
+     * If parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number, then the {@code pos}
+     * error index will be set to 5 (the beginning of the {@code "40.0"} character sequence) while the
+     * {@link ParseException} error offset will be set to 2 (the coma position relative the beginning
+     * of the {@code "40.0"} character sequence).</div>
      *
      * This error offset policy is a consequence of the compound nature of {@code CompoundFormat},
      * since the exception may have been produced by a call to {@link Format#parseObject(String)}.
@@ -265,11 +266,11 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * {@linkplain Character#isSpaceChar(int) spaces} and
      * {@linkplain Character#isISOControl(int) ISO control characters}.
      *
-     * {@note The usual SIS policy, as documented in the <code>CharSequences</code> class,
-     * is to test for whitespaces using the <code>Characters.isWhitespace(…)</code> method.
-     * The combination of <code>isSpaceChar(…)</code> and <code>isISOControl(…)</code> done
-     * in this <code>parseObject(…)</code> method is more permissive since it encompasses
-     * all whitespace characters, plus non-breaking spaces and non-white ISO controls.}
+     * <div class="note"><b>Note:</b>
+     * The usual SIS policy, as documented in the {@link org.apache.sis.util.CharSequences} class, is to test for
+     * whitespaces using the {@code Character.isWhitespace(…)} method. The combination of {@code isSpaceChar(…)}
+     * and {@code isISOControl(…)} done in this {@code parseObject(…)} method is more permissive since it encompasses
+     * all whitespace characters, plus non-breaking spaces and non-white ISO controls.</div>
      *
      * @param  text The string representation of the object to parse.
      * @return The parsed object.
@@ -309,10 +310,10 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * without propagating {@link IOException}. The I/O exception should never
      * occur since we are writing in a {@link StringBuffer}.
      *
-     * {@note Strictly speaking, an <code>IOException</code> could still occur if a subclass
-     * overrides the above <code>format</code> method and performs some I/O operation outside
-     * the given <code>StringBuffer</code>. However this is not the intended usage of this
-     * class and implementors should avoid such unexpected I/O operation.}
+     * <div class="note"><b>Note:</b>
+     * Strictly speaking, an {@link IOException} could still occur if a subclass overrides the above {@code format}
+     * method and performs some I/O operation outside the given {@link StringBuffer}. However this is not the intended
+     * usage of this class and implementors should avoid such unexpected I/O operation.</div>
      *
      * @param  object      The object to format.
      * @param  toAppendTo  Where to format the object.

@@ -500,7 +500,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Formats this datum as a <cite>Well Known Text</cite> {@code Datum[…]} element.
      *
-     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text of a WGS 84 datum.
+     * <div class="note"><b>Example:</b> Well-Known Text of a WGS 84 datum.
      *
      * {@preformat wkt
      *      Datum["World Geodetic System 1984",
@@ -515,7 +515,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *        SPHEROID["WGS84", 6378137.0, 298.257223563],
      *      AUTHORITY["EPSG", "6326"]]
      * }
-     * </font></blockquote>
+     * </div>
      *
      * @return {@code "Datum"}.
      */

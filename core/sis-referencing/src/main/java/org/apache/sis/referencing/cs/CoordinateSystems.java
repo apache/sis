@@ -217,7 +217,7 @@ public final class CoordinateSystems extends Static {
      * ({@linkplain AxisDirection#EAST East}, {@linkplain AxisDirection#NORTH North})
      * are taken in account by this method.
      *
-     * <blockquote><font size="-1"><b>Example:</b>
+     * <div class="note"><b>Example:</b>
      * If coordinates in {@code sourceCS} are (<var>x</var>,<var>y</var>) tuples in metres
      * and coordinates in {@code targetCS} are (<var>-y</var>,<var>x</var>) tuples in centimetres,
      * then the transformation can be performed as below:
@@ -229,7 +229,7 @@ public final class CoordinateSystems extends Static {
      *     │ 1    │   │   0     0    1 │ │ 1   │
      *     └      ┘   └                ┘ └     ┘
      * }
-     * </font></blockquote>
+     * </div>
      *
      * @param  sourceCS The source coordinate system.
      * @param  targetCS The target coordinate system.

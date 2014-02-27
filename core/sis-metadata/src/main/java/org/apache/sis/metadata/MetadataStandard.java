@@ -455,7 +455,8 @@ public class MetadataStandard implements Serializable {
      * {@linkplain KeyNamePolicy#METHOD_NAME method names} or {@linkplain KeyNamePolicy#SENTENCE
      * sentences} (usually in English).
      *
-     * <p><b>Example:</b> the following code prints <code>"alternateTitle<u>s</u>"</code> (note the plural):</p>
+     * <div class="note"><b>Example:</b>
+     * The following code prints <code>"alternateTitle<u>s</u>"</code> (note the plural):
      *
      * {@preformat java
      *   MetadataStandard standard = MetadataStandard.ISO_19115;
@@ -463,6 +464,7 @@ public class MetadataStandard implements Serializable {
      *   String value = names.get("alternateTitle");
      *   System.out.println(value); // alternateTitles
      * }
+     * </div>
      *
      * The {@code keyPolicy} argument specify only the string representation of keys returned by the iterators.
      * No matter the key name policy, the {@code key} argument given to any {@link Map} method can be any of the

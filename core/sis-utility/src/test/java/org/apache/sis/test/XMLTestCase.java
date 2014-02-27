@@ -114,8 +114,9 @@ public abstract strictfp class XMLTestCase extends TestCase {
      * The (un)marshallers locale is set to {@link Locale#UK} (the language of ISO standards) and their
      * timezone is arbitrarily set to CET (<cite>Central European Time</cite>).
      *
-     * {@note We intentionally use a timezone different than UTC in order to have an error of one or two hours
-     *        if a code fails to take timezone offset in account.}
+     * <div class="note"><b>Note:</b>
+     * We intentionally use a timezone different than UTC in order to have an error of one or two hours
+     * if a code fails to take timezone offset in account.</div>
      *
      * @return The shared (un)marshaller pool.
      * @throws JAXBException If an error occurred while creating the JAXB marshaller.

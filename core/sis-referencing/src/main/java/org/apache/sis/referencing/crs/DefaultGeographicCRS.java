@@ -204,7 +204,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
-     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text (version 2)
+     * <div class="note"><b>Example:</b> Well-Known Text (version 2)
      * of a geographic coordinate reference system using the WGS 84 datum.
      *
      * {@preformat wkt
@@ -234,7 +234,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *      AXIS["Longitude", EAST],
      *      AUTHORITY["EPSG", "4326"]]
      * }
-     * </font></blockquote>
+     * </div>
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
      */

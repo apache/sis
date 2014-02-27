@@ -177,7 +177,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * {@linkplain #baseDirection base directions} don't match.
      * A positive angle denote a right-handed system.
      *
-     * {@example The angle from "<cite>North along 90 deg East</cite>" to "<cite>North along 0 deg</cite> is 90°.}
+     * <div class="note"><b>Example:</b>
+     * The angle from "<cite>North along 90 deg East</cite>" to "<cite>North along 0 deg</cite> is 90°.</div>
      */
     public double angle(final DirectionAlongMeridian other) {
         if (!baseDirection.equals(other.baseDirection)) {

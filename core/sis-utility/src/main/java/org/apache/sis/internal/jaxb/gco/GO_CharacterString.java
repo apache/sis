@@ -269,9 +269,10 @@ public class GO_CharacterString {
      * Returns the text as a string, or {@code null} if none.
      * The null value is expected by various {@code PT_FreeText}.
      *
-     * {@note Returning <code>null</code> is unusual and not a recommended practice.
-     * But precedents exist (for example Swing <code>DefaultMutableTreeNode</code>)
-     * and this class is not for public usage.}
+     * <div class="note"><b>Note:</b>
+     * Returning {@code null} is unusual and not a recommended practice.
+     * But precedents exist (for example {@link javax.swing.tree.DefaultMutableTreeNode})
+     * and this class is not for public usage.</div>
      *
      * @return The text as a string (may be null).
      */
