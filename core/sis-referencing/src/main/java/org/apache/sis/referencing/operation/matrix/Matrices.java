@@ -365,9 +365,10 @@ public final class Matrices extends Static {
      *       then an exception will be thrown.</li>
      * </ul>
      *
-     * {@example It is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>) to
-     *           (<i>easting</i>, <i>northing</i>) - this is the first above case, but illegal
-     *           to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).}
+     * <div class="note"><b>Example:</b>
+     * It is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>) to
+     * (<i>easting</i>, <i>northing</i>) - this is the first above case, but illegal
+     * to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).</div>
      *
      * {@section Example}
      * The following method call:

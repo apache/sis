@@ -411,11 +411,12 @@ public class AttributeNames {
      *   <td>           {@link Role#PUBLISHER}</td>
      * </tr></table>
      *
-     * {@note The member names in this class are upper-cases because they should be considered
-     *        as constants. For example <code>AttributeNames.CREATOR.EMAIL</code> maps exactly to the
-     *        <code>"creator_email"</code> string and nothing else. A lower-case <code>email</code>
-     *        member name could be misleading since it would suggest that the field contains the
-     *        actual name value rather than the key by which the value is identified in a NetCDF file.}
+     * <div class="note"><b>Note:</b>
+     * The member names in this class are upper-cases because they should be considered as constants.
+     * For example {@code AttributeNames.CREATOR.EMAIL} maps exactly to the {@code "creator_email"} string
+     * and nothing else. A lower-case {@code email} member name could be misleading since it would suggest
+     * that the field contains the actual name value rather than the key by which the value is identified
+     * in a NetCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3 (derived from geotk-3.20)
@@ -707,12 +708,12 @@ public class AttributeNames {
      *   <td            >{@link DimensionNameType#TIME}</td>
      * </tr></table>
      *
-     * {@note The member names in this class are upper-cases because they should be considered
-     *        as constants. For example <code>AttributeNames.LATITUDE.MINIMUM</code> maps exactly to
-     *        the <code>"geospatial_lat_min"</code> string and nothing else. A lower-case
-     *        <code>minimum</code> member name could be misleading since it would suggest that
-     *        the field contains the actual name value rather than the key by which the value
-     *        is identified in a NetCDF file.}
+     * <div class="note"><b>Note:</b>
+     * The member names in this class are upper-cases because they should be considered as constants.
+     * For example {@code AttributeNames.LATITUDE.MINIMUM} maps exactly to the {@code "geospatial_lat_min"}
+     * string and nothing else. A lower-case {@code minimum} member name could be misleading since it would
+     * suggest that the field contains the actual name value rather than the key by which the value is
+     * identified in a NetCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3 (derived from geotk-3.20)

@@ -1325,9 +1325,10 @@ public final class ArraysExt extends Static {
      *     array = resize(array, removeDuplicated(array));
      * }
      *
-     * {@note This method return type is not an array in order to make obvious that the given
-     *        array will be modified in-place. This behavior is different than the behavior of
-     *        many other methods in this class, which do not modify the given source array.}
+     * <div class="note"><b>API note:</b>
+     * This method return type is not an array in order to make obvious that the given array will be modified in-place.
+     * This behavior is different than the behavior of many other methods in this class, which do not modify the given
+     * source array.</div>
      *
      * @param  array Array from which to remove duplicated elements, or {@code null}.
      * @return The number of remaining elements in the given array, or 0 if the given
@@ -1717,8 +1718,9 @@ public final class ArraysExt extends Static {
     /**
      * Swaps the elements at the given indices in the given array of {@code Object} values.
      *
-     * {@note While trivial, this method is provided because its need occurs relatively often
-     *        and the availability of a <code>swap</code> method makes the code easier to read.}
+     * <div class="note"><b>Note:</b>
+     * While trivial, this method is provided because its need occurs relatively often
+     * and the availability of a {@code swap} method makes the code easier to read.</div>
      *
      * @param data The array in which to swap elements.
      * @param i0   Index of one element to be swapped.
@@ -1735,8 +1737,9 @@ public final class ArraysExt extends Static {
     /**
      * Swaps the elements at the given indices in the given array of {@code double} values.
      *
-     * {@note While trivial, this method is provided because its need occurs relatively often
-     *        and the availability of a <code>swap</code> method makes the code easier to read.}
+     * <div class="note"><b>Note:</b>
+     * While trivial, this method is provided because its need occurs relatively often
+     * and the availability of a {@code swap} method makes the code easier to read.</div>
      *
      * @param data The array in which to swap elements.
      * @param i0   Index of one element to be swapped.
@@ -1783,8 +1786,9 @@ public final class ArraysExt extends Static {
     /**
      * Swaps the elements at the given indices in the given array of {@code int} values.
      *
-     * {@note While trivial, this method is provided because its need occurs relatively often
-     *        and the availability of a <code>swap</code> method makes the code easier to read.}
+     * <div class="note"><b>Note:</b>
+     * While trivial, this method is provided because its need occurs relatively often
+     * and the availability of a {@code swap} method makes the code easier to read.</div>
      *
      * @param data The array in which to swap elements.
      * @param i0   Index of one element to be swapped.

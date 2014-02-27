@@ -25,7 +25,7 @@ import org.apache.sis.util.resources.Errors;
 /**
  * A limited set of color and font attributes assignable to characters at formatting time.
  * Those attributes are used by SIS formatters for providing some syntax coloring,
- * for example in the <code>org.apache.sis.io.wkt</code> package.
+ * for example in the {@link org.apache.sis.io.wkt} package.
  *
  * <p>This enumeration is restricted to a subset of the <cite>ANSI escape codes</cite> (a.k.a.
  * ECMA-48, ISO/IEC 6429 and X3.64 standards) because SIS uses them mostly for syntax coloring in

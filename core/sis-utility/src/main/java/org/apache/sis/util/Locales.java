@@ -94,10 +94,11 @@ public final class Locales extends Static {
      * for compactness (conversions is done by {@link #toNumber(String, int)}) and for avoiding references
      * to {@code String} instances.
      *
-     * {@note Oracle JDK8 implementation computes the 3-letters codes on-the-fly instead of holding references
-     *        to pre-existing strings. If we were holding string references here, we would prevent the garbage
-     *        collector to collect the strings for all languages and countries. This would probably be a waste
-     *        of resources.}
+     * <div class="note"><b>Implementation note:</b>
+     * Oracle JDK8 implementation computes the 3-letters codes on-the-fly instead of holding references
+     * to pre-existing strings. If we were holding string references here, we would prevent the garbage
+     * collector to collect the strings for all languages and countries. This would probably be a waste
+     * of resources.</div>
      */
     private static final short[] ISO3, ISO2;
     static {
@@ -269,10 +270,10 @@ filter: for (final Locale locale : locales) {
      * string are parsed as documented in the {@link #parse(String)} method. In particular, this method tries to
      * convert 3-letters codes to 2-letters code on a <cite>best effort</cite> basis.
      *
-     * {@example This method is useful when language codes are appended to a base property or resource name.
-     *           For example a dictionary may define the <code>"remarks"</code> property by values associated
-     *           to the <code>"remarks_en"</code> and <code>"remarks_fr"</code> keys, for English and French
-     *           locales respectively.}
+     * <div class="note"><b>Example:</b>
+     * This method is useful when language codes are appended to a base property or resource name.
+     * For example a dictionary may define the {@code "remarks"} property by values associated to the
+     * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.</div>
      *
      * @param  code The language code, which may be followed by country code.
      * @param  fromIndex Index of the first character to parse.

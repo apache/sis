@@ -237,14 +237,15 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * check that every points in a {@code LINESTRING} have the same dimension. However this
      * constructor ensures that the parenthesis are balanced, in order to catch some malformed WKT.
      *
-     * {@example The following texts can be parsed by this constructor in addition of the usual
-     * <code>BOX</code> element. This constructor creates the bounding box of those geometries:
+     * <div class="note"><b>Example:</b>
+     * The following texts can be parsed by this constructor in addition of the usual {@code BOX} element.
+     * This constructor creates the bounding box of those geometries:
      *
      * <ul>
-     *   <li><code>POINT(6 10)</code></li>
-     *   <li><code>MULTIPOLYGON(((1 1, 5 1, 1 5, 1 1),(2 2, 3 2, 3 3, 2 2)))</code></li>
-     *   <li><code>GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))</code></li>
-     * </ul>}
+     *   <li>{@code POINT(6 10)}</li>
+     *   <li>{@code MULTIPOLYGON(((1 1, 5 1, 1 5, 1 1),(2 2, 3 2, 3 3, 2 2)))}</li>
+     *   <li>{@code GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))}</li>
+     * </ul></div>
      *
      * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @throws IllegalArgumentException If the given string can not be parsed.
@@ -348,10 +349,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * this {@linkplain #getDimension() envelope dimension}, and minimum shall not be greater
      * than maximum.
      *
-     * {@example
+     * <div class="note"><b>Example:</b>
      * (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>, <var>z</var><sub>min</sub>,
      *  <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>, <var>z</var><sub>max</sub>)
-     * }
+     * </div>
      *
      * @param corners Ordinates of the new lower corner followed by the new upper corner.
      */

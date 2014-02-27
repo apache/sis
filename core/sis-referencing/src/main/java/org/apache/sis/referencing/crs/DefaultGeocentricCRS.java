@@ -223,7 +223,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
-     * <blockquote><font size="-1"><b>Example:</b> Well-Known Text (version 2)
+     * <div class="note"><b>Example:</b> Well-Known Text (version 2)
      * of a geocentric coordinate reference system using the WGS 84 datum.
      *
      * {@preformat wkt
@@ -250,7 +250,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *     AXIS["Y", EAST],
      *     AXIS["Z", NORTH]]
      * }
-     * </font></blockquote>
+     * </div>
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeocCS"} (WKT 1).
      */

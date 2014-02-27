@@ -27,10 +27,11 @@ import org.apache.sis.util.logging.Logging;
  * This thread is reserved to internal SIS usage - no user code shall be executed here.
  * All submitted tasks shall be very quick, since there is only one thread shared by everyone.
  *
- * {@note In practice some user code may be indirectly executed, since some SIS tasks invoke
- * overrideable methods. We may need to revisit the <code>DelayedExecutor</code> design in a
- * future version if the above happens to be a problem. For example we may allow the user to
- * specify an application-wide scheduled executor and delegate the tasks to that executor.}
+ * <div class="note"><b>Note:</b>
+ * In practice some user code may be indirectly executed, since some SIS tasks invoke overrideable methods.
+ * We may need to revisit the {@code DelayedExecutor} design in a future version if the above happens to be
+ * a problem. For example we may allow the user to specify an application-wide scheduled executor and delegate
+ * the tasks to that executor.</div>
  *
  * The methods for use in this class are:
  * <ul>
@@ -142,9 +143,10 @@ public final class DelayedExecutor extends DaemonThread {
      * Constructs a new thread as a daemon thread. This thread will be sleeping most of the time.
      * It will run only only a few nanoseconds every time a new {@link DelayedRunnable} is taken.
      *
-     * {@note We give to this thread a priority higher than the normal one since this thread shall
-     *        execute only tasks to be completed very shortly. Quick execution of those tasks is at
-     *        the benefit of the rest of the system, since they make more resources available sooner.}
+     * <div class="note"><b>Note:</b>
+     * We give to this thread a priority higher than the normal one since this thread shall
+     * execute only tasks to be completed very shortly. Quick execution of those tasks is at
+     * the benefit of the rest of the system, since they make more resources available sooner.</div>
      */
     private DelayedExecutor(final DaemonThread lastCreatedDaemon) {
         super("DelayedExecutor", lastCreatedDaemon);

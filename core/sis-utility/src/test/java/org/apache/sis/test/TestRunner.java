@@ -70,9 +70,9 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * The dependency methods that failed. This set will be created only when first needed.
      * Values are method names.
      *
-     * {@note There is no need to prefix the method names by classnames because a new instance of
-     *        <code>TestRunner</code> will be created for each test class, even if the the test
-     *        classes are aggregated in a <code>TestSuite</code>.}
+     * <div class="note"><b>Note:</b>
+     * There is no need to prefix the method names by classnames because a new instance of {@code TestRunner}
+     * will be created for each test class, even if the the test classes are aggregated in a {@link TestSuite}.</div>
      *
      * @see #addDependencyFailure(String)
      */

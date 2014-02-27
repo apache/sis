@@ -221,9 +221,9 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * The scale difference in parts per million (EPSG:8611).
      * The legacy OGC parameter name is {@code "ppm"}.
      *
-     * {@example If a distance of 100 km in the source coordinate reference system translates into a distance
-     *           of 100.001 km in the target coordinate reference system, the scale difference is 1 ppm
-     *           (the ratio being 1.000001).}
+     * <div class="note"><b>Example:</b>
+     * If a distance of 100 km in the source coordinate reference system translates into a distance of 100.001 km
+     * in the target coordinate reference system, the scale difference is 1 ppm (the ratio being 1.000001).</div>
      */
     public double dS;
 

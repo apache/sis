@@ -61,9 +61,10 @@ import static org.apache.sis.util.Numbers.*;
  * this {@code RangeSet} class and override the {@link #add(Range)}, {@link #remove(Object)} and
  * {@link #newRange(Comparable, Comparable)} methods.
  *
- * {@note Current implementation does not yet support open intervals. The ranges shall be either
- * closed intervals, or half-open. This limitation exists because supporting open intervals implies
- * that the internal array shall support duplicated values.}
+ * <div class="note"><b>Note:</b>
+ * Current implementation does not yet support open intervals. The ranges shall be either closed intervals,
+ * or half-open. This limitation exists because supporting open intervals implies that the internal array
+ * shall support duplicated values.</div>
  *
  * {@section Extensions to <code>SortedSet</code> API}
  * This class contains some methods not found in standard {@link SortedSet} API.
@@ -228,9 +229,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * are minimal values, and all elements at odd indices are maximal values. Elements in this
      * array must be strictly increasing without duplicated values.
      *
-     * {@note The restriction against duplicated values will need to be removed in a future
-     * version if we want to support open intervals. All binary searches in this class will
-     * need to take in account the possibility for duplicated values.}
+     * <div class="note"><b>Note:</b>
+     * The restriction against duplicated values will need to be removed in a future version
+     * if we want to support open intervals. All binary searches in this class will need to
+     * take in account the possibility for duplicated values.</div>
      */
     private Object array;
 
@@ -792,8 +794,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      *           upper.minValue, !upper.isMinIncluded));
      * }
      *
-     * {@note This method takes the minimal value of the <code>upper</code> argument
-     *        rater than the maximal value because the upper endpoint is exclusive.}
+     * <div class="note"><b>API note:</b>
+     * This method takes the minimal value of the {@code upper} argument instead
+     * than the maximal value because the upper endpoint is exclusive.</div>
      *
      * @param  lower Low endpoint (inclusive) of the sub set.
      * @param  upper High endpoint (exclusive) of the sub set.

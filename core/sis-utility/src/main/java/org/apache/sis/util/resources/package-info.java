@@ -31,15 +31,14 @@
  *   <li>the value string is compliant with the {@link java.text.MessageFormat} syntax.</li>
  * </ul>
  *
- * {@note <code>java.util.Formatter</code> is an alternative to <code>MessageFormat</code> providing
- *        similar functionalities with a C/C++ like syntax. However <code>MessageFormat</code> has two
- *        advantages: it provides a <code>choice</code> format type (useful for handling plural forms),
- *        and localizes properly objects of unspecified type (by contrast, the <code>Formatter</code>
- *        <code>"%s"</code> type always invoke <code>toString()</code>). The later advantage is
- *        important for messages in wich the same argument could receive <code>Number</code> or
- *        <code>Date</code> instances as well as <code>String</code>.
- *        Furthermore, the <code>java.util.logging</code> framework is designed for use with
- *        <code>MessageFormat</code> (see the <code>Formatter.formatMessage(LogRecord)</code> method).}
+ * <div class="note"><b>Note:</b>
+ * {@link java.util.Formatter java.util.Formatter} is an alternative to {@link java.text.MessageFormat} providing
+ * similar functionalities with a C/C++ like syntax. However {@code MessageFormat} has two advantages: it provides
+ * a {@code choice} format type (useful for handling plural forms), and localizes properly objects of unspecified type
+ * (by contrast, the {@code Formatter} {@code "%s"} type always invoke {@code toString()}). The later advantage is
+ * important for messages in which the same argument could receive {@link java.lang.Number} or {@link java.util.Date}
+ * instances as well as {@link java.lang.String}. Furthermore, the {@link java.util.logging} framework is designed for
+ * use with {@code MessageFormat} (see the {@code Formatter.formatMessage(LogRecord)} method).</div>
  *
  * Apache SIS developers can add resources by editing the {@code *.properties} file in the source code directory,
  * then run the localized resources compiler provided in the {@code sis-build-helper} module.

@@ -985,9 +985,8 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * with equals coordinates and {@linkplain #getCoordinateReferenceSystem() CRS}.
      *
      * <div class="note"><b>Implementation note:</b>
-     * This implementation requires that the provided <code>object</code> argument is of the same class
-     * than this envelope. We do not relax this rule since not every implementations in the SIS code base
-     * follow the same contract.</div>
+     * This implementation requires that the provided {@code object} argument is of the same class than this envelope.
+     * We do not relax this rule since not every implementations in the SIS code base follow the same contract.</div>
      *
      * @param object The object to compare with this envelope.
      * @return {@code true} if the given object is equal to this envelope.
@@ -1044,12 +1043,12 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
      * The number of dimension is written only if different than 2.
      *
-     * {@example
+     * <div class="note"><b>Example:</b>
      *   <ul>
-     *     <li><code>BOX(-90 -180, 90 180)</code></li>
-     *     <li><code>BOX3D(-90 -180 0, 90 180 1)</code></li>
+     *     <li>{@code BOX(-90 -180, 90 180)}</li>
+     *     <li>{@code BOX3D(-90 -180 0, 90 180 1)}</li>
      *   </ul>
-     * }
+     * </div>
      *
      * <div class="note"><b>Note:</b>
      * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
