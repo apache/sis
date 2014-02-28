@@ -146,6 +146,17 @@ div.note {
   margin-bottom: 9pt;
 }
 
+/*
+ * Note, examples or warnings.
+ */
+div.warning {
+  color:   firebrick;
+  margin-left:  30pt;
+  margin-right: 30pt;
+  margin-top:    9pt;
+  margin-bottom: 9pt;
+}
+
 
 
 
