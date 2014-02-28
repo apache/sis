@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link Parameters} class.
+ * Tests the static methods in the {@link Parameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -45,6 +45,38 @@ import static org.junit.Assert.*;
  */
 @DependsOn({DefaultParameterDescriptorTest.class, DefaultParameterValueTest.class})
 public final class ParametersTest extends TestCase {
+    /**
+     * Tests the {@link Parameters#cast(ParameterDescriptor, Class)} and
+     * {@link Parameters#cast(ParameterValue, Class)} methods.
+     */
+    @Test
+    public void testCast() {
+        final ParameterDescriptor<Integer> descriptor = DefaultParameterDescriptorTest.create("My param", 5, 15, 10);
+        assertSame(descriptor, Parameters.cast(descriptor, Integer.class));
+        try {
+            assertSame(descriptor, Parameters.cast(descriptor, Double.class));
+            fail("Expected a ClassCastException.");
+        } catch (ClassCastException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("My param"));
+            assertTrue(message, message.contains("Integer"));
+        }
+        /*
+         * Tests the cast of values.
+         */
+        final ParameterValue<Integer> value = descriptor.createValue();
+        assertEquals("Expected a parameter initialized to the default value.", 10, value.intValue());
+        assertSame(value, Parameters.cast(value, Integer.class));
+        try {
+            assertSame(value, Parameters.cast(value, Double.class));
+            fail("Expected a ClassCastException.");
+        } catch (ClassCastException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("My param"));
+            assertTrue(message, message.contains("Integer"));
+        }
+    }
+
     /**
      * Tests {@link Parameters#getValueDomain(ParameterDescriptor)
      */
