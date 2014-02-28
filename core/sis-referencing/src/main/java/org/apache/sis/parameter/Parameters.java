@@ -16,14 +16,18 @@
  */
 package org.apache.sis.parameter;
 
+import javax.measure.unit.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
+import org.apache.sis.measure.Range;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Static;
 
 
 /**
- * Static methods working on parameters.
+ * Static methods working on parameters and their descriptors.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-2.1)
@@ -90,5 +94,42 @@ public final class Parameters extends Static {
             }
         }
         return (ParameterValue<T>) value;
+    }
+
+    /**
+     * Returns the domain of valid values defined by the given descriptor, or {@code null} if none.
+     * This method builds the range from the {@linkplain DefaultParameterDescriptor#getMinimumValue() minimum value},
+     * {@linkplain DefaultParameterDescriptor#getMaximumValue() maximum value} and, if the values are numeric, from
+     * the {@linkplain DefaultParameterDescriptor#getUnit() unit}.
+     *
+     * @param  <T> The type of parameter values.
+     * @param  descriptor The parameter descriptor, or {@code null}.
+     * @return The domain of valid values, or {@code null} if none.
+     *
+     * @see DefaultParameterDescriptor#getValueDomain()
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <T extends Comparable<? super T>> Range<T> getValueDomain(final ParameterDescriptor<T> descriptor) {
+        if (descriptor != null) {
+            if (descriptor instanceof DefaultParameterDescriptor<?>) {
+                return (Range) ((DefaultParameterDescriptor<T>) descriptor).getValueDomain();
+            }
+            final Class<T> valueClass = descriptor.getValueClass();
+            final T minimumValue = valueClass.cast(descriptor.getMinimumValue());
+            final T maximumValue = valueClass.cast(descriptor.getMaximumValue());
+            if (Number.class.isAssignableFrom(valueClass)) {
+                final Unit<?> unit = descriptor.getUnit();
+                if (unit != null) {
+                    return new MeasurementRange((Class) valueClass,
+                            (Number) minimumValue, true, (Number) maximumValue, true, unit);
+                } else if (minimumValue != null || maximumValue != null) {
+                    return new NumberRange((Class) valueClass,
+                            (Number) minimumValue, true, (Number) maximumValue, true);
+                }
+            } else if (minimumValue != null || maximumValue != null) {
+                return new Range<>(valueClass, minimumValue, true, maximumValue, true);
+            }
+        }
+        return null;
     }
 }

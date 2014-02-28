@@ -52,6 +52,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.AbstractReferenceSystemTest.class,
     org.apache.sis.parameter.DefaultParameterDescriptorTest.class,
     org.apache.sis.parameter.DefaultParameterValueTest.class,
+    org.apache.sis.parameter.ParametersTest.class,
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
     org.apache.sis.referencing.datum.TimeDependentBWPTest.class,
     org.apache.sis.referencing.datum.DefaultEllipsoidTest.class,

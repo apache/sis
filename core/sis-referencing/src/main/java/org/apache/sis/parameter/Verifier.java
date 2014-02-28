@@ -24,6 +24,7 @@ import javax.measure.converter.ConversionException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
@@ -94,7 +95,7 @@ final class Verifier {
     static <T> T ensureValidValue(final ParameterDescriptor<T> descriptor, final Object value, final Unit<?> unit)
             throws InvalidParameterValueException
     {
-        final Class<T> type = descriptor.getValueClass();
+        final Class<T> valueClass = descriptor.getValueClass();
         /*
          * Before to verify if the given value is inside the bounds, we need to convert the value
          * to the units used by the parameter descriptor.
@@ -111,7 +112,7 @@ final class Verifier {
                 if (getUnitMessageID(unit) != expectedID) {
                     throw new IllegalArgumentException(Errors.format(expectedID, unit));
                 }
-                if (value != null && Number.class.isAssignableFrom(type)) {
+                if (value != null && Number.class.isAssignableFrom(valueClass)) {
                     final UnitConverter converter;
                     try {
                         converter = unit.getConverterToAny(def);
@@ -121,7 +122,7 @@ final class Verifier {
                     Number n = (Number) value; // Given value.
                     n = converter.convert(n.doubleValue()); // Value in units that we can compare.
                     try {
-                        convertedValue = Numbers.cast(n, (Class<? extends Number>) type);
+                        convertedValue = Numbers.cast(n, (Class<? extends Number>) valueClass);
                     } catch (IllegalArgumentException e) {
                         throw new InvalidParameterValueException(e.getLocalizedMessage(), getName(descriptor), value);
                     }
@@ -131,9 +132,15 @@ final class Verifier {
         if (convertedValue == null) {
             return descriptor.getDefaultValue();
         }
-        final Comparable<T> minimum = descriptor.getMinimumValue();
-        final Comparable<T> maximum = descriptor.getMaximumValue();
-        final Verifier error = ensureValidValue(type, descriptor.getValidValues(), minimum, maximum, convertedValue);
+        final Verifier error;
+        final Set<T> validValues = descriptor.getValidValues();
+        if (descriptor instanceof DefaultParameterDescriptor<?>) {
+            error = ensureValidValue(valueClass, validValues,
+                    ((DefaultParameterDescriptor<?>) descriptor).getValueDomain(), convertedValue);
+        } else {
+            error = ensureValidValue(valueClass, validValues,
+                    descriptor.getMinimumValue(), descriptor.getMaximumValue(), convertedValue);
+        }
         if (error != null) {
             final String name = getName(descriptor);
             throw new InvalidParameterValueException(error.message(null, name, value), name, value);
@@ -154,16 +161,64 @@ final class Verifier {
      *        This is not necessarily the user-provided value.
      */
     @SuppressWarnings("unchecked")
-    static <T> Verifier ensureValidValue(final Class<T> type, final Set<T> validValues,
+    static <T> Verifier ensureValidValue(final Class<T> valueClass, final Set<T> validValues,
+            final Range<?> valueDomain, final Object convertedValue)
+    {
+        Verifier verifier = ensureValidValue(valueClass, validValues, convertedValue);
+        if (verifier == null && valueDomain != null) {
+            /*
+             * Following assertion should never fail with DefaultParameterDescriptor instances.
+             * It could fail if the user override DefaultParameterDescriptor.getValueDomain()
+             * in a way that break the method contract.
+             */
+            assert valueDomain.getElementType() == valueClass : valueDomain;
+            if (!((Range) valueDomain).contains((Comparable<?>) convertedValue)) {
+                return new Verifier(Errors.Keys.ValueOutOfRange_4, true, null,
+                        valueDomain.getMinValue(), valueDomain.getMaxValue(), convertedValue);
+            }
+        }
+        return verifier;
+    }
+
+    /**
+     * Same as {@link #ensureValidValue(Class, Set, Range, Object)}, used as a fallback when
+     * the descriptor is not an instance of {@link DefaultParameterDescriptor}.
+     *
+     * @param convertedValue The value <em>converted to the units specified by the descriptor</em>.
+     *        This is not necessarily the user-provided value.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> Verifier ensureValidValue(final Class<T> valueClass, final Set<T> validValues,
             final Comparable<T> minimum, final Comparable<T> maximum, final Object convertedValue)
     {
-        if (!type.isInstance(convertedValue)) {
-            return new Verifier(Errors.Keys.IllegalParameterValueClass_3, false, null, type, convertedValue.getClass());
+        Verifier verifier = ensureValidValue(valueClass, validValues, convertedValue);
+        if (verifier == null) {
+            if ((minimum != null && minimum.compareTo((T) convertedValue) > 0) ||
+                (maximum != null && maximum.compareTo((T) convertedValue) < 0))
+            {
+                verifier = new Verifier(Errors.Keys.ValueOutOfRange_4, true, null, minimum, maximum, convertedValue);
+            }
         }
-        if ((minimum != null && minimum.compareTo((T) convertedValue) > 0) ||
-            (maximum != null && maximum.compareTo((T) convertedValue) < 0))
-        {
-            return new Verifier(Errors.Keys.ValueOutOfRange_4, true, null, minimum, maximum, convertedValue);
+        return verifier;
+    }
+
+    /**
+     * Ensures that the given value has valid type and is a member of the set of valid values.
+     * If the value is valid, returns {@code null}. Otherwise returns an object that can be used
+     * for formatting the error message.
+     *
+     * <p>If this method returns {@code null}, then {@code convertedValue} can safely be casted to
+     * type {@code <T>}.</p>
+     *
+     * @param convertedValue The value <em>converted to the units specified by the descriptor</em>.
+     *        This is not necessarily the user-provided value.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> Verifier ensureValidValue(final Class<T> valueClass, final Set<T> validValues,
+            final Object convertedValue)
+    {
+        if (!valueClass.isInstance(convertedValue)) {
+            return new Verifier(Errors.Keys.IllegalParameterValueClass_3, false, null, valueClass, convertedValue.getClass());
         }
         if (validValues != null && !validValues.contains(convertedValue)) {
             return new Verifier(Errors.Keys.IllegalParameterValue_2, true, null, convertedValue);
@@ -173,7 +228,7 @@ final class Verifier {
 
     /**
      * Returns an error message for the error detected by
-     * {@link #ensureValidValue(Class, Set, Comparable, Comparable, Object)}.
+     * {@link #ensureValidValue(Class, Set, Range, Object)}.
      *
      * @param name  The parameter name.
      * @param value The user-supplied value (not necessarily equals to the converted value).
