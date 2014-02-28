@@ -83,7 +83,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      */
     private static DefaultParameterValue<Double> create(final String name, final double value, final Unit<?> unit) {
         final ParameterDescriptor<Double> descriptor = DefaultParameterDescriptorTest.create(
-                name, Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, unit);
+                name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN, unit);
         final DefaultParameterValue<Double> parameter = new DefaultParameterValue<>(descriptor);
         parameter.setValue(value, unit);
         return parameter;
@@ -154,7 +154,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @DependsOnMethod("testInteger")
     public void testBoundedInteger() {
         final DefaultParameterValue<Integer> parameter = new DefaultParameterValue<>(
-                DefaultParameterDescriptorTest.create("Bounded param", 15, -30, +40));
+                DefaultParameterDescriptorTest.create("Bounded param", -30, +40, 15));
         assertEquals(Integer.class, parameter.getDescriptor().getValueClass());
         assertEquals(      "value", Integer.valueOf(15), parameter.getValue());
         assertEquals(   "intValue", 15, parameter.intValue());
@@ -273,7 +273,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @DependsOnMethod("testMeasure")
     public void testBoundedDouble() {
         final DefaultParameterValue<Double> parameter = new DefaultParameterValue<>(
-                DefaultParameterDescriptorTest.create("Bounded param", 15.0, -30.0, +40.0, null));
+                DefaultParameterDescriptorTest.create("Bounded param", -30.0, +40.0, 15.0, null));
         assertEquals(Double.class, parameter.getDescriptor().getValueClass());
         assertEquals(      "value", Double.valueOf(15), parameter.getValue());
         assertEquals(   "intValue", 15, parameter.intValue());
@@ -317,7 +317,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @DependsOnMethod({"testMeasure", "testBoundedDouble"})
     public void testBoundedMeasure() {
         final DefaultParameterValue<Double> parameter = new DefaultParameterValue<>(
-                DefaultParameterDescriptorTest.create("Length measure", 12, 4, 20, SI.METRE));
+                DefaultParameterDescriptorTest.create("Length measure", 4, 20, 12, SI.METRE));
         assertEquals("value",    Double.valueOf(12), parameter.getValue());
         assertEquals("intValue", 12,                 parameter.intValue());
         assertEquals("unit",     SI.METRE,           parameter.getUnit());
@@ -358,8 +358,8 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
         final AxisDirection[] directions = {
             AxisDirection.NORTH,
             AxisDirection.SOUTH,
-            AxisDirection.DISPLAY_LEFT,
-            AxisDirection.PAST
+            AxisDirection.PAST,
+            AxisDirection.DISPLAY_LEFT
         };
         final ParameterDescriptor<AxisDirection> descriptor = DefaultParameterDescriptorTest.create(
                 "Direction", AxisDirection.class, directions, AxisDirection.NORTH);
