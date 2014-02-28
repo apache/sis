@@ -21,9 +21,13 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Set;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -72,6 +76,24 @@ public final strictfp class CollectionsExtTest extends TestCase {
             assertTrue(message, message.contains(name));
             assertTrue(message, message.contains("Object[]"));
         }
+    }
+
+    /**
+     * Tests {@link CollectionsExt#createSetForType(Class, int)}.
+     */
+    @Test
+    public void testCreateSetForType() {
+        Set<?> set = CollectionsExt.createSetForType(java.lang.annotation.ElementType.class, 0);
+        assertTrue("isEmpty", set.isEmpty());
+        assertInstanceOf("Set<ElementType>", EnumSet.class, set);
+
+        set = CollectionsExt.createSetForType(org.opengis.referencing.cs.AxisDirection.class, 0);
+        assertTrue("isEmpty", set.isEmpty());
+        assertInstanceOf("Set<AxisDirection>", CodeListSet.class, set);
+
+        set = CollectionsExt.createSetForType(String.class, 0);
+        assertTrue("isEmpty", set.isEmpty());
+        assertInstanceOf("Set<String>", HashSet.class, set);
     }
 
     /**
