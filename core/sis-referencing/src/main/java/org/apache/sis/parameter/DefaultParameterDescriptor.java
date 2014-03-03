@@ -291,7 +291,7 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     }
 
     /**
-     * The minimum number of times that values for this parameter group or parameter are required.
+     * The minimum number of times that values for this parameter are required.
      * A value of 0 means an optional parameter and a value of 1 means a mandatory parameter.
      *
      * @see #getMaximumOccurs()
@@ -302,7 +302,7 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     }
 
     /**
-     * The maximum number of times that values for this parameter group or parameter can be included.
+     * The maximum number of times that values for this parameter can be included.
      * For a {@code ParameterDescriptor}, the value is always 1.
      *
      * @return The maximum occurrence.
