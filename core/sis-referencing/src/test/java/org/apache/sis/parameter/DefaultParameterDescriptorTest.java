@@ -65,7 +65,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * @return The parameter descriptor.
      */
     static <T> DefaultParameterDescriptor<T> createSimpleOptional(final String name, final Class<T> type) {
-        return new DefaultParameterDescriptor<>(properties(name), type, null, null, false);
+        return new DefaultParameterDescriptor<>(properties(name), type, null, null, null, false);
     }
 
     /**
@@ -81,7 +81,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
             final int minimumValue, final int maximumValue, final int defaultValue)
     {
         return new DefaultParameterDescriptor<>(properties(name), Integer.class,
-                NumberRange.create(minimumValue, true, maximumValue, true), Integer.valueOf(defaultValue), true);
+                NumberRange.create(minimumValue, true, maximumValue, true), null, Integer.valueOf(defaultValue), true);
     }
 
     /**
@@ -98,7 +98,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
             final double minimumValue, final double maximumValue, final double defaultValue, final Unit<?> unit)
     {
         return new DefaultParameterDescriptor<>(properties(name), Double.class,
-                MeasurementRange.create(minimumValue, true, maximumValue, true, unit),
+                MeasurementRange.create(minimumValue, true, maximumValue, true, unit), null,
                 Double.isNaN(defaultValue) ? null : Double.valueOf(defaultValue), true);
     }
 
@@ -115,9 +115,23 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     static <T> DefaultParameterDescriptor<T> create(final String name, final Class<T> type,
             final T[] validValues, final T defaultValue)
     {
-        final Map<String,Object> properties = properties(name);
-        assertNull(properties.put(DefaultParameterDescriptor.VALID_VALUES_KEY, validValues));
-        return new DefaultParameterDescriptor<>(properties, type, null, defaultValue, true);
+        return new DefaultParameterDescriptor<>(properties(name), type, null, validValues, defaultValue, true);
+    }
+
+    /**
+     * Creates a descriptor for an array of {@code double[] values.
+     *
+     * @param  name         The parameter name.
+     * @param  minimumValue The minimum parameter value, or {@link Double#NEGATIVE_INFINITY} if none.
+     * @param  maximumValue The maximum parameter value, or {@link Double#POSITIVE_INFINITY} if none.
+     * @param  unit         The unit for minimum and maximum values.
+     * @return The parameter descriptor for the given range of values.
+     */
+    static DefaultParameterDescriptor<double[]> createForArray(final String name,
+            final double minimumValue, final double maximumValue, final Unit<?> unit)
+    {
+        final MeasurementRange<Double> valueDomain = MeasurementRange.create(minimumValue, true, maximumValue, true, unit);
+        return new DefaultParameterDescriptor<>(properties(name), double[].class, valueDomain, null, null, true);
     }
 
     /**
@@ -170,7 +184,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
             create("Test default", 4, 20, 3);
             fail("defaultValue < minimum");
         } catch (IllegalArgumentException exception) {
-            assertEquals("Value ‘Test default’=3 is invalid. Expected a value in the [4 … 20] range.", exception.getMessage());
+            assertEquals("Value ‘Test default’ = 3 is invalid. Expected a value in the [4 … 20] range.", exception.getMessage());
         }
     }
 
@@ -198,7 +212,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     public void testStringType() {
         final Range<String> valueDomain = new Range<>(String.class, "AAA", true, "BBB", true);
         final DefaultParameterDescriptor<String> descriptor = new DefaultParameterDescriptor<>(
-                properties("String param"), String.class, valueDomain, "ABC", false);
+                properties("String param"), String.class, valueDomain, null, "ABC", false);
         assertEquals("name", "String param",     descriptor.getName().getCode());
         assertEquals("valueClass", String.class, descriptor.getValueClass());
         assertNull  ("validValues",              descriptor.getValidValues());
@@ -208,6 +222,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         assertEquals("maximumValue",  "BBB",     descriptor.getMaximumValue());
         assertEquals("minimumOccurs", 0,         descriptor.getMinimumOccurs());
         assertEquals("maximumOccurs", 1,         descriptor.getMaximumOccurs());
+        assertNull  ("unit",                     descriptor.getUnit());
     }
 
     /**
@@ -227,6 +242,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         assertNull       ("maximumValue",              descriptor.getMaximumValue());
         assertEquals     ("minimumOccurs", 1,          descriptor.getMinimumOccurs());
         assertEquals     ("maximumOccurs", 1,          descriptor.getMaximumOccurs());
+        assertNull       ("unit",                      descriptor.getUnit());
         /*
          * Invalid operation: element not in the list of valid elements.
          */
@@ -234,6 +250,39 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
             create("Enumeration param", String.class, enumeration, "Pear");
         } catch (IllegalArgumentException e) {
             assertEquals("Parameter “Enumeration param” can not take the “Pear” value.", e.getMessage());
+        }
+    }
+
+    /**
+     * Tests a descriptor for a parameter value of kind {@code double[]}.
+     */
+    @Test
+    @DependsOnMethod("testDoubleType")
+    public void testArrayType() {
+        final DefaultParameterDescriptor<double[]> descriptor = createForArray("Array param", 4, 9, SI.METRE);
+        assertEquals("name",       "Array param",  descriptor.getName().getCode());
+        assertEquals("valueClass", double[].class, descriptor.getValueClass());
+        assertEquals("unit",       SI.METRE,       descriptor.getUnit());
+        assertNull  ("validValues",                descriptor.getValidValues());
+        assertNull  ("defaultValue",               descriptor.getDefaultValue());
+        assertNull  ("minimumValue",               descriptor.getMinimumValue());
+        assertNull  ("maximumValue",               descriptor.getMaximumValue());
+        assertEquals("minimumOccurs", 1,           descriptor.getMinimumOccurs());
+        assertEquals("maximumOccurs", 1,           descriptor.getMaximumOccurs());
+
+        final Range<?> valueDomain = descriptor.getValueDomain();
+        assertNotNull("valueDomain", valueDomain);
+        assertEquals(Double.class,      valueDomain.getElementType());
+        assertEquals(Double.valueOf(4), valueDomain.getMinValue());
+        assertEquals(Double.valueOf(9), valueDomain.getMaxValue());
+        /*
+         * Invalid operation: wrong type of range value.
+         */
+        try {
+            new DefaultParameterDescriptor<>(properties("Array param"), double[].class,
+                    NumberRange.create(4, true, 9, true), null, null, false);
+        } catch (IllegalArgumentException e) {
+            assertEquals("Argument ‘valueDomain’ can not be an instance of ‘Range<Integer>’.", e.getMessage());
         }
     }
 }

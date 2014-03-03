@@ -19,15 +19,13 @@ package org.apache.sis.parameter;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
-import java.util.Collection;
 import javax.measure.unit.Unit;
-
 import org.opengis.util.CodeList;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
-
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Range;
@@ -81,15 +79,6 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     private static final long serialVersionUID = 7433401733923393656L;
 
     /**
-     * Key for the <code>{@value}</code> property to be given to the constructor.
-     * This is used for setting the value to be returned by {@link #getValidValues()}.
-     *
-     * <p>This property is mostly for restricting values to a {@linkplain CodeList code list} or enumeration subset.
-     * It is not necessary to provide this property when all values from the code list or enumeration are valid.</p>
-     */
-    public static final String VALID_VALUES_KEY = "validValues";
-
-    /**
      * {@code true} if this parameter is mandatory, or {@code false} if it is optional.
      *
      * @see #getMinimumOccurs()
@@ -113,11 +102,18 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
 
     /**
      * The minimum and maximum parameter value with their unit of measurement, or {@code null} if none.
-     * If non-null, then the range element type shall be the same than {@link #valueClass}.
+     * If this field is non-null, then <code>valueDomain.{@linkplain Range#getElementType() getElementType()}</code>
+     * shall be one of the following:
+     *
+     * <ul>
+     *   <li>If {@link #valueClass} is not an array, then the range element type shall be the same class.</li>
+     *   <li>If {@code valueClass} is an array, then the range element type shall be the wrapper of
+     *       <code>valueClass.{@linkplain Class#getComponentType() getComponentType()}</code>.</li>
+     * </ul>
      *
      * @see #getValueDomain()
      */
-    private final Range<? extends T> valueDomain;
+    private final Range<?> valueDomain;
 
     /**
      * The default value for the parameter, or {@code null}.
@@ -127,23 +123,15 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     private final T defaultValue;
 
     /**
-     * Constructs a descriptor from a set of properties. The properties given in argument follow the same rules
-     * than for the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
-     * Additionally, the following properties are understood by this constructor:
+     * Constructs a descriptor from a set of properties. The properties map is given unchanged to the
+     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
+     * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value #VALID_VALUES_KEY}</td>
-     *     <td>{@code Collection<T>} or {@code T[]}</td>
-     *     <td>{@link #getValidValues()}</td>
-     *   </tr>
-     *   <tr>
-     *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
@@ -167,31 +155,57 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
      *   </tr>
      * </table>
      *
-     * The {@code valueDomain} argument groups the {@linkplain #getMinimumValue() minimum value},
+     * The {@code valueDomain} argument combines the {@linkplain #getMinimumValue() minimum value},
      * {@linkplain #getMaximumValue() maximum value}, {@linkplain #getUnit() unit of measurement}
-     * (if any) and information about whether the bounds are inclusive or exclusive. This argument
-     * can be provided only if the {@code valueClass} is assignable to {@link Comparable}, and the
-     * value returned by {@link Range#getElementType()} shall be the same than {@code valueClass}.
+     * (if any) and information about whether the bounds are inclusive or exclusive.
+     * If this argument is non-null, then it shall comply to the following conditions:
+     *
+     * <ul>
+     *   <li>The range shall be non-{@linkplain Range#isEmpty() empty}.</li>
+     *   <li><code>valueDomain.{@linkplain Range#getElementType() getElementType()}</code> shall be equals
+     *       to one of the following:
+     *     <ul>
+     *       <li>to {@code valueClass} if the later is not an array,</li>
+     *       <li>or to <code>{@linkplain Numbers#primitiveToWrapper(Class)
+     *           primitiveToWrapper}(valueClass.{@linkplain Class#getComponentType() getComponentType()})</code>
+     *           if {@code valueClass} is an array.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * If both {@code valueDomain} and {@code validValues} are non-null, then all valid values shall be contained
+     * in the value domain.
      *
      * @param properties   The properties to be given to the identified object.
      * @param valueClass   The class that describes the type of the parameter value.
      * @param valueDomain  The minimum value, maximum value and unit of measurement, or {@code null} if none.
+     * @param validValues  The list of valid values, or {@code null} if there is no restriction.
+     *                     This property is mostly for restricting values to a {@linkplain CodeList code list}
+     *                     or enumeration subset. It is not necessary to provide this property when all values
+     *                     from the code list or enumeration are valid.
      * @param defaultValue The default value for the parameter, or {@code null} if none.
      * @param required     {@code true} if this parameter is mandatory, or {@code false} if it is optional.
      */
     @SuppressWarnings("unchecked")
-    public DefaultParameterDescriptor(final Map<String,?>      properties,
-                                      final Class<T>           valueClass,
-                                      final Range<? extends T> valueDomain,
-                                      final T                  defaultValue,
-                                      final boolean            required)
+    public DefaultParameterDescriptor(final Map<String,?> properties,
+                                      final Class<T>      valueClass,
+                                      final Range<?>      valueDomain,
+                                      final T[]           validValues,
+                                      final T             defaultValue,
+                                      final boolean       required)
     {
         super(properties);
         ensureNonNull("valueClass",   valueClass);
         ensureCanCast("defaultValue", valueClass, defaultValue);
         if (valueDomain != null) {
+            Class<?> componentType = valueClass.getComponentType();
+            if (componentType != null) {
+                componentType = Numbers.primitiveToWrapper(componentType);
+            } else {
+                componentType = valueClass;
+            }
             final Class<?> elementType = valueDomain.getElementType();
-            if (elementType != valueClass) {
+            if (elementType != componentType) {
                 throw new IllegalArgumentException(Errors.getResources(properties).getString(
                         Errors.Keys.IllegalArgumentClass_2, "valueDomain",
                         "Range<" + Classes.getShortName(elementType) + '>'));
@@ -209,37 +223,27 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
          * If the caller specified a set of valid values, then copy the values in
          * a new set and verify their type and inclusion in the [min … max] range.
          */
-        final Object values = properties.get(VALID_VALUES_KEY);
-        if (values != null) {
-            final Object[] array;
-            if (values instanceof Object[]) {
-                array = (Object[]) values;
-            } else if (values instanceof Collection<?>) {
-                array = ((Collection<?>) values).toArray();
-            } else {
-                throw new IllegalArgumentException(Errors.getResources(properties)
-                        .getString(Errors.Keys.IllegalPropertyClass_2, VALID_VALUES_KEY, values.getClass()));
-            }
-            final Set<T> valids = CollectionsExt.createSetForType(valueClass, array.length);
-            for (Object value : array) {
+        if (validValues != null) {
+            final Set<T> valids = CollectionsExt.createSetForType(valueClass, validValues.length);
+            for (T value : validValues) {
                 if (value != null) {
                     value = Numerics.cached(value);
                     final Verifier error = Verifier.ensureValidValue(valueClass, null, valueDomain, value);
                     if (error != null) {
                         throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), value));
                     }
+                    valids.add(value);
                 }
-                valids.add((T) value);
             }
-            validValues = CollectionsExt.unmodifiableOrCopy(valids);
+            this.validValues = CollectionsExt.unmodifiableOrCopy(valids);
         } else {
-            validValues = null;
+            this.validValues = null;
         }
         /*
          * Finally, verify the default value if any.
          */
         if (defaultValue != null) {
-            final Verifier error = Verifier.ensureValidValue(valueClass, validValues, valueDomain, defaultValue);
+            final Verifier error = Verifier.ensureValidValue(valueClass, this.validValues, valueDomain, defaultValue);
             if (error != null) {
                 throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), defaultValue));
             }
@@ -348,19 +352,24 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     /**
      * Returns the domain of values with their unit of measurement (if any), or {@code null} if none.
      * The {@code Range} object combines the {@linkplain #getValueClass() value class},
-     * {@linkplain #getMinimumValue() minimum value} and {@link #getMaximumValue() maximum value}
+     * {@linkplain #getMinimumValue() minimum value}, {@linkplain #getMaximumValue() maximum value}
      * and whether these values are inclusive or inclusive. If the range is an instance of
      * {@link MeasurementRange}, then it contains also the {@linkplain #getUnit() unit of measurement}.
      *
-     * <div class="note"><b>API note:</b> If this method returns a non-null value, then its type is exactly
-     * {@code Range<T>}. The {@code <? extends T>} in this method signature is because range types need to
-     * extend {@link Comparable}, while {@code ParameterDescriptor<T>} does not have this requirement.</div>
+     * <div class="note"><b>API note:</b> If this method returns a non-null value, then its type is either exactly
+     * {@code Range<T>}, or {@code Range<E>} where {@code <E>} is the {@linkplain Class#getComponentType() component
+     * type} of {@code <T>} (using wrapper classes for primitive types).</div>
      *
      * @return The domain of values, or {@code null}.
      *
      * @see Parameters#getValueDomain(ParameterDescriptor)
      */
-    public Range<? extends T> getValueDomain() {
+    /* Implementation note: this method is final because the constructor performs various checks on range validity,
+     * and we can not express those rules in the method signature. The 'Verifier.ensureValidValue(…)' method needs
+     * some guarantees about range validity, so we can not let users override this method with a range that may
+     * break them.
+     */
+    public final Range<?> getValueDomain() {
         return valueDomain;
     }
 
@@ -378,7 +387,8 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     @Override
     @SuppressWarnings("unchecked")
     public Comparable<T> getMinimumValue() {
-        return (valueDomain != null) ? (Comparable<T>) valueDomain.getMinValue() : null;
+        return (valueDomain != null && valueDomain.getElementType() == valueClass)
+               ? (Comparable<T>) valueDomain.getMinValue() : null;
     }
 
     /**
@@ -395,7 +405,8 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     @Override
     @SuppressWarnings("unchecked")
     public Comparable<T> getMaximumValue() {
-        return (valueDomain != null) ? (Comparable<T>) valueDomain.getMaxValue() : null;
+        return (valueDomain != null && valueDomain.getElementType() == valueClass)
+               ? (Comparable<T>) valueDomain.getMaxValue() : null;
     }
 
     /**

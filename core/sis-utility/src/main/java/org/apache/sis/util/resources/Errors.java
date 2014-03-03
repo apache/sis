@@ -788,12 +788,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ValueAlreadyDefined_1 = 131;
 
         /**
-         * Value ‘{0}’={1} is invalid. Expected a number greater than 0.
+         * Value ‘{0}’ = {1} is invalid. Expected a number greater than 0.
          */
         public static final short ValueNotGreaterThanZero_2 = 132;
 
         /**
-         * Value ‘{0}’={3} is invalid. Expected a value in the [{1} … {2}] range.
+         * Value ‘{0}’ = {3} is invalid. Expected a value in the [{1} … {2}] range.
          */
         public static final short ValueOutOfRange_4 = 133;
     }
