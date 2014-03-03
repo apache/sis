@@ -18,6 +18,7 @@ package org.apache.sis.parameter;
 
 import java.util.Map;
 import java.util.Set;
+import java.lang.reflect.Array;
 import javax.measure.unit.Unit;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
@@ -33,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
 /**
  * Verifies the validity of a given value.
  * An instance of {@code Verifier} is created only if an error is detected.
- * In such case, the error message is given by {@link #message(String, Object)}.
+ * In such case, the error message is given by {@link #message(Map, String, Object)}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
@@ -56,7 +57,8 @@ final class Verifier {
      * The current implementation relies on the following invariants:
      *
      * <ul>
-     *   <li>The first element in this array is always the parameter name.</li>
+     *   <li>The first element in this array will be the parameter name. Before the name is known,
+     *       this element is either {@code null} or the index to append to the name.</li>
      *   <li>The last element shall be set to the erroneous value if {@link #needsValue} is {@code true}.</li>
      * </ul>
      */
@@ -73,7 +75,7 @@ final class Verifier {
 
     /**
      * Ensures that the given value is valid according the specified parameter descriptor.
-     * This convenience method ensures that {@code value} is assignable to the
+     * This method ensures that {@code value} is assignable to the
      * {@linkplain ParameterDescriptor#getValueClass() expected class}, is between the
      * {@linkplain ParameterDescriptor#getMinimumValue() minimum} and
      * {@linkplain ParameterDescriptor#getMaximumValue() maximum} values and is one of the
@@ -86,9 +88,8 @@ final class Verifier {
      * @param  descriptor The parameter descriptor to check against.
      * @param  value      The value to check, or {@code null}.
      * @param  unit       The unit of the value to check, or {@code null}.
-     * @return The value casted to the descriptor parameterized type, or the
-     *         {@linkplain ParameterDescriptor#getDefaultValue() default value}
-     *         if the given value was null.
+     * @return The given value converted to the descriptor unit if any,
+     *         then casted to the descriptor parameterized type.
      * @throws InvalidParameterValueException if the parameter value is invalid.
      */
     @SuppressWarnings("unchecked")
@@ -98,8 +99,10 @@ final class Verifier {
         final Class<T> valueClass = descriptor.getValueClass();
         /*
          * Before to verify if the given value is inside the bounds, we need to convert the value
-         * to the units used by the parameter descriptor.
+         * to the units used by the parameter descriptor. The first part of this block verifies
+         * the validity of the unit argument, so we execute it even if 'value' is null.
          */
+        UnitConverter converter = null;
         Object convertedValue = value;
         if (unit != null) {
             final Unit<?> def = descriptor.getUnit();
@@ -112,45 +115,85 @@ final class Verifier {
                 if (getUnitMessageID(unit) != expectedID) {
                     throw new IllegalArgumentException(Errors.format(expectedID, unit));
                 }
-                if (value != null && Number.class.isAssignableFrom(valueClass)) {
-                    final UnitConverter converter;
+                /*
+                 * Verify the type of the user's value before to perform the unit conversion,
+                 * because the conversion will create a new object not necessarily of the same type.
+                 */
+                if (value != null) {
+                    if (!valueClass.isInstance(value)) {
+                        final String name = getName(descriptor);
+                        throw new InvalidParameterValueException(
+                                Errors.format(Errors.Keys.IllegalParameterValueClass_3,
+                                name, valueClass, value.getClass()), name, value);
+                    }
+                    /*
+                     * From this point we will perform the actual unit conversion. The value may be either
+                     * a Number instance, or an array of numbers (typically an array of type double[]). In
+                     * the array case, we will store the converted values in a new array of the same type.
+                     */
                     try {
                         converter = unit.getConverterToAny(def);
                     } catch (ConversionException e) {
                         throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2, unit, def), e);
                     }
-                    Number n = (Number) value; // Given value.
-                    n = converter.convert(n.doubleValue()); // Value in units that we can compare.
-                    try {
-                        convertedValue = Numbers.cast(n, (Class<? extends Number>) valueClass);
-                    } catch (IllegalArgumentException e) {
-                        throw new InvalidParameterValueException(e.getLocalizedMessage(), getName(descriptor), value);
+                    Class<?> componentType = valueClass.getComponentType();
+                    if (componentType == null) {
+                        /*
+                         * Usual case where the value is not an array. Convert the value directly.
+                         * Note that the value can only be a number because the unit is associated
+                         * to MeasurementRange, which accepts only numbers.
+                         */
+                        Number n = converter.convert(((Number) value).doubleValue());
+                        try {
+                            convertedValue = Numbers.cast(n, (Class<? extends Number>) valueClass);
+                        } catch (IllegalArgumentException e) {
+                            throw new InvalidParameterValueException(e.getLocalizedMessage(), getName(descriptor), value);
+                        }
+                    } else {
+                        /*
+                         * The value is an array. Creates a new array and store the converted values
+                         * using Array reflection.
+                         */
+                        final int length = Array.getLength(value);
+                        convertedValue = Array.newInstance(componentType, length);
+                        componentType = Numbers.primitiveToWrapper(componentType);
+                        for (int i=0; i<length; i++) {
+                            Number n = (Number) Array.get(value, i);
+                            n = converter.convert(n.doubleValue()); // Value in units that we can compare.
+                            try {
+                                n = Numbers.cast(n, (Class<? extends Number>) componentType);
+                            } catch (IllegalArgumentException e) {
+                                throw new InvalidParameterValueException(e.getLocalizedMessage(),
+                                        getName(descriptor) + '[' + i + ']', value);
+                            }
+                            Array.set(convertedValue, i, n);
+                        }
                     }
                 }
             }
         }
-        if (convertedValue == null) {
-            return descriptor.getDefaultValue();
-        }
-        final Verifier error;
-        final Set<T> validValues = descriptor.getValidValues();
-        if (descriptor instanceof DefaultParameterDescriptor<?>) {
-            error = ensureValidValue(valueClass, validValues,
-                    ((DefaultParameterDescriptor<?>) descriptor).getValueDomain(), convertedValue);
-        } else {
-            error = ensureValidValue(valueClass, validValues,
-                    descriptor.getMinimumValue(), descriptor.getMaximumValue(), convertedValue);
-        }
-        if (error != null) {
-            final String name = getName(descriptor);
-            throw new InvalidParameterValueException(error.message(null, name, value), name, value);
-        }
         /*
-         * Passed every tests - the value is valid.
-         * Really returns the original value, not the converted one, because we store the given
-         * unit as well. Conversions will be applied on the fly by the getter method if needed.
+         * At this point the user's value has been fully converted to the unit of measurement specified
+         * by the ParameterDescriptor. Now compares the converted value to the restricting given by the
+         * descriptor (set of valid values and range of value domain).
          */
-        return (T) value;
+        if (convertedValue != null) {
+            final Verifier error;
+            final Set<T> validValues = descriptor.getValidValues();
+            if (descriptor instanceof DefaultParameterDescriptor<?>) {
+                error = ensureValidValue(valueClass, validValues,
+                        ((DefaultParameterDescriptor<?>) descriptor).getValueDomain(), convertedValue);
+            } else {
+                error = ensureValidValue(valueClass, validValues,
+                        descriptor.getMinimumValue(), descriptor.getMaximumValue(), convertedValue);
+            }
+            if (error != null) {
+                error.convertRange(converter);
+                final String name = getName(descriptor);
+                throw new InvalidParameterValueException(error.message(null, name, value), name, value);
+            }
+        }
+        return (T) convertedValue;
     }
 
     /**
@@ -164,17 +207,32 @@ final class Verifier {
     static <T> Verifier ensureValidValue(final Class<T> valueClass, final Set<T> validValues,
             final Range<?> valueDomain, final Object convertedValue)
     {
-        Verifier verifier = ensureValidValue(valueClass, validValues, convertedValue);
+        final Verifier verifier = ensureValidValue(valueClass, validValues, null, null, convertedValue);
         if (verifier == null && valueDomain != null) {
-            /*
-             * Following assertion should never fail with DefaultParameterDescriptor instances.
-             * It could fail if the user override DefaultParameterDescriptor.getValueDomain()
-             * in a way that break the method contract.
-             */
-            assert valueDomain.getElementType() == valueClass : valueDomain;
-            if (!((Range) valueDomain).contains((Comparable<?>) convertedValue)) {
-                return new Verifier(Errors.Keys.ValueOutOfRange_4, true, null,
-                        valueDomain.getMinValue(), valueDomain.getMaxValue(), convertedValue);
+            if (!valueClass.isArray()) {
+                /*
+                 * Following assertion should never fail with DefaultParameterDescriptor instances.
+                 * It could fail if the user overrides DefaultParameterDescriptor.getValueDomain()
+                 * in a way that break the method contract.
+                 */
+                assert valueDomain.getElementType() == valueClass : valueDomain;
+                if (!((Range) valueDomain).contains((Comparable<?>) convertedValue)) {
+                    return new Verifier(Errors.Keys.ValueOutOfRange_4, true, null,
+                            valueDomain.getMinValue(), valueDomain.getMaxValue(), convertedValue);
+                }
+            } else {
+                /*
+                 * Following assertion should never fail under the same condition than above.
+                 */
+                assert valueDomain.getElementType() == Numbers.primitiveToWrapper(valueClass.getComponentType()) : valueDomain;
+                final int length = Array.getLength(convertedValue);
+                for (int i=0; i<length; i++) {
+                    final Object e = Array.get(convertedValue, i);
+                    if (!((Range) valueDomain).contains((Comparable<?>) e)) {
+                        return new Verifier(Errors.Keys.ValueOutOfRange_4, true, i,
+                                valueDomain.getMinValue(), valueDomain.getMaxValue(), e);
+                    }
+                }
             }
         }
         return verifier;
@@ -184,6 +242,11 @@ final class Verifier {
      * Same as {@link #ensureValidValue(Class, Set, Range, Object)}, used as a fallback when
      * the descriptor is not an instance of {@link DefaultParameterDescriptor}.
      *
+     * <div class="note"><b>Implementation note:</b>
+     * At the difference of {@code ensureValidValue(…, Range, …)}, this method does not need to verify array elements
+     * because the type returned by {@link ParameterDescriptor#getMinimumValue()} and {@code getMaximumValue()}
+     * methods (namely {@code Comparable<T>}) does not allow usage with arrays.</div>
+     *
      * @param convertedValue The value <em>converted to the units specified by the descriptor</em>.
      *        This is not necessarily the user-provided value.
      */
@@ -191,39 +254,37 @@ final class Verifier {
     private static <T> Verifier ensureValidValue(final Class<T> valueClass, final Set<T> validValues,
             final Comparable<T> minimum, final Comparable<T> maximum, final Object convertedValue)
     {
-        Verifier verifier = ensureValidValue(valueClass, validValues, convertedValue);
-        if (verifier == null) {
-            if ((minimum != null && minimum.compareTo((T) convertedValue) > 0) ||
-                (maximum != null && maximum.compareTo((T) convertedValue) < 0))
-            {
-                verifier = new Verifier(Errors.Keys.ValueOutOfRange_4, true, null, minimum, maximum, convertedValue);
-            }
-        }
-        return verifier;
-    }
-
-    /**
-     * Ensures that the given value has valid type and is a member of the set of valid values.
-     * If the value is valid, returns {@code null}. Otherwise returns an object that can be used
-     * for formatting the error message.
-     *
-     * <p>If this method returns {@code null}, then {@code convertedValue} can safely be casted to
-     * type {@code <T>}.</p>
-     *
-     * @param convertedValue The value <em>converted to the units specified by the descriptor</em>.
-     *        This is not necessarily the user-provided value.
-     */
-    @SuppressWarnings("unchecked")
-    private static <T> Verifier ensureValidValue(final Class<T> valueClass, final Set<T> validValues,
-            final Object convertedValue)
-    {
         if (!valueClass.isInstance(convertedValue)) {
             return new Verifier(Errors.Keys.IllegalParameterValueClass_3, false, null, valueClass, convertedValue.getClass());
         }
         if (validValues != null && !validValues.contains(convertedValue)) {
             return new Verifier(Errors.Keys.IllegalParameterValue_2, true, null, convertedValue);
         }
+        if ((minimum != null && minimum.compareTo((T) convertedValue) > 0) ||
+            (maximum != null && maximum.compareTo((T) convertedValue) < 0))
+        {
+            return new Verifier(Errors.Keys.ValueOutOfRange_4, true, null, minimum, maximum, convertedValue);
+        }
         return null;
+    }
+
+    /**
+     * Converts the information about an "value out of range" error. The range in the error message will be formatted
+     * in the unit given by the user, which is not necessarily the same than the unit of the parameter descriptor.
+     *
+     * @param converter The conversion from user unit to descriptor unit, or {@code null} if none. This method
+     *        uses the inverse of that conversion for converting the given minimum and maximum values.
+     */
+    private void convertRange(UnitConverter converter) {
+        if (converter != null && errorKey == Errors.Keys.ValueOutOfRange_4) {
+            converter = converter.inverse();
+            Object minimumValue = arguments[1];
+            Object maximumValue = arguments[2];
+            minimumValue = (minimumValue != null) ? converter.convert(((Number) minimumValue).doubleValue()) : "-∞";
+            maximumValue = (maximumValue != null) ? converter.convert(((Number) maximumValue).doubleValue()) :  "∞";
+            arguments[1] = minimumValue;
+            arguments[2] = maximumValue;
+        }
     }
 
     /**
@@ -233,7 +294,12 @@ final class Verifier {
      * @param name  The parameter name.
      * @param value The user-supplied value (not necessarily equals to the converted value).
      */
-    String message(final Map<?,?> properties, final String name, final Object value) {
+    String message(final Map<?,?> properties, String name, Object value) {
+        final Object index = arguments[0];
+        if (index != null) {
+            name = name + '[' + index + ']';
+            value = Array.get(value, (Integer) index);
+        }
         arguments[0] = name;
         if (needsValue) {
             arguments[arguments.length - 1] = value;

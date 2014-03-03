@@ -21,7 +21,6 @@ import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterTypeException;
 import org.opengis.parameter.InvalidParameterValueException;
@@ -59,6 +58,38 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     private static final double EPS = 1E-10;
 
     /**
+     * A subclass of {@code DefaultParameterValue} which store the value converted by {@link Verifier}.
+     * This allows {@link DefaultParameterValueTest} methods to verify the conversion result.
+     */
+    @SuppressWarnings("serial")
+    private static final strictfp class Watcher<T> extends DefaultParameterValue<T> {
+        /** The value converted by {@link Verifier}. */
+        T convertedValue;
+
+        /** Creates a new parameter value for testing purpose. */
+        Watcher(final DefaultParameterDescriptor<T> descriptor) {
+            super(descriptor);
+        }
+
+        /** Automatically invoked when a new value is set. */
+        @Override protected void validate(final T value) {
+            convertedValue = value;
+        }
+
+        /** Asserts that the value and the converted value are equal to the expected one. */
+        void assertValueEquals(final Object expected) {
+            assertEquals("value",          expected, getValue());
+            assertEquals("convertedValue", expected, convertedValue);
+        }
+
+        /** Asserts that the value and the converted value are equal to the expected ones. */
+        void assertValueEquals(final Object expected, final Object converted) {
+            assertEquals("value",          expected,  getValue());
+            assertEquals("convertedValue", converted, convertedValue);
+        }
+    }
+
+    /**
      * Constructs an optional parameter initialized to the given value.
      * The descriptor has no default value, no minimum and no maximum.
      *
@@ -66,8 +97,8 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * @param  value The parameter value.
      * @return A new parameter instance for the given name and value.
      */
-    private static DefaultParameterValue<Integer> createOptional(final String name, final int value) {
-        final DefaultParameterValue<Integer> parameter = new DefaultParameterValue<>(
+    private static Watcher<Integer> createOptional(final String name, final int value) {
+        final Watcher<Integer> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.createSimpleOptional(name, Integer.class));
         parameter.setValue(value, null);
         return parameter;
@@ -81,10 +112,9 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * @param unit  The unit for the parameter value.
      * @return A new parameter instance for the given name and value.
      */
-    private static DefaultParameterValue<Double> create(final String name, final double value, final Unit<?> unit) {
-        final ParameterDescriptor<Double> descriptor = DefaultParameterDescriptorTest.create(
-                name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN, unit);
-        final DefaultParameterValue<Double> parameter = new DefaultParameterValue<>(descriptor);
+    private static Watcher<Double> create(final String name, final double value, final Unit<?> unit) {
+        final Watcher<Double> parameter = new Watcher<>(DefaultParameterDescriptorTest.create(
+                name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN, unit));
         parameter.setValue(value, unit);
         return parameter;
     }
@@ -96,7 +126,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      */
     @Test
     public void testInteger() {
-        final ParameterValue<Integer> parameter = createOptional("Integer param", 14);
+        final Watcher<Integer> parameter = createOptional("Integer param", 14);
         final ParameterDescriptor<Integer> descriptor = parameter.getDescriptor();
         validate(parameter);
 
@@ -139,7 +169,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
          * the value should stay null (not substituted by the default value).
          */
         parameter.setValue(-15);
-        assertEquals(Integer.valueOf(-15), parameter.getValue());
+        parameter.assertValueEquals(Integer.valueOf(-15));
         parameter.setValue(null);
         assertNull(parameter.getValue());
         validate(parameter);
@@ -153,7 +183,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @Test
     @DependsOnMethod("testInteger")
     public void testBoundedInteger() {
-        final DefaultParameterValue<Integer> parameter = new DefaultParameterValue<>(
+        final Watcher<Integer> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Bounded param", -30, +40, 15));
         assertEquals(Integer.class, parameter.getDescriptor().getValueClass());
         assertEquals(      "value", Integer.valueOf(15), parameter.getValue());
@@ -164,7 +194,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
          * Set a value inside the range of valid values.
          */
         parameter.setValue(12);
-        assertEquals(      "value", Integer.valueOf(12), parameter.getValue());
+        parameter.assertValueEquals(Integer.valueOf(12));
         assertEquals(   "intValue", 12, parameter.intValue());
         assertEquals("doubleValue", 12, parameter.doubleValue(), STRICT);
         validate(parameter);
@@ -203,7 +233,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
          * the value can be converted to an integer.
          */
         parameter.setValue(10.0);
-        assertEquals(      "value", Integer.valueOf(10), parameter.getValue());
+        parameter.assertValueEquals(Integer.valueOf(10));
         assertEquals(   "intValue", 10, parameter.intValue());
         assertEquals("doubleValue", 10, parameter.doubleValue(), STRICT);
         validate(parameter);
@@ -226,7 +256,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      */
     @Test
     public void testMeasure() {
-        final DefaultParameterValue<Double> parameter = create("Numerical param", 3, SI.METRE);
+        final Watcher<Double> parameter = create("Numerical param", 3, SI.METRE);
         final ParameterDescriptor<Double> descriptor = parameter.getDescriptor();
         validate(parameter);
 
@@ -258,6 +288,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
          * Sets a value in centimetres.
          */
         parameter.setValue(400, SI.CENTIMETRE);
+        parameter.assertValueEquals(Double.valueOf(400), Double.valueOf(4));
         assertEquals("unit",        SI.CENTIMETRE, parameter.getUnit());
         assertEquals("doubleValue", 400, parameter.doubleValue(),              STRICT);
         assertEquals("doubleValue", 400, parameter.doubleValue(SI.CENTIMETRE), STRICT);
@@ -272,7 +303,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @Test
     @DependsOnMethod("testMeasure")
     public void testBoundedDouble() {
-        final DefaultParameterValue<Double> parameter = new DefaultParameterValue<>(
+        final Watcher<Double> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Bounded param", -30.0, +40.0, 15.0, null));
         assertEquals(Double.class, parameter.getDescriptor().getValueClass());
         assertEquals(      "value", Double.valueOf(15), parameter.getValue());
@@ -281,7 +312,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
         validate(parameter);
 
         parameter.setValue(12.0);
-        assertEquals(      "value", Double.valueOf(12), parameter.getValue());
+        parameter.assertValueEquals(Double.valueOf(12));
         assertEquals(   "intValue", 12, parameter.intValue());
         assertEquals("doubleValue", 12, parameter.doubleValue(), STRICT);
         validate(parameter);
@@ -316,7 +347,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @Test
     @DependsOnMethod({"testMeasure", "testBoundedDouble"})
     public void testBoundedMeasure() {
-        final DefaultParameterValue<Double> parameter = new DefaultParameterValue<>(
+        final Watcher<Double> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Length measure", 4, 20, 12, SI.METRE));
         assertEquals("value",    Double.valueOf(12), parameter.getValue());
         assertEquals("intValue", 12,                 parameter.intValue());
@@ -325,7 +356,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
 
         for (int i=4; i<=20; i++) {
             parameter.setValue(i);
-            assertEquals("value", Double.valueOf(i), parameter.getValue());
+            parameter.assertValueEquals(Double.valueOf(i));
             assertEquals("unit",  SI.METRE,          parameter.getUnit());
             assertEquals("value", i,                 parameter.doubleValue(SI.METRE), STRICT);
             assertEquals("value", 100*i,             parameter.doubleValue(SI.CENTIMETRE), STRICT);
@@ -337,16 +368,61 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
             assertEquals("Length measure", exception.getParameterName());
         }
         try {
+            parameter.setValue(10.0, SI.KILOMETRE); // Out of range only after unit conversion.
+            fail("setValue(> max)");
+        } catch (InvalidParameterValueException exception) {
+            assertEquals("Length measure", exception.getParameterName());
+        }
+        try {
             parameter.setValue("12");
             fail("setValue(Sring)");
         } catch (InvalidParameterValueException exception) {
             assertEquals("Length measure", exception.getParameterName());
         }
         for (int i=400; i<=2000; i+=100) {
+            final double metres = i / 100.0;
             parameter.setValue(i, SI.CENTIMETRE);
-            assertEquals("value", Double.valueOf(i), parameter.getValue());
-            assertEquals("unit",  SI.CENTIMETRE,     parameter.getUnit());
-            assertEquals("value", i/100,             parameter.doubleValue(SI.METRE), EPS);
+            parameter.assertValueEquals(Double.valueOf(i), Double.valueOf(metres));
+            assertEquals("unit",  SI.CENTIMETRE, parameter.getUnit());
+            assertEquals("value", metres,        parameter.doubleValue(SI.METRE), EPS);
+        }
+    }
+
+    /**
+     * Tests a parameter for values of type {@code double[]}.
+     */
+    @Test
+    public void testArray() {
+        double[] values = {5, 10, 15};
+        final Watcher<double[]> parameter = new Watcher<>(
+                DefaultParameterDescriptorTest.createForArray("myValues", 4, 4000, SI.METRE));
+        parameter.setValue(values);
+        assertArrayEquals(values, parameter.getValue(), 0);
+        assertArrayEquals(values, parameter.convertedValue, 0);
+        assertArrayEquals(values, parameter.doubleValueList(), 0);
+        assertArrayEquals(new double[] {500, 1000, 1500}, parameter.doubleValueList(SI.CENTIMETRE), 0);
+        /*
+         * New values in kilometres.
+         */
+        values = new double[] {3, 2, 4};
+        final double[] metres = new double[] {3000, 2000, 4000};
+        parameter.setValue(values, SI.KILOMETRE);
+        assertArrayEquals(values, parameter.getValue(), 0);
+        assertArrayEquals(metres, parameter.convertedValue, 0);
+        assertArrayEquals(values, parameter.doubleValueList(), 0);
+        assertArrayEquals(metres, parameter.doubleValueList(SI.METRE), 0);
+        /*
+         * Values out of range.
+         */
+        try {
+            parameter.setValue(new double[] {5, 10, -5}, SI.METRE);
+        } catch (InvalidParameterValueException e) {
+            assertTrue(e.getMessage().contains("myValues[2]"));
+        }
+        try {
+            parameter.setValue(new double[] {4, 5}, SI.KILOMETRE); // Out of range only after unit conversion.
+        } catch (InvalidParameterValueException e) {
+            assertTrue(e.getMessage().contains("myValues[1]"));
         }
     }
 

@@ -126,11 +126,16 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         isMinIncluded = range.isMinIncluded;
         maxValue      = range.maxValue;
         isMaxIncluded = range.isMaxIncluded;
-        assert validate();
+        assert validate() : elementType;
     }
 
     /**
      * Creates a new range bounded by the given endpoint values.
+     *
+     * <div class="note"><b>Assertion:</b>
+     * This constructor verifies the {@code minValue} and {@code maxValue} arguments type if Java assertions
+     * are enabled. This verification is not performed in normal execution because theoretically unnecessary
+     * unless Java generic types have been tricked.</div>
      *
      * @param elementType    The base type of the range elements.
      * @param minValue       The minimal value, or {@code null} if none.
@@ -152,7 +157,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         this.isMinIncluded = isMinIncluded && (minValue != null);
         this.maxValue      = maxValue;
         this.isMaxIncluded = isMaxIncluded && (maxValue != null);
-        assert validate();
+        assert validate() : elementType;
     }
 
     /**

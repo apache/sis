@@ -613,7 +613,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public void setValue(final double[] values, final Unit<?> unit) throws InvalidParameterValueException {
-        setValue(value, unit);
+        setValue((Object) values, unit);
     }
 
     /**
@@ -634,9 +634,38 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
      */
+    @SuppressWarnings("unchecked")
     protected void setValue(final Object value, final Unit<?> unit) throws InvalidParameterValueException {
-        this.value = Verifier.ensureValidValue(descriptor, value, unit);
-        this.unit  = unit; // Assign only on success.
+        final T convertedValue = Verifier.ensureValidValue(descriptor, value, unit);
+        if (value != null) {
+            validate(convertedValue);
+            this.value = (T) value; // Type has been verified by Verifier.ensureValidValue(…).
+        } else {
+            this.value = descriptor.getDefaultValue();
+        }
+        this.unit = unit; // Assign only on success.
+    }
+
+    /**
+     * Invoked by {@link #setValue(Object, Unit)} after the basic verifications have been done and before
+     * the value is stored. Subclasses can override this method for performing additional verifications.
+     *
+     * {@section Unit of measurement}
+     * If the user specified a unit of measurement, then the value given to this method has been converted
+     * to the unit specified by the {@linkplain #getDescriptor() descriptor}, for easier comparisons against
+     * standardized values. This converted value may be different than the value to be stored in this
+     * {@code ParameterValue}, since the later value will be stored in the unit specified by the user.
+     *
+     * {@section Standard validations}
+     * The checks for {@linkplain DefaultParameterDescriptor#getValueClass() value class},
+     * for {@linkplain DefaultParameterDescriptor#getValueDomain() value domain} and for
+     * {@linkplain DefaultParameterDescriptor#getValidValues() valid values} are performed
+     * before this method is invoked. The default implementation of this method does nothing.
+     *
+     * @param  value The value converted to the unit of measurement specified by the descriptor.
+     * @throws InvalidParameterValueException If the given value is invalid for implementation-specific reasons.
+     */
+    protected void validate(final T value) throws InvalidParameterValueException {
     }
 
     /**
