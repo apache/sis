@@ -80,6 +80,7 @@ public final strictfp class DripByteChannel implements ReadableByteChannel {
      * Reads a random number of bytes from the data array.
      *
      * @param buffer The buffer where to copy the bytes.
+     * @throws IOException If this channel is closed.
      */
     @Override
     public int read(final ByteBuffer buffer) throws IOException {

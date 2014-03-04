@@ -109,7 +109,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
             // The message may be in any language, but shall
             // contain at least the missing property name.
             final String message = e.getMessage();
-            assertTrue(message, message.contains("code"));
+            assertTrue(message, message.contains("name"));
         }
         // Try again, with error messages forced to English.
         assertNull(properties.put(AbstractIdentifiedObject.LOCALE_KEY, Locale.US));
@@ -117,7 +117,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
             new AbstractIdentifiedObject(properties);
             fail("Should not allow unnamed object.");
         } catch (IllegalArgumentException e) {
-            assertEquals("Missing value for “code” property.", e.getMessage());
+            assertEquals("Missing value for “name” property.", e.getMessage());
         }
         // "code" with String value is accepted as well.
         assertNull(properties.put("code", "Test"));

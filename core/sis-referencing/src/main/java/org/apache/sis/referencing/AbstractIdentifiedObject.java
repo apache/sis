@@ -296,6 +296,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         // -------------------------------------
         Object value = properties.get(NAME_KEY);
         if (value == null || value instanceof String) {
+            if (value == null && properties.get(ReferenceIdentifier.CODE_KEY) == null) {
+                throw new IllegalArgumentException(Errors.getResources(properties)
+                        .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
+            }
             name = new NamedIdentifier(PropertiesConverter.convert(properties));
         } else if (value instanceof ReferenceIdentifier) {
             name = (ReferenceIdentifier) value;
