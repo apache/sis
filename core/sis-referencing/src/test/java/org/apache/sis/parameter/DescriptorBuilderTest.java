@@ -19,6 +19,7 @@ package org.apache.sis.parameter;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
+import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.test.DependsOn;
@@ -46,16 +47,24 @@ public final strictfp class DescriptorBuilderTest extends TestCase {
         final DescriptorBuilder builder = new DescriptorBuilder();
         builder.codespace(HardCodedCitations.OGP, "EPSG").mandatory();
         final ParameterDescriptor[] parameters = {
-            builder.name("Latitude of natural origin")     .create( -80,  +80, 0, NonSI.DEGREE_ANGLE),
-            builder.name("Longitude of natural origin")    .create(-180, +180, 0, NonSI.DEGREE_ANGLE),
+            builder.name   ("Longitude of natural origin")
+                   .aliases("OGC:central_meridian", "GeoTIFF:NatOriginLong")
+                   .remarks("Some remarks.")               .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
+            builder.name("Latitude of natural origin")     .createBounded( -80,  +80, 0, NonSI.DEGREE_ANGLE),
             builder.name("Scale factor at natural origin") .createStrictlyPositive(1, Unit.ONE),
-            builder.name("False easting")                  .createUnbounded(0, SI.METRE),
-            builder.name("False northing")                 .createUnbounded(0, SI.METRE)
+            builder.name("False easting")                  .create(0, SI.METRE),
+            builder.name("False northing")                 .create(0, SI.METRE)
         };
         // Tests random properties.
-        assertEquals("EPSG",             parameters[0].getName().getCodeSpace());
+        assertEquals("EPSG",             parameters[1].getName().getCodeSpace());
         assertEquals("False easting",    parameters[3].getName().getCode());
-        assertEquals(Double.valueOf(80), parameters[0].getMaximumValue());
+        assertEquals("Some remarks.",    parameters[0].getRemarks().toString());
+        assertEquals(Double.valueOf(80), parameters[1].getMaximumValue());
         assertEquals(SI.METRE,           parameters[4].getUnit());
+
+        final GenericName alias = parameters[0].getAlias().iterator().next();
+        assertEquals("central_meridian",     alias.tip().toString());
+        assertEquals("OGC",                  alias.head().toString());
+        assertEquals("OGC:central_meridian", alias.toString());
     }
 }
