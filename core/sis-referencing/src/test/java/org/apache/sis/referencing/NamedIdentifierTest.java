@@ -18,6 +18,8 @@ package org.apache.sis.referencing;
 
 import java.util.Locale;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.util.InternationalString;
+import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.test.Validators;
 import org.apache.sis.util.iso.DefaultInternationalString;
@@ -26,6 +28,8 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.internal.system.DefaultFactories.SIS_NAMES;
+import static org.apache.sis.metadata.iso.citation.HardCodedCitations.OGP;
 import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
 
 
@@ -39,18 +43,49 @@ import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
  */
 public final strictfp class NamedIdentifierTest extends TestCase {
     /**
-     * Tests the {@link NamedIdentifier#NamedIdentifier(Citation, String)} constructor.
+     * Tests the {@link NamedIdentifier#NamedIdentifier(Citation, String, String, String, InternationalString)}
+     * constructor.
      */
     @Test
     public void testCreateFromCode() {
-        final NamedIdentifier identifier = new NamedIdentifier(EPSG, "4326");
+        final NamedIdentifier identifier = new NamedIdentifier(OGP, "EPSG", "4326", "8.3", null);
         Validators.validate((ReferenceIdentifier) identifier);
         Validators.validate((GenericName) identifier);
 
         // ImmutableIdentifier properties
         assertEquals("code",      "4326", identifier.getCode());
         assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
-        assertSame  ("authority",  EPSG,  identifier.getAuthority());
+        assertSame  ("authority",  OGP,   identifier.getAuthority());
+        assertEquals("version",   "8.3",  identifier.getVersion());
+        assertNull  ("remarks",           identifier.getRemarks());
+        assertFalse ("isDeprecated",      identifier.isDeprecated());
+
+        // NamedIdentifier properties
+        assertEquals("depth",  2,          identifier.depth());
+        assertEquals("tip",   "4326",      identifier.tip().toString());
+        assertEquals("head",  "EPSG",      identifier.head().toString());
+        assertEquals("name",  "EPSG:4326", identifier.toString());
+
+        // Scope (derived from the autority)
+        final NameSpace scope = identifier.scope();
+        assertFalse ("scope",        scope.isGlobal());
+        assertEquals("scope", "OGP", scope.name().toString());
+    }
+
+    /**
+     * Tests the {@link NamedIdentifier#NamedIdentifier(GenericName)} constructor.
+     */
+    @Test
+    public void testCreateFromName() {
+        final NameSpace scope = SIS_NAMES.createNameSpace(SIS_NAMES.createLocalName(null, "OGP"), null);
+        final NamedIdentifier identifier = new NamedIdentifier(SIS_NAMES.createGenericName(scope, "EPSG", "4326"));
+        Validators.validate((ReferenceIdentifier) identifier);
+        Validators.validate((GenericName) identifier);
+
+        // ImmutableIdentifier properties
+        assertEquals("code",      "4326", identifier.getCode());
+        assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
+        assertEquals("authority", "OGP",  identifier.getAuthority().getTitle().toString());
         assertNull  ("version",           identifier.getVersion());
         assertNull  ("remarks",           identifier.getRemarks());
         assertFalse ("isDeprecated",      identifier.isDeprecated());
@@ -60,7 +95,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         assertEquals("tip",   "4326",      identifier.tip().toString());
         assertEquals("head",  "EPSG",      identifier.head().toString());
         assertEquals("name",  "EPSG:4326", identifier.toString());
-        assertTrue  ("scope",              identifier.scope().isGlobal());
+        assertSame  ("scope", scope,       identifier.scope());
     }
 
     /**
@@ -101,7 +136,11 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         assertEquals("name",  "EPSG:name", identifier.toInternationalString().toString(Locale.ENGLISH));
         assertEquals("name",  "EPSG:nom",  identifier.toInternationalString().toString(Locale.FRENCH));
         assertEquals("name",  "EPSG:名前",  identifier.toInternationalString().toString(Locale.JAPANESE));
-        assertTrue  ("scope",              identifier.scope().isGlobal());
+
+        // Scope (derived from the autority)
+        final NameSpace scope = identifier.scope();
+        assertFalse ("scope",         scope.isGlobal());
+        assertEquals("scope", "EPSG", scope.name().toString());
     }
 
     /**

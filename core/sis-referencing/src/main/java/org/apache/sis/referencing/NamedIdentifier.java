@@ -37,6 +37,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
 // Related to JDK7
 import java.util.Objects;
 
@@ -58,13 +60,23 @@ import java.util.Objects;
  * {@linkplain AbstractIdentifiedObject#getAlias() aliases} and have those names used in contexts
  * where {@code ReferenceIdentifier} instances are required, like GML marshalling time.
  *
- * {@section Name inference}
- * The generic name will be inferred from {@code ReferenceIdentifier} attributes.
- * More specifically, a {@link ScopedName} will be created using the shortest authority's
- * {@linkplain Citation#getAlternateTitles() alternate titles} (or the {@linkplain Citation#getTitle() main title}
- * if there is no alternate titles) as the {@linkplain ScopedName#scope() scope}, and the {@linkplain #getCode() code}
- * as the name {@linkplain ScopedName#tip() tip}. Note that according ISO 19115, citation alternate titles often
- * contains abbreviation (for example "DCW" as an alternative title for "<cite>Digital Chart of the World</cite>").
+ * {@section Name ↔ Identifier mapping}
+ * The {@code GenericName} attributes will be inferred from {@code ReferenceIdentifier} attributes as below:
+ *
+ * <ul>
+ *   <li><b>{@linkplain #tip() Tip}:</b> derived from the identifier {@linkplain #getCode() code}.</li>
+ *   <li><b>{@linkplain #head() Head}:</b> derived from the identifier {@linkplain #getCodeSpace() code space}.</li>
+ *   <li><b>{@linkplain #scope() Scope}:</b> derived from the shortest {@linkplain #getAuthority() authority}'s
+ *     {@linkplain Citation#getAlternateTitles() alternate titles}, or the {@linkplain Citation#getTitle() main title}
+ *     if there is no alternate titles. Note that according ISO 19115, citation alternate titles often contain
+ *     abbreviation (for example "DCW" as an alternative title for "<cite>Digital Chart of the World</cite>").</li>
+ * </ul>
+ *
+ * <div class="note"><b>Example:</b>
+ * If the identifier attributes are {@code authority} = {@link Citations#OGP}, {@code codeSpace} = {@code "EPSG"}
+ * and {@code code} = {@code "4326"}, then the name attributes will be {@code scope} = {@code "OGP"},
+ * {@code head} = {@code "EPSG"}, {@code tip} = {@code "4326"} and {@link #toString()} = {@code "EPSG:4326"}.
+ * Note that the scope does not appear in the string representation of names.</div>
  *
  *
  * {@section Immutability and thread safety}
@@ -84,7 +96,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8474731565582874497L;
+    private static final long serialVersionUID = -3982456534858346939L;
 
     /**
      * A pool of {@link NameSpace} values for given {@link InternationalString}.
@@ -92,8 +104,8 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     private static final Map<CharSequence,NameSpace> SCOPES = new WeakValueHashMap<>(CharSequence.class);
 
     /**
-     * The name of this identifier as a generic name. If {@code null}, will be constructed
-     * only when first needed.
+     * The name of this identifier as a generic name.
+     * If {@code null}, will be constructed only when first needed.
      */
     private transient GenericName name;
 
@@ -101,7 +113,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * {@code true} if {@link #name} has been given explicitly by the user.
      * Consider this field as final - it is not only for constructors convenience.
      */
-    private boolean isNameSupplied;
+    private transient boolean isNameSupplied;
 
     /**
      * Creates a new identifier from the specified one. This is a copy constructor
@@ -109,7 +121,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * available) from the given identifier.
      *
      * <p>If the given identifier implements the {@link GenericName} interface, then calls to
-     * {@link #tip()}, {@link #head()}, {@link #scope()} and similar methods will delegates
+     * {@link #tip()}, {@link #head()}, {@link #scope()} and similar methods will delegate
      * to that name.</p>
      *
      * @param identifier The identifier to copy.
@@ -120,6 +132,19 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
             name = (GenericName) identifier;
             isNameSupplied = true;
         }
+    }
+
+    /**
+     * Creates a new identifier from the specified name. This constructor infers the identifier attributes
+     * (code, codespace and authority) from the given name. Calls to name-related methods like {@link #tip()},
+     * {@link #head()} and {@link #scope()} will delegate to the given name.
+     *
+     * @param name The name to wrap.
+     */
+    public NamedIdentifier(final GenericName name) {
+        super(name instanceof ReferenceIdentifier ? (ReferenceIdentifier) name : new Adapter(name));
+        this.name = name;
+        isNameSupplied = true;
     }
 
     /**
@@ -215,25 +240,61 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     private GenericName createName(final Citation authority, final CharSequence code) {
         final NameFactory factory = DefaultFactories.NAMES;
-        if (authority == null) {
-            return factory.createLocalName(null, code);
-        }
-        final String title;
-        final String codeSpace = super.getCodeSpace();
-        if (codeSpace != null) {
-            title = codeSpace; // Whitespaces trimed by constructor.
-        } else {
-            title = Citations.getIdentifier(authority); // Whitespaces trimed by Citations.
-        }
-        NameSpace scope;
-        synchronized (SCOPES) {
-            scope = SCOPES.get(title);
-            if (scope == null) {
-                scope = factory.createNameSpace(factory.createLocalName(null, title), null);
-                SCOPES.put(title, scope);
+        final String title = Citations.getIdentifier(authority); // Whitespaces trimed by Citations.
+        NameSpace scope = null;
+        if (title != null) {
+            synchronized (SCOPES) {
+                scope = SCOPES.get(title);
+                if (scope == null) {
+                    scope = factory.createNameSpace(factory.createLocalName(null, title), null);
+                    SCOPES.put(title, scope);
+                }
             }
         }
-        return factory.createLocalName(scope, code).toFullyQualifiedName();
+        final String codeSpace = super.getCodeSpace();
+        if (codeSpace != null) {
+            return factory.createGenericName(scope, codeSpace, code);
+        } else {
+            return factory.createLocalName(scope, code);
+        }
+    }
+
+    /**
+     * The converse of {@link NamedIdentifier#createName(Citation, CharSequence)}.
+     */
+    private static final class Adapter implements ReferenceIdentifier {
+        /** The name from which to infer the identifier attributes. */
+        private final GenericName name;
+
+        /** Infers the attributes from the given name. */
+        Adapter(final GenericName name) {
+            ensureNonNull("name", name);
+            this.name = name;
+        }
+
+        /** Infers the authority from the scope. */
+        @Override public Citation getAuthority() {
+            final NameSpace scope = name.scope();
+            if (scope == null || scope.isGlobal()) {
+                return null;
+            }
+            return Citations.fromName(scope.name().tip().toString());
+        }
+
+        /** Takes everything except the tip as the code space. */
+        @Override public String getCodeSpace() {
+            return (name instanceof ScopedName) ? ((ScopedName) name).path().toString() : null;
+        }
+
+        /** Takes the last element as the code. */
+        @Override public String getCode() {
+            return name.tip().toString();
+        }
+
+        /** Names are not versioned. */
+        @Override public String getVersion() {
+            return null;
+        }
     }
 
     /**
@@ -265,10 +326,10 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
 
     /**
      * Returns the scope (name space) in which this name is local.
-     * By default, this is the same value than {@link #getCodeSpace()} provided as a name space.
+     * By default, this is the same value than the {@link #getAuthority() authority} provided as a name space.
      *
      * @see #head()
-     * @see #getCodeSpace()
+     * @see #getAuthority()
      *
      * @return The scope of this name.
      */
@@ -402,9 +463,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
-        if (isNameSupplied) {
-            out.writeObject(name);
-        }
+        out.writeObject(isNameSupplied ? name : null);
     }
 
     /**
@@ -413,8 +472,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        if (isNameSupplied) {
-            name = (GenericName) in.readObject();
-        }
+        name = (GenericName) in.readObject();
+        isNameSupplied = (name != null);
     }
 }

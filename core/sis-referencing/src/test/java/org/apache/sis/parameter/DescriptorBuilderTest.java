@@ -47,8 +47,9 @@ public final strictfp class DescriptorBuilderTest extends TestCase {
         final DescriptorBuilder builder = new DescriptorBuilder();
         builder.codespace(HardCodedCitations.OGP, "EPSG").mandatory();
         final ParameterDescriptor[] parameters = {
-            builder.name   ("Longitude of natural origin")
-                   .aliases("OGC:central_meridian", "GeoTIFF:NatOriginLong")
+            builder.name("Longitude of natural origin")
+                   .name(HardCodedCitations.OGC, "central_meridian")
+                   .name(HardCodedCitations.GEOTIFF, "NatOriginLong")
                    .remarks("Some remarks.")               .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
             builder.name("Latitude of natural origin")     .createBounded( -80,  +80, 0, NonSI.DEGREE_ANGLE),
             builder.name("Scale factor at natural origin") .createStrictlyPositive(1, Unit.ONE),

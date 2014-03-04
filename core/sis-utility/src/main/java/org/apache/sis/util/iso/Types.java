@@ -710,10 +710,9 @@ public final class Types extends Static {
      * <ul>
      *   <li>{@link GenericName}, to be casted and returned as-is.</li>
      *   <li>{@link CharSequence} (usually a {@link String} or an {@link InternationalString}),
-     *       to be parsed as a generic name using the
-     *       {@value org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
+     *       to be parsed as a generic name using the {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator.</li>
      *   <li>{@link Identifier}, its {@linkplain Identifier#getCode() code} to be parsed as a generic name
-     *       using the {@value org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
+     *       using the {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator.</li>
      * </ul>
      *
      * If {@code value} is an array or a collection containing {@code null} elements,
