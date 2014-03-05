@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link DescriptorBuilder}.
+ * Tests {@link ParameterBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -38,20 +38,20 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn({DefaultParameterDescriptorTest.class, DefaultParameterValueTest.class})
-public final strictfp class DescriptorBuilderTest extends TestCase {
+public final strictfp class ParameterBuilderTest extends TestCase {
     /**
      * Tests the "<cite>Mercator (variant A)</cite>" example given in Javadoc.
      */
     @Test
-    public void testMercatorExample() {
-        final DescriptorBuilder builder = new DescriptorBuilder();
+    public void testMercatorProjection() {
+        final ParameterBuilder builder = new ParameterBuilder();
         builder.codespace(HardCodedCitations.OGP, "EPSG").mandatory();
         final ParameterDescriptor[] parameters = {
             builder.name("Longitude of natural origin")
                    .name(HardCodedCitations.OGC, "central_meridian")
                    .name(HardCodedCitations.GEOTIFF, "NatOriginLong")
                    .remarks("Some remarks.")               .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
-            builder.name("Latitude of natural origin")     .createBounded( -80,  +80, 0, NonSI.DEGREE_ANGLE),
+            builder.name("Latitude of natural origin")     .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
             builder.name("Scale factor at natural origin") .createStrictlyPositive(1, Unit.ONE),
             builder.name("False easting")                  .create(0, SI.METRE),
             builder.name("False northing")                 .create(0, SI.METRE)
@@ -60,8 +60,9 @@ public final strictfp class DescriptorBuilderTest extends TestCase {
         assertEquals("EPSG",             parameters[1].getName().getCodeSpace());
         assertEquals("False easting",    parameters[3].getName().getCode());
         assertEquals("Some remarks.",    parameters[0].getRemarks().toString());
-        assertEquals(Double.valueOf(80), parameters[1].getMaximumValue());
+        assertEquals(Double.valueOf(84), parameters[1].getMaximumValue());
         assertEquals(SI.METRE,           parameters[4].getUnit());
+        assertTrue  (                    parameters[1].getAlias().isEmpty());
 
         final GenericName alias = parameters[0].getAlias().iterator().next();
         assertEquals("central_meridian",     alias.tip().toString());
