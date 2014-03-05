@@ -86,14 +86,13 @@ public class AbstractIdentifiedType implements Serializable {
     /**
      * Compares this type with the given object for equality.
      *
-     * @param  obj The object to compare with this class.
-     * @return {@code true} if the given object is equals to this map.
+     * @param  obj The object to compare with this type.
+     * @return {@code true} if the given object is equals to this type.
      */
     @Override
     public boolean equals(final Object obj) {
         if (obj != null && getClass() != obj.getClass()) {
-            final AbstractIdentifiedType that = (AbstractIdentifiedType) obj;
-            return Objects.equals(this.name, that.name);
+            return Objects.equals(name, ((AbstractIdentifiedType) obj).name);
         }
         return false;
     }
