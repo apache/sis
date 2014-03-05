@@ -37,7 +37,11 @@ import static org.junit.Assert.*;
  * @version 0.4
  * @module
  */
-@DependsOn({DefaultParameterDescriptorTest.class, DefaultParameterValueTest.class})
+@DependsOn({
+    org.apache.sis.referencing.BuilderTest.class,
+    DefaultParameterDescriptorTest.class,
+    DefaultParameterValueTest.class
+})
 public final strictfp class ParameterBuilderTest extends TestCase {
     /**
      * Tests the "<cite>Mercator (variant A)</cite>" example given in Javadoc.

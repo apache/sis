@@ -78,7 +78,7 @@ public final class ParametersTest extends TestCase {
     }
 
     /**
-     * Tests {@link Parameters#getValueDomain(ParameterDescriptor)
+     * Tests {@link Parameters#getValueDomain(ParameterDescriptor)}.
      */
     @Test
     public void testValueDomain() {
