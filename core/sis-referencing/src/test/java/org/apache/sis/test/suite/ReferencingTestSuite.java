@@ -50,6 +50,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.NamedIdentifierTest.class,
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
     org.apache.sis.referencing.AbstractReferenceSystemTest.class,
+    org.apache.sis.referencing.BuilderTest.class,
     org.apache.sis.parameter.DefaultParameterDescriptorTest.class,
     org.apache.sis.parameter.DefaultParameterValueTest.class,
     org.apache.sis.parameter.ParametersTest.class,

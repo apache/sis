@@ -139,6 +139,18 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
+     * Creates a descriptor for values of the given type without domain restriction.
+     *
+     * @param  <T>          The compile-time type of the {@code valueClass} argument.
+     * @param  valueClass   The class that describe the type of the parameter values.
+     * @param  defaultValue The default value for the parameter, or {@code null} if none.
+     * @return The parameter descriptor for the given default value and unit.
+     */
+    public <T> ParameterDescriptor<T> create(final Class<T> valueClass, final T defaultValue) {
+        return create(valueClass, null, null, defaultValue);
+    }
+
+    /**
      * Creates a descriptor for floating point values greater than zero.
      * The zero value is not considered valid. There is no maximal value.
      *
@@ -243,11 +255,11 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * a {@linkplain org.opengis.util.CodeList code list} or enumeration subset.
      * It is not necessary to provide this property when all values from the code list or enumeration are valid.</p>
      *
-     * @param <T>          The compile-time type of the {@code valueClass} argument.
-     * @param valueClass   The class that describe the type of the parameter values.
-     * @param validValues  A finite set of valid values (usually from a {@linkplain CodeList code list})
-     *                     or {@code null} if it doesn't apply.
-     * @param defaultValue The default value for the parameter, or {@code null} if none.
+     * @param  <T>          The compile-time type of the {@code valueClass} argument.
+     * @param  valueClass   The class that describe the type of the parameter values.
+     * @param  validValues  A finite set of valid values (usually from a {@linkplain CodeList code list})
+     *                      or {@code null} if it doesn't apply.
+     * @param  defaultValue The default value for the parameter, or {@code null} if none.
      * @return The parameter descriptor for the given set of valid values.
      */
     public <T> ParameterDescriptor<T> createEnumerated(final Class<T> valueClass, final T[] validValues, final T defaultValue) {

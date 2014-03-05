@@ -40,8 +40,8 @@ import java.util.Objects;
 
 
 /**
- * Base class of builders for various kind of {@code IdentifiedObject}. {@code Builder}s aim to make object
- * creation easier — they do not add any new functionality to {@link org.opengis.referencing.ObjectFactory}.
+ * Base class of builders for various kind of {@link IdentifiedObject}. {@code Builder}s aim to make object creation
+ * easier — they do not add any new functionality compared to {@link org.opengis.referencing.ObjectFactory}.
  * Builder methods like {@link #name(CharSequence)} and {@link #identifier(String)} provide convenient ways
  * to fill the {@link #properties} map, which will be given to the {@code ObjectFactory} methods at
  * {@code IdentifiedObject} creation time. Creations happen when any {@code createXXX(…)} method defined in
@@ -50,7 +50,7 @@ import java.util.Objects;
  * <p>This base class provides method for defining the following {@link IdentifiedObject} properties:</p>
  * <ul>
  *   <li><p><b>{@link AbstractIdentifiedObject#getName() Name}:</b><br>
- *     Each {@code IdentifiedObject} must have a name, which can be specified by a call to any of the
+ *     Each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
  *     {@code name(…)} methods defined in this class.</p></li>
  *
  *   <li><p><b>{@link AbstractIdentifiedObject#getAlias() Aliases}:</b><br>
@@ -69,7 +69,7 @@ import java.util.Objects;
  * {@section Builder property lifetimes}
  * The same builder can be used for creating many objects, since constructing a Coordinate Reference System (CRS)
  * may require constructing many components (coordinate system, datum, ellipsoid, prime meridian, <i>etc.</i>),
- * some of them sharing common properties. In order to simplify the most common usage scenarios, identification
+ * some of them sharing common properties. In order to simplify the most common usages, identification
  * properties have two different lifetimes in the {@code Builder} class:
  *
  * <ul>
@@ -80,8 +80,11 @@ import java.util.Objects;
  *       method, because they are usually specific to a particular {@code IdentifiedObject} instance.</li>
  * </ul>
  *
+ * {@section Usage examples}
+ * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for an example with the
+ * <cite>Mercator</cite> projection.
  *
- * <div class="note"><b>Note for subclass implementors:</b>
+ * {@section Note for subclass implementors}
  * <ul>
  *   <li>The type {@code <B>} shall be exactly the subclass type.
  *       For performance reasons, this is verified only if Java assertions are enabled.</li>
@@ -89,7 +92,7 @@ import java.util.Objects;
  *       usage of {@link #properties} map by the factory.</li>
  * </ul>
  *
- * <b>Example:</b>
+ * <div class="note"><b>Example:</b>
  * {@preformat java
  *     public class MyBuilder extends Builder<MyBuilder> {
  *         public Foo createFoo() {
@@ -118,7 +121,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY} and
      * {@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY} keys.
      * Subclasses may add other entries like
-     * {@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY},
+     * {@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY} and
      * {@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY} keys.
      *
      * <p>See <cite>Notes for subclass implementors</cite> in class javadoc for usage conditions.</p>
@@ -148,7 +151,7 @@ public abstract class Builder<B extends Builder<B>> {
      * Creates a new builder.
      */
     protected Builder() {
-        assert isSelf(getClass());
+        assert verifyParameterizedType(getClass());
         properties  = new HashMap<>(8);
         aliases     = new ArrayList<>(4);
         identifiers = new ArrayList<>(4);
@@ -158,7 +161,7 @@ public abstract class Builder<B extends Builder<B>> {
      * Verifies that {@code B} in {@code <B extends Builder<B>} is the expected class.
      * This method is for assertion purposes only.
      */
-    private static boolean isSelf(final Class<?> expected) {
+    private static boolean verifyParameterizedType(final Class<?> expected) {
         for (Class<?> c = expected; c != null; c = c.getSuperclass()) {
             Type type = c.getGenericSuperclass();
             if (type instanceof ParameterizedType) {
