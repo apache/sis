@@ -24,7 +24,7 @@ import org.opengis.util.GenericName;
  * {@link DefaultFeature} instances of that type.
  *
  * <div class="note"><b>Note:</b>
- * Compared to the Java language, {@code FeatureType} is equivalent to {@link Class} and
+ * Compared to the Java language, {@code FeatureType} is equivalent to {@link Class} while
  * {@code Feature} instances are equivalent to {@link Object} instances of that class.</div>
  *
  * <div class="warning"><b>Warning:</b>
