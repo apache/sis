@@ -68,8 +68,8 @@ import java.util.Objects;
  *   <li><b>{@linkplain #head() Head}:</b> derived from the identifier {@linkplain #getCodeSpace() code space}.</li>
  *   <li><b>{@linkplain #scope() Scope}:</b> derived from the shortest {@linkplain #getAuthority() authority}'s
  *     {@linkplain Citation#getAlternateTitles() alternate titles}, or the {@linkplain Citation#getTitle() main title}
- *     if there is no alternate titles. Note that according ISO 19115, citation alternate titles often contain
- *     abbreviation (for example "DCW" as an alternative title for "<cite>Digital Chart of the World</cite>").</li>
+ *     if there is no alternate titles. This policy exploits the ISO 19115 comment saying that citation alternate titles
+ *     often contain abbreviation (for example "DCW" as an alternative title for "<cite>Digital Chart of the World</cite>").</li>
  * </ul>
  *
  * <div class="note"><b>Example:</b>

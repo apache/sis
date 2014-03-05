@@ -454,11 +454,12 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
 
     /**
      * Organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode code}.
+     * {@linkplain #getCode() code}.
+     *
+     * <div class="note"><b>Example:</b> Coordinate Reference System (CRS) identified by an EPSG code will return
+     * {@link Citations#OGP}, since OGP is the organization maintaining the EPSG geodetic database.</div>
      *
      * @return The authority, or {@code null} if not available.
-     *
-     * @see org.apache.sis.metadata.iso.citation.Citations#EPSG
      */
     @Override
     public Citation getAuthority() {
@@ -467,7 +468,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
 
     /**
      * Identifier of the version of the associated code space or code, as specified by the
-     * code authority. This version is included only when the {@linkplain #getCode code}
+     * code authority. This version is included only when the {@linkplain #getCode() code}
      * uses versions. When appropriate, the edition is identified by the effective date,
      * coded using ISO 8601 date format.
      *
