@@ -16,7 +16,7 @@
  */
 package org.apache.sis.feature;
 
-import org.opengis.util.GenericName;
+import java.util.Map;
 
 
 /**
@@ -39,11 +39,41 @@ import org.opengis.util.GenericName;
  */
 public class DefaultFeatureType extends AbstractIdentifiedType {
     /**
-     * Creates a feature type of the given name.
+     * Constructs a feature type from the given properties. The properties map is given unchanged to
+     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
+     * The following table is a reminder of main (not all) properties:
      *
-     * @param name The name of this feature type.
+     * <table class="sis">
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
+     *     <td>{@link org.opengis.util.GenericName} or {@link String}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDefinition()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDesignation()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDescription()}</td>
+     *   </tr>
+     * </table>
+     *
+     * @param properties The name and other properties to be given to this feature type.
      */
-    public DefaultFeatureType(final GenericName name) {
-        super(name);
+    public DefaultFeatureType(final Map<String,?> properties) {
+        super(properties);
     }
 }
