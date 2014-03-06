@@ -49,21 +49,21 @@ import java.util.Objects;
  *
  * <p>This base class provides method for defining the following {@link IdentifiedObject} properties:</p>
  * <ul>
- *   <li><p><b>{@link AbstractIdentifiedObject#getName() Name}:</b><br>
+ *   <li><b>{@link AbstractIdentifiedObject#getName() Name}:</b>
  *     Each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
- *     {@code name(…)} methods defined in this class.</p></li>
+ *     {@code name(…)} methods defined in this class.</li>
  *
- *   <li><p><b>{@link AbstractIdentifiedObject#getAlias() Aliases}:</b><br>
+ *   <li><b>{@link AbstractIdentifiedObject#getAlias() Aliases}:</b>
  *     Identified objects can optionally have an arbitrary amount of aliases, which are also specified
- *     by the {@code name(…)} methods — each call after the first one adds an alias.</p></li>
+ *     by the {@code name(…)} methods — each call after the first one adds an alias.</li>
  *
- *   <li><p><b>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b><br>
+ *   <li><b>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b>
  *     Identified objects can also have an arbitrary amount of identifiers, which are specified by the
  *     {@code identifier(…)} methods. Like names, more than one identifier can be added by invoking
- *     the method many time.</p></li>
+ *     the method many time.</li>
  *
- *   <li><p><b>{@link AbstractIdentifiedObject#getRemarks() Remarks}:</b><br>
- *     Identified objects can have at most one remark, which is specified by the {@code remarks(…)} method.</p></li>
+ *   <li><b>{@link AbstractIdentifiedObject#getRemarks() Remarks}:</b>
+ *     Identified objects can have at most one remark, which is specified by the {@code remarks(…)} method.</li>
  * </ul>
  *
  * {@section Builder property lifetimes}
@@ -81,8 +81,44 @@ import java.util.Objects;
  * </ul>
  *
  * {@section Usage examples}
- * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for an example with the
- * <cite>Mercator</cite> projection.
+ * The "<cite>Mercator (variant A)</cite>" projection (EPSG:9804) is also known as "<cite>Mercator (1SP)</cite>".
+ * OGC and GeoTIFF use slightly different names, and GeoTIFF has its own code (7).
+ * Those information can be specified as below:
+ *
+ * {@preformat java
+ *   Builder builder = new Builder();
+ *   builder.codespace (Citations.OGP, "EPSG")
+ *          .name      ("Mercator (variant A)")             // Defined in EPSG namespace.
+ *          .name      ("Mercator (1SP)")                   // Defined in EPSG namespace.
+ *          .identifier("9804")                             // Defined in EPSG namespace.
+ *          .name      (Citations.OGC,     "Mercator_1SP")
+ *          .name      (Citations.GEOTIFF, "CT_Mercator")
+ *          .identifier(Citations.GEOTIFF, "7")
+ *          .remarks("The “Mercator (1SP)” method name was used prior to October 2010.");
+ *   // At this point, the createXXX(…) method to invoke depends on the Builder subclass.
+ * }
+ *
+ * The two first names, which use the default namespace specified by the call to {@code codespace(…)},
+ * will have the {@code "EPSG"} {@linkplain NamedIdentifier#scope() scope}. Since scopes are not shown
+ * in {@linkplain NamedIdentifier#toString() string representation of names}, the string representation
+ * of the two first names will omit the {@code "EPSG:"} prefix. However the string representation of the
+ * two last names will be {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} respectively.
+ *
+ * <p>The {@code IdentificationObject} created by this example will have the following properties:</p>
+ * <ul>
+ *   <li>{@link AbstractIdentifiedObject#getName() Name}:
+ *       {@code "Mercator (variant A)"} as a local name in {@code "EPSG"} scope.</li>
+ *   <li>{@link AbstractIdentifiedObject#getAlias() Aliases}:
+ *       {@code "Mercator (1SP)"} as a local name in {@code "EPSG"} scope,
+ *       {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} as scoped names.</li>
+ *   <li>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:
+ *       {@code "EPSG:9804"} and {@code "GeoTIFF:7"}.</li>
+ *   <li>{@link AbstractIdentifiedObject#getRemarks() Remarks}:
+ *       {@code "The “Mercator (1SP)” method name was used prior to October 2010."}</li>
+ * </ul>
+ *
+ * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for more examples with the
+ * <cite>Mercator</cite> projection parameters.
  *
  * {@section Note for subclass implementors}
  * <ul>

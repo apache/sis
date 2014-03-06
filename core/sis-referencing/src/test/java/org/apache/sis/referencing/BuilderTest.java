@@ -110,10 +110,10 @@ public final strictfp class BuilderTest extends TestCase {
 
         // The test.
         final BuilderMock builder = new BuilderMock();
-        builder.name("Mercator (variant A)");   // EPSG version 7.6 and later.
-        builder.name("Mercator (1SP)");         // EPSG before version 7.6.
-        builder.name("Mercator_1SP");           // OGC
-        builder.name("CT_Mercator");            // GeoTIFF
+        assertSame(builder, builder.name("Mercator (variant A)"));   // EPSG version 7.6 and later.
+        assertSame(builder, builder.name("Mercator (1SP)"));         // EPSG before version 7.6.
+        assertSame(builder, builder.name("Mercator_1SP"));           // OGC
+        assertSame(builder, builder.name("CT_Mercator"));            // GeoTIFF
         builder.onCreate(false);
         assertEquals(name, builder.properties.get(NAME_KEY));
         assertArrayEquals(new GenericName[] {alias1, alias2, alias3},
@@ -139,11 +139,11 @@ public final strictfp class BuilderTest extends TestCase {
 
         // The test.
         final BuilderMock builder = new BuilderMock();
-        builder.codespace(OGP, "EPSG");
-        builder.name(          "Mercator (variant A)");
-        builder.name(          "Mercator (1SP)");
-        builder.name(OGC,      "Mercator_1SP");
-        builder.name(GEOTIFF,  "CT_Mercator");
+        assertSame(builder, builder.codespace(OGP, "EPSG"));
+        assertSame(builder, builder.name(          "Mercator (variant A)"));
+        assertSame(builder, builder.name(          "Mercator (1SP)"));
+        assertSame(builder, builder.name(OGC,      "Mercator_1SP"));
+        assertSame(builder, builder.name(GEOTIFF,  "CT_Mercator"));
         builder.onCreate(false);
         assertEquals(name, builder.properties.get(NAME_KEY));
         assertArrayEquals(new GenericName[] {alias1, alias2, alias3},
@@ -171,9 +171,9 @@ public final strictfp class BuilderTest extends TestCase {
 
         // The test.
         final BuilderMock builder = new BuilderMock();
-        builder.codespace (OGP,  "EPSG");
-        builder.identifier(      "9804");
-        builder.identifier(GEOTIFF, "7");
+        assertSame(builder, builder.codespace (OGP,  "EPSG"));
+        assertSame(builder, builder.identifier(      "9804"));
+        assertSame(builder, builder.identifier(GEOTIFF, "7"));
         builder.onCreate(false);
         assertArrayEquals(new ReferenceIdentifier[] {id1, id2},
                 (ReferenceIdentifier[]) builder.properties.get(IDENTIFIERS_KEY));
