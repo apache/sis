@@ -400,7 +400,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Returns a string representation of this generic name. This string representation
      * is local-independent. It contains all elements listed by {@link #getParsedNames()}
-     * separated by an arbitrary character (usually {@code :} or {@code /}).
+     * separated by a namespace-dependent character (usually {@code :} or {@code /}).
      *
      * @return A local-independent string representation of this generic name.
      *

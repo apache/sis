@@ -123,7 +123,7 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     private final T defaultValue;
 
     /**
-     * Constructs a descriptor from a set of properties. The properties map is given unchanged to the
+     * Constructs a descriptor from the given properties. The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
      *
