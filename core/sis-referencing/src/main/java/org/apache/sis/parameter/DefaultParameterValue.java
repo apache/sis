@@ -98,7 +98,7 @@ import java.nio.file.Path;
  * @module
  *
  * @see DefaultParameterDescriptor
- * @see DefaultParameterGroup
+ * @see DefaultParameterValueGroup
  */
 public class DefaultParameterValue<T> extends FormattableObject implements ParameterValue<T>, Serializable, Cloneable {
     /**
