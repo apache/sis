@@ -50,6 +50,7 @@ public final strictfp class BuilderTest extends TestCase {
         }
         try {
             new Invalid();
+            fail("Creation of Invalid builder shall not be allowed.");
         } catch (AssertionError e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains(BuilderMock.class.getName()));
@@ -57,20 +58,20 @@ public final strictfp class BuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link Builder#codespace(Citation, String)}.
+     * Tests {@link Builder#setCodeSpace(Citation, String)}.
      */
     @Test
-    public void testCodespace() {
+    public void testSetCodeSpace() {
         final BuilderMock builder = new BuilderMock();
-        builder.codespace(OGP, "EPSG");
-        builder.name("Mercator (variant A)");
+        builder.setCodeSpace(OGP, "EPSG");
+        builder.addName("Mercator (variant A)");
         /*
          * Setting the same codespace should have no effect, while attempt to
          * set a new codespace after we added a name shall not be allowed.
          */
-        builder.codespace(OGP, "EPSG");
+        builder.setCodeSpace(OGP, "EPSG");
         try {
-            builder.codespace(EPSG, "EPSG");
+            builder.setCodeSpace(EPSG, "EPSG");
             fail("Setting a different codespace shall not be allowed.");
         } catch (IllegalStateException e) {
             final String message = e.getMessage();
@@ -88,13 +89,13 @@ public final strictfp class BuilderTest extends TestCase {
         builder.onCreate(true);
         assertEquals("EPSG", builder.properties.get(ReferenceIdentifier.CODESPACE_KEY));
         assertSame  ( OGP,   builder.properties.get(ReferenceIdentifier.AUTHORITY_KEY));
-        builder.codespace(EPSG, "EPSG");
+        builder.setCodeSpace(EPSG, "EPSG");
         assertEquals("EPSG", builder.properties.get(ReferenceIdentifier.CODESPACE_KEY));
         assertSame  ( EPSG,  builder.properties.get(ReferenceIdentifier.AUTHORITY_KEY));
     }
 
     /**
-     * Tests {@link Builder#name(CharSequence)} without codespace.
+     * Tests {@link Builder#addName(CharSequence)} without codespace.
      */
     @Test
     public void testUnscopedName() {
@@ -110,10 +111,10 @@ public final strictfp class BuilderTest extends TestCase {
 
         // The test.
         final BuilderMock builder = new BuilderMock();
-        assertSame(builder, builder.name("Mercator (variant A)"));   // EPSG version 7.6 and later.
-        assertSame(builder, builder.name("Mercator (1SP)"));         // EPSG before version 7.6.
-        assertSame(builder, builder.name("Mercator_1SP"));           // OGC
-        assertSame(builder, builder.name("CT_Mercator"));            // GeoTIFF
+        assertSame(builder, builder.addName("Mercator (variant A)"));   // EPSG version 7.6 and later.
+        assertSame(builder, builder.addName("Mercator (1SP)"));         // EPSG before version 7.6.
+        assertSame(builder, builder.addName("Mercator_1SP"));           // OGC
+        assertSame(builder, builder.addName("CT_Mercator"));            // GeoTIFF
         builder.onCreate(false);
         assertEquals(name, builder.properties.get(NAME_KEY));
         assertArrayEquals(new GenericName[] {alias1, alias2, alias3},
@@ -121,10 +122,10 @@ public final strictfp class BuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link Builder#name(Citation, CharSequence)} and {@link Builder#name(CharSequence)} with codespace.
+     * Tests {@link Builder#addName(Citation, CharSequence)} and {@link Builder#addName(CharSequence)} with codespace.
      */
     @Test
-    @DependsOnMethod({"testUnscopedName", "testCodespace"})
+    @DependsOnMethod({"testUnscopedName", "testSetCodeSpace"})
     public void testScopedName() {
         // Expected values to be used later in the test.
         final String      name   = "Mercator (variant A)";
@@ -139,11 +140,11 @@ public final strictfp class BuilderTest extends TestCase {
 
         // The test.
         final BuilderMock builder = new BuilderMock();
-        assertSame(builder, builder.codespace(OGP, "EPSG"));
-        assertSame(builder, builder.name(          "Mercator (variant A)"));
-        assertSame(builder, builder.name(          "Mercator (1SP)"));
-        assertSame(builder, builder.name(OGC,      "Mercator_1SP"));
-        assertSame(builder, builder.name(GEOTIFF,  "CT_Mercator"));
+        assertSame(builder, builder.setCodeSpace(OGP, "EPSG"));
+        assertSame(builder, builder.addName(          "Mercator (variant A)"));
+        assertSame(builder, builder.addName(          "Mercator (1SP)"));
+        assertSame(builder, builder.addName(OGC,      "Mercator_1SP"));
+        assertSame(builder, builder.addName(GEOTIFF,  "CT_Mercator"));
         builder.onCreate(false);
         assertEquals(name, builder.properties.get(NAME_KEY));
         assertArrayEquals(new GenericName[] {alias1, alias2, alias3},
@@ -158,7 +159,7 @@ public final strictfp class BuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link Builder#identifier(Citation, String)} and {@link Builder#identifier(String)}
+     * Tests {@link Builder#addIdentifier(Citation, String)} and {@link Builder#addIdentifier(String)}
      * with codespace.
      */
     @Test
@@ -171,9 +172,9 @@ public final strictfp class BuilderTest extends TestCase {
 
         // The test.
         final BuilderMock builder = new BuilderMock();
-        assertSame(builder, builder.codespace (OGP,  "EPSG"));
-        assertSame(builder, builder.identifier(      "9804"));
-        assertSame(builder, builder.identifier(GEOTIFF, "7"));
+        assertSame(builder, builder.setCodeSpace (OGP,  "EPSG"));
+        assertSame(builder, builder.addIdentifier(      "9804"));
+        assertSame(builder, builder.addIdentifier(GEOTIFF, "7"));
         builder.onCreate(false);
         assertArrayEquals(new ReferenceIdentifier[] {id1, id2},
                 (ReferenceIdentifier[]) builder.properties.get(IDENTIFIERS_KEY));

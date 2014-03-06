@@ -42,29 +42,30 @@ import java.util.Objects;
 /**
  * Base class of builders for various kind of {@link IdentifiedObject}. {@code Builder}s aim to make object creation
  * easier — they do not add any new functionality compared to {@link org.opengis.referencing.ObjectFactory}.
- * Builder methods like {@link #name(CharSequence)} and {@link #identifier(String)} provide convenient ways
+ * Builder methods like {@link #addName(CharSequence)} and {@link #addIdentifier(String)} provide convenient ways
  * to fill the {@link #properties} map, which will be given to the {@code ObjectFactory} methods at
  * {@code IdentifiedObject} creation time. Creations happen when any {@code createXXX(…)} method defined in
  * the builder subclasses is invoked.
  *
  * <p>This base class provides method for defining the following {@link IdentifiedObject} properties:</p>
- * <ul>
- *   <li><b>{@link AbstractIdentifiedObject#getName() Name}:</b>
- *     Each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
- *     {@code name(…)} methods defined in this class.</li>
+ * <blockquote><table class="compact">
+ * <tr><td>{@link AbstractIdentifiedObject#getName() Name}:</td>
+ *     <td>Each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
+ *     {@code addName(…)} methods defined in this class.</td></tr>
  *
- *   <li><b>{@link AbstractIdentifiedObject#getAlias() Aliases}:</b>
- *     Identified objects can optionally have an arbitrary amount of aliases, which are also specified
- *     by the {@code name(…)} methods — each call after the first one adds an alias.</li>
+ * <tr><td>{@link AbstractIdentifiedObject#getAlias() Aliases}:</td>
+ *     <td>Identified objects can optionally have an arbitrary amount of aliases, which are also specified
+ *     by the {@code addName(…)} methods — each call after the first one adds an alias.</td></tr>
  *
- *   <li><b>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b>
- *     Identified objects can also have an arbitrary amount of identifiers, which are specified by the
- *     {@code identifier(…)} methods. Like names, more than one identifier can be added by invoking
- *     the method many time.</li>
+ * <tr><td>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:</td>
+ *     <td>Identified objects can also have an arbitrary amount of identifiers, which are specified by the
+ *     {@code addIdentifier(…)} methods. Like names, more than one identifier can be added by invoking
+ *     the method many time.</td></tr>
  *
- *   <li><b>{@link AbstractIdentifiedObject#getRemarks() Remarks}:</b>
- *     Identified objects can have at most one remark, which is specified by the {@code remarks(…)} method.</li>
- * </ul>
+ * <tr><td>{@link AbstractIdentifiedObject#getRemarks() Remarks}:</td>
+ *     <td>Identified objects can have at most one remark, which is specified by the {@code setRemarks(…)}
+ *         method.</td></tr>
+ * </table></blockquote>
  *
  * {@section Builder property lifetimes}
  * The same builder can be used for creating many objects, since constructing a Coordinate Reference System (CRS)
@@ -87,35 +88,35 @@ import java.util.Objects;
  *
  * {@preformat java
  *   Builder builder = new Builder();
- *   builder.codespace (Citations.OGP, "EPSG")
- *          .name      ("Mercator (variant A)")             // Defined in EPSG namespace.
- *          .name      ("Mercator (1SP)")                   // Defined in EPSG namespace.
- *          .identifier("9804")                             // Defined in EPSG namespace.
- *          .name      (Citations.OGC,     "Mercator_1SP")
- *          .name      (Citations.GEOTIFF, "CT_Mercator")
- *          .identifier(Citations.GEOTIFF, "7")
- *          .remarks("The “Mercator (1SP)” method name was used prior to October 2010.");
+ *   builder.setCodespace (Citations.OGP, "EPSG")
+ *          .addName      ("Mercator (variant A)")             // Defined in EPSG namespace.
+ *          .addName      ("Mercator (1SP)")                   // Defined in EPSG namespace.
+ *          .addIdentifier("9804")                             // Defined in EPSG namespace.
+ *          .addName      (Citations.OGC,     "Mercator_1SP")
+ *          .addName      (Citations.GEOTIFF, "CT_Mercator")
+ *          .addIdentifier(Citations.GEOTIFF, "7")
+ *          .setRemarks("The “Mercator (1SP)” method name was used prior to October 2010.");
  *   // At this point, the createXXX(…) method to invoke depends on the Builder subclass.
  * }
  *
- * The two first names, which use the default namespace specified by the call to {@code codespace(…)},
+ * The two first names, which use the default namespace specified by the call to {@code setCodeSpace(…)},
  * will have the {@code "EPSG"} {@linkplain NamedIdentifier#scope() scope}. Since scopes are not shown
  * in {@linkplain NamedIdentifier#toString() string representation of names}, the string representation
  * of the two first names will omit the {@code "EPSG:"} prefix. However the string representation of the
  * two last names will be {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} respectively.
  *
  * <p>The {@code IdentificationObject} created by this example will have the following properties:</p>
- * <ul>
- *   <li>{@link AbstractIdentifiedObject#getName() Name}:
- *       {@code "Mercator (variant A)"} as a local name in {@code "EPSG"} scope.</li>
- *   <li>{@link AbstractIdentifiedObject#getAlias() Aliases}:
- *       {@code "Mercator (1SP)"} as a local name in {@code "EPSG"} scope,
- *       {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} as scoped names.</li>
- *   <li>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:
- *       {@code "EPSG:9804"} and {@code "GeoTIFF:7"}.</li>
- *   <li>{@link AbstractIdentifiedObject#getRemarks() Remarks}:
- *       {@code "The “Mercator (1SP)” method name was used prior to October 2010."}</li>
- * </ul>
+ * <blockquote><table class="compact">
+ * <tr><td>{@link AbstractIdentifiedObject#getName() Name}:</td>
+ *     <td>{@code "Mercator (variant A)"} as a local name in {@code "EPSG"} scope.</td></tr>
+ * <tr><td>{@link AbstractIdentifiedObject#getAlias() Aliases}:</td>
+ *     <td>{@code "Mercator (1SP)"} as a local name in {@code "EPSG"} scope,
+ *         {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} as scoped names.</td></tr>
+ * <tr><td>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:</td>
+ *     <td>{@code "EPSG:9804"} and {@code "GeoTIFF:7"}.</td></tr>
+ * <tr><td>{@link AbstractIdentifiedObject#getRemarks() Remarks}:</td>
+ *     <td>{@code "The “Mercator (1SP)” method name was used prior to October 2010."}</td></tr>
+ * </table></blockquote>
  *
  * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for more examples with the
  * <cite>Mercator</cite> projection parameters.
@@ -263,19 +264,19 @@ public abstract class Builder<B extends Builder<B>> {
      *
      * <p><b>Condition:</b>
      * this method can not be invoked after one or more names or identifiers have been added (by calls to the
-     * {@code name(…)} or {@code identifier(…)} methods) for the next object to create. This method can be
+     * {@code addName(…)} or {@code addIdentifier(…)} methods) for the next object to create. This method can be
      * invoked again after the name, aliases and identifiers have been cleared by a call to {@code createXXX(…)}.</p>
      *
      * <p><b>Lifetime:</b>
-     * this property is kept unchanged until this {@code codespace(…)} method is invoked again.</p>
+     * this property is kept unchanged until this {@code setCodeSpace(…)} method is invoked again.</p>
      *
      * @param  authority Bibliographic reference to the authority defining the codes, or {@code null} if none.
      * @param  codespace The {@code IdentifiedObject} codespace, or {@code null} for inferring it from the authority.
      * @return {@code this}, for method call chaining.
-     * @throws IllegalStateException if {@code name(…)} or {@code identifier(…)} has been invoked at least
+     * @throws IllegalStateException if {@code addName(…)} or {@code addIdentifier(…)} has been invoked at least
      *         once since builder construction or since the last call to a {@code createXXX(…)} method.
      */
-    public B codespace(final Citation authority, final String codespace) {
+    public B setCodeSpace(final Citation authority, final String codespace) {
         if (!setProperty(ReferenceIdentifier.CODESPACE_KEY, codespace)) {
             namespace = null;
         }
@@ -289,26 +290,26 @@ public abstract class Builder<B extends Builder<B>> {
      *
      * <p><b>Condition:</b>
      * this method can not be invoked after one or more names or identifiers have been added (by calls to the
-     * {@code name(…)} or {@code identifier(…)} methods) for the next object to create. This method can be
+     * {@code addName(…)} or {@code addIdentifier(…)} methods) for the next object to create. This method can be
      * invoked again after the name, aliases and identifiers have been cleared by a call to {@code createXXX(…)}.</p>
      *
      * <p><b>Lifetime:</b>
-     * this property is kept unchanged until this {@code version(…)} method is invoked again.</p>
+     * this property is kept unchanged until this {@code setVersion(…)} method is invoked again.</p>
      *
      * @param  version The version of code definitions, or {@code null} if none.
      * @return {@code this}, for method call chaining.
-     * @throws IllegalStateException if {@code name(…)} or {@code identifier(…)} has been invoked at least
+     * @throws IllegalStateException if {@code addName(…)} or {@code addIdentifier(…)} has been invoked at least
      *         once since builder construction or since the last call to a {@code createXXX(…)} method.
      */
-    public B version(final String version) {
+    public B setVersion(final String version) {
         setProperty(ReferenceIdentifier.VERSION_KEY, version);
         return self();
     }
 
     /**
      * Adds an {@code IdentifiedObject} name given by a {@code String} or {@code InternationalString}.
-     * The given string will be combined with the authority, {@linkplain #codespace(Citation, String) code space}
-     * and {@linkplain #version(String) version} information for creating the {@link ReferenceIdentifier} or
+     * The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space}
+     * and {@link #setVersion(String) version} information for creating the {@link ReferenceIdentifier} or
      * {@link GenericName} object.
      *
      * {@section Name and aliases}
@@ -322,7 +323,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  name The {@code IdentifiedObject} name.
      * @return {@code this}, for method call chaining.
      */
-    public B name(final CharSequence name) {
+    public B addName(final CharSequence name) {
         ensureNonNull("name", name);
         final Object old = properties.put(IdentifiedObject.NAME_KEY, name.toString());
         if (old != null) {
@@ -341,10 +342,10 @@ public abstract class Builder<B extends Builder<B>> {
      * by OGC and GeoTIFF. Those alternative names can be defined as below:
      *
      * {@preformat java
-     *   builder.codespace(Citations.OGP, "EPSG")           // Sets the default namespace to "EPSG".
-     *          .name("Longitude of natural origin")        // Primary name in builder default namespace.
-     *          .name(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
-     *          .name(Citations.GEOTIFF, "NatOriginLong");  // Second alias in "GeoTIFF" namespace.
+     *   builder.setCodespace(Citations.OGP, "EPSG")           // Sets the default namespace to "EPSG".
+     *          .addName("Longitude of natural origin")        // Primary name in builder default namespace.
+     *          .addName(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
+     *          .addName(Citations.GEOTIFF, "NatOriginLong");  // Second alias in "GeoTIFF" namespace.
      * }
      *
      * In this example, {@code "central_meridian"} will be the
@@ -358,9 +359,9 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  name The {@code IdentifiedObject} alias as a name in the namespace of the given authority.
      * @return {@code this}, for method call chaining.
      *
-     * @see #identifier(Citation, String)
+     * @see #addIdentifier(Citation, String)
      */
-    public B name(final Citation authority, final CharSequence name) {
+    public B addName(final Citation authority, final CharSequence name) {
         ensureNonNull("name", name);
         final NamedIdentifier identifier;
         if (name instanceof InternationalString) {
@@ -378,8 +379,8 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Adds an {@code IdentifiedObject} name fully specified by the given identifier.
-     * This method ignores the authority, {@linkplain #codespace(Citation, String) code space} or
-     * {@linkplain #version(String) version} specified to this builder (if any), since the given
+     * This method ignores the authority, {@link #setCodeSpace(Citation, String) code space} or
+     * {@link #setVersion(String) version} specified to this builder (if any), since the given
      * identifier already contains those information.
      *
      * {@section Name and aliases}
@@ -393,7 +394,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  name The {@code IdentifiedObject} name as an identifier.
      * @return {@code this}, for method call chaining.
      */
-    public B name(final ReferenceIdentifier name) {
+    public B addName(final ReferenceIdentifier name) {
         ensureNonNull("name", name);
         final Object old = properties.put(IdentifiedObject.NAME_KEY, name);
         if (old != null) {
@@ -405,8 +406,8 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Adds an {@code IdentifiedObject} name fully specified by the given generic name.
-     * This method ignores the authority, {@linkplain #codespace(Citation, String) code space} or
-     * {@linkplain #version(String) version} specified to this builder (if any), since the given
+     * This method ignores the authority, {@link #setCodeSpace(Citation, String) code space} or
+     * {@link #setVersion(String) version} specified to this builder (if any), since the given
      * generic name already contains those information.
      *
      * {@section Name and aliases}
@@ -420,7 +421,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  name The {@code IdentifiedObject} name as an identifier.
      * @return {@code this}, for method call chaining.
      */
-    public B name(final GenericName name) {
+    public B addName(final GenericName name) {
         ensureNonNull("name", name);
         if (properties.get(IdentifiedObject.NAME_KEY) == null) {
             properties.put(IdentifiedObject.NAME_KEY, new NamedIdentifier(name));
@@ -432,8 +433,8 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Adds an {@code IdentifiedObject} identifier given by a {@code String}.
-     * The given string will be combined with the authority, {@linkplain #codespace(Citation, String) code space}
-     * and {@linkplain #version(String) version} information for creating the {@link ReferenceIdentifier} object.
+     * The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space}
+     * and {@link #setVersion(String) version} information for creating the {@link ReferenceIdentifier} object.
      *
      * <p><b>Lifetime:</b>
      * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
@@ -441,7 +442,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  identifier The {@code IdentifiedObject} identifier.
      * @return {@code this}, for method call chaining.
      */
-    public B identifier(final String identifier) {
+    public B addIdentifier(final String identifier) {
         ensureNonNull("identifier", identifier);
         identifiers.add(new ImmutableIdentifier((Citation) properties.get(ReferenceIdentifier.AUTHORITY_KEY),
                 (String) properties.get(ReferenceIdentifier.CODESPACE_KEY), identifier));
@@ -450,7 +451,7 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Adds an {@code IdentifiedObject} identifier in an alternative namespace.
-     * This method is typically invoked in complement to {@link #name(Citation, CharSequence)}.
+     * This method is typically invoked in complement to {@link #addName(Citation, CharSequence)}.
      *
      * <p><b>Lifetime:</b>
      * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
@@ -459,9 +460,9 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  identifier The {@code IdentifiedObject} identifier as a code in the namespace of the given authority.
      * @return {@code this}, for method call chaining.
      *
-     * @see #name(Citation, CharSequence)
+     * @see #addName(Citation, CharSequence)
      */
-    public B identifier(final Citation authority, final String identifier) {
+    public B addIdentifier(final Citation authority, final String identifier) {
         ensureNonNull("identifier", identifier);
         identifiers.add(new ImmutableIdentifier(authority, Citations.getIdentifier(authority), identifier));
         return self();
@@ -469,8 +470,8 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Adds an {@code IdentifiedObject} identifier fully specified by the given identifier.
-     * This method ignores the authority, {@linkplain #codespace(Citation, String) code space} or
-     * {@linkplain #version(String) version} specified to this builder (if any), since the given
+     * This method ignores the authority, {@link #setCodeSpace(Citation, String) code space} or
+     * {@link #setVersion(String) version} specified to this builder (if any), since the given
      * identifier already contains those information.
      *
      * <p><b>Lifetime:</b>
@@ -479,7 +480,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  identifier The {@code IdentifiedObject} identifier.
      * @return {@code this}, for method call chaining.
      */
-    public B identifier(final ReferenceIdentifier identifier) {
+    public B addIdentifier(final ReferenceIdentifier identifier) {
         ensureNonNull("identifier", identifier);
         identifiers.add(identifier);
         return self();
@@ -490,13 +491,13 @@ public abstract class Builder<B extends Builder<B>> {
      * Calls to this method overwrite any previous value.
      *
      * <p><b>Lifetime:</b>
-     * previous remarks are discarded by calls to {@code remarks(…)}.
+     * previous remarks are discarded by calls to {@code setRemarks(…)}.
      * Remarks are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
      * @param  remarks The remarks, or {@code null} if none.
      * @return {@code this}, for method call chaining.
      */
-    public B remarks(final CharSequence remarks) {
+    public B setRemarks(final CharSequence remarks) {
         properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         return self();
     }
