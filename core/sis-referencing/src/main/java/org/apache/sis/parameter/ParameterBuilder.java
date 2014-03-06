@@ -35,15 +35,15 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * provided by the implementor.
  *
  * {@section Identification properties}
- * Each parameter must have a name, which can be specified by any of the {@code name(…)} methods.
+ * Each parameter must have a name, which can be specified by any of the {@code addName(…)} methods.
  * Parameters can optionally have an arbitrary amount of aliases, which are also specified by the
- * {@code name(…)} methods — each call after the first one adds an alias.
+ * {@code addName(…)} methods — each call after the first one adds an alias.
  *
  * <p>Parameters can also have an arbitrary amount of identifiers, which are specified by the
- * {@code identifier(…)} methods. Like names, more than one identifier can be added by invoking
+ * {@code addIdentifier(…)} methods. Like names, more than one identifier can be added by invoking
  * the method many time.</p>
  *
- * <p>Parameters can have at most one remark, which is specified by the {@code remarks(…)} method.</p>
+ * <p>Parameters can have at most one remark, which is specified by the {@code setRemarks(…)} method.</p>
  *
  * <p>All the above-cited properties are cleared after a call to any {@code createXXX(…)} method,
  * since those properties are specific to the each parameter. Other properties like codespace,
@@ -58,23 +58,24 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * {@preformat java
  *   ParameterBuilder builder = new ParameterBuilder();
- *   builder.codespace(Citations.OGP, "EPSG").mandatory();
+ *   builder.setCodeSpace(Citations.OGP, "EPSG").setRequired(true);
  *   ParameterDescriptor<Double>[] parameters = {
- *       builder.name("Latitude of natural origin")    .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
- *       builder.name("Longitude of natural origin")   .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
- *       builder.name("Scale factor at natural origin").createStrictlyPositive(1, Unit.ONE),
- *       builder.name("False easting")                 .create(0, SI.METRE),
- *       builder.name("False northing")                .create(0, SI.METRE)
+ *       builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
+ *       builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
+ *       builder.addName("Scale factor at natural origin").createStrictlyPositive(1, Unit.ONE),
+ *       builder.addName("False easting")                 .create(0, SI.METRE),
+ *       builder.addName("False northing")                .create(0, SI.METRE)
  *   };
  * }
  *
- * Note that different softwares or standards may use different names for the same parameters.
- * Aliases may be defined to any parameters like below:
+ * Parameters often have more than one name, because different softwares or standards use different conventions.
+ * In the above example, the line creating the <cite>Longitude of natural origin</cite> parameter could be replaced
+ * by the following code in order to declare its aliases:
  *
  * {@preformat java
- *   builder.name("Longitude of natural origin")        // Primary name in builder default namespace.
- *          .name(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
- *          .name(Citations.GEOTIFF, "NatOriginLong")   // Second alias in "GeoTIFF" namespace.
+ *   builder.addName("Longitude of natural origin")        // Primary name in builder default namespace.
+ *          .addName(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
+ *          .addName(Citations.GEOTIFF, "NatOriginLong")   // Second alias in "GeoTIFF" namespace.
  *          .createBounded(-80, +84, 0, NonSI.DEGREE_ANGLE);
  * }
  *
@@ -87,8 +88,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     /**
      * {@code true} if the parameter is mandatory, or {@code false} if optional.
      *
-     * @see #mandatory()
-     * @see #optional()
+     * @see #setRequired(boolean)
      */
     private boolean required;
 
@@ -99,24 +99,21 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
-     * Sets the parameter as mandatory.
-     * The minimum number of times that values are required will be 1.
+     * Sets whether the parameter is mandatory or optional.
+     * This property determines the {@linkplain DefaultParameterDescriptor#getMinimumOccurs() minimum number
+     * of times} that values are required, which will be 0 for an optional parameter and 1 for a mandatory one.
      *
+     * <p><b>Default value:</b>
+     * If this method is never invoked, then the default value is {@code false}.</p>
+     *
+     * <p><b>Lifetime:</b>
+     * this property is kept unchanged until this {@code setRequired(…)} method is invoked again.</p>
+     *
+     * @param  required {@code true} for a mandatory parameter, or {@code false} for an optional one.
      * @return {@code this}, for method call chaining.
      */
-    public ParameterBuilder mandatory() {
-        this.required = true;
-        return this;
-    }
-
-    /**
-     * Sets the parameter as optional.
-     * The minimum number of times that values are required will be 0.
-     *
-     * @return {@code this}, for method call chaining.
-     */
-    public ParameterBuilder optional() {
-        this.required = false;
+    public ParameterBuilder setRequired(final boolean required) {
+        this.required = required;
         return this;
     }
 

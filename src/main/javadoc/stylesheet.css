@@ -64,7 +64,7 @@
 
 /*
  * Table without vertical space between rows and a little bit of space between columns.
- * This table has no border. Headers are still centered and other cells left-aligned.
+ * This table has no border and text is left-aligned.
  */
 .contentContainer .block table.compact,
 .contentContainer ul.blockList ul.blockList li.blockList table.compact

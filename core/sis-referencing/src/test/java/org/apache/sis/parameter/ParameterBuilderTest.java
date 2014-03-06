@@ -49,16 +49,16 @@ public final strictfp class ParameterBuilderTest extends TestCase {
     @Test
     public void testMercatorProjection() {
         final ParameterBuilder builder = new ParameterBuilder();
-        builder.codespace(HardCodedCitations.OGP, "EPSG").mandatory();
+        builder.setCodeSpace(HardCodedCitations.OGP, "EPSG").setRequired(true);
         final ParameterDescriptor[] parameters = {
-            builder.name("Longitude of natural origin")
-                   .name(HardCodedCitations.OGC, "central_meridian")
-                   .name(HardCodedCitations.GEOTIFF, "NatOriginLong")
-                   .remarks("Some remarks.")               .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
-            builder.name("Latitude of natural origin")     .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
-            builder.name("Scale factor at natural origin") .createStrictlyPositive(1, Unit.ONE),
-            builder.name("False easting")                  .create(0, SI.METRE),
-            builder.name("False northing")                 .create(0, SI.METRE)
+            builder.addName("Longitude of natural origin")
+                   .addName(HardCodedCitations.OGC, "central_meridian")
+                   .addName(HardCodedCitations.GEOTIFF, "NatOriginLong")
+                   .setRemarks("Some remarks.")               .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
+            builder.addName("Latitude of natural origin")     .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
+            builder.addName("Scale factor at natural origin") .createStrictlyPositive(1, Unit.ONE),
+            builder.addName("False easting")                  .create(0, SI.METRE),
+            builder.addName("False northing")                 .create(0, SI.METRE)
         };
         // Tests random properties.
         assertEquals("EPSG",             parameters[1].getName().getCodeSpace());
