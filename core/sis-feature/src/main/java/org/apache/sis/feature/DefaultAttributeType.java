@@ -16,7 +16,7 @@
  */
 package org.apache.sis.feature;
 
-import org.opengis.util.GenericName;
+import java.util.Map;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
@@ -31,6 +31,9 @@ import java.util.Objects;
 
 /**
  * Definition of an attribute in a feature type.
+ * The name of attribute type is mandatory. The name {@linkplain org.apache.sis.util.iso.AbstractName#scope() scope}
+ * is typically the name of the {@linkplain DefaultFeatureType feature type} containing this attribute, but this is
+ * not mandatory. The scope could also be defined by the ontology for example.
  *
  * <div class="note"><b>Note:</b>
  * Compared to the Java language, {@code AttributeType} is equivalent to {@link java.lang.reflect.Field}
@@ -40,6 +43,8 @@ import java.util.Objects;
  * This class is expected to implement a GeoAPI {@code AttributeType} interface in a future version.
  * When such interface will be available, most references to {@code DefaultAttributeType} in the API
  * will be replaced by references to the {@code AttributeType} interface.</div>
+ *
+ * @param <T> The value type.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -90,7 +95,37 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
     private final int minimumOccurs, maximumOccurs;
 
     /**
-     * Creates an attribute type of the given name.
+     * Constructs an attribute type from the given properties. The properties map is given unchanged to
+     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
+     * The following table is a reminder of main (not all) properties:
+     *
+     * <table class="sis">
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
+     *     <td>{@link org.opengis.util.GenericName} or {@link String}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDefinition()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDesignation()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDescription()}</td>
+     *   </tr>
+     * </table>
      *
      * {@section Domain of attribute values}
      * If {@code valueDomain} argument is non-null, then it shall comply to the following conditions:
@@ -108,7 +143,7 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
      *   </li>
      * </ul>
      *
-     * @param name          The name of this attribute type.
+     * @param properties    The name and other properties to be given to this attribute type.
      * @param valueClass    The type of attribute values.
      * @param valueDomain   The minimum value, maximum value and unit of measurement, or {@code null} if none.
      * @param defaultValue  The default value for the attribute, or {@code null} if none.
@@ -116,10 +151,10 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
      * @param maximumOccurs The maximum number of occurrences of the property within its containing entity,
      *                      or {@link Integer#MAX_VALUE} if none.
      */
-    public DefaultAttributeType(final GenericName name, final Class<T> valueClass, final Range<?> valueDomain,
+    public DefaultAttributeType(final Map<String,?> properties, final Class<T> valueClass, final Range<?> valueDomain,
             final T defaultValue, final int minimumOccurs, final int maximumOccurs)
     {
-        super(name);
+        super(properties);
         ensureNonNull("valueClass",   valueClass);
         ensureCanCast("defaultValue", valueClass, defaultValue);
         if (minimumOccurs < 0 || minimumOccurs > maximumOccurs) {
@@ -224,6 +259,9 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
      */
     @Override
     public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
         if (super.equals(obj)) {
             final DefaultAttributeType<?> that = (DefaultAttributeType<?>) obj;
             return valueClass    == that.valueClass    &&
