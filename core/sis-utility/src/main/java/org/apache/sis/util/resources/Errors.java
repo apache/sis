@@ -170,6 +170,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ElementAlreadyPresent_1 = 19;
 
         /**
+         * Element “{0}” has not been found.
+         */
+        public static final short ElementNotFound_1 = 70;
+
+        /**
          * Argument ‘{0}’ shall not be empty.
          */
         public static final short EmptyArgument_1 = 20;
@@ -398,6 +403,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedMatrixSize_4 = 60;
 
         /**
+         * Mismatched descriptor for “{0}” parameter.
+         */
+        public static final short MismatchedParameterDescriptor_1 = 146;
+
+        /**
          * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.
          */
         public static final short MissingAuthority_1 = 135;
@@ -456,16 +466,6 @@ public final class Errors extends IndexedResourceBundle {
          * No code “{2}” from authority “{0}” found for object of type ‘{1}’.
          */
         public static final short NoSuchAuthorityCode_3 = 137;
-
-        /**
-         * Element “{0}” has not been found.
-         */
-        public static final short NoSuchElement_1 = 70;
-
-        /**
-         * No property named “{0}” has been found in “{1}”.
-         */
-        public static final short NoSuchProperty_2 = 71;
 
         /**
          * No unit of measurement has been specified.
@@ -608,6 +608,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final short OddArrayLength_1 = 98;
 
         /**
+         * No parameter named “{1}” has been found in “{0}”.
+         */
+        public static final short ParameterNotFound_2 = 147;
+
+        /**
+         * No property named “{1}” has been found in “{0}”.
+         */
+        public static final short PropertyNotFound_2 = 71;
+
+        /**
          * Recursive call while creating an object for the “{0}” key.
          */
         public static final short RecursiveCreateCallForKey_1 = 99;
@@ -638,9 +648,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final short TooFewArguments_2 = 104;
 
         /**
+         * Too few occurrences of “{1}”. Expected at least {0} of them.
+         */
+        public static final short TooFewOccurrences_2 = 148;
+
+        /**
          * Expected at most {0} argument{0,choice,1#|2#s}, but got {1}.
          */
         public static final short TooManyArguments_2 = 105;
+
+        /**
+         * Too many occurrences of “{1}”. There is already {0} of them.
+         */
+        public static final short TooManyOccurrences_2 = 149;
 
         /**
          * Tree depth exceeds the maximum.
