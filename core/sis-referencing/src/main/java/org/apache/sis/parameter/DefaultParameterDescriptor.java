@@ -43,7 +43,7 @@ import java.util.Objects;
 
 
 /**
- * The definition of a parameter used by an operation method.
+ * The definition of a single parameter used by an operation method.
  * For {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems}
  * most parameter values are numeric, but other types of parameter values are possible.
  *
@@ -502,7 +502,7 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     }
 
     /**
-     * {@inheritDoc}
+     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
      *
      * @return {@inheritDoc}
      */

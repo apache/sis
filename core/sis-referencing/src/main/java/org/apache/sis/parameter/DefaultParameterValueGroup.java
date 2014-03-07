@@ -39,6 +39,17 @@ import java.util.Objects;
 /**
  * A group of related parameter values.
  *
+ * <p>This class defines the following convenience methods:</p>
+ * <ul>
+ *   <li>{@link #parameter(String)} searches for a single parameter value of the given name.</li>
+ *   <li>{@link #groups(String)} searches for all groups of the given name.</li>
+ *   <li>{@link #addGroup(String)} for creating a new subgroup and adding it to the list of subgroups.</li>
+ * </ul>
+ *
+ * <div class="note"><b>API note:</b> there is no <code>parameter<b><u>s</u></b>(String)</code> method
+ * returning a list of parameter values because the ISO 19111 standard fixes the {@code ParameterValue}
+ * {@linkplain DefaultParameterDescriptor#getMaximumOccurs() maximum occurrence} to 1.</div>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
@@ -129,29 +140,41 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
     public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
         final List<GeneralParameterValue> values = content.values;
+        ParameterValue<?> fallback = null, ambiguity = null;
         for (final GeneralParameterValue value : values) {
             if (value instanceof ParameterValue<?>) {
-                if (isHeuristicMatchForName(value.getDescriptor(), name)) {
-                    return (ParameterValue<?>) value;
+                final GeneralParameterDescriptor descriptor = value.getDescriptor();
+                if (isHeuristicMatchForName(descriptor, name)) {
+                    if (name.equals(descriptor.getName().toString())) {
+                        return (ParameterValue<?>) value;
+                    } else if (fallback == null) {
+                        fallback = (ParameterValue<?>) value;
+                    } else {
+                        ambiguity = (ParameterValue<?>) value;
+                    }
                 }
             }
+        }
+        if (fallback != null) {
+            if (ambiguity == null) {
+                return fallback;
+            }
+            throw new ParameterNotFoundException(Errors.format(Errors.Keys.AmbiguousName_3,
+                    fallback.getDescriptor().getName(), ambiguity.getDescriptor().getName(), name), name);
         }
         /*
          * No existing parameter found. Check if an optional parameter exists.
          * If such a descriptor is found, create it, add it to the list of values
          * and returns it.
          */
-        for (final GeneralParameterDescriptor descriptor : getDescriptor().descriptors()) {
-            if (descriptor instanceof ParameterDescriptor<?>) {
-                if (isHeuristicMatchForName(descriptor, name)) {
-                    final ParameterValue<?> value = ((ParameterDescriptor<?>) descriptor).createValue();
-                    values.add(value);
-                    return value;
-                }
-            }
+        final GeneralParameterDescriptor descriptor = content.descriptor.descriptor(name);
+        if (descriptor instanceof ParameterDescriptor<?>) {
+            final ParameterValue<?> value = ((ParameterDescriptor<?>) descriptor).createValue();
+            values.add(value);
+            return value;
         }
-        throw new ParameterNotFoundException(Errors.format(
-                Errors.Keys.ParameterNotFound_2, content.descriptor.getName(), name), name);
+        throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
+                content.descriptor.getName(), name), name);
     }
 
     /**
@@ -218,19 +241,13 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
             throw new ParameterNotFoundException(Errors.format(
                     Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
         }
-        int count = 0;
-        final List<GeneralParameterValue> values = content.values;
-        for (final GeneralParameterValue value : values) {
-            if (isHeuristicMatchForName(value.getDescriptor(), name)) {
-                count++;
-            }
-        }
+        final int count = content.count(child.getName());
         if (count >= child.getMaximumOccurs()) {
             throw new InvalidParameterCardinalityException(Errors.format(
                     Errors.Keys.TooManyOccurrences_2, count, name), name);
         }
         final ParameterValueGroup value = ((ParameterDescriptorGroup) child).createValue();
-        values.add(value);
+        content.values.add(value);
         return value;
     }
 

@@ -64,6 +64,11 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * Name “{2}” is ambiguous because it can be understood as either “{0}” or “{1}”.
+         */
+        public static final short AmbiguousName_3 = 151;
+
+        /**
          * No element can be added to this set because properties ‘{0}’ and ‘{1}’ are mutually
          * exclusive.
          */
@@ -163,6 +168,11 @@ public final class Errors extends IndexedResourceBundle {
          * Option “{0}” is duplicated.
          */
         public static final short DuplicatedOption_1 = 18;
+
+        /**
+         * Name or alias for parameter “{0}” at index {1} conflict with name “{2}” at index {3}.
+         */
+        public static final short DuplicatedParameterName_4 = 150;
 
         /**
          * Element “{0}” is already present.
