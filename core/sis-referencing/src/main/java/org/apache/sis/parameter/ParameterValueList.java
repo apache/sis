@@ -49,6 +49,9 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
 
     /**
      * The descriptor for the list as a whole.
+     *
+     * <p>This descriptor will not be used in {@link #equals(Object)} and {@link #hashCode()}
+     * implementations in order to stay consistent with the {@link List} contract.</p>
      */
     final ParameterDescriptorGroup descriptor;
 
@@ -116,18 +119,29 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
         /*
          * Before to add the parameter, check the cardinality.
          */
-        int count = 0;
-        for (final GeneralParameterValue value : values) {
-            if (name.equals(value.getDescriptor().getName())) {
-                count++;
-            }
-        }
+        final int count = count(name);
         if (count >= type.getMaximumOccurs()) {
             throw new InvalidParameterCardinalityException(Errors.format(
                     Errors.Keys.TooManyOccurrences_2, count, name), name.getCode());
         }
         modCount++;
         return values.add(parameter);
+    }
+
+    /**
+     * Count the number of parameter having the given name.
+     *
+     * @param  name The name to search.
+     * @return Number of parameter having the given name.
+     */
+    final int count(final ReferenceIdentifier name) {
+        int count = 0;
+        for (final GeneralParameterValue value : values) {
+            if (name.equals(value.getDescriptor().getName())) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
