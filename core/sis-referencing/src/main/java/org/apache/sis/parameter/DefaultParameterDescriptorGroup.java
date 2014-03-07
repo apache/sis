@@ -19,7 +19,6 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Collections;
 import org.opengis.parameter.ParameterValueGroup;
@@ -68,13 +67,7 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
     /**
      * The {@linkplain #descriptors() parameter descriptors} for this group.
      */
-    private final GeneralParameterDescriptor[] parameters;
-
-    /**
-     * A view of {@link #parameters} as an immutable list.
-     * Will be constructed only when first needed.
-     */
-    private transient List<GeneralParameterDescriptor> asList;
+    private final List<GeneralParameterDescriptor> descriptors;
 
     /**
      * Constructs a parameter group from a set of properties. The properties map is given unchanged to the
@@ -139,7 +132,7 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
                 }
             }
         }
-        this.parameters = parameters;
+        descriptors = asList(parameters);
     }
 
     /**
@@ -156,7 +149,53 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
         minimumOccurs = descriptor.getMinimumOccurs();
         maximumOccurs = descriptor.getMaximumOccurs();
         final List<GeneralParameterDescriptor> c = descriptor.descriptors();
-        parameters = c.toArray(new GeneralParameterDescriptor[c.size()]);
+        if (descriptor instanceof DefaultParameterDescriptorGroup &&
+                ((DefaultParameterDescriptorGroup) descriptor).descriptors == c)
+        {
+            descriptors = c; // Share the immutable instance (no need to clone).
+        } else {
+            descriptors = asList(c.toArray(new GeneralParameterDescriptor[c.size()]));
+        }
+    }
+
+    /**
+     * Returns the given array of parameters as an unmodifiable list.
+     */
+    private static List<GeneralParameterDescriptor> asList(final GeneralParameterDescriptor[] parameters) {
+        switch (parameters.length) {
+            case 0:  return Collections.emptyList();
+            case 1:  return Collections.singletonList(parameters[0]);
+            case 2:  // fall through
+            case 3:  return UnmodifiableArrayList.wrap(parameters);
+            default: return new AsList(parameters);
+        }
+    }
+
+    /**
+     * The {@link DefaultParameterDescriptorGroup#descriptors} as an unmodifiable list.
+     * This class overrides {@link #contains(Object)} with a faster implementation based on {@link HashSet}.
+     * This optimizations is helpful for map projection implementations, which test often for a parameter validity.
+     */
+    private static final class AsList extends UnmodifiableArrayList<GeneralParameterDescriptor> {
+        /** For compatibility with different versions. */
+        private static final long serialVersionUID = -2116304004367396735L;
+
+        /** The element as a set, created when first needed. */
+        private transient volatile Set<GeneralParameterDescriptor> asSet;
+
+        /** Constructs a list for the specified array. */
+        public AsList(final GeneralParameterDescriptor[] array) {
+            super(array);
+        }
+
+        /** Tests for the inclusion of the specified descriptor. */
+        @Override public boolean contains(final Object object) {
+            Set<GeneralParameterDescriptor> s = asSet;
+            if (s == null) {
+                asSet = s = new HashSet<>(this); // No synchronization: not a big problem if created twice.
+            }
+            return s.contains(object);
+        }
     }
 
     /**
@@ -209,46 +248,13 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
     }
 
     /**
-     * A view of {@link #parameters} as an unmodifiable list. This class overrides {@link #contains(Object)}
-     * with a faster implementation based on {@link HashSet}. This optimizations is helpful for map projection
-     * implementations, which test often for a parameter validity.
-     */
-    private static final class AsList extends UnmodifiableArrayList<GeneralParameterDescriptor> {
-        /** For compatibility with different versions. */
-        private static final long serialVersionUID = -2116304004367396735L;
-
-        /** The element as a set. */
-        private final Set<GeneralParameterDescriptor> asSet;
-
-        /** Constructs a list for the specified array. */
-        public AsList(final GeneralParameterDescriptor[] array) {
-            super(array);
-            asSet = new HashSet<>(this);
-        }
-
-        /** Tests for the inclusion of the specified descriptor. */
-        @Override public boolean contains(final Object object) {
-            return asSet.contains(object);
-        }
-    }
-
-    /**
      * Returns all parameters in this group.
      *
      * @return The parameter descriptors in this group.
      */
     @Override
     public List<GeneralParameterDescriptor> descriptors() {
-        if (asList == null) {
-            switch (parameters.length) {
-                case 0:  asList = Collections.emptyList();                  break;
-                case 1:  asList = Collections.singletonList(parameters[0]); break;
-                case 2:  // fall through
-                case 3:  asList = UnmodifiableArrayList.wrap(parameters);   break;
-                default: asList = new AsList(parameters);                   break;
-            }
-        }
-        return asList;
+        return descriptors;
     }
 
     /**
@@ -264,7 +270,7 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
     public GeneralParameterDescriptor descriptor(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
         GeneralParameterDescriptor fallback = null, ambiguity = null;
-        for (final GeneralParameterDescriptor param : parameters) {
+        for (final GeneralParameterDescriptor param : descriptors) {
             if (IdentifiedObjects.isHeuristicMatchForName(param, name)) {
                 if (name.equals(param.getName().getCode())) {
                     return param;
@@ -296,7 +302,7 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
                     final DefaultParameterDescriptorGroup that = (DefaultParameterDescriptorGroup) object;
                     return minimumOccurs == that.minimumOccurs &&
                            maximumOccurs == that.maximumOccurs &&
-                           Arrays.equals(parameters, that.parameters);
+                           descriptors.equals(that.descriptors);
                 }
                 default: {
                     final ParameterDescriptorGroup that = (ParameterDescriptorGroup) object;
@@ -316,6 +322,6 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
      */
     @Override
     protected long computeHashCode() {
-        return Arrays.hashCode(parameters) + super.computeHashCode();
+        return super.computeHashCode() + descriptors.hashCode();
     }
 }

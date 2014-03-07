@@ -17,18 +17,8 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Locale;
+import java.util.List;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.measure.Range;
-import org.apache.sis.measure.NumberRange;
-import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -56,14 +46,14 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      * The very last parameter has a maximum number of occurrence of 2, which is illegal
      * according ISO 19111 but nevertheless supported by Apache SIS.
      */
-    static final DefaultParameterDescriptorGroup createGroupOfIntegers() {
-        final Integer DEFAULT = 10;
+    static final DefaultParameterDescriptorGroup createGroup_2M_2O() {
+        final Integer DEFAULT_VALUE = 10;
         final Class<Integer> type = Integer.class;
         return new DefaultParameterDescriptorGroup(name("The group"), 0, 1,
-            new DefaultParameterDescriptor<>(name("Mandatory 1"), type, null, null, DEFAULT, true),
-            new DefaultParameterDescriptor<>(name("Mandatory 2"), type, null, null, DEFAULT, true),
-            new DefaultParameterDescriptor<>(name( "Optional 3"), type, null, null, DEFAULT, false),
-            new MultiOccurrenceDescriptor <>(name( "Optional 4"), type, null, null, DEFAULT, false)
+            new DefaultParameterDescriptor<>(name("Mandatory 1"), type, null, null, DEFAULT_VALUE, true),
+            new DefaultParameterDescriptor<>(name("Mandatory 2"), type, null, null, DEFAULT_VALUE, true),
+            new DefaultParameterDescriptor<>(name( "Optional 3"), type, null, null, DEFAULT_VALUE, false),
+            new MultiOccurrenceDescriptor <>(name( "Optional 4"), type, null, null, DEFAULT_VALUE, false)
         );
     }
 
@@ -75,11 +65,11 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
     }
 
     /**
-     * Tests descriptor validation.
+     * Validates the test parameter descriptors created by {@link #createGroup_2M_2O()}.
      */
     @Test
-    public void testValidate() {
-        for (final GeneralParameterDescriptor descriptor : createGroupOfIntegers().descriptors()) {
+    public void validateTestObjects() {
+        for (final GeneralParameterDescriptor descriptor : createGroup_2M_2O().descriptors()) {
             AssertionError error = null;
             try {
                 validate(descriptor);
@@ -91,6 +81,34 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
             } else if (error != null) {
                 throw error;
             }
+        }
+    }
+
+    /**
+     * Tests {@link DefaultParameterDescriptorGroup#descriptor(String)}.
+     */
+    @Test
+    public void testDescriptor() {
+        final DefaultParameterDescriptorGroup group = createGroup_2M_2O();
+        final List<GeneralParameterDescriptor> descriptors = group.descriptors();
+        assertEquals("name", "The group", group.getName().getCode());
+        assertEquals("size", 4, descriptors.size());
+        assertSame("descriptor(“Mandatory 1”)",  descriptors.get(0), group.descriptor("Mandatory 1"));
+        assertSame("descriptor(“Optional 3”)",   descriptors.get(2), group.descriptor("Optional 3"));
+        assertSame("descriptor(“Optional 4”)",   descriptors.get(3), group.descriptor("Optional 4"));
+        assertSame("descriptor(“Mandatory 2”)",  descriptors.get(1), group.descriptor("Mandatory 2"));
+    }
+
+    /**
+     * Tests {@code DefaultParameterDescriptorGroup.descriptors().contains(Object)}.
+     * The list returned by {@code descriptors()} provides a fast implementation based on {@code HashSet},
+     * because this operation is requested everytime a new parameter is added or modified.
+     */
+    @Test
+    public void testContains() {
+        final List<GeneralParameterDescriptor> descriptors = createGroup_2M_2O().descriptors();
+        for (final GeneralParameterDescriptor p : descriptors) {
+            assertTrue(descriptors.contains(p));
         }
     }
 }
