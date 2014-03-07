@@ -19,7 +19,10 @@ package org.apache.sis.parameter;
 import java.util.List;
 import java.util.AbstractList;
 import java.util.RandomAccess;
+import java.util.Arrays;
 import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
@@ -28,13 +31,20 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
 /**
  * The list to be returned by {@link DefaultParameterValueGroup#values()}.
  * This class performs checks on the parameter values to be added or removed.
- * This implementation supports {@code add(…)} and {@code remove(…)} operations.
+ * This implementation supports {@code set(…)}, {@code add(…)} and {@code remove(…)} operations.
+ *
+ * <p><b>Implementation note:</b> This class reproduces some {@link java.util.ArrayList} functionalities.
+ * However we do <strong>not</strong> extend {@code ArrayList} because we really need the default method
+ * implementations provided by {@code AbstractList} — the optimizations performed by {@code ArrayList}
+ * are not suitable here.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.1)
@@ -50,63 +60,159 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
     /**
      * The descriptor for the list as a whole.
      *
-     * <p>This descriptor will not be used in {@link #equals(Object)} and {@link #hashCode()}
+     * <p>This descriptor shall not be used in {@link #equals(Object)} and {@link #hashCode()}
      * implementations in order to stay consistent with the {@link List} contract.</p>
      */
     final ParameterDescriptorGroup descriptor;
 
     /**
-     * The unchecked list of parameter values for this list.
+     * The parameter values in the group. The length of this array is the list capacity.
      */
-    final List<GeneralParameterValue> values;
+    private GeneralParameterValue[] values;
 
     /**
-     * Constructs a parameter list.
+     * Number of valid elements in the {@link #values} array.
+     */
+    private int size;
+
+    /**
+     * Constructs an initially empty parameter list.
      *
      * @param descriptor The descriptor for this list.
-     * @param values The parameter values for this list.
+     * @param capacity The initial capacity.
      */
-    ParameterValueList(final ParameterDescriptorGroup descriptor, final List<GeneralParameterValue> values) {
+    ParameterValueList(final ParameterDescriptorGroup descriptor, final int capacity) {
         this.descriptor = descriptor;
-        this.values     = values;
+        values = new GeneralParameterValue[capacity];
     }
 
-    /*
-     * CAUTION: Some methods are NOT forwarded to 'values', and this is on purpose!
-     *          This include all modification methods (add, set, remove, etc.).
-     *          We must rely on the default AbstractList implementation for them.
+    /**
+     * Constructs a parameter list initialized to a copy of the given one.
      */
-    @Override public boolean               isEmpty    ()         {return values.isEmpty    ( );}
-    @Override public int                   size       ()         {return values.size       ( );}
-    @Override public GeneralParameterValue get        (int i)    {return values.get        (i);}
-    @Override public int                   indexOf    (Object o) {return values.indexOf    (o);}
-    @Override public int                   lastIndexOf(Object o) {return values.lastIndexOf(o);}
-    @Override public boolean               equals     (Object o) {return values.equals     (o);}
-    @Override public int                   hashCode   ()         {return values.hashCode   ( );}
-    @Override public String                toString   ()         {return values.toString   ( );}
+    ParameterValueList(final ParameterValueList other) {
+        descriptor = other.descriptor;
+        values = new GeneralParameterValue[size = other.size];
+        for (int i=0; i<size; i++) {
+            values[i] = other.values[i].clone();
+        }
+    }
+
+    /**
+     * Returns the number of parameters in this list.
+     */
+    @Override
+    public int size() {
+        return size;
+    }
+
+    /**
+     * Returns the descriptor at the given index. This method is preferable to {@code get(i).getDescriptor()}
+     * when the caller does not need the replacement of {@link UninitializedParameter} instances.
+     */
+    final GeneralParameterDescriptor descriptor(final int index) {
+        return values[index].getDescriptor();
+    }
+
+    /**
+     * Returns the parameter value at the given index. If the parameter at the given index is a
+     * mandatory parameter pending creation of the actual value, the value will be created now.
+     */
+    @Override
+    public GeneralParameterValue get(int index) {
+        ArgumentChecks.ensureValidIndex(size, index);
+        GeneralParameterValue value = values[index];
+        if (value instanceof UninitializedParameter) {
+            values[index] = value = value.getDescriptor().createValue();
+        }
+        return value;
+    }
+
+    /**
+     * Sets the parameter at the given index. The descriptor of the given parameter must be one of those
+     * in the {@link DefaultParameterDescriptorGroup#descriptors()} list, and storing that parameter must
+     * be allowed by the cardinality constraints.
+     */
+    @Override
+    public GeneralParameterValue set(final int index, final GeneralParameterValue parameter) {
+        ArgumentChecks.ensureValidIndex(size, index);
+        final GeneralParameterValue value = values[index];
+        ArgumentChecks.ensureNonNull("parameter", parameter);
+        final GeneralParameterDescriptor desc = parameter.getDescriptor();
+        if (!value.getDescriptor().equals(desc)) {
+            ensureDescriptorExists(desc);
+            ensureCanRemove(desc);
+            ensureCanAdd(desc);
+        }
+        values[index] = parameter;
+        return value;
+    }
 
     /**
      * Adds a {@link ParameterValue} or an other {@link ParameterValueGroup} to this list.
      * If an existing parameter is already included for the same name and adding the new
      * parameter would increase the number past what is allowable by {@code maximumOccurs},
-     * then an {@link IllegalStateException} will be thrown.
+     * then an {@link InvalidParameterCardinalityException} will be thrown.
      *
      * @param  parameter New parameter to be added to this group.
-     * @return {@code true} if this object changed as a result of this call.
+     * @return Always {@code true} since this object changes as a result of this call.
      * @throws IllegalArgumentException if the specified parameter is not allowable by the groups descriptor.
      * @throws InvalidParameterCardinalityException if adding this parameter would result in more parameters
      *         than allowed by {@code maximumOccurs}.
      */
     @Override
     public boolean add(final GeneralParameterValue parameter) {
-        final GeneralParameterDescriptor type = parameter.getDescriptor();
-        final ReferenceIdentifier name = type.getName();
+        ArgumentChecks.ensureNonNull("parameter", parameter);
+        final GeneralParameterDescriptor desc = parameter.getDescriptor();
+        ensureDescriptorExists(desc);
+        /*
+         * If we had an uninitialized parameter (a parameter created by the DefaultParameterValueGroup constructor
+         * and never been queried or set by the user), then the given parameter will replace the uninitialized.
+         * The intend is to allow users to set its own parameters by a call to group.values().addAll(myParam).
+         * Otherwise the given parameter will be added, in which case we need to check the cardinality.
+         */
+        final ReferenceIdentifier name = desc.getName();
+        int count = 0;
+        for (int i=0; i<size; i++) {
+            final GeneralParameterValue value = values[i];
+            if (name.equals(value.getDescriptor().getName())) {
+                if (value instanceof UninitializedParameter) {
+                    values[i] = parameter;
+                    return true;
+                }
+                count++;
+            }
+        }
+        if (count > desc.getMaximumOccurs()) {
+            throw new InvalidParameterCardinalityException(Errors.format(
+                    Errors.Keys.TooManyOccurrences_2, count, name), name.getCode());
+        }
+        addUnchecked(parameter);
+        modCount++;
+        return true;
+    }
+
+    /**
+     * Unconditionally adds the given parameter to this list without any validity check.
+     * The internal array will growth as needed.
+     */
+    final void addUnchecked(final GeneralParameterValue parameter) {
+        if (size == values.length) {
+            values = Arrays.copyOf(values, size*2);
+        }
+        values[size++] = parameter;
+    }
+
+    /**
+     * Verifies the given descriptor exists in the {@link DefaultParameterDescriptorGroup#descriptors()} list.
+     */
+    final void ensureDescriptorExists(final GeneralParameterDescriptor desc) {
         final List<GeneralParameterDescriptor> descriptors = descriptor.descriptors();
-        if (!descriptors.contains(type)) {
+        if (!descriptors.contains(desc)) {
             /*
              * For a more accurate error message, check if the operation failed because the
              * parameter name was not found, or the parameter descriptor does not matches.
              */
+            final ReferenceIdentifier name = desc.getName();
             for (final GeneralParameterDescriptor descriptor : descriptors) {
                 if (name.equals(descriptor.getName())) {
                     throw new IllegalArgumentException(Errors.format(
@@ -116,32 +222,47 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
             throw new InvalidParameterNameException(Errors.format(
                     Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name.getCode());
         }
-        /*
-         * Before to add the parameter, check the cardinality.
-         */
-        final int count = count(name);
-        if (count >= type.getMaximumOccurs()) {
-            throw new InvalidParameterCardinalityException(Errors.format(
-                    Errors.Keys.TooManyOccurrences_2, count, name), name.getCode());
-        }
-        modCount++;
-        return values.add(parameter);
     }
 
     /**
-     * Count the number of parameter having the given name.
-     *
-     * @param  name The name to search.
-     * @return Number of parameter having the given name.
+     * Verifies if adding a parameter with the given descriptor is allowed by the cardinality constraints. If adding
+     * the parameter would result in more occurrences than {@link DefaultParameterDescriptor#getMaximumOccurs()},
+     * then this method throws an {@link InvalidParameterCardinalityException}.
      */
-    final int count(final ReferenceIdentifier name) {
+    private void ensureCanAdd(final GeneralParameterDescriptor desc) {
+        final ReferenceIdentifier name = desc.getName();
         int count = 0;
-        for (final GeneralParameterValue value : values) {
-            if (name.equals(value.getDescriptor().getName())) {
+        for (int i=0; i<size; i++) {
+            if (name.equals(values[i].getDescriptor().getName())) {
                 count++;
             }
         }
-        return count;
+        if (count >= desc.getMaximumOccurs()) {
+            throw new InvalidParameterCardinalityException(Errors.format(
+                    Errors.Keys.TooManyOccurrences_2, count, name), name.getCode());
+        }
+    }
+
+    /**
+     * Verifies if removing the given value is allowed by the cardinality constraints. If removing the parameter
+     * would result in less occurrences than {@link DefaultParameterDescriptor#getMinimumOccurs()},
+     * then this method throws an {@link InvalidParameterCardinalityException}.
+     */
+    private void ensureCanRemove(final GeneralParameterDescriptor desc) {
+        final int min = desc.getMinimumOccurs();
+        if (min != 0) { // Optimization for a common case.
+            final ReferenceIdentifier name = desc.getName();
+            int count = 0;
+            for (int i=0; i<size; i++) {
+                if (name.equals(values[i].getDescriptor().getName())) {
+                    if (++count > min) {
+                        return;
+                    }
+                }
+            }
+            throw new InvalidParameterCardinalityException(Errors.format(
+                    Errors.Keys.TooFewOccurrences_2, min, name), name.getCode());
+        }
     }
 
     /**
@@ -153,22 +274,36 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      */
     @Override
     public GeneralParameterValue remove(final int index) {
-        final GeneralParameterDescriptor type = values.get(index).getDescriptor();
-        final int min = type.getMinimumOccurs();
-        if (min != 0) {
-            int count = 0;
-            final ReferenceIdentifier name = type.getName();
-            for (final GeneralParameterValue value : values) {
-                if (name.equals(value.getDescriptor().getName())) {
-                    if (++count > min) break;
-                }
-            }
-            if (count <= min) {
-                throw new InvalidParameterCardinalityException(Errors.format(
-                        Errors.Keys.TooFewOccurrences_2, min, name), name.getCode());
-            }
-        }
+        ArgumentChecks.ensureValidIndex(size, index);
+        final GeneralParameterValue value = values[index];
+        ensureCanRemove(value.getDescriptor());
+        System.arraycopy(values, index + 1, values, index, --size - index);
+        values[size] = null;
         modCount++;
-        return values.remove(index);
+        return value;
+    }
+
+    /**
+     * Returns a string representation of this list.
+     */
+    @Override
+    public String toString() {
+        if (size == 0) {
+            return "[]";
+        }
+        final String lineSeparator = System.lineSeparator();
+        final StringBuilder buffer = new StringBuilder();
+        for (int i=0; i<size; i++) {
+            buffer.append(values[i]).append(lineSeparator);
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Trims the array to its capacity before to serialize.
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        values = ArraysExt.resize(values, size);
+        out.defaultWriteObject();
     }
 }

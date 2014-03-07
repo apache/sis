@@ -16,20 +16,13 @@
  */
 package org.apache.sis.parameter;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Arrays;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.measure.Range;
-import org.apache.sis.measure.NumberRange;
-import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -68,13 +61,12 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     }
 
     /**
-     * Tests parameter validation.
+     * Validates the test parameter values created by {@link #createValues(List, int)}.
      */
     @Test
-    public void testValidate() {
-        for (final DefaultParameterValue<?> param : createValues(
-                DefaultParameterDescriptorGroupTest.createGroupOfIntegers().descriptors(), 10))
-        {
+    public void validateTestObjects() {
+        final DefaultParameterDescriptorGroup group = DefaultParameterDescriptorGroupTest.createGroup_2M_2O();
+        for (final DefaultParameterValue<?> param : createValues(group.descriptors(), 10)) {
             AssertionError error = null;
             try {
                 validate(param);
@@ -86,6 +78,24 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
             } else if (error != null) {
                 throw error;
             }
+        }
+    }
+
+    /**
+     * Tests {@code DefaultParameterValueGroup.values().addAll(…)}.
+     */
+    @Test
+    public void testAddAll() {
+        final DefaultParameterDescriptorGroup descriptor = DefaultParameterDescriptorGroupTest.createGroup_2M_2O();
+        final DefaultParameterValueGroup group = new DefaultParameterValueGroup(descriptor);
+        final List<GeneralParameterValue> values = group.values();
+        assertEquals("Initial size", 2, values.size());
+
+        final DefaultParameterValue<?>[] external = createValues(descriptor.descriptors(), 10);
+        assertTrue(values.addAll(Arrays.asList(external)));
+        assertEquals("Final size", external.length, values.size());
+        for (int i=0; i<external.length; i++) {
+            assertSame(external[i], values.get(i));
         }
     }
 

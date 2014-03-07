@@ -69,7 +69,7 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
      *
      * <p>Consider this field as final. It is not for the purpose of {@link #clone()}.</p>
      */
-    private ParameterValueList content;
+    private ParameterValueList values;
 
     /**
      * Constructs a parameter group from the specified descriptor.
@@ -78,14 +78,13 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
      */
     public DefaultParameterValueGroup(final ParameterDescriptorGroup descriptor) {
         ArgumentChecks.ensureNonNull("descriptor", descriptor);
-        final List<GeneralParameterDescriptor> parameters = descriptor.descriptors();
-        final List<GeneralParameterValue> values = new ArrayList<>(parameters.size());
-        for (final GeneralParameterDescriptor element : parameters) {
-            for (int count=element.getMinimumOccurs(); --count>=0;) {
-                values.add(element.createValue());
+        final List<GeneralParameterDescriptor> elements = descriptor.descriptors();
+        values = new ParameterValueList(descriptor, elements.size());
+        for (final GeneralParameterDescriptor child : elements) {
+            for (int count=child.getMinimumOccurs(); --count>=0;) {
+                values.addUnchecked(new UninitializedParameter(child));
             }
         }
-        content = new ParameterValueList(descriptor, values);
     }
 
     /**
@@ -95,16 +94,28 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
      */
     @Override
     public ParameterDescriptorGroup getDescriptor() {
-        return content.descriptor;
+        return values.descriptor;
     }
 
     /**
-     * Returns the values in this group. Changes in this list are reflected on this {@code ParameterValueGroup}.
-     * The returned list supports the {@code add(…)} and {@code remove(…)} operations.
+     * Returns the values in this group. The returned list is <cite>live</cite>:
+     * changes in this list are reflected on this {@code ParameterValueGroup}, and conversely.
+     *
+     * {@section Restrictions}
+     * All write operations must comply to the following conditions:
+     *
+     * <ul>
+     *   <li>Parameters added to the list shall have one of the descriptors listed by {@link #getDescriptor()}.</li>
+     *   <li>Adding or removing parameters shall not violate the parameter cardinality constraints.</li>
+     * </ul>
+     *
+     * The list will verify those conditions and throws {@link org.opengis.parameter.InvalidParameterNameException},
+     * {@link org.opengis.parameter.InvalidParameterCardinalityException} or other runtime exceptions if a condition
+     * is not meet.
      */
     @Override
     public List<GeneralParameterValue> values() {
-        return content;
+        return values;
     }
 
     /**
@@ -113,19 +124,23 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
      *
      * <ul>
      *   <li>If this group contains a parameter value of the given name, then that parameter is returned.</li>
-     *   <li>Otherwise if the {@linkplain #getDescriptor() descriptor} contains a definition for a parameter
-     *       of the given name, then a new {@code ParameterValue} instance is
-     *       {@linkplain DefaultParameterDescriptor#createValue() created}, added to this group then returned.</li>
+     *   <li>Otherwise if a {@linkplain DefaultParameterDescriptorGroup#descriptor(String) descriptor} of the
+     *       given name exists, then a new {@code ParameterValue} instance is
+     *       {@linkplain DefaultParameterDescriptor#createValue() created}, added to this group and returned.</li>
      *   <li>Otherwise a {@code ParameterNotFoundException} is thrown.</li>
      * </ul>
      *
-     * This convenience method provides a way to get and set parameter values by name. For example
-     * the following idiom fetches a floating point value for the {@code "false_easting"} parameter:
+     * This convenience method provides a way to get and set parameter values by name.
+     * For example the following idiom fetches a floating point value for the <cite>False easting</cite>
+     * and <cite>False northing</cite> parameters and set a new value for the <cite>False easting</cite> one:
      *
      * {@preformat java
-     *     double value = parameter("false_easting").doubleValue();
+     *     double easting  = parameter("False easting" ).doubleValue();
+     *     double northing = parameter("False northing").doubleValue();
+     *     parameter("False easting").setValue(500000.0);
      * }
      *
+     * {@section Parameters subgroups}
      * This method does not search recursively in subgroups. This is because more than one subgroup
      * may exist for the same {@linkplain ParameterDescriptorGroup descriptor}. The user have to
      * {@linkplain #groups(String) query all subgroups} and select explicitly the appropriate one.
@@ -139,42 +154,42 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
     @Override
     public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
-        final List<GeneralParameterValue> values = content.values;
-        ParameterValue<?> fallback = null, ambiguity = null;
-        for (final GeneralParameterValue value : values) {
-            if (value instanceof ParameterValue<?>) {
-                final GeneralParameterDescriptor descriptor = value.getDescriptor();
+        final ParameterValueList values = this.values; // Protect against accidental changes.
+        int fallback = -1, ambiguity = -1;
+        final int size = values.size();
+        for (int i=0; i<size; i++) {
+            final GeneralParameterDescriptor descriptor = values.descriptor(i);
+            if (descriptor instanceof ParameterDescriptor<?>) {
                 if (isHeuristicMatchForName(descriptor, name)) {
                     if (name.equals(descriptor.getName().toString())) {
-                        return (ParameterValue<?>) value;
-                    } else if (fallback == null) {
-                        fallback = (ParameterValue<?>) value;
+                        return (ParameterValue<?>) values.get(i);
+                    } else if (fallback < 0) {
+                        fallback = i;
                     } else {
-                        ambiguity = (ParameterValue<?>) value;
+                        ambiguity = i;
                     }
                 }
             }
         }
-        if (fallback != null) {
-            if (ambiguity == null) {
-                return fallback;
+        if (fallback >= 0) {
+            if (ambiguity < 0) {
+                return (ParameterValue<?>) values.get(fallback);
             }
             throw new ParameterNotFoundException(Errors.format(Errors.Keys.AmbiguousName_3,
-                    fallback.getDescriptor().getName(), ambiguity.getDescriptor().getName(), name), name);
+                    values.descriptor(fallback).getName(), values.descriptor(ambiguity).getName(), name), name);
         }
         /*
-         * No existing parameter found. Check if an optional parameter exists.
-         * If such a descriptor is found, create it, add it to the list of values
-         * and returns it.
+         * No existing parameter found. The parameter may be optional. Check if a descriptor exists.
+         * If such a descriptor is found, create the parameter, add it to the values list and returns it.
          */
-        final GeneralParameterDescriptor descriptor = content.descriptor.descriptor(name);
-        if (descriptor instanceof ParameterDescriptor<?>) {
+        final GeneralParameterDescriptor descriptor = values.descriptor.descriptor(name);
+        if (descriptor instanceof ParameterDescriptor<?> && descriptor.getMaximumOccurs() != 0) {
             final ParameterValue<?> value = ((ParameterDescriptor<?>) descriptor).createValue();
-            values.add(value);
+            values.addUnchecked(value);
             return value;
         }
         throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
-                content.descriptor.getName(), name), name);
+                values.descriptor.getName(), name), name);
     }
 
     /**
@@ -191,11 +206,14 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
+        final ParameterValueList values = this.values; // Protect against accidental changes.
         final List<ParameterValueGroup> groups = new ArrayList<>(4);
-        for (final GeneralParameterValue value : content.values) {
-            if (value instanceof ParameterValueGroup) {
-                if (isHeuristicMatchForName(value.getDescriptor(), name)) {
-                    groups.add((ParameterValueGroup) value);
+        final int size = values.size();
+        for (int i=0; i<size; i++) {
+            final GeneralParameterDescriptor descriptor = values.descriptor(i);
+            if (descriptor instanceof ParameterDescriptorGroup) {
+                if (isHeuristicMatchForName(descriptor, name)) {
+                    groups.add((ParameterValueGroup) values.get(i));
                 }
             }
         }
@@ -205,7 +223,7 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
          * it is simply an optional group not yet defined), then returns an empty list.
          */
         if (groups.isEmpty()) {
-            final ParameterDescriptorGroup descriptor = content.descriptor;
+            final ParameterDescriptorGroup descriptor = values.descriptor;
             if (!(descriptor.descriptor(name) instanceof ParameterDescriptorGroup)) {
                 throw new ParameterNotFoundException(Errors.format(
                         Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
@@ -235,19 +253,15 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
     public ParameterValueGroup addGroup(final String name)
             throws ParameterNotFoundException, InvalidParameterCardinalityException
     {
-        final ParameterDescriptorGroup descriptor = content.descriptor;
+        final ParameterValueList values = this.values; // Protect against accidental changes.
+        final ParameterDescriptorGroup descriptor = values.descriptor;
         final GeneralParameterDescriptor child = descriptor.descriptor(name);
         if (!(child instanceof ParameterDescriptorGroup)) {
             throw new ParameterNotFoundException(Errors.format(
                     Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
         }
-        final int count = content.count(child.getName());
-        if (count >= child.getMaximumOccurs()) {
-            throw new InvalidParameterCardinalityException(Errors.format(
-                    Errors.Keys.TooManyOccurrences_2, count, name), name);
-        }
         final ParameterValueGroup value = ((ParameterDescriptorGroup) child).createValue();
-        content.values.add(value);
+        values.add(value);
         return value;
     }
 
@@ -264,8 +278,8 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
         }
         if (object != null && getClass() == object.getClass()) {
             final DefaultParameterValueGroup that = (DefaultParameterValueGroup) object;
-            return Objects.equals(content.descriptor, that.content.descriptor) &&
-                   Objects.equals(content.values,     that.content.values);
+            return Objects.equals(values.descriptor, that.values.descriptor) &&
+                   Objects.equals(values, that.values);
         }
         return false;
     }
@@ -278,7 +292,7 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
      */
     @Override
     public int hashCode() {
-        return content.descriptor.hashCode() ^ content.values.hashCode();
+        return values.descriptor.hashCode() ^ values.hashCode();
     }
 
     /**
@@ -296,11 +310,7 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
-        copy.content = new ParameterValueList(content.descriptor, new ArrayList<>(content.values));
-        final List<GeneralParameterValue> values = copy.content.values;
-        for (int i=values.size(); --i>=0;) {
-            values.set(i, values.get(i).clone());
-        }
+        copy.values = new ParameterValueList(copy.values);
         return copy;
     }
 }

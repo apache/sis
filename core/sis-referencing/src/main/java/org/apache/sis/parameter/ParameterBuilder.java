@@ -28,7 +28,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * Provides convenience methods for easier {@code DefaultParameterDescriptor} instantiations.
+ * Provides convenience methods for easier {@code ParameterDescriptorGroup} instantiations.
  * This builder can be helpful for map projection <em>providers</em>, or for implementation of
  * any process that use parameters. Map projection or process <em>users</em> do not need this
  * builder since they can invoke {@link ParameterDescriptor#createValue()} on the descriptor
@@ -53,8 +53,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Parameter descriptors are typically grouped in a {@link ParameterDescriptorGroup}.
  * All parameters usually have the same namespace, which can be declared only once.
  * The following example creates parameters for "<cite>Mercator (variant A)</cite>" projection method (EPSG:9804)
- * with all parameter names in the "EPSG" namespace. The default values define a projection centered on (0°,0°)
- * with no scale factor and no false easting/northing.
+ * with all parameter names in the "EPSG" namespace. The default values define a projection centered on (0°,0°),
+ * with no scale factor and no false easting/northing. The projection is valid from 80°S to 84°N and on all the
+ * longitude range (±180°).
  *
  * {@preformat java
  *   ParameterBuilder builder = new ParameterBuilder();
@@ -76,6 +77,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   builder.addName("Longitude of natural origin")        // Primary name in builder default namespace.
  *          .addName(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
  *          .addName(Citations.GEOTIFF, "NatOriginLong")   // Second alias in "GeoTIFF" namespace.
+ *          .addIdentifier("8802")                         // Primary key in EPSG database.
  *          .createBounded(-80, +84, 0, NonSI.DEGREE_ANGLE);
  * }
  *
