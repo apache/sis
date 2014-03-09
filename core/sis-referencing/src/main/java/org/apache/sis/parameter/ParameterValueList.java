@@ -79,11 +79,12 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      * Constructs an initially empty parameter list.
      *
      * @param descriptor The descriptor for this list.
-     * @param capacity The initial capacity.
      */
-    ParameterValueList(final ParameterDescriptorGroup descriptor, final int capacity) {
+    ParameterValueList(final ParameterDescriptorGroup descriptor) {
         this.descriptor = descriptor;
-        values = new GeneralParameterValue[capacity];
+        final List<GeneralParameterDescriptor> elements = descriptor.descriptors();
+        values = new GeneralParameterValue[elements.size()];
+        initialize(elements);
     }
 
     /**
@@ -95,6 +96,28 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
         for (int i=0; i<size; i++) {
             values[i] = other.values[i].clone();
         }
+    }
+
+    /**
+     * Adds all mandatory parameters to this list. This method can been invoked only after
+     * construction or after a call to {@link #clear()}.
+     */
+    private void initialize(final List<GeneralParameterDescriptor> elements) {
+        for (final GeneralParameterDescriptor child : elements) {
+            for (int count=child.getMinimumOccurs(); --count>=0;) {
+                addUnchecked(new UninitializedParameter(child));
+            }
+        }
+    }
+
+    /**
+     * Clears this list, then recreate the mandatory parameters.
+     */
+    @Override
+    public void clear() {
+        Arrays.fill(values, 0, size, null);
+        size = 0;
+        initialize(descriptor.descriptors());
     }
 
     /**
