@@ -46,9 +46,24 @@ import java.util.Objects;
  *   <li>{@link #addGroup(String)} for creating a new subgroup and adding it to the list of subgroups.</li>
  * </ul>
  *
- * <div class="note"><b>API note:</b> there is no <code>parameter<b><u>s</u></b>(String)</code> method
- * returning a list of parameter values because the ISO 19111 standard fixes the {@code ParameterValue}
- * {@linkplain DefaultParameterDescriptor#getMaximumOccurs() maximum occurrence} to 1.</div>
+ * {@section Instantiation}
+ * {@code ParameterValueGroup} are usually not instantiated directly. Instead, new instances are created by calling
+ * <code>descriptor.{@linkplain DefaultParameterDescriptorGroup#createValue() createValue()}</code> on a descriptor
+ * supplied by a map projection or process provider. After a {@code ParameterValueGroup} instance has been created,
+ * the parameter values can be set by chaining calls to {@link #parameter(String)} with one of the {@code setValue(…)}
+ * methods defined in the {@linkplain DefaultParameterValue parameter value} class.
+ *
+ * <div class="note"><b>Example:</b>
+ * Assuming a descriptor defined as in the {@link DefaultParameterDescriptorGroup} javadoc,
+ * one can set <cite>Mercator (variant A)</cite> projection parameters as below:
+ *
+ * {@preformat java
+ *     ParameterValueGroup mercator = MercatorProjection.PARAMETERS.createValue();
+ *     mercator.parameter("Longitude of natural origin").setValue(-60, NonSI.DEGREE_ANGLE);  // 60°W
+ *     mercator.parameter("Latitude of natural origin") .setValue( 40, NonSI.DEGREE_ANGLE);  // 40°N
+ *     // Keep default values for other parameters.
+ * }
+ * </div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
@@ -140,6 +155,10 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
      *     parameter("False easting").setValue(500000.0);
      * }
      *
+     * <div class="note"><b>API note:</b> there is no <code>parameter<b><u>s</u></b>(String)</code> method
+     * returning a list of parameter values because the ISO 19111 standard fixes the {@code ParameterValue}
+     * {@linkplain DefaultParameterDescriptor#getMaximumOccurs() maximum occurrence} to 1.</div>
+     *
      * {@section Parameters subgroups}
      * This method does not search recursively in subgroups. This is because more than one subgroup
      * may exist for the same {@linkplain ParameterDescriptorGroup descriptor}. The user have to
@@ -155,15 +174,24 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
     public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
         final ParameterValueList values = this.values; // Protect against accidental changes.
-        int fallback = -1, ambiguity = -1;
+
+        // Quick search for an exact match.
         final int size = values.size();
         for (int i=0; i<size; i++) {
             final GeneralParameterDescriptor descriptor = values.descriptor(i);
             if (descriptor instanceof ParameterDescriptor<?>) {
+                if (name.equals(descriptor.getName().toString())) {
+                    return (ParameterValue<?>) values.get(i);
+                }
+            }
+        }
+        // More costly search before to give up.
+        int fallback = -1, ambiguity = -1;
+        for (int i=0; i<size; i++) {
+            final GeneralParameterDescriptor descriptor = values.descriptor(i);
+            if (descriptor instanceof ParameterDescriptor<?>) {
                 if (isHeuristicMatchForName(descriptor, name)) {
-                    if (name.equals(descriptor.getName().toString())) {
-                        return (ParameterValue<?>) values.get(i);
-                    } else if (fallback < 0) {
+                    if (fallback < 0) {
                         fallback = i;
                     } else {
                         ambiguity = i;

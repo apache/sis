@@ -19,6 +19,7 @@ package org.apache.sis.parameter;
 import javax.measure.unit.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
@@ -28,7 +29,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * Provides convenience methods for easier {@code ParameterDescriptorGroup} instantiations.
+ * Provides convenience methods for easier {@code ParameterDescriptor} instantiations.
  * This builder can be helpful for map projection <em>providers</em>, or for implementation of
  * any process that use parameters. Map projection or process <em>users</em> do not need this
  * builder since they can invoke {@link ParameterDescriptor#createValue()} on the descriptor
@@ -60,7 +61,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@preformat java
  *   ParameterBuilder builder = new ParameterBuilder();
  *   builder.setCodeSpace(Citations.OGP, "EPSG").setRequired(true);
- *   ParameterDescriptor<Double>[] parameters = {
+ *   ParameterDescriptor<?>[] parameters = {
  *       builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
  *       builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
  *       builder.addName("Scale factor at natural origin").createStrictlyPositive(1, Unit.ONE),
@@ -273,10 +274,49 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     private <T> ParameterDescriptor<T> create(final Class<T> valueClass, final Range<?> valueDomain,
             final T[] validValues, final T defaultValue)
     {
+        final ParameterDescriptor<T> descriptor;
         onCreate(false);
-        final ParameterDescriptor<T> descriptor = new DefaultParameterDescriptor<>(
-                properties, valueClass, valueDomain, validValues, defaultValue, required);
-        onCreate(true);
+        try {
+            descriptor = new DefaultParameterDescriptor<>(properties,
+                    valueClass, valueDomain, validValues, defaultValue, required);
+        } finally {
+            onCreate(true);
+        }
         return descriptor;
+    }
+
+    /**
+     * Creates a descriptor group for the given parameters. This is a convenience method for
+     * {@link #createGroup(int, int, GeneralParameterDescriptor[])} with a cardinality of [0 … 1]
+     * or [1 … 1] depending on the value given to the last call to {@link #setRequired(boolean)}.
+     *
+     * @param  parameters The {@linkplain #descriptors() parameter descriptors} for the group to create.
+     * @return The parameter descriptor group.
+     */
+    public ParameterDescriptorGroup createGroup(final GeneralParameterDescriptor... parameters) {
+        return createGroup(required ? 1 : 0, 1, parameters);
+    }
+
+    /**
+     * Creates a descriptor group for the given cardinality and parameters.
+     *
+     * @param  minimumOccurs The {@linkplain DefaultParameterDescriptorGroup#getMinimumOccurs() minimum}
+     *                       number of times that values for this parameter group are required.
+     * @param  maximumOccurs The {@linkplain DefaultParameterDescriptorGroup#getMaximumOccurs() maximum}
+     *                       number of times that values for this parameter group are required.
+     * @param  parameters    The {@linkplain #descriptors() parameter descriptors} for the group to create.
+     * @return The parameter descriptor group.
+     */
+    public ParameterDescriptorGroup createGroup(final int minimumOccurs, final int maximumOccurs,
+            final GeneralParameterDescriptor... parameters)
+    {
+        final ParameterDescriptorGroup group;
+        onCreate(false);
+        try {
+            group = new DefaultParameterDescriptorGroup(properties, minimumOccurs, maximumOccurs, parameters);
+        } finally {
+            onCreate(true);
+        }
+        return group;
     }
 }
