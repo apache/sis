@@ -41,15 +41,16 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 @DependsOn(DefaultParameterDescriptorTest.class)
 public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase {
     /**
-     * Returns a group of 4 parameters of type {@link Integer} with default value 10.
+     * A group of 4 parameters of type {@link Integer} with default value 10.
      * The two first parameters are mandatory, while the two last parameters are optional.
      * The very last parameter has a maximum number of occurrence of 2, which is illegal
      * according ISO 19111 but nevertheless supported by Apache SIS.
      */
-    static final DefaultParameterDescriptorGroup createGroup_2M_2O() {
+    static final DefaultParameterDescriptorGroup M1_M1_O1_O2;
+    static {
         final Integer DEFAULT_VALUE = 10;
         final Class<Integer> type = Integer.class;
-        return new DefaultParameterDescriptorGroup(name("The group"), 0, 1,
+        M1_M1_O1_O2 = new DefaultParameterDescriptorGroup(name("The group"), 0, 1,
             new DefaultParameterDescriptor<>(name("Mandatory 1"), type, null, null, DEFAULT_VALUE, true),
             new DefaultParameterDescriptor<>(name("Mandatory 2"), type, null, null, DEFAULT_VALUE, true),
             new DefaultParameterDescriptor<>(name( "Optional 3"), type, null, null, DEFAULT_VALUE, false),
@@ -69,7 +70,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      */
     @Test
     public void validateTestObjects() {
-        for (final GeneralParameterDescriptor descriptor : createGroup_2M_2O().descriptors()) {
+        for (final GeneralParameterDescriptor descriptor : M1_M1_O1_O2.descriptors()) {
             AssertionError error = null;
             try {
                 validate(descriptor);
@@ -89,7 +90,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      */
     @Test
     public void testDescriptor() {
-        final DefaultParameterDescriptorGroup group = createGroup_2M_2O();
+        final DefaultParameterDescriptorGroup group = M1_M1_O1_O2;
         final List<GeneralParameterDescriptor> descriptors = group.descriptors();
         assertEquals("name", "The group", group.getName().getCode());
         assertEquals("size", 4, descriptors.size());
@@ -106,7 +107,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      */
     @Test
     public void testContains() {
-        final List<GeneralParameterDescriptor> descriptors = createGroup_2M_2O().descriptors();
+        final List<GeneralParameterDescriptor> descriptors = M1_M1_O1_O2.descriptors();
         for (final GeneralParameterDescriptor p : descriptors) {
             assertTrue(descriptors.contains(p));
         }

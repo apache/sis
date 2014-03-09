@@ -182,7 +182,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
                 count++;
             }
         }
-        if (count > desc.getMaximumOccurs()) {
+        if (count >= desc.getMaximumOccurs()) {
             throw new InvalidParameterCardinalityException(Errors.format(
                     Errors.Keys.TooManyOccurrences_2, count, name), name.getCode());
         }
