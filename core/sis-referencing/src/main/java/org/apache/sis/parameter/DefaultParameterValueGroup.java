@@ -37,33 +37,48 @@ import java.util.Objects;
 
 
 /**
- * A group of related parameter values.
- *
- * <p>This class defines the following convenience methods:</p>
- * <ul>
- *   <li>{@link #parameter(String)} searches for a single parameter value of the given name.</li>
- *   <li>{@link #groups(String)} searches for all groups of the given name.</li>
- *   <li>{@link #addGroup(String)} for creating a new subgroup and adding it to the list of subgroups.</li>
- * </ul>
- *
- * {@section Instantiation}
- * {@code ParameterValueGroup} are usually not instantiated directly. Instead, new instances are created by calling
+ * A group of related parameter values. {@code ParameterValueGroup} instances are typically created by calls to
  * <code>descriptor.{@linkplain DefaultParameterDescriptorGroup#createValue() createValue()}</code> on a descriptor
- * supplied by a map projection or process provider. After a {@code ParameterValueGroup} instance has been created,
- * the parameter values can be set by chaining calls to {@link #parameter(String)} with one of the {@code setValue(…)}
- * methods defined in the {@linkplain DefaultParameterValue parameter value} class.
+ * supplied by a map projection or process provider. New instances are initialized with a {@linkplain #values() list
+ * of values} containing all mandatory parameters, and no optional parameter. The values list is modifiable, but all
+ * operations will first ensure that the modification would not violate the cardinality constraints (i.e. the minimum
+ * and maximum occurrences of that parameter allowed by the descriptor). If a cardinality constraint is violated, then
+ * an {@link InvalidParameterCardinalityException} will be thrown.
+ *
+ * <p>After a new {@code ParameterValueGroup} instance has been created, the parameter values can be set by chaining
+ * calls to {@link #parameter(String)} with one of the {@code setValue(…)} methods defined in the returned object
+ * (see the {@linkplain DefaultParameterValue table of setter methods}). The {@code parameter(String)} method can
+ * be invoked regardless of whether the parameter is mandatory or optional: if the parameter was optional and not
+ * yet present in this group, it will be created.</p>
  *
  * <div class="note"><b>Example:</b>
- * Assuming a descriptor defined as in the {@link DefaultParameterDescriptorGroup} javadoc,
+ * Assuming the descriptor defined in the {@link DefaultParameterDescriptorGroup} example,
  * one can set <cite>Mercator (variant A)</cite> projection parameters as below:
  *
  * {@preformat java
- *     ParameterValueGroup mercator = MercatorProjection.PARAMETERS.createValue();
+ *     ParameterValueGroup mercator = Mercator.PARAMETERS.createValue();
  *     mercator.parameter("Longitude of natural origin").setValue(-60, NonSI.DEGREE_ANGLE);  // 60°W
  *     mercator.parameter("Latitude of natural origin") .setValue( 40, NonSI.DEGREE_ANGLE);  // 40°N
  *     // Keep default values for other parameters.
  * }
  * </div>
+ *
+ * Alternatively, if all parameters were created elsewhere and the user wants to copy them in a new
+ * parameter group, the {@link List#addAll(Collection)} method can been invoked on the values list.
+ *
+ * <div class="note"><b>Example:</b>
+ * {@preformat java
+ *     ParameterValue<?>[] parameter = ...; // Defined elsewhere.
+ *     ParameterValueGroup mercator = Mercator.PARAMETERS.createValue();
+ *     mercator.values().addAll(Arrays.asList(parameters));
+ * }
+ * </div>
+ *
+ * Optional parameters can be removed by the usual {@link List#remove(int)} or {@link List#remove(Object)}
+ * operations on the values list. But attempts to remove a mandatory parameter will cause an
+ * {@link InvalidParameterCardinalityException} to be thrown.
+ *
+ * <p>Calls to {@code values().clear()} restore this {@code DefaultParameterValueGroup} to its initial state.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
@@ -89,17 +104,15 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
     /**
      * Constructs a parameter group from the specified descriptor.
      *
+     * <p><b>Usage note:</b> {@code ParameterValueGroup} are usually not instantiated directly. Instead, consider
+     * invoking <code>descriptor.{@linkplain DefaultParameterDescriptorGroup#createValue() createValue()}</code>
+     * on a descriptor supplied by a map projection or process provider.</p>
+     *
      * @param descriptor The descriptor for this group.
      */
     public DefaultParameterValueGroup(final ParameterDescriptorGroup descriptor) {
         ArgumentChecks.ensureNonNull("descriptor", descriptor);
-        final List<GeneralParameterDescriptor> elements = descriptor.descriptors();
-        values = new ParameterValueList(descriptor, elements.size());
-        for (final GeneralParameterDescriptor child : elements) {
-            for (int count=child.getMinimumOccurs(); --count>=0;) {
-                values.addUnchecked(new UninitializedParameter(child));
-            }
-        }
+        values = new ParameterValueList(descriptor);
     }
 
     /**

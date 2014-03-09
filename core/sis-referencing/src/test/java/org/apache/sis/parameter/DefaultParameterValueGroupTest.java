@@ -132,6 +132,22 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     }
 
     /**
+     * Tests {@code DefaultParameterValueGroup.values().clear()}.
+     */
+    @Test
+    @DependsOnMethod("testParameter")
+    public void testValuesClear() {
+        final DefaultParameterValueGroup  group  = createGroup(10);
+        final List<GeneralParameterValue> values = group.values();
+        assertEquals("size", 4, values.size());
+        assertEquals("parameter(“Mandatory 2”)", 20, group.parameter("Mandatory 2").intValue());
+        values.clear();
+        assertEquals("size", 2, values.size());
+        assertEquals("parameter(“Mandatory 2”)", 10, group.parameter("Mandatory 2").intValue());
+        // The above 10 is the default value specified by the descriptor.
+    }
+
+    /**
      * Tests {@code DefaultParameterValueGroup.values().get(…)} on a group expected to be pre-filled
      * with mandatory parameters.
      */
