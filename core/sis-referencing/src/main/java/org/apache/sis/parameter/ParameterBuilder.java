@@ -74,10 +74,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * by the following code in order to declare its aliases:
  *
  * {@preformat java
- *   builder.addName("Longitude of natural origin")        // Primary name in builder default namespace.
+ *   builder.addIdentifier("8802")                         // Primary key in builder default namespace (EPSG in this example).
+ *          .addName("Longitude of natural origin")        // Primary name in builder default namespace (EPSG in this example).
  *          .addName(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
  *          .addName(Citations.GEOTIFF, "NatOriginLong")   // Second alias in "GeoTIFF" namespace.
- *          .addIdentifier("8802")                         // Primary key in EPSG database.
  *          .createBounded(-80, +84, 0, NonSI.DEGREE_ANGLE);
  * }
  *
