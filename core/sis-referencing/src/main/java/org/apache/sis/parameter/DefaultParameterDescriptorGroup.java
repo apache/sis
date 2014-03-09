@@ -38,6 +38,43 @@ import static org.apache.sis.util.Utilities.deepEquals;
 
 /**
  * The definition of a group of related parameters used by an operation method.
+ * {@code DefaultParameterDescriptorGroup} instances are immutable and thus thread-safe.
+ * Each map projection or process will typically defines a single static {@code ParameterDescriptorGroup},
+ * to be shared by all users of that projection or process.
+ *
+ * {@section Instantiation}
+ * Map projection or process <em>implementors</em> may use the {@link ParameterBuilder} class for making
+ * their task easier. The following example creates a <cite>Mercator (variant A)</cite> projection valid
+ * from 80°S to 84°N on all the longitude range (±180°).
+ *
+ * {@preformat java
+ *     public class MercatorProjection {
+ *         public static final ParameterDescriptorGroup PARAMETERS;
+ *         static {
+ *             ParameterBuilder builder = new ParameterBuilder();
+ *             builder.setCodeSpace(Citations.OGP, "EPSG").setRequired(true);
+ *             ParameterDescriptor<?>[] parameters = {
+ *                 builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
+ *                 builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
+ *                 builder.addName("Scale factor at natural origin").createStrictlyPositive(1, Unit.ONE),
+ *                 builder.addName("False easting")                 .create(0, SI.METRE),
+ *                 builder.addName("False northing")                .create(0, SI.METRE)
+ *             };
+ *             builder.addIdentifier("9804")                    // Primary key in EPSG database.
+ *                    .addName("Mercator (variant A)")          // EPSG name since October 2010.
+ *                    .addName("Mercator (1SP)")                // EPSG name prior October 2010.
+ *                    .addName(Citations.OGC, "Mercator_1SP");  // Name found in some OGC specifications.
+ *             PARAMETERS = builder.createGroup(parameters);
+ *         }
+ *     }
+ * }
+ *
+ * Users can simply reference the descriptor provided par projection or process providers like below:
+ *
+ * {@preformat java
+ *     ParameterValueGroup parameters = MercatorProjection.PARAMETERS.createValue();
+ *     // See DefaultParameterValueGroup for more information on 'parameters' usage.
+ * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -268,18 +305,26 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
     @Override
     @SuppressWarnings("null")
     public GeneralParameterDescriptor descriptor(final String name) throws ParameterNotFoundException {
+        // Quick search for an exact match.
         ArgumentChecks.ensureNonNull("name", name);
+        for (final GeneralParameterDescriptor param : descriptors) {
+            if (name.equals(param.getName().getCode())) {
+                return param;
+            }
+        }
+        // More costly search before to give up.
         GeneralParameterDescriptor fallback = null, ambiguity = null;
         for (final GeneralParameterDescriptor param : descriptors) {
             if (IdentifiedObjects.isHeuristicMatchForName(param, name)) {
-                if (name.equals(param.getName().getCode())) {
-                    return param;
-                } else if (fallback == null) {
+                if (fallback == null) {
                     fallback = param;
                 } else {
                     ambiguity = param;
                 }
             }
+        }
+        if (fallback != null && ambiguity == null) {
+            return fallback;
         }
         throw new ParameterNotFoundException(ambiguity != null
                 ? Errors.format(Errors.Keys.AmbiguousName_3, fallback.getName(), ambiguity.getName(), name)

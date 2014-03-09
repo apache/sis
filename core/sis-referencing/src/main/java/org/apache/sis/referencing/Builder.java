@@ -508,9 +508,13 @@ public abstract class Builder<B extends Builder<B>> {
      *
      * {@preformat java
      *     public Foo createFoo() {
+     *         final Foo foo;
      *         onCreate(false);
-     *         Foo foo = factory.createFoo(properties);
-     *         onCreate(true);
+     *         try {
+     *             foo = factory.createFoo(properties);
+     *         } finally {
+     *             onCreate(true);
+     *         }
      *         return foo;
      *     }
      * }

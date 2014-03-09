@@ -31,9 +31,10 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.opengis.test.Validators.*;
-import static org.apache.sis.parameter.DefaultParameterDescriptorGroupTest.name;
+import static java.util.Collections.singletonMap;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 
 
 /**
@@ -113,18 +114,21 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
      * Tests {@link DefaultParameterValueGroup#parameter(String)}.
      */
     @Test
-    @DependsOnMethod("testValuesAddAll")
     public void testParameter() {
-        final DefaultParameterValueGroup  group  = createGroup(10);
-        final List<GeneralParameterValue> values = group.values();
-        assertSame  ("parameter(“Mandatory 1”)", values.get(0), group.parameter("Mandatory 1"));
-        assertSame  ("parameter(“Mandatory 2”)", values.get(1), group.parameter("Mandatory 2"));
-        assertSame  ("parameter(“Optional 3”)",  values.get(2), group.parameter("Optional 3"));
-        assertSame  ("parameter(“Optional 4”)",  values.get(3), group.parameter("Optional 4"));
-        assertEquals("parameter(“Mandatory 1”)", 10, group.parameter("Mandatory 1").intValue());
-        assertEquals("parameter(“Mandatory 2”)", 20, group.parameter("Mandatory 2").intValue());
-        assertEquals("parameter(“Optional 3”)",  30, group.parameter("Optional 3") .intValue());
-        assertEquals("parameter(“Optional 4”)",  40, group.parameter("Optional 4") .intValue());
+        final List<GeneralParameterDescriptor> descriptors = descriptor.descriptors();
+        final GeneralParameterValue[] expected = {
+            descriptors.get(0).createValue(),
+            descriptors.get(1).createValue(),
+            descriptors.get(2).createValue(),
+            descriptors.get(3).createValue()
+        };
+        final DefaultParameterValueGroup  group  = new DefaultParameterValueGroup(descriptor);
+        assertEquals("parameter(“Mandatory 1”)", expected[0], group.parameter("Mandatory 1"));
+        assertEquals("parameter(“Mandatory 2”)", expected[1], group.parameter("Mandatory 2"));
+        assertEquals("parameter(“Optional 3”)",  expected[2], group.parameter("Optional 3"));
+        assertEquals("parameter(“Optional 4”)",  expected[3], group.parameter("Optional 4"));
+        assertEquals("parameter(“Alias 2”)",     expected[1], group.parameter("Alias 2"));
+        assertEquals("parameter(“Alias 3”)",     expected[2], group.parameter("Alias 3"));
     }
 
     /**
@@ -144,6 +148,35 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         } catch (IndexOutOfBoundsException e) {
             assertNotNull(e.getMessage());
         }
+        assertEquals(10, ((ParameterValue<?>) values.get(0)).intValue());
+        assertEquals(10, ((ParameterValue<?>) values.get(1)).intValue());
+        // 10 is the default value specified by the descriptor.
+    }
+
+    /**
+     * Tests {@code DefaultParameterValueGroup.values().set(…)}.
+     */
+    @Test
+    @DependsOnMethod("testValuesGet")
+    public void testValuesSet() {
+        final DefaultParameterValueGroup  group  = new DefaultParameterValueGroup(descriptor);
+        final List<GeneralParameterValue> values = group.values();
+        assertEquals("Initial size", 2, values.size());
+        final ParameterValue<?> p0 = (ParameterValue<?>) descriptor.descriptors().get(0).createValue();
+        final ParameterValue<?> p1 = (ParameterValue<?>) descriptor.descriptors().get(1).createValue();
+        p0.setValue(4);
+        p1.setValue(5);
+        assertEquals("Mandatory 1", values.set(0, p0).getDescriptor().getName().toString());
+        assertEquals("Mandatory 2", values.set(1, p1).getDescriptor().getName().toString());
+        try {
+            values.set(2, p1);
+            fail("Index 2 shall be out of bounds.");
+        } catch (IndexOutOfBoundsException e) {
+            assertNotNull(e.getMessage());
+        }
+        assertEquals("size", 2, values.size()); // Size should be unchanged.
+        assertEquals(4, ((ParameterValue<?>) values.get(0)).intValue());
+        assertEquals(5, ((ParameterValue<?>) values.get(1)).intValue());
     }
 
     /**
@@ -188,7 +221,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         final DefaultParameterValueGroup    group = createGroup(10);
         final List<GeneralParameterValue>  values = group.values();
         final ParameterValue<Integer> nonExistent = new DefaultParameterDescriptor<>(
-                name("Optional 5"), Integer.class, null, null, null, false).createValue();
+                singletonMap(NAME_KEY, "Optional 5"), Integer.class, null, null, null, false).createValue();
         try {
             values.add(nonExistent);
             fail("“Optional 5” is not a parameter for this group.");
@@ -196,7 +229,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
             assertEquals("Optional 5", e.getParameterName());
             final String message = e.getMessage();
             assertTrue(message, message.contains("Optional 5"));
-            assertTrue(message, message.contains("The group"));
+            assertTrue(message, message.contains("Test group"));
         }
     }
 
@@ -278,8 +311,8 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
      */
     @Test
     public void testAddGroup() {
-        descriptor = new DefaultParameterDescriptorGroup(name("theGroup"), 1, 1,
-                new DefaultParameterDescriptorGroup(name("theSubGroup"), 0, 10)
+        descriptor = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theGroup"), 1, 1,
+                new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theSubGroup"), 0, 10)
         );
         validate(descriptor);
 
@@ -288,6 +321,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         final ParameterValueGroup subGroupValues = groupValues.addGroup("theSubGroup");
         assertEquals("Size after add.", 1, groupValues.values().size());
         assertSame(subGroupValues, groupValues.values().get(0));
+        assertArrayEquals(new Object[] {subGroupValues}, groupValues.groups("theSubGroup").toArray());
     }
 
     /**
@@ -299,9 +333,17 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         final DefaultParameterValueGroup g1 = createGroup( 10);
         final DefaultParameterValueGroup g2 = createGroup(-10);
         final DefaultParameterValueGroup g3 = createGroup( 10);
-        assertTrue ("equals", g1.equals(g1));
-        assertFalse("equals", g1.equals(g2));
-        assertTrue ("equals", g1.equals(g3));
+        assertTrue  ("equals", g1.equals(g1));
+        assertFalse ("equals", g1.equals(g2));
+        assertTrue  ("equals", g1.equals(g3));
         assertEquals("hashCode", g1.hashCode(), g3.hashCode());
+    }
+
+    /**
+     * Tests {@link DefaultParameterValueGroup} serialization.
+     */
+    @Test
+    public void testSerialization() {
+        assertSerializedEquals(createGroup(10));
     }
 }
