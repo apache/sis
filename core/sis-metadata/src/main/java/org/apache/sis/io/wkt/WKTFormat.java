@@ -445,14 +445,8 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Creates a new format to use for parsing and formatting values of the given type.
      * This method is invoked the first time that a format is needed for the given type.
-     * The {@code valueType} can be one of the following classes:
-     *
-     * <table class="sis">
-     *   <tr><th>Value type</th>     <th>Format to create</th></tr>
-     *   <tr><td>{@link Number}</td> <td>{@link NumberFormat}</td></tr>
-     *   <tr><td>{@link Date}</td>   <td>{@link DateFormat}</td></tr>
-     *   <tr><td>{@link Unit}</td>   <td>{@link UnitFormat}</td></tr>
-     * </table>
+     * The {@code valueType} can be any types declared in the
+     * {@linkplain CompoundFormat#createFormat(Class) parent class}.
      *
      * @param  valueType The base type of values to parse or format.
      * @return The format to use for parsing of formatting values of the given type, or {@code null} if none.
@@ -461,9 +455,6 @@ public class WKTFormat extends CompoundFormat<Object> {
     protected Format createFormat(final Class<?> valueType) {
         if (valueType == Number.class) {
             return symbols.createNumberFormat();
-        }
-        if (valueType == Unit.class) {
-            return UnitFormat.getInstance(symbols.getLocale());
         }
         if (valueType == Date.class) {
             final DateFormat format = new SimpleDateFormat(DATE_PATTERN, symbols.getLocale());

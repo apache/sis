@@ -266,11 +266,7 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
         valueClass   = descriptor.getValueClass();
         validValues  = descriptor.getValidValues();
         defaultValue = descriptor.getDefaultValue();
-        if (Number.class.isAssignableFrom(valueClass) && Comparable.class.isAssignableFrom(valueClass)) {
-            valueDomain = Parameters.getValueDomain((ParameterDescriptor) descriptor);
-        } else {
-            valueDomain = null;
-        }
+        valueDomain  = Parameters.getValueDomain(descriptor);
     }
 
     /**
