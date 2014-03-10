@@ -32,12 +32,11 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.apache.sis.internal.referencing.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.collection.WeakValueHashMap;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Related to JDK7
 import java.util.Objects;
@@ -142,7 +141,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @param name The name to wrap.
      */
     public NamedIdentifier(final GenericName name) {
-        super(name instanceof ReferenceIdentifier ? (ReferenceIdentifier) name : new Adapter(name));
+        super(name instanceof ReferenceIdentifier ? (ReferenceIdentifier) name : new NameToIdentifier(name));
         this.name = name;
         isNameSupplied = true;
     }
@@ -256,44 +255,6 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
             return factory.createGenericName(scope, codeSpace, code);
         } else {
             return factory.createLocalName(scope, code);
-        }
-    }
-
-    /**
-     * The converse of {@link NamedIdentifier#createName(Citation, CharSequence)}.
-     */
-    private static final class Adapter implements ReferenceIdentifier {
-        /** The name from which to infer the identifier attributes. */
-        private final GenericName name;
-
-        /** Infers the attributes from the given name. */
-        Adapter(final GenericName name) {
-            ensureNonNull("name", name);
-            this.name = name;
-        }
-
-        /** Infers the authority from the scope. */
-        @Override public Citation getAuthority() {
-            final NameSpace scope = name.scope();
-            if (scope == null || scope.isGlobal()) {
-                return null;
-            }
-            return Citations.fromName(scope.name().tip().toString());
-        }
-
-        /** Takes everything except the tip as the code space. */
-        @Override public String getCodeSpace() {
-            return (name instanceof ScopedName) ? ((ScopedName) name).path().toString() : null;
-        }
-
-        /** Takes the last element as the code. */
-        @Override public String getCode() {
-            return name.tip().toString();
-        }
-
-        /** Names are not versioned. */
-        @Override public String getVersion() {
-            return null;
         }
     }
 

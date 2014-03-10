@@ -156,7 +156,7 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
         super(properties);
         this.minimumOccurs = minimumOccurs;
         this.maximumOccurs = maximumOccurs;
-        if (minimumOccurs < 0  || minimumOccurs > maximumOccurs) {
+        if (minimumOccurs < 0  || minimumOccurs > maximumOccurs || maximumOccurs == 0) {
             throw new IllegalArgumentException(Errors.getResources(properties).getString(
                     Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
         }

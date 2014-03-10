@@ -253,7 +253,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *
      * @param  stats       The statistics to format.
      * @param  toAppendTo  Where to format the statistics.
-     * @throws IOException If an error occurred while writing in the given appender.
+     * @throws IOException If an error occurred while writing to the given appendable.
      */
     @Override
     public void format(Statistics stats, final Appendable toAppendTo) throws IOException {
@@ -272,7 +272,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *
      * @param  stats       The statistics to format.
      * @param  toAppendTo  Where to format the statistics.
-     * @throws IOException If an error occurred while writing in the given appender.
+     * @throws IOException If an error occurred while writing to the given appendable.
      */
     public void format(final Statistics[] stats, final Appendable toAppendTo) throws IOException {
         /*

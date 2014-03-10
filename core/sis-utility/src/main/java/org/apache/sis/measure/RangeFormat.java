@@ -16,6 +16,8 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -89,7 +91,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.06)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see Range#toString()
@@ -289,6 +291,13 @@ public class RangeFormat extends Format {
     protected final UnitFormat unitFormat;
 
     /**
+     * Whether we should insert a space between the bracket and the unit symbol.
+     *
+     * @see #insertSpaceBeforeUnit(Unit)
+     */
+    private transient Map<Unit<?>,Boolean> insertSpaceBeforeUnit;
+
+    /**
      * Creates a new format for parsing and formatting {@linkplain NumberRange number ranges}
      * using the {@linkplain Locale#getDefault() default locale}.
      */
@@ -461,6 +470,23 @@ public class RangeFormat extends Format {
     }
 
     /**
+     * Returns whether we should insert a space between the bracket and the unit symbol.
+     * We cache the result because checking for this condition forces us to format the unit symbol twice.
+     */
+    private boolean insertSpaceBeforeUnit(final Unit<?> unit) {
+        if (insertSpaceBeforeUnit == null) {
+            insertSpaceBeforeUnit = new HashMap<>();
+        }
+        Boolean value = insertSpaceBeforeUnit.get(unit);
+        if (value == null) {
+            final String symbol = unitFormat.format(unit);
+            value = !symbol.isEmpty() && Character.isLetterOrDigit(symbol.codePointAt(0));
+            insertSpaceBeforeUnit.put(unit, value);
+        }
+        return value;
+    }
+
+    /**
      * Returns the {@code *_FIELD} constant for the given field position, or -1 if none.
      */
     private static int getField(final FieldPosition position) {
@@ -574,7 +600,9 @@ public class RangeFormat extends Format {
             } else {
                 final Format format;
                 if (field == UNIT_FIELD) {
-                    startPosition = toAppendTo.append(' ').length();
+                    if (insertSpaceBeforeUnit((Unit) value)) {
+                        startPosition = toAppendTo.append(' ').length();
+                    }
                     format = unitFormat;
                 } else {
                     format = elementFormat;

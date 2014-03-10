@@ -17,6 +17,7 @@
 package org.apache.sis.measure;
 
 import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
 import javax.measure.converter.ConversionException;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
@@ -30,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(NumberRangeTest.class)
@@ -80,8 +81,10 @@ public final strictfp class MeasurementRangeTest extends TestCase {
      */
     @Test
     public void testToString() {
-        final MeasurementRange<Float> range = MeasurementRange.create(10f, true, 20f, true, SI.KILOMETRE);
+        MeasurementRange<Float> range = MeasurementRange.create(10f, true, 20f, true, SI.KILOMETRE);
         assertEquals("[10.0 … 20.0] km", range.toString());
+        range = MeasurementRange.create(10f, true, 20f, true, NonSI.DEGREE_ANGLE);
+        assertEquals("[10.0 … 20.0] deg", range.toString());
     }
 
     /**

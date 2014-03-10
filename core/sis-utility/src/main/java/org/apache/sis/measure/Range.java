@@ -664,6 +664,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         }
         final Unit<?> unit = unit();
         if (unit != null) {
+            // No need to check if we should omit the space because Unit.toString()
+            // uses UCUM format, so we will never have symbol like the ° one.
             buffer.append(' ').append(unit);
         }
         return buffer.toString();

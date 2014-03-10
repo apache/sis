@@ -55,6 +55,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         }
 
         /**
+         * Aliases
+         */
+        public static final short Aliases = 74;
+
+        /**
          * Angle
          */
         public static final short Angle = 0;
@@ -128,6 +133,16 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Daylight time
          */
         public static final short DaylightTime = 13;
+
+        /**
+         * Default value
+         */
+        public static final short DefaultValue = 71;
+
+        /**
+         * Description
+         */
+        public static final short Description = 75;
 
         /**
          * Destination
@@ -365,6 +380,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short UnavailableContent = 57;
 
         /**
+         * Units
+         */
+        public static final short Units = 72;
+
+        /**
          * Unnamed
          */
         public static final short Unnamed = 65;
@@ -383,6 +403,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Value
          */
         public static final short Value = 60;
+
+        /**
+         * Value domain
+         */
+        public static final short ValueDomain = 73;
 
         /**
          * Variables
