@@ -363,12 +363,13 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns the kind of objects formatted by this class.
+     * Returns the type of objects formatted by this class. This method has to return {@code Object.class}
+     * since it is the only common parent to all object types accepted by this formatter.
      *
      * @return {@code Object.class}
      */
     @Override
-    public Class<?> getValueType() {
+    public final Class<Object> getValueType() {
         return Object.class;
     }
 

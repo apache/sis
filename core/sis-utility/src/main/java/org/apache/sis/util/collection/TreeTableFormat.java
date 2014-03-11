@@ -189,9 +189,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     }
 
     /**
-     * Returns the type of object formatted by this class, which is {@link TreeTable}.
+     * Returns the type of objects formatted by this class.
      *
-     * @return {@inheritDoc}
+     * @return {@code TreeTable.class}
      */
     @Override
     public final Class<TreeTable> getValueType() {

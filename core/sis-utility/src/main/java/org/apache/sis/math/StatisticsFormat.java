@@ -145,12 +145,12 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     }
 
     /**
-     * Returns the kind of objects formatted by this class.
+     * Returns the type of objects formatted by this class.
      *
      * @return {@code Statistics.class}
      */
     @Override
-    public Class<Statistics> getValueType() {
+    public final Class<Statistics> getValueType() {
         return Statistics.class;
     }
 

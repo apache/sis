@@ -27,12 +27,16 @@ import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.lang.reflect.Array;
 import java.io.IOException;
+import java.text.Format;
+import java.text.FieldPosition;
 import javax.measure.unit.Unit;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.opengis.util.NameSpace;
+import org.apache.sis.measure.Range;
+import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.internal.referencing.NameToIdentifier;
 import org.apache.sis.internal.util.X364;
 
@@ -58,24 +62,50 @@ final class ParameterTableRow {
      *   <li>{@link String} for names or aliases.</li>
      *   <li>{@link ReferenceIdentifier} for identifiers.</li>
      * </ul>
+     *
+     * @see #addIdentifier(String, Object)
      */
     private final Map<String,Set<Object>> identifiers;
 
     /**
+     * The largest codespace width, in number of Unicode code points.
+     *
+     * @see #addIdentifier(String, Object)
+     */
+    int codespaceWidth;
+
+    /**
+     * The string representation of the domain of values, or {@code null} if none.
+     *
+     * @see #setValueDomain(Range, Format, StringBuffer)
+     */
+    String valueDomain;
+
+    /**
+     * The position to use for alignment of {@link #valueDomain}.
+     * This is usually after the '…' separator.
+     *
+     * @see #setValueDomain(Range, Format, StringBuffer)
+     */
+    int valueDomainAlignment;
+
+    /**
      * The values. Some elements in this list may be null.
+     *
+     * @see #addValue(Object, Unit)
      */
     final List<Object> values;
 
     /**
      * The units of measurement. The size of this list shall be the same than {@link #values}.
      * The list may contain null elements.
+     *
+     * <p>This list is initially filled with {@link Unit} instance. Later in the formatting process,
+     * {@code Unit} instances will be replaced by their symbol.</p>
+     *
+     * @see #addValue(Object, Unit)
      */
-    final List<Unit<?>> units;
-
-    /**
-     * The largest codespace width, in number of Unicode code points.
-     */
-    int codespaceWidth;
+    final List<Object> units;
 
     /**
      * Creates a new row in a table to be formatted by {@link ParameterFormat}.
@@ -119,7 +149,7 @@ final class ParameterTableRow {
     }
 
     /**
-     * Adds an identifier for the given code space.
+     * Helper method for the constructor only, adding an identifier for the given code space.
      * As a side effect, this method remembers the length of the widest code space.
      */
     private void addIdentifier(final String codespace, final Object identifier) {
@@ -138,6 +168,32 @@ final class ParameterTableRow {
     }
 
     /**
+     * Sets the value domain to the string representation of the given range.
+     *
+     * @param  range  The range to format.
+     * @param  format The format to use for formatting the {@code range}.
+     * @param  buffer A temporary buffer to use for formatting the range.
+     * @return The position of a character on which to align the text in the cell.
+     */
+    final int setValueDomain(final Range<?> range, final Format format, final StringBuffer buffer) {
+        final FieldPosition fieldPosition = new FieldPosition(RangeFormat.Field.MAX_VALUE);
+        valueDomain = format.format(range, buffer, fieldPosition).toString();
+        buffer.setLength(0);
+        return valueDomainAlignment = fieldPosition.getBeginIndex();
+    }
+
+    /**
+     * Adds a value and its unit of measurement.
+     *
+     * @param value The value, or {@code null}.
+     * @param unit  The unit of measurement, or {@code null}.
+     */
+    final void addValue(final Object value, final Unit<?> unit) {
+        values.add(value);
+        units .add(unit);
+    }
+
+    /**
      * If the list has only one element and this element is an array or a collection, expands it.
      * This method shall be invoked only after the caller finished to add all elements in the
      * {@link #values} and {@link #units} lists.
@@ -152,7 +208,7 @@ final class ParameterTableRow {
                 }
                 if (value.getClass().isArray()) {
                     final int length = Array.getLength(value);
-                    final Unit<?> unit = units.get(0);
+                    final Object unit = units.get(0);
                     values.clear();
                     units.clear();
                     for (int i=0; i<length; i++) {
@@ -167,7 +223,7 @@ final class ParameterTableRow {
     /**
      * Writes the given color if {@code colorEnabled} is {@code true}.
      */
-    private static void appendColor(final Appendable out, final X364 color, final boolean colorEnabled)
+    private static void writeColor(final Appendable out, final X364 color, final boolean colorEnabled)
             throws IOException
     {
         if (colorEnabled) {
@@ -179,57 +235,75 @@ final class ParameterTableRow {
      * Writes the identifiers. At most one of {@code colorsForTitle} and {@code colorsForRows}
      * can be set to {@code true}.
      *
+     * <p><b>This method can be invoked only once per {@code ParameterTableRow} instance</b>,
+     * at its implementation destroys the internal list of identifiers.</p>
+     *
      * @param  out             Where to write.
      * @param  colorsForTitle  {@code true} if syntax coloring should be applied for table title.
      * @param  colorsForRows   {@code true} if syntax coloring should be applied for table rows.
      * @param  lineSeparator   The system-dependent line separator.
      * @throws IOException     If an exception occurred while writing.
      */
-    final void appendIdentifiers(final Appendable out, final boolean colorsForTitle,
+    final void writeIdentifiers(final Appendable out, final boolean colorsForTitle,
             final boolean colorsForRows, final String lineSeparator) throws IOException
     {
-        boolean continuing = false;
+        boolean isNewLine = false;
         for (final Map.Entry<String,Set<Object>> entry : identifiers.entrySet()) {
-            if (continuing) {
-                out.append(lineSeparator);
-            }
-            continuing = true;
-            int length = codespaceWidth + 1;
-            final String authority  = entry.getKey();
-            appendColor(out, FOREGROUND_GREEN, colorsForTitle);
-            if (authority != null) {
-                appendColor(out, FAINT, colorsForRows);
-                out.append(authority);
-                out.append(':');
-                appendColor(out, NORMAL, colorsForRows);
-                length -= authority.length();
-            }
-            out.append(spaces(length));
-            appendColor(out, BOLD, colorsForTitle);
-            final Iterator<Object> it = entry.getValue().iterator();
-            out.append(toString(it.next()));
-            appendColor(out, RESET, colorsForTitle);
-            boolean hasMore = false;
+            final String codespace = entry.getKey();
+            final Set<Object> identifiers = entry.getValue();
+            Iterator<Object> it = identifiers.iterator();
             while (it.hasNext()) {
-                out.append(hasMore ? ", " : " (");
-                final Object id = it.next();
-                final X364 color, normal;
-                if (id instanceof ReferenceIdentifier) {
-                    color  = FOREGROUND_YELLOW;
-                    normal = FOREGROUND_DEFAULT;
-                } else {
-                    color  = FAINT;
-                    normal = NORMAL;
+                if (isNewLine) {
+                    out.append(lineSeparator);
                 }
-                appendColor(out, color, colorsForTitle);
-                out.append(toString(id));
-                appendColor(out, normal, colorsForTitle);
-                hasMore = true;
+                isNewLine = true;
+                /*
+                 * Write the codespace. More than one name may exist for the same codespace,
+                 * in which case the code space will be repeated on a new line each time.
+                 */
+                writeColor(out, FOREGROUND_GREEN, colorsForTitle);
+                int pad = codespaceWidth + 1;
+                if (codespace != null) {
+                    writeColor(out, FAINT, colorsForRows);
+                    out.append(codespace).append(':');
+                    writeColor(out, NORMAL, colorsForRows);
+                    pad -= codespace.length();
+                }
+                /*
+                 * Write the name or alias after the codespace. We remove what we wrote,
+                 * because we may iterate over the 'identifiers' set more than once.
+                 */
+                out.append(spaces(pad));
+                writeColor(out, BOLD, colorsForTitle);
+                out.append(toString(it.next()));
+                writeColor(out, RESET, colorsForTitle);
+                it.remove();
+                /*
+                 * Write all identifiers between parenthesis after the firt name only.
+                 * Aliases (to be written in a new iteration) will not have identifier.
+                 */
+                boolean hasAliases     = false;
+                boolean hasIdentifiers = false;
+                while (it.hasNext()) {
+                    final Object id = it.next();
+                    if (id instanceof ReferenceIdentifier) {
+                        out.append(hasIdentifiers ? ", " : " (");
+                        writeColor(out, FOREGROUND_YELLOW, colorsForTitle);
+                        out.append(toString(id));
+                        writeColor(out, FOREGROUND_DEFAULT, colorsForTitle);
+                        hasIdentifiers = true;
+                        it.remove();
+                    } else {
+                        hasAliases = true;
+                    }
+                }
+                if (hasIdentifiers) {
+                    out.append(')');
+                }
+                if (hasAliases) {
+                    it = identifiers.iterator();
+                }
             }
-            if (hasMore) {
-                out.append(')');
-            }
-            appendColor(out, RESET, colorsForTitle);
         }
     }
 
