@@ -51,31 +51,45 @@ public final class NameToIdentifier implements ReferenceIdentifier {
     }
 
     /**
+     * Infers the authority from the scope of the given name.
+     *
+     * @param  name The name from which to infer the authority, or {@code null}.
+     * @return The authority, or {@code null} if none.
+     */
+    public static Citation getAuthority(final GenericName name) {
+        if (name != null) {
+            final NameSpace scope = name.scope();
+            if (scope != null && !scope.isGlobal()) {
+                return Citations.fromName(scope.name().tip().toString());
+            }
+        }
+        return null;
+    }
+
+    /**
      * Infers the authority from the scope.
      */
     @Override
     public Citation getAuthority() {
-        final NameSpace scope = name.scope();
-        if (scope == null || scope.isGlobal()) {
-            return null;
-        }
-        return Citations.fromName(scope.name().tip().toString());
+        return getAuthority(name);
     }
 
     /**
      * Takes everything except the tip as the code space.
      *
-     * @param name The name from which to get the code space.
+     * @param name The name from which to get the code space, or {@code null}.
      * @return The code space, or {@code null} if none.
      */
     public static String getCodeSpace(final GenericName name) {
-        if (name instanceof ScopedName) {
-            return ((ScopedName) name).path().toString();
-        }
-        if (name.depth() == 2) {
-            // May happen on GenericName implementation that do not implement the ScopedName interface.
-            // The most importance case is org.apache.sis.referencing.NamedIdentifier.
-            return name.head().toString();
+        if (name != null) {
+            if (name instanceof ScopedName) {
+                return ((ScopedName) name).path().toString();
+            }
+            if (name.depth() == 2) {
+                // May happen on GenericName implementation that do not implement the ScopedName interface.
+                // The most importance case is org.apache.sis.referencing.NamedIdentifier.
+                return name.head().toString();
+            }
         }
         return null;
     }

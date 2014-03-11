@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.io.IOException;
 import java.text.Format;
+import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import javax.measure.unit.Unit;
@@ -41,10 +42,14 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.measure.Range;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.io.TabularFormat;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.referencing.NameToIdentifier;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.X364;
 
@@ -57,23 +62,37 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * This format assumes a monospaced font and an encoding supporting drawing box
  * characters (e.g. UTF-8).
  *
+ * <p>This class can format parameters with different levels of verbosity, specified by the {@link ContentLevel}
+ * property. The content level controls whether the formatter should write all names and aliases (at the cost of
+ * multi-line rows), or to pickup one name per parameter for a more compact table. See {@link ContentLevel}
+ * javadoc for output examples.</p>
+ *
  * <div class="note"><b>Example:</b>
  * The <cite>Mercator (variant A)</cite> example given in {@link DefaultParameterDescriptorGroup} javadoc
- * can be formatted as below:
+ * will be formatted by default as below:
  *
  * {@preformat text
  *   EPSG: Mercator (variant A)
  *   ┌────────────────────────────────┬────────┬───────────────┬───────────────┐
  *   │ Name                           │ Type   │ Value domain  │ Default value │
  *   ├────────────────────────────────┼────────┼───────────────┼───────────────┤
- *   │ Latitude of natural origin     │ Double │ [-80 … 84]°   │ 40.0°         │
- *   │ Longitude of natural origin    │ Double │ [-180 … 180]° │ -60.0°        │
- *   │ Scale factor at natural origin │ Double │ (0 … ∞)       │ 1.0           │
- *   │ False easting                  │ Double │ (-∞ … ∞) m    │ 5000.0 m      │
- *   │ False northing                 │ Double │ (-∞ … ∞) m    │ 10000.0 m     │
+ *   │ Latitude of natural origin     │ Double │  [-80 … 84]°  │         0.0°  │
+ *   │ Longitude of natural origin    │ Double │ [-180 … 180]° │         0.0°  │
+ *   │ Scale factor at natural origin │ Double │    (0 … ∞)    │         1.0   │
+ *   │ False easting                  │ Double │   (-∞ … ∞) m  │         0.0 m │
+ *   │ False northing                 │ Double │   (-∞ … ∞) m  │         0.0 m │
  *   └────────────────────────────────┴────────┴───────────────┴───────────────┘
  * }
  * </div>
+ *
+ * The kind of objects accepted by this formatter are:
+ * <table class="sis">
+ *   <tr><th>Class</th> <th>Remarks</th></tr>
+ *   <tr><td>{@link ParameterValueGroup}</td> <td>Column of <cite>default values</cite> is replaced by a column of the actual values.</td></tr>
+ *   <tr><td>{@link ParameterDescriptorGroup}</td> <td></td></tr>
+ *   <tr><td>{@link OperationMethod}</td> <td></td></tr>
+ *   <tr><td><code>{@linkplain IdentifiedObject}[]</code></td> <td>Accepted only for {@link ContentLevel#NAME_SUMMARY}.</td></tr>
+ * </table>
  *
  * <div class="warning"><b>Limitation:</b>
  * Current implementation supports only formatting, not parsing.
@@ -84,19 +103,24 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @version 0.4
  * @module
  */
-public class ParameterFormat extends CompoundFormat<Object> {
+public class ParameterFormat extends TabularFormat<Object> {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1345231739800152411L;
 
     /**
-     * Special codespace for requesting the display of EPSG codes.
+     * The default column separator. User can change the separator
+     * by a call to {@link #setColumnSeparatorPattern(String)}.
      */
-    private static final String SHOW_EPSG_CODES = "EPSG:#";
+    private static final String SEPARATOR = " │ ";
 
     /**
      * The amount of information to put in the table to be formatted by {@link ParameterFormat}.
+     * The content level controls whether the formatter should write all names and aliases
+     * (at the cost of multi-line rows), or to pickup one name per parameter for a more compact table.
+     *
+     * <p>The enumeration value javadoc provide examples of formatting output.</p>
      *
      * @since   0.4
      * @version 0.4
@@ -108,6 +132,35 @@ public class ParameterFormat extends CompoundFormat<Object> {
          * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() name} and
          * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getAlias() aliases}.
          * Each parameter may be formatted on many lines if they have aliases.
+         *
+         * <div class="note"><b>Example:</b>
+         * The <cite>Mercator (variant A)</cite> example given in {@link DefaultParameterDescriptorGroup} javadoc,
+         * (augmented with parameter aliases) formatted at this level produces a text like below:
+         *
+         * {@preformat text
+         *   EPSG: Mercator (variant A) (9804)
+         *   EPSG: Mercator (1SP)
+         *   OGC:  Mercator_1SP
+         *   ╔══════════════════════════════════════╤════════╤═══════════════╤═══════════════╗
+         *   ║ Name                                 │ Type   │ Value domain  │ Default value ║
+         *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
+         *   ║ EPSG: Latitude of natural origin     │ Double │  [-80 … 84]°  │         0.0°  ║
+         *   ║ OGC:  latitude_of_origin             │        │               │               ║
+         *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
+         *   ║ EPSG: Longitude of natural origin    │ Double │ [-180 … 180]° │         0.0°  ║
+         *   ║ OGC:  central_meridian               │        │               │               ║
+         *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
+         *   ║ EPSG: Scale factor at natural origin │ Double │    (0 … ∞)    │         1.0   ║
+         *   ║ OGC:  scale_factor                   │        │               │               ║
+         *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
+         *   ║ EPSG: False easting                  │ Double │   (-∞ … ∞) m  │         0.0 m ║
+         *   ║ OGC:  FalseEasting                   │        │               │               ║
+         *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
+         *   ║ EPSG: False northing                 │ Double │   (-∞ … ∞) m  │         0.0 m ║
+         *   ║ OGC:  FalseNorthing                  │        │               │               ║
+         *   ╚══════════════════════════════════════╧════════╧═══════════════╧═══════════════╝
+         * }
+         * </div>
          */
         DETAILED,
 
@@ -116,6 +169,24 @@ public class ParameterFormat extends CompoundFormat<Object> {
          * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() name} is formatted —
          * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getAlias() aliases} and
          * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getIdentifiers() identifiers} are omitted.
+         *
+         * <div class="note"><b>Example:</b>
+         * The <cite>Mercator (variant A)</cite> example given in {@link DefaultParameterDescriptorGroup} javadoc
+         * formatted at this level produces a text like below:
+         *
+         * {@preformat text
+         *   EPSG: Mercator (variant A)
+         *   ┌────────────────────────────────┬────────┬───────────────┬───────────────┐
+         *   │ Name                           │ Type   │ Value domain  │ Default value │
+         *   ├────────────────────────────────┼────────┼───────────────┼───────────────┤
+         *   │ Latitude of natural origin     │ Double │  [-80 … 84]°  │         0.0°  │
+         *   │ Longitude of natural origin    │ Double │ [-180 … 180]° │         0.0°  │
+         *   │ Scale factor at natural origin │ Double │    (0 … ∞)    │         1.0   │
+         *   │ False easting                  │ Double │   (-∞ … ∞) m  │         0.0 m │
+         *   │ False northing                 │ Double │   (-∞ … ∞) m  │         0.0 m │
+         *   └────────────────────────────────┴────────┴───────────────┴───────────────┘
+         * }
+         * </div>
          */
         BRIEF,
 
@@ -123,6 +194,24 @@ public class ParameterFormat extends CompoundFormat<Object> {
          * Limits the content to names and aliases in a tabular format. In addition to parameters,
          * this level can also format array of operation method, coordinate reference system, <i>etc.</i>
          * The summary contains the identifier names and aliases aligned in a table.
+         *
+         * <div class="note"><b>Example:</b>
+         * The <cite>Mercator (variant A)</cite> example given in {@link ParameterBuiler} javadoc
+         * formatted at this level produces a text like below:
+         *
+         * {@preformat text
+         *   EPSG: Mercator (variant A)
+         *   ┌────────────────────────────────┬────────────────────┐
+         *   │ EPSG                           │ OGC                │
+         *   ├────────────────────────────────┼────────────────────┤
+         *   │ Latitude of natural origin     │ latitude_of_origin │
+         *   │ Longitude of natural origin    │ central_meridian   │
+         *   │ Scale factor at natural origin │ scale_factor       │
+         *   │ False easting                  │ FalseEasting       │
+         *   │ False northing                 │ FalseNorthing      │
+         *   └────────────────────────────────┴────────────────────┘
+         * }
+         * </div>
          *
          * <p><b>Tip:</b> The table formatted by default may be quite large. It is recommended to invoke
          * {@link ParameterFormat#setPreferredCodespaces(String[])} before to format in order to reduce the
@@ -164,6 +253,7 @@ public class ParameterFormat extends CompoundFormat<Object> {
     public ParameterFormat() {
         super(Locale.getDefault(Locale.Category.FORMAT), TimeZone.getDefault());
         displayLocale = Locale.getDefault(Locale.Category.DISPLAY);
+        columnSeparator = SEPARATOR;
     }
 
     /**
@@ -175,17 +265,17 @@ public class ParameterFormat extends CompoundFormat<Object> {
     public ParameterFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
         displayLocale = (locale != null) ? locale : Locale.ROOT;
+        columnSeparator = SEPARATOR;
     }
 
     /**
-     * Returns the base type of values parsed and formatted by this {@code Format} instance.
-     * The default implementation returns {@code Object.class} since it is the only common parent
-     * of classes formatted by this object.
+     * Returns the type of objects formatted by this class. This method has to return {@code Object.class}
+     * since it is the only common parent to all object types accepted by this formatter.
      *
-     * @return The common parent of object classes formatted by this {@code ParameterFormat}.
+     * @return {@code Object.class}
      */
     @Override
-    public Class<? extends Object> getValueType() {
+    public final Class<Object> getValueType() {
         return Object.class;
     }
 
@@ -207,7 +297,7 @@ public class ParameterFormat extends CompoundFormat<Object> {
 
     /**
      * Returns the amount of information to put in the table.
-     * The default value is {@link org.apache.sis.parameter.ParameterFormat.ContentLevel#BRIEF}.
+     * The default value is {@link ContentLevel#BRIEF}.
      *
      * @return The table content.
      */
@@ -239,15 +329,14 @@ public class ParameterFormat extends CompoundFormat<Object> {
     /**
      * Filters names and identifiers by their code spaces. If the given array is non-null, then the only names,
      * aliases and identifiers to be formatted are those having a {@link ReferenceIdentifier#getCodeSpace()},
-     * {@link GenericName#scope()} or {@link ScopedName#head()} value in the given list, unless no name or alias
+     *  {@link ScopedName#head()} or {@link GenericName#scope()} value in the given list, unless no name or alias
      * matches this criterion.
      *
      * <p>Additional effects:</p>
      * <ul>
-     *   <li>With {@link org.apache.sis.parameter.ParameterFormat.ContentLevel#BRIEF}, the given list determines
-     *       the preference order to choosing the name or identifier to format.</li>
-     *   <li>With {@link org.apache.sis.parameter.ParameterFormat.ContentLevel#NAME_SUMMARY}, the given list
-     *       sets the column order.</li>
+     *   <li>With {@link ContentLevel#BRIEF}, the given list determines the preference order for choosing the name
+     *       or identifier to format.</li>
+     *   <li>With {@link ContentLevel#NAME_SUMMARY}, the given list sets the column order.</li>
      * </ul>
      *
      * @param codespaces The preferred code spaces of names, aliases and identifiers to format, or {@code null}
@@ -262,6 +351,13 @@ public class ParameterFormat extends CompoundFormat<Object> {
     }
 
     /**
+     * Returns {@code true} if a name, alias or identifier in the given codespace should be formatted.
+     */
+    private boolean isPreferredCodespace(final String codespace) {
+        return (preferredCodespaces == null) || preferredCodespaces.contains(codespace);
+    }
+
+    /**
      * Returns the colors for an output on X3.64 compatible terminal, or {@code null} if none.
      * The default value is {@code null}.
      *
@@ -273,7 +369,6 @@ public class ParameterFormat extends CompoundFormat<Object> {
 
     /**
      * Sets the colors for an output on X3.64 compatible terminal.
-     * This is used for example in order to emphases the identifier in a list of alias.
      *
      * @param colors The colors for an output on X3.64 compatible terminal, or {@code null} if none.
      */
@@ -289,8 +384,7 @@ public class ParameterFormat extends CompoundFormat<Object> {
      *   <li>{@link ParameterValueGroup}</li>
      *   <li>{@link ParameterDescriptorGroup}</li>
      *   <li>{@link OperationMethod}</li>
-     *   <li><code>{@linkplain IdentifiedObject}[]</code> — accepted only for
-     *       {@link org.apache.sis.parameter.ParameterFormat.ContentLevel#NAME_SUMMARY}.</li>
+     *   <li><code>{@linkplain IdentifiedObject}[]</code> — accepted only for {@link ContentLevel#NAME_SUMMARY}.</li>
      * </ul>
      *
      * @throws IOException If an error occurred while writing to the given appendable.
@@ -344,39 +438,12 @@ public class ParameterFormat extends CompoundFormat<Object> {
     {
         final boolean isBrief       = (contentLevel == ContentLevel.BRIEF);
         final boolean hasColors     = (colors != null);
-        final String  lineSeparator = System.lineSeparator();
-        final Vocabulary resources  = Vocabulary.getResources(displayLocale);
-        new ParameterTableRow(group, displayLocale, isBrief).appendIdentifiers(out, hasColors, false, lineSeparator);
-        out.append(lineSeparator);
-        /*
-         * Formats the table header (i.e. the column names).
-         */
-        final char horizontalBorder = isBrief ? '─' : '═';
-        final TableAppender table = isBrief ? new TableAppender(out, " │ ") : new TableAppender(out);
-        table.setMultiLinesCells(true);
-        table.nextLine(horizontalBorder);
-        for (int i=0; ; i++) {
-            boolean end = false;
-            final short key;
-            switch (i) {
-                case 0: key = Vocabulary.Keys.Name; break;
-                case 1: key = Vocabulary.Keys.Type; break;
-                case 2: key = Vocabulary.Keys.ValueDomain; break;
-                case 3: key = (values == null) ? Vocabulary.Keys.DefaultValue : Vocabulary.Keys.Value; end = true; break;
-                default: throw new AssertionError(i);
-            }
-            if (hasColors) table.append(X364.BOLD.sequence());
-            table.append(resources.getString(key));
-            if (hasColors) table.append(X364.NORMAL.sequence());
-            if (end) break;
-            table.nextColumn();
-        }
-        table.nextLine();
+        final String  lineSeparator = this.lineSeparator;
         /*
          * Prepares the informations to be printed later as table rows. We scan all rows before to print them
          * in order to compute the width of codespaces. During this process, we split the objects to be printed
          * later in two collections: simple parameters are stored as (descriptor,value) pairs, while groups are
-         * stored in an other collection for deferred printing after the simple parameters.
+         * stored in an other collection for deferred formatting after the simple parameters.
          */
         int codespaceWidth = 0;
         final Collection<?> elements = (values != null) ? values.values() : group.descriptors();
@@ -420,15 +487,93 @@ public class ParameterFormat extends CompoundFormat<Object> {
             if (row == null) {
                 row = new ParameterTableRow(descriptor, displayLocale, isBrief);
                 descriptorValues.put(descriptor, row);
+                if (row.codespaceWidth > codespaceWidth) {
+                    codespaceWidth = row.codespaceWidth;
+                }
             }
-            row.values.add(value);
-            row.units .add(unit);
-            if (row.codespaceWidth > codespaceWidth) {
-                codespaceWidth = row.codespaceWidth;
+            row.addValue(value, unit);
+        }
+        /*
+         * Finished to collect the values. Now transform the values:
+         *
+         *   - Singleton value of array types (either primitive or not) are expanded to a list.
+         *   - Values are formatted.
+         *   - Value domains are formatted.
+         *   - Position of the character on which to do the alignment are remembered.
+         */
+        int unitWidth = 0;
+        int valueDomainAlignment = 0;
+        final StringBuffer buffer = new StringBuffer();
+        final FieldPosition fp = new FieldPosition(-1);
+        for (final Map.Entry<GeneralParameterDescriptor,ParameterTableRow> entry : descriptorValues.entrySet()) {
+            final GeneralParameterDescriptor descriptor = entry.getKey();
+            if (descriptor instanceof ParameterDescriptor<?>) {
+                final ParameterTableRow row = entry.getValue();
+                final Range<?> valueDomain = Parameters.getValueDomain((ParameterDescriptor<?>) descriptor);
+                if (valueDomain != null) {
+                    final int p = row.setValueDomain(valueDomain, getFormat(Range.class), buffer);
+                    if (p > valueDomainAlignment) {
+                        valueDomainAlignment = p;
+                    }
+                }
+                /*
+                 * Singleton array conversion. Because it may be an array of primitive types, we can not just
+                 * cast to Object[]. Then formats the units, with a space before the unit if the symbol is a
+                 * letter or digit (i.e. we do not put a space in front of ° symbol for instance).
+                 */
+                row.expandSingleton();
+                final int length = row.units.size();
+                for (int i=0; i<length; i++) {
+                    final Object unit = row.units.get(i);
+                    if (unit != null) {
+                        if (getFormat(Unit.class).format(unit, buffer, fp).length() != 0) {
+                            if (Character.isLetterOrDigit(buffer.codePointAt(0))) {
+                                buffer.insert(0, ' ');
+                            }
+                        }
+                        final String symbol = buffer.toString();
+                        row.units.set(i, symbol);
+                        buffer.setLength(0);
+                        final int p = symbol.length();
+                        if (p > unitWidth) {
+                            unitWidth = p;
+                        }
+                    }
+                }
             }
         }
         /*
-         * Now process to the formatting of (descriptor,value) pairs. Each descriptor alias
+         * Finished to prepare information. Now begin the actual writing.
+         * First, formats the table header (i.e. the column names).
+         */
+        final Vocabulary resources = Vocabulary.getResources(displayLocale);
+        new ParameterTableRow(group, displayLocale, isBrief).writeIdentifiers(out, hasColors, false, lineSeparator);
+        out.append(lineSeparator);
+        final char horizontalBorder = isBrief ? '─' : '═';
+        final TableAppender table = (isBrief || !columnSeparator.equals(SEPARATOR)) ?
+                new TableAppender(out, columnSeparator) : new TableAppender(out);
+        table.setMultiLinesCells(true);
+        table.nextLine(horizontalBorder);
+        for (int i=0; ; i++) {
+            boolean end = false;
+            final short key;
+            switch (i) {
+                case 0: key = Vocabulary.Keys.Name; break;
+                case 1: key = Vocabulary.Keys.Type; break;
+                case 2: key = Vocabulary.Keys.ValueDomain; break;
+                case 3: key = (values == null) ? Vocabulary.Keys.DefaultValue : Vocabulary.Keys.Value; end = true; break;
+                default: throw new AssertionError(i);
+            }
+            if (hasColors) table.append(X364.BOLD.sequence());
+            table.append(resources.getString(key));
+            if (hasColors) table.append(X364.NORMAL.sequence());
+            if (end) break;
+            table.append(beforeFill);
+            table.nextColumn(fillCharacter);
+        }
+        table.nextLine();
+        /*
+         * Now process to the formatting of (descriptor,value) pairs. Each descriptor's alias
          * will be formatted on its own line in a table row. If there is more than one value,
          * then each value will be formatted on its own line as well. Note that the values may
          * be null if there is none.
@@ -441,8 +586,9 @@ public class ParameterFormat extends CompoundFormat<Object> {
             horizontalLine = isBrief ? 0 : '─';
             final ParameterTableRow row = entry.getValue();
             row.codespaceWidth = codespaceWidth;
-            row.appendIdentifiers(table, false, hasColors, lineSeparator);
-            table.nextColumn();
+            row.writeIdentifiers(table, false, hasColors, lineSeparator);
+            table.append(beforeFill);
+            table.nextColumn(fillCharacter);
             final GeneralParameterDescriptor generalDescriptor = entry.getKey();
             if (generalDescriptor instanceof ParameterDescriptor<?>) {
                 /*
@@ -450,45 +596,48 @@ public class ParameterFormat extends CompoundFormat<Object> {
                  */
                 final ParameterDescriptor<?> descriptor = (ParameterDescriptor<?>) generalDescriptor;
                 final Class<?> valueClass = descriptor.getValueClass();
-                table.append(getFormat(Class.class).format(valueClass));
-                table.nextColumn();
+                table.append(getFormat(Class.class).format(valueClass, buffer, fp).toString());
+                table.append(beforeFill);
+                table.nextColumn(fillCharacter);
+                buffer.setLength(0);
                 /*
                  * Writes minimum and maximum values, together with the unit of measurement (if any).
                  */
-                final Range<?> valueDomain = Parameters.getValueDomain(descriptor);
+                final String valueDomain = row.valueDomain;
                 if (valueDomain != null) {
-                    table.append(getFormat(Range.class).format(valueDomain));
+                    table.append(CharSequences.spaces(valueDomainAlignment - row.valueDomainAlignment)).append(valueDomain);
                 }
-                table.nextColumn();
+                table.append(beforeFill);
+                table.nextColumn(fillCharacter);
                 /*
-                 * Wraps the value in an array. Because it may be an array of primitive type,
-                 * we can't cast to Object[]. Then, each array's element will be formatted on
-                 * its own line.
+                 * Writes the values, each on its own line, together with their unit of measurement.
                  */
-                row.expandSingleton();
+                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
                 final int length = row.values.size();
                 for (int i=0; i<length; i++) {
-                    final Object value = row.values.get(i);
+                    Object value = row.values.get(i);
                     if (value != null) {
                         if (i != 0) {
                             table.append(lineSeparator);
                         }
                         final Format format = getFormat(value.getClass());
-                        table.append(format != null ? format.format(value) : value.toString());
-                        final Unit<?> unit = row.units.get(i);
-                        if (unit != null) {
-                            final String symbol = getFormat(Unit.class).format(unit);
-                            if (!symbol.isEmpty()) {
-                                if (Character.isLetterOrDigit(symbol.codePointAt(0))) {
-                                    table.append(' ');
-                                }
-                                table.append(symbol);
-                            }
+                        if (format != null) {
+                            value = format.format(value, buffer, fp);
                         }
+                        table.append(value.toString());
+                        buffer.setLength(0);
+                        int pad = unitWidth;
+                        final String unit = (String) row.units.get(i);
+                        if (unit != null) {
+                            table.append(unit);
+                            pad -= unit.length();
+                        }
+                        table.append(CharSequences.spaces(pad));
                     }
                 }
             }
             table.nextLine();
+            table.setCellAlignment(TableAppender.ALIGN_LEFT);
         }
         table.nextLine(horizontalBorder);
         table.flush();
@@ -522,161 +671,128 @@ public class ParameterFormat extends CompoundFormat<Object> {
      * @throws IOException if an error occurred will writing to the given appendable.
      */
     private void formatSummary(final IdentifiedObject[] objects, final Appendable out) throws IOException {
+        final Vocabulary resources = Vocabulary.getResources(displayLocale);
         /*
          * Prepares all rows before we write them to the output stream, because not all
          * identified objects may have names with the same scopes in the same order. We
          * also need to iterate over all rows in order to know the number of columns.
          *
-         * The two first columns are treated especially.  The first one is the optional
-         * EPSG code. The second one is the main identifier (usually the EPSG name). We
-         * put SHOW_EPSG_CODE and null as special values for their column names,  to be
-         * replaced later by "EPSG" and "Identifier" in user locale. We can not put the
-         * localized strings in the map right now because they could conflict with the
-         * scope of some alias to be processed below.
+         * The first column is reserved for the identifier. We put null as a sentinal key for
+         * that column name, to be replaced later by "Identifier" in user locale. We can not
+         * put the localized strings in the map right now because they could conflict with
+         * the scope of some alias to be processed below.
          */
-        final Map<Object,Integer> header = new LinkedHashMap<>();
-        final List<String[]>        rows = new ArrayList<>();
-        final List<String>     epsgNames = new ArrayList<>();
-        final Set<String>     codespaces = this.preferredCodespaces;
-        final Vocabulary       resources = Vocabulary.getResources(displayLocale);
-        final int          showEpsgCodes = ((codespaces == null) || codespaces.contains(SHOW_EPSG_CODES)) ? 1 : 0;
-        if (showEpsgCodes != 0) {
-            header.put(SHOW_EPSG_CODES, 0);
+        boolean hasIdentifiers = false;
+        final List<String[]> rows = new ArrayList<>();
+        final Map<String,Integer> columnIndices = new LinkedHashMap<>();
+        columnIndices.put(null, 0); // See above comment for the meaning of "null" here.
+        if (preferredCodespaces != null) {
+            for (final String codespace : preferredCodespaces) {
+                columnIndices.put(codespace, columnIndices.size());
+            }
         }
-        header.put(null, showEpsgCodes); // See above comment for the meaning of "null" here.
-        for (final IdentifiedObject element : objects) {
+        for (final IdentifiedObject object : objects) {
+            String[] row = new String[columnIndices.size()]; // Will growth later if needed.
             /*
-             * Prepares a row: puts the name in the "identifier" column, which is the
-             * first or the second one depending if we display EPSG codes or not.
+             * Put the first identifier in the first column. If no identifier has a codespace in the list
+             * supplied by the user, then we will use the first identifier (any codespace) as a fallback.
              */
-            String epsgName = null;
-            String[] row = new String[header.size()];
-            row[showEpsgCodes] = element.getName().getCode();
-            int numUnscoped = 0;
-            final Collection<GenericName> aliases = element.getAlias();
-            if (aliases != null) {
-                /*
-                 * Adds alias (without scope) to the row. Each alias will be put in the column
-                 * appropriate for its scope. If a name has no scope, we will create one using
-                 * sequential number ("numUnscoped" is the count of such names without scope).
-                 */
-                for (final GenericName alias : aliases) {
-                    final GenericName scope = alias.scope().name();
-                    final String name = alias.tip().toInternationalString().toString(displayLocale);
-                    final Object columnName;
-                    if (scope != null) {
-                        columnName = scope.toInternationalString().toString(displayLocale);
-                    } else {
-                        columnName = ++numUnscoped;
+            final Set<ReferenceIdentifier> identifiers = object.getIdentifiers();
+            if (identifiers != null) { // Paranoiac check.
+                ReferenceIdentifier identifier = null;
+                for (final ReferenceIdentifier candidate : identifiers) {
+                    if (candidate != null) { // Paranoiac check.
+                        if (isPreferredCodespace(candidate.getCodeSpace())) {
+                            identifier = candidate;
+                            break; // Format now.
+                        }
+                        if (identifier == null) {
+                            identifier = candidate; // To be used as a fallback if we find nothing better.
+                        }
                     }
-                    if (columnName.equals("EPSG")) {
-                        epsgName = name;
-                    }
-                    if (codespaces != null && !codespaces.contains(scope.toString())) {
-                        /*
-                         * The user requested only for a few authorities and the current alias
-                         * is not a member of this subset. Continue the search to other alias.
-                         */
-                        continue;
-                    }
-                    /*
-                     * Now stores the alias name at the position we just determined above. If
-                     * more than one value are assigned to the same column, keep the first one.
-                     */
-                    row = putIfAbsent(row, getColumnIndex(header, columnName), name);
+                }
+                if (identifier != null) {
+                    row[0] = IdentifiedObjects.toString(identifier);
+                    hasIdentifiers = true;
                 }
             }
             /*
-             * After the aliases, search for the identifiers. The code in this block is similar
-             * to the one we just did for aliases. By doing this operation after the aliases we
-             * ensure that if both an identifier and a name is defined for the same column, the
-             * name is given precedence.
+             * If the name's codespace is in the list of codespaces asked by the user, add that name
+             * in the current row and clear the 'name' locale variable. Otherwise, keep the 'name'
+             * locale variable in case we found no alias to format.
              */
-            final Collection<ReferenceIdentifier> identifiers = element.getIdentifiers();
-            if (identifiers != null) {
-                for (final ReferenceIdentifier identifier : identifiers) {
-                    final String scope = identifier.getCodeSpace();
-                    final String name = identifier.getCode();
-                    final Object columnName = (scope != null) ? scope : ++numUnscoped;
-                    int columnIndex;
-                    if (showEpsgCodes != 0 && columnName.equals("EPSG")) {
-                        columnIndex = 0;
-                    } else {
-                        if (codespaces!=null && !codespaces.contains(scope)) {
-                            continue;
-                        }
-                        columnIndex = getColumnIndex(header, columnName);
-                    }
-                    row = putIfAbsent(row, columnIndex, name);
+            ReferenceIdentifier name = object.getName();
+            if (name != null) { // Paranoiac check.
+                final String codespace = name.getCodeSpace();
+                if (isPreferredCodespace(codespace)) {
+                    row = putIfAbsent(resources, row, columnIndices, codespace, name.getCode());
+                    name = null;
                 }
+            }
+            /*
+             * Put all aliases having a codespace in the list asked by the user.
+             */
+            final Collection<GenericName> aliases = object.getAlias();
+            if (aliases != null) { // Paranoiac check.
+                for (final GenericName alias : aliases) {
+                    if (alias != null) { // Paranoiac check.
+                        String codespace = NameToIdentifier.getCodeSpace(alias);
+                        if (codespace == null) {
+                            codespace = Citations.getIdentifier(NameToIdentifier.getAuthority(alias));
+                        }
+                        if (isPreferredCodespace(codespace)) {
+                            row = putIfAbsent(resources, row, columnIndices, codespace,
+                                    alias.tip().toInternationalString().toString(displayLocale));
+                            name = null;
+                        }
+                    }
+                }
+            }
+            /*
+             * If no name and no alias have a codespace in the list of codespaces asked by the user,
+             * force the addition of primary name regardless its codespace.
+             */
+            if (name != null) {
+                row = putIfAbsent(resources, row, columnIndices, name.getCodeSpace(), name.getCode());
             }
             rows.add(row);
-            epsgNames.add(epsgName);
         }
         /*
-         * Writes the table. The header will contains one column for each alias's scope
-         * (or authority) declared in 'titles', in the same order. The column for Geotk
-         * names will treated especially, because cit ontains ambiguous names.
+         * Writes the table. The header will contain one column for each codespace in the order declared
+         * by the user. If the user did not specified any codespace, or if we had to write codespace not
+         * on the user list, then those codespaces will be written in the order we found them.
          */
         final boolean hasColors = (colors != null);
-        final TableAppender table = new TableAppender(out, " │ ");
+        final TableAppender table = new TableAppender(out, columnSeparator);
         table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();
-        /*
-         * Writes all column headers.
-         */
-        int column = 0;
-        int geotoolkitColumn = -1;
-        for (final Object element : header.keySet()) {
-            String title;
-            if (element == null) {
-                title = resources.getString(Vocabulary.Keys.Identifier);
-            } else if (element == SHOW_EPSG_CODES) {
-                title = "EPSG";
-            } else if (element instanceof String) {
-                title = (String) element;
-                if (title.equalsIgnoreCase("geotk") ||
-                    title.equalsIgnoreCase("Geotoolkit.org") ||
-                    title.equalsIgnoreCase("Geotoolkit")) // Legacy
-                {
-                    geotoolkitColumn = column;
-                    title = resources.getString(Vocabulary.Keys.Description);
-                }
-            } else { // Should be a Number
-                title = resources.getString(Vocabulary.Keys.Aliases) + ' ' + element;
+        for (String codespace : columnIndices.keySet()) {
+            if (codespace == null) {
+                if (!hasIdentifiers) continue; // Skip empty column.
+                codespace = resources.getString(Vocabulary.Keys.Identifier);
             }
             if (hasColors) {
-                title = X364.BOLD.sequence() + title + X364.NORMAL.sequence();
+                codespace = X364.BOLD.sequence() + codespace + X364.NORMAL.sequence();
             }
-            table.append(title);
-            table.nextColumn();
-            column++;
+            table.append(codespace);
+            table.append(beforeFill);
+            table.nextColumn(fillCharacter);
         }
         table.appendHorizontalSeparator();
         /*
-         * Writes all rows.
+         * Writes row content.
          */
-        final int numRows    = rows.size();
-        final int numColumns = header.size();
-        for (int rowIndex=0; rowIndex<numRows; rowIndex++) {
-            final String[] aliases = rows.get(rowIndex);
-            for (column=0; column<numColumns; column++) {
-                if (column < aliases.length) {
-                    String alias = aliases[column];
-                    if (column == geotoolkitColumn) {
-                        if (alias == null) {
-                            alias = epsgNames.get(rowIndex);
-                        } else if (hasColors) {
-                            if (!alias.equals(aliases[showEpsgCodes])) {
-                                alias = X364.FAINT.sequence() + alias + X364.NORMAL.sequence();
-                            }
-                        }
-                    }
-                    if (alias != null) {
-                        table.append(alias);
+        final int numColumns = columnIndices.size();
+        for (final String[] row : rows) {
+            for (int i=hasIdentifiers ? 0 : 1; i<numColumns; i++) {
+                if (i < row.length) {
+                    final String name = row[i];
+                    if (name != null) {
+                        table.append(name);
                     }
                 }
-                table.nextColumn();
+                table.append(beforeFill);
+                table.nextColumn(fillCharacter);
             }
             table.nextLine();
         }
@@ -685,28 +801,34 @@ public class ParameterFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns the index of the column of the given name. If no such column
-     * exists, then a new column is appended at the right of the table.
+     * Stores a value in the given position of the given row, expanding the array if needed.
+     * This operation is performed only if no value already exists in the cell.
+     *
+     * @param  row           All columns in a single row.
+     * @param  columnIndices Indices of columns for each codespace.
+     * @param  codespace     The codespace of the name or alias to add.
+     * @param  name          The code of the name or alias to add.
+     * @return {@code row}, or a new array if it was necessary to expand the row.
      */
-    private static int getColumnIndex(final Map<Object,Integer> header, final Object columnName) {
-        Integer position = header.get(columnName);
-        if (position == null) {
-            position = header.size();
-            header.put(columnName, position);
+    private static String[] putIfAbsent(final Vocabulary resources, String[] row,
+            final Map<String,Integer> columnIndices, String codespace, final String name)
+    {
+        if (codespace == null) {
+            codespace = resources.getString(Vocabulary.Keys.Unnamed);
         }
-        return position;
-    }
-
-    /**
-     * Stores a value at the given position in the given row, expanding the array if needed.
-     * This operation is performed only if no value already exists at the given index.
-     */
-    private static String[] putIfAbsent(String[] row, final int columnIndex, final String name) {
-        if (columnIndex >= row.length) {
-            row = Arrays.copyOf(row, columnIndex+1);
+        final Integer columnIndex = columnIndices.get(codespace);
+        final int i;
+        if (columnIndex != null) {
+            i = columnIndex;
+        } else {
+            i = columnIndices.size();
+            columnIndices.put(codespace, i);
         }
-        if (row[columnIndex] == null) {
-            row[columnIndex] = name;
+        if (i >= row.length) {
+            row = Arrays.copyOf(row, i + 1);
+        }
+        if (row[i] == null) {
+            row[i] = name;
         }
         return row;
     }
