@@ -30,8 +30,8 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.opengis.test.Validators.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
@@ -201,8 +201,6 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         assertEquals("minimum",      Double.valueOf( 4), descriptor.getMinimumValue());
         assertEquals("maximum",      Double.valueOf(20), descriptor.getMaximumValue());
         validate(descriptor);
-        assertEquals("DefaultParameterDescriptor[\"Length measure\", mandatory, class=Double, " +
-                "valid=[4.0 … 20.0] m, default=12.0]", descriptor.toString());
     }
 
     /**
@@ -284,5 +282,16 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         } catch (IllegalArgumentException e) {
             assertEquals("Argument ‘valueDomain’ can not be an instance of ‘Range<Integer>’.", e.getMessage());
         }
+    }
+
+    /**
+     * Tests the WKT representation.
+     */
+    @Test
+    public void testWKT() {
+        final DefaultParameterDescriptor<Double> descriptor = create("Real number", 4, 8, 5, SI.METRE);
+        assertWktEquals("Parameter[“Integer param”, 5]", create("Integer param", 4, 8, 5));
+        assertWktEquals("Parameter[“Real number”, 5.0, LengthUnit[“metre”, 1]]", descriptor);
+        assertEquals("Parameter[\"Real number\", 5.0, Unit[\"metre\", 1]]", descriptor.toString());
     }
 }
