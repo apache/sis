@@ -34,6 +34,8 @@ import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.NameSpace;
+import org.apache.sis.io.wkt.Colors;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.internal.referencing.NameToIdentifier;
@@ -264,6 +266,20 @@ final class ParameterTableRow {
     }
 
     /**
+     * Writes the color for the given type if {@code colors} is non-null.
+     */
+    private static void writeColor(final Appendable out, final Colors colors, final ElementKind type)
+            throws IOException
+    {
+        if (colors != null) {
+            final String name = colors.getName(type);
+            if (name != null) {
+                out.append(X364.forColorName(name).sequence());
+            }
+        }
+    }
+
+    /**
      * Writes the given color if {@code colorEnabled} is {@code true}.
      */
     private static void writeColor(final Appendable out, final X364 color, final boolean colorEnabled)
@@ -275,21 +291,21 @@ final class ParameterTableRow {
     }
 
     /**
-     * Writes the identifiers. At most one of {@code colorsForTitle} and {@code colorsForRows}
-     * can be set to {@code true}.
+     * Writes the identifiers. At most one of {@code colors != null} and {@code colorsForRows}
+     * can be {@code true}.
      *
      * <p><b>This method can be invoked only once per {@code ParameterTableRow} instance</b>,
      * at its implementation destroys the internal list of identifiers.</p>
      *
      * @param  out             Where to write.
      * @param  writeCodespaces {@code true} for writing codespaces, or {@code false} for omitting them.
-     * @param  colorsForTitle  {@code true} if syntax coloring should be applied for table title.
+     * @param  colors          Non null if syntax coloring should be applied for table title.
      * @param  colorsForRows   {@code true} if syntax coloring should be applied for table rows.
      * @param  lineSeparator   The system-dependent line separator.
      * @throws IOException     If an exception occurred while writing.
      */
     final void writeIdentifiers(final Appendable out, final boolean writeCodespaces,
-            final boolean colorsForTitle, final boolean colorsForRows, final String lineSeparator) throws IOException
+            final Colors colors, final boolean colorsForRows, final String lineSeparator) throws IOException
     {
         boolean isNewLine = false;
         for (final Map.Entry<String,Set<Object>> entry : identifiers.entrySet()) {
@@ -305,7 +321,7 @@ final class ParameterTableRow {
                  * Write the codespace. More than one name may exist for the same codespace,
                  * in which case the code space will be repeated on a new line each time.
                  */
-                writeColor(out, FOREGROUND_GREEN, colorsForTitle);
+                writeColor(out, colors, ElementKind.NAME);
                 if (writeCodespaces) {
                     int pad = codespaceWidth + 1;
                     if (codespace != null) {
@@ -320,9 +336,9 @@ final class ParameterTableRow {
                  * Write the name or alias after the codespace. We remove what we wrote,
                  * because we may iterate over the 'identifiers' set more than once.
                  */
-                writeColor(out, BOLD, colorsForTitle);
+                writeColor(out, BOLD, colors != null);
                 out.append(toString(it.next()));
-                writeColor(out, RESET, colorsForTitle);
+                writeColor(out, RESET, colors != null);
                 it.remove();
                 /*
                  * Write all identifiers between parenthesis after the firt name only.
@@ -334,9 +350,9 @@ final class ParameterTableRow {
                     final Object id = it.next();
                     if (id instanceof ReferenceIdentifier) {
                         out.append(hasIdentifiers ? ", " : " (");
-                        writeColor(out, FOREGROUND_YELLOW, colorsForTitle);
+                        writeColor(out, colors, ElementKind.IDENTIFIER);
                         out.append(toString(id));
-                        writeColor(out, FOREGROUND_DEFAULT, colorsForTitle);
+                        writeColor(out, FOREGROUND_DEFAULT, colors != null);
                         hasIdentifiers = true;
                         it.remove();
                     } else {

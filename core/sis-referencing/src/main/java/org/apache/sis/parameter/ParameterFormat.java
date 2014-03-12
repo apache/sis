@@ -30,6 +30,8 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.io.Console;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.measure.unit.Unit;
 
 import org.opengis.parameter.*;
@@ -107,6 +109,11 @@ public class ParameterFormat extends TabularFormat<Object> {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1345231739800152411L;
+
+    /**
+     * An instance created when first needed and potentially shared.
+     */
+    private static final AtomicReference<ParameterFormat> INSTANCE = new AtomicReference<>();
 
     /**
      * The default column separator. User can change the separator
@@ -554,7 +561,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * First, formats the table header (i.e. the column names).
          */
         final Vocabulary resources = Vocabulary.getResources(displayLocale);
-        header.writeIdentifiers(out, true, hasColors, false, lineSeparator);
+        header.writeIdentifiers(out, true, colors, false, lineSeparator);
         out.append(lineSeparator);
         final char horizontalBorder = isBrief ? '─' : '═';
         final TableAppender table = (isBrief || !columnSeparator.equals(SEPARATOR)) ?
@@ -596,7 +603,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             horizontalLine = isBrief ? 0 : '─';
             final ParameterTableRow row = entry.getValue();
             row.codespaceWidth = codespaceWidth;
-            row.writeIdentifiers(table, writeCodespaces, false, hasColors, lineSeparator);
+            row.writeIdentifiers(table, writeCodespaces, null, hasColors, lineSeparator);
             table.append(beforeFill);
             table.nextColumn(fillCharacter);
             final GeneralParameterDescriptor generalDescriptor = entry.getKey();
@@ -841,6 +848,44 @@ public class ParameterFormat extends TabularFormat<Object> {
     }
 
     /**
+     * Returns a shared instance of {@code ParameterFormat} if possible, or a new one otherwise.
+     */
+    private static ParameterFormat getSharedInstance(final Colors colors) {
+        ParameterFormat f = INSTANCE.getAndSet(null);
+        if (f == null) {
+            f = new ParameterFormat();
+        }
+        f.setColors(colors);
+        return f;
+    }
+
+    /**
+     * Formats the given object using a shared instance of {@code ParameterFormat}.
+     * This is used for {@link DefaultParameterDescriptorGroup#toString()} implementation.
+     */
+    static String sharedFormat(final Object object) {
+        final ParameterFormat f = getSharedInstance(null);
+        final String s = f.format(object);
+        INSTANCE.set(f);
+        return s;
+    }
+
+    /**
+     * Writes the given object to the console using a shared instance of {@code ParameterFormat}.
+     */
+    static void print(final Object object) {
+        final Console console = System.console();
+        final Appendable out = (console != null) ? console.writer() : System.out;
+        final ParameterFormat f = getSharedInstance(Colors.NAMING);
+        try {
+            f.format(object, out);
+        } catch (IOException e) {
+            throw new AssertionError(e); // Should never happen, since we are writing to stdout.
+        }
+        INSTANCE.set(f);
+    }
+
+    /**
      * Not yet supported.
      *
      * @return Currently never return.
@@ -848,6 +893,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
-        throw new ParseException("Not supported yet.", 0);
+        throw new ParseException(Errors.getResources(displayLocale)
+                .getString(Errors.Keys.UnsupportedOperation_1, "parse"), 0);
     }
 }

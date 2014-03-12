@@ -129,23 +129,18 @@ public abstract class FormattableObject {
     }
 
     /**
-     * Prints a WKT representation of this object to the {@linkplain System#out standard output stream}.
+     * Prints a string representation of this object to the {@linkplain System#out standard output stream}.
      * If a {@linkplain Console console} is attached to the running JVM (i.e. if the application is run
      * from the command-line and the output is not redirected to a file) and if Apache SIS thinks that
      * the console supports the ANSI escape codes (a.k.a. X3.64), then a syntax coloring will be applied.
      *
      * <p>This is a convenience method for debugging purpose and for console applications.</p>
-     *
-     * @param convention The WKT convention to use.
-     *
-     * @see Colors#CONSOLE
      */
     @Debug
-    public void print(final Convention convention) {
-        ArgumentChecks.ensureNonNull("convention", convention);
+    public void print() {
         final Console console = System.console();
         final PrintWriter out = (console != null) ? console.writer() : null;
-        final String wkt = formatWKT(convention, (out != null) && X364.isAnsiSupported(), false);
+        final String wkt = formatWKT(Convention.WKT2_SIMPLIFIED, (out != null) && X364.isAnsiSupported(), false);
         if (out != null) {
             out.println(wkt);
         } else {
@@ -171,7 +166,7 @@ public abstract class FormattableObject {
         if (formatter == null) {
             formatter = new Formatter();
         }
-        formatter.configure(convention, null, colorize ? Colors.CONSOLE : null,
+        formatter.configure(convention, null, colorize ? Colors.DEFAULT : null,
                 convention.majorVersion() == 1, WKTFormat.DEFAULT_INDENTATION);
         final String wkt;
         try {

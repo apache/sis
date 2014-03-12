@@ -32,6 +32,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -372,5 +373,31 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + descriptors.hashCode();
+    }
+
+    /**
+     * Returns a string representation of this descriptor.
+     * The default implementation delegates to {@link ParameterFormat}.
+     *
+     * <p>This method is for information purpose only and may change in future SIS version.</p>
+     */
+    @Debug
+    @Override
+    public String toString() {
+        return ParameterFormat.sharedFormat(this);
+    }
+
+    /**
+     * Prints a string representation of this descriptor to the {@linkplain System#out standard output stream}.
+     * If a {@linkplain java.io.Console console} is attached to the running JVM (i.e. if the application is run
+     * from the command-line and the output is not redirected to a file) and if Apache SIS thinks that the console
+     * supports the ANSI escape codes (a.k.a. X3.64), then a syntax coloring will be applied.
+     *
+     * <p>This is a convenience method for debugging purpose and for console applications.</p>
+     */
+    @Debug
+    @Override
+    public void print() {
+        ParameterFormat.print(this);
     }
 }

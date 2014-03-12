@@ -42,6 +42,11 @@ public enum ElementKind {
     NAME,
 
     /**
+     * Object identifier, typically written almost last just before remarks.
+     */
+    IDENTIFIER,
+
+    /**
      * Floating point numbers (excluding integer types).
      */
     NUMBER,

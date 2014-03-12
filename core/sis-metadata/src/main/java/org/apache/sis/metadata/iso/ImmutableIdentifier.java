@@ -562,11 +562,11 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
                 final Convention convention = formatter.getConvention();
                 if (convention.majorVersion() == 1) {
                     keyword = "Authority";
-                    formatter.append(cs, null);
-                    formatter.append(code, null);
+                    formatter.append(cs, ElementKind.IDENTIFIER);
+                    formatter.append(code, ElementKind.IDENTIFIER);
                 } else {
                     keyword = "Id";
-                    formatter.append(cs, null);
+                    formatter.append(cs, ElementKind.IDENTIFIER);
                     appendCode(formatter, code);
                     if (version != null) {
                         appendCode(formatter, version);
@@ -607,7 +607,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
             try {
                 n = Long.parseLong(text);
             } catch (NumberFormatException e) {
-                formatter.append(text, null);
+                formatter.append(text, ElementKind.IDENTIFIER);
                 return;
             }
             formatter.append(n);
