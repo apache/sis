@@ -45,36 +45,42 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * A parameter value used by an operation method. Most CRS parameter values are numeric and can
- * be obtained by the {@link #intValue()} or {@link #doubleValue()} methods. But other types of
- * parameter values are possible and can be handled by the more generic {@link #getValue()} and
- * {@link #setValue(Object)} methods. The type and constraints on parameter values are given by
- * the {@linkplain #getDescriptor() descriptor}.
+ * A single parameter value used by an operation method. Most CRS parameter values are numeric and can be obtained
+ * by the {@link #intValue()} or {@link #doubleValue()} methods. But other types of parameter values are possible
+ * and can be handled by the more generic {@link #getValue()} and {@link #setValue(Object)} methods.
  *
- * <p>The following table summarizes the ISO 19111 attributes with the corresponding getter and
- * setter methods:</p>
+ * <p>All {@code xxxValue()} methods in this class are convenience methods converting the value from {@code Object}
+ * to some commonly used types. Those types are specified in ISO 19111 as an union of attributes, listed below with
+ * the corresponding getter and setter methods:</p>
  *
  * <table class="sis">
- *   <tr><th>ISO attribute</th>             <th>Java type</th>        <th>Getter method</th>                  <th>Setter method</th></tr>
- *   <tr><td></td>                          <td>{@link Object}</td>   <td>{@link #getValue()}</td>            <td>{@link #setValue(Object)}</td></tr>
- *   <tr><td>{@code stringValue}</td>       <td>{@link String}</td>   <td>{@link #stringValue()}</td>         <td>{@code  setValue(Object)}</td></tr>
- *   <tr><td>{@code value}</td>             <td>{@code double}</td>   <td>{@link #doubleValue()}</td>         <td>{@link #setValue(double)}</td></tr>
- *   <tr><td></td>                          <td>{@code double}</td>   <td>{@link #doubleValue(Unit)}</td>     <td>{@link #setValue(double, Unit)}</td></tr>
- *   <tr><td>{@code valueList}</td>         <td>{@code double[]}</td> <td>{@link #doubleValueList()}</td>     <td>{@code  setValue(Object)}</td></tr>
- *   <tr><td></td>                          <td>{@code double[]}</td> <td>{@link #doubleValueList(Unit)}</td> <td>{@link #setValue(double[], Unit)}</td></tr>
- *   <tr><td>{@code integerValue}</td>      <td>{@code int}</td>      <td>{@link #intValue()}</td>            <td>{@link #setValue(int)}</td></tr>
- *   <tr><td>{@code integerValueList}</td>  <td>{@code int[]}</td>    <td>{@link #intValueList()}</td>        <td>{@code  setValue(Object)}</td></tr>
- *   <tr><td>{@code booleanValue}</td>      <td>{@code boolean}</td>  <td>{@link #booleanValue()}</td>        <td>{@link #setValue(boolean)}</td></tr>
- *   <tr><td>{@code valueFile}</td>         <td>{@link URI}</td>      <td>{@link #valueFile()}</td>           <td>{@code  setValue(Object)}</td></tr>
- *   <tr><td>{@code valueFileCitation}</td> <td>{@link Citation}</td> <td>{@code  getValue()}</td>            <td>{@code  setValue(Object)}</td></tr>
+ *   <tr><th>ISO attribute</th>     <th>Java type</th>        <th>Getter method</th>                  <th>Setter method</th></tr>
+ *   <tr><td></td>                  <td>{@link Object}</td>   <td>{@link #getValue()}</td>            <td>{@link #setValue(Object)}</td></tr>
+ *   <tr><td>stringValue</td>       <td>{@link String}</td>   <td>{@link #stringValue()}</td>         <td>{@link #setValue(Object)}</td></tr>
+ *   <tr><td>value</td>             <td>{@code double}</td>   <td>{@link #doubleValue()}</td>         <td>{@link #setValue(double)}</td></tr>
+ *   <tr><td></td>                  <td>{@code double}</td>   <td>{@link #doubleValue(Unit)}</td>     <td>{@link #setValue(double, Unit)}</td></tr>
+ *   <tr><td>valueList</td>         <td>{@code double[]}</td> <td>{@link #doubleValueList()}</td>     <td>{@link #setValue(Object)}</td></tr>
+ *   <tr><td></td>                  <td>{@code double[]}</td> <td>{@link #doubleValueList(Unit)}</td> <td>{@link #setValue(double[], Unit)}</td></tr>
+ *   <tr><td>integerValue</td>      <td>{@code int}</td>      <td>{@link #intValue()}</td>            <td>{@link #setValue(int)}</td></tr>
+ *   <tr><td>integerValueList</td>  <td>{@code int[]}</td>    <td>{@link #intValueList()}</td>        <td>{@link #setValue(Object)}</td></tr>
+ *   <tr><td>booleanValue</td>      <td>{@code boolean}</td>  <td>{@link #booleanValue()}</td>        <td>{@link #setValue(boolean)}</td></tr>
+ *   <tr><td>valueFile</td>         <td>{@link URI}</td>      <td>{@link #valueFile()}</td>           <td>{@link #setValue(Object)}</td></tr>
+ *   <tr><td>valueFileCitation</td> <td>{@link Citation}</td> <td>{@link #getValue()}</td>            <td>{@link #setValue(Object)}</td></tr>
  * </table>
  *
- * Instances of {@code ParameterValue} are created by the {@link ParameterDescriptor#createValue()} method.
- * The parameter type can be fetch with the following idiom:
+ * The type and constraints on parameter values are given by the {@linkplain #getDescriptor() descriptor},
+ * which is specified at construction time. The parameter type can be fetch with the following idiom:
  *
  * {@preformat java
  *     Class<T> valueClass = parameter.getDescriptor().getValueClass();
  * }
+ *
+ * {@section Instantiation}
+ * A {@linkplain DefaultParameterDescriptor parameter descriptor} must be defined before parameter value can be created.
+ * Descriptors are usually pre-defined by map projection or process providers. Given a descriptor, a parameter value can
+ * be created by a call to the {@link #DefaultParameterValue(ParameterDescriptor)} constructor or by a call to the
+ * {@link ParameterDescriptor#createValue()} method. The later is recommended since it allows descriptors to return
+ * specialized implementations.
  *
  * {@section Implementation note for subclasses}
  * All read and write operations (except constructors, {@link #equals(Object)} and {@link #hashCode()})
@@ -97,7 +103,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @module
  *
  * @see DefaultParameterDescriptor
- * @see DefaultParameterGroup
+ * @see DefaultParameterValueGroup
  */
 public class DefaultParameterValue<T> extends FormattableObject implements ParameterValue<T>, Serializable, Cloneable {
     /**
@@ -609,7 +615,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public void setValue(final double[] values, final Unit<?> unit) throws InvalidParameterValueException {
-        setValue(value, unit);
+        setValue((Object) values, unit);
     }
 
     /**
@@ -630,9 +636,38 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
      */
+    @SuppressWarnings("unchecked")
     protected void setValue(final Object value, final Unit<?> unit) throws InvalidParameterValueException {
-        this.value = Verifier.ensureValidValue(descriptor, value, unit);
-        this.unit  = unit; // Assign only on success.
+        final T convertedValue = Verifier.ensureValidValue(descriptor, value, unit);
+        if (value != null) {
+            validate(convertedValue);
+            this.value = (T) value; // Type has been verified by Verifier.ensureValidValue(…).
+        } else {
+            this.value = descriptor.getDefaultValue();
+        }
+        this.unit = unit; // Assign only on success.
+    }
+
+    /**
+     * Invoked by {@link #setValue(Object, Unit)} after the basic verifications have been done and before
+     * the value is stored. Subclasses can override this method for performing additional verifications.
+     *
+     * {@section Unit of measurement}
+     * If the user specified a unit of measurement, then the value given to this method has been converted
+     * to the unit specified by the {@linkplain #getDescriptor() descriptor}, for easier comparisons against
+     * standardized values. This converted value may be different than the value to be stored in this
+     * {@code ParameterValue}, since the later value will be stored in the unit specified by the user.
+     *
+     * {@section Standard validations}
+     * The checks for {@linkplain DefaultParameterDescriptor#getValueClass() value class},
+     * for {@linkplain DefaultParameterDescriptor#getValueDomain() value domain} and for
+     * {@linkplain DefaultParameterDescriptor#getValidValues() valid values} are performed
+     * before this method is invoked. The default implementation of this method does nothing.
+     *
+     * @param  value The value converted to the unit of measurement specified by the descriptor.
+     * @throws InvalidParameterValueException If the given value is invalid for implementation-specific reasons.
+     */
+    protected void validate(final T value) throws InvalidParameterValueException {
     }
 
     /**

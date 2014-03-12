@@ -56,7 +56,7 @@ table.sis tr td.sep {
 
 /*
  * Table without vertical space between rows and a little bit of space between columns.
- * This table has no border. Headers are still centered and other cells left-aligned.
+ * This table has no border and text is left-aligned.
  */
 table.compact {
   margin-top:     6pt;
@@ -143,6 +143,17 @@ div.block pre {
 div.note {
   font-size: small;
   margin-left:  30pt;
+  margin-top:    9pt;
+  margin-bottom: 9pt;
+}
+
+/*
+ * Note, examples or warnings.
+ */
+div.warning {
+  color:   firebrick;
+  margin-left:  30pt;
+  margin-right: 30pt;
   margin-top:    9pt;
   margin-bottom: 9pt;
 }

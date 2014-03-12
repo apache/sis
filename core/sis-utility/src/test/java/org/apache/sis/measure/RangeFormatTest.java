@@ -24,6 +24,7 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.text.AttributedCharacterIterator;
+import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
@@ -40,7 +41,7 @@ import static java.lang.Double.NEGATIVE_INFINITY;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.06)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(MeasurementRangeTest.class)
@@ -180,6 +181,12 @@ public final strictfp class RangeFormatTest extends TestCase {
 
         // Measurement
         assertEquals("[-10 … 20] m", format(MeasurementRange.create(-10, true, 20, true, SI.METRE)));
+        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
+        assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
+        assertEquals("maxPos.beginIndex", 7, maxPos.getBeginIndex());
+        assertEquals("maxPos.endIndex",   9, maxPos.getEndIndex());
+
+        assertEquals("[-10 … 20]°", format(MeasurementRange.create(-10, true, 20, true, NonSI.DEGREE_ANGLE)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 7, maxPos.getBeginIndex());

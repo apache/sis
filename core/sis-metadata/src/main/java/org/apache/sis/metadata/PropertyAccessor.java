@@ -479,7 +479,7 @@ class PropertyAccessor {
                 if (!mandatory) {
                     return -1;
                 }
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NoSuchProperty_2, name, type));
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, type, name));
             }
         }
         return index;
