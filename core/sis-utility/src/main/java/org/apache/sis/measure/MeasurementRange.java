@@ -231,6 +231,8 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -343,6 +345,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * the value of the other range to the unit of measurement of this range before to perform
      * the operation.
      *
+     * @return {@inheritDoc}
      * @throws IllegalArgumentException is the given range is an instance of
      *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
@@ -357,6 +360,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * the value of the other range to the unit of measurement of this range before to perform
      * the operation.
      *
+     * @return {@inheritDoc}
      * @throws IllegalArgumentException is the given range is an instance of
      *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
@@ -371,6 +375,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * the value of the other range to the unit of measurement of this range before to perform
      * the operation.
      *
+     * @return {@inheritDoc}
      * @throws IllegalArgumentException is the given range is an instance of
      *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
@@ -385,6 +390,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * the value of the other range to the unit of measurement of this range before to perform
      * the operation.
      *
+     * @return {@inheritDoc}
      * @throws IllegalArgumentException is the given range is an instance of
      *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
@@ -399,6 +405,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * the value of the other range to the unit of measurement of this range before to perform
      * the operation.
      *
+     * @return {@inheritDoc}
      * @throws IllegalArgumentException is the given range is an instance of
      *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
@@ -409,15 +416,21 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * Compares this range with the specified object for equality.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     public boolean equals(final Object object) {
-        if (super.equals(object)) {
-            if (object instanceof MeasurementRange<?>) {
-                return Objects.equals(unit, ((MeasurementRange<?>) object).unit);
-            }
-            return true;
-        }
-        return false;
+        return super.equals(object) && Objects.equals(unit, ((MeasurementRange<?>) object).unit);
+    }
+
+    /**
+     * Returns a hash code value for this measurement range.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + Objects.hashCode(unit);
     }
 }

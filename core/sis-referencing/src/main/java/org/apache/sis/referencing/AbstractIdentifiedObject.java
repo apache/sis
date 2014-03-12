@@ -296,6 +296,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         // -------------------------------------
         Object value = properties.get(NAME_KEY);
         if (value == null || value instanceof String) {
+            if (value == null && properties.get(ReferenceIdentifier.CODE_KEY) == null) {
+                throw new IllegalArgumentException(Errors.getResources(properties)
+                        .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
+            }
             name = new NamedIdentifier(PropertiesConverter.convert(properties));
         } else if (value instanceof ReferenceIdentifier) {
             name = (ReferenceIdentifier) value;
@@ -362,7 +366,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Returns a SIS identified object implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -371,8 +375,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       {@link org.opengis.referencing.cs.CoordinateSystem},
      *       {@link org.opengis.referencing.cs.CoordinateSystemAxis},
      *       {@link org.opengis.referencing.datum.Datum},
-     *       {@link org.opengis.referencing.datum.Ellipsoid} or
+     *       {@link org.opengis.referencing.datum.Ellipsoid},
      *       {@link org.opengis.referencing.datum.PrimeMeridian},
+     *       {@link org.opengis.parameter.ParameterDescriptor} or
+     *       {@link org.opengis.parameter.ParameterDescriptorGroup},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
      *       Note that if the given object implements more than one of the above-cited interfaces,
      *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>

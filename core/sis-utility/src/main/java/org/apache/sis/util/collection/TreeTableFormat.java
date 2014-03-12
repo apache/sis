@@ -189,9 +189,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     }
 
     /**
-     * Returns the type of object formatted by this class, which is {@link TreeTable}.
+     * Returns the type of objects formatted by this class.
      *
-     * @return {@inheritDoc}
+     * @return {@code TreeTable.class}
      */
     @Override
     public final Class<TreeTable> getValueType() {
@@ -593,7 +593,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         private final Map<Object,Object> parentObjects;
 
         /**
-         * Creates a new instance which will write in the given appendable.
+         * Creates a new instance which will write to the given appendable.
          *
          * @param out           Where to format the tree.
          * @param column        The columns of the tree table to format.
@@ -731,7 +731,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *
      * @param  tree        The tree to format.
      * @param  toAppendTo  Where to format the tree.
-     * @throws IOException If an error occurred while writing in the given appender.
+     * @throws IOException If an error occurred while writing to the given appendable.
      *
      * @see TreeTables#toString(TreeTable)
      */
