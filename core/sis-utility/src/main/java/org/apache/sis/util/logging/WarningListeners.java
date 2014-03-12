@@ -257,7 +257,7 @@ public class WarningListeners<S> implements Localized {
                 }
             }
         }
-        throw new NoSuchElementException(Errors.format(Errors.Keys.NoSuchElement_1, listener));
+        throw new NoSuchElementException(Errors.format(Errors.Keys.ElementNotFound_1, listener));
     }
 
     /**

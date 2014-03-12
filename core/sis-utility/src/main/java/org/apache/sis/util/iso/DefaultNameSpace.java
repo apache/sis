@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.io.Serializable;
-import java.io.ObjectStreamException;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -64,8 +63,8 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     private static final long serialVersionUID = 8272640747799127007L;
 
     /**
-     * The default separator, which is {@value}. The separator is inserted between the
-     * namespace and any {@linkplain GenericName generic name} in that namespace.
+     * The default separator, which is {@code ':'}. The separator is inserted between
+     * the namespace and any {@linkplain GenericName generic name} in that namespace.
      */
     public static final char DEFAULT_SEPARATOR = ':';
 

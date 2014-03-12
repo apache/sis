@@ -121,12 +121,12 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     }
 
     /**
-     * Returns the kind of objects formatted by this class.
+     * Returns the type of objects formatted by this class.
      *
      * @return {@code Statistics.class}
      */
     @Override
-    public Class<Statistics> getValueType() {
+    public final Class<Statistics> getValueType() {
         return Statistics.class;
     }
 
@@ -229,7 +229,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *
      * @param  stats       The statistics to format.
      * @param  toAppendTo  Where to format the statistics.
-     * @throws IOException If an error occurred while writing in the given appender.
+     * @throws IOException If an error occurred while writing to the given appendable.
      */
     @Override
     public void format(Statistics stats, final Appendable toAppendTo) throws IOException {
@@ -248,7 +248,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *
      * @param  stats       The statistics to format.
      * @param  toAppendTo  Where to format the statistics.
-     * @throws IOException If an error occurred while writing in the given appender.
+     * @throws IOException If an error occurred while writing to the given appendable.
      */
     public void format(final Statistics[] stats, final Appendable toAppendTo) throws IOException {
         /*

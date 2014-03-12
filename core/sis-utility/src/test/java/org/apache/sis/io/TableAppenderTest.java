@@ -64,7 +64,7 @@ public final strictfp class TableAppenderTest extends AppenderTestCase {
         // r.e.d. = Equatorial diameter Measured relative to the Earth.
         // Source: "Planet" on wikipedia on July 25, 2008.
         assertSame(out, out.append("English\tFrench\tr.e.d." + lineSeparator));
-        table.writeHorizontalSeparator();
+        table.appendHorizontalSeparator();
         assertSame(out, out.append("Mercury\tMercure\t0.382" + lineSeparator));
         assertSame(out, out.append("Venus\tVénus\t0.949"     + lineSeparator));
         assertSame(out, out.append("Earth\tTerre"));
@@ -138,7 +138,7 @@ public final strictfp class TableAppenderTest extends AppenderTestCase {
      */
     private static void testToString(final TableAppender table, final String expected) {
         table.nextLine('═');
-        table.append("English\tFrench\tr.e.d.\n").writeHorizontalSeparator();
+        table.append("English\tFrench\tr.e.d.\n").appendHorizontalSeparator();
         table.append("Mercury\tMercure\t0.382\n")
              .append("Venus\tVénus\t0.949\n")
              .append("Earth\tTerre\t1.00\n")

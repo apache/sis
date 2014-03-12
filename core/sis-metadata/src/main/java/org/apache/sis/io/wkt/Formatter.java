@@ -1028,7 +1028,7 @@ public class Formatter implements Localized {
      * formatted without the trailing ".0".
      */
     private void appendExact(final double number) {
-        if (Locale.ROOT.equals(locale)) {
+        if (Locale.ROOT.equals(symbols.getLocale())) {
             appendSeparator();
             setColor(highlightError ? ElementKind.ERROR : ElementKind.NUMBER);
             final int i = (int) number;
@@ -1239,9 +1239,9 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Returns the unit to use instead than the given one, or the given unit if there is no replacement for it.
-     * This method searches for a unit specified by {@link #addContextualUnit(Unit)} which
-     * {@linkplain Unit#isCompatible(Unit) is compatible} with the given unit.
+     * Returns the unit to use instead than the given one, or {@code null} if there is no replacement
+     * for {@code unit}. This method searches for a unit specified by {@link #addContextualUnit(Unit)}
+     * which {@linkplain Unit#isCompatible(Unit) is compatible} with the given unit.
      *
      * @param  <Q>  The quantity of the unit.
      * @param  unit The unit to replace by the contextual unit, or {@code null}.
@@ -1256,7 +1256,7 @@ public class Formatter implements Localized {
                 return candidate;
             }
         }
-        return unit;
+        return null;
     }
 
     /**

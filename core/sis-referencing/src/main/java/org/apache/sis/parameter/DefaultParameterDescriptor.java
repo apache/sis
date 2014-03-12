@@ -19,35 +19,33 @@ package org.apache.sis.parameter;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import javax.measure.unit.Unit;
-
 import org.opengis.util.CodeList;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
-
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.Containers;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.measure.Range;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
-import static org.apache.sis.internal.util.CollectionsExt.unmodifiableOrCopy;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * The definition of a parameter used by an operation method.
+ * The definition of a single parameter used by an operation method.
  * For {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems}
  * most parameter values are numeric, but other types of parameter values are possible.
  *
@@ -59,9 +57,10 @@ import org.apache.sis.internal.jdk7.Objects;
  *       but other types are allowed as well.</li>
  *   <li>Whether this parameter is optional or mandatory. This is specified by the {@linkplain #getMinimumOccurs()
  *       minimum occurences} number, which can be 0 or 1 respectively.</li>
- *   <li>The {@linkplain #getDefaultValue() default value} and its {@linkplain #getUnit() unit of measurement}.</li>
  *   <li>The domain of values, as a {@linkplain #getMinimumValue() minimum value}, {@linkplain #getMaximumValue()
  *       maximum value} or an enumeration of {@linkplain #getValidValues() valid values}.</li>
+ *   <li>The {@linkplain #getDefaultValue() default value}.</li>
+ *   <li>The {@linkplain #getUnit() unit of measurement}.</li>
  * </ul>
  *
  * @param <T> The type of elements to be returned by {@link DefaultParameterValue#getValue()}.
@@ -79,90 +78,62 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -295668622297737705L;
-
-    /**
-     * Key for the <code>{@value}</code> property to be given to the constructor.
-     * This is used for setting the value to be returned by {@link #getMinimumValue()}.
-     */
-    public static final String MINIMUM_VALUE_KEY = "minimumValue";
-
-    /**
-     * Key for the <code>{@value}</code> property to be given to the constructor.
-     * This is used for setting the value to be returned by {@link #getMaximumValue()}.
-     */
-    public static final String MAXIMUM_VALUE_KEY = "maximumValue";
-
-    /**
-     * Key for the <code>{@value}</code> property to be given to the constructor.
-     * This is used for setting the value to be returned by {@link #getValidValues()}.
-     */
-    public static final String VALID_VALUES_KEY = "validValues";
+    private static final long serialVersionUID = 7433401733923393656L;
 
     /**
      * {@code true} if this parameter is mandatory, or {@code false} if it is optional.
+     *
+     * @see #getMinimumOccurs()
      */
     private final boolean required;
 
     /**
      * The class that describe the type of parameter values.
+     *
+     * @see #getValueClass()
      */
     private final Class<T> valueClass;
 
     /**
      * A set of valid values (usually from a {@linkplain CodeList code list})
      * or {@code null} if it doesn't apply. This set is immutable.
+     *
+     * @see #getValidValues()
      */
     private final Set<T> validValues;
 
     /**
+     * The minimum and maximum parameter value with their unit of measurement, or {@code null} if none.
+     * If this field is non-null, then <code>valueDomain.{@linkplain Range#getElementType() getElementType()}</code>
+     * shall be one of the following:
+     *
+     * <ul>
+     *   <li>If {@link #valueClass} is not an array, then the range element type shall be the same class.</li>
+     *   <li>If {@code valueClass} is an array, then the range element type shall be the wrapper of
+     *       <code>valueClass.{@linkplain Class#getComponentType() getComponentType()}</code>.</li>
+     * </ul>
+     *
+     * @see #getValueDomain()
+     */
+    private final Range<?> valueDomain;
+
+    /**
      * The default value for the parameter, or {@code null}.
+     *
+     * @see #getDefaultValue()
      */
     private final T defaultValue;
 
     /**
-     * The minimum parameter value, or {@code null}.
-     */
-    private final Comparable<T> minimumValue;
-
-    /**
-     * The maximum parameter value, or {@code null}.
-     */
-    private final Comparable<T> maximumValue;
-
-    /**
-     * The unit for default, minimum and maximum values, or {@code null}.
-     */
-    private final Unit<?> unit;
-
-    /**
-     * Constructs a descriptor from a set of properties. The properties given in argument follow the same rules
-     * than for the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
-     * Additionally, the following properties are understood by this constructor:
+     * Constructs a descriptor from the given properties. The properties map is given unchanged to the
+     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
+     * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value #MINIMUM_VALUE_KEY}</td>
-     *     <td>{@code Comparable<T>}</td>
-     *     <td>{@link #getMinimumValue()}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value #MAXIMUM_VALUE_KEY}</td>
-     *     <td>{@code Comparable<T>}</td>
-     *     <td>{@link #getMaximumValue()}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value #VALID_VALUES_KEY}</td>
-     *     <td>{@code Collection<T>} or {@code T[]}</td>
-     *     <td>{@link #getValidValues()}</td>
-     *   </tr>
-     *   <tr>
-     *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
@@ -186,96 +157,95 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
      *   </tr>
      * </table>
      *
-     * Generally speaking, information provided in the {@code properties} map are considered ignorable metadata
-     * (except the parameter name) while information provided as explicit arguments may have an impact on coordinate
-     * transformation results. See {@link #equals(Object, ComparisonMode)} for more information.
+     * The {@code valueDomain} argument combines the {@linkplain #getMinimumValue() minimum value},
+     * {@linkplain #getMaximumValue() maximum value}, {@linkplain #getUnit() unit of measurement}
+     * (if any) and information about whether the bounds are inclusive or exclusive.
+     * If this argument is non-null, then it shall comply to the following conditions:
+     *
+     * <ul>
+     *   <li>The range shall be non-{@linkplain Range#isEmpty() empty}.</li>
+     *   <li><code>valueDomain.{@linkplain Range#getElementType() getElementType()}</code> shall be equals
+     *       to one of the following:
+     *     <ul>
+     *       <li>to {@code valueClass} if the later is not an array,</li>
+     *       <li>or to <code>{@linkplain Numbers#primitiveToWrapper(Class)
+     *           primitiveToWrapper}(valueClass.{@linkplain Class#getComponentType() getComponentType()})</code>
+     *           if {@code valueClass} is an array.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * If both {@code valueDomain} and {@code validValues} are non-null, then all valid values shall be contained
+     * in the value domain.
      *
      * @param properties   The properties to be given to the identified object.
      * @param valueClass   The class that describes the type of the parameter value.
+     * @param valueDomain  The minimum value, maximum value and unit of measurement, or {@code null} if none.
+     * @param validValues  The list of valid values, or {@code null} if there is no restriction.
+     *                     This property is mostly for restricting values to a {@linkplain CodeList code list}
+     *                     or enumeration subset. It is not necessary to provide this property when all values
+     *                     from the code list or enumeration are valid.
      * @param defaultValue The default value for the parameter, or {@code null} if none.
-     * @param unit         The unit of measurement for the default, minimum and maximum values, or {@code null} if none.
      * @param required     {@code true} if this parameter is mandatory, or {@code false} if it is optional.
      */
     @SuppressWarnings("unchecked")
     public DefaultParameterDescriptor(final Map<String,?> properties,
                                       final Class<T>      valueClass,
+                                      final Range<?>      valueDomain,
+                                      final T[]           validValues,
                                       final T             defaultValue,
-                                      final Unit<?>       unit,
                                       final boolean       required)
     {
         super(properties);
-        final Comparable<T> minimumValue = Containers.property(properties, MINIMUM_VALUE_KEY, Comparable.class);
-        final Comparable<T> maximumValue = Containers.property(properties, MAXIMUM_VALUE_KEY, Comparable.class);
-        ensureNonNull("valueClass",      valueClass);
-        ensureCanCast("defaultValue",    valueClass, defaultValue);
-        ensureCanCast(MINIMUM_VALUE_KEY, valueClass, minimumValue);
-        ensureCanCast(MAXIMUM_VALUE_KEY, valueClass, maximumValue);
+        ensureNonNull("valueClass",   valueClass);
+        ensureCanCast("defaultValue", valueClass, defaultValue);
+        if (valueDomain != null) {
+            Class<?> componentType = valueClass.getComponentType();
+            if (componentType != null) {
+                componentType = Numbers.primitiveToWrapper(componentType);
+            } else {
+                componentType = valueClass;
+            }
+            final Class<?> elementType = valueDomain.getElementType();
+            if (elementType != componentType) {
+                throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                        Errors.Keys.IllegalArgumentClass_2, "valueDomain",
+                        "Range<" + Classes.getShortName(elementType) + '>'));
+            }
+            if (valueDomain.isEmpty()) {
+                throw new IllegalArgumentException(Errors.getResources(properties)
+                        .getString(Errors.Keys.IllegalRange_2, valueDomain.getMinValue(), valueDomain.getMaxValue()));
+            }
+        }
         this.required     = required;
         this.valueClass   = valueClass;
+        this.valueDomain  = valueDomain;
         this.defaultValue = Numerics.cached(defaultValue);
-        this.minimumValue = Numerics.cached(minimumValue);
-        this.maximumValue = Numerics.cached(maximumValue);
-        this.unit         = unit;
-        /*
-         * If the caller specified a unit of measurement, then
-         * verify that the values are of some numerical type.
-         */
-        if (unit != null) {
-            Class<?> componentType = valueClass;
-            for (Class<?> c; (c = componentType.getComponentType()) != null;) {
-                componentType = c;
-            }
-            componentType = Numbers.primitiveToWrapper(componentType);
-            if (!Number.class.isAssignableFrom(componentType)) {
-                throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                        Errors.Keys.IllegalUnitFor_2, super.getName().getCode(), unit));
-            }
-        }
-        /*
-         * If the caller specified minimum and maximum values, then
-         * verify that the minimum is not greater than the maximum.
-         */
-        if (minimumValue != null && maximumValue != null) {
-            if (minimumValue.compareTo(valueClass.cast(maximumValue)) > 0) {
-                throw new IllegalArgumentException(Errors.getResources(properties)
-                        .getString(Errors.Keys.IllegalRange_2, minimumValue, maximumValue));
-            }
-        }
         /*
          * If the caller specified a set of valid values, then copy the values in
          * a new set and verify their type and inclusion in the [min … max] range.
          */
-        final Object values = properties.get(VALID_VALUES_KEY);
-        if (values != null) {
-            final Object[] array;
-            if (values instanceof Object[]) {
-                array = (Object[]) values;
-            } else if (values instanceof Collection<?>) {
-                array = ((Collection<?>) values).toArray();
-            } else {
-                throw new IllegalArgumentException(Errors.getResources(properties)
-                        .getString(Errors.Keys.IllegalPropertyClass_2, VALID_VALUES_KEY, values.getClass()));
-            }
-            final Set<T> valids = new LinkedHashSet<T>(hashMapCapacity(array.length));
-            for (Object value : array) {
+        if (validValues != null) {
+            final Set<T> valids = CollectionsExt.createSetForType(valueClass, validValues.length);
+            for (T value : validValues) {
                 if (value != null) {
                     value = Numerics.cached(value);
-                    final Verifier error = Verifier.ensureValidValue(valueClass, null, minimumValue, maximumValue, value);
+                    final Verifier error = Verifier.ensureValidValue(valueClass, null, valueDomain, value);
                     if (error != null) {
                         throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), value));
                     }
+                    valids.add(value);
                 }
-                valids.add((T) value);
             }
-            validValues = unmodifiableOrCopy(valids);
+            this.validValues = CollectionsExt.unmodifiableOrCopy(valids);
         } else {
-            validValues = null;
+            this.validValues = null;
         }
         /*
          * Finally, verify the default value if any.
          */
         if (defaultValue != null) {
-            final Verifier error = Verifier.ensureValidValue(valueClass, validValues, minimumValue, maximumValue, defaultValue);
+            final Verifier error = Verifier.ensureValidValue(valueClass, this.validValues, valueDomain, defaultValue);
             if (error != null) {
                 throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), defaultValue));
             }
@@ -290,16 +260,33 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
      * @param descriptor The descriptor to shallow copy.
+     *
+     * @see #castOrCopy(ParameterDescriptor)
      */
-    public DefaultParameterDescriptor(final ParameterDescriptor<T> descriptor) {
+    @SuppressWarnings("unchecked")
+    protected DefaultParameterDescriptor(final ParameterDescriptor<T> descriptor) {
         super(descriptor);
         required     = descriptor.getMinimumOccurs() != 0;
         valueClass   = descriptor.getValueClass();
         validValues  = descriptor.getValidValues();
         defaultValue = descriptor.getDefaultValue();
-        minimumValue = descriptor.getMinimumValue();
-        maximumValue = descriptor.getMaximumValue();
-        unit         = descriptor.getUnit();
+        valueDomain  = Parameters.getValueDomain(descriptor);
+    }
+
+    /**
+     * Returns a SIS parameter implementation with the same values than the given arbitrary implementation.
+     * If the given object is {@code null}, then this method returns {@code null}.
+     * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
+     * Otherwise a new SIS implementation is created and initialized to the values of the given object.
+     *
+     * @param  <T> The type of values.
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static <T> DefaultParameterDescriptor<T> castOrCopy(final ParameterDescriptor<T> object) {
+        return (object == null) || (object instanceof DefaultParameterDescriptor<?>)
+                ? (DefaultParameterDescriptor<T>) object : new DefaultParameterDescriptor<T>(object);
     }
 
     /**
@@ -320,7 +307,7 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     }
 
     /**
-     * The minimum number of times that values for this parameter group or parameter are required.
+     * The minimum number of times that values for this parameter are required.
      * A value of 0 means an optional parameter and a value of 1 means a mandatory parameter.
      *
      * @see #getMaximumOccurs()
@@ -331,7 +318,7 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     }
 
     /**
-     * The maximum number of times that values for this parameter group or parameter can be included.
+     * The maximum number of times that values for this parameter can be included.
      * For a {@code ParameterDescriptor}, the value is always 1.
      *
      * @return The maximum occurrence.
@@ -361,21 +348,81 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
      * @return The parameter value class.
      */
     @Override
-    public Class<T> getValueClass() {
+    public final Class<T> getValueClass() {
         return valueClass;
     }
 
     /**
      * If this parameter allows only a finite set of values, returns that set.
-     * The set of valid values is usually a {@linkplain CodeList code list} or enumerations.
+     * The set of valid values is usually a {@linkplain CodeList code list} or enumeration.
      * This method returns {@code null} if this parameter does not limit values to a finite set.
      *
      * @return A finite set of valid values (usually from a {@linkplain CodeList code list}),
-     *         or {@code null} if it does not apply.
+     *         or {@code null} if it does not apply or if there is no restriction.
      */
     @Override
     public Set<T> getValidValues() {
         return validValues;
+    }
+
+    /**
+     * Returns the domain of values with their unit of measurement (if any), or {@code null} if none.
+     * The {@code Range} object combines the {@linkplain #getValueClass() value class},
+     * {@linkplain #getMinimumValue() minimum value}, {@linkplain #getMaximumValue() maximum value}
+     * and whether these values are inclusive or inclusive. If the range is an instance of
+     * {@link MeasurementRange}, then it contains also the {@linkplain #getUnit() unit of measurement}.
+     *
+     * <div class="note"><b>API note:</b> If this method returns a non-null value, then its type is either exactly
+     * {@code Range<T>}, or {@code Range<E>} where {@code <E>} is the {@linkplain Class#getComponentType() component
+     * type} of {@code <T>} (using wrapper classes for primitive types).</div>
+     *
+     * @return The domain of values, or {@code null}.
+     *
+     * @see Parameters#getValueDomain(ParameterDescriptor)
+     */
+    /* Implementation note: this method is final because the constructor performs various checks on range validity,
+     * and we can not express those rules in the method signature. The 'Verifier.ensureValidValue(…)' method needs
+     * some guarantees about range validity, so we can not let users override this method with a range that may
+     * break them.
+     */
+    public final Range<?> getValueDomain() {
+        return valueDomain;
+    }
+
+    /**
+     * Returns the minimum parameter value. If there is no minimum value, or if minimum
+     * value is inappropriate for the {@linkplain #getValueClass() value class}, then
+     * this method returns {@code null}.
+     *
+     * <p>This is a convenience method for
+     * <code>{@linkplain #getValueDomain()}.{@linkplain Range#getMinValue() getMinValue()}</code>.
+     * Note that this method said nothing about whether the value is {@linkplain Range#isMinIncluded() inclusive}.</p>
+     *
+     * @return The minimum parameter value (often an instance of {@link Double}), or {@code null} if unbounded.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Comparable<T> getMinimumValue() {
+        return (valueDomain != null && valueDomain.getElementType() == valueClass)
+               ? (Comparable<T>) valueDomain.getMinValue() : null;
+    }
+
+    /**
+     * Returns the maximum parameter value. If there is no maximum value, or if maximum
+     * value is inappropriate for the {@linkplain #getValueClass() value type}, then
+     * this method returns {@code null}.
+     *
+     * <p>This is a convenience method for
+     * <code>{@linkplain #getValueDomain()}.{@linkplain Range#getMaxValue() getMaxValue()}</code>.
+     * Note that this method said nothing about whether the value is {@linkplain Range#isMaxIncluded() inclusive}.</p>
+     *
+     * @return The minimum parameter value (often an instance of {@link Double}), or {@code null} if unbounded.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Comparable<T> getMaximumValue() {
+        return (valueDomain != null && valueDomain.getElementType() == valueClass)
+               ? (Comparable<T>) valueDomain.getMaxValue() : null;
     }
 
     /**
@@ -391,41 +438,20 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     }
 
     /**
-     * Returns the minimum parameter value. If there is no minimum value, or if minimum
-     * value is inappropriate for the {@linkplain #getValueClass() value class}, then
-     * this method returns {@code null}.
-     *
-     * @return The minimum parameter value (often an instance of {@link Double}), or {@code null}.
-     */
-    @Override
-    public Comparable<T> getMinimumValue() {
-        return minimumValue;
-    }
-
-    /**
-     * Returns the maximum parameter value. If there is no maximum value, or if maximum
-     * value is inappropriate for the {@linkplain #getValueClass() value type}, then
-     * this method returns {@code null}.
-     *
-     * @return The minimum parameter value (often an instance of {@link Double}), or {@code null}.
-     */
-    @Override
-    public Comparable<T> getMaximumValue() {
-        return maximumValue;
-    }
-
-    /**
      * Returns the unit of measurement for the
-     * {@linkplain #getDefaultValue() default},
-     * {@linkplain #getMinimumValue() minimum} and
-     * {@linkplain #getMaximumValue() maximum} values.
+     * {@linkplain #getMinimumValue() minimum},
+     * {@linkplain #getMaximumValue() maximum} and
+     * {@linkplain #getDefaultValue() default} values.
      * This attribute apply only if the values is of numeric type (usually an instance of {@link Double}).
+     *
+     * <p>This is a convenience method for
+     * <code>{@linkplain #getValueDomain()}.{@linkplain MeasurementRange#unit() unit()}</code>.</p>
      *
      * @return The unit for numeric value, or {@code null} if it doesn't apply to the value type.
      */
     @Override
     public Unit<?> getUnit() {
-        return unit;
+        return (valueDomain instanceof MeasurementRange<?>) ? ((MeasurementRange<?>) valueDomain).unit() : null;
     }
 
     /**
@@ -473,20 +499,18 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
                            getMaximumOccurs() == that.getMaximumOccurs() &&
                            getValueClass()    == that.getValueClass()    &&
                            Objects.    equals(getValidValues(),  that.getValidValues())  &&
-                           Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
                            Objects.    equals(getMinimumValue(), that.getMinimumValue()) &&
                            Objects.    equals(getMaximumValue(), that.getMaximumValue()) &&
+                           Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
                            Objects.    equals(getUnit(),         that.getUnit());
                 }
                 case STRICT: {
                     final DefaultParameterDescriptor<?> that = (DefaultParameterDescriptor<?>) object;
-                    return                    this.required   == that.required      &&
-                                              this.valueClass == that.valueClass    &&
-                           Objects.    equals(this.validValues,  that.validValues)  &&
-                           Objects.deepEquals(this.defaultValue, that.defaultValue) &&
-                           Objects.    equals(this.minimumValue, that.minimumValue) &&
-                           Objects.    equals(this.maximumValue, that.maximumValue) &&
-                           Objects.    equals(this.unit,         that.unit);
+                    return                    this.required   == that.required     &&
+                                              this.valueClass == that.valueClass   &&
+                           Objects.    equals(this.validValues,  that.validValues) &&
+                           Objects.    equals(this.valueDomain,  that.valueDomain) &&
+                           Objects.deepEquals(this.defaultValue, that.defaultValue);
                 }
             }
         }
@@ -494,39 +518,37 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     }
 
     /**
-     * {@inheritDoc}
+     * Invoked by {@link #hashCode()} for computing the hash code when first needed.
      *
      * @return {@inheritDoc}
      */
     @Override
     protected long computeHashCode() {
-        return Arrays.deepHashCode(new Object[] {required, valueClass, defaultValue, minimumValue, maximumValue, unit})
+        return Arrays.deepHashCode(new Object[] {required, valueClass, valueDomain, defaultValue})
                 + super.computeHashCode();
     }
 
     /**
-     * Returns a string representation of this descriptor. The string returned by this
-     * method is for information purpose only and may change in future SIS version.
+     * Formats this parameter as a pseudo-<cite>Well Known Text</cite> element. The WKT specification
+     * does not define any representation of parameter descriptors. Apache SIS fallback on the
+     * {@linkplain DefaultParameterValue#formatTo(Formatter) same representation than parameter value},
+     * with the descriptor {@linkplain #getDefaultValue() default value} in place of the parameter value.
+     * The text formatted by this method is {@linkplain Formatter#setInvalidWKT flagged as invalid WKT}.
+     *
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return {@code "Parameter"}.
      */
-    @Debug
     @Override
-    public String toString() {
-        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this))
-                .append("[\"").append(getName().getCode()).append("\", ")
-                .append(getMinimumOccurs() == 0 ? "optional" : "mandatory");
-        buffer.append(", class=").append(Classes.getShortName(valueClass));
-        if (minimumValue != null || maximumValue != null) {
-            buffer.append(", valid=[").append(minimumValue != null ? minimumValue : "-∞")
-                  .append(" … ") .append(maximumValue != null ? maximumValue :  "∞").append(']');
-        } else if (validValues != null) {
-            buffer.append(", valid=").append(validValues);
-        }
-        if (defaultValue != null) {
-            buffer.append(", default=").append(defaultValue);
-        }
+    protected String formatTo(final Formatter formatter) {
+        WKTUtilities.appendName(this, formatter, ElementKind.PARAMETER);
+        formatter.setInvalidWKT(this, null);
+        formatter.appendAny(defaultValue);
+        final Unit<?> unit = getUnit();
         if (unit != null) {
-            buffer.append(", unit=").append(unit);
+            if (!formatter.getConvention().isSimplified() || !unit.equals(formatter.toContextualUnit(unit))) {
+                formatter.append(unit);
+            }
         }
-        return buffer.append(']').toString();
+        return "Parameter";
     }
 }
