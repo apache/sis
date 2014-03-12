@@ -23,15 +23,17 @@ import javax.measure.unit.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 
@@ -258,6 +260,8 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
      * @param descriptor The descriptor to shallow copy.
+     *
+     * @see #castOrCopy(ParameterDescriptor)
      */
     @SuppressWarnings("unchecked")
     protected DefaultParameterDescriptor(final ParameterDescriptor<T> descriptor) {
@@ -267,6 +271,22 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
         validValues  = descriptor.getValidValues();
         defaultValue = descriptor.getDefaultValue();
         valueDomain  = Parameters.getValueDomain(descriptor);
+    }
+
+    /**
+     * Returns a SIS parameter implementation with the same values than the given arbitrary implementation.
+     * If the given object is {@code null}, then this method returns {@code null}.
+     * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
+     * Otherwise a new SIS implementation is created and initialized to the values of the given object.
+     *
+     * @param  <T> The type of values.
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static <T> DefaultParameterDescriptor<T> castOrCopy(final ParameterDescriptor<T> object) {
+        return (object == null) || (object instanceof DefaultParameterDescriptor<?>)
+                ? (DefaultParameterDescriptor<T>) object : new DefaultParameterDescriptor<>(object);
     }
 
     /**
@@ -509,24 +529,26 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     }
 
     /**
-     * Returns a string representation of this descriptor. The string returned by this
-     * method is for information purpose only and may change in future SIS version.
+     * Formats this parameter as a pseudo-<cite>Well Known Text</cite> element. The WKT specification
+     * does not define any representation of parameter descriptors. Apache SIS fallback on the
+     * {@linkplain DefaultParameterValue#formatTo(Formatter) same representation than parameter value},
+     * with the descriptor {@linkplain #getDefaultValue() default value} in place of the parameter value.
+     * The text formatted by this method is {@linkplain Formatter#setInvalidWKT flagged as invalid WKT}.
+     *
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return {@code "Parameter"}.
      */
-    @Debug
     @Override
-    public String toString() {
-        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this))
-                .append("[\"").append(getName().getCode()).append("\", ")
-                .append(getMinimumOccurs() == 0 ? "optional" : "mandatory");
-        buffer.append(", class=").append(Classes.getShortName(valueClass));
-        if (valueDomain != null) {
-            buffer.append(", valid=").append(valueDomain);
-        } else if (validValues != null) {
-            buffer.append(", valid=").append(validValues);
+    protected String formatTo(final Formatter formatter) {
+        WKTUtilities.appendName(this, formatter, ElementKind.PARAMETER);
+        formatter.setInvalidWKT(this, null);
+        formatter.appendAny(defaultValue);
+        final Unit<?> unit = getUnit();
+        if (unit != null) {
+            if (!formatter.getConvention().isSimplified() || !unit.equals(formatter.toContextualUnit(unit))) {
+                formatter.append(unit);
+            }
         }
-        if (defaultValue != null) {
-            buffer.append(", default=").append(defaultValue);
-        }
-        return buffer.append(']').toString();
+        return "Parameter";
     }
 }

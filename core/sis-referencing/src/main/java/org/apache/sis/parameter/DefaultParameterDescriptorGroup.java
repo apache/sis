@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.Collections;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -29,6 +30,9 @@ import org.opengis.parameter.InvalidParameterNameException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -185,6 +189,8 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
      * @param descriptor The descriptor to shallow copy.
+     *
+     * @see #castOrCopy(ParameterDescriptorGroup)
      */
     protected DefaultParameterDescriptorGroup(final ParameterDescriptorGroup descriptor) {
         super(descriptor);
@@ -238,6 +244,21 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
             }
             return s.contains(object);
         }
+    }
+
+    /**
+     * Returns a SIS group implementation with the same values than the given arbitrary implementation.
+     * If the given object is {@code null}, then this method returns {@code null}.
+     * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
+     * Otherwise a new SIS implementation is created and initialized to the values of the given object.
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static DefaultParameterDescriptorGroup castOrCopy(final ParameterDescriptorGroup object) {
+        return (object == null) || (object instanceof DefaultParameterDescriptorGroup)
+                ? (DefaultParameterDescriptorGroup) object : new DefaultParameterDescriptorGroup(object);
     }
 
     /**
@@ -399,5 +420,34 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
     @Override
     public void print() {
         ParameterFormat.print(this);
+    }
+
+    /**
+     * Formats this group as a pseudo-<cite>Well Known Text</cite> element. The WKT specification
+     * does not define any representation of parameter descriptors. Apache SIS fallback on a list
+     * of {@linkplain DefaultParameterDescriptor#formatTo(Formatter) single descriptors}.
+     * The text formatted by this method is {@linkplain Formatter#setInvalidWKT flagged as invalid WKT}.
+     *
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return {@code "ParameterGroup"}.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        WKTUtilities.appendName(this, formatter, null);
+        formatter.setInvalidWKT(this, null);
+        for (GeneralParameterDescriptor parameter : descriptors) {
+            if (!(parameter instanceof FormattableObject)) {
+                if (parameter instanceof ParameterDescriptor<?>) {
+                    parameter = new DefaultParameterDescriptor<>((ParameterDescriptor<?>) parameter);
+                } else if (parameter instanceof ParameterDescriptorGroup) {
+                    parameter = new DefaultParameterDescriptorGroup((ParameterDescriptorGroup) parameter);
+                } else {
+                    continue;
+                }
+            }
+            formatter.newLine();
+            formatter.append((FormattableObject) parameter);
+        }
+        return "ParameterGroup";
     }
 }
