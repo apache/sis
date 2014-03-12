@@ -33,7 +33,6 @@ import javax.measure.unit.Unit;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.opengis.util.InternationalString;
 import org.opengis.util.NameSpace;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
@@ -113,36 +112,65 @@ final class ParameterTableRow {
      * @param object The object for which to get the (<var>codespace(s)</var>, <var>name(s)</var>).
      * @param locale The locale for formatting the names.
      */
-    ParameterTableRow(final IdentifiedObject object, final Locale locale, final boolean brief) {
+    ParameterTableRow(final IdentifiedObject object, final Locale locale,
+            final Set<String> preferredCodespaces, final boolean isBrief)
+    {
         values = new ArrayList<>(2); // In the vast majority of cases, we will have only one value.
         units  = new ArrayList<>(2);
-        /*
-         * Creates a collection which will contain the identifier and all aliases
-         * found for the given IdentifiedObject. We begin with the primary name.
-         */
         identifiers = new LinkedHashMap<>();
-        final ReferenceIdentifier identifier = object.getName();
-        addIdentifier(identifier.getCodeSpace(), identifier.getCode()); // Value needs to be a String here.
-        if (!brief) {
+        ReferenceIdentifier name = object.getName();
+        if (name != null) { // Paranoiac check.
+            final String codespace = name.getCodeSpace();
+            if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
+                addIdentifier(codespace, name.getCode()); // Value needs to be a String here.
+                name = null;
+            }
+        }
+        /*
+         * For detailed content, add aliases.
+         * For brief content, add the first alias if we have not been able to add the name.
+         */
+        if (!isBrief || identifiers.isEmpty()) {
             final Collection<GenericName> aliases = object.getAlias();
             if (aliases != null) { // Paranoiac check.
                 for (GenericName alias : aliases) {
-                    String codespace = NameToIdentifier.getCodeSpace(alias);
+                    String codespace = NameToIdentifier.getCodeSpace(alias, locale);
                     if (codespace != null) {
                         alias = alias.tip();
                     } else {
                         final NameSpace scope = alias.scope();
                         if (scope != null && !scope.isGlobal()) {
-                            codespace = toString(scope.name().tip(), locale);
+                            codespace = NameToIdentifier.toString(scope.name().tip(), locale);
                         }
                     }
-                    addIdentifier(codespace, toString(alias, locale));
+                    if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
+                        addIdentifier(codespace, NameToIdentifier.toString(alias, locale));
+                        name = null;
+                        if (isBrief) {
+                            break;
+                        }
+                    }
                 }
             }
+        }
+        /*
+         * If we found no name and no alias in the codespaces requested by the user,
+         * unconditionally add the name regardless its namespace.
+         */
+        if (name != null) {
+            addIdentifier(name.getCodeSpace(), name.getCode()); // Value needs to be a String here.
+        }
+        /*
+         * Add identifiers (detailed mode only).
+         */
+        if (!isBrief) {
             final Collection<? extends ReferenceIdentifier> ids = object.getIdentifiers();
             if (ids != null) { // Paranoiac check.
                 for (final ReferenceIdentifier id : ids) {
-                    addIdentifier(id.getCodeSpace(), id); // No .getCode() here.
+                    final String codespace = id.getCodeSpace();
+                    if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
+                        addIdentifier(codespace, id); // No .getCode() here.
+                    }
                 }
             }
         }
@@ -165,6 +193,21 @@ final class ParameterTableRow {
             identifiers.put(codespace, ids);
         }
         ids.add(identifier);
+    }
+
+    /**
+     * If this row has exactly one codespace, returns that codespace.
+     * Otherwise returns {@code null}.
+     */
+    final String getCodeSpace() {
+        final Iterator<Map.Entry<String,Set<Object>>> it = identifiers.entrySet().iterator();
+        if (it.hasNext()) {
+            final Map.Entry<String,Set<Object>> entry = it.next();
+            if (!it.hasNext()) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     /**
@@ -239,13 +282,14 @@ final class ParameterTableRow {
      * at its implementation destroys the internal list of identifiers.</p>
      *
      * @param  out             Where to write.
+     * @param  writeCodespaces {@code true} for writing codespaces, or {@code false} for omitting them.
      * @param  colorsForTitle  {@code true} if syntax coloring should be applied for table title.
      * @param  colorsForRows   {@code true} if syntax coloring should be applied for table rows.
      * @param  lineSeparator   The system-dependent line separator.
      * @throws IOException     If an exception occurred while writing.
      */
-    final void writeIdentifiers(final Appendable out, final boolean colorsForTitle,
-            final boolean colorsForRows, final String lineSeparator) throws IOException
+    final void writeIdentifiers(final Appendable out, final boolean writeCodespaces,
+            final boolean colorsForTitle, final boolean colorsForRows, final String lineSeparator) throws IOException
     {
         boolean isNewLine = false;
         for (final Map.Entry<String,Set<Object>> entry : identifiers.entrySet()) {
@@ -262,18 +306,20 @@ final class ParameterTableRow {
                  * in which case the code space will be repeated on a new line each time.
                  */
                 writeColor(out, FOREGROUND_GREEN, colorsForTitle);
-                int pad = codespaceWidth + 1;
-                if (codespace != null) {
-                    writeColor(out, FAINT, colorsForRows);
-                    out.append(codespace).append(':');
-                    writeColor(out, NORMAL, colorsForRows);
-                    pad -= codespace.length();
+                if (writeCodespaces) {
+                    int pad = codespaceWidth + 1;
+                    if (codespace != null) {
+                        writeColor(out, FAINT, colorsForRows);
+                        out.append(codespace).append(':');
+                        writeColor(out, NORMAL, colorsForRows);
+                        pad -= codespace.length();
+                    }
+                    out.append(spaces(pad));
                 }
                 /*
                  * Write the name or alias after the codespace. We remove what we wrote,
                  * because we may iterate over the 'identifiers' set more than once.
                  */
-                out.append(spaces(pad));
                 writeColor(out, BOLD, colorsForTitle);
                 out.append(toString(it.next()));
                 writeColor(out, RESET, colorsForTitle);
@@ -305,19 +351,6 @@ final class ParameterTableRow {
                 }
             }
         }
-    }
-
-    /**
-     * Returns a string representation of the given name in the given locale, with paranoiac checks against null value.
-     * Such null values should never happen since the properties used here are mandatory, but we try to make this class
-     * robust to broken implementations.
-     */
-    private static String toString(final GenericName name, final Locale locale) {
-        if (name != null) {
-            final InternationalString i18n = name.toInternationalString();
-            return (i18n != null) ? i18n.toString(locale) : name.toString();
-        }
-        return null;
     }
 
     /**
