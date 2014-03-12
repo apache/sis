@@ -244,8 +244,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**
      * Constructs a generic name from a qualified name.
      * This method splits the given name around a separator inferred from the given scope, or the
-     * {@value org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR} separator if the given
-     * scope is null.
+     * {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator if the given scope is null.
      *
      * @param  scope The {@linkplain AbstractName#scope() scope} of the generic name to
      *         be created, or {@code null} for a global namespace.

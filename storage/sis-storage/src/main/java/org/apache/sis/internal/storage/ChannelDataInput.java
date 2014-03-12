@@ -774,6 +774,8 @@ public class ChannelDataInput {
 
     /**
      * Returns a string representation of this object for debugging purpose.
+     *
+     * @return A string representation of this channel.
      */
     @Debug
     @Override

@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.util.*;
 import java.lang.reflect.Array;
+import org.opengis.util.CodeList;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.resources.Errors;
@@ -199,6 +200,26 @@ public final class CollectionsExt extends Static {
             }
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, valueType));
+    }
+
+    /**
+     * Creates an initially empty set for elements of the given type.
+     * This method will creates specialized set for code lists and enumerations.
+     *
+     * @param  <E>   The type of elements in the set.
+     * @param  type  The type of elements in the set.
+     * @param  count The expected number of elements to put in the set.
+     * @return A new set for elements of the given type.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public static <E> Set<E> createSetForType(final Class<E> type, final int count) {
+        if (CodeList.class.isAssignableFrom(type)) {
+            return new CodeListSet((Class) type);
+        }
+        if (Enum.class.isAssignableFrom(type)) {
+            return EnumSet.noneOf((Class) type);
+        }
+        return new LinkedHashSet<E>(hashMapCapacity(count));
     }
 
     /**

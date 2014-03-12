@@ -373,7 +373,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
 
     /**
      * Returns a SIS identifier implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -454,11 +454,12 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
 
     /**
      * Organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode code}.
+     * {@linkplain #getCode() code}.
+     *
+     * <div class="note"><b>Example:</b> Coordinate Reference System (CRS) identified by an EPSG code will return
+     * {@link Citations#OGP}, since OGP is the organization maintaining the EPSG geodetic database.</div>
      *
      * @return The authority, or {@code null} if not available.
-     *
-     * @see org.apache.sis.metadata.iso.citation.Citations#EPSG
      */
     @Override
     public Citation getAuthority() {
@@ -467,7 +468,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
 
     /**
      * Identifier of the version of the associated code space or code, as specified by the
-     * code authority. This version is included only when the {@linkplain #getCode code}
+     * code authority. This version is included only when the {@linkplain #getCode() code}
      * uses versions. When appropriate, the edition is identified by the effective date,
      * coded using ISO 8601 date format.
      *
@@ -561,11 +562,11 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
                 final Convention convention = formatter.getConvention();
                 if (convention.majorVersion() == 1) {
                     keyword = "Authority";
-                    formatter.append(cs, null);
-                    formatter.append(code, null);
+                    formatter.append(cs, ElementKind.IDENTIFIER);
+                    formatter.append(code, ElementKind.IDENTIFIER);
                 } else {
                     keyword = "Id";
-                    formatter.append(cs, null);
+                    formatter.append(cs, ElementKind.IDENTIFIER);
                     appendCode(formatter, code);
                     if (version != null) {
                         appendCode(formatter, version);
@@ -606,7 +607,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
             try {
                 n = Long.parseLong(text);
             } catch (NumberFormatException e) {
-                formatter.append(text, null);
+                formatter.append(text, ElementKind.IDENTIFIER);
                 return;
             }
             formatter.append(n);

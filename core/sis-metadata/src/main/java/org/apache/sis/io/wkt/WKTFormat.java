@@ -222,7 +222,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * This property applies only when formatting text.
      *
      * <p>Newly created {@code WKTFormat}s have no syntax coloring. If a non-null argument like
-     * {@link Colors#CONSOLE} is given to this method, then the {@link #format(Object, Appendable) format(…)}
+     * {@link Colors#DEFAULT} is given to this method, then the {@link #format(Object, Appendable) format(…)}
      * method tries to highlight most of the elements that are relevant to
      * {@link org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)}.</p>
      *
@@ -342,12 +342,13 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns the kind of objects formatted by this class.
+     * Returns the type of objects formatted by this class. This method has to return {@code Object.class}
+     * since it is the only common parent to all object types accepted by this formatter.
      *
      * @return {@code Object.class}
      */
     @Override
-    public Class<?> getValueType() {
+    public final Class<Object> getValueType() {
         return Object.class;
     }
 
@@ -424,14 +425,8 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Creates a new format to use for parsing and formatting values of the given type.
      * This method is invoked the first time that a format is needed for the given type.
-     * The {@code valueType} can be one of the following classes:
-     *
-     * <table class="sis">
-     *   <tr><th>Value type</th>     <th>Format to create</th></tr>
-     *   <tr><td>{@link Number}</td> <td>{@link NumberFormat}</td></tr>
-     *   <tr><td>{@link Date}</td>   <td>{@link DateFormat}</td></tr>
-     *   <tr><td>{@link Unit}</td>   <td>{@link UnitFormat}</td></tr>
-     * </table>
+     * The {@code valueType} can be any types declared in the
+     * {@linkplain CompoundFormat#createFormat(Class) parent class}.
      *
      * @param  valueType The base type of values to parse or format.
      * @return The format to use for parsing of formatting values of the given type, or {@code null} if none.
@@ -440,9 +435,6 @@ public class WKTFormat extends CompoundFormat<Object> {
     protected Format createFormat(final Class<?> valueType) {
         if (valueType == Number.class) {
             return symbols.createNumberFormat();
-        }
-        if (valueType == Unit.class) {
-            return UnitFormat.getInstance(symbols.getLocale());
         }
         if (valueType == Date.class) {
             final DateFormat format = new SimpleDateFormat(DATE_PATTERN, symbols.getLocale());

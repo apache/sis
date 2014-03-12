@@ -208,7 +208,7 @@ search:     do {
                 return buffer.append(text, fromIndex, toIndex);
             }
         }
-        return text;
+        return text.subSequence(fromIndex, toIndex);
     }
 
     /**
