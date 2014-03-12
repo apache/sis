@@ -49,7 +49,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.referencing.NameToIdentifier;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.X364;
 
@@ -74,7 +73,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * {@preformat text
  *   EPSG: Mercator (variant A)
  *   ┌────────────────────────────────┬────────┬───────────────┬───────────────┐
- *   │ Name                           │ Type   │ Value domain  │ Default value │
+ *   │ Name (EPSG)                    │ Type   │ Value domain  │ Default value │
  *   ├────────────────────────────────┼────────┼───────────────┼───────────────┤
  *   │ Latitude of natural origin     │ Double │  [-80 … 84]°  │         0.0°  │
  *   │ Longitude of natural origin    │ Double │ [-180 … 180]° │         0.0°  │
@@ -88,10 +87,10 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * The kind of objects accepted by this formatter are:
  * <table class="sis">
  *   <tr><th>Class</th> <th>Remarks</th></tr>
- *   <tr><td>{@link ParameterValueGroup}</td> <td>Column of <cite>default values</cite> is replaced by a column of the actual values.</td></tr>
- *   <tr><td>{@link ParameterDescriptorGroup}</td> <td></td></tr>
- *   <tr><td>{@link OperationMethod}</td> <td></td></tr>
- *   <tr><td><code>{@linkplain IdentifiedObject}[]</code></td> <td>Accepted only for {@link ContentLevel#NAME_SUMMARY}.</td></tr>
+ *   <tr><td>{@link ParameterValueGroup}</td><td><cite>Default values</cite> column is replaced by a column of the actual values.</td></tr>
+ *   <tr><td>{@link ParameterDescriptorGroup}</td><td>Table title is the parameter group name.</td></tr>
+ *   <tr><td>{@link OperationMethod}</td><td>Table title is the method name (not necessarily the same than parameter group name).</td></tr>
+ *   <tr><td><code>{@linkplain IdentifiedObject}[]</code></td><td>Accepted only for {@link ContentLevel#NAME_SUMMARY}.</td></tr>
  * </table>
  *
  * <div class="warning"><b>Limitation:</b>
@@ -177,7 +176,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * {@preformat text
          *   EPSG: Mercator (variant A)
          *   ┌────────────────────────────────┬────────┬───────────────┬───────────────┐
-         *   │ Name                           │ Type   │ Value domain  │ Default value │
+         *   │ Name (EPSG)                    │ Type   │ Value domain  │ Default value │
          *   ├────────────────────────────────┼────────┼───────────────┼───────────────┤
          *   │ Latitude of natural origin     │ Double │  [-80 … 84]°  │         0.0°  │
          *   │ Longitude of natural origin    │ Double │ [-180 … 180]° │         0.0°  │
@@ -316,9 +315,11 @@ public class ParameterFormat extends TabularFormat<Object> {
     }
 
     /**
-     * Returns the code spaces of names and identifiers to show, or {@code null} if there is no restriction.
-     * This method returns the sequence specified by the last call to {@link #setPreferredCodespaces(String[])}.
-     * The default value is {@code null}.
+     * Returns the code spaces of names, aliases and identifiers to show, or {@code null} if there is no restriction.
+     * This method returns the sequence specified by the last call to {@link #setPreferredCodespaces(String[])},
+     * without duplicated values.
+     *
+     * <p>The default value is {@code null}.</p>
      *
      * @return The code spaces of names and identifiers to show, or {@code null} if no restriction.
      */
@@ -327,17 +328,10 @@ public class ParameterFormat extends TabularFormat<Object> {
     }
 
     /**
-     * Filters names and identifiers by their code spaces. If the given array is non-null, then the only names,
+     * Filters names, aliases and identifiers by their code spaces. If the given array is non-null, then the only names,
      * aliases and identifiers to be formatted are those having a {@link ReferenceIdentifier#getCodeSpace()},
-     *  {@link ScopedName#head()} or {@link GenericName#scope()} value in the given list, unless no name or alias
+     * {@link ScopedName#head()} or {@link GenericName#scope()} value in the given list, unless no name or alias
      * matches this criterion.
-     *
-     * <p>Additional effects:</p>
-     * <ul>
-     *   <li>With {@link ContentLevel#BRIEF}, the given list determines the preference order for choosing the name
-     *       or identifier to format.</li>
-     *   <li>With {@link ContentLevel#NAME_SUMMARY}, the given list sets the column order.</li>
-     * </ul>
      *
      * @param codespaces The preferred code spaces of names, aliases and identifiers to format, or {@code null}
      *        for accepting all of them. Some typical values are {@code "EPSG"}, {@code "OGC"} or {@code "GeoTIFF"}.
@@ -436,9 +430,11 @@ public class ParameterFormat extends TabularFormat<Object> {
     private void format(final String name, final ParameterDescriptorGroup group,
             final ParameterValueGroup values, final Appendable out) throws IOException
     {
-        final boolean isBrief       = (contentLevel == ContentLevel.BRIEF);
-        final boolean hasColors     = (colors != null);
-        final String  lineSeparator = this.lineSeparator;
+        final boolean    isBrief       = (contentLevel == ContentLevel.BRIEF);
+        final boolean    hasColors     = (colors != null);
+        final String     lineSeparator = this.lineSeparator;
+        final ParameterTableRow header = new ParameterTableRow(group, displayLocale, preferredCodespaces, isBrief);
+        final String    groupCodespace = header.getCodeSpace();
         /*
          * Prepares the informations to be printed later as table rows. We scan all rows before to print them
          * in order to compute the width of codespaces. During this process, we split the objects to be printed
@@ -485,7 +481,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             }
             ParameterTableRow row = descriptorValues.get(descriptor);
             if (row == null) {
-                row = new ParameterTableRow(descriptor, displayLocale, isBrief);
+                row = new ParameterTableRow(descriptor, displayLocale, preferredCodespaces, isBrief);
                 descriptorValues.put(descriptor, row);
                 if (row.codespaceWidth > codespaceWidth) {
                     codespaceWidth = row.codespaceWidth;
@@ -501,14 +497,25 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   - Value domains are formatted.
          *   - Position of the character on which to do the alignment are remembered.
          */
-        int unitWidth = 0;
-        int valueDomainAlignment = 0;
-        final StringBuffer buffer = new StringBuffer();
-        final FieldPosition fp = new FieldPosition(-1);
+        int     unitWidth            = 0;
+        int     valueDomainAlignment = 0;
+        boolean writeCodespaces      = (groupCodespace == null);
+        final   StringBuffer  buffer = new StringBuffer();
+        final   FieldPosition fp     = new FieldPosition(-1);
         for (final Map.Entry<GeneralParameterDescriptor,ParameterTableRow> entry : descriptorValues.entrySet()) {
             final GeneralParameterDescriptor descriptor = entry.getKey();
             if (descriptor instanceof ParameterDescriptor<?>) {
                 final ParameterTableRow row = entry.getValue();
+                /*
+                 * Verify if all rows use the same codespace than the header, in which case we can omit
+                 * row codespace formatting.
+                 */
+                if (!writeCodespaces && !groupCodespace.equals(entry.getValue().getCodeSpace())) {
+                    writeCodespaces = true;
+                }
+                /*
+                 * Format the value domain, so we can compute the character position on which to perform alignment.
+                 */
                 final Range<?> valueDomain = Parameters.getValueDomain((ParameterDescriptor<?>) descriptor);
                 if (valueDomain != null) {
                     final int p = row.setValueDomain(valueDomain, getFormat(Range.class), buffer);
@@ -547,7 +554,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * First, formats the table header (i.e. the column names).
          */
         final Vocabulary resources = Vocabulary.getResources(displayLocale);
-        new ParameterTableRow(group, displayLocale, isBrief).writeIdentifiers(out, hasColors, false, lineSeparator);
+        header.writeIdentifiers(out, true, hasColors, false, lineSeparator);
         out.append(lineSeparator);
         final char horizontalBorder = isBrief ? '─' : '═';
         final TableAppender table = (isBrief || !columnSeparator.equals(SEPARATOR)) ?
@@ -567,6 +574,9 @@ public class ParameterFormat extends TabularFormat<Object> {
             if (hasColors) table.append(X364.BOLD.sequence());
             table.append(resources.getString(key));
             if (hasColors) table.append(X364.NORMAL.sequence());
+            if (!writeCodespaces && i == 0) {
+                table.append(" (").append(groupCodespace).append(')');
+            }
             if (end) break;
             table.append(beforeFill);
             table.nextColumn(fillCharacter);
@@ -586,7 +596,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             horizontalLine = isBrief ? 0 : '─';
             final ParameterTableRow row = entry.getValue();
             row.codespaceWidth = codespaceWidth;
-            row.writeIdentifiers(table, false, hasColors, lineSeparator);
+            row.writeIdentifiers(table, writeCodespaces, false, hasColors, lineSeparator);
             table.append(beforeFill);
             table.nextColumn(fillCharacter);
             final GeneralParameterDescriptor generalDescriptor = entry.getKey();
@@ -736,10 +746,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             if (aliases != null) { // Paranoiac check.
                 for (final GenericName alias : aliases) {
                     if (alias != null) { // Paranoiac check.
-                        String codespace = NameToIdentifier.getCodeSpace(alias);
-                        if (codespace == null) {
-                            codespace = Citations.getIdentifier(NameToIdentifier.getAuthority(alias));
-                        }
+                        final String codespace = NameToIdentifier.getCodespaceOrAuthority(alias, displayLocale);
                         if (isPreferredCodespace(codespace)) {
                             row = putIfAbsent(resources, row, columnIndices, codespace,
                                     alias.tip().toInternationalString().toString(displayLocale));
