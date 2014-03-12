@@ -29,6 +29,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Debug;
 
 import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForName;
 
@@ -353,5 +354,30 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
         }
         copy.values = new ParameterValueList(copy.values);
         return copy;
+    }
+
+    /**
+     * Returns a string representation of this group.
+     * The default implementation delegates to {@link ParameterFormat}.
+     *
+     * <p>This method is for information purpose only and may change in future SIS version.</p>
+     */
+    @Debug
+    @Override
+    public String toString() {
+        return ParameterFormat.sharedFormat(this);
+    }
+
+    /**
+     * Prints a string representation of this group to the {@linkplain System#out standard output stream}.
+     * If a {@linkplain java.io.Console console} is attached to the running JVM (i.e. if the application
+     * is run from the command-line and the output is not redirected to a file) and if Apache SIS thinks
+     * that the console supports the ANSI escape codes (a.k.a. X3.64), then a syntax coloring will be applied.
+     *
+     * <p>This is a convenience method for debugging purpose and for console applications.</p>
+     */
+    @Debug
+    public void print() {
+        ParameterFormat.print(this);
     }
 }

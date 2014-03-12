@@ -243,7 +243,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * This property applies only when formatting text.
      *
      * <p>Newly created {@code WKTFormat}s have no syntax coloring. If a non-null argument like
-     * {@link Colors#CONSOLE} is given to this method, then the {@link #format(Object, Appendable) format(…)}
+     * {@link Colors#DEFAULT} is given to this method, then the {@link #format(Object, Appendable) format(…)}
      * method tries to highlight most of the elements that are relevant to
      * {@link org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)}.</p>
      *

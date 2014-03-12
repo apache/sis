@@ -49,15 +49,15 @@ public class Colors implements Cloneable, Serializable {
     private static final long serialVersionUID = 256160285861027191L;
 
     /**
-     * A map of colors for outputs to the {@link java.io.Console}.
-     * Those colors give better results on a black background.
+     * The default colors used by {@link FormattableObject#print(Convention)}.
+     * Those colors give better results on a {@link java.io.Console} with black background.
      * This map is immutable.
      *
      * @see FormattableObject#print(Convention)
      */
-    public static final Colors CONSOLE = new Colors();
+    public static final Colors DEFAULT = new Colors();
     static {
-        final EnumMap<ElementKind,X364> map = CONSOLE.map;
+        final EnumMap<ElementKind,X364> map = DEFAULT.map;
         map.put(ElementKind.NUMBER,     X364.FOREGROUND_YELLOW);
         map.put(ElementKind.INTEGER,    X364.FOREGROUND_YELLOW);
         map.put(ElementKind.UNIT,       X364.FOREGROUND_YELLOW);
@@ -71,7 +71,21 @@ public class Colors implements Cloneable, Serializable {
         map.put(ElementKind.EXTENT,     X364.BACKGROUND_GRAY);
         map.put(ElementKind.CITATION,   X364.BACKGROUND_GRAY);
         map.put(ElementKind.REMARKS,    X364.BACKGROUND_GRAY);
-        CONSOLE.isImmutable = true;
+        DEFAULT.isImmutable = true;
+    }
+
+    /**
+     * Emphases on identification information
+     * ({@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() name} and
+     *  {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getIdentifiers() identifiers}) only.
+     * This map is immutable.
+     */
+    public static final Colors NAMING = new Colors();
+    static {
+        final EnumMap<ElementKind,X364> map = NAMING.map;
+        map.put(ElementKind.NAME,       X364.FOREGROUND_GREEN);
+        map.put(ElementKind.IDENTIFIER, X364.FOREGROUND_YELLOW);
+        NAMING.isImmutable = true;
     }
 
     /**
@@ -197,9 +211,9 @@ public class Colors implements Cloneable, Serializable {
     }
 
     /**
-     * Replaces the deserialized instance by {@link #CONSOLE} one if possible.
+     * Replaces the deserialized instance by {@link #DEFAULT} one if possible.
      */
     final Object readResolve() {
-        return isImmutable && map.equals(CONSOLE.map) ? CONSOLE : this;
+        return isImmutable && map.equals(DEFAULT.map) ? DEFAULT : this;
     }
 }
