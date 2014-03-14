@@ -20,7 +20,10 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.ObjectInputStream;
+import java.lang.reflect.Field;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -36,7 +39,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -59,8 +62,8 @@ import org.apache.sis.util.resources.Errors;
  * or <cite>Kroenecker delta tensor</cite>.
  *
  * <p><b>Parameters are not an efficient storage format for large tensors.</b>
- * Parameters are used only for small or sparse matrices/tensors to be specified in coordinate operations or
- * processing libraries. In particular, those parameters integrate well in <cite>Well Known Text</cite> (WKT) format.
+ * Parameters are used only for small matrices/tensors to be specified in coordinate operations or processing libraries.
+ * In particular, those parameters integrate well in <cite>Well Known Text</cite> (WKT) format.
  * For a more efficient matrix storage, see {@link org.apache.sis.referencing.operation.matrix.MatrixSIS}.</p>
  *
  * {@section Formatting}
@@ -83,12 +86,14 @@ import org.apache.sis.util.resources.Errors;
  * depends on the {@code "num_row"} and {@code "num_col"} parameter values. For this reason, the descriptor of
  * matrix or tensor parameters is not immutable.
  *
+ * @param <E> The type of tensor element values.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */
-public class TensorParameters implements Serializable {
+public class TensorParameters<E> implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -107,7 +112,7 @@ public class TensorParameters implements Serializable {
      *
      * <div class="note"><b>Example:</b> {@code "elt_2_1"} is the element name for the value at line 2 and row 1.</div>
      */
-    public static final TensorParameters WKT1;
+    public static final TensorParameters<Double> WKT1;
     static {
         /*
          * Note: the upper limit given in the operation parameters is arbitrary. A high
@@ -125,7 +130,7 @@ public class TensorParameters implements Serializable {
         numRow = new DefaultParameterDescriptor<>(properties, Integer.class, valueDomain, null, defaultSize, true);
         properties.put(ReferenceIdentifier.CODE_KEY, "num_col");
         numCol = new DefaultParameterDescriptor<>(properties, Integer.class, valueDomain, null, defaultSize, true);
-        WKT1 = new TensorParameters("elt_", "_", numRow, numCol);
+        WKT1 = new TensorParameters<>(Double.class, "elt_", "_", numRow, numCol);
     }
 
     /**
@@ -143,6 +148,11 @@ public class TensorParameters implements Serializable {
     private static final int CACHE_RANK = 3;
 
     /**
+     * The type of tensor element values.
+     */
+    private final Class<E> elementType;
+
+    /**
      * The parameters that define the number of rows, columns or other dimensions.
      * In WKT1, the parameter names are {@code "num_row"} and {@code "num_col"} respectively.
      *
@@ -154,7 +164,12 @@ public class TensorParameters implements Serializable {
      * The cached descriptors for each elements in a tensor. Descriptors do not depend on tensor element values.
      * Consequently, the same descriptors can be reused for all {@link MatrixParameterValues} instances.
      */
-    private final transient ParameterDescriptor<Double>[] parameters;
+    private final transient ParameterDescriptor<E>[] parameters;
+
+    /**
+     * The elements for the 0 and 1 values, or {@code null} if unknown.
+     */
+    private transient E zero, one;
 
     /**
      * The prefix of parameter names for tensor elements.
@@ -171,35 +186,50 @@ public class TensorParameters implements Serializable {
     /**
      * Constructs a descriptors provider.
      *
-     * @param prefix     The prefix to insert in front of parameter name for each tensor elements.
-     * @param separator  The separator between dimension (row, column, …) indices in parameter names.
-     * @param dimensions The parameter for the size of each dimension, usually in an array of length 2.
-     *                   Length may be different if the caller wants to generalize usage of this class to tensors.
+     * @param elementType The type of tensor element values.
+     * @param prefix      The prefix to insert in front of parameter name for each tensor elements.
+     * @param separator   The separator between dimension (row, column, …) indices in parameter names.
+     * @param dimensions  The parameter for the size of each dimension, usually in an array of length 2.
+     *                    Length may be different if the caller wants to generalize usage of this class to tensors.
      */
     @SafeVarargs
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public TensorParameters(final String prefix, final String separator, final ParameterDescriptor<Integer>... dimensions) {
-        ArgumentChecks.ensureNonNull("prefix",     prefix);
-        ArgumentChecks.ensureNonNull("separator",  separator);
-        ArgumentChecks.ensureNonNull("dimensions", dimensions);
+    public TensorParameters(final Class<E> elementType, final String prefix, final String separator,
+            final ParameterDescriptor<Integer>... dimensions)
+    {
+        ArgumentChecks.ensureNonNull("elementType", elementType);
+        ArgumentChecks.ensureNonNull("prefix",      prefix);
+        ArgumentChecks.ensureNonNull("separator",   separator);
+        ArgumentChecks.ensureNonNull("dimensions",  dimensions);
         if (dimensions.length == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "dimensions"));
         }
-        this.prefix     = prefix;
-        this.separator  = separator;
-        this.dimensions = new ParameterDescriptor[dimensions.length];
+        this.elementType = elementType;
+        this.prefix      = prefix;
+        this.separator   = separator;
+        this.dimensions  = new ParameterDescriptor[dimensions.length];
         for (int i=0; i<dimensions.length; i++) {
             ArgumentChecks.ensureNonNullElement("dimensions", i, this.dimensions[i] = dimensions[i]);
         }
-        parameters = createCache(dimensions.length);
+        parameters = createCache();
     }
 
     /**
-     * Creates an initially empty {@link #parameters} array. This method is invoked by constructor
-     * and on deserialization.
+     * Initializes the fields used for cached values: {@link #zero}, {@link #one} and the {@link #parameters} array.
+     * The later is not assigned to the {@code parameters} field, but rather returned - caller shall assign himself
+     * the returned value to the {@link #parameters} field.
+     *
+     * <p>This method is invoked by constructor and on deserialization.</p>
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static ParameterDescriptor<Double>[] createCache(int rank) {
+    private <T> ParameterDescriptor<T>[] createCache() {
+        if (Number.class.isAssignableFrom(elementType)) try {
+            one  = (E) Numbers.wrap(1, (Class) elementType);
+            zero = (E) Numbers.wrap(0, (Class) elementType);
+        } catch (IllegalArgumentException e) {
+            // Ignore - zero and one will be left to null.
+        }
+        int rank = dimensions.length;
         if (rank > CACHE_RANK) {
             rank = CACHE_RANK;
         }
@@ -211,8 +241,17 @@ public class TensorParameters implements Serializable {
     }
 
     /**
+     * Returns the type of tensor element values.
+     *
+     * @return The type of tensor element values.
+     */
+    public final Class<E> getElementType() {
+        return elementType;
+    }
+
+    /**
      * Returns the rank of the tensor objects for which this instance will create parameters.
-     * The rank determines the type of objects represented by the parameter:
+     * The rank determines the type of objects represented by the parameters:
      *
      * <table class="sis">
      *   <tr><th>Rank</th> <th>Type</th></tr>
@@ -229,65 +268,34 @@ public class TensorParameters implements Serializable {
     }
 
     /**
-     * Creates a new parameter descriptor for a matrix or tensor element at the given indices.
-     * The returned parameter shall have a {@linkplain DefaultParameterDescriptor#getName() name}
-     * parsable by the {@link #parseElementName(String)} method.
+     * Returns the parameter descriptor for the dimension at the given index.
      *
-     * {@section Default implementation}
-     * The default implementation requires an {@code indices} array having a length equals to the {@linkplain #rank()
-     * rank}. That length is usually 2, where {@code indices[0]} is the <var>row</var> index and {@code indices[1]} is
-     * the <var>column</var> index. Then this method builds a name with the “{@link #prefix} + <var>row</var> +
-     * {@link #separator} + <var>column</var> + …” pattern (e.g. {@code "elt_0_0"}).
-     * Finally this method creates a descriptor for an optional parameter of that name.
-     *
-     * {@section Subclassing}
-     * If a subclass overrides this method for creating parameters with different names, then that subclass shall
-     * also override {@link #parseElementName(String)} for parsing those names.
-     *
-     * @param  indices The indices of the tensor element for which to create a parameter.
-     * @return The parameter descriptor for the given tensor element.
-     * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
-     *
-     * @see #parseElementName(String)
+     * @param  i The dimension index, from 0 inclusive to {@link #rank()} exclusive.
+     * @return The parameter descriptor for the dimension at the given index.
      */
-    protected ParameterDescriptor<Double> createElementDescriptor(final int[] indices) throws IllegalArgumentException {
-        if (indices.length != dimensions.length) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.UnexpectedArrayLength_2, dimensions.length, indices.length));
-        }
-        final StringBuilder name = new StringBuilder();
-        String s = prefix;
-        int p = indices[0];
-        boolean isDiagonal = false;
-        for (final int i : indices) {
-            isDiagonal &= (i == p);
-            name.append(s).append(i);
-            s = separator;
-            p = i;
-        }
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(ReferenceIdentifier.CODE_KEY, name.toString());
-        properties.put(ReferenceIdentifier.AUTHORITY_KEY, dimensions[0].getName().getAuthority());
-        return new DefaultParameterDescriptor<>(properties, Double.class, null, null, isDiagonal ? 1.0 : 0.0, false);
+    public final ParameterDescriptor<Integer> getDimensionDescriptor(final int i) {
+        return dimensions[i];
     }
 
     /**
-     * Checks in the cache before to delegate to {@link #createElementDescriptor(int[])}.
+     * Returns the parameter descriptor for a matrix or tensor element at the given indices.
+     * The length of the given {@code indices} array shall be equals to the {@linkplain #rank() rank}.
+     * That length is usually 2, where {@code indices[0]} is the <var>row</var> index and {@code indices[1]}
+     * is the <var>column</var> index.
+     *
+     * @param  indices The indices of the tensor element for which to get the descriptor.
+     * @return The parameter descriptor for the given tensor element.
+     * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
      */
-    private ParameterDescriptor<Double> descriptor(final int[] indices) {
-        int cacheIndex = -1;
-        if (indices.length >= 2 && zeroTail(indices)) {
-            final int row = indices[0];
-            final int col = indices[1];
-            if (row < CACHE_SIZE && col < CACHE_SIZE) {
-                final ParameterDescriptor<Double> param;
-                cacheIndex = row*CACHE_SIZE + col;
-                synchronized (parameters) {
-                    param = parameters[cacheIndex];
-                }
-                if (param != null) {
-                    return param;
-                }
+    public final ParameterDescriptor<E> getElementDescriptor(final int[] indices) {
+        final int cacheIndex = cacheIndex(indices);
+        if (cacheIndex >= 0) {
+            final ParameterDescriptor<E> param;
+            synchronized (parameters) {
+                param = parameters[cacheIndex];
+            }
+            if (param != null) {
+                return param;
             }
         }
         /*
@@ -295,10 +303,10 @@ public class TensorParameters implements Serializable {
          * Note that an other thread could have created the same descriptor in the main time,
          * so we will need to check again.
          */
-        final ParameterDescriptor<Double> param = createElementDescriptor(indices);
+        final ParameterDescriptor<E> param = createElementDescriptor(indices);
         if (cacheIndex >= 0) {
             synchronized (parameters) {
-                final ParameterDescriptor<Double> existing = parameters[cacheIndex];
+                final ParameterDescriptor<E> existing = parameters[cacheIndex];
                 if (existing != null) {
                     return existing;
                 }
@@ -309,22 +317,95 @@ public class TensorParameters implements Serializable {
     }
 
     /**
-     * Returns {@code true} if all array elements starting at index 2 are 0.
-     * Used only in order to determine if we can cache a descriptor, because
-     * we limit the cache to a two-rank case.
+     * Returns the index in the cache for the given indices, or -1 if that elements is not cached.
      */
-    private static boolean zeroTail(final int[] indices) {
-        for (int i=2; i<indices.length; i++) {
-            if (indices[i] != 0) {
-                return false;
+    private static int cacheIndex(final int[] indices) {
+        int cacheIndex = 0;
+        for (int i=0; i<indices.length; i++) {
+            final int index = indices[i];
+            if (i < CACHE_RANK) {
+                if (index >= 0 && index < CACHE_SIZE) {
+                    cacheIndex = (cacheIndex * CACHE_SIZE) + index;
+                    continue;
+                }
+            } else if (index == 0) {
+                continue;
+            }
+            return -1;
+        }
+        return cacheIndex;
+    }
+
+    /**
+     * Creates a new parameter descriptor for a matrix or tensor element at the given indices.
+     * This method is invoked by {@link #getElementDescriptor(int[])} when a new descriptor needs
+     * to be created.
+     *
+     * {@section Default implementation}
+     * The default implementation converts the given indices to a parameter name by invoking the
+     * {@link #indicesToName(int[])} method, then creates a descriptor for an optional parameter
+     * of that name.
+     *
+     * {@section Subclassing}
+     * Subclasses can override this method if they want more control on descriptor properties
+     * like identification information, value domain and default values.
+     *
+     * @param  indices The indices of the tensor element for which to create a parameter.
+     * @return The parameter descriptor for the given tensor element.
+     * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
+     *
+     * @see #indicesToName(int[])
+     * @see #nameToIndices(String)
+     */
+    protected ParameterDescriptor<E> createElementDescriptor(final int[] indices) throws IllegalArgumentException {
+        boolean isDiagonal = true;
+        for (int i=1; i<indices.length; i++) {
+            if (indices[i] != indices[i-1]) {
+                isDiagonal = false;
+                break;
             }
         }
-        return true;
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(ReferenceIdentifier.CODE_KEY, indicesToName(indices));
+        properties.put(ReferenceIdentifier.AUTHORITY_KEY, dimensions[0].getName().getAuthority());
+        return new DefaultParameterDescriptor<>(properties, elementType, null, null, isDiagonal ? one : zero, false);
+    }
+
+    /**
+     * Returns the parameter descriptor name of a matrix or tensor element at the given indices.
+     * The returned name shall be parsable by the {@link #nameToIndices(String)} method.
+     *
+     * {@section Default implementation}
+     * The default implementation requires an {@code indices} array having a length equals to the {@linkplain #rank()
+     * rank}. That length is usually 2, where {@code indices[0]} is the <var>row</var> index and {@code indices[1]} is
+     * the <var>column</var> index. Then this method builds a name with the “{@link #prefix} + <var>row</var> +
+     * {@link #separator} + <var>column</var> + …” pattern (e.g. {@code "elt_0_0"}).
+     *
+     * {@section Subclassing}
+     * If a subclass overrides this method for creating different names, then that subclass shall
+     * also override {@link #nameToIndices(String)} for parsing those names.
+     *
+     * @param  indices The indices of the tensor element for which to create a parameter name.
+     * @return The parameter descriptor name for the tensor element at the given indices.
+     * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
+     */
+    protected String indicesToName(final int[] indices) throws IllegalArgumentException {
+        if (indices.length != dimensions.length) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.UnexpectedArrayLength_2, dimensions.length, indices.length));
+        }
+        final StringBuilder name = new StringBuilder();
+        String s = prefix;
+        for (final int i : indices) {
+            name.append(s).append(i);
+            s = separator;
+        }
+        return name.toString();
     }
 
     /**
      * Returns the indices of matrix element for the given parameter name.
-     * This method is the converse of {@link #createElementDescriptor(int[])}.
+     * This method is the converse of {@link #indicesToName(int[])}.
      *
      * {@section Default implementation}
      * The default implementation expects a name matching the “{@link #prefix} + <var>row</var> + {@link #separator} +
@@ -336,7 +417,7 @@ public class TensorParameters implements Serializable {
      * @throws IllegalArgumentException If the name has been recognized but an error occurred while parsing it
      *         (e.g. an {@link NumberFormatException}, which is an {@code IllegalArgumentException} subclass).
      */
-    protected int[] parseElementName(final String name) throws IllegalArgumentException {
+    protected int[] nameToIndices(final String name) throws IllegalArgumentException {
         int s = prefix.length();
         if (!name.regionMatches(true, 0, prefix, 0, s)) {
             return null;
@@ -364,19 +445,17 @@ public class TensorParameters implements Serializable {
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     final ParameterDescriptor<?> descriptor(final ParameterDescriptorGroup caller,
-            String name, final int[] actualSize) throws ParameterNotFoundException
+            final String name, final int[] actualSize) throws ParameterNotFoundException
     {
-        ArgumentChecks.ensureNonNull("name", name);
-        name = CharSequences.trimWhitespaces(name);
         IllegalArgumentException cause = null;
         int[] indices = null;
         try {
-            indices = parseElementName(name);
+            indices = nameToIndices(name);
         } catch (IllegalArgumentException exception) {
             cause = exception;
         }
         if (indices != null && isInBounds(indices, actualSize)) {
-            return descriptor(indices);
+            return getElementDescriptor(indices);
         }
         /*
          * The given name is not a matrix (or tensor) element name.
@@ -431,7 +510,7 @@ public class TensorParameters implements Serializable {
          * will vary faster, and index on the left side (usually the row index) will vary slowest.
          */
         for (int i=0; i<length; i++) {
-            parameters[rank + i] = descriptor(indices);
+            parameters[rank + i] = getElementDescriptor(indices);
             for (int j=rank; --j >= 0;) {
                 if (++indices[j] < actualSize[j]) {
                     break;
@@ -456,13 +535,13 @@ public class TensorParameters implements Serializable {
 
     /**
      * Constructs a matrix from a group of parameters.
-     * This operation is allowed only for tensor of {@linkplain #rank() rank} 2.
+     * This operation is allowed only for tensors of {@linkplain #rank() rank} 2.
      *
      * @param  parameters The group of parameters.
      * @return A matrix constructed from the specified group of parameters.
      * @throws InvalidParameterNameException if a parameter name was not recognized.
      */
-    public Matrix getMatrix(final ParameterValueGroup parameters) throws InvalidParameterNameException {
+    public Matrix toMatrix(final ParameterValueGroup parameters) throws InvalidParameterNameException {
         ArgumentChecks.ensureNonNull("parameters", parameters);
         if (dimensions.length != 2) {
             throw new IllegalStateException();
@@ -485,7 +564,7 @@ public class TensorParameters implements Serializable {
                 IllegalArgumentException cause = null;
                 int[] indices = null;
                 try {
-                    indices = parseElementName(name);
+                    indices = nameToIndices(name);
                 } catch (IllegalArgumentException e) {
                     cause = e;
                 }
@@ -499,5 +578,17 @@ public class TensorParameters implements Serializable {
         return matrix;
     }
 
-    // TODO: restore parameters on deserialization.
+    /**
+     * Invoked on deserialization for restoring the {@link #parameters} array.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        try {
+            final Field field = TensorParameters.class.getField("parameters");
+            field.setAccessible(true);
+            field.set(this, createCache());
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
 }
