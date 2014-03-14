@@ -90,6 +90,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short BarometricAltitude = 5;
 
         /**
+         * Cardinality
+         */
+        public static final short Cardinality = 76;
+
+        /**
          * Character encoding
          */
         public static final short CharacterEncoding = 6;
@@ -245,6 +250,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Longitude = 32;
 
         /**
+         * Mandatory
+         */
+        public static final short Mandatory = 77;
+
+        /**
          * Maximum value
          */
         public static final short MaximumValue = 33;
@@ -280,6 +290,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short NumberOfValues = 39;
 
         /**
+         * Obligation
+         */
+        public static final short Obligation = 78;
+
+        /**
          * {0} ({1} of {2})
          */
         public static final short Of_3 = 40;
@@ -293,6 +308,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Operating system
          */
         public static final short OperatingSystem = 42;
+
+        /**
+         * Optional
+         */
+        public static final short Optional = 79;
 
         /**
          * Options
