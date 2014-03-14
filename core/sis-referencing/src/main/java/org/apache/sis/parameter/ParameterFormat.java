@@ -74,15 +74,15 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * {@preformat text
  *   EPSG: Mercator (variant A)
- *   ┌────────────────────────────────┬────────┬───────────────┬───────────────┐
- *   │ Name (EPSG)                    │ Type   │ Value domain  │ Default value │
- *   ├────────────────────────────────┼────────┼───────────────┼───────────────┤
- *   │ Latitude of natural origin     │ Double │  [-80 … 84]°  │         0.0°  │
- *   │ Longitude of natural origin    │ Double │ [-180 … 180]° │         0.0°  │
- *   │ Scale factor at natural origin │ Double │    (0 … ∞)    │         1.0   │
- *   │ False easting                  │ Double │   (-∞ … ∞) m  │         0.0 m │
- *   │ False northing                 │ Double │   (-∞ … ∞) m  │         0.0 m │
- *   └────────────────────────────────┴────────┴───────────────┴───────────────┘
+ *   ┌────────────────────────────────┬────────┬────────────┬───────────────┬───────────────┐
+ *   │ Name (EPSG)                    │ Type   │ Obligation │ Value domain  │ Default value │
+ *   ├────────────────────────────────┼────────┼────────────┼───────────────┼───────────────┤
+ *   │ Latitude of natural origin     │ Double │ Mandatory  │  [-80 … 84]°  │         0.0°  │
+ *   │ Longitude of natural origin    │ Double │ Mandatory  │ [-180 … 180]° │         0.0°  │
+ *   │ Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   │
+ *   │ False easting                  │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m │
+ *   │ False northing                 │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m │
+ *   └────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘
  * }
  * </div>
  *
@@ -147,24 +147,24 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   EPSG: Mercator (variant A) (9804)
          *   EPSG: Mercator (1SP)
          *   OGC:  Mercator_1SP
-         *   ╔══════════════════════════════════════╤════════╤═══════════════╤═══════════════╗
-         *   ║ Name                                 │ Type   │ Value domain  │ Default value ║
-         *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
-         *   ║ EPSG: Latitude of natural origin     │ Double │  [-80 … 84]°  │         0.0°  ║
-         *   ║ OGC:  latitude_of_origin             │        │               │               ║
-         *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
-         *   ║ EPSG: Longitude of natural origin    │ Double │ [-180 … 180]° │         0.0°  ║
-         *   ║ OGC:  central_meridian               │        │               │               ║
-         *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
-         *   ║ EPSG: Scale factor at natural origin │ Double │    (0 … ∞)    │         1.0   ║
-         *   ║ OGC:  scale_factor                   │        │               │               ║
-         *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
-         *   ║ EPSG: False easting                  │ Double │   (-∞ … ∞) m  │         0.0 m ║
-         *   ║ OGC:  false_easting                  │        │               │               ║
-         *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
-         *   ║ EPSG: False northing                 │ Double │   (-∞ … ∞) m  │         0.0 m ║
-         *   ║ OGC:  false_northing                 │        │               │               ║
-         *   ╚══════════════════════════════════════╧════════╧═══════════════╧═══════════════╝
+         *   ╔══════════════════════════════════════╤════════╤════════════╤═══════════════╤═══════════════╗
+         *   ║ Name                                 │ Type   │ Obligation │ Value domain  │ Default value ║
+         *   ╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢
+         *   ║ EPSG: Latitude of natural origin     │ Double │ Mandatory  │  [-80 … 84]°  │         0.0°  ║
+         *   ║ OGC:  latitude_of_origin             │        │            │               │               ║
+         *   ╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢
+         *   ║ EPSG: Longitude of natural origin    │ Double │ Mandatory  │ [-180 … 180]° │         0.0°  ║
+         *   ║ OGC:  central_meridian               │        │            │               │               ║
+         *   ╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢
+         *   ║ EPSG: Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   ║
+         *   ║ OGC:  scale_factor                   │        │            │               │               ║
+         *   ╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢
+         *   ║ EPSG: False easting                  │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m ║
+         *   ║ OGC:  false_easting                  │        │            │               │               ║
+         *   ╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢
+         *   ║ EPSG: False northing                 │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m ║
+         *   ║ OGC:  false_northing                 │        │            │               │               ║
+         *   ╚══════════════════════════════════════╧════════╧════════════╧═══════════════╧═══════════════╝
          * }
          * </div>
          */
@@ -182,15 +182,15 @@ public class ParameterFormat extends TabularFormat<Object> {
          *
          * {@preformat text
          *   EPSG: Mercator (variant A)
-         *   ┌────────────────────────────────┬────────┬───────────────┬───────────────┐
-         *   │ Name (EPSG)                    │ Type   │ Value domain  │ Default value │
-         *   ├────────────────────────────────┼────────┼───────────────┼───────────────┤
-         *   │ Latitude of natural origin     │ Double │  [-80 … 84]°  │         0.0°  │
-         *   │ Longitude of natural origin    │ Double │ [-180 … 180]° │         0.0°  │
-         *   │ Scale factor at natural origin │ Double │    (0 … ∞)    │         1.0   │
-         *   │ False easting                  │ Double │   (-∞ … ∞) m  │         0.0 m │
-         *   │ False northing                 │ Double │   (-∞ … ∞) m  │         0.0 m │
-         *   └────────────────────────────────┴────────┴───────────────┴───────────────┘
+         *   ┌────────────────────────────────┬────────┬────────────┬───────────────┬───────────────┐
+         *   │ Name (EPSG)                    │ Type   │ Obligation │ Value domain  │ Default value │
+         *   ├────────────────────────────────┼────────┼────────────┼───────────────┼───────────────┤
+         *   │ Latitude of natural origin     │ Double │ Mandatory  │  [-80 … 84]°  │         0.0°  │
+         *   │ Longitude of natural origin    │ Double │ Mandatory  │ [-180 … 180]° │         0.0°  │
+         *   │ Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   │
+         *   │ False easting                  │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m │
+         *   │ False northing                 │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m │
+         *   └────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘
          * }
          * </div>
          */
@@ -378,6 +378,14 @@ public class ParameterFormat extends TabularFormat<Object> {
     }
 
     /**
+     * Invoked when the formatter needs to move to the next column.
+     */
+    private void nextColumn(final TableAppender table) {
+        table.append(beforeFill);
+        table.nextColumn(fillCharacter);
+    }
+
+    /**
      * Formats the given object to the given stream of buffer.
      * The object may be an instance of any of the following types:
      *
@@ -437,11 +445,12 @@ public class ParameterFormat extends TabularFormat<Object> {
     private void format(final String name, final ParameterDescriptorGroup group,
             final ParameterValueGroup values, final Appendable out) throws IOException
     {
-        final boolean    isBrief       = (contentLevel == ContentLevel.BRIEF);
-        final boolean    hasColors     = (colors != null);
-        final String     lineSeparator = this.lineSeparator;
-        final ParameterTableRow header = new ParameterTableRow(group, displayLocale, preferredCodespaces, isBrief);
-        final String    groupCodespace = header.getCodeSpace();
+        final boolean    isBrief        = (contentLevel == ContentLevel.BRIEF);
+        final boolean    showObligation = !isBrief || (values == null);
+        final boolean    hasColors      = (colors != null);
+        final String     lineSeparator  = this.lineSeparator;
+        final ParameterTableRow header  = new ParameterTableRow(group, displayLocale, preferredCodespaces, isBrief);
+        final String    groupCodespace  = header.getCodeSpace();
         /*
          * Prepares the informations to be printed later as table rows. We scan all rows before to print them
          * in order to compute the width of codespaces. During this process, we split the objects to be printed
@@ -504,11 +513,11 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   - Value domains are formatted.
          *   - Position of the character on which to do the alignment are remembered.
          */
-        int     unitWidth            = 0;
-        int     valueDomainAlignment = 0;
-        boolean writeCodespaces      = (groupCodespace == null);
-        final   StringBuffer  buffer = new StringBuffer();
-        final   FieldPosition fp     = new FieldPosition(-1);
+        int     unitWidth             = 0;
+        int     valueDomainAlignment  = 0;
+        boolean writeCodespaces       = (groupCodespace == null);
+        final   StringBuffer  buffer  = new StringBuffer();
+        final   FieldPosition dummyFP = new FieldPosition(-1);
         for (final Map.Entry<GeneralParameterDescriptor,ParameterTableRow> entry : descriptorValues.entrySet()) {
             final GeneralParameterDescriptor descriptor = entry.getKey();
             if (descriptor instanceof ParameterDescriptor<?>) {
@@ -540,7 +549,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                 for (int i=0; i<length; i++) {
                     final Object unit = row.units.get(i);
                     if (unit != null) {
-                        if (getFormat(Unit.class).format(unit, buffer, fp).length() != 0) {
+                        if (getFormat(Unit.class).format(unit, buffer, dummyFP).length() != 0) {
                             if (Character.isLetterOrDigit(buffer.codePointAt(0))) {
                                 buffer.insert(0, ' ');
                             }
@@ -572,10 +581,30 @@ public class ParameterFormat extends TabularFormat<Object> {
             boolean end = false;
             final short key;
             switch (i) {
-                case 0: key = Vocabulary.Keys.Name; break;
-                case 1: key = Vocabulary.Keys.Type; break;
-                case 2: key = Vocabulary.Keys.ValueDomain; break;
-                case 3: key = (values == null) ? Vocabulary.Keys.DefaultValue : Vocabulary.Keys.Value; end = true; break;
+                case 0: {
+                    key = Vocabulary.Keys.Name;
+                    break;
+                }
+                case 1: {
+                    key = Vocabulary.Keys.Type;
+                    break;
+                }
+                case 2: {
+                    if (!showObligation) {
+                       continue;
+                    }
+                    key = Vocabulary.Keys.Obligation;
+                    break;
+                }
+                case 3: {
+                    key = Vocabulary.Keys.ValueDomain;
+                    break;
+                }
+                case 4: {
+                    key = (values == null) ? Vocabulary.Keys.DefaultValue : Vocabulary.Keys.Value;
+                    end = true;
+                    break;
+                }
                 default: throw new AssertionError(i);
             }
             if (hasColors) table.append(X364.BOLD.sequence());
@@ -585,8 +614,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                 table.append(" (").append(groupCodespace).append(')');
             }
             if (end) break;
-            table.append(beforeFill);
-            table.nextColumn(fillCharacter);
+            nextColumn(table);
         }
         table.nextLine();
         /*
@@ -604,8 +632,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             final ParameterTableRow row = entry.getValue();
             row.codespaceWidth = codespaceWidth;
             row.writeIdentifiers(table, writeCodespaces, null, hasColors, lineSeparator);
-            table.append(beforeFill);
-            table.nextColumn(fillCharacter);
+            nextColumn(table);
             final GeneralParameterDescriptor generalDescriptor = entry.getKey();
             if (generalDescriptor instanceof ParameterDescriptor<?>) {
                 /*
@@ -613,10 +640,31 @@ public class ParameterFormat extends TabularFormat<Object> {
                  */
                 final ParameterDescriptor<?> descriptor = (ParameterDescriptor<?>) generalDescriptor;
                 final Class<?> valueClass = descriptor.getValueClass();
-                table.append(getFormat(Class.class).format(valueClass, buffer, fp).toString());
-                table.append(beforeFill);
-                table.nextColumn(fillCharacter);
+                table.append(getFormat(Class.class).format(valueClass, buffer, dummyFP).toString());
+                nextColumn(table);
                 buffer.setLength(0);
+                /*
+                 * Writes the obligation (mandatory or optional).
+                 */
+                if (showObligation) {
+                    final int minimumOccurs = descriptor.getMinimumOccurs();
+                    final int maximumOccurs = descriptor.getMaximumOccurs();
+                    if (maximumOccurs == 1) {
+                        table.append(resources.getString(minimumOccurs == 0 ?
+                                Vocabulary.Keys.Optional : Vocabulary.Keys.Mandatory));
+                    } else {
+                        final Format f = getFormat(Integer.class);
+                        table.append(f.format(minimumOccurs, buffer, dummyFP).toString()).append(" … ");
+                        buffer.setLength(0);
+                        if (maximumOccurs == Integer.MAX_VALUE) {
+                            table.append('∞');
+                        } else {
+                            table.append(f.format(maximumOccurs, buffer, dummyFP).toString());
+                            buffer.setLength(0);
+                        }
+                    }
+                    nextColumn(table);
+                }
                 /*
                  * Writes minimum and maximum values, together with the unit of measurement (if any).
                  */
@@ -624,8 +672,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                 if (valueDomain != null) {
                     table.append(CharSequences.spaces(valueDomainAlignment - row.valueDomainAlignment)).append(valueDomain);
                 }
-                table.append(beforeFill);
-                table.nextColumn(fillCharacter);
+                nextColumn(table);
                 /*
                  * Writes the values, each on its own line, together with their unit of measurement.
                  */
@@ -639,7 +686,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                         }
                         final Format format = getFormat(value.getClass());
                         if (format != null) {
-                            value = format.format(value, buffer, fp);
+                            value = format.format(value, buffer, dummyFP);
                         }
                         table.append(value.toString());
                         buffer.setLength(0);
@@ -789,8 +836,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                 codespace = X364.BOLD.sequence() + codespace + X364.NORMAL.sequence();
             }
             table.append(codespace);
-            table.append(beforeFill);
-            table.nextColumn(fillCharacter);
+            nextColumn(table);
         }
         table.appendHorizontalSeparator();
         /*
@@ -805,8 +851,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                         table.append(name);
                     }
                 }
-                table.append(beforeFill);
-                table.nextColumn(fillCharacter);
+                nextColumn(table);
             }
             table.nextLine();
         }
