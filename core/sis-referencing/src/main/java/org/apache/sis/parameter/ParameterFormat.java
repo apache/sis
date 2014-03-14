@@ -160,10 +160,10 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   ║ OGC:  scale_factor                   │        │               │               ║
          *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
          *   ║ EPSG: False easting                  │ Double │   (-∞ … ∞) m  │         0.0 m ║
-         *   ║ OGC:  FalseEasting                   │        │               │               ║
+         *   ║ OGC:  false_easting                  │        │               │               ║
          *   ╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢
          *   ║ EPSG: False northing                 │ Double │   (-∞ … ∞) m  │         0.0 m ║
-         *   ║ OGC:  FalseNorthing                  │        │               │               ║
+         *   ║ OGC:  false_northing                 │        │               │               ║
          *   ╚══════════════════════════════════════╧════════╧═══════════════╧═══════════════╝
          * }
          * </div>
@@ -213,8 +213,8 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   │ Latitude of natural origin     │ latitude_of_origin │
          *   │ Longitude of natural origin    │ central_meridian   │
          *   │ Scale factor at natural origin │ scale_factor       │
-         *   │ False easting                  │ FalseEasting       │
-         *   │ False northing                 │ FalseNorthing      │
+         *   │ False easting                  │ false_easting      │
+         *   │ False northing                 │ false_northing     │
          *   └────────────────────────────────┴────────────────────┘
          * }
          * </div>

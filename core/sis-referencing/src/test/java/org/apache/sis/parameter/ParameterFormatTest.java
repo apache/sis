@@ -66,8 +66,8 @@ public final strictfp class ParameterFormatTest extends TestCase {
             builder.addName("Latitude of natural origin")    .addName(OGC, "latitude_of_origin").createBounded( -80,  +84,  40, NonSI.DEGREE_ANGLE),
             builder.addName("Longitude of natural origin")   .addName(OGC, "central_meridian")  .createBounded(-180, +180, -60, NonSI.DEGREE_ANGLE),
             builder.addName("Scale factor at natural origin").addName(OGC, "scale_factor")      .createStrictlyPositive(1, Unit.ONE),
-            builder.addName("False easting")                 .addName(OGC, "FalseEasting")      .create( 5000, SI.METRE),
-            builder.addName("False northing")                .addName(OGC, "FalseNorthing")     .create(10000, SI.METRE)
+            builder.addName("False easting")                 .addName(OGC, "false_easting")     .create( 5000, SI.METRE),
+            builder.addName("False northing")                .addName(OGC, "false_northing")    .create(10000, SI.METRE)
         };
         builder.addIdentifier("9804")
                .addName("Mercator (variant A)")
@@ -92,7 +92,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
         group.parameter("latitude_of_origin").setValue(20);
         group.parameter("central_meridian").setValue(-70);
         group.parameter("scale_factor").setValue(0.997);
-        group.parameter("FalseNorthing").setValue(20, SI.KILOMETRE);
+        group.parameter("false_northing").setValue(20, SI.KILOMETRE);
         return group;
     }
 
@@ -177,10 +177,10 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "║ OGC:  scale_factor                   │        │               │               ║\n" +
                 "╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢\n" +
                 "║ EPSG: False easting                  │ Double │   (-∞ … ∞) m  │      5000.0 m ║\n" +
-                "║ OGC:  FalseEasting                   │        │               │               ║\n" +
+                "║ OGC:  false_easting                  │        │               │               ║\n" +
                 "╟──────────────────────────────────────┼────────┼───────────────┼───────────────╢\n" +
                 "║ EPSG: False northing                 │ Double │   (-∞ … ∞) m  │     10000.0 m ║\n" +
-                "║ OGC:  FalseNorthing                  │        │               │               ║\n" +
+                "║ OGC:  false_northing                 │        │               │               ║\n" +
                 "╚══════════════════════════════════════╧════════╧═══════════════╧═══════════════╝\n", text);
 
         text = format.format(createParameterValues());
@@ -201,10 +201,10 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "║ OGC:  scale_factor                   │        │               │           ║\n" +
                 "╟──────────────────────────────────────┼────────┼───────────────┼───────────╢\n" +
                 "║ EPSG: False easting                  │ Double │   (-∞ … ∞) m  │ 5000.0 m  ║\n" +
-                "║ OGC:  FalseEasting                   │        │               │           ║\n" +
+                "║ OGC:  false_easting                  │        │               │           ║\n" +
                 "╟──────────────────────────────────────┼────────┼───────────────┼───────────╢\n" +
                 "║ EPSG: False northing                 │ Double │   (-∞ … ∞) m  │   20.0 km ║\n" +
-                "║ OGC:  FalseNorthing                  │        │               │           ║\n" +
+                "║ OGC:  false_northing                 │        │               │           ║\n" +
                 "╚══════════════════════════════════════╧════════╧═══════════════╧═══════════╝\n", text);
     }
 
@@ -232,8 +232,8 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "│ Latitude of natural origin     │ latitude_of_origin │\n" +
                 "│ Longitude of natural origin    │ central_meridian   │\n" +
                 "│ Scale factor at natural origin │ scale_factor       │\n" +
-                "│ False easting                  │ FalseEasting       │\n" +
-                "│ False northing                 │ FalseNorthing      │\n" +
+                "│ False easting                  │ false_easting      │\n" +
+                "│ False northing                 │ false_northing     │\n" +
                 "└────────────────────────────────┴────────────────────┘\n", text);
     }
 
@@ -276,8 +276,8 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "│ latitude_of_origin │ Double │  [-80 … 84]°  │   20.0°   │\n" +
                 "│ central_meridian   │ Double │ [-180 … 180]° │  -70.0°   │\n" +
                 "│ scale_factor       │ Double │    (0 … ∞)    │  0.997    │\n" +
-                "│ FalseEasting       │ Double │   (-∞ … ∞) m  │ 5000.0 m  │\n" +
-                "│ FalseNorthing      │ Double │   (-∞ … ∞) m  │   20.0 km │\n" +
+                "│ false_easting      │ Double │   (-∞ … ∞) m  │ 5000.0 m  │\n" +
+                "│ false_northing     │ Double │   (-∞ … ∞) m  │   20.0 km │\n" +
                 "└────────────────────┴────────┴───────────────┴───────────┘\n", text);
     }
 }
