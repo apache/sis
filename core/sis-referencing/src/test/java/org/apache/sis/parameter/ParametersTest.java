@@ -43,8 +43,11 @@ import static org.junit.Assert.*;
  * @version 0.4
  * @module
  */
-@DependsOn({DefaultParameterDescriptorTest.class, DefaultParameterValueTest.class})
-public final class ParametersTest extends TestCase {
+@DependsOn({
+    DefaultParameterDescriptorTest.class,
+    DefaultParameterValueTest.class
+})
+public final strictfp class ParametersTest extends TestCase {
     /**
      * Tests the {@link Parameters#cast(ParameterDescriptor, Class)} and
      * {@link Parameters#cast(ParameterValue, Class)} methods.
