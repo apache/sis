@@ -43,18 +43,28 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Creates parameter groups from tensors (usually matrices), and conversely.
- * Each group of parameters contains the following elements:
+ * Matrices are handled as a special case of tensors (<cite>second-order</cite> tensors).
  *
+ * <p>Each group of parameters contains the following elements:</p>
  * <ul>
  *   <li>A mandatory parameter for the number of rows ({@code "num_row"} in WKT 1).</li>
  *   <li>A mandatory parameter for the number of columns ({@code "num_col"} in WKT 1).</li>
- *   <li>(<i>etc.</i> in third-order or higher-order tensors).</li>
- *   <li>A maximum of {@code num_row} × {@code num_col} × … optional parameters for the matrix element values.
- *       Parameter names depend on the formatting convention. If a parameter is omitted, then its default value
- *       is 1 for parameters on the diagonal and 0 for all other parameters.</li>
+ *   <li>(<i>etc.</i> for third-order or higher-order tensors).</li>
+ *   <li>A maximum of {@code num_row} × {@code num_col} × … optional parameters for the matrix or tensor element values.
+ *       Parameter names depend on the formatting convention.</li>
  * </ul>
  *
- * The parameters format is typically like below:
+ * For all matrix or tensor elements, the default value is 1 for elements on the diagonal (where all indices have
+ * the same value) and 0 for all other elements. Those default values defines an <cite>identity matrix</cite>,
+ * or <cite>Kroenecker delta tensor</cite>.
+ *
+ * <p><b>Parameters are not an efficient storage format for large tensors.</b>
+ * Parameters are used only for small or sparse matrices/tensors to be specified in coordinate operations or
+ * processing libraries. In particular, those parameters integrate well in <cite>Well Known Text</cite> (WKT) format.
+ * For a more efficient matrix storage, see {@link org.apache.sis.referencing.operation.matrix.MatrixSIS}.</p>
+ *
+ * {@section Formatting}
+ * The parameters format for a matrix is typically like below:
  *
  * {@preformat wkt
  *   Parameter["num_row", 3],
@@ -71,21 +81,21 @@ import org.apache.sis.util.resources.Errors;
  *
  * Those groups are extensible, i.e. the number of <code>"elt_<var>row</var>_<var>col</var>"</code> parameters
  * depends on the {@code "num_row"} and {@code "num_col"} parameter values. For this reason, the descriptor of
- * matrix parameters is not immutable.
+ * matrix or tensor parameters is not immutable.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */
-public class MatrixParameters implements Serializable {
+public class TensorParameters implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -7386537348359343836L;
 
     /**
-     * Parses and creates parameters names matching the
+     * Parses and creates parameters names for matrices matching the
      * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Known Text</a>
      * version 1 (WKT 1) convention.
      *
@@ -97,7 +107,7 @@ public class MatrixParameters implements Serializable {
      *
      * <div class="note"><b>Example:</b> {@code "elt_2_1"} is the element name for the value at line 2 and row 1.</div>
      */
-    public static final MatrixParameters WKT1;
+    public static final TensorParameters WKT1;
     static {
         /*
          * Note: the upper limit given in the operation parameters is arbitrary. A high
@@ -115,36 +125,45 @@ public class MatrixParameters implements Serializable {
         numRow = new DefaultParameterDescriptor<>(properties, Integer.class, valueDomain, null, defaultSize, true);
         properties.put(ReferenceIdentifier.CODE_KEY, "num_col");
         numCol = new DefaultParameterDescriptor<>(properties, Integer.class, valueDomain, null, defaultSize, true);
-        WKT1 = new MatrixParameters("elt_", "_", numRow, numCol);
+        WKT1 = new TensorParameters("elt_", "_", numRow, numCol);
     }
 
     /**
      * The height and weight of the matrix of {@link #parameters} to cache. Descriptors
      * for row or column indices greater than or equal to this value will not be cached.
+     * A small value is sufficient since matrix sizes are usually the maximum number of
+     * CRS dimensions (usually 4) plus one.
      */
-    private static final int CACHE_SIZE = 8;
+    private static final int CACHE_SIZE = 5;
 
     /**
-     * The parameters that define the number of rows and columns.
+     * Maximal cache rank. Memory required by the cache will be {@code pow(CACHE_SIZE, CACHE_RANK)},
+     * so that value is better to be small.
+     */
+    private static final int CACHE_RANK = 3;
+
+    /**
+     * The parameters that define the number of rows, columns or other dimensions.
      * In WKT1, the parameter names are {@code "num_row"} and {@code "num_col"} respectively.
+     *
+     * <p>The length of this array determine the tensor {@linkplain #rank() rank}.</p>
      */
-    private final ParameterDescriptor<Integer>[] size;
+    private final ParameterDescriptor<Integer>[] dimensions;
 
     /**
-     * The cached descriptors for each elements in a matrix. Descriptors do not depend on matrix element values.
+     * The cached descriptors for each elements in a tensor. Descriptors do not depend on tensor element values.
      * Consequently, the same descriptors can be reused for all {@link MatrixParameterValues} instances.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    private final transient ParameterDescriptor<Double>[] parameters = new ParameterDescriptor[CACHE_SIZE * CACHE_SIZE];
+    private final transient ParameterDescriptor<Double>[] parameters;
 
     /**
-     * The prefix of parameter names for matrix elements.
+     * The prefix of parameter names for tensor elements.
      * This is {@code "elt_"} in WKT 1.
      */
     protected final String prefix;
 
     /**
-     * The separator between row and column in parameter names for matrix elements.
+     * The separator between row and column in parameter names for tensor elements.
      * This is {@code "_"} in WKT 1.
      */
     protected final String separator;
@@ -152,26 +171,61 @@ public class MatrixParameters implements Serializable {
     /**
      * Constructs a descriptors provider.
      *
-     * @param prefix     The prefix to insert in front of parameter name for each matrix elements.
-     * @param separator  The separator between the row and the column index in parameter names.
-     * @param size       The parameter for the number of rows and columns, usually in an array of length 2.
+     * @param prefix     The prefix to insert in front of parameter name for each tensor elements.
+     * @param separator  The separator between dimension (row, column, …) indices in parameter names.
+     * @param dimensions The parameter for the size of each dimension, usually in an array of length 2.
      *                   Length may be different if the caller wants to generalize usage of this class to tensors.
      */
     @SafeVarargs
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public MatrixParameters(final String prefix, final String separator, final ParameterDescriptor<Integer>... size) {
-        ArgumentChecks.ensureNonNull("prefix",    prefix);
-        ArgumentChecks.ensureNonNull("separator", separator);
-        ArgumentChecks.ensureNonNull("size",      size);
-        if (size.length == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "size"));
+    public TensorParameters(final String prefix, final String separator, final ParameterDescriptor<Integer>... dimensions) {
+        ArgumentChecks.ensureNonNull("prefix",     prefix);
+        ArgumentChecks.ensureNonNull("separator",  separator);
+        ArgumentChecks.ensureNonNull("dimensions", dimensions);
+        if (dimensions.length == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "dimensions"));
         }
-        this.prefix    = prefix;
-        this.separator = separator;
-        this.size      = new ParameterDescriptor[size.length];
-        for (int i=0; i<size.length; i++) {
-            ArgumentChecks.ensureNonNullElement("size", i, this.size[i] = size[i]);
+        this.prefix     = prefix;
+        this.separator  = separator;
+        this.dimensions = new ParameterDescriptor[dimensions.length];
+        for (int i=0; i<dimensions.length; i++) {
+            ArgumentChecks.ensureNonNullElement("dimensions", i, this.dimensions[i] = dimensions[i]);
         }
+        parameters = createCache(dimensions.length);
+    }
+
+    /**
+     * Creates an initially empty {@link #parameters} array. This method is invoked by constructor
+     * and on deserialization.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static ParameterDescriptor<Double>[] createCache(int rank) {
+        if (rank > CACHE_RANK) {
+            rank = CACHE_RANK;
+        }
+        int length = 1;
+        while (--rank >= 0) {
+            length *= CACHE_SIZE;
+        }
+        return new ParameterDescriptor[length];
+    }
+
+    /**
+     * Returns the rank of the tensor objects for which this instance will create parameters.
+     * The rank determines the type of objects represented by the parameter:
+     *
+     * <table class="sis">
+     *   <tr><th>Rank</th> <th>Type</th></tr>
+     *   <tr><td>0</td>    <td>scalar</td></tr>
+     *   <tr><td>1</td>    <td>vector</td></tr>
+     *   <tr><td>2</td>    <td>matrix</td></tr>
+     *   <tr><td><var>k</var></td><td>rank <var>k</var> tensor</td></tr>
+     * </table>
+     *
+     * @return The rank of the tensors for which to create parameters.
+     */
+    public final int rank() {
+        return dimensions.length;
     }
 
     /**
@@ -180,14 +234,11 @@ public class MatrixParameters implements Serializable {
      * parsable by the {@link #parseElementName(String)} method.
      *
      * {@section Default implementation}
-     * The default implementation requires an {@code indices} array having the same length than the {@code size} array
-     * specified at construction time. That length is usually 2, where {@code indices[0]} is the <var>row</var> index
-     * and {@code indices[1]} is the <var>column</var> index. Then this method builds a name with the "{@link #prefix}
-     * + <var>row</var> + {@link #separator} + <var>column</var> + …" pattern (e.g. {@code "elt_0_0"}).
+     * The default implementation requires an {@code indices} array having a length equals to the {@linkplain #rank()
+     * rank}. That length is usually 2, where {@code indices[0]} is the <var>row</var> index and {@code indices[1]} is
+     * the <var>column</var> index. Then this method builds a name with the “{@link #prefix} + <var>row</var> +
+     * {@link #separator} + <var>column</var> + …” pattern (e.g. {@code "elt_0_0"}).
      * Finally this method creates a descriptor for an optional parameter of that name.
-     *
-     * <div class="note"><b>Note:</b> matrices can been seen as a special case of tensors with indices arrays
-     * of length 2 (i.e. <cite>second-order</cite> tensor).</div>
      *
      * {@section Subclassing}
      * If a subclass overrides this method for creating parameters with different names, then that subclass shall
@@ -200,9 +251,9 @@ public class MatrixParameters implements Serializable {
      * @see #parseElementName(String)
      */
     protected ParameterDescriptor<Double> createElementDescriptor(final int[] indices) throws IllegalArgumentException {
-        if (indices.length != size.length) {
+        if (indices.length != dimensions.length) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.UnexpectedArrayLength_2, size.length, indices.length));
+                    Errors.Keys.UnexpectedArrayLength_2, dimensions.length, indices.length));
         }
         final StringBuilder name = new StringBuilder();
         String s = prefix;
@@ -216,7 +267,7 @@ public class MatrixParameters implements Serializable {
         }
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(ReferenceIdentifier.CODE_KEY, name.toString());
-        properties.put(ReferenceIdentifier.AUTHORITY_KEY, size[0].getName().getAuthority());
+        properties.put(ReferenceIdentifier.AUTHORITY_KEY, dimensions[0].getName().getAuthority());
         return new DefaultParameterDescriptor<>(properties, Double.class, null, null, isDiagonal ? 1.0 : 0.0, false);
     }
 
@@ -260,7 +311,7 @@ public class MatrixParameters implements Serializable {
     /**
      * Returns {@code true} if all array elements starting at index 2 are 0.
      * Used only in order to determine if we can cache a descriptor, because
-     * we limit the cache to a two-dimensional plane.
+     * we limit the cache to a two-rank case.
      */
     private static boolean zeroTail(final int[] indices) {
         for (int i=2; i<indices.length; i++) {
@@ -276,8 +327,8 @@ public class MatrixParameters implements Serializable {
      * This method is the converse of {@link #createElementDescriptor(int[])}.
      *
      * {@section Default implementation}
-     * The default implementation expects a name matching the "{@link #prefix} + <var>row</var> + {@link #separator} +
-     * <var>column</var> + …" pattern and returns an array containing the <var>row</var>, <var>column</var> and other
+     * The default implementation expects a name matching the “{@link #prefix} + <var>row</var> + {@link #separator} +
+     * <var>column</var> + …” pattern and returns an array containing the <var>row</var>, <var>column</var> and other
      * indices, in that order.
      *
      * @param  name The parameter name to parse.
@@ -290,7 +341,7 @@ public class MatrixParameters implements Serializable {
         if (!name.regionMatches(true, 0, prefix, 0, s)) {
             return null;
         }
-        final int[] indices = new int[size.length];
+        final int[] indices = new int[dimensions.length];
         final int last = indices.length - 1;
         for (int i=0; i<last; i++) {
             final int split = name.indexOf(separator, s);
@@ -308,7 +359,7 @@ public class MatrixParameters implements Serializable {
      * Returns the descriptor in this group for the specified name.
      *
      * @param  name The case insensitive name of the parameter to search for.
-     * @param  actualSize The current values of parameters that define the matrix (or tensor) size.
+     * @param  actualSize The current values of parameters that define the matrix (or tensor) dimensions.
      * @return The parameter for the given name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
@@ -332,7 +383,7 @@ public class MatrixParameters implements Serializable {
          * Verify if the requested parameters is one of those that
          * specify the matrix/tensor size ("num_row" or "num_col").
          */
-        for (final ParameterDescriptor<Integer> param : size) {
+        for (final ParameterDescriptor<Integer> param : dimensions) {
             if (IdentifiedObjects.isHeuristicMatchForName(param, name)) {
                 return param;
             }
@@ -347,7 +398,7 @@ public class MatrixParameters implements Serializable {
      * Returns {@code true} if the given indices are not out-of-bounds.
      *
      * @param indices    The indices parsed from a parameter name.
-     * @param actualSize The current values of parameters that define the matrix (or tensor) size.
+     * @param actualSize The current values of parameters that define the matrix (or tensor) dimensions.
      */
     private static boolean isInBounds(final int[] indices, final int[] actualSize) {
         for (int i=0; i<indices.length; i++) {
@@ -360,28 +411,28 @@ public class MatrixParameters implements Serializable {
     }
 
     /**
-     * Returns all parameters in this group for a tensor of the specified size.
+     * Returns all parameters in this group for a tensor of the specified dimensions.
      *
-     * @param  actualSize The current values of parameters that define the matrix (or tensor) size.
+     * @param  actualSize The current values of parameters that define the matrix (or tensor) dimensions.
      *         It is caller's responsibility to ensure that this array does not contain negative values.
      * @return The matrix parameters, including all elements.
      */
     final List<GeneralParameterDescriptor> descriptors(final int[] actualSize) {
-        final int dimension = size.length; // 2 for a matrix, may be higher for a tensor.
+        final int rank = dimensions.length; // 2 for a matrix, may be higher for a tensor.
         int length = actualSize[0];
-        for (int i=1; i<dimension; i++) {
+        for (int i=1; i<rank; i++) {
             length *= actualSize[i];
         }
-        final GeneralParameterDescriptor[] parameters = new GeneralParameterDescriptor[dimension + length];
-        System.arraycopy(size, 0, parameters, 0, dimension);
-        final int[] indices = new int[dimension];
+        final GeneralParameterDescriptor[] parameters = new GeneralParameterDescriptor[rank + length];
+        System.arraycopy(dimensions, 0, parameters, 0, rank);
+        final int[] indices = new int[rank];
         /*
          * Iterates on all possible index values. Indes on the right side (usually the column index)
          * will vary faster, and index on the left side (usually the row index) will vary slowest.
          */
         for (int i=0; i<length; i++) {
-            parameters[dimension + i] = descriptor(indices);
-            for (int j=dimension; --j >= 0;) {
+            parameters[rank + i] = descriptor(indices);
+            for (int j=rank; --j >= 0;) {
                 if (++indices[j] < actualSize[j]) {
                     break;
                 }
@@ -404,8 +455,8 @@ public class MatrixParameters implements Serializable {
 //  }
 
     /**
-     * Constructs a matrix from a group of parameters. This operation is allowed only if this
-     * {@code MatrixParameters} has been created with a {@code size} array of length 2.
+     * Constructs a matrix from a group of parameters.
+     * This operation is allowed only for tensor of {@linkplain #rank() rank} 2.
      *
      * @param  parameters The group of parameters.
      * @return A matrix constructed from the specified group of parameters.
@@ -413,7 +464,7 @@ public class MatrixParameters implements Serializable {
      */
     public Matrix getMatrix(final ParameterValueGroup parameters) throws InvalidParameterNameException {
         ArgumentChecks.ensureNonNull("parameters", parameters);
-        if (size.length != 2) {
+        if (dimensions.length != 2) {
             throw new IllegalStateException();
         }
 //      if (parameters instanceof MatrixParameterValues) {
@@ -421,8 +472,8 @@ public class MatrixParameters implements Serializable {
 //          return ((MatrixParameterValues) parameters).getMatrix();
 //      }
         // Fallback on the general case (others implementations)
-        final ParameterValue<?> numRow = parameters.parameter(size[0].getName().getCode());
-        final ParameterValue<?> numCol = parameters.parameter(size[1].getName().getCode());
+        final ParameterValue<?> numRow = parameters.parameter(dimensions[0].getName().getCode());
+        final ParameterValue<?> numCol = parameters.parameter(dimensions[1].getName().getCode());
         final Matrix matrix = Matrices.createDiagonal(numRow.intValue(), numCol.intValue());
         final List<GeneralParameterValue> values = parameters.values();
         if (values != null) {
