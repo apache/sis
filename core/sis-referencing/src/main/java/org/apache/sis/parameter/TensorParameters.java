@@ -43,6 +43,9 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
+// Related to JDK7
+import java.util.Objects;
+
 
 /**
  * Creates parameter groups from tensors (usually matrices), and conversely.
@@ -168,6 +171,7 @@ public class TensorParameters<E> implements Serializable {
 
     /**
      * The elements for the 0 and 1 values, or {@code null} if unknown.
+     * Computed by {@link #createCache()}.
      */
     private transient E zero, one;
 
@@ -215,9 +219,9 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
-     * Initializes the fields used for cached values: {@link #zero}, {@link #one} and the {@link #parameters} array.
-     * The later is not assigned to the {@code parameters} field, but rather returned - caller shall assign himself
-     * the returned value to the {@link #parameters} field.
+     * Initializes the fields used for cached values: {@link #zero}, {@link #one}, {@link #valuesArrayType} and the
+     * {@link #parameters} array. The later is not assigned to the {@code parameters} field, but rather returned.
+     * Caller shall assign himself the returned value to the {@link #parameters} field.
      *
      * <p>This method is invoked by constructor and on deserialization.</p>
      */
@@ -404,7 +408,7 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
-     * Returns the indices of matrix element for the given parameter name.
+     * Returns the indices of matrix element for the given parameter name, or {@code null} if none.
      * This method is the converse of {@link #indicesToName(int[])}.
      *
      * {@section Default implementation}
@@ -467,10 +471,8 @@ public class TensorParameters<E> implements Serializable {
                 return param;
             }
         }
-        ParameterNotFoundException e = new ParameterNotFoundException(Errors.format(
-                Errors.Keys.ParameterNotFound_2, caller.getName(), name), name);
-        e.initCause(cause);
-        throw e;
+        throw (ParameterNotFoundException) new ParameterNotFoundException(Errors.format(
+                Errors.Keys.ParameterNotFound_2, caller.getName(), name), name).initCause(cause);
     }
 
     /**
@@ -479,7 +481,7 @@ public class TensorParameters<E> implements Serializable {
      * @param indices    The indices parsed from a parameter name.
      * @param actualSize The current values of parameters that define the matrix (or tensor) dimensions.
      */
-    private static boolean isInBounds(final int[] indices, final int[] actualSize) {
+    static boolean isInBounds(final int[] indices, final int[] actualSize) {
         for (int i=0; i<indices.length; i++) {
             final int index = indices[i];
             if (index < 0 || index >= actualSize[i]) {
@@ -518,20 +520,70 @@ public class TensorParameters<E> implements Serializable {
                 indices[j] = 0; // We have done a full turn at that dimension. Will increment next dimension.
             }
         }
-        assert Arrays.equals(actualSize, indices) : Arrays.toString(actualSize);
         return UnmodifiableArrayList.wrap(parameters);
     }
 
     /**
-     * Creates a new instance of parameter group with matrix elements initialized to the 1 on the diagonal,
-     * and 0 everywhere else. The returned parameter group is extensible, i.e. the number of elements will
-     * depend upon the value associated to the {@code numRow} and {@code numCol} parameters.
+     * Creates a new instance of parameter group with default values of 1 on the diagonal, and 0 everywhere else.
+     * The returned parameter group is extensible, i.e. the number of elements will depend upon the value associated
+     * to the parameters that define the matrix (or tensor) dimension.
      *
-     * @return A new parameter initialized to the default value.
+     * <p>The properties map is given unchanged to the
+     * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
+     * identified object constructor}. The following table is a reminder of main (not all) properties:</p>
+     *
+     * <table class="sis">
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link DefaultParameterDescriptorGroup#getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link DefaultParameterDescriptorGroup#getAlias()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link DefaultParameterDescriptorGroup#getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link DefaultParameterDescriptorGroup#getRemarks()}</td>
+     *   </tr>
+     * </table>
+     *
+     * @param  properties The properties to be given to the identified object.
+     * @return A new parameter group initialized to the default values.
      */
-//  public ParameterValueGroup createValue() {
-//      return new MatrixParameterValues(this);
-//  }
+    public ParameterValueGroup createValueGroup(final Map<String,?> properties) {
+        return new TensorValues<>(properties, this);
+    }
+
+    /**
+     * Creates a new instance of parameter group initialized to the given matrix.
+     * This operation is allowed only for tensors of {@linkplain #rank() rank} 2.
+     *
+     * @param  properties The properties to be given to the identified object.
+     * @param  matrix The matrix to copy in the new parameter group.
+     * @return A new parameter group initialized to the given matrix.
+     */
+    public ParameterValueGroup createValueGroup(final Map<String,?> properties, final Matrix matrix) {
+        if (dimensions.length != 2) {
+            throw new IllegalStateException();
+        }
+        ArgumentChecks.ensureNonNull("matrix", matrix);
+        final TensorValues<E> values = new TensorValues<>(properties, this);
+        values.setMatrix(matrix);
+        return values;
+    }
 
     /**
      * Constructs a matrix from a group of parameters.
@@ -542,14 +594,13 @@ public class TensorParameters<E> implements Serializable {
      * @throws InvalidParameterNameException if a parameter name was not recognized.
      */
     public Matrix toMatrix(final ParameterValueGroup parameters) throws InvalidParameterNameException {
-        ArgumentChecks.ensureNonNull("parameters", parameters);
         if (dimensions.length != 2) {
             throw new IllegalStateException();
         }
-//      if (parameters instanceof MatrixParameterValues) {
-//          // More efficient implementation
-//          return ((MatrixParameterValues) parameters).getMatrix();
-//      }
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        if (parameters instanceof TensorValues) {
+            return ((TensorValues) parameters).toMatrix(); // More efficient implementation
+        }
         // Fallback on the general case (others implementations)
         final ParameterValue<?> numRow = parameters.parameter(dimensions[0].getName().getCode());
         final ParameterValue<?> numCol = parameters.parameter(dimensions[1].getName().getCode());
@@ -579,12 +630,43 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
+     * Returns a hash code value for this object.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(elementType, prefix, separator) ^ Arrays.hashCode(dimensions);
+    }
+
+    /**
+     * Compares this object with the given object for equality.
+     *
+     * @param other The other object to compare with this object.
+     * @return {@code true} if both object are equal.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other.getClass() == getClass()) {
+            final TensorParameters<?> that = (TensorParameters<?>) other;
+            return elementType.equals(that.elementType) &&
+                   prefix     .equals(that.prefix)      &&
+                   separator  .equals(that.separator)   &&
+                   Arrays.equals(dimensions, that.dimensions);
+        }
+        return false;
+    }
+
+    /**
      * Invoked on deserialization for restoring the {@link #parameters} array.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         try {
-            final Field field = TensorParameters.class.getField("parameters");
+            final Field field = TensorParameters.class.getDeclaredField("parameters");
             field.setAccessible(true);
             field.set(this, createCache());
         } catch (ReflectiveOperationException e) {
