@@ -199,8 +199,9 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Returns {@code true} if the given doubles are equals. Positive and negative zero are
-     * considered different, while a NaN value is considered equal to all other NaN values.
+     * Returns {@code true} if the given doubles are equal.
+     * Positive and negative zeros are considered different.
+     * NaN values are considered equal to all other NaN values.
      *
      * @param  o1 The first value to compare.
      * @param  o2 The second value to compare.
@@ -210,6 +211,18 @@ public final class Numerics extends Static {
      */
     public static boolean equals(final double o1, final double o2) {
         return Double.doubleToLongBits(o1) == Double.doubleToLongBits(o2);
+    }
+
+    /**
+     * Returns {@code true} if the given doubles are equal, ignoring the sign of zero values.
+     * NaN values are considered equal to all other NaN values.
+     *
+     * @param  o1 The first value to compare.
+     * @param  o2 The second value to compare.
+     * @return {@code true} if both values are equal.
+     */
+    public static boolean equalsIgnoreZeroSign(final double o1, final double o2) {
+        return (o1 == o2) || Double.doubleToLongBits(o1) == Double.doubleToLongBits(o2);
     }
 
     /**
