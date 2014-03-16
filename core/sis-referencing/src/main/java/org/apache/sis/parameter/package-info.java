@@ -21,16 +21,38 @@
  * The remaining discussion on this page is specific to the SIS implementation.
  *
  * <p>Parameters are organized in <cite>groups</cite>. A group may be for example the set of all parameters needed
- * for the definition of a <cite>Mercator projection</cite>. When using this {@code org.apache.sis.parameter} package,
- * the starting point is usually to obtain a {@linkplain org.apache.sis.parameter.DefaultParameterDescriptorGroup
- * parameter group descriptor} for the operation of interest. Those groups are provided by the operation implementors,
- * so users do not need to create their own.</p>
+ * for the definition of a <cite>Mercator projection</cite>.
+ * Parameter groups have some similarity with {@code java.util.Map} where:</p>
  *
- * <p>Each parameter have a name and a cardinality (i.e. the parameter may be mandatory or optional). Parameter values
- * may also be constrained to a {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValueDomain() domain},
- * have a {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getDefaultValue() default value} and a
- * {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getUnit() unit of measurement}.
- * All those information are provided by the descriptors.</p>
+ * <ul>
+ *   <li>Keys are (indirectly) parameter
+ *       {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getName() names}.</li>
+ *   <li>Values are typically (but not restricted to) {@code int}, {@code int[]}, {@code double}, {@code double[]},
+ *       {@code boolean}, {@link java.lang.String}, {@link java.net.URI} or
+ *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation Citation}
+ *       (note: there is a level of indirection through those values).</li>
+ *   <li>Each parameter (equivalent to map entry) defines its own set of constraints on acceptable values:
+ *     <ul>
+ *       <li>The base {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValueClass() value class}.</li>
+ *       <li>Optionally the {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValueDomain()
+ *           value domain} (i.e. minimum and maximum valid values) or an enumeration of
+ *           {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValidValues() valid values}.</li>
+ *     </ul>
+ *   </li>
+ *   <li>Each entry can have a
+ *       {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getDefaultValue() default value} and an
+ *       {@linkplain org.apache.sis.parameter.DefaultParameterValue#getUnit() unit of measurement}.</li>
+ *   <li>Some parameters are mandatory ({@link org.apache.sis.parameter.DefaultParameterDescriptor#getMinimumOccurs()
+ *       minimum occurrence} = 1), meaning that they can not be removed from the group.
+ *       They can be left to their default value however.</li>
+ *   <li>Group may contain other groups.</li>
+ * </ul>
+ *
+ * {@section Usage}
+ * When using this {@code org.apache.sis.parameter} package, the starting point is usually to obtain a
+ * {@linkplain org.apache.sis.parameter.DefaultParameterDescriptorGroup parameter group descriptor} for
+ * the operation of interest. Those groups are provided by the operation implementors, so users do not
+ * need to create their own.</p>
  *
  * <p>Given a group descriptor, users can obtain a new instance of parameter values by a call to the
  * {@link org.apache.sis.parameter.DefaultParameterDescriptorGroup#createValue() createValue()} method.
@@ -48,6 +70,11 @@
  *     group.parameter("False easting").setValue(200.0, SI.KILOMETRE); // Using explicit units.
  * }
  * </div>
+ *
+ * Calls to {@code parameter(…)} throw a {@link org.opengis.parameter.InvalidParameterNameException}
+ * if the given name is unknown to the group.
+ * Calls to {@code setValue(…)} throw a {@link org.opengis.parameter.InvalidParameterValueException}
+ * if the given value is not assignable to the expected class or is not inside the value domain.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
