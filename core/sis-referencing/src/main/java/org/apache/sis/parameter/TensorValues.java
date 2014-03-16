@@ -274,7 +274,7 @@ final class TensorValues<E> extends AbstractIdentifiedObject
                  * For rank 3, creates ParameterValue[][][];
                  * etc.
                  */
-                final Class<?> componentType = Classes.changeArrayDimension(ParameterValue.class, rank - i);
+                final Class<?> componentType = Classes.changeArrayDimension(ParameterValue.class, rank - i - 1);
                 element = Array.newInstance(componentType, actualSize[i]);
                 if (parent != null) {
                     parent[indices[i-1]] = element;
@@ -301,7 +301,7 @@ final class TensorValues<E> extends AbstractIdentifiedObject
             element = parent[indices[i]];
         }
         if (element == null) {
-            element = descriptors.getElementDescriptor(indices);
+            element = descriptors.getElementDescriptor(indices).createValue();
             parent[indices[rank - 1]] = element;
         }
         return Parameters.cast((ParameterValue<?>) element, descriptors.getElementType());
@@ -433,7 +433,7 @@ final class TensorValues<E> extends AbstractIdentifiedObject
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (super.equals(object)) {
+        if (super.equals(object, mode)) {
             final TensorValues<?> that = (TensorValues<?>) object;
             return Utilities.deepEquals(descriptors, that.descriptors, mode) &&
                    Utilities.deepEquals(values(),    that.values(),    mode);

@@ -62,7 +62,7 @@ import java.util.Objects;
  *
  * For all matrix or tensor elements, the default value is 1 for elements on the diagonal (where all indices have
  * the same value) and 0 for all other elements. Those default values defines an <cite>identity matrix</cite>,
- * or <cite>Kroenecker delta tensor</cite>.
+ * or (more generally) <cite>Kroenecker delta tensor</cite>.
  *
  * <p><b>Parameters are not an efficient storage format for large tensors.</b>
  * Parameters are used only for small matrices/tensors to be specified in coordinate operations or processing libraries.
@@ -88,6 +88,15 @@ import java.util.Objects;
  * Those groups are extensible, i.e. the number of <code>"elt_<var>row</var>_<var>col</var>"</code> parameters
  * depends on the {@code "num_row"} and {@code "num_col"} parameter values. For this reason, the descriptor of
  * matrix or tensor parameters is not immutable.
+ *
+ * {@section Usage}
+ * For creating a new group of parameters for a matrix using the {@link #WKT1} naming conventions,
+ * on can use the following code:
+ *
+ * {@preformat java
+ *   Map<String,?> properties = Collections.singletonMap("name", "My operation");
+ *   ParameterValueGroup p = TensorParameters.WKT1.createValueGroup(properties);
+ * }
  *
  * @param <E> The type of tensor element values.
  *
@@ -142,7 +151,7 @@ public class TensorParameters<E> implements Serializable {
      * A small value is sufficient since matrix sizes are usually the maximum number of
      * CRS dimensions (usually 4) plus one.
      */
-    private static final int CACHE_SIZE = 5;
+    static final int CACHE_SIZE = 5;
 
     /**
      * Maximal cache rank. Memory required by the cache will be {@code pow(CACHE_SIZE, CACHE_RANK)},
@@ -219,8 +228,8 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
-     * Initializes the fields used for cached values: {@link #zero}, {@link #one}, {@link #valuesArrayType} and the
-     * {@link #parameters} array. The later is not assigned to the {@code parameters} field, but rather returned.
+     * Initializes the fields used for cached values: {@link #zero}, {@link #one} and the {@link #parameters} array.
+     * The later is not assigned to the {@code parameters} field, but rather returned.
      * Caller shall assign himself the returned value to the {@link #parameters} field.
      *
      * <p>This method is invoked by constructor and on deserialization.</p>
@@ -233,12 +242,8 @@ public class TensorParameters<E> implements Serializable {
         } catch (IllegalArgumentException e) {
             // Ignore - zero and one will be left to null.
         }
-        int rank = dimensions.length;
-        if (rank > CACHE_RANK) {
-            rank = CACHE_RANK;
-        }
         int length = 1;
-        while (--rank >= 0) {
+        for (int i = Math.min(dimensions.length, CACHE_RANK); --i >= 0;) {
             length *= CACHE_SIZE;
         }
         return new ParameterDescriptor[length];
@@ -291,7 +296,7 @@ public class TensorParameters<E> implements Serializable {
      * @return The parameter descriptor for the given tensor element.
      * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
      */
-    public final ParameterDescriptor<E> getElementDescriptor(final int[] indices) {
+    public final ParameterDescriptor<E> getElementDescriptor(final int... indices) {
         final int cacheIndex = cacheIndex(indices);
         if (cacheIndex >= 0) {
             final ParameterDescriptor<E> param;
@@ -611,7 +616,7 @@ public class TensorParameters<E> implements Serializable {
                 if (param == numRow || param == numCol) {
                     continue;
                 }
-                final String name = param.getDescriptor().getName().toString();
+                final String name = param.getDescriptor().getName().getCode();
                 IllegalArgumentException cause = null;
                 int[] indices = null;
                 try {
