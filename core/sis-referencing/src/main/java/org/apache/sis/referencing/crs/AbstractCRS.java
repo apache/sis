@@ -244,7 +244,9 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * will override this method with public access and more specific return type.
      */
     Datum getDatum() {
-        return null;
+        // User could provide his own CRS implementation outside this SIS package, so we have
+        // to check for SingleCRS interface. But all SIS classes override this implementation.
+        return (this instanceof SingleCRS) ? ((SingleCRS) this).getDatum() : null;
     }
 
     /**

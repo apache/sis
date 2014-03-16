@@ -45,11 +45,14 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * A single parameter value used by an operation method. Most CRS parameter values are numeric and can be obtained
- * by the {@link #intValue()} or {@link #doubleValue()} methods. But other types of parameter values are possible
- * and can be handled by the more generic {@link #getValue()} and {@link #setValue(Object)} methods.
+ * A single parameter value used by an operation method. {@code ParameterValue} instances are elements in
+ * a {@linkplain DefaultParameterValueGroup parameter value group}, in a way similar to {@code Map.Entry}
+ * instances in a {@code java.util.Map}.
  *
- * <p>All {@code xxxValue()} methods in this class are convenience methods converting the value from {@code Object}
+ * <p>In the context of coordinate operations, most parameter values are numeric and can be obtained by the
+ * {@link #intValue()} or {@link #doubleValue()} methods. But other types of parameter values are possible
+ * and can be handled by the more generic {@link #getValue()} and {@link #setValue(Object)} methods.
+ * All {@code xxxValue()} methods in this class are convenience methods converting the value from {@code Object}
  * to some commonly used types. Those types are specified in ISO 19111 as an union of attributes, listed below with
  * the corresponding getter and setter methods:</p>
  *

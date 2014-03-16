@@ -43,7 +43,7 @@ import org.apache.sis.internal.util.X364;
  * </ul>
  *
  * {@section Syntax coloring}
- * A convenience {@link #print(Convention)} method is provided, which is roughly equivalent to
+ * A convenience {@link #print()} method is provided, which is roughly equivalent to
  * {@code System.out.println(this)} except that syntax coloring is automatically applied
  * if the terminal seems to support the ANSI escape codes.
  *
@@ -54,7 +54,7 @@ import org.apache.sis.internal.util.X364;
  * <ul>
  *   <li>{@link #toWKT()} will throw a {@link UnformattableObjectException}.</li>
  *   <li>{@link #toString()} will ignore the problem and uses non-standard elements if needed.</li>
- *   <li>{@link #print(Convention)} will show the non-standard elements in red if syntax coloring is enabled.</li>
+ *   <li>{@link #print()} will show the non-standard elements in red if syntax coloring is enabled.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
