@@ -91,7 +91,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
     }
 
     /**
-     * Validates the test parameter descriptors created by {@link #createGroup_2M_2O()}.
+     * Validates the test parameter descriptors given by {@link #M1_M1_O1_O2}.
      */
     @Test
     public void validateTestObjects() {

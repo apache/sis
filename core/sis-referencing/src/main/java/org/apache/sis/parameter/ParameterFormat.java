@@ -80,8 +80,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *   │ Latitude of natural origin     │ Double │ Mandatory  │  [-80 … 84]°  │         0.0°  │
  *   │ Longitude of natural origin    │ Double │ Mandatory  │ [-180 … 180]° │         0.0°  │
  *   │ Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   │
- *   │ False easting                  │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m │
- *   │ False northing                 │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m │
+ *   │ False easting                  │ Double │ Mandatory  │   (-∞ … ∞) m  │         0.0 m │
+ *   │ False northing                 │ Double │ Mandatory  │   (-∞ … ∞) m  │         0.0 m │
  *   └────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘
  * }
  * </div>
@@ -159,10 +159,10 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   ║ EPSG: Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   ║
          *   ║ OGC:  scale_factor                   │        │            │               │               ║
          *   ╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢
-         *   ║ EPSG: False easting                  │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m ║
+         *   ║ EPSG: False easting                  │ Double │ Mandatory  │   (-∞ … ∞) m  │         0.0 m ║
          *   ║ OGC:  false_easting                  │        │            │               │               ║
          *   ╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢
-         *   ║ EPSG: False northing                 │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m ║
+         *   ║ EPSG: False northing                 │ Double │ Mandatory  │   (-∞ … ∞) m  │         0.0 m ║
          *   ║ OGC:  false_northing                 │        │            │               │               ║
          *   ╚══════════════════════════════════════╧════════╧════════════╧═══════════════╧═══════════════╝
          * }
@@ -188,8 +188,8 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   │ Latitude of natural origin     │ Double │ Mandatory  │  [-80 … 84]°  │         0.0°  │
          *   │ Longitude of natural origin    │ Double │ Mandatory  │ [-180 … 180]° │         0.0°  │
          *   │ Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   │
-         *   │ False easting                  │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m │
-         *   │ False northing                 │ Double │ Optional   │   (-∞ … ∞) m  │         0.0 m │
+         *   │ False easting                  │ Double │ Mandatory  │   (-∞ … ∞) m  │         0.0 m │
+         *   │ False northing                 │ Double │ Mandatory  │   (-∞ … ∞) m  │         0.0 m │
          *   └────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘
          * }
          * </div>
@@ -202,7 +202,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * The summary contains the identifier names and aliases aligned in a table.
          *
          * <div class="note"><b>Example:</b>
-         * The <cite>Mercator (variant A)</cite> example given in {@link ParameterBuiler} javadoc
+         * The <cite>Mercator (variant A)</cite> example given in {@link ParameterBuilder} javadoc
          * formatted at this level produces a text like below:
          *
          * {@preformat text

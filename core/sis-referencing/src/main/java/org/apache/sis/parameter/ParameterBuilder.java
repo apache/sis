@@ -252,12 +252,12 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * The descriptor has no minimal or maximal value and no unit.
      *
      * <p>The {@code validValues} property is mostly for restricting values to
-     * a {@linkplain org.opengis.util.CodeList code list} or enumeration subset.
+     * a {@linkplain org.opengis.util.CodeList code list} or {@linkplain Enum enumeration} subset.
      * It is not necessary to provide this property when all values from the code list or enumeration are valid.</p>
      *
      * @param  <T>          The compile-time type of the {@code valueClass} argument.
      * @param  valueClass   The class that describe the type of the parameter values.
-     * @param  validValues  A finite set of valid values (usually from a {@linkplain CodeList code list})
+     * @param  validValues  A finite set of valid values (usually from a code list or enumeration)
      *                      or {@code null} if it doesn't apply.
      * @param  defaultValue The default value for the parameter, or {@code null} if none.
      * @return The parameter descriptor for the given set of valid values.
@@ -290,7 +290,8 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * {@link #createGroup(int, int, GeneralParameterDescriptor[])} with a cardinality of [0 … 1]
      * or [1 … 1] depending on the value given to the last call to {@link #setRequired(boolean)}.
      *
-     * @param  parameters The {@linkplain #descriptors() parameter descriptors} for the group to create.
+     * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
+     *         for the group to create.
      * @return The parameter descriptor group.
      */
     public ParameterDescriptorGroup createGroup(final GeneralParameterDescriptor... parameters) {
@@ -304,7 +305,8 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      *                       number of times that values for this parameter group are required.
      * @param  maximumOccurs The {@linkplain DefaultParameterDescriptorGroup#getMaximumOccurs() maximum}
      *                       number of times that values for this parameter group are required.
-     * @param  parameters    The {@linkplain #descriptors() parameter descriptors} for the group to create.
+     * @param  parameters    The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
+     *                       for the group to create.
      * @return The parameter descriptor group.
      */
     public ParameterDescriptorGroup createGroup(final int minimumOccurs, final int maximumOccurs,

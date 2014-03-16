@@ -91,7 +91,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     }
 
     /**
-     * Validates the test parameter values created by {@link #createValues(List, int)}.
+     * Validates the test parameter values created by {@link #createValues(int)}.
      */
     @Test
     public void validateTestObjects() {
