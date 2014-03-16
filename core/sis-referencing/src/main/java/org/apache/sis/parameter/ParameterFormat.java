@@ -122,7 +122,7 @@ public class ParameterFormat extends TabularFormat<Object> {
     private static final String SEPARATOR = " │ ";
 
     /**
-     * The amount of information to put in the table to be formatted by {@link ParameterFormat}.
+     * The amount of information to include in the table formatted by {@link ParameterFormat}.
      * The content level controls whether the formatter should write all names and aliases
      * (at the cost of multi-line rows), or to pickup one name per parameter for a more compact table.
      *

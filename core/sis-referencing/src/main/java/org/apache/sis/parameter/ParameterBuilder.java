@@ -29,11 +29,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * Provides convenience methods for easier {@code ParameterDescriptor} instantiations.
- * This builder can be helpful for map projection <em>providers</em>, or for implementation of
- * any process that use parameters. Map projection or process <em>users</em> do not need this
- * builder since they can invoke {@link ParameterDescriptor#createValue()} on the descriptor
- * provided by the implementor.
+ * Helper class for {@linkplain DefaultParameterDescriptor parameter descriptor} instantiations.
+ * This builder can be helpful to operation or process <em>providers</em> (e.g. map projection
+ * implementors). Operation <em>users</em> do not need this builder since they can invoke
+ * {@link ParameterDescriptor#createValue()} on the descriptor provided by the implementor.
  *
  * {@section Identification properties}
  * Each parameter must have a name, which can be specified by any of the {@code addName(…)} methods.

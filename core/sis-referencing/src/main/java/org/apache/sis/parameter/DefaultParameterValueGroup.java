@@ -38,19 +38,30 @@ import java.util.Objects;
 
 
 /**
- * A group of related parameter values. {@code ParameterValueGroup} instances are typically created by calls to
+ * A group of related parameter values. Parameter groups have some similarities with {@code java.util.Map}:
+ *
+ * <ul>
+ *   <li>{@link #parameter(String)} is similar in purpose to {@link java.util.Map#get(Object)},
+ *       with an additional level of indirection in both the argument and the return value.</li>
+ *   <li>{@link #values()} is similar in purpose to {@link java.util.Map#entrySet()},
+ *       with {@code ParameterValue} playing a role similar to {@code Map.Entry}.</li>
+ * </ul>
+ *
+ * {@section Instantiation and validity constraints}
+ * {@code ParameterValueGroup} instances are typically created by calls to
  * <code>descriptor.{@linkplain DefaultParameterDescriptorGroup#createValue() createValue()}</code> on a descriptor
- * supplied by a map projection or process provider. New instances are initialized with a {@linkplain #values() list
- * of values} containing all mandatory parameters, and no optional parameter. The values list is modifiable, but all
- * operations will first ensure that the modification would not violate the cardinality constraints (i.e. the minimum
+ * supplied by a coordinate operation or process provider. New instances are initialized with a {@linkplain #values()
+ * list of values} containing all mandatory parameters, and no optional parameter. The values list is modifiable, but
+ * all methods will first ensure that the modification would not violate the cardinality constraints (i.e. the minimum
  * and maximum occurrences of that parameter allowed by the descriptor). If a cardinality constraint is violated, then
  * an {@link InvalidParameterCardinalityException} will be thrown.
  *
- * <p>After a new {@code ParameterValueGroup} instance has been created, the parameter values can be set by chaining
+ * {@section Setting the parameter values}
+ * After a new {@code ParameterValueGroup} instance has been created, the parameter values can be set by chaining
  * calls to {@link #parameter(String)} with one of the {@code setValue(…)} methods defined in the returned object
  * (see the {@linkplain DefaultParameterValue table of setter methods}). The {@code parameter(String)} method can
  * be invoked regardless of whether the parameter is mandatory or optional: if the parameter was optional and not
- * yet present in this group, it will be created.</p>
+ * yet present in this group, it will be created.
  *
  * <div class="note"><b>Example:</b>
  * Assuming the descriptor defined in the {@link DefaultParameterDescriptorGroup} example,

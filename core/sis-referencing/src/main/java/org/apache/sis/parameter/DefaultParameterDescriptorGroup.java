@@ -48,12 +48,12 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * to be shared by all users of that projection or process.
  *
  * {@section Instantiation}
- * Map projection or process <em>implementors</em> may use the {@link ParameterBuilder} class for making
+ * Coordinate operation or process <em>implementors</em> may use the {@link ParameterBuilder} class for making
  * their task easier.
  *
  * <div class="note"><b>Example:</b>
- * The following example creates a <cite>Mercator (variant A)</cite> projection valid
- * from 80°S to 84°N on all the longitude range (±180°).
+ * The following example declares the parameters for a <cite>Mercator (variant A)</cite> projection method
+ * valid from 80°S to 84°N on all the longitude range (±180°).
  *
  * {@preformat java
  *     public class Mercator {
@@ -76,14 +76,15 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *         }
  *     }
  * }
+ * </div>
  *
- * Users can simply reference the descriptor provided par projection or process providers like below:
+ * {@section Usage}
+ * Users can simply reference the descriptor provided par a coordinate operation or process providers like below:
  *
  * {@preformat java
  *     ParameterValueGroup parameters = Mercator.PARAMETERS.createValue();
  *     // See DefaultParameterValueGroup for examples on 'parameters' usage.
  * }
- * </div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
