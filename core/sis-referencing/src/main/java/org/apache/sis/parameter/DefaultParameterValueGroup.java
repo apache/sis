@@ -181,8 +181,6 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
      * @param  name The name of the parameter to search for.
      * @return The parameter value for the given name.
      * @throws ParameterNotFoundException if there is no parameter value for the given name.
-     *
-     * @see Parameters#getOrCreate(ParameterDescriptor, ParameterValueGroup)
      */
     @Override
     public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {

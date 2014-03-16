@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import java.util.Locale;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;

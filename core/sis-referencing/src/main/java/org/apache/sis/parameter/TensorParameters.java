@@ -48,7 +48,7 @@ import java.util.Objects;
 
 
 /**
- * Creates parameter groups from tensors (usually matrices), and conversely.
+ * Creates parameter groups for tensors (usually matrices).
  * Matrices are handled as a special case of tensors (<cite>second-order</cite> tensors).
  *
  * <p>Each group of parameters contains the following elements:</p>
