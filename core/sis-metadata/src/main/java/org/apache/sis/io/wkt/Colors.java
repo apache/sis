@@ -49,11 +49,11 @@ public class Colors implements Cloneable, Serializable {
     private static final long serialVersionUID = 256160285861027191L;
 
     /**
-     * The default colors used by {@link FormattableObject#print(Convention)}.
+     * The default colors used by {@link FormattableObject#print()}.
      * Those colors give better results on a {@link java.io.Console} with black background.
      * This map is immutable.
      *
-     * @see FormattableObject#print(Convention)
+     * @see FormattableObject#print()
      */
     public static final Colors DEFAULT = new Colors();
     static {

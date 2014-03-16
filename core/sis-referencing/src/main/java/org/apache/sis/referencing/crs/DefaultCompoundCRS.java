@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -266,6 +267,14 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     @Override
     public Class<? extends CompoundCRS> getInterface() {
         return CompoundCRS.class;
+    }
+
+    /**
+     * Compound CRS do not have datum.
+     */
+    @Override
+    final Datum getDatum() {
+        return null;
     }
 
     /**

@@ -30,7 +30,7 @@ import org.apache.sis.measure.Range;
  * @module
  */
 @SuppressWarnings("serial")
-final class MultiOccurrenceDescriptor<T> extends DefaultParameterDescriptor<T> {
+final strictfp class MultiOccurrenceDescriptor<T> extends DefaultParameterDescriptor<T> {
     /**
      * Creates a new descriptor with the given name and default value.
      */
