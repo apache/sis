@@ -307,6 +307,9 @@ final class ParameterTableRow {
     final void writeIdentifiers(final Appendable out, final boolean writeCodespaces,
             final Colors colors, final boolean colorsForRows, final String lineSeparator) throws IOException
     {
+        if (codespaceWidth != 0) {
+            codespaceWidth++; // Add a space between codespace and code in e.g. "OGC: Mercator".
+        }
         boolean isNewLine = false;
         for (final Map.Entry<String,Set<Object>> entry : identifiers.entrySet()) {
             final String codespace = entry.getKey();
@@ -323,7 +326,7 @@ final class ParameterTableRow {
                  */
                 writeColor(out, colors, ElementKind.NAME);
                 if (writeCodespaces) {
-                    int pad = codespaceWidth + 1;
+                    int pad = codespaceWidth;
                     if (codespace != null) {
                         writeColor(out, FAINT, colorsForRows);
                         out.append(codespace).append(':');

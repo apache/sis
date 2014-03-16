@@ -708,6 +708,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnexpectedFileFormat_2 = 111;
 
         /**
+         * Parameter “{0}” was not expected.
+         */
+        public static final short UnexpectedParameter_1 = 152;
+
+        /**
          * Parameter “{0}” has no unit.
          */
         public static final short UnitlessParameter_1 = 139;
