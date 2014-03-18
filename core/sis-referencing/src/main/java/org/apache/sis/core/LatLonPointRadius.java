@@ -22,19 +22,25 @@ import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 
+// GeoAPI import
+import org.opengis.geometry.DirectPosition;
+
 //SIS imports
 import org.apache.sis.distance.DistanceUtils;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.measure.Longitude;
 
 /**
  * Represents a 2D point associated with a radius to enable great circle
  * estimation on earth surface.
  *
- * @deprecated Replaced by {@link org.opengis.geometry.DirectPosition}, which is derived from OGC/ISO specifications.
+ * <div class="warning">This class may be refactored as a geometric object in a future SIS version.
+ * Current implementation does not verify the CRS of circle center or the datum.</div>
  */
-@Deprecated
-public class LatLonPointRadius extends GeneralDirectPosition {
+public class LatLonPointRadius {
+
+  private final DirectPosition center;
+  private final double radius;
 
   /**
    * Creates a representation of point-radius search region.
@@ -44,8 +50,9 @@ public class LatLonPointRadius extends GeneralDirectPosition {
    * @param radius
    *          the radius of the search region
    */
-  public LatLonPointRadius(DirectPosition2D center, double radius) {
-    super(center.x, center.y, radius);
+  public LatLonPointRadius(DirectPosition center, double radius) {
+    this.center = center;
+    this.radius = radius;
   }
 
   /**
@@ -58,7 +65,7 @@ public class LatLonPointRadius extends GeneralDirectPosition {
    *         circular region
    */
   public DirectPosition2D[] getCircularRegionApproximation(int numberOfPoints) {
-    if (super.getOrdinate(2) >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
+    if (radius >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
       DirectPosition2D[] points = new DirectPosition2D[5];
       points[0] = new DirectPosition2D(-180.0, -90.0);
       points[1] = new DirectPosition2D(-180.0, 90.0);
@@ -75,8 +82,8 @@ public class LatLonPointRadius extends GeneralDirectPosition {
 
     for (int i = 0; i < numberOfPoints; i++)
     {
-      points[i] = DistanceUtils.getPointOnGreatCircle(super.getOrdinate(1),
-          super.getOrdinate(0), super.getOrdinate(2), i * bearingIncrement);
+      points[i] = DistanceUtils.getPointOnGreatCircle(center.getOrdinate(1),
+          center.getOrdinate(0), radius, i * bearingIncrement);
     }
 
     points[numberOfPoints] = points[0];
@@ -92,30 +99,30 @@ public class LatLonPointRadius extends GeneralDirectPosition {
    * @return Java Rectangle2D object that bounds the circlar search region
    */
   public Rectangle2D getRectangularRegionApproximation(int numberOfPoints) {
-    if (super.getOrdinate(2) >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
+    if (radius >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
       return new Rectangle2D.Double(0.0, 0.0, 360.0, 180.0);
     }
     int numberOfCrossOvers = 0;
 
     Path2D path = new Path2D.Double();
-    DirectPosition2D initPT = DistanceUtils.getPointOnGreatCircle(super.getOrdinate(1),
-        super.getOrdinate(0), super.getOrdinate(2), 0);
+    DirectPosition2D initPT = DistanceUtils.getPointOnGreatCircle(center.getOrdinate(1),
+        center.getOrdinate(0), radius, 0);
     path.moveTo(initPT.x + 180.0, initPT.y + 90.0);
 
     DirectPosition2D currPT = initPT;
 
     for (int i = 1; i < 360; i++) {
 
-      DirectPosition2D pt = DistanceUtils.getPointOnGreatCircle(super.getOrdinate(1),
-          super.getOrdinate(0), super.getOrdinate(2), i);
+      DirectPosition2D pt = DistanceUtils.getPointOnGreatCircle(center.getOrdinate(1),
+          center.getOrdinate(0), radius, i);
       path.lineTo(pt.x + 180.0, pt.y + 90.0);
 
-      if (dateLineCrossOver(getNormLon(currPT.x), getNormLon(pt.x))) {
+      if (dateLineCrossOver(Longitude.normalize(currPT.x), Longitude.normalize(pt.x))) {
         numberOfCrossOvers++;
       }
       currPT = pt;
     }
-    if (dateLineCrossOver(getNormLon(initPT.x), getNormLon(currPT.x))) {
+    if (dateLineCrossOver(Longitude.normalize(initPT.x), Longitude.normalize(currPT.x))) {
       numberOfCrossOvers++;
     }
 
@@ -125,17 +132,15 @@ public class LatLonPointRadius extends GeneralDirectPosition {
      */
     if (numberOfCrossOvers == 1) {
       Rectangle2D r = path.getBounds2D();
-      Rectangle2D lowerHalf = new Rectangle2D.Double(0.0, 0.0, 360.0, r
-          .getMaxY());
-      if (lowerHalf.contains(super.getOrdinate(0) + 180, super.getOrdinate(1) + 90)) {
+      Rectangle2D lowerHalf = new Rectangle2D.Double(0.0, 0.0, 360.0, r.getMaxY());
+      if (lowerHalf.contains(center.getOrdinate(0) + 180.0, center.getOrdinate(1) + 90.0)) {
         return lowerHalf;
       } else {
-        return new Rectangle2D.Double(0.0, r.getMinY(), 360.0, 180.0 - r
-            .getMinY());
+        return new Rectangle2D.Double(0.0, r.getMinY(), 360.0, 180.0 - r.getMinY());
       }
     }
 
-    if (path.contains(super.getOrdinate(0) + 180, super.getOrdinate(1) + 90)) {
+    if (path.contains(center.getOrdinate(0) + 180.0, center.getOrdinate(1) + 90.0)) {
       Rectangle2D r = path.getBounds2D();
       if ((r.getMaxX() - r.getMinX()) > 359.0) {
         return new Rectangle2D.Double(0.0, 0.0, 360.0, 180.0);
@@ -155,24 +160,6 @@ public class LatLonPointRadius extends GeneralDirectPosition {
       wholeMap.subtract(pathArea);
       return wholeMap.getBounds2D();
     }
-  }
-
-  /**
-   * Normalizes the longitude values to be between -180.0 and 180.0
-   *
-   * @return longitude value that is between -180.0 and 180.0 inclusive
-   */
-  private static double getNormLon(double normLon) {
-    if (normLon > 180.0) {
-      while (normLon > 180.0) {
-        normLon -= 360.0;
-      }
-    } else if (normLon < -180.0) {
-      while (normLon < -180.0) {
-        normLon += 360.0;
-      }
-    }
-    return normLon;
   }
 
   /**
