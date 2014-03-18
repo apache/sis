@@ -58,7 +58,7 @@ public final strictfp class TensorParametersTest extends TestCase {
     }
 
     /**
-     * Tests {@link TensorParameters#getDimensionDescriptor(int[])}.
+     * Tests {@link TensorParameters#getDimensionDescriptor(int)}.
      */
     @Test
     public void testGetDimensionDescriptor() {
