@@ -66,11 +66,11 @@ public class Colors implements Cloneable, Serializable {
         map.put(ElementKind.PARAMETER,  X364.FOREGROUND_GREEN);
         map.put(ElementKind.METHOD,     X364.FOREGROUND_GREEN);
         map.put(ElementKind.DATUM,      X364.FOREGROUND_GREEN);
+        map.put(ElementKind.SCOPE,      X364.FOREGROUND_GRAY);
+        map.put(ElementKind.EXTENT,     X364.FOREGROUND_GRAY);
+        map.put(ElementKind.CITATION,   X364.FOREGROUND_GRAY);
+        map.put(ElementKind.REMARKS,    X364.FOREGROUND_GRAY);
         map.put(ElementKind.ERROR,      X364.BACKGROUND_RED);
-        map.put(ElementKind.SCOPE,      X364.BACKGROUND_GRAY);
-        map.put(ElementKind.EXTENT,     X364.BACKGROUND_GRAY);
-        map.put(ElementKind.CITATION,   X364.BACKGROUND_GRAY);
-        map.put(ElementKind.REMARKS,    X364.BACKGROUND_GRAY);
         DEFAULT.isImmutable = true;
     }
 
