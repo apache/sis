@@ -26,10 +26,12 @@ import java.io.IOException;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
 import org.opengis.metadata.Metadata;
+import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.xml.XML;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 
@@ -41,6 +43,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <ul>
  *   <li>{@link Metadata}, typically built from the {@code <gmd:MD_Metadata>} XML element.</li>
+ *   <li>{@link ReferenceSystem}, accessible by {@link Metadata#getReferenceSystemInfo()}.</li>
  * </ul>
  *
  * The above list may be extended in any future SIS version.
@@ -66,6 +69,11 @@ public class XMLStore extends DataStore {
      * May still {@code null} if the unmarshalling failed.
      */
     private Object object;
+
+    /**
+     * The metadata object, determined when first needed.
+     */
+    private Metadata metadata;
 
     /**
      * Creates a new XML store from the given file, URL or stream.
@@ -162,11 +170,22 @@ public class XMLStore extends DataStore {
     @Override
     public Metadata getMetadata() throws DataStoreException {
         unmarshal();
-        return (object instanceof Metadata) ? (Metadata) object : null;
+        if (metadata == null) {
+            if (object instanceof Metadata) {
+                metadata = (Metadata) object;
+            } else if (object instanceof ReferenceSystem) {
+                final DefaultMetadata d = new DefaultMetadata();
+                d.getReferenceSystemInfo().add((ReferenceSystem) object);
+                metadata = d;
+            }
+        }
+        return metadata;
     }
 
     /**
      * Closes this data store and releases any underlying resources.
+     *
+     * @throws DataStoreException If an error occurred while closing this data store.
      */
     @Override
     public void close() throws DataStoreException {
