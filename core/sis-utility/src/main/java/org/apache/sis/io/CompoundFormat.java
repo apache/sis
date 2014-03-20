@@ -32,11 +32,13 @@ import java.text.SimpleDateFormat;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -417,6 +419,11 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             return new RangeFormat(locale);
         } else if (valueType == Class.class) {
             return ClassFormat.INSTANCE;
+        } else {
+            final Class<?>[] interfaces = valueType.getInterfaces();
+            if (ArraysExt.contains(interfaces, IdentifiedObject.class)) {
+                return new IdentifiedObjectFormat(locale);
+            }
         }
         return null;
     }

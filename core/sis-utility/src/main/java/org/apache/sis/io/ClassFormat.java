@@ -23,7 +23,7 @@ import org.apache.sis.util.Classes;
 
 
 /**
- * Used by {@link CompoundFormat} for formatting the names of object of type {@link Class}.
+ * Used by {@link CompoundFormat} for formatting the name of objects of type {@link Class}.
  *
  * {@section Thread safety}
  * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
