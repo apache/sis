@@ -282,8 +282,28 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * <div class="note"><b>Implementation note:</b>
      * It was easy to put JAXB annotations directly on datum fields in subclasses because each CRS type
      * can be associated to only one datum type. But we do not have this convenience for coordinate systems,
-     * where the same CRS may accept more than one kind of CS. In GML, the different kinds of CS are marshalled
-     * in different XML elements.</div>
+     * where the same CRS may accept different kinds of CS. In GML, the different kinds of CS are marshalled
+     * as different XML elements. The usual way to handle such {@code <xs:choice>} with JAXB is to annotate
+     * a single method like below:
+     *
+     * {@preformat java
+     *   &#64;Override
+     *   &#64;XmlElements({
+     *     &#64;XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
+     *     &#64;XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
+     *     &#64;XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
+     *     &#64;XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
+     *     &#64;XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
+     *     &#64;XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
+     *     &#64;XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
+     *   })
+     *   public CoordinateSystem getCoordinateSystem() {
+     *       return super.getCoordinateSystem();
+     *   }
+     * }
+     *
+     * However our attempts to apply this approach have not been conclusive.
+     * For an unknown reason, the unmarlshalled CS object was empty.</div>
      *
      * @param  name The property name, used only in case of error message to format.
      * @throws IllegalStateException If the coordinate system has already been set.

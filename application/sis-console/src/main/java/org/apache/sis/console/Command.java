@@ -41,7 +41,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * Each command can accepts an arbitrary amount of the following options:
  *
  * <blockquote><table class="compact">
- * <tr><td>{@code --format}   </td><td>The output format (XML or text).</td></tr>
+ * <tr><td>{@code --format}   </td><td>The output format: {@code xml}, {@code wkt}, {@code wkt1} or {@code text}.</td></tr>
  * <tr><td>{@code --locale}   </td><td>The locale to use for the command output.</td></tr>
  * <tr><td>{@code --timezone} </td><td>The timezone for the dates to be formatted.</td></tr>
  * <tr><td>{@code --encoding} </td><td>The encoding to use for the command output.</td></tr>
@@ -150,10 +150,11 @@ public final class Command {
             command = new HelpSC(-1, args);
         } else {
             commandName = commandName.toLowerCase(Locale.US);
-                 if (commandName.equals("about"))     command = new AboutSC   (commandIndex, args);
-            else if (commandName.equals("help"))      command = new HelpSC    (commandIndex, args);
-            else if (commandName.equals("mime-type")) command = new MimeTypeSC(commandIndex, args);
-            else if (commandName.equals("metadata"))  command = new MetadataSC(commandIndex, args);
+                 if (commandName.equals("about"))     command = new AboutSC   (       commandIndex, args);
+            else if (commandName.equals("help"))      command = new HelpSC    (       commandIndex, args);
+            else if (commandName.equals("mime-type")) command = new MimeTypeSC(       commandIndex, args);
+            else if (commandName.equals("metadata"))  command = new MetadataSC(false, commandIndex, args);
+            else if (commandName.equals("crs"))       command = new MetadataSC(true,  commandIndex, args);
             else throw new InvalidCommandException(Errors.format(
                         Errors.Keys.UnknownCommand_1, commandName), commandName);
         }

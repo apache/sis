@@ -24,6 +24,9 @@ import org.apache.sis.geometry.DirectPosition2D;
  * Class to calculate distances on earth surface. Actual calculation code very
  * similar to Apache SIS but refractor to allow use of custom classes.
  *
+ * <div class="warning"><b>Warning:</b> This class may change in a future SIS version. Current implementation
+ * performs computations on a sphere of hard-coded radius. A future implementation should perform computations
+ * on a given ellipsoid.</div>
  */
 public class DistanceUtils {
 

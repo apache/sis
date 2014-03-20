@@ -22,6 +22,11 @@ import java.io.IOException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.storage.DataStore;
@@ -36,7 +41,8 @@ import org.apache.sis.xml.XML;
 
 
 /**
- * The "metadata" subcommand.
+ * The "metadata" and "crs" subcommands.
+ * CRS are considered as a kind of metadata here.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -45,14 +51,25 @@ import org.apache.sis.xml.XML;
  */
 final class MetadataSC extends SubCommand {
     /**
-     * Creates the {@code "metadata"} sub-command.
+     * {@code true} for the {@code "crs"} sub-command,
+     * or {@code false} for the {@code "metadata"} sub-command.
      */
-    MetadataSC(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args, EnumSet.of(Option.FORMAT, Option.LOCALE, Option.TIMEZONE, Option.ENCODING, Option.HELP));
+    private final boolean isCRS;
+
+    /**
+     * Creates the {@code "metadata"} or {@code "crs"} sub-command.
+     *
+     * @param isCRS {@code true} for the {@code "crs"} sub-command,
+     *        or {@code false} for the {@code "metadata"} sub-command.
+     */
+    MetadataSC(final boolean isCRS, final int commandIndex, final String... args) throws InvalidOptionException {
+        super(commandIndex, args, EnumSet.of(Option.FORMAT, Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
+                Option.COLORS, Option.HELP));
+        this.isCRS = isCRS;
     }
 
     /**
-     * Prints metadata information.
+     * Prints metadata or CRS information.
      *
      * @throws DataStoreException If an error occurred while reading the file.
      * @throws JAXBException If an error occurred while producing the XML output.
@@ -62,18 +79,30 @@ final class MetadataSC extends SubCommand {
     public int run() throws InvalidOptionException, DataStoreException, JAXBException, IOException {
         /*
          * Output format can be either "text" (the default) or "xml".
+         * In the case of "crs" sub-command, we accept also WKT variants.
          */
         boolean toXML = false;
+        Convention wkt = null;
         final String format = options.get(Option.FORMAT);
         if (format != null && !format.equalsIgnoreCase("text")) {
-            if (!format.equalsIgnoreCase("xml")) {
-                throw new InvalidOptionException(Errors.format(
-                        Errors.Keys.IllegalOptionValue_2, "format", format), format);
+            toXML = format.equalsIgnoreCase("xml");
+            if (!toXML) {
+                if (isCRS) {
+                    if (format.equalsIgnoreCase("wkt") || format.equalsIgnoreCase("wkt2")) {
+                        wkt = Convention.WKT2;
+                    } else if (format.equalsIgnoreCase("wkt1")) {
+                        wkt = Convention.WKT1;
+                    }
+                }
+                if (wkt == null) {
+                    throw new InvalidOptionException(Errors.format(
+                            Errors.Keys.IllegalOptionValue_2, "format", format), format);
+                }
             }
-            toXML = true;
         }
         /*
          * Read metadata from the data storage.
+         * If we are executing the "crs" sub-command, extract the first CRS.
          */
         if (hasUnexpectedFileCount(1, 1)) {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
@@ -85,31 +114,52 @@ final class MetadataSC extends SubCommand {
         } finally {
             store.close();
         }
+        if (metadata == null) {
+            return 0;
+        }
+        CoordinateReferenceSystem crs = null;
+        if (isCRS) {
+            for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
+                if (rs instanceof CoordinateReferenceSystem) {
+                    crs = (CoordinateReferenceSystem) rs;
+                    break;
+                }
+            }
+            if (crs == null) {
+                return 0;
+            }
+        }
         /*
          * Format metadata to the standard output stream.
          */
-        if (metadata != null) {
-            if (toXML) {
-                final MarshallerPool pool = new MarshallerPool(null);
-                final Marshaller marshaller = pool.acquireMarshaller();
-                marshaller.setProperty(XML.LOCALE,   locale);
-                marshaller.setProperty(XML.TIMEZONE, timezone);
-                if (isConsole()) {
-                    marshaller.marshal(metadata, out);
-                } else {
-                    out.flush();
-                    marshaller.setProperty(Marshaller.JAXB_ENCODING, encoding.name());
-                    marshaller.marshal(metadata, System.out); // Use OutputStream instead than Writer.
-                    System.out.flush();
-                }
+        if (toXML) {
+            final MarshallerPool pool = new MarshallerPool(null);
+            final Marshaller marshaller = pool.acquireMarshaller();
+            marshaller.setProperty(XML.LOCALE,   locale);
+            marshaller.setProperty(XML.TIMEZONE, timezone);
+            if (isConsole()) {
+                marshaller.marshal(crs != null ? crs : metadata, out);
             } else {
-                final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(metadata, ValueExistencePolicy.NON_EMPTY);
-                final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
-                tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
-                tf.format(tree, out);
+                out.flush();
+                marshaller.setProperty(Marshaller.JAXB_ENCODING, encoding.name());
+                marshaller.marshal(crs != null ? crs : metadata, System.out); // Use OutputStream instead than Writer.
+                System.out.flush();
             }
-            out.flush();
+        } else if (wkt != null) {
+            final WKTFormat f = new WKTFormat(locale, timezone);
+            f.setConvention(wkt);
+            if (colors) {
+                f.setColors(Colors.DEFAULT);
+            }
+            f.format(crs, out);
+            out.println();
+        } else {
+            final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(metadata, ValueExistencePolicy.NON_EMPTY);
+            final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
+            tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
+            tf.format(tree, out);
         }
+        out.flush();
         return 0;
     }
 

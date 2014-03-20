@@ -22,27 +22,23 @@
  *
  * <p>Parameters are organized in <cite>groups</cite>. A group may be for example the set of all parameters needed
  * for the definition of a <cite>Mercator projection</cite>.
- * Parameter groups have some similarity with {@code java.util.Map} where:</p>
+ * Parameter groups have some similarities with {@code java.util.Map} where:</p>
  *
  * <ul>
  *   <li>Keys are (indirectly) parameter
  *       {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getName() names}.</li>
- *   <li>Values are typically (but not restricted to) {@code int}, {@code int[]}, {@code double}, {@code double[]},
+ *   <li>Values are (indirectly) typically of type {@code int}, {@code int[]}, {@code double}, {@code double[]},
  *       {@code boolean}, {@link java.lang.String}, {@link java.net.URI} or
- *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation Citation}
- *       (note: there is a level of indirection through those values).</li>
- *   <li>Each parameter (equivalent to map entry) defines its own set of constraints on acceptable values:
- *     <ul>
- *       <li>The base {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValueClass() value class}.</li>
- *       <li>Optionally the {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValueDomain()
- *           value domain} (i.e. minimum and maximum valid values) or an enumeration of
- *           {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValidValues() valid values}.</li>
- *     </ul>
- *   </li>
- *   <li>Each entry can have a
- *       {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getDefaultValue() default value} and an
+ *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation Citation}.</li>
+ *   <li>Each parameter (equivalent to map entry) constraints the values to a base
+ *       {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValueClass() value class},
+ *       and optionally to a {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValueDomain()
+ *       value domain} (i.e. minimum and maximum valid values) or an enumeration of
+ *       {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getValidValues() valid values}.</li>
+ *   <li>Each parameter can have a
+ *       {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getDefaultValue() default value} and a
  *       {@linkplain org.apache.sis.parameter.DefaultParameterValue#getUnit() unit of measurement}.</li>
- *   <li>Some parameters are mandatory ({@link org.apache.sis.parameter.DefaultParameterDescriptor#getMinimumOccurs()
+ *   <li>Some parameters are mandatory ({@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getMinimumOccurs()
  *       minimum occurrence} = 1), meaning that they can not be removed from the group.
  *       They can be left to their default value however.</li>
  *   <li>Group may contain other groups.</li>

@@ -85,7 +85,7 @@ abstract class SubCommand {
      * This is the value specified by the {@code --colors} arguments if present,
      * or a value inferred from the system otherwise.
      */
-    protected final Boolean colors;
+    protected final boolean colors;
 
     /**
      * Output stream to the console. This output stream uses the encoding
