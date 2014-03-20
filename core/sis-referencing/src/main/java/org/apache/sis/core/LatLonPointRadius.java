@@ -34,7 +34,7 @@ import org.apache.sis.measure.Longitude;
  * Represents a 2D point associated with a radius to enable great circle
  * estimation on earth surface.
  *
- * <div class="warning">This class may be refactored as a geometric object in a future SIS version.
+ * <div class="warning"><b>Warning:</b> This class may be refactored as a geometric object in a future SIS version.
  * Current implementation does not verify the CRS of circle center or the datum.</div>
  */
 public class LatLonPointRadius {
