@@ -100,6 +100,8 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.Envelope2DTest.class,
     org.apache.sis.geometry.EnvelopesTest.class,
 
+    org.apache.sis.distance.LatLonPointRadiusTest.class, // Pending refactoring in a geometry package.
+
     org.apache.sis.test.integration.ReferencingInMetadataTest.class
 })
 public final strictfp class ReferencingTestSuite extends TestSuite {

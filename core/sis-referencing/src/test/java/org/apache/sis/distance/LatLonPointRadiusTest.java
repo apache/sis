@@ -15,28 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.sis.core;
+package org.apache.sis.distance;
 
-import junit.framework.TestCase;
 
-//JDK imports
+// JDK imports
 import java.awt.geom.Rectangle2D;
 
-//SIS imports
+// SIS imports
+import org.apache.sis.test.TestCase;
 import org.apache.sis.geometry.DirectPosition2D;
+
+// JUnit imports
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * Tests methods from the {@link LatLonPointRadius} class.
  *
  * @author rlaidlaw
  */
-public class TestLatLonPointRadius extends TestCase
+public strictfp class LatLonPointRadiusTest extends TestCase
 {
   private static final double EPSILON = 0.000001;
 
   /**
    * Tests the LatLonPointRadius constructor.
    */
+  @Test
   public void testCreateLatLonPointRadius()
   {
     LatLonPointRadius region = new LatLonPointRadius(new DirectPosition2D(0.0, 0.0), 100.0);
@@ -46,6 +51,7 @@ public class TestLatLonPointRadius extends TestCase
   /**
    * Tests the getCircularRegionApproximation() method.
    */
+  @Test
   public void testGetCircularRegionApproximation()
   {
     LatLonPointRadius pr1 = new LatLonPointRadius(new DirectPosition2D(0.0, 0.0), 25000.0);
@@ -70,6 +76,7 @@ public class TestLatLonPointRadius extends TestCase
   /**
    * Tests the getRectangularRegionApproximation() method.
    */
+  @Test
   public void testGetRectangularRegionApproximation()
   {
     LatLonPointRadius pr1 = new LatLonPointRadius(new DirectPosition2D(0.0, 0.0), 25000.0);
