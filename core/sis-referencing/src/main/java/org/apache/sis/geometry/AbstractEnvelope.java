@@ -86,8 +86,8 @@ import java.util.Objects;
  *   <li>{@link #getSpan(int)}</li>
  *   <li>{@link #toSimpleEnvelopes()}</li>
  *   <li>{@link #contains(DirectPosition)}</li>
- *   <li>{@link #contains(Envelope, boolean)}</li>
- *   <li>{@link #intersects(Envelope, boolean)}</li>
+ *   <li>{@link #contains(Envelope)}</li>
+ *   <li>{@link #intersects(Envelope)}</li>
  * </ul>
  * </td></tr></table>
  *
@@ -110,7 +110,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public abstract class AbstractEnvelope implements Envelope, Emptiable {
@@ -728,9 +728,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
 
     /**
      * Returns {@code true} if this envelope completely encloses the specified envelope.
-     * If one or more edges from the specified envelope coincide with an edge from this
-     * envelope, then this method returns {@code true} only if {@code edgesInclusive}
-     * is {@code true}.
+     * All edges of this envelope are considered inclusive.
      *
      * {@section Pre-conditions}
      * This method assumes that the specified envelope uses the same CRS than this envelope.
@@ -740,17 +738,38 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * For every cases illustrated below, the yellow box is considered completely enclosed
      * in the blue envelope:
      *
-     * <center><img src="doc-files/Contains.png"></center>
+     * <img src="doc-files/Contains.png">
+     *
+     * @param  envelope The envelope to test for inclusion.
+     * @return {@code true} if this envelope completely encloses the specified one.
+     * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
+     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     *
+     * @see #intersects(Envelope)
+     * @see #equals(Envelope, double, boolean)
+     *
+     * @since 0.4
+     */
+    public final boolean contains(final Envelope envelope) throws MismatchedDimensionException {
+        return contains(envelope, true);
+    }
+
+    /**
+     * Returns {@code true} if this envelope completely encloses the specified envelope.
+     * If one or more edges from the specified envelope coincide with an edge from this
+     * envelope, then this method returns {@code true} only if {@code edgesInclusive}
+     * is {@code true}.
+     *
+     * <p>This method is subject to the same pre-conditions than {@link #contains(Envelope)},
+     * and handles envelopes spanning the anti-meridian in the same way.</p>
      *
      * @param  envelope The envelope to test for inclusion.
      * @param  edgesInclusive {@code true} if this envelope edges are inclusive.
      * @return {@code true} if this envelope completely encloses the specified one.
-     * @throws MismatchedDimensionException if the specified envelope doesn't have
-     *         the expected dimension.
+     * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
      * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
      *
      * @see #intersects(Envelope, boolean)
-     * @see #equals(Envelope, double, boolean)
      */
     public boolean contains(final Envelope envelope, final boolean edgesInclusive) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
@@ -824,8 +843,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
 
     /**
      * Returns {@code true} if this envelope intersects the specified envelope.
-     * If one or more edges from the specified envelope coincide with an edge from this envelope,
-     * then this method returns {@code true} only if {@code edgesInclusive} is {@code true}.
+     * All edges of this envelope are considered inclusive.
      *
      * {@section Pre-conditions}
      * This method assumes that the specified envelope uses the same CRS than this envelope.
@@ -833,6 +851,28 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * This method can handle envelopes spanning the anti-meridian.
+     *
+     * @param  envelope The envelope to test for intersection.
+     * @return {@code true} if this envelope intersects the specified one.
+     * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
+     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     *
+     * @see #contains(Envelope, boolean)
+     * @see #equals(Envelope, double, boolean)
+     *
+     * @since 0.4
+     */
+    public boolean intersects(final Envelope envelope) throws MismatchedDimensionException {
+        return intersects(envelope, true);
+    }
+
+    /**
+     * Returns {@code true} if this envelope intersects the specified envelope.
+     * If one or more edges from the specified envelope coincide with an edge from this envelope,
+     * then this method returns {@code true} only if {@code edgesInclusive} is {@code true}.
+     *
+     * <p>This method is subject to the same pre-conditions than {@link #intersects(Envelope)},
+     * and handles envelopes spanning the anti-meridian in the same way.</p>
      *
      * @param  envelope The envelope to test for intersection.
      * @param  edgesInclusive {@code true} if this envelope edges are inclusive.
@@ -950,8 +990,8 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *         axis length, or {@code false} if it is an absolute value.
      * @return {@code true} if the given object is equal to this envelope up to the given tolerance value.
      *
-     * @see #contains(Envelope, boolean)
-     * @see #intersects(Envelope, boolean)
+     * @see #contains(Envelope)
+     * @see #intersects(Envelope)
      */
     public boolean equals(final Envelope other, final double eps, final boolean epsIsRelative) {
         ensureNonNull("other", other);
