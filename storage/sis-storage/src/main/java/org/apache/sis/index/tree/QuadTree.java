@@ -24,9 +24,9 @@ import java.util.List;
 
 //SIS imports
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.core.LatLonPointRadius;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.distance.DistanceUtils;
+import org.apache.sis.distance.LatLonPointRadius;
 
 /**
  * Implementation of Quad Tree Index. Insertion algorithm implemented based on
