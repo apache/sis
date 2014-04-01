@@ -68,12 +68,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
        ============================================================== -->
   <scm>
     <connection>
-      scm:svn:http://svn.apache.org/repos/asf/sis/trunk
+      scm:svn:http://svn.apache.org/repos/asf/sis/branches/0.4
     </connection>
     <developerConnection>
-      scm:svn:https://svn.apache.org/repos/asf/sis/trunk
+      scm:svn:https://svn.apache.org/repos/asf/sis/branches/0.4
     </developerConnection>
-    <url>http://svn.apache.org/viewvc/sis/trunk</url>
+    <url>http://svn.apache.org/viewvc/sis/branches/0.4</url>
   </scm>
 
   <ciManagement>
@@ -406,7 +406,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <!-- Following properties are branch-specific -->
     <maven.compile.source>1.6</maven.compile.source>
     <maven.compile.target>1.6</maven.compile.target>
-    <sis.plugin.version>${project.version}</sis.plugin.version>
+    <sis.plugin.version>0.4-SNAPSHOT</sis.plugin.version>
   </properties>
 
   <profiles>
@@ -512,47 +512,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </configuration>
       </plugin>
 
-      <!-- Build XHTML pages from the DocBook files
-           See src/main/docbook/README.txt -->
-      <plugin>
-        <groupId>com.agilejava.docbkx</groupId>
-        <artifactId>docbkx-maven-plugin</artifactId>
-        <version>2.0.14</version>
-        <inherited>false</inherited>
-        <dependencies>
-          <dependency> <!-- XHTML generation -->
-            <groupId>net.sf.docbook</groupId>
-            <artifactId>docbook-xml</artifactId>
-            <version>5.0-all</version>
-            <classifier>resources</classifier>
-            <type>zip</type>
-            <scope>runtime</scope>
-          </dependency>
-          <dependency> <!-- Syntax highlighting -->
-            <groupId>net.sf.xslthl</groupId>
-            <artifactId>xslthl</artifactId>
-            <version>2.1.0</version>
-            <scope>runtime</scope>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <sourceDirectory>${basedir}/src/main/docbook</sourceDirectory>
-          <targetDirectory>${basedir}/target/site/book</targetDirectory>
-          <xhtmlCustomization>src/main/docbook/book.xsl</xhtmlCustomization>
-          <xincludeSupported>true</xincludeSupported>
-          <htmlStylesheet>book.css</htmlStylesheet>
-          <highlightSource>true</highlightSource>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate-xhtml</goal>
-            </goals>
-            <phase>pre-site</phase>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Create web site. The Maven generated site is not deployed at the URL
            declared in this pom.xml (namely http://sis.apache.org). Consequently,
            we disable links relativization for avoiding confusing behavior. -->
@@ -564,6 +523,89 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
           <outputEncoding>${website.encoding}</outputEncoding>
           <relativizeDecorationLinks>false</relativizeDecorationLinks>
+        </configuration>
+      </plugin>
+
+      <!-- Copy of the javadoc plugin configuration in <reporting>. -->
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration>
+          <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
+          <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
+          <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
+          <charset>${website.encoding}</charset>                <!-- Encoding to declare in the HTML META tag. -->
+          <locale>${website.locale}</locale>                    <!-- Locale for navigation bar, help file contents, etc. -->
+          <author>false</author>                                <!-- Excludes the authors text in the generated docs. -->
+          <version>false</version>                              <!-- Excludes the version text in the generated docs. -->
+          <nosince>true</nosince>                               <!-- Omits the "Since" sections associated with the since tags. -->
+          <noqualifier>all</noqualifier>                        <!-- Omit qualifying package name before class names in output. -->
+          <quiet>true</quiet>                                   <!-- Shuts off non-error and non-warning messages. -->
+          <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->
+          <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
+          <stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
+          <validateLinks>true</validateLinks>
+          <links>
+            <link>http://www.geoapi.org/3.0/javadoc</link>
+          </links>
+
+          <!-- Separates packages on the overview page into the groups specified. -->
+          <groups>
+            <group>
+              <title>Testing tools</title> <!-- Exists in test javadoc only. -->
+              <packages>org.apache.sis.test*</packages>
+            </group>
+            <group>
+              <title>Applications</title>
+              <packages>org.apache.sis.console*:org.apache.sis.services*</packages>
+            </group>
+            <group>
+              <title>Data storage</title>
+              <packages>org.apache.sis.storage*:org.apache.sis.index*</packages>
+            </group>
+            <group>
+              <title>Feature and Geometry</title>
+              <packages>org.apache.sis.feature*:org.apache.sis.geometry*</packages>
+            </group>
+            <group>
+              <title>Referencing</title>
+              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
+            </group>
+            <group>
+              <title>Metadata</title>
+              <packages>org.apache.sis.metadata*</packages>
+            </group>
+            <group>
+              <title>Utilities</title>
+              <packages>org.apache.sis.math*:org.apache.sis.measure*:org.apache.sis.util*:org.apache.sis.io*:org.apache.sis.xml*:org.apache.sis.setup*</packages>
+            </group>
+            <group>
+              <title>Profiles</title>
+              <packages>org.apache.sis.profile*</packages>
+            </group>
+          </groups>
+
+          <!-- Internal packages to hide from javadoc. -->
+          <excludePackageNames>org.apache.sis.internal:org.apache.sis.util.resources:com</excludePackageNames>
+
+          <!-- Custom taglets, some of them implemented in Java. -->
+          <tags>
+            <tag><placement>t</placement> <name>goal</name>     <head>Maven goal:</head></tag>
+            <tag><placement>t</placement> <name>phase</name>    <head>Maven phase:</head></tag>
+            <tag><placement>X</placement> <name>category</name> <head>Category:</head></tag>
+            <tag><placement>a</placement> <name>todo</name>     <head>TODO:</head></tag>
+          </tags>
+          <taglets>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Module</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Section</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Preformat</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.SourceRepositoryURL</tagletClass></taglet>
+          </taglets>
+          <tagletArtifact>
+            <groupId>org.apache.sis.core</groupId>
+            <artifactId>sis-build-helper</artifactId>
+            <version>${sis.plugin.version}</version>
+          </tagletArtifact>
         </configuration>
       </plugin>
 
@@ -780,25 +822,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
     </plugins>
   </reporting>
 
-
-
-  <!-- ==============================================================
-         Additional repositories from which to download artifacts.
-         The parent pom.xml already declares the apache.snapshots
-         repository for library artifacts. But we also need it for
-         Maven plugins in order to download sis-build-helper when
-         the user did not built it himself.
-       ============================================================== -->
-  <pluginRepositories>
-    <pluginRepository>
-      <id>apache.snapshots</id>
-      <name>Apache Snapshot Repository</name>
-      <url>http://repository.apache.org/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
 
 
   <!-- ==============================================================
