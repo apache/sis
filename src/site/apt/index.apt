@@ -57,13 +57,9 @@ The Apache SIS™ library
 
     * {{{./sis-referencing/index.html}Referencing}} — Coordinate Reference Systems (CRS), conversion and transformation services derived from ISO 19111.
 
-    * {{{./sis-feature/index.html}Features}} — Representations of geographic features.
-
   * Storage
 
     * {{{./sis-storage/index.html}Storage}} — Base classes to be implemented by various storage formats.
-
-    * {{{./sis-shapefile/index.html}Shapefile}} — Read and write files in the Shapefile format.
 
     * {{{./sis-netcdf/index.html}NetCDF}} — Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadata.
 
