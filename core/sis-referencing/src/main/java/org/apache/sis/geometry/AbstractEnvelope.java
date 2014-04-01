@@ -737,7 +737,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * For every cases illustrated below, the yellow box is considered completely enclosed
      * in the blue envelope:
      *
-     * <img src="doc-files/Contains.png">
+     * <p><img src="doc-files/Contains.png"></p>
      *
      * @param  envelope The envelope to test for inclusion.
      * @return {@code true} if this envelope completely encloses the specified one.
