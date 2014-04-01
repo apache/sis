@@ -20,9 +20,9 @@
  * attributes in a NetCDF file. The mapping is defined in the following web pages:
  *
  * <ul>
- *   <li><a href="https://geo-ide.noaa.gov/wiki/index.php?title=NetCDF_Attribute_Convention_for_Dataset_Discovery">NetCDF
- *       Attribute Convention for Dataset Discovery</a> wiki</li>
- *   <li><a href="http://ngdc.noaa.gov/metadata/published/xsl/nciso2.0/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file</li>
+ *   <li><a href="http://wiki.esipfed.org/index.php/Category:Attribute_Conventions_Dataset_Discovery">NetCDF
+ *       Attribute Convention for Dataset Discovery</a> version 1.0.</li>
+ *   <li><a href="http://ngdc.noaa.gov/metadata/published/xsl/nciso2.0/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file.</li>
  * </ul>
  *
  * The NetCDF attributes recognized by this package are listed in the
