@@ -726,7 +726,6 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
 
     /**
      * Returns {@code true} if this envelope completely encloses the specified envelope.
-     * All edges of this envelope are considered inclusive.
      *
      * {@section Pre-conditions}
      * This method assumes that the specified envelope uses the same CRS than this envelope.
@@ -736,7 +735,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * For every cases illustrated below, the yellow box is considered completely enclosed
      * in the blue envelope:
      *
-     * <img src="doc-files/Contains.png">
+     * <p><img src="doc-files/Contains.png"></p>
      *
      * @param  envelope The envelope to test for inclusion.
      * @return {@code true} if this envelope completely encloses the specified one.
@@ -748,7 +747,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *
      * @since 0.4
      */
-    public final boolean contains(final Envelope envelope) throws MismatchedDimensionException {
+    public boolean contains(final Envelope envelope) throws MismatchedDimensionException {
         return contains(envelope, true);
     }
 
@@ -760,6 +759,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *
      * <p>This method is subject to the same pre-conditions than {@link #contains(Envelope)},
      * and handles envelopes spanning the anti-meridian in the same way.</p>
+     *
+     * <div class="warning"><b>Warning:</b> This method may change or be removed in a future SIS version.
+     * For API stability, use the {@link #contains(Envelope)} method instead.
+     * See <a href="http://issues.apache.org/jira/browse/SIS-172">SIS-172</a> for more information.</div>
      *
      * @param  envelope The envelope to test for inclusion.
      * @param  edgesInclusive {@code true} if this envelope edges are inclusive.
@@ -841,7 +844,6 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
 
     /**
      * Returns {@code true} if this envelope intersects the specified envelope.
-     * All edges of this envelope are considered inclusive.
      *
      * {@section Pre-conditions}
      * This method assumes that the specified envelope uses the same CRS than this envelope.
@@ -871,6 +873,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *
      * <p>This method is subject to the same pre-conditions than {@link #intersects(Envelope)},
      * and handles envelopes spanning the anti-meridian in the same way.</p>
+     *
+     * <div class="warning"><b>Warning:</b> This method may change or be removed in a future SIS version.
+     * For API stability, use the {@link #intersects(Envelope)} method instead.
+     * See <a href="http://issues.apache.org/jira/browse/SIS-172">SIS-172</a> for more information.</div>
      *
      * @param  envelope The envelope to test for intersection.
      * @param  edgesInclusive {@code true} if this envelope edges are inclusive.
