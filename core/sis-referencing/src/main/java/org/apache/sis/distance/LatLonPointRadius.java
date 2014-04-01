@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sis.core;
+package org.apache.sis.distance;
 
 //JDK imports
 import java.awt.geom.Area;
@@ -26,7 +26,6 @@ import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.DirectPosition;
 
 //SIS imports
-import org.apache.sis.distance.DistanceUtils;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.measure.Longitude;
 
@@ -174,8 +173,6 @@ public class LatLonPointRadius {
    *         otherwise
    */
   private static boolean dateLineCrossOver(double longitude1, double longitude2) {
-    if (Math.abs(longitude1 - longitude2) > 180.0)
-      return true;
-    return false;
+    return (Math.abs(longitude1 - longitude2) > 180.0);
   }
 }

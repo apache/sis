@@ -138,7 +138,7 @@ public final strictfp class PathConverterTest extends TestCase {
     @Test
     @PlatformDependent
     public void testURI_File() throws URISyntaxException {
-        PathConverterTest.assumeUnixRoot();
+        assumeUnixRoot();
         final ObjectConverter<URI,File> c = PathConverter.URIFile.INSTANCE;
         runInvertibleConversion(c, new URI("file:/home/user/index.txt"), new File("/home/user/index.txt"));
         assertSerializedEquals(c);
@@ -177,7 +177,7 @@ public final strictfp class PathConverterTest extends TestCase {
     @Test
     @PlatformDependent
     public void testURL_File() throws MalformedURLException {
-        PathConverterTest.assumeUnixRoot();
+        assumeUnixRoot();
         final ObjectConverter<URL,File> c = PathConverter.URLFile.INSTANCE;
         runInvertibleConversion(c, new URL("file:/home/user/index.txt"), new File("/home/user/index.txt"));
         assertSerializedEquals(c);
