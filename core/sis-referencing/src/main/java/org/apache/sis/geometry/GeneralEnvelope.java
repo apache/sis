@@ -82,8 +82,8 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *   <li>{@link #isEmpty()}</li>
  *   <li>{@link #toSimpleEnvelopes() toSimpleEnvelopes()}</li>
  *   <li>{@link #contains(DirectPosition) contains(DirectPosition)}</li>
- *   <li>{@link #contains(Envelope, boolean) contains(Envelope, boolean)}</li>
- *   <li>{@link #intersects(Envelope, boolean) intersects(Envelope, boolean)}</li>
+ *   <li>{@link #contains(Envelope) contains(Envelope)}</li>
+ *   <li>{@link #intersects(Envelope) intersects(Envelope)}</li>
  *   <li>{@link #intersect(Envelope)}</li>
  *   <li>{@link #add(Envelope)}</li>
  *   <li>{@link #add(DirectPosition)}</li>
@@ -664,7 +664,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                 ordinates[iUpper] = Double.POSITIVE_INFINITY;
             }
         }
-        assert contains(envelope, true) || isEmpty() || hasNaN(envelope) : this;
+        assert contains(envelope) || isEmpty() || hasNaN(envelope) : this;
     }
 
     /**
@@ -795,7 +795,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             if (max1 < max0) ordinates[iUpper] = max1;
         }
         // Tests only if the interection result is non-empty.
-        assert isEmpty() || AbstractEnvelope.castOrCopy(envelope).contains(this, true) : this;
+        assert isEmpty() || AbstractEnvelope.castOrCopy(envelope).contains(this) : this;
     }
 
     /**

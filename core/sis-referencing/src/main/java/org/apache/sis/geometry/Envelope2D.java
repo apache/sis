@@ -673,7 +673,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * This method supports anti-meridian spanning in the same way than
-     * {@link AbstractEnvelope#contains(Envelope, boolean)}.
+     * {@link AbstractEnvelope#contains(Envelope)}.
      *
      * @param  rect The rectangle to test for inclusion.
      * @return {@code true} if this envelope completely encloses the specified rectangle.
@@ -695,7 +695,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * This method supports anti-meridian spanning in the same way than
-     * {@link AbstractEnvelope#contains(Envelope, boolean)}.
+     * {@link AbstractEnvelope#contains(Envelope)}.
      *
      * @param  rx The <var>x</var> ordinate of the lower corner of the rectangle to test for inclusion.
      * @param  ry The <var>y</var> ordinate of the lower corner of the rectangle to test for inclusion.
@@ -742,7 +742,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * This method supports anti-meridian spanning in the same way than
-     * {@link AbstractEnvelope#intersects(Envelope, boolean)}.
+     * {@link AbstractEnvelope#intersects(Envelope)}.
      *
      * @param  rect The rectangle to test for intersection.
      * @return {@code true} if this envelope intersects the specified rectangle.
@@ -764,7 +764,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * This method supports anti-meridian spanning in the same way than
-     * {@link AbstractEnvelope#intersects(Envelope, boolean)}.
+     * {@link AbstractEnvelope#intersects(Envelope)}.
      *
      * @param  rx The <var>x</var> ordinate of the lower corner of the rectangle to test for intersection.
      * @param  ry The <var>y</var> ordinate of the lower corner of the rectangle to test for intersection.
