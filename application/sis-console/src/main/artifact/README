@@ -17,8 +17,8 @@ SIS is based on Java 6 and provided as a unique standalone JAR file.
 
 Unix
 ----
-1) Unzip 'apache-sis-0.3-bin.zip' in any directory.
-2) Add the 'apache-sis-0.3/bin' directory to the path.
+1) Unzip 'apache-sis-0.5-bin.zip' in any directory.
+2) Add the 'apache-sis-0.5/bin' directory to the path.
 3) Invoke 'sis' on the command line.
 
 Windows
@@ -26,8 +26,8 @@ Windows
 There is not yet 'sis.bat' file for Windows.
 The following steps need to be done manually:
 
-1) Unzip 'apache-sis-0.3-bin.zip' in any directory.
-2) In the 'apache-sis-0.3/lib' directory, execute:
+1) Unzip 'apache-sis-0.5-bin.zip' in any directory.
+2) In the 'apache-sis-0.5/lib' directory, execute:
 
      unpack200 --remove-pack-file sis.pack.gz sis.jar
 
