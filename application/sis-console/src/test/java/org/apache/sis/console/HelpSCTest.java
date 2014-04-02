@@ -71,4 +71,32 @@ public final strictfp class HelpSCTest extends TestCase {
         assertFalse("--verbose",  result.contains("--verbose"));
         assertTrue ("--help",     result.contains("--help"));
     }
+
+    /**
+     * Tests the sub-command with the {@code --locale en} option.
+     *
+     * @throws InvalidOptionException Should never happen.
+     */
+    @Test
+    public void testEnglishLocale() throws InvalidOptionException {
+        final HelpSC test = new HelpSC(0, SubCommand.TEST, "--help", "--locale", "en");
+        test.help("help");
+        final String result = test.outputBuffer.toString();
+        assertTrue(result, result.contains("Show a help overview."));
+        assertTrue(result, result.contains("The locale to use"));
+    }
+
+    /**
+     * Tests the sub-command with the {@code --locale fr} option.
+     *
+     * @throws InvalidOptionException Should never happen.
+     */
+    @Test
+    public void testFrenchLocale() throws InvalidOptionException {
+        final HelpSC test = new HelpSC(0, SubCommand.TEST, "--help", "--locale", "fr");
+        test.help("help");
+        final String result = test.outputBuffer.toString();
+        assertTrue(result, result.contains("Affiche un écran d’aide."));
+        assertTrue(result, result.contains("Les paramètres régionaux"));
+    }
 }
