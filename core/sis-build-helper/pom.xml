@@ -25,10 +25,12 @@
                                http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <!-- Do not inherit from core/pom.xml because doing so would create a cyclic dependency. -->
   <parent>
     <groupId>org.apache.sis</groupId>
-    <artifactId>core</artifactId>
+    <artifactId>parent</artifactId>
     <version>0.4-jdk7-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
 
