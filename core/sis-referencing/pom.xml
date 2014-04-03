@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>core</artifactId>
-    <version>0.4</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.sis.core</groupId>
@@ -78,20 +78,6 @@ Implementations of Coordinate Reference Systems (CRS),
        =========================================================== -->
   <build>
     <plugins>
-
-      <!-- Collect JAR files in <root>/target/binaries directory. -->
-      <plugin>
-        <groupId>org.apache.sis.core</groupId>
-        <artifactId>sis-build-helper</artifactId>
-        <version>${sis.plugin.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>collect-jars</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
 
       <!-- Package as OSGi bundle -->
       <plugin>

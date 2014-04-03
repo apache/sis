@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>13</version> <!-- See the "TODO" in this file. -->
+    <version>14</version> <!-- See the "TODO" in this file. -->
   </parent>
 
 
@@ -39,7 +39,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>parent</artifactId>
-  <version>0.4</version>
+  <version>0.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
@@ -68,12 +68,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
        ============================================================== -->
   <scm>
     <connection>
-      scm:svn:http://svn.apache.org/repos/asf/sis/tags/0.4
+      scm:svn:http://svn.apache.org/repos/asf/sis/branches/0.4
     </connection>
     <developerConnection>
-      scm:svn:https://svn.apache.org/repos/asf/sis/tags/0.4
+      scm:svn:https://svn.apache.org/repos/asf/sis/branches/0.4
     </developerConnection>
-    <url>http://svn.apache.org/viewvc/sis/tags/0.4</url>
+    <url>http://svn.apache.org/viewvc/sis/branches/0.4</url>
   </scm>
 
   <ciManagement>
@@ -406,7 +406,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <!-- Following properties are branch-specific -->
     <maven.compile.source>1.6</maven.compile.source>
     <maven.compile.target>1.6</maven.compile.target>
-    <sis.plugin.version>0.4</sis.plugin.version>
+    <sis.plugin.version>0.4-SNAPSHOT</sis.plugin.version>
   </properties>
 
   <profiles>
@@ -431,7 +431,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version> <!-- TODO: Remove after parent pom.xml has upgraded. -->
         <configuration>
           <source>${maven.compile.source}</source>
           <target>${maven.compile.target}</target>
@@ -488,7 +487,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- Set "*-source-release.zip" filename prefix to "sis-*" instead of "parent-*" -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.4</version> <!-- TODO: Remove after parent pom.xml has upgraded. -->
         <executions>
           <execution>
             <id>source-release-assembly</id>
@@ -517,7 +515,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
            we disable links relativization for avoiding confusing behavior. -->
       <plugin>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.3</version> <!-- TODO: Remove after parent pom.xml has upgraded. -->
         <configuration>
           <locales>${website.locale}</locales>
           <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
