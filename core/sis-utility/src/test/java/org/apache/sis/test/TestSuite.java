@@ -55,6 +55,13 @@ public abstract strictfp class TestSuite {
     };
 
     /**
+     * {@code true} for disabling the search for missing tests. This is necessary
+     * when the test suites are executed from an external project, for example during a
+     * <a href="https://svn.apache.org/repos/asf/sis/release-test/maven">release test</a>.
+     */
+    static boolean skipCheckForMissingTests;
+
+    /**
      * Creates a new test suite.
      */
     protected TestSuite() {
@@ -64,9 +71,12 @@ public abstract strictfp class TestSuite {
      * Verifies that we did not forgot to declare some test classes in the given suite.
      * This method scans the directory for {@code *Test.class} files.
      *
+     * <p>This check is disabled if {@link #skipCheckForMissingTests} is {@code true}.</p>
+     *
      * @param suite The suite for which to check for missing tests.
      */
     protected static void assertNoMissingTest(final Class<? extends TestSuite> suite) {
+        if (skipCheckForMissingTests) return;
         final ClassLoader loader = suite.getClassLoader();
         final URL url = loader.getResource(suite.getName().replace('.', '/') + ".class");
         assertNotNull("Test suite class not found.", url);
