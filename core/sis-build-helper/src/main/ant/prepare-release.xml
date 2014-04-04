@@ -37,7 +37,6 @@
     <!-- Replace the version number in Java code. -->
     <replace dir="${user.dir}" failOnNoReplacements="true">
       <include name="core/sis-utility/src/main/java/org/apache/sis/util/Version.java"/>
-      <include name="core/sis-build-helper/src/main/java/org/apache/sis/internal/taglet/Module.java"/>
       <replacefilter token="&quot;${sis.version}-SNAPSHOT&quot;"
                      value="&quot;${sis.version}&quot;"/>
     </replace>

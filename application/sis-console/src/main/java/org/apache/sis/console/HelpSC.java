@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 final class HelpSC extends SubCommand {
@@ -40,7 +40,8 @@ final class HelpSC extends SubCommand {
         "help",
         "about",
         "mime-type",
-        "metadata"
+        "metadata",
+        "crs"
     };
 
     /**
