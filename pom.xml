@@ -39,7 +39,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>parent</artifactId>
-  <version>0.4-jdk6-SNAPSHOT</version>
+  <version>0.5-jdk6-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
