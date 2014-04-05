@@ -166,14 +166,14 @@ public final strictfp class RangeFormatTest extends TestCase {
         assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
 
         // Positive infinity with integers
-        assertEquals("[50 … ∞)", format(new NumberRange<>(Integer.class, 50, true, null, true)));
+        assertEquals("[50 … ∞)", format(new NumberRange<Integer>(Integer.class, 50, true, null, true)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
 
         // Negative infinity with integers
-        assertEquals("(-∞ … 40]", format(new NumberRange<>(Integer.class, null, true, 40, true)));
+        assertEquals("(-∞ … 40]", format(new NumberRange<Integer>(Integer.class, null, true, 40, true)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
