@@ -118,7 +118,7 @@ public final class Preformat extends InlineTaglet {
         try {
             style = Style.valueOf(format);
         } catch (IllegalArgumentException e) {
-            ConfigurationImpl.getInstance().root.printWarning(tag.position(), "Unknown format: " + format);
+            getConfiguration().root.printWarning(tag.position(), "Unknown format: " + format);
             style = Style.text;
         }
         /*
