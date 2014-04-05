@@ -50,18 +50,6 @@ public final class JDK8 {
     }
 
     /**
-     * Returns the floating-point value adjacent to {@code value} in the direction of negative infinity.
-     *
-     * @param  value The value for which to get the adjacent value.
-     * @return The adjacent value in the direction of negative infinity.
-     *
-     * @since 0.4
-     */
-    public static double nextDown(final double value) {
-        return Math.nextAfter(value, Double.NEGATIVE_INFINITY);
-    }
-
-    /**
      * Parses a date from a string in ISO 8601 format. More specifically, this method expects the
      * format defined by <cite>XML Schema Part 2: Datatypes for {@code xsd:dateTime}</cite>, with
      * some additional flexibility (e.g. missing minutes or seconds fields are automatically added).

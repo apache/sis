@@ -35,7 +35,7 @@ import org.junit.Test;
 import static org.apache.sis.test.Assert.*;
 
 // Related to JDK8
-import org.apache.sis.internal.jdk8.Function;
+import java.util.function.Function;
 
 
 /**

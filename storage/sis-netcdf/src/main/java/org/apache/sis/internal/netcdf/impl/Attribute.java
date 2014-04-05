@@ -19,7 +19,9 @@ package org.apache.sis.internal.netcdf.impl;
 import java.lang.reflect.Array;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.internal.jdk8.Function;
+
+// Related to JDK8
+import java.util.function.Function;
 
 
 /**
@@ -35,11 +37,7 @@ final class Attribute {
     /**
      * The function for obtaining the name of an attribute.
      */
-    static final Function<Attribute,String> NAME_FUNCTION = new Function<Attribute,String>() {
-        @Override public String apply(final Attribute value) {
-            return value.name;
-        }
-    };
+    static final Function<Attribute,String> NAME_FUNCTION = (Attribute value1) -> value1.name;
 
     /**
      * The attribute name.
