@@ -1,6 +1,6 @@
 <!ENTITY geoapi-version "3.1-SNAPSHOT">
 <!ENTITY geoapi-release "3.0.0">
-<!ENTITY sis-release    "0.5-jdk7-SNAPSHOT">
+<!ENTITY sis-release    "0.5-jdk8-SNAPSHOT">
 <!ENTITY gml-version    "3.3">
 <!ENTITY sis-javadoc    "../apidocs">
 <!ENTITY geoapi-javadoc "http://www.geoapi.org/snapshot/javadoc">

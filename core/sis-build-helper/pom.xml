@@ -29,7 +29,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>parent</artifactId>
-    <version>0.5-jdk7-SNAPSHOT</version>
+    <version>0.5-jdk8-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -134,7 +134,7 @@ Define Maven Mojos and Javadoc taglets for generating resource files
          This copy will not be needed anymore if http://jira.codehaus.org/browse/MNG-3328
          get fixed. -->
     <profile>
-      <id>jdk7-tools.jar</id>
+      <id>jdk8-tools.jar</id>
       <activation>
         <property>
           <name>java.vendor</name>

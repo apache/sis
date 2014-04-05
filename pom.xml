@@ -39,7 +39,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>parent</artifactId>
-  <version>0.5-jdk7-SNAPSHOT</version>
+  <version>0.5-jdk8-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
@@ -78,7 +78,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
 
   <ciManagement>
     <system>jenkins</system>
-    <url>https://builds.apache.org/job/sis-jdk7</url>
+    <url>https://builds.apache.org/job/sis-jdk8</url>
   </ciManagement>
 
   <issueManagement>
@@ -403,8 +403,8 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <website.locale>en</website.locale>
 
     <!-- Following properties are branch-specific -->
-    <maven.compile.source>1.7</maven.compile.source>
-    <maven.compile.target>1.7</maven.compile.target>
+    <maven.compile.source>1.8</maven.compile.source>
+    <maven.compile.target>1.8</maven.compile.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <geoapi.version>3.1-SNAPSHOT</geoapi.version>
   </properties>
