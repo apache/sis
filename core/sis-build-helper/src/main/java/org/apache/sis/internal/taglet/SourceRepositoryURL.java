@@ -88,7 +88,7 @@ public final class SourceRepositoryURL extends InlineTaglet {
                 break;
             }
             default: {
-                ConfigurationImpl.getInstance().root.printWarning(tag.position(), "Unknown keyword: " + keyword);
+                getConfiguration().root.printWarning(tag.position(), "Unknown keyword: " + keyword);
                 break;
             }
         }

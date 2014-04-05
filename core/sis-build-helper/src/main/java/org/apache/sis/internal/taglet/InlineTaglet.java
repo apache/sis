@@ -18,6 +18,8 @@ package org.apache.sis.internal.taglet;
 
 import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
+import com.sun.tools.doclets.internal.toolkit.Configuration;
+import com.sun.tools.doclets.formats.html.ConfigurationImpl;
 
 
 /**
@@ -29,6 +31,24 @@ import com.sun.tools.doclets.Taglet;
  * @module
  */
 abstract class InlineTaglet implements Taglet {
+    /**
+     * The doclet configuration, created when first needed for reporting warnings.
+     *
+     * <p>Note: the JDK7 branch uses {@code ConfigurationImpl.getInstance()} method instead.
+     * But that method does not exist anymore in JDK8.</p>
+     */
+    private static Configuration configuration;
+
+    /**
+     * Returns the doclet configuration.
+     */
+    static synchronized Configuration getConfiguration() {
+        if (configuration == null) {
+            configuration = new ConfigurationImpl();
+        }
+        return configuration;
+    }
+
     /**
      * Constructs a default inline taglet.
      */
