@@ -678,7 +678,7 @@ public final class Numbers extends Static {
             if (type == Map      .class) return (T) Collections.EMPTY_MAP;
             if (type == List     .class) return (T) Collections.EMPTY_LIST;
             if (type == Queue    .class) return (T) CollectionsExt.emptyQueue();
-            if (type == SortedSet.class) return (T) CollectionsExt.emptySortedSet();
+            if (type == SortedSet.class) return (T) Collections.emptySortedSet();
             if (type.isAssignableFrom(Set.class)) {
                 return (T) Collections.EMPTY_SET;
             }

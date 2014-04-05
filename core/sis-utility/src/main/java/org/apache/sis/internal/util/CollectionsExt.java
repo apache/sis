@@ -27,7 +27,7 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Related to JDK8
-import org.apache.sis.internal.jdk8.Function;
+import java.util.function.Function;
 
 
 /**
@@ -73,24 +73,6 @@ public final class CollectionsExt extends Static {
     @SuppressWarnings({"unchecked","rawtype"})
     public static <E> Queue<E> emptyQueue() {
         return EmptyQueue.INSTANCE;
-    }
-
-    /**
-     * Returns a {@linkplain SortedSet sorted set} which is always empty and accepts no element.
-     *
-     * <div class="note"><b>Note:</b>
-     * This method exists only on the JDK6 and JDK7 branches. This method will
-     * be removed from the JDK8 branch, since it has been added to the JDK.</div>
-     *
-     * @param <E> The type of elements in the empty collection.
-     * @return An empty collection.
-     *
-     * @see Collections#emptyList()
-     * @see Collections#emptySet()
-     */
-    @SuppressWarnings({"unchecked","rawtype"})
-    public static <E> SortedSet<E> emptySortedSet() {
-        return EmptySortedSet.INSTANCE;
     }
 
     /**

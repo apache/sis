@@ -27,9 +27,6 @@ import static org.apache.sis.math.MathFunctions.*;
 import static org.apache.sis.util.ArraysExt.isSorted;
 import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
 
-// Related to JDK8
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Tests the {@link MathFunctions} static methods.
@@ -135,7 +132,7 @@ public final strictfp class MathFunctionsTest extends TestCase {
         for (int i=0; i<=SIGNIFICAND_SIZE; i++) {
             assertEquals(MIN_EXPONENT - i, getExponent(MIN_NORMAL / (1L << i)));
         }
-        assertEquals(MIN_EXPONENT - 1,                    getExponent(JDK8.nextDown(MIN_NORMAL)));
+        assertEquals(MIN_EXPONENT - 1,                    getExponent(StrictMath.nextDown(MIN_NORMAL)));
         assertEquals(MIN_EXPONENT - SIGNIFICAND_SIZE,     getExponent(MIN_VALUE));
         assertEquals(MIN_EXPONENT - SIGNIFICAND_SIZE - 1, getExponent(0));
         /*

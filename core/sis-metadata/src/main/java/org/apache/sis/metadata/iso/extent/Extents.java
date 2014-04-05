@@ -289,7 +289,7 @@ public final class Extents extends Static {
         if (min == null) return max;
         if (max == null) return min;
         final long startTime = min.getTime();
-        return new Date(startTime + Math.round((max.getTime() - startTime) * location)); // addExact on JDK8 branch.
+        return new Date(Math.addExact(startTime, Math.round((max.getTime() - startTime) * location)));
     }
 
     /**

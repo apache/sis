@@ -28,8 +28,8 @@ import static java.lang.Double.doubleToLongBits;
 
 // Related to JDK7 and JDK8
 import java.util.Objects;
-import org.apache.sis.internal.jdk8.LongConsumer;
-import org.apache.sis.internal.jdk8.DoubleConsumer;
+import java.util.function.LongConsumer;
+import java.util.function.DoubleConsumer;
 
 
 /**
