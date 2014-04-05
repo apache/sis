@@ -29,8 +29,8 @@
        ==================================================== -->
   <bannerLeft>
     <name>Apache SIS</name>
-    <src>http://builds.apache.org/job/sis-jdk7/site/images/banner.png</src>
-    <href>http://builds.apache.org/job/sis-jdk7/site/index.html</href>
+    <src>http://builds.apache.org/job/sis-jdk8/site/images/banner.png</src>
+    <href>http://builds.apache.org/job/sis-jdk8/site/index.html</href>
   </bannerLeft>
 
   <body>
@@ -49,7 +49,7 @@
         Menus to appears on the left side of home page.
     -->
     <menu name="Quick links" inherit="top">
-      <item name="Aggregated Javadoc" href="http://builds.apache.org/job/sis-jdk7/site/apidocs/index.html"/>
+      <item name="Aggregated Javadoc" href="http://builds.apache.org/job/sis-jdk8/site/apidocs/index.html"/>
       <!-- Absolute URL in order to point to the aggregated Javadoc instead than module Javadoc. -->
     </menu>
 
