@@ -159,8 +159,8 @@ public final strictfp class RangeSetTest extends TestCase {
          * Verify the RangeSet content.
          */
         final Iterator<Range<Date>> it = ranges.iterator();
-        assertEqual(new Range<>(Date.class, lastWeek,  true, other, false), it.next(), ranges.first());
-        assertEqual(new Range<>(Date.class, yesterday, true, now,   false), it.next(), ranges.last());
+        assertEqual(new Range<Date>(Date.class, lastWeek,  true, other, false), it.next(), ranges.first());
+        assertEqual(new Range<Date>(Date.class, yesterday, true, now,   false), it.next(), ranges.last());
         assertFalse(it.hasNext());
     }
 
@@ -189,8 +189,8 @@ public final strictfp class RangeSetTest extends TestCase {
          * Verify the RangeSet content.
          */
         final Iterator<Range<String>> it = ranges.iterator();
-        assertEqual(new Range<>(String.class, "FAA", true, "FCC", false), it.next(), ranges.first());
-        assertEqual(new Range<>(String.class, "GAA", true, "GBB", false), it.next(), ranges.last());
+        assertEqual(new Range<String>(String.class, "FAA", true, "FCC", false), it.next(), ranges.first());
+        assertEqual(new Range<String>(String.class, "GAA", true, "GBB", false), it.next(), ranges.last());
         assertFalse(it.hasNext());
     }
 
