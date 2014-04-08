@@ -102,7 +102,7 @@ public final class Locales extends Static {
      */
     private static final short[] ISO3, ISO2;
     static {
-        final Short CONFLICT = (short) 0; // Sentinal value for conflicts (paranoiac safety).
+        final Short CONFLICT = 0; // Sentinal value for conflicts (paranoiac safety).
         final Map<Short,Short> map = new TreeMap<Short,Short>();
         for (final Locale locale : POOL.values()) {
             short type = LANGUAGE; // 0 for language, or leftmost bit set for country.
@@ -202,37 +202,14 @@ filter: for (final Locale locale : locales) {
     }
 
     /**
-     * Returns the list of {@linkplain #getAvailableLocales() available locales} formatted
-     * as strings in the specified locale.
-     *
-     * @param  locale The locale to use for formatting the strings to be returned.
-     * @return String descriptions of available locales.
-     *
-     * @deprecated Not useful in practice, since we typically also need the original Locale object.
-     */
-    @Deprecated // Remove for simplifiying the API.
-    public String[] getAvailableLocales(final Locale locale) {
-        final Locale[] locales = getAvailableLocales();
-        final String[] display = new String[locales.length];
-        for (int i=0; i<locales.length; i++) {
-            display[i] = locales[i].getDisplayName(locale);
-        }
-        Arrays.sort(display);
-        return display;
-    }
-
-    /**
      * Returns the languages of the given locales, without duplicated values.
      * The instances returned by this method have no {@linkplain Locale#getCountry() country}
      * and no {@linkplain Locale#getVariant() variant} information.
      *
      * @param  locales The locales from which to get the languages.
      * @return The languages, without country or variant information.
-     *
-     * @deprecated Users can easily perform this operation themselves, thus avoiding this class initialization.
      */
-    @Deprecated // Make this method private for simplifiying the API.
-    public static Locale[] getLanguages(final Locale... locales) {
+    private static Locale[] getLanguages(final Locale... locales) {
         final Set<String> codes = new LinkedHashSet<String>(hashMapCapacity(locales.length));
         for (final Locale locale : locales) {
             codes.add(locale.getLanguage());
@@ -337,50 +314,6 @@ filter: for (final Locale locale : locales) {
             }
         }
         return true;
-    }
-
-    /**
-     * Parses the language encoded in the suffix of a property key. This convenience method
-     * is used when a property in a {@link java.util.Map} may have many localized variants.
-     * For example the {@code "remarks"} property may be defined by values associated to the
-     * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales
-     * respectively.
-     *
-     * <p>This method infers the {@code Locale} from the property {@code key} with the following steps:</p>
-     *
-     * <ul>
-     *   <li>If the given {@code key} is exactly equals to {@code prefix},
-     *       then this method returns {@link Locale#ROOT}.</li>
-     *   <li>Otherwise if the given {@code key} does not start with the specified {@code prefix}
-     *       followed by the {@code '_'} character, then this method returns {@code null}.</li>
-     *   <li>Otherwise, the characters after the {@code '_'} are parsed as an ISO language
-     *       and country code by the {@link #parse(String, int)} method.</li>
-     * </ul>
-     *
-     * @param  prefix The prefix to skip at the beginning of the {@code key}.
-     * @param  key    The property key from which to extract the locale, or {@code null}.
-     * @return The locale encoded in the given key name, or {@code null} if the key has not been recognized.
-     * @throws RuntimeException If the given code is not valid ({@code IllformedLocaleException} on the JDK7 branch).
-     *
-     * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
-     *
-     * @deprecated Users can easily perform this operation themselves, thus avoiding this class initialization.
-     */
-    @Deprecated
-    public static Locale parseSuffix(final String prefix, final String key) {
-        ArgumentChecks.ensureNonNull("prefix", prefix);
-        if (key != null) { // Tolerance for Map that accept null keys.
-            if (key.startsWith(prefix)) {
-                final int offset = prefix.length();
-                if (key.length() == offset) {
-                    return Locale.ROOT;
-                }
-                if (key.charAt(offset) == '_') {
-                    return parse(key, offset + 1);
-                }
-            }
-        }
-        return null;
     }
 
     /**
