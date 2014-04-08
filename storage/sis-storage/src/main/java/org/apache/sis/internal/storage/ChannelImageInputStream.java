@@ -327,7 +327,7 @@ loop:   while ((c = read()) >= 0) {
      */
     @Override
     public final int read() throws IOException {
-        return hasRemaining() ? buffer.get() & 0xFF : -1;
+        return hasRemaining() ? Byte.toUnsignedInt(buffer.get()) : -1;
     }
 
     /**

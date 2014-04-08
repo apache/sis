@@ -56,6 +56,6 @@ final class Dimension {
     @Debug
     @Override
     public String toString() {
-        return name + '[' + (length & 0xFFFFFFFFL) + ']';
+        return name + '[' + Integer.toUnsignedLong(length) + ']';
     }
 }

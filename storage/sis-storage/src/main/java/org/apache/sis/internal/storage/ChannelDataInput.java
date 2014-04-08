@@ -267,14 +267,14 @@ public class ChannelDataInput {
      * The implementation is as below:
      *
      * {@preformat java
-     *     return readByte() & 0xFF;
+     *     return Byte.toUnsignedInt(readByte());
      * }
      *
      * @return The value of the next unsigned byte from the stream.
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final int readUnsignedByte() throws IOException {
-        return readByte() & 0xFF;
+        return Byte.toUnsignedInt(readByte());
     }
 
     /**
@@ -295,14 +295,14 @@ public class ChannelDataInput {
      * The implementation is as below:
      *
      * {@preformat java
-     *     return readShort() & 0xFFFF;
+     *     return Short.toUnsignedInt(readShort());
      * }
      *
      * @return The value of the next unsigned short from the stream.
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final int readUnsignedShort() throws IOException {
-        return readShort() & 0xFFFF;
+        return Short.toUnsignedInt(readShort());
     }
 
     /**
@@ -336,14 +336,14 @@ public class ChannelDataInput {
      * The implementation is as below:
      *
      * {@preformat java
-     *     return readInt() & 0xFFFFFFFFL;
+     *     return Integer.toUnsignedLong(readInt());
      * }
      *
      * @return The value of the next unsigned integer from the stream.
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final long readUnsignedInt() throws IOException {
-        return readInt() & 0xFFFFFFFFL;
+        return Integer.toUnsignedLong(readInt());
     }
 
     /**
