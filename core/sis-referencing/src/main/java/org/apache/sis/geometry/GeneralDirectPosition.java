@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
-// JDK7 related
+// Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
 
 

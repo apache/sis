@@ -527,14 +527,6 @@ public class TableAppender extends Appender implements Flushable {
      * Writes an horizontal separator.
      */
     public void appendHorizontalSeparator() {
-        writeHorizontalSeparator();
-    }
-
-    /**
-     * @deprecated Renamed {@link #appendHorizontalSeparator()}.
-     */
-    @Deprecated
-    public void writeHorizontalSeparator() {
         if (currentColumn != 0 || buffer.length() != 0) {
             nextLine();
         }

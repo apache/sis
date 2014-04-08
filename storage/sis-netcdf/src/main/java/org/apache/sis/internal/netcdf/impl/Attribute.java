@@ -19,6 +19,8 @@ package org.apache.sis.internal.netcdf.impl;
 import java.lang.reflect.Array;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
+
+// Related to JDK8
 import org.apache.sis.internal.jdk8.Function;
 
 
