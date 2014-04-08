@@ -33,13 +33,11 @@ import java.lang.reflect.Array;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
-import org.apache.sis.internal.jdk8.Function;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
@@ -48,6 +46,10 @@ import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 import org.apache.sis.measure.Units;
+
+// Related to JDK8
+import org.apache.sis.internal.jdk8.JDK8;
+import org.apache.sis.internal.jdk8.Function;
 
 
 /**
