@@ -265,7 +265,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      */
     @Override
     public Integer getMaximumOccurrence() {
-        final int n = maximumOccurs & 0xFF;
+        final int n = Byte.toUnsignedInt(maximumOccurs);
         return (n == 0xFF) ? Integer.MAX_VALUE : n;
     }
 

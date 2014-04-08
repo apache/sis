@@ -77,7 +77,7 @@ class KeyConstants {
                 names = new String[fields.length];
                 for (final Field field : fields) {
                     if (Modifier.isStatic(field.getModifiers()) && field.getType() == Short.TYPE) {
-                        final int index = ((Short) field.get(null)) & 0xFFFF;
+                        final int index = Short.toUnsignedInt((Short) field.get(null));
                         if (index >= length) {
                             length = index + 1;
                             if (length > names.length) {
@@ -102,7 +102,7 @@ class KeyConstants {
      * our {@link IndexedResourceBundle#handleGetObject(String)} implementation.
      */
     final String getKeyName(final short index) {
-        final int i = index & 0xFFFF;
+        final int i = Short.toUnsignedInt(index);
         final String[] keys = getKeyNames();
         if (i < keys.length) {
             final String key = keys[i];

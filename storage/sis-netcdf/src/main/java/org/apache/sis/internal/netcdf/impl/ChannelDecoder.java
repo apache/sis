@@ -307,7 +307,7 @@ public final class ChannelDecoder extends Decoder {
      */
     private int ensureBufferContains(final int n, final int dataSize, String name) throws IOException, DataStoreException {
         // (n+3) & ~3  is a trick for rounding 'n' to the next multiple of 4.
-        final long size = ((n & 0xFFFFFFFFL) * dataSize + 3) & ~3;
+        final long size = (Integer.toUnsignedLong(n) * dataSize + 3) & ~3;
         if (size > input.buffer.capacity()) {
             name = input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + name;
             final Errors errors = errors();

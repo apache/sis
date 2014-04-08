@@ -61,7 +61,7 @@ final class UnitsMap extends Static {
     static {
         final byte[] codes = {1, 2, 30, 36, 101, 102, 103, 104, 105, 108, 109, 111, 110, (byte) 201, (byte) 202};
         for (final byte c : codes) {
-            final int code = 9000 + (c & 0xFF);
+            final int code = 9000 + Byte.toUnsignedInt(c);
             EPSG_CODES.put(Units.valueOfEPSG(code), code);
         }
     }

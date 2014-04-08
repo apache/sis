@@ -43,7 +43,7 @@ public class FieldDescriptor {
     }
 
     public int getLength() {
-        return this.FieldLength & 0xFF;
+        return Byte.toUnsignedInt(this.FieldLength);
     }
 
     @Override

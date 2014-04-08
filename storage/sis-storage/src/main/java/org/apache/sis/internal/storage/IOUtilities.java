@@ -205,7 +205,7 @@ public final class IOUtilities extends Static {
                 }
                 for (final byte b : path.substring(i, i+n).getBytes(StandardCharsets.UTF_8)) {
                     buffer.append('%');
-                    final String hex = Integer.toHexString(b & 0xFF).toUpperCase(Locale.ROOT);
+                    final String hex = Integer.toHexString(Byte.toUnsignedInt(b)).toUpperCase(Locale.ROOT);
                     if (hex.length() < 2) {
                         buffer.append('0');
                     }
