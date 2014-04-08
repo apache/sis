@@ -112,19 +112,4 @@ public final strictfp class LocalesTest extends TestCase {
             assertTrue(message, message.contains("APPLE"));
         }
     }
-
-    /**
-     * Tests the {@link Locales#parseSuffix(String, String)} method.
-     */
-    @Test
-    @Deprecated
-    @DependsOnMethod("testParse")
-    public void testParseSuffix() {
-        assertSame(null,           Locales.parseSuffix("remarks", "remark"));
-        assertSame(Locale.ROOT,    Locales.parseSuffix("remarks", "remarks"));
-        assertSame(Locale.ENGLISH, Locales.parseSuffix("remarks", "remarks_en"));
-        assertSame(Locale.FRENCH,  Locales.parseSuffix("remarks", "remarks_fr"));
-        assertSame(Locale.FRENCH,  Locales.parseSuffix("remarks", "remarks_fra"));
-        assertSame(null,           Locales.parseSuffix("remarks", "remarks2_en"));
-    }
 }

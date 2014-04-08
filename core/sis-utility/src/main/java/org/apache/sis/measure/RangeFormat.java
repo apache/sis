@@ -771,6 +771,7 @@ public class RangeFormat extends Format {
      * need to be reset to -1.  In case of failure (including an exception being thrown), the
      * parse index is undetermined and need to be reset to its initial value.
      */
+    @SuppressWarnings({"unchecked","rawtypes"})
     private Range<?> tryParse(final String source, final ParsePosition pos)
             throws UnconvertibleObjectException
     {
@@ -971,7 +972,6 @@ public class RangeFormat extends Format {
          * than a more specialized type, the finest suitable type will be determined.
          */
         if (Number.class.isAssignableFrom(elementType)) {
-            @SuppressWarnings({"unchecked","rawtypes"})
             Class<? extends Number> type = (Class) elementType;
             Number min = (Number) minValue;
             Number max = (Number) maxValue;
@@ -983,25 +983,16 @@ public class RangeFormat extends Format {
             if (min.doubleValue() == Double.NEGATIVE_INFINITY) min = null;
             if (max.doubleValue() == Double.POSITIVE_INFINITY) max = null;
             if (unit != null) {
-                @SuppressWarnings({"unchecked","rawtypes"})
                 final MeasurementRange<?> range = new MeasurementRange(type, min, isMinIncluded, max, isMaxIncluded, unit);
                 return range;
             }
-            @SuppressWarnings({"unchecked","rawtypes"})
-            final NumberRange<?> range = new NumberRange(type, min, isMinIncluded, max, isMaxIncluded);
-            return range;
+            return new NumberRange(type, min, isMinIncluded, max, isMaxIncluded);
         } else if (Date.class.isAssignableFrom(elementType)) {
-            final Date min = (Date) minValue;
-            final Date max = (Date) maxValue;
-            return new Range<Date>(Date.class, min, isMinIncluded, max, isMaxIncluded);
+            return new Range(Date.class, (Date) minValue, isMinIncluded, (Date) maxValue, isMaxIncluded);
         } else {
-            @SuppressWarnings({"unchecked","rawtypes"})
-            final Class<? extends Comparable<?>> type = (Class) elementType;
-            final Comparable<?> min = (Comparable<?>) minValue;
-            final Comparable<?> max = (Comparable<?>) maxValue;
-            @SuppressWarnings({"unchecked","rawtypes"})
-            final Range<?> range = new Range(type, min, isMinIncluded, max, isMaxIncluded);
-            return range;
+            return new Range(elementType,
+                    (Comparable<?>) minValue, isMinIncluded,
+                    (Comparable<?>) maxValue, isMaxIncluded);
         }
     }
 

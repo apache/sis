@@ -58,7 +58,8 @@ public final class Classes extends Static {
     /**
      * An empty array of classes.
      */
-    private static final Class<?>[] EMPTY_ARRAY = new Class<?>[0];
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private static final Class<Object>[] EMPTY_ARRAY = new Class[0];
 
     /**
      * Methods to be rejected by {@link #isPossibleGetter(Method)}. They are mostly methods inherited

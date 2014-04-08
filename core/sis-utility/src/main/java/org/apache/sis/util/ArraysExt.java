@@ -1391,37 +1391,6 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns a copy of the given array where each value has been casted to the {@code float} type.
-     *
-     * @param  data The array to copy, or {@code null}.
-     * @return A copy of the given array with values casted to the {@code float} type, or
-     *         {@code null} if the given array was null.
-     *
-     * @deprecated Will be removed since we do not plan to provide static converter methods for every possible
-     *             type combination, and user should probably control himself the rounding behavior.
-     */
-    @Deprecated
-    public static float[] copyAsFloats(final double[] data) {
-        return org.apache.sis.internal.util.Numerics.copyAsFloats(data);
-    }
-
-    /**
-     * Returns a copy of the given array where each value has been
-     * {@linkplain Math#round(double) rounded} to the {@code int} type.
-     *
-     * @param  data The array to copy, or {@code null}.
-     * @return A copy of the given array with values rounded to the {@code int} type, or
-     *         {@code null} if the given array was null.
-     *
-     * @deprecated Will be removed since we do not plan to provide static converter methods for every possible
-     *             type combination, and user should probably control himself the rounding behavior.
-     */
-    @Deprecated
-    public static int[] copyAsInts(final double[] data) {
-        return org.apache.sis.internal.util.Numerics.copyAsInts(data);
-    }
-
-    /**
      * Returns {@code true} if all elements in the specified array are in increasing order.
      * Special cases:
      *

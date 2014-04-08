@@ -125,25 +125,4 @@ public abstract class DataStoreProvider {
      * @see DataStores#open(Object)
      */
     public abstract DataStore open(StorageConnector storage) throws DataStoreException;
-
-    /**
-     * Returns {@code TRUE} if the given storage appears to be supported by the {@code DataStore}.
-     *
-     * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
-     * @return {@link Boolean#TRUE} if the given storage seems to be usable by the {@code DataStore} instances
-     *         create by this provider, {@link Boolean#FALSE} if the {@code DataStore} will not be able to use
-     *         the given storage, or {@code null} if this method does not have enough information.
-     * @throws DataStoreException if an I/O or SQL error occurred. The error shall be unrelated to the logical
-     *         structure of the storage.
-     *
-     * @deprecated Replaced by {@link #probeContent(StorageConnector)}.
-     */
-    @Deprecated
-    public Boolean canOpen(final StorageConnector storage) throws DataStoreException {
-        final ProbeResult probe = probeContent(storage);
-        if (ProbeResult.INSUFFICIENT_BYTES.equals(probe) || ProbeResult.UNDETERMINED.equals(probe)) {
-            return null;
-        }
-        return probe.isSupported();
-    }
 }
