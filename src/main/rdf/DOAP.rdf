@@ -91,6 +91,13 @@
         <asfext:id>ISO 19111</asfext:id>
       </asfext:Standard>
     </asfext:implements>
+    <asfext:implements>
+      <asfext:Standard>
+        <asfext:title>Well known text representation of coordinate reference systems</asfext:title>
+        <asfext:body>International Organization for Standardization</asfext:body>
+        <asfext:id>ISO 19162</asfext:id>
+      </asfext:Standard>
+    </asfext:implements>
     <release>
       <Version>
         <name>SIS 0.4</name>
