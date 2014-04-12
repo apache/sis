@@ -25,7 +25,7 @@
          xmlns:rdf    = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
          xmlns:asfext = "http://projects.apache.org/ns/asfext#"
          xmlns:foaf   = "http://xmlns.com/foaf/0.1/">
-  <Project rdf:about="http://sis.apache.org/">
+  <Project rdf:about  = "http://sis.apache.org/">
     <created>2010-02-28</created>
     <name>Apache Spatial Information System</name>
     <shortdesc>A library for developing geospatial applications.</shortdesc>
@@ -39,13 +39,14 @@
     <download-page rdf:resource = "http://sis.apache.org/downloads.html"/>
     <repository>
       <SVNRepository>
-        <location rdf:resource="http://svn.apache.org/repos/asf/sis/trunk"/>
-        <browse rdf:resource="http://svn.apache.org/viewvc/sis/trunk"/>
+        <location rdf:resource = "http://svn.apache.org/repos/asf/sis/trunk"/>
+        <browse   rdf:resource = "http://svn.apache.org/viewvc/sis/trunk"/>
       </SVNRepository>
     </repository>
     <repository>
       <GitRepository>
-        <location rdf:resource="git://git.apache.org/sis.git"/>
+        <location rdf:resource = "git://git.apache.org/sis.git"/>
+        <browse   rdf:resource = "http://github.com/apache/sis"/>
       </GitRepository>
     </repository>
     <asfext:implements>
