@@ -143,6 +143,7 @@ final class FilteredNamespaces implements NamespaceContext {
      * Returns all prefixes for the given namespace.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public Iterator<String> getPrefixes(final String namespaceURI) {
         return context.getPrefixes(toImpl(namespaceURI));
     }
