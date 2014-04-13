@@ -505,7 +505,7 @@ public final class ChannelDecoder extends Decoder {
                 final int na  = (int) tn;
                 ensureNonNegative(na, tag);
                 switch (tag) {
-                    // More cases may be added later if it appears to exist.
+                    // More cases may be added later if they appear to exist.
                     case ATTRIBUTE: attributes = readAttributes(na); break;
                     default:        throw malformedHeader();
                 }
@@ -553,6 +553,8 @@ public final class ChannelDecoder extends Decoder {
      * <p>Current implementation does nothing, since the NetCDF binary files that {@code ChannelDecoder}
      * can read do not have groups anyway. Future SIS implementations may honor the given group names if
      * groups support is added.</p>
+     *
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public void setSearchPath(final String... groupNames) throws IOException {
@@ -562,6 +564,9 @@ public final class ChannelDecoder extends Decoder {
      * Returns the path which is currently set. The array returned by this method may be only
      * a subset of the array given to {@link #setSearchPath(String[])} since only the name of
      * groups which have been found in the NetCDF file are returned by this method.
+     *
+     * @return {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public String[] getSearchPath() throws IOException {
@@ -592,6 +597,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  name The name of the attribute to search, or {@code null}.
      * @return The attribute value, or {@code null} if none or empty or if the given name was null.
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public String stringValue(final String name) throws IOException {
@@ -605,6 +611,9 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Returns the value of the attribute of the given name as a number, or {@code null} if none.
      * If there is more than one numeric value, only the first one is returned.
+     *
+     * @return {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public Number numericValue(final String name) throws IOException {
@@ -621,6 +630,9 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Returns the value of the attribute of the given name as a date, or {@code null} if none.
      * If there is more than one numeric value, only the first one is returned.
+     *
+     * @return {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public Date dateValue(final String name) throws IOException {
@@ -641,6 +653,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  values The values to convert. May contains {@code null} elements.
      * @return The converted values. May contains {@code null} elements.
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public Date[] numberToDate(final String symbol, final Number... values) throws IOException {
@@ -664,6 +677,9 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Returns all variables found in the NetCDF file.
      * This method returns a direct reference to an internal array - do not modify.
+     *
+     * @return {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public Variable[] getVariables() throws IOException {
@@ -673,6 +689,9 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Returns all grid geometries found in the NetCDF file.
      * This method returns a direct reference to an internal array - do not modify.
+     *
+     * @return {@inheritDoc}
+     * @throws IOException {@inheritDoc}
      */
     @Override
     public GridGeometry[] getGridGeometries() throws IOException {
@@ -742,6 +761,8 @@ nextVar:    for (final VariableInfo variable : variables) {
     /**
      * Returns a string representation to be inserted in {@link org.apache.sis.storage.netcdf.NetcdfStore#toString()}
      * result. This is for debugging purpose only any may change in any future SIS version.
+     *
+     * @return {@inheritDoc}
      */
     @Debug
     @Override
