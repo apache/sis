@@ -206,6 +206,8 @@ public abstract class Variable {
 
     /**
      * Returns a string representation of this variable for debugging purpose.
+     *
+     * @return A string representation of this variable.
      */
     @Debug
     @Override
