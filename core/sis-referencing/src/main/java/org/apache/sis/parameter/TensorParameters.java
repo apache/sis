@@ -105,6 +105,7 @@ import java.util.Objects;
  * @version 0.4
  * @module
  */
+@SuppressWarnings("unchecked")
 public class TensorParameters<E> implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -206,7 +207,7 @@ public class TensorParameters<E> implements Serializable {
      *                    Length may be different if the caller wants to generalize usage of this class to tensors.
      */
     @SafeVarargs
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("rawtypes")
     public TensorParameters(final Class<E> elementType, final String prefix, final String separator,
             final ParameterDescriptor<Integer>... dimensions)
     {
@@ -234,7 +235,7 @@ public class TensorParameters<E> implements Serializable {
      *
      * <p>This method is invoked by constructor and on deserialization.</p>
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("rawtypes")
     private <T> ParameterDescriptor<T>[] createCache() {
         if (Number.class.isAssignableFrom(elementType)) try {
             one  = (E) Numbers.wrap(1, (Class) elementType);
