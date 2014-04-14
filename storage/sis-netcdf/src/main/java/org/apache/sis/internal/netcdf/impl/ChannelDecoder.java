@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import java.time.Instant;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -38,7 +39,6 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
@@ -633,7 +633,7 @@ public final class ChannelDecoder extends Decoder {
         final Attribute attribute = findAttribute(name);
         if (attribute != null) {
             if (attribute.value instanceof String) try {
-                return JDK8.parseDateTime(Attribute.dateToISO((String) attribute.value));
+                return Date.from(Instant.parse(Attribute.dateToISO((String) attribute.value)));
             } catch (IllegalArgumentException e) {
                 listeners.warning(null, e);
             }
@@ -655,7 +655,7 @@ public final class ChannelDecoder extends Decoder {
         final String[] parts = TIME_UNIT_PATTERN.split(symbol);
         if (parts.length == 2) try {
             final UnitConverter converter = Units.valueOf(parts[0]).getConverterToAny(Units.MILLISECOND);
-            final long epoch = JDK8.parseDateTime(Attribute.dateToISO(parts[1])).getTime();
+            final long epoch = Instant.parse(Attribute.dateToISO(parts[1])).toEpochMilli();
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {
