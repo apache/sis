@@ -107,12 +107,6 @@ public final class ChannelDecoder extends Decoder {
      */
     private static final Pattern TIME_UNIT_PATTERN = Pattern.compile("(?i)\\bsince\\b");
 
-    /**
-     * {@code true} if the default timezone is UTC, or {@code false} if it shall be the
-     * {@linkplain java.util.TimeZone#getDefault() system default}.
-     */
-    private static final boolean DEFAULT_TIMEZONE_IS_UTC = true;
-
     /*
      * NOTE: the names of the static constants below this point match the names used in the Backus-Naur Form (BNF)
      *       definitions in the NetCDF Classic and 64-bit Offset Format (1.0) specification (link in class javdoc),
@@ -639,7 +633,7 @@ public final class ChannelDecoder extends Decoder {
         final Attribute attribute = findAttribute(name);
         if (attribute != null) {
             if (attribute.value instanceof String) try {
-                return JDK8.parseDateTime((String) attribute.value, DEFAULT_TIMEZONE_IS_UTC);
+                return JDK8.parseDateTime(Attribute.dateToISO((String) attribute.value));
             } catch (IllegalArgumentException e) {
                 listeners.warning(null, e);
             }
@@ -661,7 +655,7 @@ public final class ChannelDecoder extends Decoder {
         final String[] parts = TIME_UNIT_PATTERN.split(symbol);
         if (parts.length == 2) try {
             final UnitConverter converter = Units.valueOf(parts[0]).getConverterToAny(Units.MILLISECOND);
-            final long epoch = JDK8.parseDateTime(parts[1], DEFAULT_TIMEZONE_IS_UTC).getTime();
+            final long epoch = JDK8.parseDateTime(Attribute.dateToISO(parts[1])).getTime();
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {

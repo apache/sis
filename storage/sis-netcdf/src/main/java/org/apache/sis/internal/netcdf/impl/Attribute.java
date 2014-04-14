@@ -19,6 +19,7 @@ package org.apache.sis.internal.netcdf.impl;
 import java.lang.reflect.Array;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.CharSequences;
 
 // Related to JDK8
 import java.util.function.Function;
@@ -30,7 +31,7 @@ import java.util.function.Function;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 final class Attribute {
@@ -94,6 +95,99 @@ final class Attribute {
      */
     final boolean booleanValue() {
         return (value instanceof String) && Boolean.valueOf((String) value);
+    }
+
+    /**
+     * Modifies, if needed, the given date in order to make it compliant with the ISO 8601 format.
+     * For example missing minutes or seconds fields are automatically added. The intend is to turn
+     * a NetCDF date into something parseable by {@code java.util.time} or {@code javax.xml.bind}.
+     *
+     * @param  date The date to parse, or {@code null}.
+     * @return The date modified if needed or {@code null} if the given string was {@code null}.
+     *
+     * @since 0.5 (derived from 0.3)
+     */
+    static String dateToISO(String date) {
+        date = CharSequences.trimWhitespaces(date);
+        if (date != null && !date.isEmpty()) {
+            /*
+             * Check for missing time fields and time zone. For example if the given date is
+             * "2005-09-22T00:00", then this block will complete it as "2005-09-22T00:00:00".
+             * In addition, a 'Z' suffix will be appended if 'defaultToUTC' is true.
+             */
+            int timeFieldStart  = date.lastIndexOf('T') + 1; // 0 if there is no time field.
+            int timeFieldEnd    = date.length();             // To be updated if there is a time field.
+            int missingFields   = 2;                         // Number of missing time fields.
+            boolean hasTimeZone = date.charAt(timeFieldEnd - 1) == 'Z';
+            if (timeFieldStart != 0) {
+                if (hasTimeZone) {
+                    timeFieldEnd--;
+                } else {
+                    final int s = Math.max(date.indexOf('+', timeFieldStart),
+                                           date.indexOf('-', timeFieldStart));
+                    if (hasTimeZone = (s >= 0)) {
+                        timeFieldEnd = s;
+                    }
+                }
+                for (int i=timeFieldStart; i<timeFieldEnd; i++) {
+                    if (date.charAt(i) == ':') {
+                        if (--missingFields == 0) break;
+                    }
+                }
+            }
+            /*
+             * If we have determined that there is some missing time fields,
+             * append default values for them.
+             */
+            CharSequence modified = date;
+            if (missingFields != 0 || !hasTimeZone) {
+                final StringBuilder buffer = new StringBuilder(date);
+                buffer.setLength(timeFieldEnd);
+                if (timeFieldStart == 0) {
+                    buffer.append("T00");
+                }
+                while (--missingFields >= 0) {
+                    buffer.append(":00");
+                }
+                if (hasTimeZone) {
+                    buffer.append(date, timeFieldEnd, date.length());
+                } else {
+                    buffer.append('Z');
+                }
+                modified = buffer;
+            }
+            /*
+             * Now ensure that all numbers have at least two digits.
+             */
+            int indexOfLastDigit = 0;
+            for (int i=modified.length(); --i >= 0;) {
+                char c = modified.charAt(i);
+                final boolean isDigit = (c >= '0' && c <= '9'); // Do not use Character.isDigit(char).
+                if (indexOfLastDigit == 0) {
+                    // We were not scaning a number. Check if we are now starting doing so.
+                    if (isDigit) {
+                        indexOfLastDigit = i;
+                    }
+                } else {
+                    // We were scaning a number. Check if we found the begining.
+                    if (!isDigit) {
+                        if (indexOfLastDigit - i == 1) {
+                            // Reuse the buffer if it exists, or create a new one otherwise.
+                            final StringBuilder buffer;
+                            if (modified == date) {
+                                modified = buffer = new StringBuilder(date);
+                            } else {
+                                buffer = (StringBuilder) modified;
+                            }
+                            buffer.insert(i+1, '0');
+                        }
+                        indexOfLastDigit = 0;
+                    }
+                }
+            }
+            date = modified.toString();
+        }
+        return date;
     }
 
     /**
