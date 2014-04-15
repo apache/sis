@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<rdf:RDF xml:lang     = "en"
+         xmlns        = "http://usefulinc.com/ns/doap#"
+         xmlns:rdf    = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:asfext = "http://projects.apache.org/ns/asfext#"
+         xmlns:foaf   = "http://xmlns.com/foaf/0.1/">
+  <Project rdf:about  = "http://sis.apache.org/">
+    <created>2010-02-24</created>
+    <name>Apache Spatial Information System</name>
+    <shortdesc xml:lang="en">A library for developing geospatial applications.</shortdesc>
+    <description xml:lang="en">Apache SIS provides data structures for geographic data and associated metadata
+        along with methods to manipulate those data structures. The library is an implementation of GeoAPI interfaces
+        and can be used for desktop or server applications.</description>
+    <programming-language>Java</programming-language>
+    <homepage      rdf:resource = "http://sis.apache.org/"/>
+    <category      rdf:resource = "http://projects.apache.org/category/library"/>
+    <license       rdf:resource = "http://usefulinc.com/doap/licenses/asl20"/>
+    <asfext:pmc    rdf:resource = "http://sis.apache.org"/>
+    <bug-database  rdf:resource = "http://issues.apache.org/jira/browse/SIS"/>
+    <mailing-list  rdf:resource = "http://sis.apache.org/mail-lists.html"/>
+    <download-page rdf:resource = "http://sis.apache.org/downloads.html"/>
+    <repository>
+      <SVNRepository>
+        <location rdf:resource = "http://svn.apache.org/repos/asf/sis/trunk"/>
+        <browse   rdf:resource = "http://svn.apache.org/viewvc/sis/trunk"/>
+      </SVNRepository>
+    </repository>
+    <repository>
+      <GitRepository>
+        <location rdf:resource = "git://git.apache.org/sis.git"/>
+        <browse   rdf:resource = "http://github.com/apache/sis"/>
+      </GitRepository>
+    </repository>
+    <asfext:implements>
+      <asfext:Standard>
+        <asfext:title>GeoAPI</asfext:title>
+        <asfext:body>Open Geospatial Consortium</asfext:body>
+        <asfext:id>OGC 09-083r3 </asfext:id>
+        <asfext:url rdf:resource = "http://www.opengeospatial.org/standards/geoapi"/>
+      </asfext:Standard>
+    </asfext:implements>
+    <asfext:implements>
+      <asfext:Standard>
+        <asfext:title>Geographic information — Conceptual schema language</asfext:title>
+        <asfext:body>ISO</asfext:body>
+        <asfext:id>ISO 19103</asfext:id>
+      </asfext:Standard>
+    </asfext:implements>
+    <asfext:implements>
+      <asfext:Standard>
+        <asfext:title>Geographic information — Metadata — Fundamentals</asfext:title>
+        <asfext:body>ISO</asfext:body>
+        <asfext:id>ISO 19115</asfext:id>
+      </asfext:Standard>
+    </asfext:implements>
+    <asfext:implements>
+      <asfext:Standard>
+        <asfext:title>Geographic information — Metadata — Extensions for imagery and gridded data</asfext:title>
+        <asfext:body>ISO</asfext:body>
+        <asfext:id>ISO 19115-2</asfext:id>
+      </asfext:Standard>
+    </asfext:implements>
+    <asfext:implements>
+      <asfext:Standard>
+        <asfext:title>Geographic information — Metadata — XML schema implementation</asfext:title>
+        <asfext:body>ISO</asfext:body>
+        <asfext:id>ISO 19139</asfext:id>
+      </asfext:Standard>
+    </asfext:implements>
+    <asfext:implements>
+      <asfext:Standard>
+        <asfext:title>Geographic information — Spatial referencing by coordinates</asfext:title>
+        <asfext:body>ISO</asfext:body>
+        <asfext:id>ISO 19111</asfext:id>
+      </asfext:Standard>
+    </asfext:implements>
+    <asfext:implements>
+      <asfext:Standard>
+        <asfext:title>Geographic information — Well known text representation of coordinate reference systems</asfext:title>
+        <asfext:body>ISO</asfext:body>
+        <asfext:id>ISO 19162</asfext:id>
+      </asfext:Standard>
+    </asfext:implements>
+    <release>
+      <Version>
+        <name>Apache SIS 0.4 — Referencing (part 1)</name>
+        <created>2014-04-07</created>
+        <revision>0.4</revision>
+      </Version>
+    </release>
+    <release>
+      <Version>
+        <name>Apache SIS 0.3 — Metadata</name>
+        <created>2013-08-17</created>
+        <revision>0.3</revision>
+      </Version>
+    </release>
+    <release>
+      <Version>
+        <name>Apache SIS 0.2-incubating</name>
+        <created>2012-07-23</created>
+        <revision>0.2-incubating</revision>
+      </Version>
+    </release>
+    <release>
+      <Version>
+        <name>Apache SIS 0.1-incubating</name>
+        <created>2010-11-10</created>
+        <revision>0.1-incubating</revision>
+      </Version>
+    </release>
+  </Project>
+</rdf:RDF>
