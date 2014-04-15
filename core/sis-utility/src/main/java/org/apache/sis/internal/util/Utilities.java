@@ -91,7 +91,7 @@ public final class Utilities extends Static {
      * used mostly for debugging purpose.
      *
      * @param  classe     The class to format.
-     * @param  properties The (<var>key</var>=</var>value</var>) pairs.
+     * @param  properties The (<var>key</var>=<var>value</var>) pairs.
      * @return A string representation of an instance of the given class having the given properties.
      *
      * @since 0.4
