@@ -182,22 +182,17 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
 
     /**
      * Checks if this {@code WeakHashSet} is valid. This method counts the number of elements and
-     * compares it to {@link #count}. If the check fails, the number of elements is corrected (if
-     * we didn't, an {@link AssertionError} would be thrown for every operations after the first
-     * error, which make debugging more difficult). The set is otherwise unchanged, which should
-     * help to get similar behavior as if assertions hasn't been turned on.
+     * compares it to {@link #count}. This method is invoked in assertions only.
      */
     @Debug
     private boolean isValid() {
-        assert Thread.holdsLock(this);
-        assert count <= upperCapacityThreshold(table.length);
-        final int n = count(table);
-        if (n != count) {
-            count = n;
-            return false;
-        } else {
-            return true;
+        if (!Thread.holdsLock(this)) {
+            throw new AssertionError();
         }
+        if (count > upperCapacityThreshold(table.length)) {
+            throw new AssertionError(count);
+        }
+        return count(table) == count;
     }
 
     /**
@@ -370,12 +365,12 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
         @SuppressWarnings("unchecked")
         final E[] elements = (E[]) Array.newInstance(elementType, count);
         int index = 0;
-        final Entry[] table = this.table;
-        for (int i=0; i<table.length; i++) {
-            for (Entry el=table[i]; el!=null; el=(Entry) el.next) {
+        for (Entry el : table) {
+            while (el != null) {
                 if ((elements[index] = el.get()) != null) {
                     index++;
                 }
+                el = (Entry) el.next;
             }
         }
         return ArraysExt.resize(elements, index);
