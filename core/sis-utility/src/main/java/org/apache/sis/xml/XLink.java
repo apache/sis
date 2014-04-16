@@ -46,12 +46,12 @@ import java.util.Objects;
  * <caption>XLink attribute usage patterns</caption>
  * <tr>
  *   <th> </th>
- *   <th width="14%">{@link XLink.Type#SIMPLE simple}</th>
- *   <th width="14%">{@link XLink.Type#EXTENDED extended}</th>
- *   <th width="14%">{@link XLink.Type#LOCATOR locator}</th>
- *   <th width="14%">{@link XLink.Type#ARC arc}</th>
- *   <th width="14%">{@link XLink.Type#RESOURCE resource}</th>
- *   <th width="14%">{@link XLink.Type#TITLE title}</th>
+ *   <th style="width: 14%">{@link XLink.Type#SIMPLE simple}</th>
+ *   <th style="width: 14%">{@link XLink.Type#EXTENDED extended}</th>
+ *   <th style="width: 14%">{@link XLink.Type#LOCATOR locator}</th>
+ *   <th style="width: 14%">{@link XLink.Type#ARC arc}</th>
+ *   <th style="width: 14%">{@link XLink.Type#RESOURCE resource}</th>
+ *   <th style="width: 14%">{@link XLink.Type#TITLE title}</th>
  * </tr>
  *   <tr align="center"><td><b>{@link #getType() type}</b></td>       <td>R</td><td>R</td><td>R</td><td>R</td><td>R</td><td>R</td></tr>
  *   <tr align="center"><td><b>{@link #getHRef() href}</b></td>       <td>O</td><td> </td><td>R</td><td> </td><td> </td><td> </td></tr>

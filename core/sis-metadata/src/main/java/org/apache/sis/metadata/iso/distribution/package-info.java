@@ -29,7 +29,7 @@
  * <tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td width="50%" nowrap>
+ * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.distribution.DefaultDistribution           Distribution}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.distribution.DefaultDistributor            Distributor}<br>
@@ -41,7 +41,7 @@
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.distribution.MediumName   Medium name}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.distribution.MediumFormat Medium format}<br>
- * </td><td class="sep" width="50%" nowrap>
+ * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                     {@linkplain org.apache.sis.metadata.iso.distribution.DefaultDistribution           Distribution}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.distribution.DefaultFormat                 Format}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.distribution.DefaultDistributor            Distributor}<br>

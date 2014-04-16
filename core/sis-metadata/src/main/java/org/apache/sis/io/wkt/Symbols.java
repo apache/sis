@@ -41,14 +41,14 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *   <tr>
  *     <td>Bracket symbols:</td>
  *     <td>{@code [}…{@code ]} or {@code (}…{@code )}</td>
- *     <td><font size="-1"><b>Note:</b> the {@code […]} brackets are common in referencing WKT,
- *         while the {@code (…)} brackets are common in geometry WKT.</font></td>
+ *     <td><span style="font-size: small"><b>Note:</b> the {@code […]} brackets are common in referencing WKT,
+ *         while the {@code (…)} brackets are common in geometry WKT.</span></td>
  *   </tr>
  *   <tr>
  *     <td>Quote symbols:</td>
  *     <td>{@code "}…{@code "}</td>
- *     <td><font size="-1"><b>Note:</b> Apache SIS accepts also {@code “…”} quotes for more readable
- *         {@code String} literals in Java code, but this is non-standard.</font></td>
+ *     <td><span style="font-size: small"><b>Note:</b> Apache SIS accepts also {@code “…”} quotes
+ *         for more readable {@code String} literals in Java code, but this is non-standard.</span></td>
  *   </tr>
  *   <tr>
  *     <td>Sequence symbols:</td>
