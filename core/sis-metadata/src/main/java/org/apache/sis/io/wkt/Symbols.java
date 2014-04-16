@@ -679,6 +679,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * Invoked on deserialization for replacing the deserialized instance by the constant instance.
      * This method also opportunistically recompute the {@link #quote} field if no replacement is done.
+     *
+     * @return The object to use after deserialization.
      */
     final Object readResolve() {
         if (isImmutable) {

@@ -57,7 +57,7 @@ public final class Citations extends Static {
     public static final Citation OGC = new SimpleCitation("OGC");
 
     /**
-     * The <a href="http://www.ogp.org.uk">International Association of Oil & Gas Producers</a> organization.
+     * The <a href="http://www.ogp.org.uk">International Association of Oil &amp; Gas Producers</a> organization.
      * This organization is responsible for maintainance of {@link #EPSG} database.
      *
      * @see #EPSG

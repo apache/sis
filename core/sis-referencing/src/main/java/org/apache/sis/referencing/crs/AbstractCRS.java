@@ -243,6 +243,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * in order to simplify our class hierarchy, so we provide a datum getter in this class has a hidden property.
      * Subclasses implementing {@code SingleCRS} (basically all SIS subclasses except {@link DefaultCompoundCRS})
      * will override this method with public access and more specific return type.
+     *
+     * @return The datum, or {@code null} if none.
      */
     Datum getDatum() {
         // User could provide his own CRS implementation outside this SIS package, so we have
@@ -422,7 +424,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> CRS into the given formatter.
+     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) CRS into the given formatter.
      * The default implementation writes the following elements in WKT 2 format:
      *
      * <ul>
