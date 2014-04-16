@@ -89,6 +89,7 @@ public final strictfp class GeodeticObjectVerifier {
      * This method verifies the following properties:
      *
      * <table class="sis">
+     * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain GeographicBoundingBox#getInclusion() Inclusion}</td><td>Absent or {@link Boolean#TRUE}</td></tr>
      * <tr><td>{@linkplain GeographicBoundingBox#getWestBoundLongitude() West bound longitude}</td><td>-180</td></tr>
@@ -115,6 +116,7 @@ public final strictfp class GeodeticObjectVerifier {
      * This method verifies the following properties:
      *
      * <table class="sis">
+     * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain PrimeMeridian#getName() name}</td>
      *     <td>{@code "Greenwich"}</td></tr>
@@ -137,6 +139,7 @@ public final strictfp class GeodeticObjectVerifier {
      * This method verifies the following properties:
      *
      * <table class="sis">
+     * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain PrimeMeridian#getName() name}</td>
      *     <td>{@code "Paris"}</td></tr>
@@ -159,6 +162,7 @@ public final strictfp class GeodeticObjectVerifier {
      * This method verifies the following properties:
      *
      * <table class="sis">
+     * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain Ellipsoid#getName() name}</td>
      *     <td>{@code "WGS 84"}</td></tr>
@@ -190,6 +194,7 @@ public final strictfp class GeodeticObjectVerifier {
      * This method verifies the following properties:
      *
      * <table class="sis">
+     * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
      *     <td>{@code "World Geodetic System 1984"}</td></tr>
@@ -217,6 +222,7 @@ public final strictfp class GeodeticObjectVerifier {
      * This method verifies the following properties:
      *
      * <table class="sis">
+     * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticCRS#getName() name}</td>
      *     <td>{@code "WGS 84"}</td></tr>
@@ -248,6 +254,7 @@ public final strictfp class GeodeticObjectVerifier {
      * This method verifies the following properties:
      *
      * <table class="sis">
+     * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
      *     <td>{@code "Mean Sea Level"}</td></tr>
@@ -269,6 +276,7 @@ public final strictfp class GeodeticObjectVerifier {
      * This method verifies the following properties:
      *
      * <table class="sis">
+     * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th colspan="2">Expected value</th></tr>
      * <tr><td>{@linkplain CartesianCS#getDimension() Dimension}</td>
      *     <td colspan="2">2</td></tr>
@@ -317,6 +325,7 @@ public final strictfp class GeodeticObjectVerifier {
      * This method verifies the following properties:
      *
      * <table class="sis">
+     * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th colspan="2">Expected value</th></tr>
      * <tr><td>{@linkplain EllipsoidalCS#getDimension() Dimension}</td>
      *     <td colspan="2">2</td></tr>

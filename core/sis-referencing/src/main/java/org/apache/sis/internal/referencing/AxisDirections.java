@@ -101,8 +101,9 @@ public final class AxisDirections extends Static {
      * ({@code NORTH}, {@code EAST}, {@code UP}, {@code FUTURE}).
      * More specifically, the following conversion table is applied:
      *
-     * <table class="compact"><tr>
-     * <td><table class="sis">
+     * <table class="compact">
+     * <caption>Mapping to "absolute" directions</caption><tr>
+     * <td><table class="sis" summary="Geospatial directions">
      *   <tr>
      *     <th width='50%'>Direction</th>
      *     <th width='50%'>Absolute value</th>
@@ -114,7 +115,7 @@ public final class AxisDirections extends Static {
      *   <tr><td width='50%'>{@code UP}</td>    <td width='50%'>{@code UP}</td>    </tr>
      *   <tr><td width='50%'>{@code DOWN}</td>  <td width='50%'>{@code UP}</td>    </tr>
      * </table></td>
-     * <td width='50%'><table class="sis">
+     * <td width='50%'><table class="sis" summary="Other directions">
      *   <tr>
      *     <th width='50%'>Direction</th>
      *     <th width='50%'>Absolute value</th>

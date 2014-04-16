@@ -190,6 +190,7 @@ public class ProbeResult implements Serializable {
      * The following table gives some example:
      *
      * <table class="sis">
+     * <caption>MIME type examples</caption>
      *   <tr><th>MIME type</th>                                                    <th>Description</th>                                 <th>Namespace</th></tr>
      *   <tr><td>{@code "application/gml+xml"}</td>                                <td>Official mime type for OGC GML</td>              <td>{@value org.apache.sis.xml.Namespaces#GML}</td></tr>
      *   <tr><td>{@code "application/vnd.eu.europa.ec.inspire.resource+xml"}</td>  <td>Official mime type for INSPIRE Resources</td>    <td></td></tr>

@@ -227,6 +227,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Additionally, the following properties are understood by this constructor:
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>

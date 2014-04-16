@@ -592,6 +592,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * <p>The {@code isMinIncluded} and {@code isMaxIncluded} properties of the given range
      * shall be the complement of the ones given to the constructor of this {@code RangeSet}:</p>
      * <table class="sis">
+     *   <caption>Expected bounds inclusion</caption>
      *   <tr><th>{@code add(…)} values</th> <th>{@code remove(…)} values</th></tr>
      *   <tr><td>{@code [min … max]}</td>   <td>{@code (min … max)}</td></tr>
      *   <tr><td>{@code (min … max)}</td>   <td>{@code [min … max]}</td></tr>

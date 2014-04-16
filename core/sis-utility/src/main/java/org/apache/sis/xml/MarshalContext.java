@@ -77,6 +77,7 @@ public abstract class MarshalContext {
      * The {@code prefix} argument can be any of the following values (case-sensitive):
      *
      * <table class="sis">
+     *   <caption>Supported schemas</caption>
      *   <tr>
      *     <th>Prefix</th>
      *     <th>Standard</th>

@@ -130,6 +130,7 @@ public enum AxesConvention {
      * The following table lists some axis orientations in the first column, and
      * how those axes are reordered in a right-handed coordinate system (second column):
      * <table class="sis">
+     *   <caption>Examples of left-handed and right-handed coordinate systems</caption>
      *   <tr><th>Left-handed</th>   <th>Right-handed</th>  <th>Remarks</th></tr>
      *   <tr><td>(North, East)</td> <td>(East, North)</td> <td>This is the most common case.</td></tr>
      *   <tr><td>(West, North)</td> <td>(North, West)</td> <td>This right-handed system has latitude first.</td></tr>

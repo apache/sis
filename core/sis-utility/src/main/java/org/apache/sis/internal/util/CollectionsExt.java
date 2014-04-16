@@ -323,6 +323,7 @@ public final class CollectionsExt extends Static {
      * applied by this method:
      *
      * <table class="sis">
+     * <caption>Implementations for types</caption>
      * <tr><th>Input type</th>                              <th class="sep">Output type</th></tr>
      * <tr><td>{@link SortedSet}</td>                       <td class="sep">{@link TreeSet}</td></tr>
      * <tr><td>{@link HashSet}</td>                         <td class="sep">{@link HashSet}</td></tr>
@@ -383,6 +384,7 @@ public final class CollectionsExt extends Static {
      * given in argument. The following table gives the types mapping applied by this method:
      *
      * <table class="sis">
+     * <caption>Implementations for types</caption>
      * <tr><th>Input type</th>                  <th class="sep">Output type</th></tr>
      * <tr><td>{@link SortedMap}</td>           <td class="sep">{@link TreeMap}</td></tr>
      * <tr><td>{@link HashMap}</td>             <td class="sep">{@link HashMap}</td></tr>

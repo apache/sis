@@ -51,7 +51,7 @@
  * (<span style="background:LightSkyBlue"><var>path</var></span>.<span style="background:Yellow"><var>tip</var></span>)
  * pairs of attributes, respectively:
  *
- * <blockquote><table class="compact" style="border-spacing:21pt 0">
+ * <blockquote><table class="compact" style="border-spacing:21pt 0" summary="Anatomy of a name">
  *   <tr>
  *     <th>{@linkplain org.apache.sis.util.iso.AbstractName#scope() scope}.name</th>
  *     <th>{@linkplain org.apache.sis.util.iso.AbstractName#head() head}.{@linkplain org.apache.sis.util.iso.DefaultScopedName#tail() tail}</th>

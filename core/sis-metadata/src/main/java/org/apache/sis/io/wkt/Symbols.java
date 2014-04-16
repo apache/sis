@@ -32,7 +32,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * The two constants defined in this class, namely {@link #SQUARE_BRACKETS} and {@link #CURLY_BRACKETS},
  * define the symbols for ISO 19162 compliant WKT formatting. Their properties are:
  *
- * <blockquote><table class="compact">
+ * <blockquote><table class="compact" summary="Standard WKT symbols.">
  *   <tr>
  *     <td>Locale for number format:</td>
  *     <td>{@link Locale#ROOT}</td>

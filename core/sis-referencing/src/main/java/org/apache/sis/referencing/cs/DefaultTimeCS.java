@@ -31,7 +31,9 @@ import org.apache.sis.measure.Units;
 /**
  * A 1-dimensional coordinate system for time elapsed in the specified time units from a specified time origin.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Permitted associations</caption>
+ * <tr>
  *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
@@ -85,6 +87,7 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>

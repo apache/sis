@@ -22,6 +22,7 @@ package org.apache.sis.util;
  * The list below summarizes some of the utility classes:
  *
  * <table class="sis">
+ * <caption>Static utility classes (non exhaustive list)</caption>
  * <tr><th colspan="2">Classes of the Java language</th></tr>
  * <tr><td>{@link Characters}</td>
  *     <td>Find subscript and superscript digit characters.</td></tr>

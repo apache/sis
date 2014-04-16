@@ -30,6 +30,7 @@ import java.util.EnumSet;
  * other properties:</p>
  *
  * <table class="sis">
+ *   <caption>Inferred function properties</caption>
  *   <tr><th>Property</th> <th>How to build</th></tr>
  *   <tr><td>{@linkplain #isBijective(Set) Bijective}</td>
  *       <td><code>EnumSet.of({@linkplain #INJECTIVE}, {@linkplain #SURJECTIVE})</code></td>

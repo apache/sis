@@ -60,8 +60,9 @@ import java.util.Objects;
  * while the <cite>legacy</cite> column lists the identifiers used in the legacy OGC 01-009 specification
  * (still used in some <cite>Well Known Texts</cite>).
  *
- * <table class="compact"><tr><td>
+ * <table class="compact" summary="Parameters and formula"><tr><td>
  * <table class="sis">
+ *   <caption>Parameters defined by EPSG</caption>
  *   <tr><th>Code</th> <th>Name</th>               <th>Abbr.</th>       <th>Legacy</th></tr>
  *   <tr><td>8605</td> <td>X-axis translation</td> <td>{@link #tX}</td> <td>{@code dx}</td></tr>
  *   <tr><td>8606</td> <td>Y-axis translation</td> <td>{@link #tY}</td> <td>{@code dy}</td></tr>

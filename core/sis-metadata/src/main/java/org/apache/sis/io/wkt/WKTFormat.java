@@ -286,6 +286,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * The following table shows the names given by various organizations or projects for the same projection:
      *
      * <table class="sis">
+     *   <caption>Projection name examples</caption>
      *   <tr><th>Authority</th> <th>Projection name</th></tr>
      *   <tr><td>EPSG</td>      <td>Mercator (variant A)</td></tr>
      *   <tr><td>OGC</td>       <td>Mercator_1SP</td></tr>
