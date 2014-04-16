@@ -29,14 +29,14 @@
  * <tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td width="50%" nowrap>
+ * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultMaintenanceInformation Maintenance information}<br>
  * {@code  └─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription Scope description}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.maintenance.MaintenanceFrequency Maintenance frequency}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.maintenance.ScopeCode            Scope code}<br>
- * </td><td class="sep" width="50%" nowrap>
+ * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *             {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultMaintenanceInformation Maintenance information}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.maintenance.MaintenanceFrequency                 Maintenance frequency} «code list»<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.maintenance.ScopeCode                            Scope code} «code list»<br>

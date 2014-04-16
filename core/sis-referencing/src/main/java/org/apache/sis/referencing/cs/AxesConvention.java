@@ -53,12 +53,12 @@ import org.opengis.referencing.cs.CoordinateSystem;
  * However SIS defines also <cite>normalized</cite> coordinate systems in a more heuristic way.
  * A similar concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:
  *
- * <blockquote><font size="-1"><b>6.7.2 Map CS</b> —
+ * <div class="note"><b>6.7.2 Map CS</b> —
  * The usual orientation of the Map CS shall be such that the <var>i</var> axis is parallel to the East-to-West axis
  * of the Layer CRS and increases Eastward, and the <var>j</var> axis is parallel to the North-to-South axis of the
  * Layer CRS and increases Southward. This orientation will not be possible in some cases, as (for example) in an
  * orthographic projection over the South Pole. The convention to be followed is that, wherever possible, East shall
- * be to the right edge and North shall be toward the upper edge of the Map CS.</font></blockquote>
+ * be to the right edge and North shall be toward the upper edge of the Map CS.</div>
  *
  * In addition to WMS, Apache SIS uses normalized coordinate systems in map projections.
  * More information are provided in the <cite>Axis units and directions</cite> section of

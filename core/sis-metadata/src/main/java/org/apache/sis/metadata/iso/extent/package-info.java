@@ -29,7 +29,7 @@
  * <tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td width="50%" nowrap>
+ * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent                Extent}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.extent.AbstractGeographicExtent     Geographic extent} «abstract»<br>
@@ -39,7 +39,7 @@
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.extent.DefaultVerticalExtent        Vertical extent}<br>
  * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.extent.DefaultTemporalExtent        Temporal extent}<br>
  * {@code      └─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent Spatial temporal extent}<br>
- * </td><td class="sep" width="50%" nowrap>
+ * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *             {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent                Extent}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.extent.AbstractGeographicExtent     Geographic extent}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultVerticalExtent        Vertical extent}<br>

@@ -77,7 +77,7 @@ import java.util.Objects;
  * <center><b>Geocentric coordinates transformation</b></center>
  * <center>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
  *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)</center>
- * <center><font size="-1">(ignoring unit conversions)</font></center>
+ * <center style="font-size: small">(ignoring unit conversions)</center>
  *
  * <p><math display="block" alttext="MathML capable browser required">
  *   <mfenced open="[" close="]">
