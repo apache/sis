@@ -23,6 +23,7 @@
  * objects, and list the Java2D classes that are conceptually equivalent.
  *
  * <table class="sis">
+ *   <caption>Java2D and geometry equivalences</caption>
  *   <tr>
  *     <th>Purpose</th>
  *     <th>Any dimension</th>

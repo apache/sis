@@ -122,6 +122,7 @@ public class AbstractIdentifiedType implements Serializable {
      * Other properties listed in the table below are optional.
      *
      * <table class="sis">
+     *   <caption>Recognized properties</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>

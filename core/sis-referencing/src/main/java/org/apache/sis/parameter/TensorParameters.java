@@ -264,6 +264,7 @@ public class TensorParameters<E> implements Serializable {
      * The rank determines the type of objects represented by the parameters:
      *
      * <table class="sis">
+     *   <caption>Tensor types implied by rank</caption>
      *   <tr><th>Rank</th> <th>Type</th></tr>
      *   <tr><td>0</td>    <td>scalar</td></tr>
      *   <tr><td>1</td>    <td>vector</td></tr>
@@ -539,6 +540,7 @@ public class TensorParameters<E> implements Serializable {
      * identified object constructor}. The following table is a reminder of main (not all) properties:</p>
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>

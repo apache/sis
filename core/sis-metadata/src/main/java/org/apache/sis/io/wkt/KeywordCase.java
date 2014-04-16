@@ -24,6 +24,7 @@ package org.apache.sis.io.wkt;
  * because WKT 2 has more keywords made by combination of words. Examples:
  *
  * <table class="sis">
+ *   <caption>WKT element case comparisons</caption>
  *   <tr><th>Upper case</th>                 <th>Camel case</th></tr>
  *   <tr><td>{@code TIMEEXTENT}</td>         <td>{@code TimeExtent}</td></td>
  *   <tr><td>{@code ANGLEUNIT}</td>          <td>{@code AngleUnit}</td></td>

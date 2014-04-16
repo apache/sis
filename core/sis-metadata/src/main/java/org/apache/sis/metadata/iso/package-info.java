@@ -27,7 +27,9 @@
  * <a href="https://geo-ide.noaa.gov/wiki/index.php?title=Category:ISO_19115">NOAA wiki page</a>
  * is a good source of information.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Package overview</caption>
+ * <tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
  * </tr><tr><td width="50%" nowrap>

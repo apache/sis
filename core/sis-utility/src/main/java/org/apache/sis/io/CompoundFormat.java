@@ -395,6 +395,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * <p>The default implementation creates the following formats:</p>
      *
      * <table class="sis">
+     *   <caption>Supported formats by type</caption>
      *   <tr><th>Value type</th>     <th>Format</th></tr>
      *   <tr><td>{@link Angle}</td>  <td>{@link AngleFormat}</td></tr>
      *   <tr><td>{@link Date}</td>   <td>{@link DateFormat}</td></tr>

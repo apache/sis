@@ -97,6 +97,7 @@ public interface TreeTable {
      * <p>The following table summarizes the tree-related and table-related methods:</p>
      *
      * <table class="sis">
+     * <caption>Tree-table methods</caption>
      * <tr>
      *   <th>Tree-related methods</th>
      *   <th>Table-related methods</th>

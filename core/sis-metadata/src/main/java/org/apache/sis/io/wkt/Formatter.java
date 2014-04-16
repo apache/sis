@@ -522,6 +522,7 @@ public class Formatter implements Localized {
      * </ul>
      *
      * <blockquote><table class="sis">
+     *   <caption>Complementary WKT elements</caption>
      *   <tr><th>WKT 2 element</th><th>WKT 1 element</th><th>For types</th></tr>
      *   <tr><td>{@code Anchor[…]}</td>        <td></td> <td>{@link Datum}</td></tr>
      *   <tr><td>{@code Scope[…]}</td>         <td></td> <td>{@link ReferenceSystem}, {@link Datum}, {@link CoordinateOperation}</td></tr>

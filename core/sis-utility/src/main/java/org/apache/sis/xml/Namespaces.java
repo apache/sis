@@ -35,6 +35,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * <p>The following table lists the URLs, their usual prefix, and the SIS versions when each URL changed.</p>
  * <table class="sis">
+ *   <caption>Namespaces and change log</caption>
  *   <tr><th>Prefix</th> <th>XML Namespace</th>   <th>Changes history</th></tr>
  *   <tr><td>gco</td>    <td>{@value #GCO}</td>   <td></td></tr>
  *   <tr><td>gfc</td>    <td>{@value #GFC}</td>   <td></td></tr>
@@ -135,6 +136,7 @@ public final class Namespaces extends Static {
      *
      * <p>History</p>
      * <table class="sis">
+     *   <caption>Change log</caption>
      *   <tr><th>SIS version</th> <th>URL</th></tr>
      *   <tr><td>0.3</td>         <td>http://www.opengis.net/gml</td></tr>
      * </table>

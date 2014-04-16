@@ -218,6 +218,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * is already a {@link ReferenceIdentifier} object instead than a {@link String}.
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>
@@ -760,7 +761,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The strictness level is controlled by the second argument,
      * from stricter to more permissive values:
      *
-     * <table class="compact">
+     * <table class="compact" summary="Description of comparison modes.">
      *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>Verifies if the two objects are of the same {@linkplain #getClass() class}
      *            and compares all public properties, including SIS-specific (non standard) properties.</td></tr>
@@ -966,7 +967,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
      * then subclasses shall write the content starting at the insertion point shown below:
      *
-     * <table class="compact">
+     * <table class="compact" summary="WKT and Java code example.">
      * <tr>
      *   <th>WKT example</th>
      *   <th>Java code example</th>

@@ -43,6 +43,7 @@ import java.util.Objects;
  * (Source: <a href="http://www.w3.org/TR/xlink/">W3C</a>):
  *
  * <table class="sis">
+ * <caption>XLink attribute usage patterns</caption>
  * <tr>
  *   <th> </th>
  *   <th width="14%">{@link XLink.Type#SIMPLE simple}</th>

@@ -44,6 +44,7 @@ import org.apache.sis.util.ArgumentChecks;
  * it into the tree on the right side:
  *
  * <table class="sis">
+ * <caption>Example of tree depth reduction</caption>
  * <tr><th>Before</th><th class="sep">After</th></tr>
  * <tr><td>
  * {@preformat text
