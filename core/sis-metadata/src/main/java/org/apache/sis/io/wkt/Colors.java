@@ -212,6 +212,8 @@ public class Colors implements Cloneable, Serializable {
 
     /**
      * Replaces the deserialized instance by {@link #DEFAULT} one if possible.
+     *
+     * @return The object to use after deserialization.
      */
     final Object readResolve() {
         return isImmutable && map.equals(DEFAULT.map) ? DEFAULT : this;

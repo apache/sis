@@ -157,7 +157,7 @@ public enum FunctionProperty {
      * <ul>
      *   <li>{@link #INJECTIVE}</li>
      *   <li>{@link #SURJECTIVE}</li>
-     * </u>
+     * </ul>
      *
      * @param  properties The properties of the function to test for bijectivity.
      * @return {@code true} if a function having the given set of properties is bijective.
@@ -174,7 +174,7 @@ public enum FunctionProperty {
      * <ul>
      *   <li>{@link #ORDER_PRESERVING}</li>
      *   <li>{@link #ORDER_REVERSING}</li>
-     * </u>
+     * </ul>
      *
      * @param  properties The properties of the function to test for monotonicity.
      * @return {@code true} if a function having the given set of properties is monotonic.

@@ -26,11 +26,11 @@ package org.apache.sis.io.wkt;
  * <table class="sis">
  *   <caption>WKT element case comparisons</caption>
  *   <tr><th>Upper case</th>                 <th>Camel case</th></tr>
- *   <tr><td>{@code TIMEEXTENT}</td>         <td>{@code TimeExtent}</td></td>
- *   <tr><td>{@code ANGLEUNIT}</td>          <td>{@code AngleUnit}</td></td>
- *   <tr><td>{@code BASEGEODCRS}</td>        <td>{@code BaseGeodCRS}</td></td>
- *   <tr><td>{@code DERIVINGCONVERSION}</td> <td>{@code DerivingConversion}</td></td>
- *   <tr><td>{@code ENGINEERINGDATUM}</td>   <td>{@code EngineeringDatum}</td></td>
+ *   <tr><td>{@code TIMEEXTENT}</td>         <td>{@code TimeExtent}</td></tr>
+ *   <tr><td>{@code ANGLEUNIT}</td>          <td>{@code AngleUnit}</td></tr>
+ *   <tr><td>{@code BASEGEODCRS}</td>        <td>{@code BaseGeodCRS}</td></tr>
+ *   <tr><td>{@code DERIVINGCONVERSION}</td> <td>{@code DerivingConversion}</td></tr>
+ *   <tr><td>{@code ENGINEERINGDATUM}</td>   <td>{@code EngineeringDatum}</td></tr>
  * </table>
  *
  * <div class="note"><b>Note:</b>
