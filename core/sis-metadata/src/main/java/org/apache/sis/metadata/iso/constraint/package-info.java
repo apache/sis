@@ -35,14 +35,14 @@
  * {@code      ├─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints    Legal constraints}<br>
  * {@code      └─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.constraints.Restriction    Restriction}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.constraints.Classification Classification}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.constraint.Restriction    Restriction}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.constraint.Classification Classification}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *             {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints         Constraints}<br>
  *             {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints    Legal constraints}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.constraints.Restriction                      Restriction} «code list»<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.constraint.Restriction                       Restriction} «code list»<br>
  *             {@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.constraints.Classification                   Classification} «code list»<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.constraint.Classification                    Classification} «code list»<br>
  * </td></tr></table>
  *
  * {@section Null values, nil objects and collections}
