@@ -307,6 +307,10 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
 
     /**
      * Computes the single CRS list on deserialization.
+     *
+     * @param  in The input stream from which to deserialize a compound CRS.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     @SuppressWarnings("unchecked")
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {

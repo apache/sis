@@ -48,7 +48,9 @@ public interface LinearTransform extends MathTransform {
      * For example if this transform converts projected coordinates (metres) to display coordinates (pixel),
      * then the same conversions can be done by the returned matrix as below:
      *
-     * <p><center><img src="../matrix/doc-files/AffineTransform.png"></center></p>
+     * <center><p>
+     * <img src="../matrix/doc-files/AffineTransform.png" alt="Matrix representation of an affine transform">
+     * </p></center>
      *
      * @return The coefficients of this linear transform as a matrix.
      */

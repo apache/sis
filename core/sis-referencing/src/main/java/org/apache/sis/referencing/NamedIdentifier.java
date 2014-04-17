@@ -421,6 +421,9 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Invoked on serialization for writing the {@linkplain #name} if it was supplied by the user.
      * Otherwise, we will let {@link #getName()} recompute the name only when needed.
+     *
+     * @param  out The output stream where to serialize this named identifier.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -430,6 +433,10 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Invoked on deserialization for reading the name written by {@link #writeObject(ObjectOutputStream)},
      * if any.
+     *
+     * @param  in The input stream from which to deserialize a named identifier.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

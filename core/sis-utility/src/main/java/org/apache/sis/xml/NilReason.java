@@ -261,6 +261,8 @@ public final class NilReason implements Serializable {
 
     /**
      * Invoked after deserialization in order to return a unique instance if possible.
+     *
+     * @return A unique instance of the deserialized {@code NilReason}.
      */
     private Object readResolve() {
         if (reason instanceof String) {
