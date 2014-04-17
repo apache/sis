@@ -670,6 +670,10 @@ public class TensorParameters<E> implements Serializable {
 
     /**
      * Invoked on deserialization for restoring the {@link #parameters} array.
+     *
+     * @param  in The input stream from which to deserialize a group of tensor parameters.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

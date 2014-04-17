@@ -560,7 +560,7 @@ public class QuadTree {
   /**
    * Sets the size of the quad tree.
    *
-   * @param size
+   * @param size The new quad tree size.
    */
   public void setSize(int size) {
     this.size = size;
@@ -578,7 +578,7 @@ public class QuadTree {
   /**
    * Sets the node size of the quad tree.
    *
-   * @param nodeSize
+   * @param nodeSize The new node size.
    */
   public void setNodeSize(int nodeSize) {
     this.nodeSize = nodeSize;

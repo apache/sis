@@ -270,6 +270,8 @@ public class OptionKey<T> implements Serializable {
     /**
      * Resolves this option key on deserialization. This method is invoked
      * only for instance of the exact {@code OptionKey} class, not subclasses.
+     *
+     * @return The unique {@code OptionKey} instance.
      */
     private Object readResolve() {
         try {

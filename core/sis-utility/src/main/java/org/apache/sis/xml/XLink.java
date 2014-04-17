@@ -53,16 +53,16 @@ import java.util.Objects;
  *   <th style="width: 14%">{@link XLink.Type#RESOURCE resource}</th>
  *   <th style="width: 14%">{@link XLink.Type#TITLE title}</th>
  * </tr>
- *   <tr align="center"><td><b>{@link #getType() type}</b></td>       <td>R</td><td>R</td><td>R</td><td>R</td><td>R</td><td>R</td></tr>
- *   <tr align="center"><td><b>{@link #getHRef() href}</b></td>       <td>O</td><td> </td><td>R</td><td> </td><td> </td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getRole() role}</b></td>       <td>O</td><td>O</td><td>O</td><td> </td><td>O</td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getArcRole() arcrole}</b></td> <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getTitle() title}</b></td>     <td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getShow() show}</b></td>       <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getActuate() actuate}</b></td> <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getLabel() label}</b></td>     <td> </td><td> </td><td>O</td><td> </td><td>O</td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getFrom() from}</b></td>       <td> </td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getTo() to}</b></td>           <td> </td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getType() type}</b></td>       <td>R</td><td>R</td><td>R</td><td>R</td><td>R</td><td>R</td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getHRef() href}</b></td>       <td>O</td><td> </td><td>R</td><td> </td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getRole() role}</b></td>       <td>O</td><td>O</td><td>O</td><td> </td><td>O</td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getArcRole() arcrole}</b></td> <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getTitle() title}</b></td>     <td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getShow() show}</b></td>       <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getActuate() actuate}</b></td> <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getLabel() label}</b></td>     <td> </td><td> </td><td>O</td><td> </td><td>O</td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getFrom() from}</b></td>       <td> </td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getTo() to}</b></td>           <td> </td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
  * </table>
  *
  * When {@code xlink} attributes are found at unmarshalling time instead of an object definition,
