@@ -29,9 +29,9 @@ import org.apache.sis.util.logging.MonolineFormatter;
 
 
 /**
- * Command line interface for Apache SIS. The {@link #main(String[])} method accepts the following commands:
+ * Command line interface for Apache SIS. The {@link #main(String[])} method accepts the following actions:
  *
- * <blockquote><table class="compact">
+ * <blockquote><table class="compact" summary="Supported command-line actions.">
  * <tr><td>{@code help}     </td><td>Show a help overview.</td></tr>
  * <tr><td>{@code about}    </td><td>Show information about Apache SIS and system configuration.</td></tr>
  * <tr><td>{@code mime-type}</td><td>Show MIME type for the given file.</td></tr>
@@ -40,7 +40,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  *
  * Each command can accepts an arbitrary amount of the following options:
  *
- * <blockquote><table class="compact">
+ * <blockquote><table class="compact" summary="Supported command-line options.">
  * <tr><td>{@code --format}   </td><td>The output format: {@code xml}, {@code wkt}, {@code wkt1} or {@code text}.</td></tr>
  * <tr><td>{@code --locale}   </td><td>The locale to use for the command output.</td></tr>
  * <tr><td>{@code --timezone} </td><td>The timezone for the dates to be formatted.</td></tr>

@@ -47,6 +47,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * and {@link Unmarshaller} instances created by {@link PooledMarshaller}:
  *
  * <table class="sis">
+ *   <caption>Supported (un)marshaller properties</caption>
  *   <tr><th>Key</th>                         <th>Value type</th>                <th>Purpose</th></tr>
  *   <tr><td>{@link #LOCALE}</td>             <td>{@link Locale}</td>            <td>for specifying the locale to use for international strings and code lists.</td></tr>
  *   <tr><td>{@link #TIMEZONE}</td>           <td>{@link TimeZone}</td>          <td>for specifying the timezone to use for dates and times.</td></tr>
@@ -126,6 +127,7 @@ public final class XML extends Static {
      *
      * {@section Valid values}
      * <table class="sis">
+     *   <caption>Supported schemas</caption>
      *   <tr><th>Map key</th> <th>Typical values (choose only one)</th></tr>
      *   <tr><td><b>gmd</b></td><td>
      *     http://schemas.opengis.net/iso/19139/20070417/<br>

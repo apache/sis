@@ -569,6 +569,7 @@ cmp:    for (final Class<?> c : c1) {
      * <p>The following table compares the various kind of names for some examples:</p>
      *
      * <table class="sis">
+     *   <caption>Class name comparisons</caption>
      *   <tr>
      *     <th>Class</th>
      *     <th>{@code getName()}</th>

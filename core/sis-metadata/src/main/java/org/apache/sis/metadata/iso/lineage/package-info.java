@@ -24,10 +24,12 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Package overview</caption>
+ * <tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td width="50%" nowrap>
+ * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultLineage           Lineage}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessStep       Process step}<br>
@@ -36,7 +38,7 @@
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessing        Processing}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultAlgorithm         Algorithm}<br>
  * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessStepReport Process step report}<br>
- * </td><td class="sep" width="50%" nowrap>
+ * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultLineage           Lineage}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultSource            Source}<br>
  * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultNominalResolution Nominal resolution}<br>

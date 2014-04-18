@@ -32,7 +32,9 @@ import org.apache.sis.measure.Units;
  * Ordinate values are distances from the axis origin to the point along the axis.
  * A typical example is an axis for representing the points along a road.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Permitted associations</caption>
+ * <tr>
  *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
@@ -83,6 +85,7 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
      * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>

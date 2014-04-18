@@ -536,7 +536,7 @@ abstract class Pooled {
      *     }
      * }
      *
-     * @see Context#finish();
+     * @see Context#finish()
      */
     final Context begin() {
         return new Context(bitMasks, locale, timezone, schemas, gmlVersion, resolver, converter, warningListener);

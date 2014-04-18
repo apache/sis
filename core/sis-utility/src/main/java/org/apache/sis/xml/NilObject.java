@@ -32,7 +32,9 @@ package org.apache.sis.xml;
  * shows a {@code CI_Citation} fragment with an ordinary {@code CI_Series} element on the left side,
  * and an unknown {@code CI_Series} element on the right side:</p>
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Example of missing object</caption>
+ * <tr>
  *   <th>Normal {@code Series} element</th>
  *   <th>Unknown {@code Series} element</th>
  * </tr><tr><td>

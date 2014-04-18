@@ -31,7 +31,9 @@ import org.apache.sis.measure.Units;
 /**
  * A 2- or 3-dimensional coordinate system for geodetic latitude and longitude, optionally with ellipsoidal height.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Permitted associations</caption>
+ * <tr>
  *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
@@ -82,6 +84,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>

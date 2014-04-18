@@ -31,7 +31,7 @@ import org.apache.sis.math.DecimalFunctions;
  *       <a href="http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf">Library
  *       for Double-Double and Quad-Double arithmetic</a>, 2007.</li>
  *   <li>Jonathan R. Shewchuk. Adaptive precision floating-point arithmetic and fast robust geometric predicates.
- *       Discrete & Computational Geometry, 18(3):305–363, 1997.</li>
+ *       Discrete &amp; Computational Geometry, 18(3):305–363, 1997.</li>
  * </ul>
  *
  * {@code DoubleDouble} is used as an alternative to {@link java.math.BigDecimal} when we do not need arbitrary
@@ -51,7 +51,7 @@ import org.apache.sis.math.DecimalFunctions;
  * then the following methods should be revisited:
  *
  * <ul>
- *   <li>{@link #setToProduct(double, double)} - revisit with [Hida & al.] algorithm 7.</li>
+ *   <li>{@link #setToProduct(double, double)} - revisit with [Hida &amp; al.] algorithm 7.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -103,7 +103,7 @@ public final class DoubleDouble extends Number {
      *     }
      * }
      *
-     * <p>Source: [Hida & al.] page 4 algorithm 5, itself reproduced from [Shewchuk] page 325.</p>
+     * <p>Source: [Hida &amp; al.] page 4 algorithm 5, itself reproduced from [Shewchuk] page 325.</p>
      */
     private static final double SPLIT = (1 << 27) + 1;
 
@@ -348,7 +348,7 @@ public final class DoubleDouble extends Number {
      * Sets this {@code DoubleDouble} to the sum of the given numbers,
      * to be used only when {@code abs(a) >= abs(b)}.
      *
-     * <p>Source: [Hida & al.] page 4 algorithm 3, itself reproduced from [Shewchuk] page 312.</p>
+     * <p>Source: [Hida &amp; al.] page 4 algorithm 3, itself reproduced from [Shewchuk] page 312.</p>
      *
      * @param a The first number to add.
      * @param b The second number to add, which must be smaller than {@code a}.
@@ -362,7 +362,7 @@ public final class DoubleDouble extends Number {
     /**
      * Sets this {@code DoubleDouble} to the sum of the given numbers.
      *
-     * <p>Source: [Hida & al.] page 4 algorithm 4, itself reproduced from [Shewchuk] page 314.</p>
+     * <p>Source: [Hida &amp; al.] page 4 algorithm 4, itself reproduced from [Shewchuk] page 314.</p>
      *
      * @param a The first number to add.
      * @param b The second number to add.
@@ -378,7 +378,7 @@ public final class DoubleDouble extends Number {
      * Sets this {@code DoubleDouble} to the product of the given numbers.
      * The given numbers shall not be greater than {@value #MAX_VALUE} in magnitude.
      *
-     * <p>Source: [Hida & al.] page 4 algorithm 6, itself reproduced from [Shewchuk] page 326.</p>
+     * <p>Source: [Hida &amp; al.] page 4 algorithm 6, itself reproduced from [Shewchuk] page 326.</p>
      *
      * @param a The first number to multiply.
      * @param b The second number to multiply.

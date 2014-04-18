@@ -259,7 +259,7 @@ public class Formatter implements Localized {
      * {@code true} if we are in the process of formatting the optional complementary attributes.
      * Those attributes are {@code SCOPE}, {@code AREA}, {@code BBOX}, {@code VERTICALEXTENT}, {@code TIMEEXTENT},
      * {@code ID} (previously known as {@code AUTHORITY}) and {@code REMARKS}, and have a special treatment: they
-     * are written by {@link #append(FormattableObject))} after the {@code formatTo(Formatter)} method returned.
+     * are written by {@link #append(FormattableObject)} after the {@code formatTo(Formatter)} method returned.
      *
      * @see #appendComplement(IdentifiedObject, boolean)
      */
@@ -522,6 +522,7 @@ public class Formatter implements Localized {
      * </ul>
      *
      * <blockquote><table class="sis">
+     *   <caption>Complementary WKT elements</caption>
      *   <tr><th>WKT 2 element</th><th>WKT 1 element</th><th>For types</th></tr>
      *   <tr><td>{@code Anchor[…]}</td>        <td></td> <td>{@link Datum}</td></tr>
      *   <tr><td>{@code Scope[…]}</td>         <td></td> <td>{@link ReferenceSystem}, {@link Datum}, {@link CoordinateOperation}</td></tr>
@@ -611,7 +612,7 @@ public class Formatter implements Localized {
      * Appends the optional complementary attributes common to many {@link IdentifiedObject} subtypes.
      * Those attributes are {@code ANCHOR}, {@code SCOPE}, {@code AREA}, {@code BBOX}, {@code VERTICALEXTENT},
      * {@code TIMEEXTENT}, {@code ID} (previously known as {@code AUTHORITY}) and {@code REMARKS},
-     * and have a special treatment: they are written by {@link #append(FormattableObject))}
+     * and have a special treatment: they are written by {@link #append(FormattableObject)}
      * after the {@code formatTo(Formatter)} method returned.
      *
      * <p>The {@code ID[<name>,<code>,…]} element is written only for the root element, unless the convention are

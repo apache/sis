@@ -66,6 +66,7 @@ public final class IdentifiedObjects extends Static {
      * and for which the corresponding method returns a non-null and non-empty value.
      *
      * <table class="sis">
+     *   <caption>Provided properties</caption>
      *   <tr><th>Key</th> <th>Value</th></tr>
      *   <tr><td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *       <td>{@link IdentifiedObject#getName()}</td></tr>

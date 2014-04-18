@@ -88,6 +88,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * The kind of objects accepted by this formatter are:
  * <table class="sis">
+ *   <caption>Formattable object types</caption>
  *   <tr><th>Class</th> <th>Remarks</th></tr>
  *   <tr><td>{@link ParameterValueGroup}</td><td><cite>Default values</cite> column is replaced by a column of the actual values.</td></tr>
  *   <tr><td>{@link ParameterDescriptorGroup}</td><td>Table title is the parameter group name.</td></tr>

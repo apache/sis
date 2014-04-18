@@ -439,7 +439,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * assuming that the distribution is Gaussian (first column) or assuming that the
      * distribution is uniform (second column).</p>
      *
-     * <table class="sis">
+     * <table class="sis" summary="Propability values for some standard deviations.">
      *   <tr><th>n</th><th>Gaussian</th><th>uniform</th>
      *   <tr><td>0.5</td><td>69.1%</td><td>28.9%</td></tr>
      *   <tr><td>1.0</td><td>84.2%</td><td>57.7%</td></tr>
