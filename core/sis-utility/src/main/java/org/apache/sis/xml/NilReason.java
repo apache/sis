@@ -431,7 +431,7 @@ public final class NilReason implements Serializable {
      * {@link Float}, {@code Double} or {@code String} instance to be considered as a nil value.
      * The caller is responsible for registering the value in {@link PrimitiveTypeProperties}.
      *
-     * <p><b>REMINDER:<b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
+     * <p><b>REMINDER:</b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
      * method and to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} javadoc.</p>
      *
      * <div class="note"><b>Implementation note:</b>

@@ -50,18 +50,18 @@
  *
  * {@section Object identification and reference}
  * <ul>
- *   <li><p><code>org.apache.sis.<b>metadata.iso</b></code> public packages:
+ *   <li><p><code>org.apache.sis.<b>metadata.iso</b></code> public packages:</p>
  *   <ul>
  *     <li>Implement the ISO 19139 {@code Foo_Type}, where <var>Foo</var> is the ISO name of a class.</li>
  *     <li>Contains the {@code gco:ObjectIdentification} group of attributes ({@code id}, {@code uuid}).</li>
  *     <li>Conceptually could have been subclasses of {@code ObjectIdentification} defined in this package.</li>
- *   </ul></p></li>
- *   <li><p><code>org.apache.sis.<b>internal.jaxb</b></code> private packages:
+ *   </ul></li>
+ *   <li><p><code>org.apache.sis.<b>internal.jaxb</b></code> private packages:</p>
  *   <ul>
  *     <li>Implement the ISO 19139 {@code Foo_PropertyType} as subclasses of the {@link org.apache.sis.internal.jaxb.gco.PropertyType} class.</li>
  *     <li>Contains the {@code gco:ObjectReference} group of attributes ({@code xlink}, {@code uuidref}).</li>
  *     <li>Attributes are declared in the {@link org.apache.sis.internal.jaxb.gco.ObjectReference} Java class.</li>
- *    </ul></p></li>
+ *    </ul></li>
  * </ul>
  *
  * <p>Those two kinds of types are marshalled as below:</p>
