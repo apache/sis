@@ -120,7 +120,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <name>Adam Estrada</name>
       <id>aestrada</id>
       <roles>
-        <role>lead</role>
+        <role>chair</role>
       </roles>
     </developer>
     <developer>
@@ -335,7 +335,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
-        <version>1.1</version>
+        <version>1.1.1</version>
       </dependency>
       <dependency>
         <groupId>gov.nist.math</groupId>
@@ -351,7 +351,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.5</version>
+        <version>1.8</version>
       </dependency>
 
       <!-- Optional dependencies -->
@@ -437,6 +437,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <encoding>${project.build.sourceEncoding}</encoding>
           <compilerArgs>
             <arg>-Xlint:all</arg>
+            <arg>-Xdoclint:syntax,missing,accessibility/private</arg>
           </compilerArgs>
         </configuration>
       </plugin>
@@ -554,85 +555,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </executions>
       </plugin>
 
-      <!-- Create web site. The Maven generated site is not deployed at the URL
-           declared in this pom.xml (namely http://sis.apache.org). Consequently,
-           we disable links relativization for avoiding confusing behavior. -->
-      <plugin>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <locales>${website.locale}</locales>
-          <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
-          <outputEncoding>${website.encoding}</outputEncoding>
-          <relativizeDecorationLinks>false</relativizeDecorationLinks>
-        </configuration>
-      </plugin>
-
-      <!-- Dependencies requires for the SIS FindBugs configuration file.
-           This dependency should be declared in the <reporting> section,
-           but Maven 3.0.4 does not support dependency declaration there.
-           Note that the version number is duplicated in the <reporting>
-           section, because <reporting> ignores <pluginManagement>. -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>${findbugs.version}</version>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.sis.core</groupId>
-            <artifactId>sis-build-helper</artifactId>
-            <version>${sis.plugin.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-    </plugins>
-
-    <!-- Following plugins are used only by some specific modules. -->
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.8</version>
-        </plugin>
-        <plugin>
-          <groupId>org.mortbay.jetty</groupId>
-          <artifactId>jetty-maven-plugin</artifactId>
-          <version>8.1.14.v20131031</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
-
-
-
-  <!-- ==============================================================
-         Reports configuration.
-       ============================================================== -->
-  <reporting>
-    <plugins>
-      <plugin>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.7</version>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>index</report>
-              <report>summary</report>
-              <report>license</report>
-              <report>dependency-info</report>
-              <report>dependencies</report>
-              <report>dependency-convergence</report>
-              <report>issue-tracking</report>
-              <report>mailing-list</report>
-              <report>project-team</report>
-              <report>scm</report>
-              <report>cim</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-
-      <!-- Produce JavaDoc -->
+      <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
@@ -651,10 +574,34 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
           <stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
           <validateLinks>true</validateLinks>
+
+          <!-- TODO
+            Following was used to work prior JDK 8. But as of Java 1.8.0_05 with maven-javadoc-plugin 2.9.1,
+            this does not work anymore.  A trailing slash seems mandatory with JDK 8, while the Maven plugin
+            unconditionally removes any trailing slash we may insert below. For now we workaround this issue
+            by using <additionalparam>-link ...</additionalparam> instead of <links>.
+
+            For verifying if this problem is fixed in future JDK/Maven versions, remove the -link argument,
+            uncomment the <links> block and execute "mvn javadoc:aggregate". If the following line appears,
+            then the problem is not yet fixed:
+
+            javadoc: warning - Error fetching URL: http://www.geoapi.org/snapshot/javadoc
+
+
           <links>
             <link>http://www.geoapi.org/snapshot/javadoc</link>
             <link>http://www.geoapi.org/snapshot/pending</link>
           </links>
+          -->
+
+          <additionalparam>
+              -link http://www.geoapi.org/snapshot/javadoc/
+              -link http://www.geoapi.org/snapshot/pending/
+          </additionalparam>
+
+          <!-- TODO: temporarily set to 'false' because our javadoc is known to have some unresolved references
+               and to use HTML tags unknown to javadoc (especially MathML). -->
+          <failOnError>false</failOnError>
 
           <!-- Separates packages on the overview page into the groups specified. -->
           <groups>
@@ -714,72 +661,56 @@ Apache SIS is a free software, Java language library for developing geospatial a
             <version>${sis.plugin.version}</version>
           </tagletArtifact>
         </configuration>
-        <reportSets>
-          <reportSet>
-            <id>aggregate</id>
-            <reports>
-              <report>aggregate</report>
-              <report>test-aggregate</report>
-            </reports>
-          </reportSet>
-        </reportSets>
       </plugin>
 
-      <!-- Produce Source cross references -->
+      <!-- Create web site. The Maven generated site is not deployed at the URL
+           declared in this pom.xml (namely http://sis.apache.org). Consequently,
+           we disable links relativization for avoiding confusing behavior. -->
       <plugin>
-        <artifactId>maven-jxr-plugin</artifactId>
-        <version>2.4</version>
-        <reportSets>
-          <reportSet>
-            <id>aggregate</id>
-            <reports>
-              <report>aggregate</report>
-              <report>test-aggregate</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-
-      <!-- Unit tests report -->
-      <plugin>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.17</version>
-        <reportSets> <!-- Workaround for http://jira.codehaus.org/browse/SUREFIRE-257 -->
-          <reportSet>
-            <reports>
-              <report>report-only</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-
-      <!-- "Release Audit" report (checks license headers etc.) -->
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <version>0.10</version>
+        <artifactId>maven-site-plugin</artifactId>
         <configuration>
-          <excludes>
-            <exclude>ide-project/**</exclude>
-          </excludes>
+          <locales>${website.locale}</locales>
+          <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+          <outputEncoding>${website.encoding}</outputEncoding>
+          <relativizeDecorationLinks>false</relativizeDecorationLinks>
         </configuration>
       </plugin>
 
-      <!-- FindBugs Report. Checkstyle configuration instructions apply also to FindBugs:
-           http://maven.apache.org/plugins/maven-checkstyle-plugin/examples/multi-module-config.html
-      -->
+      <!-- Dependencies requires for the SIS FindBugs configuration file.
+           This dependency should be declared in the <reporting> section,
+           but Maven 3.0.4 does not support dependency declaration there.
+           Note that the version number is duplicated in the <reporting>
+           section, because <reporting> ignores <pluginManagement>. -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>${findbugs.version}</version> <!-- See also the same plugin in the <build> section. -->
-        <configuration>
-          <threshold>Normal</threshold>
-          <effort>Default</effort>
-          <excludeFilterFile>org/apache/sis/findbugs-exclude.xml</excludeFilterFile>
-       </configuration>
+        <version>${findbugs.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.sis.core</groupId>
+            <artifactId>sis-build-helper</artifactId>
+            <version>${sis.plugin.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
-  </reporting>
+
+    <!-- Following plugins are used only by some specific modules. -->
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty-maven-plugin</artifactId>
+          <version>8.1.14.v20131031</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 
 
 
