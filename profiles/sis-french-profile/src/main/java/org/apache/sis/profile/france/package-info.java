@@ -25,7 +25,8 @@
  * The following table lists the French extentions and their replacement in the newer ISO standard:
  *
  * <table class="sis">
- *   <tr><th>French profile</th> <th>ISO 19115:2013 equivalent</th></tr>
+ *   <caption>AFNOR to ISO mapping</caption>
+ *   <tr><th>French profile</th> <th>ISO 19115:2014 equivalent</th></tr>
  *   <tr><td>{@code FRA_DataIdentification.relatedCitation}</td> <td>{@code MD_Identification.additionalDocumentation}</td></tr>
  *   <tr><td>{@code FRA_Constraints.citation}</td> <td>{@code MD_Constraints.reference}</td></tr>
  * </table>

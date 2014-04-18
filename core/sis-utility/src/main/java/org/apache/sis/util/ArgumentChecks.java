@@ -31,6 +31,7 @@ import org.apache.sis.util.resources.Errors;
  * Every methods in this class can throw one of the following exceptions:
  *
  * <table class="sis">
+ * <caption>Exceptions thrown on illegal argument</caption>
  * <tr>
  *   <th>Exception</th>
  *   <th class="sep">Thrown by</th>

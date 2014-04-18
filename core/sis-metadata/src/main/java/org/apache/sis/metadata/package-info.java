@@ -23,7 +23,7 @@
  * Many metadata standards exist, including <cite>Dublin core</cite>, <cite>ISO 19115</cite> and the Image I/O
  * metadata defined in {@link javax.imageio.metadata}. The SIS implementation focuses on ISO 19115 (including
  * its ISO 19115-2 extension), but the classes are designed in a way that allow the usage of different standards.
- * This genericity goal should be keept in mind in the discussion below.
+ * This genericity goal should be keep in mind in the discussion below.
  *
  * {@section How Metadata are defined}
  * A metadata standard is defined by a set of Java interfaces belonging to a specific package and its sub-packages.
@@ -41,7 +41,7 @@
  *
  * <p>The implementation classes, if they exist, are defined in different packages than the interfaces.
  * For example the ISO 19115 interfaces, declared in {@link org.opengis.metadata}, are implemented by
- * SIS in {@link org.apache.sis.metadata.iso}. The subpackages hierarchy is the same, and the names
+ * SIS in {@link org.apache.sis.metadata.iso}. The sub-packages hierarchy is the same, and the names
  * of implementation classes are the name of the implemented interfaces prefixed with {@code Abstract}
  * or {@code Default}.</p>
  *
@@ -67,7 +67,7 @@
  *
  * <p>In addition, the metadata modules provide support methods for handling the metadata objects through Java Reflection.
  * This is an approach similar to <cite>Java Beans</cite>, in that users are encouraged to use directly the API of
- * <cite>Plain Old Java</cite> objects (actually interfaces) everytime their type is known at compile time,
+ * <cite>Plain Old Java</cite> objects (actually interfaces) every time their type is known at compile time,
  * and fallback on the reflection technic when the type is known only at runtime.</p>
  *
  * <p>Using Java reflection, a metadata can be viewed in many different ways:</p>
@@ -83,24 +83,24 @@
  *       The metadata are organized as a tree. For example the {@code Citation} metadata contains one or many
  *       {@code ResponsibleParty} elements, each of them containing a {@code Contact} element, which contains
  *       a {@code Telephone} element, <i>etc</i>. For each node, there is many information that can be displayed
- *       in columns:
+ *       in columns:</p>
  *       <ul>
  *         <li>A description of the element.</li>
  *         <li>The type of values ({@code String}, {@code double}, <i>etc</i>).</li>
  *         <li>The range of valid values (if the type is numeric),
  *             or an enumeration of valid values (if the type is a code list).</li>
  *         <li>The value stored in the element, or the default value.</li>
- *       </ul></p></li>
+ *       </ul></li>
  *
  *   <li><p><b>As a table record in a database (using {@link org.apache.sis.metadata.sql})</b><br>
- *       It is possible to establish the following mapping between metadata and a SQL database:
+ *       It is possible to establish the following mapping between metadata and a SQL database:</p>
  *       <ul>
  *         <li>Each metadata interface maps to a table of the same name in the database.</li>
  *         <li>Each property in the above interface maps to a column of the same name in the above table.</li>
  *         <li>Each instance of the above interface is a record in the above table.</li>
  *       </ul>
  *       Using Java reflection, it is possible to generate implementations of the metadata interfaces
- *       where each call to a getter method is translated into a SQL query for the above database.</p></li>
+ *       where each call to a getter method is translated into a SQL query for the above database.</li>
  * </ul>
  *
  * {@section How Metadata are marshalled}

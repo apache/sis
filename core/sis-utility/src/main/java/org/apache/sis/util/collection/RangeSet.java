@@ -592,6 +592,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * <p>The {@code isMinIncluded} and {@code isMaxIncluded} properties of the given range
      * shall be the complement of the ones given to the constructor of this {@code RangeSet}:</p>
      * <table class="sis">
+     *   <caption>Expected bounds inclusion</caption>
      *   <tr><th>{@code add(…)} values</th> <th>{@code remove(…)} values</th></tr>
      *   <tr><td>{@code [min … max]}</td>   <td>{@code (min … max)}</td></tr>
      *   <tr><td>{@code (min … max)}</td>   <td>{@code [min … max]}</td></tr>
@@ -1480,6 +1481,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * Invoked before serialization. Trims the internal array to the minimal size
      * in order to reduce the size of the object to be serialized.
+     *
+     * @param  out The output stream where to serialize this range set.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         trimToSize();
@@ -1488,6 +1492,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
 
     /**
      * Invoked after deserialization. Initializes the transient fields.
+     *
+     * @param  in The input stream from which to deserialize a range set.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

@@ -460,6 +460,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * The node will have the following columns:
          *
          * <table class="sis">
+         *   <caption>Node columns</caption>
          *   <tr><th>Header</th> <th>Type</th>                 <th>Initial value</th></tr>
          *   <tr><td>"Name"</td> <td>{@link CharSequence}</td> <td>{@code name}</td></tr>
          * </table>

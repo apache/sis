@@ -205,6 +205,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * get (extracted from the EPSG database):
      *
      * <table class="sis">
+     *   <caption>Direction name examples</caption>
      *   <tr><td>North along 90° East,</td>  <td>North along 0°</td></tr>
      *   <tr><td>North along 75° West,</td>  <td>North along 165° West</td></tr>
      *   <tr><td>South along 90° West,</td>  <td>South along 0°</td></tr>

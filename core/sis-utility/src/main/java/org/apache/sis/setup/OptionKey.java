@@ -121,6 +121,7 @@ public class OptionKey<T> implements Serializable {
      * write, append or other modes. The main options that can be provided are:
      *
      * <table class="sis">
+     *   <caption>Supported open options</caption>
      *   <tr><th>Value</th>                             <th>Meaning</th></tr>
      *   <tr><td>{@link StandardOpenOption#READ}</td>   <td>Open for reading data from the storage object.</td></tr>
      *   <tr><td>{@link StandardOpenOption#WRITE}</td>  <td>Open for modifying existing data in the storage object.</td></tr>
@@ -269,6 +270,8 @@ public class OptionKey<T> implements Serializable {
     /**
      * Resolves this option key on deserialization. This method is invoked
      * only for instance of the exact {@code OptionKey} class, not subclasses.
+     *
+     * @return The unique {@code OptionKey} instance.
      */
     private Object readResolve() {
         try {

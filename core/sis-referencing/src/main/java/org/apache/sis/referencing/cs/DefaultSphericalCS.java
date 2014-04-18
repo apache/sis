@@ -32,7 +32,9 @@ import org.apache.sis.measure.Units;
  * Not to be confused with an {@linkplain DefaultEllipsoidalCS ellipsoidal coordinate system}
  * based on an ellipsoid "degenerated" into a sphere.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Permitted associations</caption>
+ * <tr>
  *   <th>Used with CRS</th>
  *   <th>Permitted axis names</th>
  * </tr><tr>
@@ -86,6 +88,7 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
      * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>

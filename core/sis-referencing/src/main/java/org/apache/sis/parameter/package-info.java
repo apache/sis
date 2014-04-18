@@ -48,7 +48,7 @@
  * When using this {@code org.apache.sis.parameter} package, the starting point is usually to obtain a
  * {@linkplain org.apache.sis.parameter.DefaultParameterDescriptorGroup parameter group descriptor} for
  * the operation of interest. Those groups are provided by the operation implementors, so users do not
- * need to create their own.</p>
+ * need to create their own.
  *
  * <p>Given a group descriptor, users can obtain a new instance of parameter values by a call to the
  * {@link org.apache.sis.parameter.DefaultParameterDescriptorGroup#createValue() createValue()} method.

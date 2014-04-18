@@ -32,7 +32,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * The two constants defined in this class, namely {@link #SQUARE_BRACKETS} and {@link #CURLY_BRACKETS},
  * define the symbols for ISO 19162 compliant WKT formatting. Their properties are:
  *
- * <blockquote><table class="compact">
+ * <blockquote><table class="compact" summary="Standard WKT symbols.">
  *   <tr>
  *     <td>Locale for number format:</td>
  *     <td>{@link Locale#ROOT}</td>
@@ -41,14 +41,14 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *   <tr>
  *     <td>Bracket symbols:</td>
  *     <td>{@code [}…{@code ]} or {@code (}…{@code )}</td>
- *     <td><font size="-1"><b>Note:</b> the {@code […]} brackets are common in referencing WKT,
- *         while the {@code (…)} brackets are common in geometry WKT.</font></td>
+ *     <td><span style="font-size: small"><b>Note:</b> the {@code […]} brackets are common in referencing WKT,
+ *         while the {@code (…)} brackets are common in geometry WKT.</span></td>
  *   </tr>
  *   <tr>
  *     <td>Quote symbols:</td>
  *     <td>{@code "}…{@code "}</td>
- *     <td><font size="-1"><b>Note:</b> Apache SIS accepts also {@code “…”} quotes for more readable
- *         {@code String} literals in Java code, but this is non-standard.</font></td>
+ *     <td><span style="font-size: small"><b>Note:</b> Apache SIS accepts also {@code “…”} quotes
+ *         for more readable {@code String} literals in Java code, but this is non-standard.</span></td>
  *   </tr>
  *   <tr>
  *     <td>Sequence symbols:</td>
@@ -679,6 +679,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * Invoked on deserialization for replacing the deserialized instance by the constant instance.
      * This method also opportunistically recompute the {@link #quote} field if no replacement is done.
+     *
+     * @return The object to use after deserialization.
      */
     final Object readResolve() {
         if (isImmutable) {

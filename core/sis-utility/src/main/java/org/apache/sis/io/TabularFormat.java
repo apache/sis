@@ -199,6 +199,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * Other characters are appended <cite>as-is</cite> between the columns.</p>
      *
      * <table class="sis">
+     *   <caption>Reserved characters</caption>
      *   <tr><th>Character(s)</th> <th>Meaning</th></tr>
      *   <tr><td>{@code '?'}</td>  <td>Omit the column separator for trailing null values.</td></tr>
      *   <tr><td>{@code "[ ]"}</td><td>Repeat the character between bracket as needed.</td></tr>

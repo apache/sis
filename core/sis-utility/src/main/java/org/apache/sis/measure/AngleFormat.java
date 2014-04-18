@@ -50,6 +50,7 @@ import java.util.Objects;
  * containing any characters, with a special meaning for the following characters:
  *
  * <table class="sis">
+ *   <caption>Reserved characters</caption>
  *   <tr><th>Symbol</th><th>Meaning</th></tr>
  *   <tr><td>{@code D}</td><td>The integer part of degrees</td></tr>
  *   <tr><td>{@code d}</td><td>The fractional part of degrees</td></tr>
@@ -107,6 +108,7 @@ import java.util.Objects;
  *
  * {@section Examples}
  * <table class="sis">
+ *   <caption>Pattern examples</caption>
  *   <tr><th>Pattern               </th>  <th>48.5      </th> <th>-12.53125    </th></tr>
  *   <tr><td>{@code DD°MM′SS.#″}   </td>  <td>48°30′00″ </td> <td>-12°31′52.5″ </td></tr>
  *   <tr><td>{@code DD°MM′}        </td>  <td>48°30′    </td> <td>-12°32′      </td></tr>

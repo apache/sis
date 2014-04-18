@@ -264,6 +264,7 @@ public class TensorParameters<E> implements Serializable {
      * The rank determines the type of objects represented by the parameters:
      *
      * <table class="sis">
+     *   <caption>Tensor types implied by rank</caption>
      *   <tr><th>Rank</th> <th>Type</th></tr>
      *   <tr><td>0</td>    <td>scalar</td></tr>
      *   <tr><td>1</td>    <td>vector</td></tr>
@@ -539,6 +540,7 @@ public class TensorParameters<E> implements Serializable {
      * identified object constructor}. The following table is a reminder of main (not all) properties:</p>
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>
@@ -668,6 +670,10 @@ public class TensorParameters<E> implements Serializable {
 
     /**
      * Invoked on deserialization for restoring the {@link #parameters} array.
+     *
+     * @param  in The input stream from which to deserialize a group of tensor parameters.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

@@ -75,8 +75,8 @@ import java.util.Objects;
  * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
  * The default implementation of methods listed in the right column can handle such cases.
  *
- * <table class="compact" align="center"><tr><td>
- *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png">
+ * <center><table class="compact" summary="Anti-meridian spanning support."><tr><td>
+ *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png" alt="Envelope spannning the anti-meridian">
  * </td><td style="vertical-align: middle">
  * Supported methods:
  * <ul>
@@ -89,7 +89,7 @@ import java.util.Objects;
  *   <li>{@link #contains(Envelope)}</li>
  *   <li>{@link #intersects(Envelope)}</li>
  * </ul>
- * </td></tr></table>
+ * </td></tr></table></center>
  *
  * {@section Choosing the range of longitude values}
  * Geographic CRS typically have longitude values in the [-180 … +180]° range, but the [0 … 360]°
@@ -591,6 +591,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
              * The 'for' loop below iterates only over the 'i' values for which the 'isWrapAround' bit is set to 1.
              */
             int mask = 1; // For identifying whether we need to set the lower or the upper ordinate.
+            @SuppressWarnings("null")
             final CoordinateSystem cs = crs.getCoordinateSystem(); // Should not be null at this point.
             for (int i; (i = Long.numberOfTrailingZeros(isWrapAround)) != Long.SIZE; isWrapAround &= ~(1L << i)) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
@@ -737,7 +738,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * For every cases illustrated below, the yellow box is considered completely enclosed
      * in the blue envelope:
      *
-     * <p><img src="doc-files/Contains.png"></p>
+     * <p><img src="doc-files/Contains.png" alt="Examples of envelope inclusions"></p>
      *
      * @param  envelope The envelope to test for inclusion.
      * @return {@code true} if this envelope completely encloses the specified one.
@@ -1228,7 +1229,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     /**
      * Invoked by {@link LowerCorner} and {@link UpperCorner} when a coordinate is modified.
      * The default implementation throws an {@link UnmodifiableGeometryException} in every cases.
-     * This method is overridden and made public by {@link GeneralGeometry}.
+     * This method is overridden and made public by {@link GeneralEnvelope}.
      *
      * <p>The declaration in this {@code AbstractEnvelope} class is not public on purpose,
      * since this class intentionally have no public setter methods. This is necessary for
