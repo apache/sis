@@ -263,7 +263,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
 
     /**
      * A {@link DerivedSet} for converters that are both invertible and bijective.
-     * The bijection allows us to query the {@linkplai #storage} set size directly
+     * The bijection allows us to query the {@linkplain #storage} set size directly
      * instead than iterating over all elements.
      *
      * @param <S> The type of elements in the storage set.
