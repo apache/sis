@@ -76,7 +76,7 @@ abstract class Appender implements Appendable {
     /**
      * Finds the line separator used in the given character sequence portion, or returns
      * {@code null} if unknown. This method is designed for invocation at the beginning
-     * of {@code append(CharSequence, ...), before the characters are effectively read.
+     * of {@code append(CharSequence, ...)}, before the characters are effectively read.
      */
     final String lineSeparator(final CharSequence sequence, int start, final int end) {
         if (isHighSurrogate()) {
