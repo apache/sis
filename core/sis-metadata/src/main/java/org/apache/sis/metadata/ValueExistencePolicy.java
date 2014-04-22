@@ -55,7 +55,7 @@ public enum ValueExistencePolicy {
         }
 
         /** Substitutes null or empty collections by a null singleton element
-            in order to make the property visible in {@link TreeNode}. */
+            in order to make the property visible in {@code TreeNode}. */
         @Override boolean substituteByNullElement(final Collection<?> values) {
             return (values == null) || values.isEmpty();
         }

@@ -112,6 +112,7 @@ public enum Convention {
      * as shown in the following table:
      *
      * <table class="sis">
+     *   <caption>Geocentric axis directions</caption>
      *   <tr><th>ISO 19111</th>    <th>OGC 01-009</th> <th>Description</th></tr>
      *   <tr><td>Geocentric X</td> <td>Other</td>      <td>Toward prime meridian</td></tr>
      *   <tr><td>Geocentric Y</td> <td>Easting</td>    <td>Toward 90°E longitude</td></tr>
@@ -236,6 +237,7 @@ public enum Convention {
      * The following table shows the names given by various organizations or projects for the same projection:
      *
      * <table class="sis">
+     *   <caption>Map projection name examples</caption>
      *   <tr><th>Authority</th> <th>Projection name</th></tr>
      *   <tr><td>EPSG</td>      <td>Mercator (variant A)</td></tr>
      *   <tr><td>OGC</td>       <td>Mercator_1SP</td></tr>

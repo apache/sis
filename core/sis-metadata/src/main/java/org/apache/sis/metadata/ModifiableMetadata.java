@@ -125,12 +125,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * Returns {@code true} if this metadata is modifiable. This method returns
      * {@code false} if {@link #freeze()} has been invoked on this object.
      *
-     * <table width="80%" align="center" cellpadding="18" border="4" bgcolor="#FFE0B0">
-     *   <tr><td>
-     *     <b>Warning:</b> this method is likely to change. SIS 0.4 will probably uses a "state" enumeration
-     *     (modifiable, appendable, etc.).
-     *   </td></tr>
-     * </table>
+     * <div class="warning"><b>Warning:</b>
+     * this method is likely to change. Future SIS version will probably uses a "state" enumeration
+     * (modifiable, appendable, etc.).</div>
      *
      * @return {@code true} if this metadata is modifiable.
      *
@@ -169,12 +166,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *       {@linkplain #freeze() freeze} the clone before to return it.</li>
      * </ul>
      *
-     * <table width="80%" align="center" cellpadding="18" border="4" bgcolor="#FFE0B0">
-     *   <tr><td>
-     *     <b>Warning:</b> this method is likely to change. SIS 0.4 will probably uses a "state" enumeration
-     *     (modifiable, appendable, etc.).
-     *   </td></tr>
-     * </table>
+     * <div class="warning"><b>Warning:</b>
+     * this method is likely to change. Future SIS version will probably uses a "state" enumeration
+     * (modifiable, appendable, etc.).</div>
      *
      * @return An unmodifiable copy of this metadata.
      */
@@ -214,12 +208,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * <p>Subclasses usually don't need to override this method since the default implementation
      * performs its work using Java reflection.</p>
      *
-     * <table width="80%" align="center" cellpadding="18" border="4" bgcolor="#FFE0B0">
-     *   <tr><td>
-     *     <b>Warning:</b> this method is likely to change. SIS 0.4 will probably uses a "state" enumeration
-     *     (modifiable, appendable, etc.).
-     *   </td></tr>
-     * </table>
+     * <div class="warning"><b>Warning:</b>
+     * this method is likely to change. Future SIS version will probably uses a "state" enumeration
+     * (modifiable, appendable, etc.).</div>
      *
      * @see #isModifiable()
      * @see #checkWritePermission()

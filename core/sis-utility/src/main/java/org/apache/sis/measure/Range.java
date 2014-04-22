@@ -191,6 +191,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * To be overridden by {@link MeasurementRange} only.
+     *
+     * @return The unit of measurement, or {@code null}.
      */
     Unit<?> unit() {
         return null;

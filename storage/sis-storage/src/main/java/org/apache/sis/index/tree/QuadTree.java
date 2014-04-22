@@ -560,7 +560,7 @@ public class QuadTree {
   /**
    * Sets the size of the quad tree.
    *
-   * @param size
+   * @param size The new quad tree size.
    */
   public void setSize(int size) {
     this.size = size;
@@ -578,7 +578,7 @@ public class QuadTree {
   /**
    * Sets the node size of the quad tree.
    *
-   * @param nodeSize
+   * @param nodeSize The new node size.
    */
   public void setNodeSize(int nodeSize) {
     this.nodeSize = nodeSize;
@@ -614,7 +614,7 @@ public class QuadTree {
   /**
    * Sets the capacity of node in the quad tree.
    *
-   * @param capacity
+   * @param capacity the capacity of node in the quad tree.
    */
   public void setCapacity(int capacity) {
     this.capacity = capacity;
@@ -623,7 +623,7 @@ public class QuadTree {
   /**
    * Sets the maximum depth of the quad tree.
    *
-   * @param depth
+   * @param depth the maximum depth of the quad tree.
    */
   public void setDepth(int depth) {
     this.maxDepth = depth;

@@ -76,6 +76,7 @@ abstract class DaemonThread extends Thread {
      *             synchronized (MyInternalClass.class) {
      *                 MyInternalClass.lastCreatedDaemon = myDaemonThread = new MyDaemonThread(
      *                         "MyThread", MyInternalClass.lastCreatedDaemon);
+     *             }
      *         }
      *     }
      * }

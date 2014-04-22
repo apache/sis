@@ -97,6 +97,7 @@ public final class CRS extends Static {
      * on any installation of Apache SIS version 0.4 or above:
      *
      * <blockquote><table class="sis">
+     *   <caption>Minimal set of supported authority codes</caption>
      *   <tr><th>Code</th>      <th>Enum</th>                            <th>CRS Type</th>      <th>Description</th></tr>
      *   <tr><td>CRS:27</td>    <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>    <td>Like EPSG:4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:83</td>    <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>    <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
@@ -399,7 +400,7 @@ public final class CRS extends Static {
      * Apache SIS allows 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
      * coordinate reference system to be built in two different ways as shown below:
      *
-     * <table class="compact">
+     * <table class="compact" summary="Illustration of a compound CRS.">
      * <tr><th>Hierarchical structure</th><th>Flat list</th></tr>
      * <tr><td><blockquote>
      *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>

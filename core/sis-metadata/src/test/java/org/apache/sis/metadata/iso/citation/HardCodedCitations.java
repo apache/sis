@@ -87,7 +87,7 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
-     * The <a href="http://www.ogp.org.uk">International Association of Oil & Gas Producers</a> organization.
+     * The <a href="http://www.ogp.org.uk">International Association of Oil &amp; Gas Producers</a> organization.
      * This organization is responsible for maintainance of {@link #EPSG} database.
      * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "OGP"
      * (according ISO 19115, alternate titles often contain abbreviations).

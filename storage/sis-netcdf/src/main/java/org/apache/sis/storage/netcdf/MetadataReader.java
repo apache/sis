@@ -408,7 +408,7 @@ final class MetadataReader {
      * Creates a {@code Citation} element if at least one of the required attributes is non-null.
      * This method will reuse the {@link #pointOfContact} field, if non-null and suitable.
      *
-     * @param  identifier The citation {@code <gmd:identifier> attribute.
+     * @param  identifier The citation {@code <gmd:identifier>} attribute.
      * @throws IOException If an I/O operation was necessary but failed.
      */
     private Citation createCitation(final Identifier identifier) throws IOException {
