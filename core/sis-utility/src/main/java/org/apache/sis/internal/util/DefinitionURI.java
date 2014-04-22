@@ -51,6 +51,7 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  *
  * The <cite>object type</cite> can be:
  * <table class="sis">
+ *   <caption>Recognized object types in URN</caption>
  *   <tr><th>Object type</th>         <th>Meaning</th></tr>
  *   <tr><td>axis</td>                <td>Coordinate system axe definition</td></tr>
  *   <tr><td>axisDirection</td>       <td>Axis direction code definition</td></tr>
@@ -79,6 +80,7 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  *
  * Some example of <cite>authorities</cite> are:
  * <table class="sis">
+ *   <caption>Authority examples</caption>
  *   <tr><th>Authority</th>      <th>Purpose</th></tr>
  *   <tr><td>{@code "OGC"}</td>  <td>Objects defined by the Open Geospatial Consortium.</td></tr>
  *   <tr><td>{@code "EPSG"}</td> <td>Referencing objects defined in the EPSG database.</td></tr>
@@ -178,6 +180,7 @@ public final class DefinitionURI {
      * @param  uri The URI to parse.
      * @return The parse result, or {@code null} if the given URI is not recognized.
      */
+    @SuppressWarnings("null")
     public static DefinitionURI parse(final String uri) {
         ensureNonNull("uri", uri);
         DefinitionURI result = null;

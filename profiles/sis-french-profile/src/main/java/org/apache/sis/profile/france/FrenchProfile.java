@@ -49,6 +49,7 @@ public final class FrenchProfile extends Static {
      * The current implementation recognizes the following types:
      *
      * <table class="sis">
+     *   <caption>AFNOR extensions to ISO 19115</caption>
      *   <tr><th>GeoAPI type</th> <th>AFNOR XML element</th></tr>
      *   <tr><td>{@link org.opengis.metadata.identification.DataIdentification}</td> <td>{@code FRA_DataIdentification}</td>
      *   <tr><td>{@link org.opengis.metadata.constraint.Constraints}</td>            <td>{@code FRA_Constraints}</td>

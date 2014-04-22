@@ -53,7 +53,8 @@ import org.opengis.metadata.extent.GeographicDescription;
  * Name of attributes used in the mapping from/to NetCDF metadata to ISO 19115 metadata.
  * The attributes recognized by SIS are listed below:
  *
- * <blockquote><table class="compact"><tr valign="top"><td width="25%">
+ * <blockquote><table class="compact" summary="List of all NetCDF attributes.">
+ * <tr valign="top"><td style="width: 25%">
  * {@value     #ACCESS_CONSTRAINT}<br>
  * {@value     #ACKNOWLEDGMENT}<br>
  * {@value     #COMMENT}<br>
@@ -72,7 +73,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@value     #FLAG_MEANINGS}<br>
  * {@value     #FLAG_NAMES}<br>
  * {@value     #FLAG_VALUES}<br>
- * </td><td width="25%">
+ * </td><td style="width: 25%">
  * {@linkplain #TITLE "full_name"}<br>
  * {@linkplain #GEOGRAPHIC_IDENTIFIER "geographic_identifier"}<br>
  * {@linkplain #LATITUDE  "geospatial_lat_max"}<br>
@@ -88,7 +89,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@linkplain #VERTICAL  "geospatial_vertical_positive"}<br>
  * {@linkplain #VERTICAL  "geospatial_vertical_resolution"}<br>
  * {@linkplain #VERTICAL  "geospatial_vertical_units"}<br>
- * </td><td width="25%">
+ * </td><td style="width: 25%">
  * {@value     #HISTORY}<br>
  * {@value     #IDENTIFIER}<br>
  * {@linkplain #CREATOR "institution"}<br>
@@ -105,7 +106,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@linkplain #PUBLISHER "publisher_url"}<br>
  * {@value     #PURPOSE}<br>
  * {@value     #REFERENCES}<br>
- * </td><td width="25%">
+ * </td><td style="width: 25%">
  * {@value     #STANDARD_NAME}<br>
  * {@value     #STANDARD_NAME_VOCABULARY}<br>
  * {@value     #SUMMARY}<br>
@@ -374,7 +375,9 @@ public class AttributeNames {
      * In the following table, the header lists the constants defined in the {@link AttributeNames}
      * class and the other cells give the values assigned in this class fields for those constants.
      *
-     * <table class="sis"><tr>
+     * <table class="sis">
+     * <caption>Names of NetCDF attributes describing a responsible party</caption>
+     * <tr>
      *   <th            >Field in this class</th>
      *   <th class="sep">{@link AttributeNames#CREATOR     CREATOR}</th>
      *   <th            >{@link AttributeNames#CONTRIBUTOR CONTRIBUTOR}</th>
@@ -658,7 +661,9 @@ public class AttributeNames {
      * In the following table, the header lists the constants defined in the {@link AttributeNames}
      * class and the other cells give the values assigned in this class fields for those constants.
      *
-     * <table class="sis"><tr>
+     * <table class="sis">
+     * <caption>Names of NetCDF attributes describing an extent</caption>
+     * <tr>
      *   <th            >Field in this class</th>
      *   <th class="sep">{@link AttributeNames#LATITUDE  LATITUDE}</th>
      *   <th            >{@link AttributeNames#LONGITUDE LONGITUDE}</th>

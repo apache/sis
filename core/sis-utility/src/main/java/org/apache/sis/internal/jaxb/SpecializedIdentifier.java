@@ -55,7 +55,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
     private static final long serialVersionUID = -1699757455535495848L;
 
     /**
-     * The authority, typically as a {@link NonMarshalledAuthority) instance.
+     * The authority, typically as a {@link NonMarshalledAuthority} instance.
      * Null value is not recommended, but this {@code SpecializedIdentifier}
      * is tolerant to such cases.
      *

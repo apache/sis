@@ -471,20 +471,21 @@ public final class Units extends Static {
      *
      * <p>The currently recognized values are:</p>
      * <table class="sis">
+     *   <caption>EPSG codes for units</caption>
      *   <tr>
      *     <th>Linear units</th>
      *     <th class="sep">Angular units</th>
      *     <th class="sep">Scale units</th>
      *   </tr><tr>
-     *     <td><table class="compact">
-     *       <tr><td width="40"><b>Code</b></td><td><b>Unit</b></td></tr>
+     *     <td><table class="compact" summary="Linear units">
+     *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
      *       <tr><td>9001</td><td>metre</td></tr>
      *       <tr><td>9002</td><td>foot</td></tr>
      *       <tr><td>9030</td><td>nautical mile</td></tr>
      *       <tr><td>9036</td><td>kilometre</td></tr>
      *     </table></td>
-     *     <td class="sep"><table class="compact">
-     *       <tr><td width="40"><b>Code</b></td><td><b>Unit</b></td></tr>
+     *     <td class="sep"><table class="compact" summary="Angular units">
+     *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
      *       <tr><td>9101</td><td>radian</td></tr>
      *       <tr><td>9102</td><td>decimal degree</td></tr>
      *       <tr><td>9103</td><td>minute</td></tr>
@@ -497,8 +498,8 @@ public final class Units extends Static {
      *       <tr><td>9111</td><td>sexagesimal degree-minute</td></tr>
      *       <tr><td>9122</td><td>decimal degree</td></tr>
      *     </table></td>
-     *     <td class="sep"><table class="compact">
-     *       <tr><td width="40"><b>Code</b></td><td><b>Unit</b></td></tr>
+     *     <td class="sep"><table class="compact" summary="Scale units">
+     *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
      *       <tr><td>9201</td><td>one</td></tr>
      *       <tr><td>9202</td><td>part per million</td></tr>
      *       <tr><td>9203</td><td>one</td></tr>

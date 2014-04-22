@@ -35,6 +35,7 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * table below (codes, names and abbreviations are from the EPSG database):
  *
  * <table class="sis">
+ *   <caption>Parameters defined by EPSG</caption>
  *   <tr><th>Code</th> <th>Name</th>                                 <th>Abbr.</th></tr>
  *   <tr><td>1040</td> <td>Rate of change of X-axis translation</td> <td>{@link #dtX}</td></tr>
  *   <tr><td>1041</td> <td>Rate of change of Y-axis translation</td> <td>{@link #dtY}</td></tr>

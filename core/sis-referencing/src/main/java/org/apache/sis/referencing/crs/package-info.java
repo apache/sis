@@ -25,6 +25,7 @@
  * apply depending on the CRS type:</p>
  *
  * <table class="sis">
+ *   <caption>Common Coordinate Reference System types</caption>
  *   <tr><th>Dimension</th> <th>CRS type examples</th> <th>Remarks</th></tr>
  *   <tr>
  *     <td>3</td>

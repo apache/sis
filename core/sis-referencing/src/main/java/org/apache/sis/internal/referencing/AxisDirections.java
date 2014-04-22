@@ -101,32 +101,33 @@ public final class AxisDirections extends Static {
      * ({@code NORTH}, {@code EAST}, {@code UP}, {@code FUTURE}).
      * More specifically, the following conversion table is applied:
      *
-     * <table class="compact"><tr>
-     * <td><table class="sis">
+     * <table class="compact">
+     * <caption>Mapping to "absolute" directions</caption><tr>
+     * <td><table class="sis" summary="Geospatial directions">
      *   <tr>
-     *     <th width='50%'>Direction</th>
-     *     <th width='50%'>Absolute value</th>
+     *     <th style="width: 50%">Direction</th>
+     *     <th style="width: 50%">Absolute value</th>
      *   </tr>
-     *   <tr><td width='50%'>{@code NORTH}</td> <td width='50%'>{@code NORTH}</td> </tr>
-     *   <tr><td width='50%'>{@code SOUTH}</td> <td width='50%'>{@code NORTH}</td> </tr>
-     *   <tr><td width='50%'>{@code EAST}</td>  <td width='50%'>{@code EAST}</td>  </tr>
-     *   <tr><td width='50%'>{@code WEST}</td>  <td width='50%'>{@code EAST}</td>  </tr>
-     *   <tr><td width='50%'>{@code UP}</td>    <td width='50%'>{@code UP}</td>    </tr>
-     *   <tr><td width='50%'>{@code DOWN}</td>  <td width='50%'>{@code UP}</td>    </tr>
+     *   <tr><td>{@code NORTH}</td> <td>{@code NORTH}</td> </tr>
+     *   <tr><td>{@code SOUTH}</td> <td>{@code NORTH}</td> </tr>
+     *   <tr><td>{@code EAST}</td>  <td>{@code EAST}</td>  </tr>
+     *   <tr><td>{@code WEST}</td>  <td>{@code EAST}</td>  </tr>
+     *   <tr><td>{@code UP}</td>    <td>{@code UP}</td>    </tr>
+     *   <tr><td>{@code DOWN}</td>  <td>{@code UP}</td>    </tr>
      * </table></td>
-     * <td width='50%'><table class="sis">
+     * <td><table class="sis" summary="Other directions">
      *   <tr>
-     *     <th width='50%'>Direction</th>
-     *     <th width='50%'>Absolute value</th>
+     *     <th style="width: 50%">Direction</th>
+     *     <th style="width: 50%">Absolute value</th>
      *   </tr>
-     *   <tr><td width='50%'>{@code DISPLAY_RIGHT}</td> <td width='50%'>{@code DISPLAY_RIGHT}</td> </tr>
-     *   <tr><td width='50%'>{@code DISPLAY_LEFT}</td>  <td width='50%'>{@code DISPLAY_RIGHT}</td> </tr>
-     *   <tr><td width='50%'>{@code DISPLAY_UP}</td>    <td width='50%'>{@code DISPLAY_UP}</td>    </tr>
-     *   <tr><td width='50%'>{@code DISPLAY_DOWN}</td>  <td width='50%'>{@code DISPLAY_UP}</td>    </tr>
-     *   <tr><td width='50%'>{@code FUTURE}</td>        <td width='50%'>{@code FUTURE}</td>        </tr>
-     *   <tr><td width='50%'>{@code PAST}</td>          <td width='50%'>{@code FUTURE}</td>        </tr>
+     *   <tr><td>{@code DISPLAY_RIGHT}</td> <td>{@code DISPLAY_RIGHT}</td> </tr>
+     *   <tr><td>{@code DISPLAY_LEFT}</td>  <td>{@code DISPLAY_RIGHT}</td> </tr>
+     *   <tr><td>{@code DISPLAY_UP}</td>    <td>{@code DISPLAY_UP}</td>    </tr>
+     *   <tr><td>{@code DISPLAY_DOWN}</td>  <td>{@code DISPLAY_UP}</td>    </tr>
+     *   <tr><td>{@code FUTURE}</td>        <td>{@code FUTURE}</td>        </tr>
+     *   <tr><td>{@code PAST}</td>          <td>{@code FUTURE}</td>        </tr>
      * </table></td></tr>
-     *   <tr align="center"><td width='50%'>{@code OTHER}</td><td width='50%'>{@code OTHER}</td></tr>
+     *   <tr align="center"><td>{@code OTHER}</td><td>{@code OTHER}</td></tr>
      * </table>
      *
      * @param  dir The direction for which to return the absolute direction, or {@code null}.

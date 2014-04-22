@@ -77,7 +77,8 @@ public class SimpleInternationalString extends AbstractInternationalString imple
     /**
      * Returns the same string for all locales. This is the string given to the constructor.
      *
-     * @param locale Ignored in the {@code SampleInternationalString} implementation.
+     * @param  locale Ignored in the {@code SimpleInternationalString} implementation.
+     * @return The international string as a {@code String}.
      */
     @Override
     public String toString(final Locale locale) {
@@ -111,6 +112,9 @@ public class SimpleInternationalString extends AbstractInternationalString imple
 
     /**
      * Writes the string. This is required since {@link #defaultValue} is not serialized.
+     *
+     * @param  out The output stream where to serialize this international string.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -119,6 +123,10 @@ public class SimpleInternationalString extends AbstractInternationalString imple
 
     /**
      * Reads the string. This is required since {@link #defaultValue} is not serialized.
+     *
+     * @param  in The input stream from which to deserialize an international string.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
