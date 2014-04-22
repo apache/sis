@@ -42,42 +42,5 @@ The Apache SIS™ library
   SIS is a project of the {{{http://www.apache.org}Apache Software Foundation}}.
   The project home is {{http://sis.apache.org}}.
 
-
-* Modules
-
-  Maven-generated reports for SIS modules are available at the following locations:
-
-  * Core
-
-    * {{{./sis-build-helper/index.html}Build helper}} — Maven Mojos and Javadoc taglets for SIS build.
-
-    * {{{./sis-utility/index.html}Utilities}} — simple data objects and miscellaneous utilities.
-
-    * {{{./sis-metadata/index.html}Metadata}} — metadata classes derived from ISO 19115.
-
-    * {{{./sis-referencing/index.html}Referencing}} — Coordinate Reference Systems (CRS), conversion and transformation services derived from ISO 19111.
-
-    * {{{./sis-feature/index.html}Features}} — Representations of geographic features.
-
-  * Storage
-
-    * {{{./sis-storage/index.html}Storage}} — Base classes to be implemented by various storage formats.
-
-    * {{{./sis-shapefile/index.html}Shapefile}} — Read and write files in the Shapefile format.
-
-    * {{{./sis-netcdf/index.html}NetCDF}} — Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadata.
-
-  * Applications
-
-    * {{{./sis-webapp/index.html}Wep application}} — Web application.
-
-    * {{{./sis-console/index.html}Console application}} — Console application.
-
-  * Profiles
-
-    * {{{./sis-french-profile/index.html}French profile}} — Extensions to ISO-19115 metadata mandated by the French government.
-
-  []
-
   Apache SIS, Apache, the Apache feather logo, and the Apache SIS project logo are trademarks of
   The Apache Software Foundation.
