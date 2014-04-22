@@ -88,7 +88,7 @@ public abstract class DataStoreProvider {
      *             // probably not a File, URL, URI, InputStream neither a ReadableChannel.
      *             return ProbeResult.UNSUPPORTED_STORAGE;
      *         }
-     *         if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
+     *         if (buffer.remaining() < Integer.BYTES) {
      *             // If the buffer does not contain enough bytes for the integer type, this is not
      *             // necessarily because the file is truncated. It may be because the data were not
      *             // yet available at the time this method has been invoked.

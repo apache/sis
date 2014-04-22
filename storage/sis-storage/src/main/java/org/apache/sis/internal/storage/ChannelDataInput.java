@@ -258,7 +258,7 @@ public class ChannelDataInput {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final byte readByte() throws IOException {
-        ensureBufferContains(Byte.SIZE / Byte.SIZE);
+        ensureBufferContains(Byte.BYTES);
         return buffer.get();
     }
 
@@ -286,7 +286,7 @@ public class ChannelDataInput {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final short readShort() throws IOException {
-        ensureBufferContains(Short.SIZE / Byte.SIZE);
+        ensureBufferContains(Short.BYTES);
         return buffer.getShort();
     }
 
@@ -314,7 +314,7 @@ public class ChannelDataInput {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final char readChar() throws IOException {
-        ensureBufferContains(Character.SIZE / Byte.SIZE);
+        ensureBufferContains(Character.BYTES);
         return buffer.getChar();
     }
 
@@ -327,7 +327,7 @@ public class ChannelDataInput {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final int readInt() throws IOException {
-        ensureBufferContains(Integer.SIZE / Byte.SIZE);
+        ensureBufferContains(Integer.BYTES);
         return buffer.getInt();
     }
 
@@ -355,7 +355,7 @@ public class ChannelDataInput {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final long readLong() throws IOException {
-        ensureBufferContains(Long.SIZE / Byte.SIZE);
+        ensureBufferContains(Long.BYTES);
         return buffer.getLong();
     }
 
@@ -368,7 +368,7 @@ public class ChannelDataInput {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final float readFloat() throws IOException {
-        ensureBufferContains(Float.SIZE / Byte.SIZE);
+        ensureBufferContains(Float.BYTES);
         return buffer.getFloat();
     }
 
@@ -381,7 +381,7 @@ public class ChannelDataInput {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final double readDouble() throws IOException {
-        ensureBufferContains(Double.SIZE / Byte.SIZE);
+        ensureBufferContains(Double.BYTES);
         return buffer.getDouble();
     }
 
@@ -583,7 +583,7 @@ public class ChannelDataInput {
             private CharBuffer view;
             @Override Buffer createView() {return view = buffer.asCharBuffer();}
             @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Character.SIZE / Byte.SIZE, offset, length);
+        }.readFully(Character.BYTES, offset, length);
     }
 
     /**
@@ -600,7 +600,7 @@ public class ChannelDataInput {
             private ShortBuffer view;
             @Override Buffer createView() {return view = buffer.asShortBuffer();}
             @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Short.SIZE / Byte.SIZE, offset, length);
+        }.readFully(Short.BYTES, offset, length);
     }
 
     /**
@@ -617,7 +617,7 @@ public class ChannelDataInput {
             private IntBuffer view;
             @Override Buffer createView() {return view = buffer.asIntBuffer();}
             @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Integer.SIZE / Byte.SIZE, offset, length);
+        }.readFully(Integer.BYTES, offset, length);
     }
 
     /**
@@ -634,7 +634,7 @@ public class ChannelDataInput {
             private LongBuffer view;
             @Override Buffer createView() {return view = buffer.asLongBuffer();}
             @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Long.SIZE / Byte.SIZE, offset, length);
+        }.readFully(Long.BYTES, offset, length);
     }
 
     /**
@@ -651,7 +651,7 @@ public class ChannelDataInput {
             private FloatBuffer view;
             @Override Buffer createView() {return view = buffer.asFloatBuffer();}
             @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Float.SIZE / Byte.SIZE, offset, length);
+        }.readFully(Float.BYTES, offset, length);
     }
 
     /**
@@ -668,7 +668,7 @@ public class ChannelDataInput {
             private DoubleBuffer view;
             @Override Buffer createView() {return view = buffer.asDoubleBuffer();}
             @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Double.SIZE / Byte.SIZE, offset, length);
+        }.readFully(Double.BYTES, offset, length);
     }
 
     /**

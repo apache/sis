@@ -60,12 +60,12 @@ final class VariableInfo extends Variable {
      * @see #sizeOf(int)
      */
     private static final int[] SIZES = new int[] {
-        Byte   .SIZE / Byte.SIZE,
-        Byte   .SIZE / Byte.SIZE, // NOT Java char
-        Short  .SIZE / Byte.SIZE,
-        Integer.SIZE / Byte.SIZE,
-        Float  .SIZE / Byte.SIZE,
-        Double .SIZE / Byte.SIZE,
+        Byte   .BYTES,
+        Byte   .BYTES, // NOT Java char
+        Short  .BYTES,
+        Integer.BYTES,
+        Float  .BYTES,
+        Double .BYTES,
     };
 
     /**

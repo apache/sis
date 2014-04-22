@@ -111,42 +111,42 @@ public final strictfp class ChannelImageInputStreamTest extends TestCase {
                         break;
                     }
                     case 15: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Character.SIZE);
+                        final int length = random.nextInt(ARRAY_MAX_SIZE / Character.BYTES);
                         final char[] expected = new char[length]; r.readFully(expected, 0, length);
                         final char[] actual   = new char[length]; t.readFully(actual,   0, length);
                         assertArrayEquals("readFully(char[])", expected, actual);
                         break;
                     }
                     case 16: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Short.SIZE);
+                        final int length = random.nextInt(ARRAY_MAX_SIZE / Short.BYTES);
                         final short[] expected = new short[length]; r.readFully(expected, 0, length);
                         final short[] actual   = new short[length]; t.readFully(actual,   0, length);
                         assertArrayEquals("readFully(short[])", expected, actual);
                         break;
                     }
                     case 17: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Integer.SIZE);
+                        final int length = random.nextInt(ARRAY_MAX_SIZE / Integer.BYTES);
                         final int[] expected = new int[length]; r.readFully(expected, 0, length);
                         final int[] actual   = new int[length]; t.readFully(actual,   0, length);
                         assertArrayEquals("readFully(int[])", expected, actual);
                         break;
                     }
                     case 18: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Long.SIZE);
+                        final int length = random.nextInt(ARRAY_MAX_SIZE / Long.BYTES);
                         final long[] expected = new long[length]; r.readFully(expected, 0, length);
                         final long[] actual   = new long[length]; t.readFully(actual,   0, length);
                         assertArrayEquals("readFully(long[])", expected, actual);
                         break;
                     }
                     case 19: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Float.SIZE);
+                        final int length = random.nextInt(ARRAY_MAX_SIZE / Float.BYTES);
                         final float[] expected = new float[length]; r.readFully(expected, 0, length);
                         final float[] actual   = new float[length]; t.readFully(actual,   0, length);
                         assertTrue("readFully(float[])", Arrays.equals(expected, actual));
                         break;
                     }
                     case 20: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Double.SIZE);
+                        final int length = random.nextInt(ARRAY_MAX_SIZE / Double.BYTES);
                         final double[] expected = new double[length]; r.readFully(expected, 0, length);
                         final double[] actual   = new double[length]; t.readFully(actual,   0, length);
                         assertTrue("readFully(double[])", Arrays.equals(expected, actual));
