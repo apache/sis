@@ -112,6 +112,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>

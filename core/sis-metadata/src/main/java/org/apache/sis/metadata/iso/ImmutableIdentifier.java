@@ -266,6 +266,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * Other properties listed in the table below are optional.
      *
      * <table class="sis">
+     *   <caption>Recognized properties</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>

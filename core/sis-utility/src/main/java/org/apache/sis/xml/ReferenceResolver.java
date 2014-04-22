@@ -184,6 +184,7 @@ public class ReferenceResolver {
      * sequence. For example:
      *
      * <table class="sis">
+     * <caption>XML representations of string</caption>
      * <tr>
      *   <th>As {@code <gco:CharacterString>}</th>
      *   <th>As {@code <gmx:Anchor>}</th>

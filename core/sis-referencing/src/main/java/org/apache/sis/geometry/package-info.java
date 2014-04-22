@@ -23,6 +23,7 @@
  * objects, and list the Java2D classes that are conceptually equivalent.
  *
  * <table class="sis">
+ *   <caption>Java2D and geometry equivalences</caption>
  *   <tr>
  *     <th>Purpose</th>
  *     <th>Any dimension</th>
@@ -59,7 +60,7 @@
  * longitude greater than the upper corner longitude, like the red box below (the green box is the
  * usual case):
  *
- * <center><img src="doc-files/AntiMeridian.png"></center>
+ * <center><img src="doc-files/AntiMeridian.png" alt="Envelope spannning the anti-meridian"></center>
  *
  * In SIS, every envelopes defined in this package support the extended bounding box interpretation:
  * for any dimension, ordinate values such that <var>upper</var> &lt; <var>lower</var> are handled

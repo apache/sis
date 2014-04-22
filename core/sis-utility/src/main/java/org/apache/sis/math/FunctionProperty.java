@@ -30,6 +30,7 @@ import java.util.EnumSet;
  * other properties:</p>
  *
  * <table class="sis">
+ *   <caption>Inferred function properties</caption>
  *   <tr><th>Property</th> <th>How to build</th></tr>
  *   <tr><td>{@linkplain #isBijective(Set) Bijective}</td>
  *       <td><code>EnumSet.of({@linkplain #INJECTIVE}, {@linkplain #SURJECTIVE})</code></td>
@@ -156,7 +157,7 @@ public enum FunctionProperty {
      * <ul>
      *   <li>{@link #INJECTIVE}</li>
      *   <li>{@link #SURJECTIVE}</li>
-     * </u>
+     * </ul>
      *
      * @param  properties The properties of the function to test for bijectivity.
      * @return {@code true} if a function having the given set of properties is bijective.
@@ -173,7 +174,7 @@ public enum FunctionProperty {
      * <ul>
      *   <li>{@link #ORDER_PRESERVING}</li>
      *   <li>{@link #ORDER_REVERSING}</li>
-     * </u>
+     * </ul>
      *
      * @param  properties The properties of the function to test for monotonicity.
      * @return {@code true} if a function having the given set of properties is monotonic.

@@ -59,7 +59,7 @@ public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar,
      * the value. JAXB calls automatically this method at unmarshalling time.
      *
      * @param  value The XML date, or {@code null}.
-     * @return The {@code java.util} date, or {@code null.
+     * @return The {@code java.util} date, or {@code null}.
      */
     @Override
     public Date unmarshal(final XMLGregorianCalendar value) {
@@ -70,8 +70,8 @@ public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar,
      * Converts the date to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The {@code java.util} date value, or {@code null.
-     * @return The XML date, or {@code null.
+     * @param  value The {@code java.util} date value, or {@code null}.
+     * @return The XML date, or {@code null}.
      */
     @Override
     public XMLGregorianCalendar marshal(final Date value) {

@@ -119,7 +119,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     }
 
     /**
-     * Creates a descriptor for an array of {@code double[] values.
+     * Creates a descriptor for an array of {@code double[]} values.
      *
      * @param  name         The parameter name.
      * @param  minimumValue The minimum parameter value, or {@link Double#NEGATIVE_INFINITY} if none.

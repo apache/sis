@@ -836,6 +836,10 @@ public class MetadataStandard implements Serializable {
 
     /**
      * Invoked during deserialization for restoring the transient fields.
+     *
+     * @param  in The input stream from which to deserialize a metadata standard.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

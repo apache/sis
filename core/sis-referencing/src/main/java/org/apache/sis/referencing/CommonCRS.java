@@ -84,6 +84,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * Below is an alphabetical list of object names available in this enumeration:
  *
  * <blockquote><table class="sis">
+ *   <caption>Geodetic objects accessible by enumeration constants</caption>
  *   <tr><th>Name or alias</th>                                     <th>Object type</th>           <th>Enumeration value</th></tr>
  *   <tr><td>Clarke 1866</td>                                       <td>Ellipsoid</td>             <td>{@link #NAD27}</td></tr>
  *   <tr><td>European Datum 1950 (ED50)</td>                        <td>CRS, datum</td>            <td>{@link #ED50}</td></tr>
@@ -112,7 +113,7 @@ public enum CommonCRS {
      * World Geodetic System 1984.
      * This is the default CRS for most {@code org.apache.sis} packages.
      *
-     * <blockquote><table class="compact">
+     * <blockquote><table class="compact" summary="WGS84 properties.">
      *   <tr><th>WMS identifier:</th>          <td>CRS:84</td></tr>
      *   <tr><th>EPSG identifiers:</th>        <td>4326 &nbsp;(<i>datum:</i> 6326, &nbsp;<i>ellipsoid:</i> 7030)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"WGS 84" &nbsp;(<i>datum:</i> "World Geodetic System 1984")</td></tr>
@@ -129,7 +130,7 @@ public enum CommonCRS {
     /**
      * World Geodetic System 1972.
      *
-     * <blockquote><table class="compact">
+     * <blockquote><table class="compact" summary="WGS72 properties.">
      *   <tr><th>EPSG identifiers:</th>        <td>4322 &nbsp;(<i>datum:</i> 6322, &nbsp;<i>ellipsoid:</i> 7043)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"WGS 72" &nbsp;(<i>datum:</i> "World Geodetic System 1972")</td></tr>
      *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "WGS 72", &nbsp;<i>ellipsoid:</i> "NWL 10D")</td></tr>
@@ -147,7 +148,7 @@ public enum CommonCRS {
      * The ellipsoid is <cite>"GRS 1980"</cite>, also known as <cite>"International 1979"</cite>.
      * This ellipsoid is very close, but not identical, to the {@linkplain #WGS84} one.
      *
-     * <blockquote><table class="compact">
+     * <blockquote><table class="compact" summary="ETRS89 properties.">
      *   <tr><th>EPSG identifiers:</th>        <td>4258 &nbsp;(<i>datum:</i> 6258, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"ETRS89" &nbsp;(<i>datum:</i> "European Terrestrial Reference System 1989", &nbsp;<i>ellipsoid:</i> "GRS 1980")</td></tr>
      *   <tr><th>Abbreviations or aliases:</th><td>"ETRF89", "EUREF89", "ETRS89-GRS80" &nbsp;(<i>ellipsoid:</i> "International 1979")</td></tr>
@@ -170,7 +171,7 @@ public enum CommonCRS {
      * The ellipsoid is <cite>"GRS 1980"</cite>, also known as <cite>"International 1979"</cite>.
      * This ellipsoid is very close, but not identical, to the {@linkplain #WGS84} one.
      *
-     * <blockquote><table class="compact">
+     * <blockquote><table class="compact" summary="NAD83 properties.">
      *   <tr><th>WMS identifier:</th>          <td>CRS:83</td></tr>
      *   <tr><th>EPSG identifiers:</th>        <td>4269 &nbsp;(<i>datum:</i> 6269, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"NAD83" &nbsp;(<i>datum:</i> "North American Datum 1983", &nbsp;<i>ellipsoid:</i> "GRS 1980")</td></tr>
@@ -192,7 +193,7 @@ public enum CommonCRS {
     /**
      * North American Datum 1927.
      *
-     * <blockquote><table class="compact">
+     * <blockquote><table class="compact" summary="NAD27 properties.">
      *   <tr><th>WMS identifier:</th>          <td>CRS:27</td></tr>
      *   <tr><th>EPSG identifiers:</th>        <td>4267 &nbsp;(<i>datum:</i> 6267, &nbsp;<i>ellipsoid:</i> 7008)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"NAD27" &nbsp;(<i>datum:</i> "North American Datum 1927", &nbsp;<i>ellipsoid:</i> "Clarke 1866")</td></tr>
@@ -208,7 +209,7 @@ public enum CommonCRS {
     /**
      * European Datum 1950.
      *
-     * <blockquote><table class="compact">
+     * <blockquote><table class="compact" summary="ED50 properties.">
      *   <tr><th>EPSG identifiers:</th>        <td>4230 &nbsp;(<i>datum:</i> 6230, &nbsp;<i>ellipsoid:</i> 7022)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"ED50" &nbsp;(<i>datum:</i> "European Datum 1950", &nbsp;<i>ellipsoid:</i> "International 1924")</td></tr>
      *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "ED50", <i>ellipsoid:</i> "Hayford 1909")</td></tr>
@@ -226,7 +227,7 @@ public enum CommonCRS {
      * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#orthodromicDistance
      * orthodromic distance computation}, which may be faster and more robust.
      *
-     * <blockquote><table class="compact">
+     * <blockquote><table class="compact" summary="Sphere properties.">
      *   <tr><th>EPSG identifiers:</th>        <td>4047 &nbsp;(<i>datum:</i> 6047, &nbsp;<i>ellipsoid:</i> 7048)</td></tr>
      *   <tr><th>Primary names:</th>           <td>"Unspecified datum based upon the GRS 1980 Authalic Sphere"</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
@@ -379,6 +380,7 @@ public enum CommonCRS {
      * together with an enumeration value that can be used for fetching that CRS:
      *
      * <blockquote><table class="sis">
+     *   <caption>Commonly used geographic CRS</caption>
      *   <tr><th>Name or alias</th>            <th>Enum</th>            <th>Code</th></tr>
      *   <tr><td>ED50</td>                     <td>{@link #ED50}</td>   <td></td></tr>
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td></td></tr>
@@ -418,6 +420,7 @@ public enum CommonCRS {
      * together with an enumeration value that can be used for fetching that CRS:
      *
      * <blockquote><table class="sis">
+     *   <caption>Commonly used geographic CRS</caption>
      *   <tr><th>Name or alias</th>            <th>Enum</th>            <th>EPSG</th></tr>
      *   <tr><td>ED50</td>                     <td>{@link #ED50}</td>   <td>4230</td></tr>
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td>4258</td></tr>
@@ -472,6 +475,7 @@ public enum CommonCRS {
      * fetching that CRS:
      *
      * <blockquote><table class="sis">
+     *   <caption>Commonly used geographic CRS</caption>
      *   <tr><th>Name or alias</th>            <th>Enum</th>            <th>EPSG</th></tr>
      *   <tr><td>ED50</td>                     <td>{@link #ED50}</td>   <td></td></tr>
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td>4937</td></tr>
@@ -529,6 +533,7 @@ public enum CommonCRS {
      * together with an enumeration value that can be used for fetching that CRS:
      *
      * <blockquote><table class="sis">
+     *   <caption>Commonly used geocentric CRS</caption>
      *   <tr><th>Name or alias</th>            <th>Enum</th>            <th>EPSG</th></tr>
      *   <tr><td>ED50</td>                     <td>{@link #ED50}</td>   <td></td></tr>
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td>4936</td></tr>
@@ -586,6 +591,7 @@ public enum CommonCRS {
      * together with an enumeration value that can be used for fetching that datum:
      *
      * <blockquote><table class="sis">
+     *   <caption>Commonly used geodetic datums</caption>
      *   <tr><th>Name or alias</th>                                     <th>Enum</th>            <th>EPSG</th></tr>
      *   <tr><td>European Datum 1950</td>                               <td>{@link #ED50}</td>   <td>6230</td></tr>
      *   <tr><td>European Terrestrial Reference System 1989</td>        <td>{@link #ETRS89}</td> <td>6258</td></tr>
@@ -627,6 +633,7 @@ public enum CommonCRS {
      * together with an enumeration value that can be used for fetching that ellipsoid:
      *
      * <blockquote><table class="sis">
+     *   <caption>Commonly used ellipsoids</caption>
      *   <tr><th>Name or alias</th>                    <th>Enum</th>            <th>EPSG</th></tr>
      *   <tr><td>Clarke 1866</td>                      <td>{@link #NAD27}</td>  <td>7008</td></tr>
      *   <tr><td>GRS 1980 Authalic Sphere</td>         <td>{@link #SPHERE}</td> <td>7048</td></tr>
@@ -671,6 +678,7 @@ public enum CommonCRS {
      * together with an enumeration value that can be used for fetching that prime meridian:
      *
      * <blockquote><table class="sis">
+     *   <caption>Commonly used prime meridians</caption>
      *   <tr><th>Name or alias</th> <th>Enum</th>           <th>EPSG</th></tr>
      *   <tr><td>Greenwich</td>     <td>{@link #WGS84}</td> <td>8901</td></tr>
      * </table></blockquote>
@@ -769,6 +777,7 @@ public enum CommonCRS {
      * Below is an alphabetical list of object names available in this enumeration:
      *
      * <blockquote><table class="sis">
+     *   <caption>Geodetic objects accessible by enumeration constants</caption>
      *   <tr><th>Name or alias</th>             <th>Object type</th> <th>Enumeration value</th></tr>
      *   <tr><td>Barometric altitude</td>       <td>CRS, Datum</td>  <td>{@link #BAROMETRIC}</td></tr>
      *   <tr><td><s>Ellipsoidal height</s></td> <td>CRS, Datum</td>  <td><s>{@link #ELLIPSOIDAL}</s></td></tr>
@@ -802,7 +811,7 @@ public enum CommonCRS {
          * Height measured above the Mean Sea Level (MSL) in metres. Can be used as an approximation of geoidal heights
          * (height measured above an equipotential surface), except that MSL are not specific to any location or epoch.
          *
-         * <blockquote><table class="compact">
+         * <blockquote><table class="compact" summary="Mean Sea Level properties.">
          *   <tr><th>EPSG identifiers:</th>         <td>5714 &nbsp;(<i>datum:</i> 5100)</td></tr>
          *   <tr><th>Primary names:</th>            <td>"MSL height" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
          *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level height" &nbsp;(<i>datum:</i> "MSL")</td></tr>
@@ -817,7 +826,7 @@ public enum CommonCRS {
         /**
          * Depth measured below the Mean Sea Level (MSL) in metres.
          *
-         * <blockquote><table class="compact">
+         * <blockquote><table class="compact" summary="Depth properties.">
          *   <tr><th>EPSG identifiers:</th>         <td>5715 &nbsp;(<i>datum:</i> 5100)</td></tr>
          *   <tr><th>Primary names:</th>            <td>"MSL depth" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
          *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level depth" &nbsp;(<i>datum:</i> "MSL")</td></tr>
@@ -913,6 +922,7 @@ public enum CommonCRS {
          * together with an enumeration value that can be used for fetching that CRS:
          *
          * <blockquote><table class="sis">
+         *   <caption>Commonly used vertical CRS</caption>
          *   <tr><th>Name or alias</th>             <th>Enum</th>                        <th>EPSG</th></tr>
          *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
          *   <tr><td><s>Ellipsoidal height</s></td> <td><s>{@link #ELLIPSOIDAL}</s></td> <td></td></tr>
@@ -978,6 +988,7 @@ public enum CommonCRS {
          * together with an enumeration value that can be used for fetching that datum:
          *
          * <blockquote><table class="sis">
+         *   <caption>Commonly used vertical datum</caption>
          *   <tr><th>Name or alias</th>             <th>Enum</th>                        <th>EPSG</th></tr>
          *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
          *   <tr><td><s>Ellipsoidal height</s></td> <td><s>{@link #ELLIPSOIDAL}</s></td> <td></td></tr>
@@ -1054,6 +1065,7 @@ public enum CommonCRS {
      * Below is an alphabetical list of object names available in this enumeration:
      *
      * <blockquote><table class="sis">
+     *   <caption>Temporal objects accessible by enumeration constants</caption>
      *   <tr><th>Name or alias</th>    <th>Object type</th> <th>Enumeration value</th></tr>
      *   <tr><td>Dublin Julian</td>    <td>CRS, Datum</td>  <td>{@link #DUBLIN_JULIAN}</td></tr>
      *   <tr><td>Java time</td>        <td>CRS</td>         <td>{@link #JAVA}</td></tr>
@@ -1158,6 +1170,7 @@ public enum CommonCRS {
          * together with an enumeration value that can be used for fetching that CRS:
          *
          * <blockquote><table class="sis">
+         *   <caption>Commonly used temporal CRS</caption>
          *   <tr><th>Name or alias</th>      <th>Enum</th></tr>
          *   <tr><td>Dublin Julian</td>      <td>{@link #DUBLIN_JULIAN}</td></tr>
          *   <tr><td>Julian</td>             <td>{@link #JULIAN}</td></tr>
@@ -1226,6 +1239,7 @@ public enum CommonCRS {
          * together with an enumeration value that can be used for fetching that datum:
          *
          * <blockquote><table class="sis">
+         *   <caption>Commonly used temporal datum</caption>
          *   <tr><th>Name or alias</th>      <th>Enum</th></tr>
          *   <tr><td>Dublin Julian</td>      <td>{@link #DUBLIN_JULIAN}</td></tr>
          *   <tr><td>Julian</td>             <td>{@link #JULIAN}</td></tr>

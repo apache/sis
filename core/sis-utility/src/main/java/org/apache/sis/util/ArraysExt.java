@@ -53,6 +53,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * Java collection framework instead.
  *
  * <table class="sis">
+ * <caption>Convenience methods for casual use on small arrays</caption>
  * <tr><th>Method</th>                                             <th class="sep">Alternative</th></tr>
  * <tr><td>{@link #resize(Object[], int)}</td>                     <td class="sep">{@link java.util.ArrayList}</td></tr>
  * <tr><td>{@link #append(Object[], Object)}</td>                  <td class="sep">{@link java.util.ArrayList}</td></tr>

@@ -171,7 +171,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     private final long costLimit;
 
     /**
-     * If {@code true}, use {@link SoftReference) instead of {@link WeakReference}.
+     * If {@code true}, use {@link SoftReference} instead of {@link WeakReference}.
      */
     private final boolean soft;
 

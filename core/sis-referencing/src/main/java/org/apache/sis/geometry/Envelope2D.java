@@ -72,9 +72,9 @@ import org.apache.sis.internal.jdk7.Objects;
  * {@linkplain #height height} field values. The default implementation of methods listed in the
  * right column can handle such cases.
  *
- * <table class="compact" align="center"><tr><td>
- *   <img src="doc-files/AntiMeridian.png">
- * </td><td>
+ * <center><table class="compact" summary="Anti-meridian spanning support."><tr><td>
+ *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png" alt="Envelope spannning the anti-meridian">
+ * </td><td style="vertical-align: middle">
  * Supported methods:
  * <ul>
  *   <li>{@link #getMinimum(int)}</li>
@@ -91,7 +91,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <li>{@link #add(Rectangle2D)}</li>
  *   <li>{@link #add(double,double)}</li>
  * </ul>
- * </td></tr></table>
+ * </td></tr></table></center>
  *
  * The {@link #getMinX()}, {@link #getMinY()}, {@link #getMaxX()}, {@link #getMaxY()},
  * {@link #getCenterX()}, {@link #getCenterY()}, {@link #getWidth()} and {@link #getHeight()}
@@ -989,7 +989,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * <p>
      * After adding a point, a call to {@link #contains(double, double)} with the added point
      * as an argument will return {@code true}, except if one of the point ordinates was
-     * {@link Double#NaN} in which case the corresponding ordinate has been ignored.
+     * {@link java.lang.Double#NaN} in which case the corresponding ordinate has been ignored.
      *
      * {@section Spanning the anti-meridian of a Geographic CRS}
      * This method supports anti-meridian spanning in the same way than

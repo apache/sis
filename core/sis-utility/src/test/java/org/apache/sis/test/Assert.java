@@ -266,6 +266,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * <p>The current substitution map is as below (may be expanded in any future SIS version):</p>
      *
      * <table class="sis">
+     *   <caption>Predefined prefix mapping</caption>
      *   <tr><th>Prefix</th> <th>URL</th></tr>
      *   <tr><td>xmlns</td>  <td>{@code "http://www.w3.org/2000/xmlns"}</td></tr>
      *   <tr><td>xlink</td>  <td>{@value org.apache.sis.xml.Namespaces#XLINK}</td></tr>

@@ -44,16 +44,17 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * {@section Special cases}
  * Conversion table from {@link String} to {@link java.lang.Boolean}:
  *
- * <table>
- *    <tr><th>source</th>          <th>target</th></tr>
- *    <tr><td>{@code "true"}  </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
- *    <tr><td>{@code "false"} </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
- *    <tr><td>{@code "yes"}   </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
- *    <tr><td>{@code "no"}    </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
- *    <tr><td>{@code "on"}    </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
- *    <tr><td>{@code "off"}   </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
- *    <tr><td>{@code "1"}     </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
- *    <tr><td>{@code "0"}     </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ * <table class="sis">
+ *   <caption>Conversion table from strings</caption>
+ *   <tr><th>source</th>          <th>target</th></tr>
+ *   <tr><td>{@code "true"}  </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *   <tr><td>{@code "false"} </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ *   <tr><td>{@code "yes"}   </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *   <tr><td>{@code "no"}    </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ *   <tr><td>{@code "on"}    </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *   <tr><td>{@code "off"}   </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ *   <tr><td>{@code "1"}     </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *   <tr><td>{@code "0"}     </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
  * </table>
  *
  * {@section Immutability and thread safety}

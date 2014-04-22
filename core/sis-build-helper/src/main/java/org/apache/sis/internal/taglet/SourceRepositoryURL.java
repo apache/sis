@@ -27,7 +27,8 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
  * This tag shall contain a keyword, for example <code>{@scmUrl metadata}</code>.
  * Valid keywords are:
  *
- * <table class="sis>
+ * <table class="sis">
+ *   <caption>Recognized keywords</caption>
  *   <tr><th>Keyword</th>     <th>path</th></tr>
  *   <tr><td>metadata</td>    <td>core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso</td></tr>
  *   <tr><td>referencing</td> <td>core/sis-referencing/src/test/resources/org/apache/sis/referencing</td></tr>

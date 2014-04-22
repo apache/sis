@@ -44,6 +44,7 @@ import org.apache.sis.util.logging.Logging;
  * metadata does not support the operation. Those methods are:
  *
  * <table class="sis">
+ * <caption>Metadata operations</caption>
  * <tr>
  *   <th>Read-only operations</th>
  *   <th class="sep">Read/write operations</th>
