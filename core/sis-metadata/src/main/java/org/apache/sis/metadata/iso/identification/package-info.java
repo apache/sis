@@ -24,10 +24,12 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Package overview</caption>
+ * <tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td width="50%" nowrap>
+ * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification       Identification} «abstract»<br>
  * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.identification.DefaultDataIdentification    Data identification}<br>
@@ -44,7 +46,7 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.InitiativeType  Initiative type}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.TopicCategory   Topic category}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.identification.CharacterSet    Character set}<br>
- * </td><td class="sep" width="50%" nowrap>
+ * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                 {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification       Identification} «abstract»<br>
  * {@code  ├─}     {@linkplain org.opengis.metadata.identification.Progress                            Progress} «code list»<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic         Browse graphic}<br>

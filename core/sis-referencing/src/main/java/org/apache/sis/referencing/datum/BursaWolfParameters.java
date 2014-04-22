@@ -60,8 +60,9 @@ import org.apache.sis.internal.jdk7.Objects;
  * while the <cite>legacy</cite> column lists the identifiers used in the legacy OGC 01-009 specification
  * (still used in some <cite>Well Known Texts</cite>).
  *
- * <table class="compact"><tr><td>
+ * <table class="compact" summary="Parameters and formula"><tr><td>
  * <table class="sis">
+ *   <caption>Parameters defined by EPSG</caption>
  *   <tr><th>Code</th> <th>Name</th>               <th>Abbr.</th>       <th>Legacy</th></tr>
  *   <tr><td>8605</td> <td>X-axis translation</td> <td>{@link #tX}</td> <td>{@code dx}</td></tr>
  *   <tr><td>8606</td> <td>Y-axis translation</td> <td>{@link #tY}</td> <td>{@code dy}</td></tr>
@@ -76,7 +77,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * <center><b>Geocentric coordinates transformation</b></center>
  * <center>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
  *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)</center>
- * <center><font size="-1">(ignoring unit conversions)</font></center>
+ * <center style="font-size: small">(ignoring unit conversions)</center>
  *
  * <p><math display="block" alttext="MathML capable browser required">
  *   <mfenced open="[" close="]">

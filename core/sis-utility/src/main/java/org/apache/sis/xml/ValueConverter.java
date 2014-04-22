@@ -117,7 +117,7 @@ public class ValueConverter {
      *
      * <p>The default implementation performs the following steps:</p>
      * <ul>
-     *   <li>Try {@link Locale#getISO3Language()}</code>:<ul>
+     *   <li>Try {@link Locale#getISO3Language()}:<ul>
      *     <li>On success, return that value if non-empty, or {@code null} otherwise.</li>
      *     <li>If an exception has been thrown, then:<ul>
      *       <li>If {@link #exceptionOccured exceptionOccured(…)} return {@code true}, then

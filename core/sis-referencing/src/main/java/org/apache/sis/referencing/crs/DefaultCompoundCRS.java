@@ -53,7 +53,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * This class is often used for defining 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
  * coordinate reference systems as an aggregation of simpler CRS. Below is two examples of such aggregations:
  *
- * <table class="compact">
+ * <table class="compact" summary="Illustration of a compound CRS.">
  * <tr><th>Flat list</th><th>Hierarchical structure</th></tr>
  * <tr><td><blockquote>
  *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
@@ -122,6 +122,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>
@@ -306,6 +307,10 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
 
     /**
      * Computes the single CRS list on deserialization.
+     *
+     * @param  in The input stream from which to deserialize a compound CRS.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     @SuppressWarnings("unchecked")
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {

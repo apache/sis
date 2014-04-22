@@ -127,6 +127,7 @@ public enum ElementKind {
      * The current implementation defines the following associations:
      *
      * <table class="sis">
+     *   <caption>Mapping from Java type to WKT element</caption>
      *   <tr><th>Base type</th>                     <th>Kind</th></tr>
      *   <tr><td>{@link Datum}</td>                 <td>{@link #DATUM}</td></tr>
      *   <tr><td>{@link OperationMethod}</td>       <td>{@link #METHOD}</td></tr>

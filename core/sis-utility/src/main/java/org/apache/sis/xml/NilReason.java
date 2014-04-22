@@ -261,6 +261,8 @@ public final class NilReason implements Serializable {
 
     /**
      * Invoked after deserialization in order to return a unique instance if possible.
+     *
+     * @return A unique instance of the deserialized {@code NilReason}.
      */
     private Object readResolve() {
         if (reason instanceof String) {
@@ -350,14 +352,14 @@ public final class NilReason implements Serializable {
      *
      * <ul>
      *   <li><p>An <strong>interface</strong>: in such case, this method returns an object which implement the given
-     *       interface together with the {@link NilObject} and {@link LenientComparable} interfaces:
+     *       interface together with the {@link NilObject} and {@link LenientComparable} interfaces:</p>
      *       <ul>
      *         <li>The {@link NilObject#getNilReason()} method will return this {@code NilReason} instance.</li>
      *         <li>The {@code equals(…)} and {@code hashCode()} methods behave as documented in {@link LenientComparable}.</li>
      *         <li>The {@code toString()} method is unspecified (may contain debugging information).</li>
      *         <li>All other methods return an empty collections, empty arrays, {@code null}, {@link Double#NaN NaN},
      *             {@code 0} or {@code false}, in this preference order, depending on the method return type.</li>
-     *       </ul></p>
+     *       </ul>
      *   </li>
      *   <li><p>One of {@code Boolean}, {@link Byte}, {@link Short}, {@code Integer}, {@link Long}, {@link Float},
      *       {@code Double} or {@code String} types: in such case, this method returns a specific instance which
@@ -429,7 +431,7 @@ public final class NilReason implements Serializable {
      * {@link Float}, {@code Double} or {@code String} instance to be considered as a nil value.
      * The caller is responsible for registering the value in {@link PrimitiveTypeProperties}.
      *
-     * <p><b>REMINDER:<b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
+     * <p><b>REMINDER:</b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
      * method and to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} javadoc.</p>
      *
      * <div class="note"><b>Implementation note:</b>

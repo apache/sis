@@ -71,8 +71,8 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
  * The default implementation of methods listed in the right column can handle such cases.
  *
- * <table class="compact" align="center"><tr><td>
- *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png">
+ * <center><table class="compact" summary="Anti-meridian spanning support."><tr><td>
+ *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png" alt="Envelope spannning the anti-meridian">
  * </td><td style="vertical-align: middle">
  * Supported methods:
  * <ul>
@@ -89,7 +89,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *   <li>{@link #add(Envelope)}</li>
  *   <li>{@link #add(DirectPosition)}</li>
  * </ul>
- * </td></tr></table>
+ * </td></tr></table></center>
  *
  * {@section Envelope validation}
  * If and only if this envelope is associated to a non-null CRS, then constructors and setter methods

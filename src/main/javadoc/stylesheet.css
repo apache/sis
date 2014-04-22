@@ -1,36 +1,64 @@
 /*
- * This file is divided in two parts.   The first part is specific to the SIS project
- * and defines the styles used by the developers in the javadoc comments.  The second
- * part is a modified copy of the default stylesheet provided by the Javadoc tools.
- * Note that the second part is totally different between JDK6 and JDK7.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+@import url('standard.css');
 
 /*
+ * This file is divided in two parts. The first part is specific to the SIS project
+ * and defines the styles used by the developers in the javadoc comments. The second
+ * part overwrites some aspects of the default stylesheet provided by the Javadoc tools.
+ */
+
+
+/*
+ * Definition of <table class="sis">
+ *
  * Table without vertical space between rows, a little bit of space between columns,
  * a light background color and a header with a darker background color. The header
  * also have a little bit more space, and a border is drawn around the table.
  */
+table.sis caption {
+  color:          #0086E0;
+  font-weight:    bold;
+  padding-bottom: 4px;
+}
+
 table.sis {
-  background-color: #F4F8FF;
-  border-color:     Black;
-  border-style:     solid;
-  border-width:     1pt;
-  border-spacing:   0pt;
-  margin:           12pt 0 12pt 0;
-  padding:          0pt;
+  margin:           18px 0;
   width:            auto;
+  background-color: #F4F8FF;
+  border-color:     darkgray;
+  border-style:     solid;
+  border-width:     1px;
+  border-spacing:   0;
+  padding:          0;
+  line-height:      1em;
 }
 
 table.sis tr th {
   background-color:    #B9DCFF;
-  border-bottom-color: Black;
+  border-bottom-color: darkgray;
   border-bottom-style: solid;
-  border-bottom-width: 1pt;
-  padding:             3pt;
+  border-bottom-width: 1px;
+  padding:             6px;
+  padding-bottom:      3px;
 }
 
 table.sis tr td {
-  padding:        1.5pt 9pt;
+  padding:        3px 12px;
   vertical-align: text-top;
 }
 
@@ -38,157 +66,125 @@ table.sis tr td {
  * Optionally add a line or column separator.
  */
 table.sis tr th.hsep {
-  border-top-width: 1pt;
+  border-top-width: 1px;
   border-top-style: solid;
+  border-top-color: darkgray;
 }
 
 table.sis tr th.sep {
-  border-left-width: 1pt;
+  border-left-width: 1px;
   border-left-style: solid;
   border-left-color: #819AB2;
 }
 
 table.sis tr td.sep {
-  border-left-width: 1pt;
+  border-left-width: 1px;
   border-left-style: solid;
   border-left-color: #AAADB2;
 }
 
+
 /*
+ * Definition of <table class="compact">
+ *
  * Table without vertical space between rows and a little bit of space between columns.
  * This table has no border and text is left-aligned.
  */
 table.compact {
-  margin-top:     6pt;
-  margin-bottom:  6pt;
+  margin:         6px 0px;
   width:          auto;
   border:         none;
-  border-spacing: 0pt;
-  padding:        0pt;
+  border-spacing: 0;
+  padding:        0;
   line-height:    1em;
   text-align:     left;
 }
 
 table.compact tr td {
-  padding-top:    0pt;
-  padding-bottom: 0pt;
-  padding-right:  3pt;
-  padding-left:   3pt;
+  padding:        0 9px;
   vertical-align: text-top;
 }
 
-table.compact tr td.onright {
-  padding-right: 1pt;
-  text-align:    right;
-  font-weight:   normal;
-}
 
-table.compact tr td.onleft {
-  padding-left: 1pt;
-  text-align:   left;
-  font-weight:  normal;
+/*
+ * Definition of <div class="note">
+ *
+ * Note or examples.
+ */
+div.note {
+  color:     #353833;
+  font-size:   small;
+  margin-left:  40px;
+  margin-right: 40px;
+  margin-top:    9px;
+  margin-bottom: 9px;
 }
 
 /*
- * Formatting if the {@section} custom javadoc tag.
+ * Definition of <div class="warning">
+ */
+div.warning {
+  color:   firebrick;
+  margin-left:  40px;
+  margin-right: 40px;
+  margin-top:    9px;
+  margin-bottom: 9px;
+}
+
+
+/*
+ * Formatting in the {@section} custom javadoc tag.
  */
 div.block h5 {
-  margin-top:   15pt;
-  margin-bottom: 3pt;
+  font-size:    16px;
+  margin-top:   30px;
+  margin-bottom: 6px;
 }
 
 div.block h6 {
-  margin-top:   15pt;
-  margin-bottom: 3pt;
+  font-size:    16px;
+  margin-top:   30px;
+  margin-bottom: 6px;
 }
 
 /*
  * Bullet and ordered lists. Put some space before and after the list.
- * Listes of the "verbose" class also have some space betweem items.
  */
 div.block ul,
 div.block ol {
-  margin-top:    9pt;
-  margin-bottom: 9pt;
+  margin-top:    9px;
+  margin-bottom: 9px;
 }
 
 div.block li > ul,
 div.block li > ol {
-  margin-top:    0pt;
-  margin-bottom: 6pt;
-}
-
-div.block ul {
-  list-style-type: square;
-}
-
-ul.verbose li {
-  margin-top:    3pt;
-  margin-bottom: 3pt;
-}
-
-/*
- * Code example formatted by the {@preformat} taglet.
- * Overrides the <pre> definition provided by the Javadoc tools.
- */
-div.block pre {
-  line-height: 1em;
-  font-size:   1em;
-  font-family: Andale Mono, Courier New, monospace;
-}
-
-/*
- * Note, examples or warnings.
- */
-div.note {
-  font-size: small;
-  margin-left:  30pt;
-  margin-top:    9pt;
-  margin-bottom: 9pt;
-}
-
-/*
- * Note, examples or warnings.
- */
-div.warning {
-  color:   firebrick;
-  margin-left:  30pt;
-  margin-right: 30pt;
-  margin-top:    9pt;
-  margin-bottom: 9pt;
+  margin-top:    0;
+  margin-bottom: 6px;
 }
 
 
 
 
 /* ----------------------------------------------------------------------
- * End of SIS-specific part. The remaining of this file is derived from
- * the Javadoc default stylesheet for the target platform (JDK6 or JDK7).
- *
- * The styles in this file are declared in their approximative usage order,
- * from top to bottom: frame, navigation bar, class description, details...
+ * End of SIS-specific part. The remaining of this file overwrite some
+ * aspects of the Javadoc default stylesheet.
  */
-/* Page background color */
-body { background-color: #FFFFFF; color:#000000 }
+body, div.block {
+  color:       black;
+  font-family: Helvetica, Arial, sans-serif;
+}
 
-/* Headings */
-h1 { font-size: 145% }
+.contentContainer .description dl dd, .contentContainer .details dl dd, .serializedFormContainer dl dd {
+  color:       #353833;
+  font-family: Helvetica, Arial, sans-serif;
+  margin-left: 40px;
+}
 
-/* Table colors */
-.TableHeadingColor     { background: #CCCCFF; color:#000000 } /* Dark mauve */
-.TableSubHeadingColor  { background: #EEEEFF; color:#000000 } /* Light mauve */
-.TableRowColor         { background: #FFFFFF; color:#000000 } /* White */
+pre, div.block pre, code, tt, dt code, table tr td dt code {
+  font-family: Andale Mono, Courier New, monospace;
+}
 
-/* Font used in left-hand frame lists */
-.FrameTitleFont   { font-size: 100%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
-.FrameHeadingFont { font-size:  90%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
-.FrameItemFont    { font-size:  90%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
-
-/* Navigation bar fonts and colors */
-.NavBarCell1    { background-color:#EEEEFF; color:#000000} /* Light mauve */
-.NavBarCell1Rev { background-color:#00008B; color:#FFFFFF} /* Dark Blue */
-.NavBarFont1    { font-family: Arial, Helvetica, sans-serif; color:#000000;color:#000000;}
-.NavBarFont1Rev { font-family: Arial, Helvetica, sans-serif; color:#FFFFFF;color:#FFFFFF;}
-
-.NavBarCell2    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF; color:#000000}
-.NavBarCell3    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF; color:#000000}
+div.block pre, code, tt, dt code, table tr td dt code {
+  line-height: 1em;
+  font-size:   1em;
+}

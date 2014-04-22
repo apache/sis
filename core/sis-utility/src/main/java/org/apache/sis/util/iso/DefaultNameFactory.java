@@ -121,9 +121,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *
      * <p>This method can receive an optional map of properties. Recognized entries are:</p>
      * <table class="sis">
+     *   <caption>Recognized properties</caption>
      *   <tr>
-     *     <th nowrap>Property name</th>
-     *     <th nowrap>Purpose</th>
+     *     <th>Property name</th>
+     *     <th>Purpose</th>
      *   </tr>
      *   <tr>
      *     <td>{@code "separator"}</td>

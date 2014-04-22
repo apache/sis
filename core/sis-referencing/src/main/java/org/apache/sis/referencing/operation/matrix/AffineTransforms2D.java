@@ -383,7 +383,7 @@ public final class AffineTransforms2D extends Static {
      * Returns the magnitude of scale factor <var>x</var> by canceling the
      * effect of eventual flip and rotation. This factor is calculated by:
      *
-     * <p><img src="doc-files/scaleX0.png"></p>
+     * <p><img src="doc-files/scaleX0.png" alt="Scale factor on x axis"></p>
      *
      * @param  transform The affine transform to inspect.
      * @return The magnitude of scale factor <var>x</var>.
@@ -401,7 +401,7 @@ public final class AffineTransforms2D extends Static {
      * Returns the magnitude of scale factor <var>y</var> by canceling the
      * effect of eventual flip and rotation. This factor is calculated by:
      *
-     * <p><img src="doc-files/scaleY0.png"></p>
+     * <p><img src="doc-files/scaleY0.png" alt="Scale factor on y axis"></p>
      *
      * @param  transform The affine transform to inspect.
      * @return The magnitude of scale factor <var>y</var>.

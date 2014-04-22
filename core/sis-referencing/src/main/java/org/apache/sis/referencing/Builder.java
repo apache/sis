@@ -48,7 +48,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * the builder subclasses is invoked.
  *
  * <p>This base class provides method for defining the following {@link IdentifiedObject} properties:</p>
- * <blockquote><table class="compact">
+ * <blockquote><table class="compact" summary="Builder properties.">
  * <tr><td>{@link AbstractIdentifiedObject#getName() Name}:</td>
  *     <td>Each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
  *     {@code addName(…)} methods defined in this class.</td></tr>
@@ -106,7 +106,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * two last names will be {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} respectively.
  *
  * <p>The {@code IdentificationObject} created by this example will have the following properties:</p>
- * <blockquote><table class="compact">
+ * <blockquote><table class="compact" summary="IdentifiedObject properties.">
  * <tr><td>{@link AbstractIdentifiedObject#getName() Name}:</td>
  *     <td>{@code "Mercator (variant A)"} as a local name in {@code "EPSG"} scope.</td></tr>
  * <tr><td>{@link AbstractIdentifiedObject#getAlias() Aliases}:</td>

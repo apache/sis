@@ -140,6 +140,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Additionally, the following properties are understood by this constructor:
      *
      * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>
