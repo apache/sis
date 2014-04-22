@@ -73,7 +73,7 @@ public final strictfp class ChannelDataInputTest extends TestCase {
                 new DataInputStream(new ByteArrayInputStream(array)),
                 new ChannelDataInput("testAllReadMethods",
                     new DripByteChannel(array, random, 1, 1024),
-                    ByteBuffer.allocate(random.nextInt(ARRAY_MAX_SIZE / 4) + (Double.SIZE / Byte.SIZE)), false));
+                    ByteBuffer.allocate(random.nextInt(ARRAY_MAX_SIZE / 4) + Double.BYTES), false));
     }
 
     /**
@@ -110,42 +110,42 @@ public final strictfp class ChannelDataInputTest extends TestCase {
                     break;
                 }
                 case 10: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Character.SIZE / Byte.SIZE));
+                    final int n = random.nextInt(ARRAY_MAX_SIZE / Character.BYTES);
                     final char[] tmp = new char[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readChar();
                     assertArrayEquals("readChars(int)", tmp, input.readChars(n));
                     break;
                 }
                 case 11: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Short.SIZE / Byte.SIZE));
+                    final int n = random.nextInt(ARRAY_MAX_SIZE / Short.BYTES);
                     final short[] tmp = new short[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readShort();
                     assertArrayEquals("readShorts(int)", tmp, input.readShorts(n));
                     break;
                 }
                 case 12: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Integer.SIZE / Byte.SIZE));
+                    final int n = random.nextInt(ARRAY_MAX_SIZE / Integer.BYTES);
                     final int[] tmp = new int[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readInt();
                     assertArrayEquals("readInts(int)", tmp, input.readInts(n));
                     break;
                 }
                 case 13: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Long.SIZE / Byte.SIZE));
+                    final int n = random.nextInt(ARRAY_MAX_SIZE / Long.BYTES);
                     final long[] tmp = new long[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readLong();
                     assertArrayEquals("readLongs(int)", tmp, input.readLongs(n));
                     break;
                 }
                 case 14: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Float.SIZE / Byte.SIZE));
+                    final int n = random.nextInt(ARRAY_MAX_SIZE / Float.BYTES);
                     final float[] tmp = new float[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readFloat();
                     assertArrayEquals("readFloats(int)", tmp, input.readFloats(n), 0);
                     break;
                 }
                 case 15: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Double.SIZE / Byte.SIZE));
+                    final int n = random.nextInt(ARRAY_MAX_SIZE / Double.BYTES);
                     final double[] tmp = new double[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readDouble();
                     assertArrayEquals("readDoubles(int)", tmp, input.readDoubles(n), 0);
@@ -184,7 +184,7 @@ public final strictfp class ChannelDataInputTest extends TestCase {
         final Random random = TestUtilities.createRandomNumberGenerator();
         int length = random.nextInt(2048) + 1024;
         final byte[] array = createRandomArray(length, random);
-        length -= (Long.SIZE / Byte.SIZE); // Safety against buffer underflow.
+        length -= Long.BYTES; // Safety against buffer underflow.
         final ByteBuffer buffer = ByteBuffer.wrap(array);
         final ChannelDataInput input = new ChannelDataInput("testSeekOnForwardOnlyChannel",
                 new DripByteChannel(array, random, 1, 2048),

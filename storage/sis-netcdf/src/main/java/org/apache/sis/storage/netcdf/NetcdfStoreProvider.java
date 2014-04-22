@@ -128,7 +128,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         boolean isSupported = false;
         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
-            if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
+            if (buffer.remaining() < Integer.BYTES) {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }
             final int header = buffer.getInt(buffer.position());
