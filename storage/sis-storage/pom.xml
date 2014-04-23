@@ -85,6 +85,16 @@ Provides the interfaces and base classes to be implemented by various storage fo
         <role>developer</role>
       </roles>
     </contributor>
+    <contributor>
+      <name>Rémi Maréchal</name>
+      <email>remi.marechal@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
   </contributors>
 
 

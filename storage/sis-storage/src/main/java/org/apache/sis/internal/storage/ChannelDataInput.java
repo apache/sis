@@ -98,7 +98,7 @@ public class ChannelDataInput {
     private long bufferOffset;
 
     /**
-     * Creates a new input source for the given channel and using the given buffer.
+     * Creates a new data input for the given channel and using the given buffer.
      * If the buffer already contains some data, then the {@code filled} argument shall be {@code true}.
      * Otherwise (e.g. if it is a newly created buffer), then {@code filled} shall be {@code false}.
      *
@@ -211,7 +211,7 @@ public class ChannelDataInput {
      * @throws IOException If an other kind of error occurred while reading.
      */
     public final void ensureBufferContains(int n) throws EOFException, IOException {
-        assert n <= buffer.capacity() : n;
+        assert n >= 0 && n <= buffer.capacity() : n;
         n -= buffer.remaining();
         if (n > 0) {
             bufferOffset += buffer.position();
@@ -561,7 +561,7 @@ public class ChannelDataInput {
             skipInBuffer(n * dataSize);
             while ((length -= n) != 0) {
                 offset += n;
-                ensureBufferContains(dataSize);
+                ensureBufferContains(dataSize); // Actually read as much data as possible.
                 view.position(0).limit(buffer.remaining() / dataSize);
                 transfer(offset, n = Math.min(view.remaining(), length));
                 skipInBuffer(n * dataSize);
