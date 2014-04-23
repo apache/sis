@@ -26,10 +26,11 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Errors;
+
+// Related to JDK7
+import java.nio.channels.SeekableByteChannel;
 
 
 /**
@@ -61,40 +62,12 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.5
  * @module
  */
-public class ChannelDataOutput implements Flushable {
-    /**
-     * A file identifier used only for formatting error message.
-     */
-    public final String filename;
-
+public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * The channel where data are written.
      * This is supplied at construction time.
      */
     public final WritableByteChannel channel;
-
-    /**
-     * The buffer to use for transferring data from memory to the channel.
-     */
-    public final ByteBuffer buffer;
-
-    /**
-     * The position of the channel when this {@code ChannelDataOutput} has been created.
-     * This is almost always 0, but we allow other values in case the data to write are
-     * part of a bigger file.
-     */
-    private final long channelOffset;
-
-    /**
-     * The position in {@link #channel} where is located the {@link #buffer} value at index 0.
-     * This is initially zero and shall be incremented as below:
-     *
-     * <ul>
-     *   <li>By {@link Buffer#position()} every time {@link ByteBuffer#compact()} is invoked.</li>
-     *   <li>By {@link Buffer#limit()}    every time {@link ByteBuffer#clear()}   is invoked.</li>
-     * </ul>
-     */
-    private long bufferOffset;
 
     /**
      * Creates a new data output for the given channel and using the given buffer.
@@ -107,36 +80,9 @@ public class ChannelDataOutput implements Flushable {
     public ChannelDataOutput(final String filename, final WritableByteChannel channel, final ByteBuffer buffer)
             throws IOException
     {
-        this.filename      = filename;
-        this.channel       = channel;
-        this.buffer        = buffer;
-        this.channelOffset = (channel instanceof SeekableByteChannel) ? ((SeekableByteChannel) channel).position() : 0;
+        super(filename, channel, buffer);
+        this.channel = channel;
         buffer.limit(0);
-    }
-
-    /**
-     * Invoked when a call to {@link WritableByteChannel#write(ByteBuffer)} has returned zero.
-     * A return value of 0 happen for example if the channel is a socket in non-blocking mode
-     * and the socket buffer is not yet ready to received new data.
-     *
-     * <p>The current implementation sleeps an arbitrary amount of time before to allow a new try.
-     * We do that in order to avoid high CPU consumption when data are expected to take more than
-     * a few nanoseconds to be consumed.</p>
-     *
-     * @throws IOException If the implementation chooses to stop the reading process.
-     */
-    protected void onEmptyChannelBuffer() throws IOException {
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            /*
-             * Someone doesn't want to let us sleep. Stop the writing process. We don't try to go back to work,
-             * because the waiting time was short and this method is invoked in loops. Consequently if the user
-             * interrupted us, it is probably because he waited for a long time and we still have not been able
-             * to send any data.
-             */
-            throw new IOException(e);
-        }
     }
 
     /**
@@ -599,40 +545,5 @@ public class ChannelDataOutput implements Flushable {
             n -= c;
         }
         buffer.clear().limit(0);
-    }
-
-    /**
-     * Sets the current byte position of the stream. This method does <strong>not</strong> seeks the stream;
-     * this method only modifies the value to be returned by {@link #getStreamPosition()}. This method can
-     * be invoked when some external code has performed some work with the {@linkplain #channel} and wants
-     * to inform this {@code ChannelDataInput} about the new position resulting from this work.
-     *
-     * <p>This method does not need to be invoked when only the {@linkplain Buffer#position() buffer position}
-     * has changed.</p>
-     *
-     * @param position The new position of the stream.
-     */
-    public final void setStreamPosition(final long position) {
-        bufferOffset = position - buffer.position();
-    }
-
-    /**
-     * Returns the current byte position of the stream.
-     *
-     * @return The position of the stream.
-     */
-    public final long getStreamPosition() {
-        return bufferOffset + buffer.position();
-    }
-
-    /**
-     * Returns a string representation of this object for debugging purpose.
-     *
-     * @return A string representation of this channel.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[“" + filename + "” at " + getStreamPosition() + ']';
     }
 }

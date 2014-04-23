@@ -28,7 +28,6 @@ import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.channels.ReadableByteChannel;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Debug;
 
 // Related to JDK7
 import java.nio.channels.SeekableByteChannel;
@@ -62,40 +61,12 @@ import java.nio.channels.SeekableByteChannel;
  * @version 0.4
  * @module
  */
-public class ChannelDataInput {
-    /**
-     * A file identifier used only for formatting error message.
-     */
-    public final String filename;
-
+public class ChannelDataInput extends ChannelData {
     /**
      * The channel from where data are read.
      * This is supplied at construction time.
      */
     public final ReadableByteChannel channel;
-
-    /**
-     * The buffer to use for transferring data from the channel to memory.
-     */
-    public final ByteBuffer buffer;
-
-    /**
-     * The position of the channel when this {@code ChannelDataInput} has been created.
-     * This is almost always 0, but we allow other values in case the data to read are
-     * encompassed inside a bigger file.
-     */
-    private final long channelOffset;
-
-    /**
-     * The position in {@link #channel} where is located the {@link #buffer} value at index 0.
-     * This is initially zero and shall be incremented as below:
-     *
-     * <ul>
-     *   <li>By {@link Buffer#position()} every time {@link ByteBuffer#compact()} is invoked.</li>
-     *   <li>By {@link Buffer#limit()}    every time {@link ByteBuffer#clear()}   is invoked.</li>
-     * </ul>
-     */
-    private long bufferOffset;
 
     /**
      * Creates a new data input for the given channel and using the given buffer.
@@ -112,40 +83,12 @@ public class ChannelDataInput {
     public ChannelDataInput(final String filename, final ReadableByteChannel channel, final ByteBuffer buffer,
             final boolean filled) throws IOException
     {
-        this.filename      = filename;
-        this.channel       = channel;
-        this.buffer        = buffer;
-        this.channelOffset = (channel instanceof SeekableByteChannel) ? ((SeekableByteChannel) channel).position() : 0;
+        super(filename, channel, buffer);
+        this.channel = channel;
         if (!filled) {
             buffer.clear();
             channel.read(buffer);
             buffer.flip();
-        }
-    }
-
-    /**
-     * Invoked when a call to {@link ReadableByteChannel#read(ByteBuffer)} has returned zero.
-     * Note that this is unrelated to end-of-file, in which case {@code read} returns -1.
-     * A return value of 0 happen for example if the channel is a socket in non-blocking mode
-     * and the socket buffer has not yet received new data.
-     *
-     * <p>The current implementation sleeps an arbitrary amount of time before to allow a new try.
-     * We do that in order to avoid high CPU consumption when data are expected to take more than
-     * a few nanoseconds to arrive.</p>
-     *
-     * @throws IOException If the implementation chooses to stop the reading process.
-     */
-    protected void onEmptyChannelBuffer() throws IOException {
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            /*
-             * Someone doesn't want to let us sleep. Stop the reading process. We don't try to go back to work,
-             * because the waiting time was short and this method is invoked in loops. Consequently if the user
-             * interrupted us, it is probably because he waited for a long time and we still have not received
-             * any new data.
-             */
-            throw new IOException(e);
         }
     }
 
@@ -746,40 +689,5 @@ public class ChannelDataInput {
              */
             throw new IOException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, filename));
         }
-    }
-
-    /**
-     * Sets the current byte position of the stream. This method does <strong>not</strong> seeks the stream;
-     * this method only modifies the value to be returned by {@link #getStreamPosition()}. This method can
-     * be invoked when some external code has performed some work with the {@linkplain #channel} and wants
-     * to inform this {@code ChannelDataInput} about the new position resulting from this work.
-     *
-     * <p>This method does not need to be invoked when only the {@linkplain Buffer#position() buffer position}
-     * has changed.</p>
-     *
-     * @param position The new position of the stream.
-     */
-    public final void setStreamPosition(final long position) {
-        bufferOffset = position - buffer.position();
-    }
-
-    /**
-     * Returns the current byte position of the stream.
-     *
-     * @return The position of the stream.
-     */
-    public final long getStreamPosition() {
-        return bufferOffset + buffer.position();
-    }
-
-    /**
-     * Returns a string representation of this object for debugging purpose.
-     *
-     * @return A string representation of this channel.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[“" + filename + "” at " + getStreamPosition() + ']';
     }
 }
