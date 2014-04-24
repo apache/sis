@@ -29,6 +29,8 @@ import java.nio.ShortBuffer;
 import java.nio.channels.WritableByteChannel;
 import org.apache.sis.util.resources.Errors;
 
+import static org.apache.sis.util.ArgumentChecks.ensureBetween;
+
 // Related to JDK7
 import java.nio.channels.SeekableByteChannel;
 
@@ -128,14 +130,66 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     }
 
     /**
-     * Writes a single byte to the stream at the current position.
-     * The 24 high-order bits of {@code v} are ignored.
+     * Writes a single bit. This method uses only the rightmost bit of the given argument;
+     * the upper 31 bits are ignored.
      *
-     * @param  v an integer whose lower 8 bits are to be written.
-     * @throws IOException if some I/O exception occurs during writing.
+     * @param bit The bit to write (rightmost bit).
+     * @throws IOException If an error occurred while creating the data output.
      */
-    public final void write(final int v) throws IOException {
-        writeByte(v);
+    public final void writeBit(final int bit) throws IOException {
+        writeBits(bit, 1);
+    }
+
+    /**
+     * Writes a sequence of bits. This method uses only the <var>numBits</code> rightmost bits;
+     * other bits are ignored.
+     *
+     * @param  bits The bits to write (rightmost bits).
+     * @param  numBits The number of bits to write.
+     * @throws IOException If an error occurred while creating the data output.
+     */
+    public final void writeBits(long bits, int numBits) throws IOException {
+        ensureBetween("numBits", 0, Long.SIZE, numBits);
+        if (numBits != 0) {
+            int bitOffset = getBitOffset();
+            if (bitOffset != 0) {
+                bits &= (1L << numBits) - 1; // Make sure that high-order bits are zero.
+                final int r = numBits - (Byte.SIZE - bitOffset);
+                /*
+                 * 'r' is the number of bits than we can not store in the current byte. This value may be negative,
+                 * which means that the current byte has space for more bits than what we have, in which case some
+                 * room will still exist after this method call (i.e. the 'bitOffset' will still non-zero).
+                 */
+                final long mask;
+                if (r >= 0) {
+                    mask = bits >>> r;
+                    bitOffset = 0;
+                } else {
+                    mask = bits << -r;
+                    bitOffset += numBits;
+                }
+                numBits = r;
+                assert (mask & ~0xFFL) == 0 : mask;
+                final int p = buffer.position() - 1;
+                buffer.put(p, (byte) (buffer.get(p) | mask));
+            }
+            /*
+             * At this point, we are going to write only whole bytes.
+             */
+            while (numBits > 0) {
+                numBits -= Byte.SIZE;
+                final long part;
+                if (numBits >= 0) {
+                    part = bits >>> numBits;
+                } else {
+                    part = bits << -numBits;
+                    bitOffset = (int) (Byte.SIZE + part);
+                }
+                assert (part & ~0xFFL) == 0 : part;
+                writeByte((int) part);
+            }
+            setBitOffset(bitOffset);
+        }
     }
 
     /**

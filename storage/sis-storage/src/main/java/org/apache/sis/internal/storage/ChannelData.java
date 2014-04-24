@@ -124,14 +124,6 @@ public abstract class ChannelData {
     }
 
     /**
-     * Pushes back the last processed byte. This is used when a call to {@code readBit()} did not
-     * used every bits in a byte, or when {@code readLine()} checked for the Windows-style of EOL.
-     */
-    final void pushBack() {
-        buffer.position(buffer.position() - 1);
-    }
-
-    /**
      * Returns the current bit offset, as an integer between 0 and 7 inclusive.
      *
      * <p>According {@link javax.imageio.stream.ImageInputStream} contract, the bit offset shall be reset to 0
