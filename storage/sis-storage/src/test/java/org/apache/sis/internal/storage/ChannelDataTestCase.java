@@ -33,23 +33,23 @@ import org.apache.sis.test.TestUtilities;
  */
 abstract strictfp class ChannelDataTestCase extends TestCase {
     /**
-     * The maximal size of the arrays to be read or written from/to the channel, in bytes.
+     * The maximal length of the arrays to be read or written from/to the channel, in bytes.
      * This size may be smaller or greater than the buffer capacity, but a greater size is
      * recommended in order to test the {@link ChannelData} capability to split a read or
      * write operation in more than one access to the channel.
      */
-    static final int ARRAY_MAX_SIZE = 256;
+    static final int ARRAY_MAX_LENGTH = 256;
 
     /**
      * The maximal capacity of the buffer to use for write operations.
      */
-    static final int BUFFER_MAX_SIZE = ARRAY_MAX_SIZE / 4;
+    static final int BUFFER_MAX_CAPACITY = ARRAY_MAX_LENGTH / 4;
 
     /**
      * The size of the {@link ByteArrayChannel} backing array.
      * A greater size increases the amount of iteration performed by test methods.
      */
-    static final int STREAM_SIZE = ARRAY_MAX_SIZE * 1024;
+    static final int STREAM_LENGTH = ARRAY_MAX_LENGTH * 1024;
 
     /**
      * Random number generator used for tests.

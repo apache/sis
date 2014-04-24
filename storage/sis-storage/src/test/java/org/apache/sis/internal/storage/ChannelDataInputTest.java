@@ -45,12 +45,12 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
      */
     @Test
     public void testAllReadMethods() throws IOException {
-        final byte[] array = createRandomArray(STREAM_SIZE);
-        compareStreamToBuffer(array.length - ARRAY_MAX_SIZE, // Margin against buffer underflow.
+        final byte[] array = createRandomArray(STREAM_LENGTH);
+        compareStreamToBuffer(array.length - ARRAY_MAX_LENGTH, // Margin against buffer underflow.
                 new DataInputStream(new ByteArrayInputStream(array)),
                 new ChannelDataInput("testAllReadMethods",
                     new DripByteChannel(array, random, 1, 1024),
-                    ByteBuffer.allocate(random.nextInt(BUFFER_MAX_SIZE) + Double.BYTES), false));
+                    ByteBuffer.allocate(random.nextInt(BUFFER_MAX_CAPACITY) + Double.BYTES), false));
     }
 
     /**
@@ -76,49 +76,49 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
                 case  7: assertEquals("readFloat()",         data.readFloat(),             input.readFloat(),  0f);    break;
                 case  8: assertEquals("readDouble()",        data.readDouble(),            input.readDouble(), 0d);    break;
                 case  9: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE);
+                    final int n = random.nextInt(ARRAY_MAX_LENGTH);
                     final byte[] tmp = new byte[n];
                     data.readFully(tmp);
                     assertArrayEquals("readBytes(int)", tmp, input.readBytes(n));
                     break;
                 }
                 case 10: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / Character.BYTES);
+                    final int n = random.nextInt(ARRAY_MAX_LENGTH / Character.BYTES);
                     final char[] tmp = new char[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readChar();
                     assertArrayEquals("readChars(int)", tmp, input.readChars(n));
                     break;
                 }
                 case 11: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / Short.BYTES);
+                    final int n = random.nextInt(ARRAY_MAX_LENGTH / Short.BYTES);
                     final short[] tmp = new short[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readShort();
                     assertArrayEquals("readShorts(int)", tmp, input.readShorts(n));
                     break;
                 }
                 case 12: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / Integer.BYTES);
+                    final int n = random.nextInt(ARRAY_MAX_LENGTH / Integer.BYTES);
                     final int[] tmp = new int[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readInt();
                     assertArrayEquals("readInts(int)", tmp, input.readInts(n));
                     break;
                 }
                 case 13: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / Long.BYTES);
+                    final int n = random.nextInt(ARRAY_MAX_LENGTH / Long.BYTES);
                     final long[] tmp = new long[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readLong();
                     assertArrayEquals("readLongs(int)", tmp, input.readLongs(n));
                     break;
                 }
                 case 14: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / Float.BYTES);
+                    final int n = random.nextInt(ARRAY_MAX_LENGTH / Float.BYTES);
                     final float[] tmp = new float[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readFloat();
                     assertArrayEquals("readFloats(int)", tmp, input.readFloats(n), 0);
                     break;
                 }
                 case 15: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / Double.BYTES);
+                    final int n = random.nextInt(ARRAY_MAX_LENGTH / Double.BYTES);
                     final double[] tmp = new double[n];
                     for (int i=0; i<n; i++) tmp[i] = data.readDouble();
                     assertArrayEquals("readDoubles(int)", tmp, input.readDoubles(n), 0);
