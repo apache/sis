@@ -39,11 +39,11 @@ import java.nio.channels.SeekableByteChannel;
  * before {@code ChannelDataOutput} creation.
  *
  * {@section Encapsulation}
- * This class exposes publicly the {@linkplain #channel} and the {@linkplain #buffer} because it is not expected
- * to perform all possible data manipulations that we can do with the buffers. This class is only a helper tool,
- * which often needs to be completed by specialized operations performed directly on the buffer. However, users
- * are encouraged to transfer data from the buffer to the channel using only the methods provided in this class
- * if they want to keep the {@link #seek(long)} and {@link #getStreamPosition()} values accurate.
+ * This class exposes publicly the {@linkplain #channel} and the {@linkplain #buffer buffer} because this class
+ * is not expected to perform all possible data manipulations that we can do with the buffers. This class is only
+ * a helper tool, which often needs to be completed by specialized operations performed directly on the buffer.
+ * However, users are encouraged to transfer data from the buffer to the channel using only the methods provided
+ * in this class if they want to keep the {@link #seek(long)} and {@link #getStreamPosition()} values accurate.
  *
  * <p>Since this class is only a helper tool, it does not "own" the channel and consequently does not provide
  * {@code close()} method. It is users responsibility to close the channel after usage.</p>
@@ -93,10 +93,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * <p>After this method call, the buffer {@linkplain ByteBuffer#limit() limit}
      * will be equal or greater than {@code position + n}.</p>
      *
-     * @param  n The minimal number of additional bytes that the {@linkplain #buffer} shall accept.
+     * @param  n The minimal number of additional bytes that the {@linkplain #buffer buffer} shall accept.
      * @throws IOException If an error occurred while writing to the channel.
      */
-    final void ensureBufferAccept(final int n) throws IOException {
+    private void ensureBufferAccepts(final int n) throws IOException {
         final int capacity = buffer.capacity();
         assert n >= 0 && n <= capacity : n;
         int after = buffer.position() + n;
@@ -111,7 +111,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
                 do {
                     final int c = channel.write(buffer);
                     if (c == 0) {
-                        onEmptyChannelBuffer();
+                        onEmptyTransfer();
                     }
                     after -= c;
                 } while (after > capacity);
@@ -148,7 +148,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeByte(final int v) throws IOException {
-        ensureBufferAccept(Byte.BYTES);
+        ensureBufferAccepts(Byte.BYTES);
         buffer.put((byte) v);
     }
 
@@ -162,7 +162,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeShort(final int v) throws IOException {
-        ensureBufferAccept(Short.BYTES);
+        ensureBufferAccepts(Short.BYTES);
         buffer.putShort((short) v);
     }
 
@@ -175,7 +175,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeChar(final int v) throws IOException {
-        ensureBufferAccept(Character.BYTES);
+        ensureBufferAccepts(Character.BYTES);
         buffer.putChar((char) v);
     }
 
@@ -188,7 +188,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeInt(final int v) throws IOException {
-        ensureBufferAccept(Integer.BYTES);
+        ensureBufferAccepts(Integer.BYTES);
         buffer.putInt(v);
     }
 
@@ -201,7 +201,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeLong(final long v) throws IOException {
-        ensureBufferAccept(Long.BYTES);
+        ensureBufferAccepts(Long.BYTES);
         buffer.putLong(v);
     }
 
@@ -214,7 +214,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeFloat(final float v) throws IOException {
-        ensureBufferAccept(Float.BYTES);
+        ensureBufferAccepts(Float.BYTES);
         buffer.putFloat(v);
     }
 
@@ -227,7 +227,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException if some I/O exception occurs during writing.
      */
     public final void writeDouble(final double v) throws IOException {
-        ensureBufferAccept(Double.BYTES);
+        ensureBufferAccepts(Double.BYTES);
         buffer.putDouble(v);
     }
 
@@ -347,7 +347,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     public void write(final byte[] src, int offset, int length) throws IOException {
         while (length != 0) {
             final int n = Math.min(buffer.capacity(), length);
-            ensureBufferAccept(n);
+            ensureBufferAccepts(n);
             buffer.put(src, offset, n);
             offset += n;
             length -= n;
@@ -390,14 +390,14 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
          * @throws IOException If an error occurred while writing the stream.
          */
         final void writeFully(final int dataSize, int offset, int length) throws IOException {
-            ensureBufferAccept(Math.min(length * dataSize, buffer.capacity()));
+            ensureBufferAccepts(Math.min(length * dataSize, buffer.capacity()));
             final Buffer view = createView(); // Must be after ensureBufferAccept
             int n = Math.min(view.remaining(), length);
             transfer(offset, n);
             skipInBuffer(n * dataSize);
             while ((length -= n) != 0) {
                 offset += n;
-                ensureBufferAccept(Math.min(length, view.capacity()) * dataSize);
+                ensureBufferAccepts(Math.min(length, view.capacity()) * dataSize);
                 view.position(0).limit(buffer.remaining() / dataSize);
                 transfer(offset, n = view.remaining());
                 skipInBuffer(n * dataSize);
@@ -507,6 +507,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  position The position where to move.
      * @throws IOException If the stream can not be moved to the given position.
      */
+    @Override
     public void seek(final long position) throws IOException {
         long p = position - bufferOffset;
         if (p >= 0 && p <= buffer.limit()) {
@@ -523,13 +524,13 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             ((SeekableByteChannel) channel).position(channelOffset + position);
             bufferOffset = position;
         } else {
-            //-- we can not move buffer more beyond channel.size --//
+            // We can not move position beyond the buffered part.
             throw new IOException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, filename));
         }
     }
 
     /**
-     * Flushes the {@link #buffer} content to the channel.
+     * Flushes the {@link #buffer buffer} content to the channel.
      *
      * @throws IOException If an error occurred while writing the stream.
      */
@@ -540,7 +541,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
         while (n != 0) {
             final int c = channel.write(buffer);
             if (c == 0) {
-                onEmptyChannelBuffer();
+                onEmptyTransfer();
             }
             n -= c;
         }
