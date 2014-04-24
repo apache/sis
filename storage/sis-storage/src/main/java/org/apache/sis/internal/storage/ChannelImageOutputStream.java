@@ -99,6 +99,25 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
     }
 
     /**
+     * Writes the lower-order byte of each character. The high-order eight bits of each character
+     * in the string are ignored - this method does <strong>not</strong> applies any encoding.
+     *
+     * <p>This method is provided because required by the {@link DataOutput} interface, but its
+     * usage should generally be avoided.</p>
+     *
+     * @param  s the string to be written.
+     * @throws IOException If an error occurred while writing the stream.
+     */
+    @Override
+    public void writeBytes(final String s) throws IOException {
+        final byte[] data = new byte[s.length()];
+        for (int i=0; i<data.length; i++) {
+            data[i] = (byte) s.charAt(i);
+        }
+        write(data);
+    }
+
+    /**
      * Writes all characters from the source into the stream.
      *
      * @param  s A String consider as an array of characters to be written into stream.
@@ -131,25 +150,6 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
         } finally {
             buffer.order(oldOrder);
         }
-    }
-
-    /**
-     * Writes the lower-order byte of each character. The high-order eight bits of each character
-     * in the string are ignored - this method does <strong>not</strong> applies any encoding.
-     *
-     * <p>This method is provided because required by the {@link DataOutput} interface, but its
-     * usage should generally be avoided.</p>
-     *
-     * @param  s the string to be written.
-     * @throws IOException If an error occurred while writing the stream.
-     */
-    @Override
-    public void writeBytes(final String s) throws IOException {
-        final byte[] data = new byte[s.length()];
-        for (int i=0; i<data.length; i++) {
-            data[i] = (byte) s.charAt(i);
-        }
-        write(data);
     }
 
     /**

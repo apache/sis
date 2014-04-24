@@ -16,13 +16,14 @@
  */
 package org.apache.sis.internal.storage;
 
-
 import java.util.Arrays;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import javax.imageio.stream.ImageOutputStream;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
@@ -39,32 +40,32 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @module
  */
-public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
+public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     /**
      * The {@link DataOutput} implementation to test. This implementation will write data to
      * {@link #testedStreamBackingArray}. The content of that array will be compared to
      * {@link #expectedData} for verifying result correctness.
      */
-    private ChannelDataOutput testedStream;
+    ChannelDataOutput testedStream;
 
     /**
      * A stream to use as a reference implementation. Any data written in {@link #testedStream}
      * will also be written in {@code referenceStream}, for later comparison.
      */
-    private DataOutput referenceStream;
+    DataOutput referenceStream;
 
     /**
      * Byte array which is filled by the {@linkplain #testedStream} implementation during write operations.
      * The content of this array will be compared to {@linkplain #expectedData}.
      */
-    private byte[] testedStreamBackingArray;
+    byte[] testedStreamBackingArray;
 
     /**
      * Object which is filled by {@link #referenceStream} implementation during write operations.
      * <b>Do not write to this stream</b> - this field is kept only for invocation of
      * {@link ByteArrayOutputStream#toByteArray()}.
      */
-    private ByteArrayOutputStream expectedData;
+    ByteArrayOutputStream expectedData;
 
     /**
      * Initializes all non-final fields before to execute a test.
@@ -74,11 +75,12 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      * @param  bufferLength Length of the {@code ByteBuffer} to use for the tests.
      * @throws IOException Should never happen.
      */
-    private void initialize(final String testName, final int streamLength, final int bufferLength) throws IOException {
-        testedStreamBackingArray = new byte[streamLength];
-        testedStream             = new ChannelDataOutput(testName, new ByteArrayChannel(testedStreamBackingArray), ByteBuffer.allocate(bufferLength));
+    void initialize(final String testName, final int streamLength, final int bufferLength) throws IOException {
         expectedData             = new ByteArrayOutputStream(streamLength);
         referenceStream          = new DataOutputStream(expectedData);
+        testedStreamBackingArray = new byte[streamLength];
+        testedStream             = new ChannelDataOutput(testName,
+                new ByteArrayChannel(testedStreamBackingArray), ByteBuffer.allocate(bufferLength));
     }
 
     /**
@@ -92,7 +94,8 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     public void testAllWriteMethods() throws IOException {
         initialize("testAllWriteMethods", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + Double.BYTES);
         writeInStreams();
-        flush();
+        testedStream.flush();
+        ((Closeable) referenceStream).close();
         final byte[] expectedArray = expectedData.toByteArray();
         assertArrayEquals(expectedArray, Arrays.copyOf(testedStreamBackingArray, expectedArray.length));
     }
@@ -107,6 +110,7 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     public void testWriteAndSeek() throws IOException {
         initialize("testWriteAndSeek", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + Double.BYTES);
         writeInStreams();
+        ((Closeable) referenceStream).close();
         final byte[] expectedArray = expectedData.toByteArray();
         final int seekRange = expectedArray.length - Long.BYTES;
         final ByteBuffer arrayView = ByteBuffer.wrap(expectedArray);
@@ -118,18 +122,26 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             testedStream.writeLong(v);
             arrayView.putLong(position, v);
         }
-        flush();
+        testedStream.flush();
         assertArrayEquals(expectedArray, Arrays.copyOf(testedStreamBackingArray, expectedArray.length));
     }
 
     /**
-     * Tests {@link ChannelDataOutput#seek(long)} with an invalid seek position.
+     * Tests the argument checks performed by various methods. For example this method
+     * tests {@link ChannelDataOutput#seek(long)} with an invalid seek position.
      *
      * @throws IOException Should never happen.
      */
     @Test
-    public void testInvalidSeek() throws IOException {
-        initialize("dataOutput : fail test", 20, 20);
+    public void testArgumentChecks() throws IOException {
+        initialize("testArgumentChecks", 20, 20);
+        try {
+            testedStream.setBitOffset(9);
+            fail("Shall not accept invalid bitOffset.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("bitOffset"));
+        }
         try {
             testedStream.seek(1);
             fail("Shall not seek further than stream length.");
@@ -137,15 +149,32 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains("position"));
         }
-    }
-
-    /**
-     * Flushes the streams.
-     *
-     * @throws IOException Should never happen.
-     */
-    private void flush() throws IOException {
+        try {
+            testedStream.reset();
+            fail("Shall not accept reset without mark.");
+        } catch (IOException e) {
+            assertFalse(e.getMessage().isEmpty());
+        }
+        /*
+         * flushBefore(int).
+         */
+        testedStream.writeShort(random.nextInt());
+        testedStream.flushBefore(0); // Valid.
+        try {
+            testedStream.flushBefore(3);
+            fail("Shall not flush at a position greater than buffer limit.");
+        } catch (IndexOutOfBoundsException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("position"));
+        }
         testedStream.flush();
+        try {
+            testedStream.flushBefore(0);
+            fail("Shall not flush at a position before buffer base.");
+        } catch (IndexOutOfBoundsException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("position"));
+        }
     }
 
     /**
@@ -154,8 +183,9 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      * @throws IOException Should never happen.
      */
     private void writeInStreams() throws IOException {
+        final int numOperations = (testedStream instanceof DataOutput) ? 19 : 14;
         while (testedStream.getStreamPosition() < testedStreamBackingArray.length - ARRAY_MAX_LENGTH) {
-            final int operation = random.nextInt(16);
+            final int operation = random.nextInt(numOperations);
             switch (operation) {
                 case 0: {
                     final byte v = (byte) random.nextInt(1 << Byte.SIZE);
@@ -254,18 +284,40 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
                     testedStream.writeDoubles(tmp);
                     break;
                 }
+                /*
+                 * Cases below this point are executed only by ChannelImageOutputStreamTest.
+                 */
                 case 14: {
-                    final String str = "test : ChannelDataOutput";
-//                  referenceStream.writeChars(str);
-//                  testedStream.writeChars(str);
+                    final long v = random.nextLong();
+                    final int numBits = random.nextInt(Byte.SIZE);
+                    ((ImageOutputStream) referenceStream).writeBits(v, numBits);
+                    testedStream.writeBits(v, numBits);
                     break;
                 }
                 case 15: {
-                    final String str = "お元気ですか";
-                    final byte[] array = str.getBytes("UTF-8");
-                    assertEquals(str.length() * 3, array.length); // Sanity check.
-//                  referenceStream.writeUTF(str);
-//                  testedStream.writeUTF(str);
+                    final boolean v = random.nextBoolean();
+                    referenceStream.writeBoolean(v);
+                    ((DataOutput) testedStream).writeBoolean(v);
+                    break;
+                }
+                case 16: {
+                    final String s = "Byte sequence";
+                    referenceStream.writeBytes(s);
+                    ((DataOutput) testedStream).writeBytes(s);
+                    break;
+                }
+                case 17: {
+                    final String s = "Character sequence";
+                    referenceStream.writeChars(s);
+                    ((DataOutput) testedStream).writeChars(s);
+                    break;
+                }
+                case 18: {
+                    final String s = "お元気ですか";
+                    final byte[] array = s.getBytes("UTF-8");
+                    assertEquals(s.length() * 3, array.length); // Sanity check.
+                    referenceStream.writeUTF(s);
+                    ((DataOutput) testedStream).writeUTF(s);
                     break;
                 }
                 default: throw new AssertionError(operation);

@@ -183,9 +183,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
                     part = bits >>> numBits;
                 } else {
                     part = bits << -numBits;
-                    bitOffset = (int) (Byte.SIZE + part);
+                    bitOffset = (int) (Byte.SIZE + numBits);
                 }
-                assert (part & ~0xFFL) == 0 : part;
                 writeByte((int) part);
             }
             setBitOffset(bitOffset);
@@ -592,6 +591,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     public final void flush() throws IOException {
         buffer.flip();
         int n = buffer.remaining();
+        bufferOffset += n;
         while (n != 0) {
             final int c = channel.write(buffer);
             if (c == 0) {
