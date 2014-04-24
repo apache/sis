@@ -94,6 +94,14 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     public void testAllWriteMethods() throws IOException {
         initialize("testAllWriteMethods", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + Double.BYTES);
         writeInStreams();
+        assertStreamContentEquals();
+    }
+
+    /**
+     * Asserts that the content of {@link #testedStream} is equals to the content of {@link #referenceStream}.
+     * This method closes the reference stream before to perform the comparison.
+     */
+    final void assertStreamContentEquals() throws IOException {
         testedStream.flush();
         ((Closeable) referenceStream).close();
         final byte[] expectedArray = expectedData.toByteArray();
@@ -158,7 +166,9 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
         /*
          * flushBefore(int).
          */
-        testedStream.writeShort(random.nextInt());
+        final int v = random.nextInt();
+        referenceStream.writeShort(v);
+        testedStream.writeShort(v);
         testedStream.flushBefore(0); // Valid.
         try {
             testedStream.flushBefore(3);
@@ -175,6 +185,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains("position"));
         }
+        assertStreamContentEquals();
     }
 
     /**
@@ -184,7 +195,8 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      */
     private void writeInStreams() throws IOException {
         final int numOperations = (testedStream instanceof DataOutput) ? 19 : 14;
-        while (testedStream.getStreamPosition() < testedStreamBackingArray.length - ARRAY_MAX_LENGTH) {
+        final int length = testedStreamBackingArray.length - ARRAY_MAX_LENGTH; // Keep a margin against buffer underflow.
+        while (testedStream.getStreamPosition() < length) {
             final int operation = random.nextInt(numOperations);
             switch (operation) {
                 case 0: {

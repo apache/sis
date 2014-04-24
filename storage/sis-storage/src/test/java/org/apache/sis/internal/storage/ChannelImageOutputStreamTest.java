@@ -19,6 +19,10 @@ package org.apache.sis.internal.storage;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import javax.imageio.stream.ImageOutputStream;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -41,5 +45,34 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
         testedStreamBackingArray = new byte[streamLength];
         testedStream             = new ChannelImageOutputStream(fileName,
                 new ByteArrayChannel(testedStreamBackingArray), ByteBuffer.allocate(bufferLength));
+    }
+
+    /**
+     * Test writing a sequence of bits.
+     *
+     * @throws IOException Should never happen.
+     */
+    @Test
+    public void testWriteBits() throws IOException {
+        initialize("testWriteBits", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + Long.BYTES);
+        final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
+        final int length = testedStreamBackingArray.length - ARRAY_MAX_LENGTH; // Keep a margin against buffer underflow.
+        while (testedStream.getStreamPosition() < length) {
+            final long v = random.nextLong();
+            final int numBits = random.nextInt(Byte.SIZE);
+            referenceStream.writeBits(v, numBits);
+            testedStream.writeBits(v, numBits);
+            /*
+             * Randomly force flushing of bits.
+             */
+            if (random.nextInt(16) == 0) {
+                final int f = random.nextInt(256);
+                referenceStream.writeByte(f);
+                testedStream.writeByte(f);
+            }
+//            assertEquals("getStreamPosition", referenceStream.getStreamPosition(), testedStream.getStreamPosition());
+            assertEquals("getBitOffset", referenceStream.getBitOffset(), testedStream.getBitOffset());
+        }
+        assertStreamContentEquals();
     }
 }

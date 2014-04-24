@@ -133,11 +133,11 @@ public abstract class ChannelData {
      * @return The bit offset of the stream.
      */
     public final int getBitOffset() {
-        final long currentPosition = getStreamPosition();
-        if ((bitPosition >>> BIT_OFFSET_SIZE) != currentPosition) {
-            bitPosition = currentPosition << BIT_OFFSET_SIZE;
+        final long position = getStreamPosition();
+        if ((bitPosition >>> BIT_OFFSET_SIZE) != position) {
+            bitPosition = position << BIT_OFFSET_SIZE;
         }
-        return (int) (bitPosition & (Byte.SIZE - 1));
+        return (int) (bitPosition & ((1 << BIT_OFFSET_SIZE) - 1));
     }
 
     /**
