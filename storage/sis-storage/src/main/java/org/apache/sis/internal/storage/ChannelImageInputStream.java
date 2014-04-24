@@ -23,9 +23,6 @@ import java.nio.ByteOrder;
 import java.nio.channels.ReadableByteChannel;
 import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
-import org.apache.sis.util.resources.Errors;
-
-import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
 // Related to JDK7
 import java.nio.channels.SeekableByteChannel;
@@ -49,7 +46,7 @@ import java.nio.channels.SeekableByteChannel;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see javax.imageio.stream.FileImageInputStream
@@ -58,48 +55,7 @@ import java.nio.channels.SeekableByteChannel;
  */
 public class ChannelImageInputStream extends ChannelDataInput implements ImageInputStream {
     /**
-     * Number of bits needed for storing the bit offset in {@link #bitPosition}.
-     * The following condition must hold:
-     *
-     * {@preformat java
-     *     (1 << BIT_OFFSET_SIZE) == Byte.SIZE
-     * }
-     */
-    private static final int BIT_OFFSET_SIZE = 3;
-
-    /**
-     * The current bit position within the stream. The 3 lowest bits are the bit offset,
-     * and the remaining of the {@code long} value is the stream position where the bit
-     * offset is valid.
-     *
-     * @see #getBitOffset()
-     */
-    private long bitPosition;
-
-    /**
-     * The most recent mark, or {@code null} if none.
-     * This is the tail of a chained list of marks.
-     */
-    private Mark mark;
-
-    /**
-     * A mark pushed by the {@link ChannelImageInputStream#mark()} method
-     * and pooled by the {@link ChannelImageInputStream#reset()} method.
-     */
-    private static final class Mark {
-        final long position;
-        final byte bitOffset;
-        Mark next;
-
-        Mark(long position, byte bitOffset, Mark next) {
-            this.position  = position;
-            this.bitOffset = bitOffset;
-            this.next      = next;
-        }
-    }
-
-    /**
-     * Creates a new input source for the given channel and using the given buffer.
+     * Creates a new input stream for the given channel and using the given buffer.
      *
      * @param  filename A file identifier used only for formatting error message.
      * @param  channel  The channel from where data are read.
@@ -115,7 +71,7 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
     }
 
     /**
-     * Creates a new input source from the given {@code ChannelDataInput}.
+     * Creates a new input stream from the given {@code ChannelDataInput}.
      * This constructor is invoked when we need to change the implementation class
      * from {@code ChannelDataInput} to {@code ChannelImageInputStream}.
      *
@@ -128,7 +84,9 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
 
     /**
      * Sets the desired byte order for future reads of data values from this stream.
-     * The default value is {@link ByteOrder#BIG_ENDIAN BIG_ENDIAN}.
+     * The default value is {@link ByteOrder#BIG_ENDIAN}.
+     *
+     * @param byteOrder The new {@linkplain #buffer buffer} byte order.
      */
     @Override
     public final void setByteOrder(final ByteOrder byteOrder) {
@@ -137,6 +95,9 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
 
     /**
      * Returns the byte order with which data values will be read from this stream.
+     * This is the {@linkplain #buffer buffer} byte order.
+     *
+     * @return The {@linkplain #buffer buffer} byte order.
      */
     @Override
     public final ByteOrder getByteOrder() {
@@ -146,6 +107,7 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
     /**
      * Returns the length of the stream (in bytes), or -1 if unknown.
      *
+     * @return The length of the stream (in bytes), or -1 if unknown.
      * @throws IOException If an error occurred while fetching the stream length.
      */
     @Override
@@ -154,101 +116,6 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
             return ((SeekableByteChannel) channel).size();
         }
         return -1;
-    }
-
-    /**
-     * Returns the earliest position in the stream to which {@linkplain #seek(long) seeking}
-     * may be performed.
-     *
-     * @return the earliest legal position for seeking.
-     */
-    @Override
-    public final long getFlushedPosition() {
-        return getStreamPosition() - buffer.position();
-    }
-
-    /**
-     * Push back the last processed byte. This is used when a call to {@link #readBit()}
-     * did not used every bits in a byte, or when {@link #readLine()} checked for the
-     * Windows-style of EOL.
-     */
-    private void pushBack() {
-        buffer.position(buffer.position() - 1);
-    }
-
-    /**
-     * Returns the current bit offset, as an integer between 0 and 7 inclusive.
-     *
-     * <p>According {@link ImageInputStream} contract, the bit offset shall be reset to 0 by every call to
-     * any {@code read} method except {@code readBit()} and {@link #readBits(int)}.</p>
-     *
-     * @return The bit offset of the stream.
-     */
-    @Override
-    public final int getBitOffset() {
-        final long currentPosition = getStreamPosition();
-        if ((bitPosition >>> BIT_OFFSET_SIZE) != currentPosition) {
-            bitPosition = currentPosition << BIT_OFFSET_SIZE;
-        }
-        return (int) (bitPosition & (Byte.SIZE - 1));
-    }
-
-    /**
-     * Sets the bit offset to the given value.
-     *
-     * @param bitOffset The new bit offset of the stream.
-     */
-    @Override
-    public final void setBitOffset(final int bitOffset) {
-        ensureBetween("bitOffset", 0, Byte.SIZE - 1, bitOffset);
-        bitPosition = (getStreamPosition() << BIT_OFFSET_SIZE) | bitOffset;
-    }
-
-    /**
-     * Reads a single bit from the stream. The bit to be read depends on the
-     * {@linkplain #getBitOffset() current bit offset}.
-     *
-     * @return The value of the next bit from the stream.
-     * @throws IOException If an error occurred while reading (including EOF).
-     */
-    @Override
-    public final int readBit() throws IOException {
-        return (int) (readBits(1) & 1);
-    }
-
-    /**
-     * Reads many bits from the stream. The first bit to be read depends on the
-     * {@linkplain #getBitOffset() current bit offset}.
-     *
-     * @param  numBits The number of bits to read.
-     * @return The value of the next bits from the stream.
-     * @throws IOException If an error occurred while reading (including EOF).
-     */
-    @Override
-    public final long readBits(int numBits) throws IOException {
-        ensureBetween("numBits", 0, Long.SIZE, numBits);
-        if (numBits == 0) {
-            return 0;
-        }
-        /*
-         * Reads the bits available in the next bytes (all of them if bitOffset == 0)
-         * and compute the number of bits that still need to be read. That number may
-         * be negative if we have read too many bits.
-         */
-        final int bitOffset = getBitOffset();
-        long value = readByte() & (0xFF >>> bitOffset);
-        numBits -= (Byte.SIZE - bitOffset);
-        while (numBits > 0) {
-            value = (value << Byte.SIZE) | readUnsignedByte();
-            numBits -= Byte.SIZE;
-        }
-        if (numBits != 0) {
-            value >>>= (-numBits); // Discard the unwanted bits.
-            numBits += Byte.SIZE;
-            pushBack();
-        }
-        setBitOffset(numBits);
-        return value;
     }
 
     /**
@@ -426,31 +293,6 @@ loop:   while ((c = read()) >= 0) {
     }
 
     /**
-     * Pushes the current stream position onto a stack of marked positions.
-     */
-    @Override
-    public final void mark() {
-        mark = new Mark(getStreamPosition(), (byte) getBitOffset(), mark);
-    }
-
-    /**
-     * Resets the current stream byte and bit positions from the stack of marked positions.
-     * An {@code IOException} will be thrown if the previous marked position lies in the
-     * discarded portion of the stream.
-     *
-     * @throws IOException If an I/O error occurs.
-     */
-    @Override
-    public final void reset() throws IOException {
-        if (mark == null) {
-            throw new IOException("No marked position.");
-        }
-        seek(mark.position);
-        setBitOffset(mark.bitOffset);
-        mark = mark.next;
-    }
-
-    /**
      * Discards the initial position of the stream prior to the current stream position.
      * The implementation is as below:
      *
@@ -463,47 +305,6 @@ loop:   while ((c = read()) >= 0) {
     @Override
     public final void flush() throws IOException {
         flushBefore(getStreamPosition());
-    }
-
-    /**
-     * Discards the initial portion of the stream prior to the indicated position.
-     * Attempting to {@linkplain #seek(long) seek} to an offset within the flushed
-     * portion of the stream will result in an {@link IndexOutOfBoundsException}.
-     *
-     * <p>This method moves the data starting at the given position to the beginning of the {@link #buffer},
-     * thus making more room for new data before the data at the given position is discarded.</p>
-     *
-     * @param  position The length of the stream prefix that may be flushed.
-     * @throws IOException If an I/O error occurred.
-     */
-    @Override
-    public final void flushBefore(final long position) throws IOException {
-        final long bufferOffset    = getFlushedPosition();
-        final long currentPosition = getStreamPosition();
-        if (position < bufferOffset || position > currentPosition) {
-            throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.ValueOutOfRange_4,
-                    "position", bufferOffset, currentPosition, position));
-        }
-        final int n = (int) (position - bufferOffset);
-        final int p = buffer.position() - n;
-        final int r = buffer.limit() - n;
-        buffer.position(n); // Number of bytes to forget.
-        buffer.compact().position(p).limit(r);
-        setStreamPosition(currentPosition);
-
-        // Discard obolete marks.
-        Mark parent = null;
-        for (Mark m = mark; m != null; m = m.next) {
-            if (m.position < position) {
-                if (parent != null) {
-                    parent.next = null;
-                } else {
-                    mark = null;
-                }
-                break;
-            }
-            parent = m;
-        }
     }
 
     /**
