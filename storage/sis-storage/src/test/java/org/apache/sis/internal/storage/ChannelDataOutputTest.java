@@ -18,14 +18,11 @@ package org.apache.sis.internal.storage;
 
 
 import java.util.Arrays;
-import java.util.Random;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
@@ -42,33 +39,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @module
  */
-public final strictfp class ChannelDataOutputTest extends TestCase {
-    /**
-     * The maximal size of the arrays to be read or written from/to the channel, in bytes.
-     * This size may be smaller or greater than the buffer capacity, but a greater size is
-     * recommended in order to test the {@link ChannelDataOutput} capability to split a
-     * write operation in more than one call to {@code channel.write(buffer)}.
-     *
-     * @see #writeInStreams(Random, int, DataOutput, ChannelDataOutput)
-     */
-    private static final int ARRAY_MAX_SIZE = 256;
-
-    /**
-     * The maximal capacity of the buffer to use for write operations.
-     */
-    private static final int BUFFER_MAX_SIZE = ARRAY_MAX_SIZE / 4;
-
-    /**
-     * The size of the {@link ByteArrayChannel} backing array.
-     * A greater size increases the amount of iteration performed by test methods.
-     */
-    private static final int STREAM_SIZE = ARRAY_MAX_SIZE * 1024;
-
-    /**
-     * Random number generator used for tests.
-     */
-    private final Random random = TestUtilities.createRandomNumberGenerator();
-
+public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     /**
      * The {@link DataOutput} implementation to test. This implementation will write data to
      * {@link #testedStreamBackingArray}. The content of that array will be compared to

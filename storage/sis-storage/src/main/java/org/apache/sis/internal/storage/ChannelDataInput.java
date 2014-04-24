@@ -708,9 +708,7 @@ public class ChannelDataInput extends ChannelData {
              */
             ((SeekableByteChannel) channel).position(channelOffset + position);
             bufferOffset = position;
-            buffer.clear();
-            channel.read(buffer);
-            buffer.flip();
+            buffer.clear().limit(0);
         } else if (p >= 0) {
             /*
              * Requested position is after the current buffer limits and
