@@ -195,6 +195,14 @@ public class ChannelDataInput extends ChannelData {
     }
 
     /**
+     * Pushes back the last processed byte. This is used when a call to {@code readBit()} did not
+     * used every bits in a byte, or when {@code readLine()} checked for the Windows-style of EOL.
+     */
+    final void pushBack() {
+        buffer.position(buffer.position() - 1);
+    }
+
+    /**
      * Reads a single bit from the stream. The bit to be read depends on the
      * {@linkplain #getBitOffset() current bit offset}.
      *
@@ -202,7 +210,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException If an error occurred while reading (including EOF).
      */
     public final int readBit() throws IOException {
-        return (int) (readBits(1) & 1);
+        return (int) readBits(1);
     }
 
     /**
