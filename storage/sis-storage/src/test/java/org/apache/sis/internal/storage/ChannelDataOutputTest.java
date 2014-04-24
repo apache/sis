@@ -90,7 +90,7 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      */
     @Test
     public void testAllWriteMethods() throws IOException {
-        initialize("testAllWriteMethods", STREAM_SIZE, random.nextInt(BUFFER_MAX_SIZE) + Double.BYTES);
+        initialize("testAllWriteMethods", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + Double.BYTES);
         writeInStreams();
         flush();
         final byte[] expectedArray = expectedData.toByteArray();
@@ -105,7 +105,7 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     @Test
     @DependsOnMethod("testAllWriteMethods")
     public void testWriteAndSeek() throws IOException {
-        initialize("testWriteAndSeek", STREAM_SIZE, random.nextInt(BUFFER_MAX_SIZE) + Double.BYTES);
+        initialize("testWriteAndSeek", STREAM_LENGTH, random.nextInt(BUFFER_MAX_CAPACITY) + Double.BYTES);
         writeInStreams();
         final byte[] expectedArray = expectedData.toByteArray();
         final int seekRange = expectedArray.length - Long.BYTES;
@@ -154,7 +154,7 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      * @throws IOException Should never happen.
      */
     private void writeInStreams() throws IOException {
-        while (testedStream.getStreamPosition() < testedStreamBackingArray.length - ARRAY_MAX_SIZE) {
+        while (testedStream.getStreamPosition() < testedStreamBackingArray.length - ARRAY_MAX_LENGTH) {
             final int operation = random.nextInt(16);
             switch (operation) {
                 case 0: {
@@ -200,14 +200,14 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
                     break;
                 }
                 case 7: {
-                    final byte[] tmp = new byte[random.nextInt(ARRAY_MAX_SIZE / Byte.BYTES)];
+                    final byte[] tmp = new byte[random.nextInt(ARRAY_MAX_LENGTH / Byte.BYTES)];
                     random.nextBytes(tmp);
                     referenceStream.write(tmp);
                     testedStream.write(tmp);
                     break;
                 }
                 case 8: {
-                    final char[] tmp = new char[random.nextInt(ARRAY_MAX_SIZE / Character.BYTES)];
+                    final char[] tmp = new char[random.nextInt(ARRAY_MAX_LENGTH / Character.BYTES)];
                     for (int i=0; i<tmp.length; i++) {
                         referenceStream.writeChar(tmp[i] = (char) random.nextInt(1 << Character.SIZE));
                     }
@@ -215,7 +215,7 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
                     break;
                 }
                 case 9: {
-                    final short[] tmp = new short[random.nextInt(ARRAY_MAX_SIZE / Short.BYTES)];
+                    final short[] tmp = new short[random.nextInt(ARRAY_MAX_LENGTH / Short.BYTES)];
                     for (int i=0; i<tmp.length; i++) {
                         referenceStream.writeShort(tmp[i] = (short) random.nextInt(1 << Short.SIZE));
                     }
@@ -223,7 +223,7 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
                     break;
                 }
                 case 10: {
-                    final int[] tmp = new int[random.nextInt(ARRAY_MAX_SIZE / Integer.BYTES)];
+                    final int[] tmp = new int[random.nextInt(ARRAY_MAX_LENGTH / Integer.BYTES)];
                     for (int i=0; i<tmp.length; i++) {
                         referenceStream.writeInt(tmp[i] = random.nextInt());
                     }
@@ -231,7 +231,7 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
                     break;
                 }
                 case 11: {
-                    final long[] tmp = new long[random.nextInt(ARRAY_MAX_SIZE / Long.BYTES)];
+                    final long[] tmp = new long[random.nextInt(ARRAY_MAX_LENGTH / Long.BYTES)];
                     for (int i=0; i<tmp.length; i++) {
                         referenceStream.writeLong(tmp[i] = random.nextLong());
                     }
@@ -239,7 +239,7 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
                     break;
                 }
                 case 12: {
-                    final float[] tmp = new float[random.nextInt(ARRAY_MAX_SIZE / Float.BYTES)];
+                    final float[] tmp = new float[random.nextInt(ARRAY_MAX_LENGTH / Float.BYTES)];
                     for (int i=0; i<tmp.length; i++) {
                         referenceStream.writeFloat(tmp[i] = random.nextFloat());
                     }
@@ -247,7 +247,7 @@ public final strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
                     break;
                 }
                 case 13: {
-                    final double[] tmp = new double[random.nextInt(ARRAY_MAX_SIZE / Double.BYTES)];
+                    final double[] tmp = new double[random.nextInt(ARRAY_MAX_LENGTH / Double.BYTES)];
                     for (int i=0; i<tmp.length; i++) {
                         referenceStream.writeDouble(tmp[i] = random.nextDouble());
                     }
