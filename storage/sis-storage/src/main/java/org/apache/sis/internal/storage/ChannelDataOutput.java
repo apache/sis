@@ -344,7 +344,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  length The number of bytes to write.
      * @throws IOException If an error occurred while writing the stream.
      */
-    public void write(final byte[] src, int offset, int length) throws IOException {
+    public final void write(final byte[] src, int offset, int length) throws IOException {
         while (length != 0) {
             final int n = Math.min(buffer.capacity(), length);
             ensureBufferAccepts(n);
@@ -413,7 +413,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  length The number of chars to write.
      * @throws IOException If an error occurred while writing the stream.
      */
-    public void writeChars(final char[] src, int offset, int length) throws IOException {
+    public final void writeChars(final char[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
             private CharBuffer view;
             @Override Buffer createView() {return view = buffer.asCharBuffer();}
@@ -429,7 +429,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  length The number of shorts to write.
      * @throws IOException If an error occurred while writing the stream.
      */
-    public void writeShorts(final short[] src, int offset, int length) throws IOException {
+    public final void writeShorts(final short[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
             private ShortBuffer view;
             @Override Buffer createView() {return view = buffer.asShortBuffer();}
@@ -445,7 +445,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  length The number of integers to write.
      * @throws IOException If an error occurred while writing the stream.
      */
-    public void writeInts(final int[] src, int offset, int length) throws IOException {
+    public final void writeInts(final int[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
             private IntBuffer view;
             @Override Buffer createView() {return view = buffer.asIntBuffer();}
@@ -461,7 +461,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  length The number of longs to write.
      * @throws IOException If an error occurred while writing the stream.
      */
-    public void writeLongs(final long[] src, int offset, int length) throws IOException {
+    public final void writeLongs(final long[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
             private LongBuffer view;
             @Override Buffer createView() {return view = buffer.asLongBuffer();}
@@ -477,7 +477,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  length The number of floats to write.
      * @throws IOException If an error occurred while writing the stream.
      */
-    public void writeFloats(final float[] src, int offset, int length) throws IOException {
+    public final void writeFloats(final float[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
             private FloatBuffer view;
             @Override Buffer createView() {return view = buffer.asFloatBuffer();}
@@ -493,7 +493,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @param  length The number of doubles to write.
      * @throws IOException If an error occurred while writing the stream.
      */
-    public void writeDoubles(final double[] src, int offset, int length) throws IOException {
+    public final void writeDoubles(final double[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
             private DoubleBuffer view;
             @Override Buffer createView() {return view = buffer.asDoubleBuffer();}
@@ -508,7 +508,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException If the stream can not be moved to the given position.
      */
     @Override
-    public void seek(final long position) throws IOException {
+    public final void seek(final long position) throws IOException {
         long p = position - bufferOffset;
         if (p >= 0 && p <= buffer.limit()) {
             /*
@@ -535,7 +535,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException If an error occurred while writing the stream.
      */
     @Override
-    public void flush() throws IOException {
+    public final void flush() throws IOException {
         buffer.flip();
         int n = buffer.remaining();
         while (n != 0) {

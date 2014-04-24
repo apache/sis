@@ -17,7 +17,6 @@
 package org.apache.sis.internal.storage;
 
 import java.util.Arrays;
-import java.util.Random;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -26,8 +25,6 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -43,12 +40,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(ChannelDataInputTest.class)
-public final strictfp class ChannelImageInputStreamTest extends TestCase {
-    /**
-     * The maximal size of the arrays to be used for the tests, in bytes.
-     */
-    private static final int ARRAY_MAX_SIZE = 512;
-
+public final strictfp class ChannelImageInputStreamTest extends ChannelDataTestCase {
     /**
      * Fills a buffer with random data and compares the result with a standard image input stream.
      * We will allocate a small buffer for the {@code ChannelImageInputStream} in order to force
@@ -62,9 +54,8 @@ public final strictfp class ChannelImageInputStreamTest extends TestCase {
         int bitOffset = 0;
         int operation = 0;
         final ByteBuffer buffer = ByteBuffer.allocate(128);
-        final Random random = TestUtilities.createRandomNumberGenerator();
         final ByteOrder byteOrder = random.nextBoolean() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
-        final byte[] data = ChannelDataInputTest.createRandomArray(512 * 1024, random);
+        final byte[] data = createRandomArray(STREAM_SIZE);
         try (ImageInputStream r = ImageIO.createImageInputStream(new ByteArrayInputStream(data));
              ImageInputStream t = new ChannelImageInputStream("Test data",
                      Channels.newChannel(new ByteArrayInputStream(data)), buffer, false))

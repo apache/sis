@@ -16,14 +16,11 @@
  */
 package org.apache.sis.internal.storage;
 
-import java.util.Random;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -35,29 +32,10 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.4
+ * @version 0.5
  * @module
  */
-public final strictfp class ChannelDataInputTest extends TestCase {
-    /**
-     * The maximal size of the arrays to be used for the tests, in bytes.
-     */
-    private static final int ARRAY_MAX_SIZE = 256;
-
-    /**
-     * Creates an array filled with random values.
-     *
-     * @param length The length of the array to create.
-     * @param random The random number generator to use.
-     */
-    static byte[] createRandomArray(final int length, final Random random) {
-        final byte[] array = new byte[length];
-        for (int i=0; i<length; i++) {
-            array[i] = (byte) random.nextInt(256);
-        }
-        return array;
-    }
-
+public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
     /**
      * Fills a buffer with random data and compare the result with a standard image input stream.
      * We allocate a small buffer for the {@code ChannelDataInput} in order to force frequent
@@ -67,28 +45,23 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testAllReadMethods() throws IOException {
-        final Random random = TestUtilities.createRandomNumberGenerator();
-        final byte[] array = createRandomArray(ARRAY_MAX_SIZE * 1024, random);
-        compareStreamToBuffer(random, array.length,
+        final byte[] array = createRandomArray(STREAM_SIZE);
+        compareStreamToBuffer(array.length - ARRAY_MAX_SIZE, // Margin against buffer underflow.
                 new DataInputStream(new ByteArrayInputStream(array)),
                 new ChannelDataInput("testAllReadMethods",
                     new DripByteChannel(array, random, 1, 1024),
-                    ByteBuffer.allocate(random.nextInt(ARRAY_MAX_SIZE / 4) + Double.BYTES), false));
+                    ByteBuffer.allocate(random.nextInt(BUFFER_MAX_SIZE) + Double.BYTES), false));
     }
 
     /**
      * Compares the data returned by the given input to the data returned by the given buffer.
      *
-     * @param  random A random number generator for executing the test.
-     * @param  length Number of bytes in the {@code r} stream.
+     * @param  length Number of bytes in the {@code data} stream.
      * @param  data   A stream over all expected data.
      * @param  input  The instance to test.
      * @throws IOException Should never happen.
      */
-    private static void compareStreamToBuffer(final Random random, int length,
-            final DataInput data, final ChannelDataInput input) throws IOException
-    {
-        length -= ARRAY_MAX_SIZE; // Margin against buffer underflow.
+    private void compareStreamToBuffer(final int length, final DataInput data, final ChannelDataInput input) throws IOException {
         while (input.getStreamPosition() < length) {
             final int operation = random.nextInt(16);
             switch (operation) {
@@ -162,7 +135,6 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testReadString() throws IOException {
-        final Random random   = TestUtilities.createRandomNumberGenerator();
         final String expected = "お元気ですか";
         final byte[] array    = expected.getBytes("UTF-8");
         assertEquals(expected.length()*3, array.length); // Sanity check.
@@ -181,9 +153,8 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testSeekOnForwardOnlyChannel() throws IOException {
-        final Random random = TestUtilities.createRandomNumberGenerator();
         int length = random.nextInt(2048) + 1024;
-        final byte[] array = createRandomArray(length, random);
+        final byte[] array = createRandomArray(length);
         length -= Long.BYTES; // Safety against buffer underflow.
         final ByteBuffer buffer = ByteBuffer.wrap(array);
         final ChannelDataInput input = new ChannelDataInput("testSeekOnForwardOnlyChannel",
@@ -205,9 +176,8 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testPrefetch() throws IOException {
-        final Random     random = TestUtilities.createRandomNumberGenerator();
         final int        length = random.nextInt(256) + 128;
-        final byte[]     array  = createRandomArray(length, random);
+        final byte[]     array  = createRandomArray(length);
         final ByteBuffer buffer = ByteBuffer.allocate(random.nextInt(64) + 16);
         final ChannelDataInput input = new ChannelDataInput("testPrefetch",
                 new DripByteChannel(array, random, 1, 64), buffer, false);
