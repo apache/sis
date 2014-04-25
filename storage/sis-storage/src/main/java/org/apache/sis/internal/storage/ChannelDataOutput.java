@@ -130,6 +130,25 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     }
 
     /**
+     * Returns the current byte position of the stream.
+     *
+     * @return The position of the stream.
+     */
+    @Override
+    public long getStreamPosition() {
+        long position = super.getStreamPosition();
+        /*
+         * ChannelDataOutput uses a different strategy than ChannelDataInput: if some bits were in process
+         * of being written, the buffer position is set to the byte AFTER the byte containing the bits. We
+         * need to apply a correction here for this strategy.
+         */
+        if (getBitOffset() != 0) {
+            position--;
+        }
+        return position;
+    }
+
+    /**
      * Writes a single bit. This method uses only the rightmost bit of the given argument;
      * the upper 31 bits are ignored.
      *
@@ -141,7 +160,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     }
 
     /**
-     * Writes a sequence of bits. This method uses only the <var>numBits</code> rightmost bits;
+     * Writes a sequence of bits. This method uses only the <code>numBits</code> rightmost bits;
      * other bits are ignored.
      *
      * @param  bits The bits to write (rightmost bits).
@@ -183,7 +202,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
                     part = bits >>> numBits;
                 } else {
                     part = bits << -numBits;
-                    bitOffset = (int) (Byte.SIZE + numBits);
+                    bitOffset = Byte.SIZE + numBits;
                 }
                 writeByte((int) part);
             }
@@ -398,12 +417,20 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * @throws IOException If an error occurred while writing the stream.
      */
     public final void write(final byte[] src, int offset, int length) throws IOException {
-        while (length != 0) {
-            final int n = Math.min(buffer.capacity(), length);
-            ensureBufferAccepts(n);
-            buffer.put(src, offset, n);
-            offset += n;
-            length -= n;
+        if (length != 0) {
+            do {
+                final int n = Math.min(buffer.capacity(), length);
+                ensureBufferAccepts(n);
+                buffer.put(src, offset, n);
+                offset += n;
+                length -= n;
+            } while (length != 0);
+        } else {
+            /*
+             * Since the 'bitOffset' validity is determined by the position, if the position
+             * did not changed, then we need to clear the 'bitOffset' flag manually.
+             */
+            clearBitOffset();
         }
     }
 
@@ -568,12 +595,13 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
              * Requested position is inside the current limits of the buffer.
              */
             buffer.position((int) p);
+            clearBitOffset();
         } else if (channel instanceof SeekableByteChannel) {
-            flush();
             /*
              * Requested position is outside the current limits of the buffer,
              * but we can set the new position directly in the channel.
              */
+            flush();
             ((SeekableByteChannel) channel).position(channelOffset + position);
             bufferOffset = position;
         } else {
@@ -584,12 +612,38 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
 
     /**
      * Flushes the {@link #buffer buffer} content to the channel.
+     * This method does <strong>not</strong> flush the channel itself.
      *
-     * @throws IOException If an error occurred while writing the stream.
+     * @throws IOException If an error occurred while writing to the channel.
      */
     @Override
     public final void flush() throws IOException {
         buffer.flip();
+        writeFully();
+        buffer.clear().limit(0);
+        clearBitOffset();
+    }
+
+    /**
+     * Writes the buffer content up to the given position, then set the buffer position to the given value.
+     * The {@linkplain ByteBuffer#limit() buffer limit} is unchanged, and the buffer offset is incremented
+     * by the given value.
+     */
+    @Override
+    final void flushAndSetPosition(final int position) throws IOException {
+        final int limit = buffer.limit();
+        buffer.position(0).limit(position);
+        writeFully();
+        buffer.limit(limit);
+    }
+
+    /**
+     * Writes fully the buffer content from its position to its limit.
+     * After this method call, the buffer position is equals to its limit.
+     *
+     * @throws IOException If an error occurred while writing to the channel.
+     */
+    private void writeFully() throws IOException {
         int n = buffer.remaining();
         bufferOffset += n;
         while (n != 0) {
@@ -599,6 +653,6 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             }
             n -= c;
         }
-        buffer.clear().limit(0);
+        assert !buffer.hasRemaining() : buffer;
     }
 }

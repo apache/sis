@@ -28,6 +28,7 @@ import java.text.Format;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -44,7 +45,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.16)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class TestUtilities extends Static {
@@ -166,6 +167,31 @@ public final strictfp class TestUtilities extends Static {
         long seed;
         do seed = StrictMath.round(StrictMath.random() * (1L << 48));
         while (seed == 0); // 0 is a sentinal value for "no generator".
+        TestCase.randomSeed = seed;
+        return new Random(seed);
+    }
+
+    /**
+     * Returns a new random number generator with the given seed. This method is used only for debugging a test failure.
+     * The seed given in argument is the value printed by the test runner. This argument shall be removed after the test
+     * has been fixed.
+     *
+     * <p>The work flow is as below:</p>
+     * <ul>
+     *   <li>Uses {@link #createRandomNumberGenerator()} (without argument} in tests.</li>
+     *   <li>If a test fail, find the seed value printed by the test runner, then insert that value in argument
+     *       to {@code createRandomNumberGenerator(…)}.</li>
+     *   <li>Debug the test.</li>
+     *   <li>Once the test has been fixed, remove the argument from the {@code createRandomNumberGenerator()} call.</li>
+     * </ul>
+     *
+     * @param  seed The random generator seed.
+     * @return A new random number generator initialized with the given seed.
+     *
+     * @since 0.5
+     */
+    @Debug
+    public static Random createRandomNumberGenerator(final long seed) {
         TestCase.randomSeed = seed;
         return new Random(seed);
     }
