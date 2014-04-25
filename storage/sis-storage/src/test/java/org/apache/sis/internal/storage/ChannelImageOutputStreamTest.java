@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.InvalidMarkException;
 import javax.imageio.stream.ImageOutputStream;
 import org.junit.Test;
 
@@ -65,13 +66,61 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
             /*
              * Randomly force flushing of bits.
              */
-            if (random.nextInt(256) == 0) {
+            if (randomEvent()) {
                 final int f = random.nextInt(256);
                 referenceStream.writeByte(f);
                 testedStream.writeByte(f);
             }
             assertEquals("getBitOffset", referenceStream.getBitOffset(), testedStream.getBitOffset());
             assertEquals("getStreamPosition", referenceStream.getStreamPosition(), testedStream.getStreamPosition());
+        }
+        assertStreamContentEquals();
+    }
+
+    /**
+     * Tests {@link ChannelImageOutputStream#mark()} and {@code reset()} methods.
+     *
+     * @throws IOException Should never happen.
+     */
+    @Test
+    public void testMarkAndReset() throws IOException {
+        initialize("testMarkAndReset", STREAM_LENGTH, 1000); // We need a larger buffer for this test.
+        final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
+        /*
+         * Fill both streams with random data.
+         * During this process, randomly takes mark.
+         */
+        int nbMarks = 0;
+        for (int i=0; i<STREAM_LENGTH; i++) {
+            final int v = random.nextInt(256);
+            if (randomEvent() && i < STREAM_LENGTH - Long.BYTES) {
+                referenceStream.mark();
+                testedStream.mark();
+                nbMarks++;
+            }
+            referenceStream.writeByte(v);
+            testedStream.writeByte(v);
+        }
+        /*
+         * Now verify the marks position and write random values at those positions.
+         */
+        while (--nbMarks >= 0) {
+            referenceStream.reset();
+            testedStream.reset();
+            assertEquals(referenceStream.getBitOffset(),      testedStream.getBitOffset());
+            assertEquals(referenceStream.getStreamPosition(), testedStream.getStreamPosition());
+            final long v = random.nextLong();
+            referenceStream.writeLong(v);
+            testedStream.writeLong(v);
+        }
+        /*
+         * Verify that we have no remaining marks, and finally compare stream content.
+         */
+        try {
+            testedStream.reset();
+            fail("Expected no remaining marks.");
+        } catch (InvalidMarkException e) {
+            // This is the expected exception.
         }
         assertStreamContentEquals();
     }

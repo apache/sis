@@ -139,4 +139,12 @@ abstract strictfp class ChannelDataTestCase extends TestCase {
         }
         return array;
     }
+
+    /**
+     * Randomly returns {@code true} for relatively rare events. The frequency is adjusted
+     * in order to have about 1024 events in a stream of length {@link #STREAM_LENGTH}.
+     */
+    final boolean randomEvent() {
+        return random.nextInt(STREAM_LENGTH / 1024) == 0;
+    }
 }

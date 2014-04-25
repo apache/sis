@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.InvalidMarkException;
 import java.nio.channels.Channel;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Errors;
@@ -223,19 +224,20 @@ public abstract class ChannelData {
         final int r = buffer.limit() - n;
         flushAndSetPosition(n); // Number of bytes to forget.
         buffer.compact().position(p).limit(r);
-
-        // Discard obolete marks.
-        Mark parent = null;
+        /*
+         * Discard trailing obsolete marks. Note that obsolete marks between valid marks
+         * can not be discarded - only the trailing obsolete marks can be removed.
+         */
+        Mark lastValid = null;
         for (Mark m = mark; m != null; m = m.next) {
-            if (m.position < position) {
-                if (parent != null) {
-                    parent.next = null;
-                } else {
-                    mark = null;
-                }
-                break;
+            if (m.position >= position) {
+                lastValid = m;
             }
-            parent = m;
+        }
+        if (lastValid != null) {
+            lastValid.next = null;
+        } else {
+            mark = null;
         }
     }
 
@@ -259,6 +261,8 @@ public abstract class ChannelData {
 
     /**
      * Pushes the current stream position onto a stack of marked positions.
+     * Note that {@code ChannelData} maintains its own marks - the buffer's
+     * mark is left unchanged.
      */
     public final void mark() {
         mark = new Mark(getStreamPosition(), (byte) getBitOffset(), mark);
@@ -266,18 +270,27 @@ public abstract class ChannelData {
 
     /**
      * Resets the current stream byte and bit positions from the stack of marked positions.
-     * An {@code IOException} will be thrown if the previous marked position lies in the
+     * An {@code IOException} may be be thrown if the previous marked position lies in the
      * discarded portion of the stream.
+     *
+     * <p>This method differs from the {@link javax.imageio.stream.ImageInputStream} contract in two aspects:</p>
+     * <ul>
+     *   <li>This method may, under some conditions, be able to perform its work even if the marked
+     *       position is before the flushed position.</li>
+     *   <li>If there is no mark, this method throws an {@link InvalidMarkException} rather than
+     *       doing nothing. Doing nothing is considered a too high risk of error.</li>
+     * </ul>
      *
      * @throws IOException If an I/O error occurs.
      */
     public final void reset() throws IOException {
-        if (mark == null) {
-            throw new IOException("No marked position.");
+        final Mark m = mark;
+        if (m == null) {
+            throw new InvalidMarkException();
         }
-        seek(mark.position);
-        setBitOffset(mark.bitOffset);
-        mark = mark.next;
+        mark = m.next;
+        seek(m.position);
+        setBitOffset(m.bitOffset);
     }
 
     /**

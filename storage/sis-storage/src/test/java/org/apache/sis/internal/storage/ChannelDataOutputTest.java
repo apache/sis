@@ -23,6 +23,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.InvalidMarkException;
 import javax.imageio.stream.ImageOutputStream;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
@@ -160,8 +161,8 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
         try {
             testedStream.reset();
             fail("Shall not accept reset without mark.");
-        } catch (IOException e) {
-            assertFalse(e.getMessage().isEmpty());
+        } catch (InvalidMarkException e) {
+            // This is the expected exception.
         }
         /*
          * flushBefore(int).
@@ -195,7 +196,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      */
     private void writeInStreams() throws IOException {
         transferRandomData(testedStream, testedStreamBackingArray.length - ARRAY_MAX_LENGTH,
-                (testedStream instanceof DataOutput) ? 20 : 14);
+                (testedStream instanceof DataOutput) ? 21 : 14);
     }
 
     /**
@@ -346,6 +347,11 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
                 flushedPosition += random.nextInt(1 + (int) (ir.getStreamPosition() - flushedPosition));
                 ir.flushBefore(flushedPosition);
                 t .flushBefore(flushedPosition);
+                break;
+            }
+            case 20: {
+                ((ImageOutputStream) r).flush();
+                t.flush();
                 break;
             }
             default: throw new AssertionError(operation);
