@@ -618,9 +618,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      */
     @Override
     public final void flush() throws IOException {
-        buffer.flip();
+        buffer.position(0);
         writeFully();
-        buffer.clear().limit(0);
+        buffer.limit(0);
         clearBitOffset();
     }
 
