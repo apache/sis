@@ -65,13 +65,13 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
             /*
              * Randomly force flushing of bits.
              */
-            if (random.nextInt(16) == 0) {
+            if (random.nextInt(256) == 0) {
                 final int f = random.nextInt(256);
                 referenceStream.writeByte(f);
                 testedStream.writeByte(f);
             }
-//            assertEquals("getStreamPosition", referenceStream.getStreamPosition(), testedStream.getStreamPosition());
             assertEquals("getBitOffset", referenceStream.getBitOffset(), testedStream.getBitOffset());
+            assertEquals("getStreamPosition", referenceStream.getStreamPosition(), testedStream.getStreamPosition());
         }
         assertStreamContentEquals();
     }

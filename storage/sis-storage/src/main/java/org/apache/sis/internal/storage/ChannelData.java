@@ -133,7 +133,7 @@ public abstract class ChannelData {
      * @return The bit offset of the stream.
      */
     public final int getBitOffset() {
-        final long position = getStreamPosition();
+        final long position = bufferOffset + buffer.position();
         if ((bitPosition >>> BIT_OFFSET_SIZE) != position) {
             bitPosition = position << BIT_OFFSET_SIZE;
         }
@@ -147,7 +147,15 @@ public abstract class ChannelData {
      */
     public final void setBitOffset(final int bitOffset) {
         ensureBetween("bitOffset", 0, Byte.SIZE - 1, bitOffset);
-        bitPosition = (getStreamPosition() << BIT_OFFSET_SIZE) | bitOffset;
+        final long position = bufferOffset + buffer.position();
+        bitPosition = (position << BIT_OFFSET_SIZE) | bitOffset;
+    }
+
+    /**
+     * Sets the bit offset to zero.
+     */
+    final void clearBitOffset() {
+        bitPosition = 0;
     }
 
     /**
@@ -155,7 +163,7 @@ public abstract class ChannelData {
      *
      * @return The position of the stream.
      */
-    public final long getStreamPosition() {
+    public long getStreamPosition() {
         return bufferOffset + buffer.position();
     }
 
@@ -165,13 +173,22 @@ public abstract class ChannelData {
      * be invoked when some external code has performed some work with the channel and wants to inform this
      * {@code ChannelData} about the new position resulting from this work.
      *
-     * <p>This method does not need to be invoked when only the {@linkplain ByteBuffer#position() buffer position}
-     * has changed.</p>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Invoking this method clears the {@linkplain #getBitOffset() bit offset}
+     *       and the {@linkplain #mark() marks}.</li>
+     *   <li>This method does not need to be invoked when only the {@linkplain ByteBuffer#position() buffer position}
+     *       has changed.</li>
+     * </ul>
      *
      * @param position The new position of the stream.
      */
     public final void setStreamPosition(final long position) {
         bufferOffset = position - buffer.position();
+        // Clearing the bit offset is needed if we don't want to handle the case of ChannelDataOutput,
+        // which use a different stream position calculation when the bit offset is non-zero.
+        clearBitOffset();
+        mark = null;
     }
 
     /**
@@ -204,9 +221,8 @@ public abstract class ChannelData {
         final int n = (int) (position - bufferOffset);
         final int p = buffer.position() - n;
         final int r = buffer.limit() - n;
-        buffer.position(n); // Number of bytes to forget.
+        flushAndSetPosition(n); // Number of bytes to forget.
         buffer.compact().position(p).limit(r);
-        setStreamPosition(currentPosition);
 
         // Discard obolete marks.
         Mark parent = null;
@@ -221,6 +237,16 @@ public abstract class ChannelData {
             }
             parent = m;
         }
+    }
+
+    /**
+     * Writes (if applicable) the buffer content up to the given position, then set the buffer position
+     * to the given value. The {@linkplain ByteBuffer#limit() buffer limit} is unchanged, and the buffer
+     * offset is incremented by the given value.
+     */
+    void flushAndSetPosition(final int position) throws IOException {
+        buffer.position(position);
+        bufferOffset += position;
     }
 
     /**

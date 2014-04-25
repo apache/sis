@@ -76,7 +76,7 @@ final strictfp class ByteArrayChannel implements SeekableByteChannel {
         if (position >= limit) {
             return -1;
         }
-        final int length = Math.min(dst.remaining(), limit - position);
+        final int length = StrictMath.min(dst.remaining(), limit - position);
         dst.put(data, position, length);
         return length;
     }
@@ -90,7 +90,7 @@ final strictfp class ByteArrayChannel implements SeekableByteChannel {
         final int length = src.remaining();
         src.get(data, position, length);
         position += length;
-        limit = Math.max(limit, position);
+        limit = StrictMath.max(limit, position);
         return length;
     }
 

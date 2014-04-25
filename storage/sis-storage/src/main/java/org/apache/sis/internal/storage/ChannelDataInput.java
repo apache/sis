@@ -743,5 +743,6 @@ public class ChannelDataInput extends ChannelData {
              */
             throw new IOException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, filename));
         }
+        clearBitOffset();
     }
 }

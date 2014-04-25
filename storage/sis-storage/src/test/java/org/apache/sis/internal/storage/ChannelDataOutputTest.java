@@ -194,146 +194,165 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      * @throws IOException Should never happen.
      */
     private void writeInStreams() throws IOException {
-        final int numOperations = (testedStream instanceof DataOutput) ? 19 : 14;
-        final int length = testedStreamBackingArray.length - ARRAY_MAX_LENGTH; // Keep a margin against buffer underflow.
-        while (testedStream.getStreamPosition() < length) {
-            final int operation = random.nextInt(numOperations);
-            switch (operation) {
-                case 0: {
-                    final byte v = (byte) random.nextInt(1 << Byte.SIZE);
-                    referenceStream.writeByte(v);
-                    testedStream.writeByte(v);
-                    break;
-                }
-                case 1: {
-                    final short v = (short) random.nextInt(1 << Short.SIZE);
-                    referenceStream.writeShort(v);
-                    testedStream.writeShort(v);
-                    break;
-                }
-                case 2: {
-                    final char v = (char) random.nextInt(1 << Character.SIZE);
-                    referenceStream.writeChar(v);
-                    testedStream.writeChar(v);
-                    break;
-                }
-                case 3: {
-                    final int v = random.nextInt();
-                    referenceStream.writeInt(v);
-                    testedStream.writeInt(v);
-                    break;
-                }
-                case 4: {
-                    final long v = random.nextLong();
-                    referenceStream.writeLong(v);
-                    testedStream.writeLong(v);
-                    break;
-                }
-                case 5: {
-                    final float v = random.nextFloat();
-                    referenceStream.writeFloat(v);
-                    testedStream.writeFloat(v);
-                    break;
-                }
-                case 6: {
-                    final double v = random.nextDouble();
-                    referenceStream.writeDouble(v);
-                    testedStream.writeDouble(v);
-                    break;
-                }
-                case 7: {
-                    final byte[] tmp = new byte[random.nextInt(ARRAY_MAX_LENGTH / Byte.BYTES)];
-                    random.nextBytes(tmp);
-                    referenceStream.write(tmp);
-                    testedStream.write(tmp);
-                    break;
-                }
-                case 8: {
-                    final char[] tmp = new char[random.nextInt(ARRAY_MAX_LENGTH / Character.BYTES)];
-                    for (int i=0; i<tmp.length; i++) {
-                        referenceStream.writeChar(tmp[i] = (char) random.nextInt(1 << Character.SIZE));
-                    }
-                    testedStream.writeChars(tmp);
-                    break;
-                }
-                case 9: {
-                    final short[] tmp = new short[random.nextInt(ARRAY_MAX_LENGTH / Short.BYTES)];
-                    for (int i=0; i<tmp.length; i++) {
-                        referenceStream.writeShort(tmp[i] = (short) random.nextInt(1 << Short.SIZE));
-                    }
-                    testedStream.writeShorts(tmp);
-                    break;
-                }
-                case 10: {
-                    final int[] tmp = new int[random.nextInt(ARRAY_MAX_LENGTH / Integer.BYTES)];
-                    for (int i=0; i<tmp.length; i++) {
-                        referenceStream.writeInt(tmp[i] = random.nextInt());
-                    }
-                    testedStream.writeInts(tmp);
-                    break;
-                }
-                case 11: {
-                    final long[] tmp = new long[random.nextInt(ARRAY_MAX_LENGTH / Long.BYTES)];
-                    for (int i=0; i<tmp.length; i++) {
-                        referenceStream.writeLong(tmp[i] = random.nextLong());
-                    }
-                    testedStream.writeLongs(tmp);
-                    break;
-                }
-                case 12: {
-                    final float[] tmp = new float[random.nextInt(ARRAY_MAX_LENGTH / Float.BYTES)];
-                    for (int i=0; i<tmp.length; i++) {
-                        referenceStream.writeFloat(tmp[i] = random.nextFloat());
-                    }
-                    testedStream.writeFloats(tmp);
-                    break;
-                }
-                case 13: {
-                    final double[] tmp = new double[random.nextInt(ARRAY_MAX_LENGTH / Double.BYTES)];
-                    for (int i=0; i<tmp.length; i++) {
-                        referenceStream.writeDouble(tmp[i] = random.nextDouble());
-                    }
-                    testedStream.writeDoubles(tmp);
-                    break;
-                }
-                /*
-                 * Cases below this point are executed only by ChannelImageOutputStreamTest.
-                 */
-                case 14: {
-                    final long v = random.nextLong();
-                    final int numBits = random.nextInt(Byte.SIZE);
-                    ((ImageOutputStream) referenceStream).writeBits(v, numBits);
-                    testedStream.writeBits(v, numBits);
-                    break;
-                }
-                case 15: {
-                    final boolean v = random.nextBoolean();
-                    referenceStream.writeBoolean(v);
-                    ((DataOutput) testedStream).writeBoolean(v);
-                    break;
-                }
-                case 16: {
-                    final String s = "Byte sequence";
-                    referenceStream.writeBytes(s);
-                    ((DataOutput) testedStream).writeBytes(s);
-                    break;
-                }
-                case 17: {
-                    final String s = "Character sequence";
-                    referenceStream.writeChars(s);
-                    ((DataOutput) testedStream).writeChars(s);
-                    break;
-                }
-                case 18: {
-                    final String s = "お元気ですか";
-                    final byte[] array = s.getBytes("UTF-8");
-                    assertEquals(s.length() * 3, array.length); // Sanity check.
-                    referenceStream.writeUTF(s);
-                    ((DataOutput) testedStream).writeUTF(s);
-                    break;
-                }
-                default: throw new AssertionError(operation);
+        transferRandomData(testedStream, testedStreamBackingArray.length - ARRAY_MAX_LENGTH,
+                (testedStream instanceof DataOutput) ? 20 : 14);
+    }
+
+    /**
+     * Writes a random unit of data using a method selected randomly.
+     * This method is invoked (indirectly) by {@link #writeInStreams()}.
+     */
+    @Override
+    final void transferRandomData(final int operation) throws IOException {
+        final DataOutput r = this.referenceStream;
+        final ChannelDataOutput t = this.testedStream;
+        switch (operation) {
+            case 0: {
+                final byte v = (byte) random.nextInt(1 << Byte.SIZE);
+                r.writeByte(v);
+                t.writeByte(v);
+                break;
             }
+            case 1: {
+                final short v = (short) random.nextInt(1 << Short.SIZE);
+                r.writeShort(v);
+                t.writeShort(v);
+                break;
+            }
+            case 2: {
+                final char v = (char) random.nextInt(1 << Character.SIZE);
+                r.writeChar(v);
+                t.writeChar(v);
+                break;
+            }
+            case 3: {
+                final int v = random.nextInt();
+                r.writeInt(v);
+                t.writeInt(v);
+                break;
+            }
+            case 4: {
+                final long v = random.nextLong();
+                r.writeLong(v);
+                t.writeLong(v);
+                break;
+            }
+            case 5: {
+                final float v = random.nextFloat();
+                r.writeFloat(v);
+                t.writeFloat(v);
+                break;
+            }
+            case 6: {
+                final double v = random.nextDouble();
+                r.writeDouble(v);
+                t.writeDouble(v);
+                break;
+            }
+            case 7: {
+                final byte[] tmp = new byte[random.nextInt(ARRAY_MAX_LENGTH / Byte.BYTES)];
+                random.nextBytes(tmp);
+                r.write(tmp);
+                t.write(tmp);
+                break;
+            }
+            case 8: {
+                final char[] tmp = new char[random.nextInt(ARRAY_MAX_LENGTH / Character.BYTES)];
+                for (int i=0; i<tmp.length; i++) {
+                    r.writeChar(tmp[i] = (char) random.nextInt(1 << Character.SIZE));
+                }
+                t.writeChars(tmp);
+                break;
+            }
+            case 9: {
+                final short[] tmp = new short[random.nextInt(ARRAY_MAX_LENGTH / Short.BYTES)];
+                for (int i=0; i<tmp.length; i++) {
+                    r.writeShort(tmp[i] = (short) random.nextInt(1 << Short.SIZE));
+                }
+                t.writeShorts(tmp);
+                break;
+            }
+            case 10: {
+                final int[] tmp = new int[random.nextInt(ARRAY_MAX_LENGTH / Integer.BYTES)];
+                for (int i=0; i<tmp.length; i++) {
+                    r.writeInt(tmp[i] = random.nextInt());
+                }
+                t.writeInts(tmp);
+                break;
+            }
+            case 11: {
+                final long[] tmp = new long[random.nextInt(ARRAY_MAX_LENGTH / Long.BYTES)];
+                for (int i=0; i<tmp.length; i++) {
+                    r.writeLong(tmp[i] = random.nextLong());
+                }
+                t.writeLongs(tmp);
+                break;
+            }
+            case 12: {
+                final float[] tmp = new float[random.nextInt(ARRAY_MAX_LENGTH / Float.BYTES)];
+                for (int i=0; i<tmp.length; i++) {
+                    r.writeFloat(tmp[i] = random.nextFloat());
+                }
+                t.writeFloats(tmp);
+                break;
+            }
+            case 13: {
+                final double[] tmp = new double[random.nextInt(ARRAY_MAX_LENGTH / Double.BYTES)];
+                for (int i=0; i<tmp.length; i++) {
+                    r.writeDouble(tmp[i] = random.nextDouble());
+                }
+                t.writeDoubles(tmp);
+                break;
+            }
+            /*
+             * Cases below this point are executed only by ChannelImageOutputStreamTest.
+             */
+            case 14: {
+                final long v = random.nextLong();
+                final int numBits = random.nextInt(Byte.SIZE);
+                ((ImageOutputStream) r).writeBits(v, numBits);
+                t.writeBits(v, numBits);
+                break;
+            }
+            case 15: {
+                final boolean v = random.nextBoolean();
+                r.writeBoolean(v);
+                ((DataOutput) t).writeBoolean(v);
+                break;
+            }
+            case 16: {
+                final String s = "Byte sequence";
+                r.writeBytes(s);
+                ((DataOutput) t).writeBytes(s);
+                break;
+            }
+            case 17: {
+                final String s = "Character sequence";
+                r.writeChars(s);
+                ((DataOutput) t).writeChars(s);
+                break;
+            }
+            case 18: {
+                final String s = "お元気ですか";
+                final byte[] array = s.getBytes("UTF-8");
+                assertEquals(s.length() * 3, array.length); // Sanity check.
+                r.writeUTF(s);
+                ((DataOutput) t).writeUTF(s);
+                break;
+            }
+            case 19: {
+                final ImageOutputStream ir = (ImageOutputStream) r;
+                long flushedPosition = StrictMath.max(ir.getFlushedPosition(), t.getFlushedPosition());
+                flushedPosition += random.nextInt(1 + (int) (ir.getStreamPosition() - flushedPosition));
+                ir.flushBefore(flushedPosition);
+                t .flushBefore(flushedPosition);
+                break;
+            }
+            default: throw new AssertionError(operation);
+        }
+        if (r instanceof ImageOutputStream) {
+            assertEquals("getBitOffset()",      ((ImageOutputStream) r).getBitOffset(),      t.getBitOffset());
+            assertEquals("getStreamPosition()", ((ImageOutputStream) r).getStreamPosition(), t.getStreamPosition());
         }
     }
 }
