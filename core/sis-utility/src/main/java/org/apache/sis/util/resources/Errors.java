@@ -215,6 +215,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ExcessiveListSize_2 = 25;
 
         /**
+         * The character string is too long.
+         */
+        public static final short ExcessiveStringSize = 153;
+
+        /**
          * Attribute “{0}” is not allowed for an object of type ‘{1}’.
          */
         public static final short ForbiddenAttribute_2 = 26;
