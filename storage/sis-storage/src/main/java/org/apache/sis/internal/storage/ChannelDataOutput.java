@@ -470,6 +470,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
          * @throws IOException If an error occurred while writing the stream.
          */
         final void writeFully(final int dataSize, int offset, int length) throws IOException {
+            clearBitOffset(); // Actually needed only if length == 0.
             ensureBufferAccepts(Math.min(length * dataSize, buffer.capacity()));
             final Buffer view = createView(); // Must be after ensureBufferAccept
             int n = Math.min(view.remaining(), length);

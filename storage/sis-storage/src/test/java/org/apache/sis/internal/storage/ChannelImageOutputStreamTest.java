@@ -21,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.InvalidMarkException;
 import javax.imageio.stream.ImageOutputStream;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -35,6 +37,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @module
  */
+@DependsOn(ChannelDataOutputTest.class)
 public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutputTest {
     /**
      * Initializes all non-final fields before to execute a test.
@@ -92,18 +95,25 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
          */
         int nbMarks = 0;
         for (int i=0; i<STREAM_LENGTH; i++) {
-            final int v = random.nextInt(256);
             if (randomEvent() && i < STREAM_LENGTH - Long.BYTES) {
                 referenceStream.mark();
                 testedStream.mark();
                 nbMarks++;
             }
+            final int v = random.nextInt(256);
             referenceStream.writeByte(v);
             testedStream.writeByte(v);
         }
-        /*
-         * Now verify the marks position and write random values at those positions.
-         */
+        compareMarks(nbMarks);
+    }
+
+    /**
+     * Invokes {@link ChannelImageOutputStream#reset()} {@code nbMarks} times and verify that the stream position
+     * is the expected one. This method will then write random values at those positions, and finally compare the
+     * stream content.
+     */
+    private void compareMarks(int nbMarks) throws IOException {
+        final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
         while (--nbMarks >= 0) {
             referenceStream.reset();
             testedStream.reset();
@@ -123,5 +133,44 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
             // This is the expected exception.
         }
         assertStreamContentEquals();
+    }
+
+    /**
+     * Tests {@link ChannelImageOutputStream#flushBefore(long)}.
+     *
+     * @throws IOException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testMarkAndReset")
+    public void testFlushBefore() throws IOException {
+        final int N = 50; // Number of long values to write.
+        initialize("testFlushBefore", N*Long.BYTES, 200);
+        final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
+        for (int i=0; i<N; i++) {
+            switch (i) {
+                case 20:
+                case 30:
+                case 40:
+                case 45: {
+                    referenceStream.mark();
+                    testedStream.mark();
+                    break;
+                }
+                case 10: {
+                    referenceStream.flushBefore(5 * Long.BYTES);
+                    testedStream.flushBefore(5 * Long.BYTES);
+                    break;
+                }
+                case 35: {
+                    referenceStream.flushBefore(32 * Long.BYTES);
+                    testedStream.flushBefore(32 * Long.BYTES);
+                    break;
+                }
+            }
+            final long v = random.nextLong();
+            referenceStream.writeLong(v);
+            testedStream.writeLong(v);
+        }
+        compareMarks(2);
     }
 }

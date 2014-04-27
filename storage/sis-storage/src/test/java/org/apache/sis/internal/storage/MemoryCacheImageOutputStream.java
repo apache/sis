@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import org.apache.sis.util.Workaround;
 
 
 /**
@@ -30,11 +31,12 @@ import java.io.OutputStream;
  * @version 0.5
  * @module
  */
+@Workaround(library = "JDK", version = "1.8")
 final strictfp class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCacheImageOutputStream {
     /**
      * Creates a new instance which will write the data in the given stream.
      */
-    public MemoryCacheImageOutputStream(OutputStream stream) {
+    MemoryCacheImageOutputStream(final OutputStream stream) {
         super(stream);
     }
 
