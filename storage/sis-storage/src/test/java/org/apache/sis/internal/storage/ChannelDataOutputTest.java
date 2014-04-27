@@ -143,7 +143,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      */
     @Test
     public void testArgumentChecks() throws IOException {
-        initialize("testArgumentChecks", 20, 20);
+        initialize("testArgumentChecks", 20, 10);
         try {
             testedStream.setBitOffset(9);
             fail("Shall not accept invalid bitOffset.");
@@ -260,7 +260,13 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             case 8: {
                 final char[] tmp = new char[random.nextInt(ARRAY_MAX_LENGTH / Character.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
-                    r.writeChar(tmp[i] = (char) random.nextInt(1 << Character.SIZE));
+                    tmp[i] = (char) random.nextInt(1 << Character.SIZE);
+                    if (!(r instanceof ImageOutputStream)) {
+                        r.writeChar(tmp[i]);
+                    }
+                }
+                if (r instanceof ImageOutputStream) {
+                    ((ImageOutputStream) r).writeChars(tmp, 0, tmp.length);
                 }
                 t.writeChars(tmp);
                 break;
@@ -268,7 +274,13 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             case 9: {
                 final short[] tmp = new short[random.nextInt(ARRAY_MAX_LENGTH / Short.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
-                    r.writeShort(tmp[i] = (short) random.nextInt(1 << Short.SIZE));
+                    tmp[i] = (short) random.nextInt(1 << Short.SIZE);
+                    if (!(r instanceof ImageOutputStream)) {
+                        r.writeShort(tmp[i]);
+                    }
+                }
+                if (r instanceof ImageOutputStream) {
+                    ((ImageOutputStream) r).writeShorts(tmp, 0, tmp.length);
                 }
                 t.writeShorts(tmp);
                 break;
@@ -276,7 +288,13 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             case 10: {
                 final int[] tmp = new int[random.nextInt(ARRAY_MAX_LENGTH / Integer.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
-                    r.writeInt(tmp[i] = random.nextInt());
+                    tmp[i] = random.nextInt();
+                    if (!(r instanceof ImageOutputStream)) {
+                        r.writeInt(tmp[i]);
+                    }
+                }
+                if (r instanceof ImageOutputStream) {
+                    ((ImageOutputStream) r).writeInts(tmp, 0, tmp.length);
                 }
                 t.writeInts(tmp);
                 break;
@@ -284,7 +302,13 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             case 11: {
                 final long[] tmp = new long[random.nextInt(ARRAY_MAX_LENGTH / Long.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
-                    r.writeLong(tmp[i] = random.nextLong());
+                    tmp[i] = random.nextLong();
+                    if (!(r instanceof ImageOutputStream)) {
+                        r.writeLong(tmp[i]);
+                    }
+                }
+                if (r instanceof ImageOutputStream) {
+                    ((ImageOutputStream) r).writeLongs(tmp, 0, tmp.length);
                 }
                 t.writeLongs(tmp);
                 break;
@@ -292,7 +316,13 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             case 12: {
                 final float[] tmp = new float[random.nextInt(ARRAY_MAX_LENGTH / Float.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
-                    r.writeFloat(tmp[i] = random.nextFloat());
+                    tmp[i] = random.nextFloat();
+                    if (!(r instanceof ImageOutputStream)) {
+                        r.writeFloat(tmp[i]);
+                    }
+                }
+                if (r instanceof ImageOutputStream) {
+                    ((ImageOutputStream) r).writeFloats(tmp, 0, tmp.length);
                 }
                 t.writeFloats(tmp);
                 break;
@@ -300,7 +330,13 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             case 13: {
                 final double[] tmp = new double[random.nextInt(ARRAY_MAX_LENGTH / Double.BYTES)];
                 for (int i=0; i<tmp.length; i++) {
-                    r.writeDouble(tmp[i] = random.nextDouble());
+                    tmp[i] = random.nextDouble();
+                    if (!(r instanceof ImageOutputStream)) {
+                        r.writeDouble(tmp[i]);
+                    }
+                }
+                if (r instanceof ImageOutputStream) {
+                    ((ImageOutputStream) r).writeDoubles(tmp, 0, tmp.length);
                 }
                 t.writeDoubles(tmp);
                 break;
