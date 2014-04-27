@@ -100,7 +100,7 @@ public class ProbeResult implements Serializable {
      *         if (buffer == null) {
      *             return ProbeResult.UNSUPPORTED_STORAGE;
      *         }
-     *         if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
+     *         if (buffer.remaining() < Integer.BYTES) {
      *             return ProbeResult.INSUFFICIENT_BYTES;
      *         }
      *         // Other verifications here.
