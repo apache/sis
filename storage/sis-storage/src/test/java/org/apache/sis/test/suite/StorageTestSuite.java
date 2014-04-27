@@ -26,13 +26,15 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.storage.IOUtilitiesTest.class,
     org.apache.sis.internal.storage.ChannelDataInputTest.class,
+    org.apache.sis.internal.storage.ChannelDataOutputTest.class,
     org.apache.sis.internal.storage.ChannelImageInputStreamTest.class,
+    org.apache.sis.internal.storage.ChannelImageOutputStreamTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
