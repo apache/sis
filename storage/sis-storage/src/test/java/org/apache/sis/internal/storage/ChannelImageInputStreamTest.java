@@ -17,7 +17,6 @@
 package org.apache.sis.internal.storage;
 
 import java.util.Arrays;
-import java.util.Random;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -26,8 +25,6 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -39,15 +36,20 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(ChannelDataInputTest.class)
-public final strictfp class ChannelImageInputStreamTest extends TestCase {
+public final strictfp class ChannelImageInputStreamTest extends ChannelDataTestCase {
     /**
-     * The maximal size of the arrays to be used for the tests, in bytes.
+     * The implementation to test.
      */
-    private static final int ARRAY_MAX_SIZE = 512;
+    private ChannelImageInputStream testedStream;
+
+    /**
+     * A stream to use as a reference implementation.
+     */
+    private ImageInputStream referenceStream;
 
     /**
      * Fills a buffer with random data and compares the result with a standard image input stream.
@@ -58,131 +60,125 @@ public final strictfp class ChannelImageInputStreamTest extends TestCase {
      */
     @Test
     public void testWithRandomData() throws IOException {
-        long position = 0;
-        int bitOffset = 0;
-        int operation = 0;
-        final ByteBuffer buffer = ByteBuffer.allocate(128);
-        final Random random = TestUtilities.createRandomNumberGenerator();
+        final ByteBuffer buffer = ByteBuffer.allocate(BUFFER_MAX_CAPACITY);
         final ByteOrder byteOrder = random.nextBoolean() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
-        final byte[] data = ChannelDataInputTest.createRandomArray(512 * 1024, random);
-        try (ImageInputStream r = ImageIO.createImageInputStream(new ByteArrayInputStream(data));
-             ImageInputStream t = new ChannelImageInputStream("Test data",
-                     Channels.newChannel(new ByteArrayInputStream(data)), buffer, false))
-        {
-            r.setByteOrder(byteOrder);
-            t.setByteOrder(byteOrder);
-            while ((position = r.getStreamPosition()) < data.length - ARRAY_MAX_SIZE) {
-                bitOffset = r.getBitOffset();
-                operation = random.nextInt(24);
-                switch (operation) {
-                    default: throw new AssertionError(operation);
-                    case  0: assertEquals("read()",              r.read(),              t.read());              break;
-                    case  1: assertEquals("readBoolean()",       r.readBoolean(),       t.readBoolean());       break;
-                    case  2: assertEquals("readChar()",          r.readChar(),          t.readChar());          break;
-                    case  3: assertEquals("readByte()",          r.readByte(),          t.readByte());          break;
-                    case  4: assertEquals("readShort()",         r.readShort(),         t.readShort());         break;
-                    case  5: assertEquals("readUnsignedShort()", r.readUnsignedShort(), t.readUnsignedShort()); break;
-                    case  6: assertEquals("readInt()",           r.readInt(),           t.readInt());           break;
-                    case  7: assertEquals("readUnsignedInt()",   r.readUnsignedInt(),   t.readUnsignedInt());   break;
-                    case  8: assertEquals("readLong()",          r.readLong(),          t.readLong());          break;
-                    case  9: assertEquals("readFloat()",         r.readFloat(),         t.readFloat(),  0f);    break;
-                    case 10: assertEquals("readDouble()",        r.readDouble(),        t.readDouble(), 0d);    break;
-                    case 11: assertEquals("readBit()",           r.readBit(),           t.readBit());           break;
-                    case 12: {
-                        final int n = random.nextInt(Long.SIZE + 1);
-                        assertEquals("readBits(" + n + ')', r.readBits(n), t.readBits(n));
-                        break;
-                    }
-                    case 13: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE);
-                        final byte[] actual = new byte[length];
-                        final int n = t.read(actual);
-                        assertFalse("Reached EOF", n < 0);
-                        final byte[] expected = new byte[n];
-                        r.readFully(expected);
-                        assertArrayEquals("read(byte[])", expected, actual);
-                        break;
-                    }
-                    case 14: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE);
-                        final byte[] expected = new byte[length]; r.readFully(expected);
-                        final byte[] actual   = new byte[length]; t.readFully(actual);
-                        assertArrayEquals("readFully(byte[])", expected, actual);
-                        break;
-                    }
-                    case 15: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Character.SIZE);
-                        final char[] expected = new char[length]; r.readFully(expected, 0, length);
-                        final char[] actual   = new char[length]; t.readFully(actual,   0, length);
-                        assertArrayEquals("readFully(char[])", expected, actual);
-                        break;
-                    }
-                    case 16: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Short.SIZE);
-                        final short[] expected = new short[length]; r.readFully(expected, 0, length);
-                        final short[] actual   = new short[length]; t.readFully(actual,   0, length);
-                        assertArrayEquals("readFully(short[])", expected, actual);
-                        break;
-                    }
-                    case 17: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Integer.SIZE);
-                        final int[] expected = new int[length]; r.readFully(expected, 0, length);
-                        final int[] actual   = new int[length]; t.readFully(actual,   0, length);
-                        assertArrayEquals("readFully(int[])", expected, actual);
-                        break;
-                    }
-                    case 18: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Long.SIZE);
-                        final long[] expected = new long[length]; r.readFully(expected, 0, length);
-                        final long[] actual   = new long[length]; t.readFully(actual,   0, length);
-                        assertArrayEquals("readFully(long[])", expected, actual);
-                        break;
-                    }
-                    case 19: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Float.SIZE);
-                        final float[] expected = new float[length]; r.readFully(expected, 0, length);
-                        final float[] actual   = new float[length]; t.readFully(actual,   0, length);
-                        assertTrue("readFully(float[])", Arrays.equals(expected, actual));
-                        break;
-                    }
-                    case 20: {
-                        final int length = random.nextInt(ARRAY_MAX_SIZE * Byte.SIZE / Double.SIZE);
-                        final double[] expected = new double[length]; r.readFully(expected, 0, length);
-                        final double[] actual   = new double[length]; t.readFully(actual,   0, length);
-                        assertTrue("readFully(double[])", Arrays.equals(expected, actual));
-                        break;
-                    }
-                    case 21: {
-                        final long length = random.nextInt(ARRAY_MAX_SIZE);
-                        final long n = t.skipBytes(length);
-                        assertFalse("Reached EOF", n < 0);
-                        r.readFully(new byte[(int) n]);
-                        assertEquals("skipBytes(int)", r.getStreamPosition(), t.getStreamPosition());
-                        break;
-                    }
-                    case 22: {
-                        long flushedPosition = StrictMath.max(r.getFlushedPosition(), t.getFlushedPosition());
-                        flushedPosition += random.nextInt(1 + (int) (r.getStreamPosition() - flushedPosition));
-                        r.flushBefore(flushedPosition);
-                        t.flushBefore(flushedPosition);
-                        break;
-                    }
-                    case 23: {
-                        r.flush();
-                        t.flush();
-                        break;
-                    }
-                }
-                assertEquals("getStreamPosition()", r.getStreamPosition(), t.getStreamPosition());
-                assertEquals("getBitOffset()",      r.getBitOffset(),      t.getBitOffset());
+        final byte[] data = createRandomArray(STREAM_LENGTH);
+        referenceStream = ImageIO.createImageInputStream(new ByteArrayInputStream(data));
+        referenceStream.setByteOrder(byteOrder);
+        testedStream = new ChannelImageInputStream("testWithRandomData",
+                Channels.newChannel(new ByteArrayInputStream(data)), buffer, false);
+        testedStream.setByteOrder(byteOrder);
+        transferRandomData(testedStream, data.length - ARRAY_MAX_LENGTH, 24);
+    }
+
+    /**
+     * Reads a random unit of data using a method selected randomly.
+     * This method is invoked (indirectly) by {@link #testWithRandomData()}.
+     */
+    @Override
+    final void transferRandomData(final int operation) throws IOException {
+        final ChannelImageInputStream t = testedStream;
+        final ImageInputStream r = referenceStream;
+        switch (operation) {
+            default: throw new AssertionError(operation);
+            case  0: assertEquals("read()",              r.read(),              t.read());              break;
+            case  1: assertEquals("readBoolean()",       r.readBoolean(),       t.readBoolean());       break;
+            case  2: assertEquals("readChar()",          r.readChar(),          t.readChar());          break;
+            case  3: assertEquals("readByte()",          r.readByte(),          t.readByte());          break;
+            case  4: assertEquals("readShort()",         r.readShort(),         t.readShort());         break;
+            case  5: assertEquals("readUnsignedShort()", r.readUnsignedShort(), t.readUnsignedShort()); break;
+            case  6: assertEquals("readInt()",           r.readInt(),           t.readInt());           break;
+            case  7: assertEquals("readUnsignedInt()",   r.readUnsignedInt(),   t.readUnsignedInt());   break;
+            case  8: assertEquals("readLong()",          r.readLong(),          t.readLong());          break;
+            case  9: assertEquals("readFloat()",         r.readFloat(),         t.readFloat(),  0f);    break;
+            case 10: assertEquals("readDouble()",        r.readDouble(),        t.readDouble(), 0d);    break;
+            case 11: assertEquals("readBit()",           r.readBit(),           t.readBit());           break;
+            case 12: {
+                final int n = random.nextInt(Long.SIZE + 1);
+                assertEquals("readBits(" + n + ')', r.readBits(n), t.readBits(n));
+                break;
             }
-        } catch (AssertionError | RuntimeException e) {
-            out.println("Position:    " + position);
-            out.println("Bit offset:  " + bitOffset);
-            out.println("Byte order:  " + byteOrder);
-            out.println("Operation:   " + operation);
-            out.println("Exception:   " + e.getLocalizedMessage());
-            throw e;
+            case 13: {
+                final int length = random.nextInt(ARRAY_MAX_LENGTH);
+                final byte[] actual = new byte[length];
+                final int n = t.read(actual);
+                assertFalse("Reached EOF", n < 0);
+                final byte[] expected = new byte[n];
+                r.readFully(expected);
+                assertArrayEquals("read(byte[])", expected, actual);
+                break;
+            }
+            case 14: {
+                final int length = random.nextInt(ARRAY_MAX_LENGTH);
+                final byte[] expected = new byte[length]; r.readFully(expected);
+                final byte[] actual   = new byte[length]; t.readFully(actual);
+                assertArrayEquals("readFully(byte[])", expected, actual);
+                break;
+            }
+            case 15: {
+                final int length = random.nextInt(ARRAY_MAX_LENGTH / (Character.SIZE / Byte.SIZE));
+                final char[] expected = new char[length]; r.readFully(expected, 0, length);
+                final char[] actual   = new char[length]; t.readFully(actual,   0, length);
+                assertArrayEquals("readFully(char[])", expected, actual);
+                break;
+            }
+            case 16: {
+                final int length = random.nextInt(ARRAY_MAX_LENGTH / (Short.SIZE / Byte.SIZE));
+                final short[] expected = new short[length]; r.readFully(expected, 0, length);
+                final short[] actual   = new short[length]; t.readFully(actual,   0, length);
+                assertArrayEquals("readFully(short[])", expected, actual);
+                break;
+            }
+            case 17: {
+                final int length = random.nextInt(ARRAY_MAX_LENGTH / (Integer.SIZE / Byte.SIZE));
+                final int[] expected = new int[length]; r.readFully(expected, 0, length);
+                final int[] actual   = new int[length]; t.readFully(actual,   0, length);
+                assertArrayEquals("readFully(int[])", expected, actual);
+                break;
+            }
+            case 18: {
+                final int length = random.nextInt(ARRAY_MAX_LENGTH / (Long.SIZE / Byte.SIZE));
+                final long[] expected = new long[length]; r.readFully(expected, 0, length);
+                final long[] actual   = new long[length]; t.readFully(actual,   0, length);
+                assertArrayEquals("readFully(long[])", expected, actual);
+                break;
+            }
+            case 19: {
+                final int length = random.nextInt(ARRAY_MAX_LENGTH / (Float.SIZE / Byte.SIZE));
+                final float[] expected = new float[length]; r.readFully(expected, 0, length);
+                final float[] actual   = new float[length]; t.readFully(actual,   0, length);
+                assertTrue("readFully(float[])", Arrays.equals(expected, actual));
+                break;
+            }
+            case 20: {
+                final int length = random.nextInt(ARRAY_MAX_LENGTH / (Double.SIZE / Byte.SIZE));
+                final double[] expected = new double[length]; r.readFully(expected, 0, length);
+                final double[] actual   = new double[length]; t.readFully(actual,   0, length);
+                assertTrue("readFully(double[])", Arrays.equals(expected, actual));
+                break;
+            }
+            case 21: {
+                final long length = random.nextInt(ARRAY_MAX_LENGTH);
+                final long n = t.skipBytes(length);
+                assertFalse("Reached EOF", n < 0);
+                r.readFully(new byte[(int) n]);
+                assertEquals("skipBytes(int)", r.getStreamPosition(), t.getStreamPosition());
+                break;
+            }
+            case 22: {
+                long flushedPosition = StrictMath.max(r.getFlushedPosition(), t.getFlushedPosition());
+                flushedPosition += random.nextInt(1 + (int) (r.getStreamPosition() - flushedPosition));
+                r.flushBefore(flushedPosition);
+                t.flushBefore(flushedPosition);
+                break;
+            }
+            case 23: {
+                r.flush();
+                t.flush();
+                break;
+            }
         }
+        assertEquals("getStreamPosition()", r.getStreamPosition(), t.getStreamPosition());
+        assertEquals("getBitOffset()",      r.getBitOffset(),      t.getBitOffset());
     }
 }

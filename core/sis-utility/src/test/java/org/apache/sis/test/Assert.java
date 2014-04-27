@@ -122,7 +122,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
     public static void assertMultilinesEquals(final String message, final CharSequence expected, final CharSequence actual) {
         final CharSequence[] expectedLines = CharSequences.splitOnEOL(expected);
         final CharSequence[] actualLines   = CharSequences.splitOnEOL(actual);
-        final int length = Math.min(expectedLines.length, actualLines.length);
+        final int length = StrictMath.min(expectedLines.length, actualLines.length);
         final StringBuilder buffer = new StringBuilder(message != null ? message : "Line").append('[');
         final int base = buffer.length();
         for (int i=0; i<length; i++) {

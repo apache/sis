@@ -28,7 +28,8 @@ import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.channels.ReadableByteChannel;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Debug;
+
+import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
 // Related to JDK7
 import java.nio.channels.SeekableByteChannel;
@@ -40,11 +41,11 @@ import java.nio.channels.SeekableByteChannel;
  * before {@code ChannelDataInput} creation.
  *
  * {@section Encapsulation}
- * This class exposes publicly the {@linkplain #channel} and the {@linkplain #buffer} because it is not expected
- * to perform all possible data manipulations that we can do with the buffers. This class is only a helper tool,
- * which often needs to be completed by specialized operations performed directly on the buffer. However, users
- * are encouraged to transfer data from the channel to the buffer using only the methods provided in this class
- * if they want to keep the {@link #seek(long)} and {@link #getStreamPosition()} values accurate.
+ * This class exposes publicly the {@linkplain #channel} and the {@linkplain #buffer buffer} because this class
+ * is not expected to perform all possible data manipulations that we can do with the buffers. This class is only
+ * a helper tool, which often needs to be completed by specialized operations performed directly on the buffer.
+ * However, users are encouraged to transfer data from the channel to the buffer using only the methods provided
+ * in this class if they want to keep the {@link #seek(long)} and {@link #getStreamPosition()} values accurate.
  *
  * <p>Since this class is only a helper tool, it does not "own" the channel and consequently does not provide
  * {@code close()} method. It is users responsibility to close the channel after usage.</p>
@@ -59,15 +60,10 @@ import java.nio.channels.SeekableByteChannel;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.4
+ * @version 0.5
  * @module
  */
-public class ChannelDataInput {
-    /**
-     * A file identifier used only for formatting error message.
-     */
-    public final String filename;
-
+public class ChannelDataInput extends ChannelData {
     /**
      * The channel from where data are read.
      * This is supplied at construction time.
@@ -75,30 +71,7 @@ public class ChannelDataInput {
     public final ReadableByteChannel channel;
 
     /**
-     * The buffer to use for transferring data from the channel to memory.
-     */
-    public final ByteBuffer buffer;
-
-    /**
-     * The position of the channel when this {@code ChannelDataInput} has been created.
-     * This is almost always 0, but we allow other values in case the data to read are
-     * encompassed inside a bigger file.
-     */
-    private final long channelOffset;
-
-    /**
-     * The position in {@link #channel} where is located the {@link #buffer} value at index 0.
-     * This is initially zero and shall be incremented as below:
-     *
-     * <ul>
-     *   <li>By {@link Buffer#position()} every time {@link ByteBuffer#compact()} is invoked.</li>
-     *   <li>By {@link Buffer#limit()}    every time {@link ByteBuffer#clear()}   is invoked.</li>
-     * </ul>
-     */
-    private long bufferOffset;
-
-    /**
-     * Creates a new input source for the given channel and using the given buffer.
+     * Creates a new data input for the given channel and using the given buffer.
      * If the buffer already contains some data, then the {@code filled} argument shall be {@code true}.
      * Otherwise (e.g. if it is a newly created buffer), then {@code filled} shall be {@code false}.
      *
@@ -112,40 +85,12 @@ public class ChannelDataInput {
     public ChannelDataInput(final String filename, final ReadableByteChannel channel, final ByteBuffer buffer,
             final boolean filled) throws IOException
     {
-        this.filename      = filename;
-        this.channel       = channel;
-        this.buffer        = buffer;
-        this.channelOffset = (channel instanceof SeekableByteChannel) ? ((SeekableByteChannel) channel).position() : 0;
+        super(filename, channel, buffer);
+        this.channel = channel;
         if (!filled) {
             buffer.clear();
             channel.read(buffer);
             buffer.flip();
-        }
-    }
-
-    /**
-     * Invoked when a call to {@link ReadableByteChannel#read(ByteBuffer)} has returned zero.
-     * Note that this is unrelated to end-of-file, in which case {@code read} returns -1.
-     * A return value of 0 happen for example if the channel is a socket in non-blocking mode
-     * and the socket buffer has not yet received new data.
-     *
-     * <p>The current implementation sleeps an arbitrary amount of time before to allow a new try.
-     * We do that in order to avoid high CPU consumption when data are expected to take more than
-     * a few nanoseconds to arrive.</p>
-     *
-     * @throws IOException If the implementation chooses to stop the reading process.
-     */
-    protected void onEmptyChannelBuffer() throws IOException {
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            /*
-             * Someone doesn't want to let us sleep. Stop the reading process. We don't try to go back to work,
-             * because the waiting time was short and this method is invoked in loops. Consequently if the user
-             * interrupted us, it is probably because he waited for a long time and we still have not received
-             * any new data.
-             */
-            throw new IOException(e);
         }
     }
 
@@ -170,7 +115,7 @@ public class ChannelDataInput {
         buffer.limit(capacity).position(limit);
         int c = channel.read(buffer);
         while (c == 0) {
-            onEmptyChannelBuffer();
+            onEmptyTransfer();
             c = channel.read(buffer);
         }
         buffer.limit(buffer.position()).position(position);
@@ -179,9 +124,9 @@ public class ChannelDataInput {
 
     /**
      * Returns {@code true} if the buffer or the channel has at least one byte remaining.
-     * If the {@linkplain #buffer} has no remaining bytes, then this method will attempts
-     * to read at least one byte from the {@linkplain #channel}. If no bytes can be read
-     * because the channel has reached the end of stream, then this method returns {@code false}.
+     * If the {@linkplain #buffer buffer} has no remaining bytes, then this method will attempts
+     * to read at least one byte from the {@linkplain #channel}. If no bytes can be read because
+     * the channel has reached the end of stream, then this method returns {@code false}.
      *
      * @return {@code true} if the buffer contains at least one remaining byte.
      * @throws IOException If it was necessary to read from the channel and this operation failed.
@@ -194,7 +139,7 @@ public class ChannelDataInput {
         buffer.clear();
         int c = channel.read(buffer);
         while (c == 0) {
-            onEmptyChannelBuffer();
+            onEmptyTransfer();
             c = channel.read(buffer);
         }
         buffer.flip();
@@ -206,12 +151,12 @@ public class ChannelDataInput {
      * It is caller's responsibility to ensure that the given number of bytes is
      * not greater than the {@linkplain ByteBuffer#capacity() buffer capacity}.
      *
-     * @param  n The minimal number of bytes needed in the {@linkplain #buffer}.
+     * @param  n The minimal number of bytes needed in the {@linkplain #buffer buffer}.
      * @throws EOFException If the channel has reached the end of stream.
      * @throws IOException If an other kind of error occurred while reading.
      */
     public final void ensureBufferContains(int n) throws EOFException, IOException {
-        assert n <= buffer.capacity() : n;
+        assert n >= 0 && n <= buffer.capacity() : n;
         n -= buffer.remaining();
         if (n > 0) {
             bufferOffset += buffer.position();
@@ -222,7 +167,7 @@ public class ChannelDataInput {
                     if (c != 0) {
                         throw new EOFException(eof());
                     }
-                    onEmptyChannelBuffer();
+                    onEmptyTransfer();
                 }
                 n -= c;
             } while (n > 0);
@@ -247,6 +192,59 @@ public class ChannelDataInput {
      */
     private String eof() {
         return Errors.format(Errors.Keys.UnexpectedEndOfFile_1, filename);
+    }
+
+    /**
+     * Pushes back the last processed byte. This is used when a call to {@code readBit()} did not
+     * used every bits in a byte, or when {@code readLine()} checked for the Windows-style of EOL.
+     */
+    final void pushBack() {
+        buffer.position(buffer.position() - 1);
+    }
+
+    /**
+     * Reads a single bit from the stream. The bit to be read depends on the
+     * {@linkplain #getBitOffset() current bit offset}.
+     *
+     * @return The value of the next bit from the stream.
+     * @throws IOException If an error occurred while reading (including EOF).
+     */
+    public final int readBit() throws IOException {
+        return (int) readBits(1);
+    }
+
+    /**
+     * Reads many bits from the stream. The first bit to be read depends on the
+     * {@linkplain #getBitOffset() current bit offset}.
+     *
+     * @param  numBits The number of bits to read.
+     * @return The value of the next bits from the stream.
+     * @throws IOException If an error occurred while reading (including EOF).
+     */
+    public final long readBits(int numBits) throws IOException {
+        ensureBetween("numBits", 0, Long.SIZE, numBits);
+        if (numBits == 0) {
+            return 0;
+        }
+        /*
+         * Reads the bits available in the next bytes (all of them if bitOffset == 0)
+         * and compute the number of bits that still need to be read. That number may
+         * be negative if we have read too many bits.
+         */
+        final int bitOffset = getBitOffset();
+        long value = readByte() & (0xFF >>> bitOffset);
+        numBits -= (Byte.SIZE - bitOffset);
+        while (numBits > 0) {
+            value = (value << Byte.SIZE) | readUnsignedByte();
+            numBits -= Byte.SIZE;
+        }
+        if (numBits != 0) {
+            value >>>= (-numBits); // Discard the unwanted bits.
+            numBits += Byte.SIZE;
+            pushBack();
+        }
+        setBitOffset(numBits);
+        return value;
     }
 
     /**
@@ -561,7 +559,7 @@ public class ChannelDataInput {
             skipInBuffer(n * dataSize);
             while ((length -= n) != 0) {
                 offset += n;
-                ensureBufferContains(dataSize);
+                ensureBufferContains(dataSize); // Actually read as much data as possible.
                 view.position(0).limit(buffer.remaining() / dataSize);
                 transfer(offset, n = Math.min(view.remaining(), length));
                 skipInBuffer(n * dataSize);
@@ -701,6 +699,7 @@ public class ChannelDataInput {
      * @param  position The position where to move.
      * @throws IOException If the stream can not be moved to the given position.
      */
+    @Override
     public final void seek(final long position) throws IOException {
         long p = position - bufferOffset;
         if (p >= 0 && p <= buffer.limit()) {
@@ -717,9 +716,7 @@ public class ChannelDataInput {
              */
             ((SeekableByteChannel) channel).position(channelOffset + position);
             bufferOffset = position;
-            buffer.clear();
-            channel.read(buffer);
-            buffer.flip();
+            buffer.clear().limit(0);
         } else if (p >= 0) {
             /*
              * Requested position is after the current buffer limits and
@@ -734,7 +731,7 @@ public class ChannelDataInput {
                     if (c != 0) {
                         throw new EOFException(eof());
                     }
-                    onEmptyChannelBuffer();
+                    onEmptyTransfer();
                 }
                 buffer.flip();
             } while (p > buffer.limit());
@@ -746,40 +743,6 @@ public class ChannelDataInput {
              */
             throw new IOException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, filename));
         }
-    }
-
-    /**
-     * Sets the current byte position of the stream. This method does <strong>not</strong> seeks the stream;
-     * this method only modifies the value to be returned by {@link #getStreamPosition()}. This method can
-     * be invoked when some external code has performed some work with the {@linkplain #channel} and wants
-     * to inform this {@code ChannelDataInput} about the new position resulting from this work.
-     *
-     * <p>This method does not need to be invoked when only the {@linkplain Buffer#position() buffer position}
-     * has changed.</p>
-     *
-     * @param position The new position of the stream.
-     */
-    public final void setStreamPosition(final long position) {
-        bufferOffset = position - buffer.position();
-    }
-
-    /**
-     * Returns the current byte position of the stream.
-     *
-     * @return The position of the stream.
-     */
-    public final long getStreamPosition() {
-        return bufferOffset + buffer.position();
-    }
-
-    /**
-     * Returns a string representation of this object for debugging purpose.
-     *
-     * @return A string representation of this channel.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[“" + filename + "” at " + getStreamPosition() + ']';
+        clearBitOffset();
     }
 }

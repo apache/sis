@@ -149,6 +149,7 @@ div.block h6 {
 
 /*
  * Bullet and ordered lists. Put some space before and after the list.
+ * Listes of the "verbose" class also have some space betweem items.
  */
 div.block ul,
 div.block ol {
@@ -159,6 +160,11 @@ div.block ol {
 div.block li > ul,
 div.block li > ol {
   margin-top:    0;
+  margin-bottom: 6px;
+}
+
+ul.verbose li {
+  margin-top:    6px;
   margin-bottom: 6px;
 }
 
