@@ -16,14 +16,11 @@
  */
 package org.apache.sis.internal.storage;
 
-import java.util.Random;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -35,28 +32,19 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.4
+ * @version 0.5
  * @module
  */
-public final strictfp class ChannelDataInputTest extends TestCase {
+public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
     /**
-     * The maximal size of the arrays to be used for the tests, in bytes.
+     * The implementation to test.
      */
-    private static final int ARRAY_MAX_SIZE = 256;
+    private ChannelDataInput testedStream;
 
     /**
-     * Creates an array filled with random values.
-     *
-     * @param length The length of the array to create.
-     * @param random The random number generator to use.
+     * A stream to use as a reference implementation.
      */
-    static byte[] createRandomArray(final int length, final Random random) {
-        final byte[] array = new byte[length];
-        for (int i=0; i<length; i++) {
-            array[i] = (byte) random.nextInt(256);
-        }
-        return array;
-    }
+    private DataInput referenceStream;
 
     /**
      * Fills a buffer with random data and compare the result with a standard image input stream.
@@ -67,90 +55,80 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testAllReadMethods() throws IOException {
-        final Random random = TestUtilities.createRandomNumberGenerator();
-        final byte[] array = createRandomArray(ARRAY_MAX_SIZE * 1024, random);
-        compareStreamToBuffer(random, array.length,
-                new DataInputStream(new ByteArrayInputStream(array)),
-                new ChannelDataInput("testAllReadMethods",
-                    new DripByteChannel(array, random, 1, 1024),
-                    ByteBuffer.allocate(random.nextInt(ARRAY_MAX_SIZE / 4) + (Double.SIZE / Byte.SIZE)), false));
+        final byte[] array = createRandomArray(STREAM_LENGTH);
+        referenceStream = new DataInputStream(new ByteArrayInputStream(array));
+        testedStream = new ChannelDataInput("testAllReadMethods", new DripByteChannel(array, random, 1, 1024),
+                ByteBuffer.allocate(random.nextInt(BUFFER_MAX_CAPACITY) + (Double.SIZE / Byte.SIZE)), false);
+        transferRandomData(testedStream, array.length - ARRAY_MAX_LENGTH, 16);
     }
 
     /**
-     * Compares the data returned by the given input to the data returned by the given buffer.
-     *
-     * @param  random A random number generator for executing the test.
-     * @param  length Number of bytes in the {@code r} stream.
-     * @param  data   A stream over all expected data.
-     * @param  input  The instance to test.
-     * @throws IOException Should never happen.
+     * Reads a random unit of data using a method selected randomly.
+     * This method is invoked (indirectly) by {@link #testAllReadMethods()}.
      */
-    private static void compareStreamToBuffer(final Random random, int length,
-            final DataInput data, final ChannelDataInput input) throws IOException
-    {
-        length -= ARRAY_MAX_SIZE; // Margin against buffer underflow.
-        while (input.getStreamPosition() < length) {
-            final int operation = random.nextInt(16);
-            switch (operation) {
-                default: throw new AssertionError(operation);
-                case  0: assertEquals("readByte()",          data.readByte(),              input.readByte());          break;
-                case  1: assertEquals("readShort()",         data.readShort(),             input.readShort());         break;
-                case  2: assertEquals("readUnsignedShort()", data.readUnsignedShort(),     input.readUnsignedShort()); break;
-                case  3: assertEquals("readChar()",          data.readChar(),              input.readChar());          break;
-                case  4: assertEquals("readInt()",           data.readInt(),               input.readInt());           break;
-                case  5: assertEquals("readUnsignedInt()",   data.readInt() & 0xFFFFFFFFL, input.readUnsignedInt());   break;
-                case  6: assertEquals("readLong()",          data.readLong(),              input.readLong());          break;
-                case  7: assertEquals("readFloat()",         data.readFloat(),             input.readFloat(),  0f);    break;
-                case  8: assertEquals("readDouble()",        data.readDouble(),            input.readDouble(), 0d);    break;
-                case  9: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE);
-                    final byte[] tmp = new byte[n];
-                    data.readFully(tmp);
-                    assertArrayEquals("readBytes(int)", tmp, input.readBytes(n));
-                    break;
-                }
-                case 10: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Character.SIZE / Byte.SIZE));
-                    final char[] tmp = new char[n];
-                    for (int i=0; i<n; i++) tmp[i] = data.readChar();
-                    assertArrayEquals("readChars(int)", tmp, input.readChars(n));
-                    break;
-                }
-                case 11: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Short.SIZE / Byte.SIZE));
-                    final short[] tmp = new short[n];
-                    for (int i=0; i<n; i++) tmp[i] = data.readShort();
-                    assertArrayEquals("readShorts(int)", tmp, input.readShorts(n));
-                    break;
-                }
-                case 12: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Integer.SIZE / Byte.SIZE));
-                    final int[] tmp = new int[n];
-                    for (int i=0; i<n; i++) tmp[i] = data.readInt();
-                    assertArrayEquals("readInts(int)", tmp, input.readInts(n));
-                    break;
-                }
-                case 13: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Long.SIZE / Byte.SIZE));
-                    final long[] tmp = new long[n];
-                    for (int i=0; i<n; i++) tmp[i] = data.readLong();
-                    assertArrayEquals("readLongs(int)", tmp, input.readLongs(n));
-                    break;
-                }
-                case 14: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Float.SIZE / Byte.SIZE));
-                    final float[] tmp = new float[n];
-                    for (int i=0; i<n; i++) tmp[i] = data.readFloat();
-                    assertArrayEquals("readFloats(int)", tmp, input.readFloats(n), 0);
-                    break;
-                }
-                case 15: {
-                    final int n = random.nextInt(ARRAY_MAX_SIZE / (Double.SIZE / Byte.SIZE));
-                    final double[] tmp = new double[n];
-                    for (int i=0; i<n; i++) tmp[i] = data.readDouble();
-                    assertArrayEquals("readDoubles(int)", tmp, input.readDoubles(n), 0);
-                    break;
-                }
+    @Override
+    final void transferRandomData(final int operation) throws IOException {
+        final ChannelDataInput t = testedStream;
+        final DataInput r = referenceStream;
+        switch (operation) {
+            default: throw new AssertionError(operation);
+            case  0: assertEquals("readByte()",          r.readByte(),              t.readByte());          break;
+            case  1: assertEquals("readShort()",         r.readShort(),             t.readShort());         break;
+            case  2: assertEquals("readUnsignedShort()", r.readUnsignedShort(),     t.readUnsignedShort()); break;
+            case  3: assertEquals("readChar()",          r.readChar(),              t.readChar());          break;
+            case  4: assertEquals("readInt()",           r.readInt(),               t.readInt());           break;
+            case  5: assertEquals("readUnsignedInt()",   r.readInt() & 0xFFFFFFFFL, t.readUnsignedInt());   break;
+            case  6: assertEquals("readLong()",          r.readLong(),              t.readLong());          break;
+            case  7: assertEquals("readFloat()",         r.readFloat(),             t.readFloat(),  0f);    break;
+            case  8: assertEquals("readDouble()",        r.readDouble(),            t.readDouble(), 0d);    break;
+            case  9: {
+                final int n = random.nextInt(ARRAY_MAX_LENGTH);
+                final byte[] tmp = new byte[n];
+                r.readFully(tmp);
+                assertArrayEquals("readBytes(int)", tmp, t.readBytes(n));
+                break;
+            }
+            case 10: {
+                final int n = random.nextInt(ARRAY_MAX_LENGTH / (Character.SIZE / Byte.SIZE));
+                final char[] tmp = new char[n];
+                for (int i=0; i<n; i++) tmp[i] = r.readChar();
+                assertArrayEquals("readChars(int)", tmp, t.readChars(n));
+                break;
+            }
+            case 11: {
+                final int n = random.nextInt(ARRAY_MAX_LENGTH / (Short.SIZE / Byte.SIZE));
+                final short[] tmp = new short[n];
+                for (int i=0; i<n; i++) tmp[i] = r.readShort();
+                assertArrayEquals("readShorts(int)", tmp, t.readShorts(n));
+                break;
+            }
+            case 12: {
+                final int n = random.nextInt(ARRAY_MAX_LENGTH / (Integer.SIZE / Byte.SIZE));
+                final int[] tmp = new int[n];
+                for (int i=0; i<n; i++) tmp[i] = r.readInt();
+                assertArrayEquals("readInts(int)", tmp, t.readInts(n));
+                break;
+            }
+            case 13: {
+                final int n = random.nextInt(ARRAY_MAX_LENGTH / (Long.SIZE / Byte.SIZE));
+                final long[] tmp = new long[n];
+                for (int i=0; i<n; i++) tmp[i] = r.readLong();
+                assertArrayEquals("readLongs(int)", tmp, t.readLongs(n));
+                break;
+            }
+            case 14: {
+                final int n = random.nextInt(ARRAY_MAX_LENGTH / (Float.SIZE / Byte.SIZE));
+                final float[] tmp = new float[n];
+                for (int i=0; i<n; i++) tmp[i] = r.readFloat();
+                assertArrayEquals("readFloats(int)", tmp, t.readFloats(n), 0);
+                break;
+            }
+            case 15: {
+                final int n = random.nextInt(ARRAY_MAX_LENGTH / (Double.SIZE / Byte.SIZE));
+                final double[] tmp = new double[n];
+                for (int i=0; i<n; i++) tmp[i] = r.readDouble();
+                assertArrayEquals("readDoubles(int)", tmp, t.readDoubles(n), 0);
+                break;
             }
         }
     }
@@ -162,7 +140,6 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testReadString() throws IOException {
-        final Random random   = TestUtilities.createRandomNumberGenerator();
         final String expected = "お元気ですか";
         final byte[] array    = expected.getBytes("UTF-8");
         assertEquals(expected.length()*3, array.length); // Sanity check.
@@ -181,9 +158,8 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testSeekOnForwardOnlyChannel() throws IOException {
-        final Random random = TestUtilities.createRandomNumberGenerator();
         int length = random.nextInt(2048) + 1024;
-        final byte[] array = createRandomArray(length, random);
+        final byte[] array = createRandomArray(length);
         length -= (Long.SIZE / Byte.SIZE); // Safety against buffer underflow.
         final ByteBuffer buffer = ByteBuffer.wrap(array);
         final ChannelDataInput input = new ChannelDataInput("testSeekOnForwardOnlyChannel",
@@ -205,9 +181,8 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testPrefetch() throws IOException {
-        final Random     random = TestUtilities.createRandomNumberGenerator();
         final int        length = random.nextInt(256) + 128;
-        final byte[]     array  = createRandomArray(length, random);
+        final byte[]     array  = createRandomArray(length);
         final ByteBuffer buffer = ByteBuffer.allocate(random.nextInt(64) + 16);
         final ChannelDataInput input = new ChannelDataInput("testPrefetch",
                 new DripByteChannel(array, random, 1, 64), buffer, false);
