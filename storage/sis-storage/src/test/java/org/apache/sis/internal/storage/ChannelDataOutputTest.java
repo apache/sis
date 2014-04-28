@@ -136,6 +136,30 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     }
 
     /**
+     * Tests seek ahead of buffer capacity.
+     *
+     * @throws IOException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testWriteAndSeek")
+    public void testSeekAhead() throws IOException {
+        initialize("testArgumentChecks", 48, 10);
+        for (int i=0; i<3; i++) {
+            final long v = random.nextLong();
+            referenceStream.writeLong(v);
+            testedStream.writeLong(v);
+        }
+        assertEquals("getStreamPosition()", 24, testedStream.getStreamPosition());
+        testedStream.seek(40); // Move 2 long ahead. Space shall be filled by 0.
+        referenceStream.writeLong(0);
+        referenceStream.writeLong(0);
+        final long v = random.nextLong();
+        referenceStream.writeLong(v);
+        testedStream.writeLong(v);
+        assertStreamContentEquals();
+    }
+
+    /**
      * Tests the argument checks performed by various methods. For example this method
      * tests {@link ChannelDataOutput#seek(long)} with an invalid seek position.
      *
@@ -150,13 +174,6 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("bitOffset"));
-        }
-        try {
-            testedStream.seek(1);
-            fail("Shall not seek further than stream length.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("position"));
         }
         try {
             testedStream.reset();
