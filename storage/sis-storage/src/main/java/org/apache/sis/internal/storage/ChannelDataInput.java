@@ -560,7 +560,7 @@ public class ChannelDataInput extends ChannelData {
             while ((length -= n) != 0) {
                 offset += n;
                 ensureBufferContains(dataSize); // Actually read as much data as possible.
-                view.position(0).limit(buffer.remaining() / dataSize);
+                view.rewind().limit(buffer.remaining() / dataSize);
                 transfer(offset, n = Math.min(view.remaining(), length));
                 skipInBuffer(n * dataSize);
             }
