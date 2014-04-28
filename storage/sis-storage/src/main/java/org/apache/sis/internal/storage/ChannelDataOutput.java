@@ -610,15 +610,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     @Override
     public final void seek(final long position) throws IOException {
         long p = position - bufferOffset;
-        if (p >= 0 && p <= buffer.capacity()) {
+        if (p >= 0 && p <= buffer.limit()) {
             /*
-             * Requested position is inside the current capacity of the buffer.
-             * If the position is greater than the limit, we will set the new bytes to 0.
+             * Requested position is inside the current limits of the buffer.
              */
-            if (p > buffer.limit()) {
-                buffer.position(buffer.limit()).limit((int) p);
-                clear();
-            }
             buffer.position((int) p);
             clearBitOffset();
         } else if (channel instanceof SeekableByteChannel) {
@@ -631,7 +626,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             bufferOffset = position;
         } else if (p >= 0) {
             /*
-             * Requested position is after the current buffer capacity and
+             * Requested position is after the current buffer limit and
              * we can not seek, so we have to pad with some zero values.
              */
             p -= buffer.limit();
