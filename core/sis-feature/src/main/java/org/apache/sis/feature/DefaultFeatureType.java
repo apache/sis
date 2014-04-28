@@ -41,11 +41,16 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * will be replaced by references to the {@code FeatureType} interface.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  */
 public class DefaultFeatureType extends AbstractIdentifiedType {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -4357370600723922312L;
+
     /**
      * If {@code true}, the feature type acts as an abstract super-type.
      *
@@ -105,7 +110,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *        association role that carries characteristics of a feature type.
      */
     public DefaultFeatureType(final Map<String,?> properties, final boolean isAbstract,
-            final DefaultFeatureType[] superTypes, final DefaultAttributeType... characteristics)
+            final DefaultFeatureType[] superTypes, final DefaultAttributeType<?>... characteristics)
     {
         super(properties);
         ArgumentChecks.ensureNonNull("characteristics", characteristics);
@@ -164,5 +169,34 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      */
     public List<DefaultAttributeType<?>> getCharacteristics() {
         return characteristics;
+    }
+
+    /**
+     * Returns a hash code value for this attribute type.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + superTypes.hashCode() + 37*superTypes.hashCode();
+    }
+
+    /**
+     * Compares this feature type with the given object for equality.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (super.equals(obj)) {
+            final DefaultFeatureType that = (DefaultFeatureType) obj;
+            return isAbstract == that.isAbstract &&
+                   superTypes.equals(that.superTypes) &&
+                   characteristics.equals(that.characteristics);
+        }
+        return false;
     }
 }
