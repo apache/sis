@@ -19,6 +19,7 @@ package org.apache.sis.measure;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.collection.WeakHashSet;
 
 
 /**
@@ -66,12 +67,22 @@ import org.apache.sis.internal.util.Numerics;
  * Other subclasses may or may not be immutable, at implementation choice. But implementors are encouraged
  * to make sure that all subclasses remain immutable for more predictable behavior.
  *
+ * {@section Shared instances}
+ * <i><b>Note:</b> following is implementation details provided for information purpose.
+ * The caching policy may change in any SIS version.</i>
+ *
+ * <p>All {@code create} static methods may return a shared instance. Those methods are preferred
+ * to the constructors when the range is expected to have a long lifetime, typically as instance
+ * given to {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameter descriptor}
+ * or {@linkplain org.apache.sis.feature.DefaultAttributeType attribute type} constructor. Other
+ * methods do not check for shared instances, since the created object is often temporary.</p>
+ *
  * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
  * @author  Jody Garnett (for parameterized type inspiration)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see RangeFormat
@@ -85,7 +96,21 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     private static final long serialVersionUID = -3198281191274903617L;
 
     /**
+     * The pool of ranges created by the {@code create(…)} methods.
+     */
+    @SuppressWarnings("unchecked")
+    private static final WeakHashSet<NumberRange<?>> POOL = new WeakHashSet<>((Class) NumberRange.class);
+
+    /**
+     * Returns a unique instance of the given range.
+     */
+    static <E extends Number & Comparable<? super E>, T extends NumberRange<E>> T unique(final T range) {
+        return POOL.unique(range);
+    }
+
+    /**
      * Constructs a range of {@code byte} values.
+     * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       The minimal value.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -96,13 +121,14 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Byte> create(final byte minValue, final boolean isMinIncluded,
                                            final byte maxValue, final boolean isMaxIncluded)
     {
-        return new NumberRange<>(Byte.class,
+        return unique(new NumberRange<>(Byte.class,
                 Byte.valueOf(minValue), isMinIncluded,
-                Byte.valueOf(maxValue), isMaxIncluded);
+                Byte.valueOf(maxValue), isMaxIncluded));
     }
 
     /**
      * Constructs a range of {@code short} values.
+     * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       The minimal value.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -113,30 +139,34 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Short> create(final short minValue, final boolean isMinIncluded,
                                             final short maxValue, final boolean isMaxIncluded)
     {
-        return new NumberRange<>(Short.class,
+        return unique(new NumberRange<>(Short.class,
                 Short.valueOf(minValue), isMinIncluded,
-                Short.valueOf(maxValue), isMaxIncluded);
+                Short.valueOf(maxValue), isMaxIncluded));
     }
 
     /**
      * Constructs a range of {@code int} values.
+     * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       The minimal value.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @return The new range of numeric values for the given endpoints.
+     *
+     * @see #createLeftBounded(int, boolean)
      */
     public static NumberRange<Integer> create(final int minValue, final boolean isMinIncluded,
                                               final int maxValue, final boolean isMaxIncluded)
     {
-        return new NumberRange<>(Integer.class,
+        return unique(new NumberRange<>(Integer.class,
                 Integer.valueOf(minValue), isMinIncluded,
-                Integer.valueOf(maxValue), isMaxIncluded);
+                Integer.valueOf(maxValue), isMaxIncluded));
     }
 
     /**
      * Constructs a range of {@code long} values.
+     * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       The minimal value.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -147,14 +177,15 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Long> create(final long minValue, final boolean isMinIncluded,
                                            final long maxValue, final boolean isMaxIncluded)
     {
-        return new NumberRange<>(Long.class,
+        return unique(new NumberRange<>(Long.class,
                 Long.valueOf(minValue), isMinIncluded,
-                Long.valueOf(maxValue), isMaxIncluded);
+                Long.valueOf(maxValue), isMaxIncluded));
     }
 
     /**
      * Constructs a range of {@code float} values.
      * The values can not be {@link Float#NaN}.
+     * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       The minimal value, or {@link Float#NEGATIVE_INFINITY} if none.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -165,9 +196,9 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Float> create(final float minValue, final boolean isMinIncluded,
                                             final float maxValue, final boolean isMaxIncluded)
     {
-        return new NumberRange<>(Float.class,
+        return unique(new NumberRange<>(Float.class,
                 valueOf("minValue", minValue, Float.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded);
+                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded));
     }
 
     /**
@@ -184,6 +215,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     /**
      * Constructs a range of {@code double} values.
      * The values can not be {@link Double#NaN}.
+     * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       The minimal value, or {@link Double#NEGATIVE_INFINITY} if none.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -194,9 +226,9 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Double> create(final double minValue, final boolean isMinIncluded,
                                              final double maxValue, final boolean isMaxIncluded)
     {
-        return new NumberRange<>(Double.class,
+        return unique(new NumberRange<>(Double.class,
                 valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded);
+                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded));
     }
 
     /**
@@ -208,6 +240,27 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, name));
         }
         return (value != infinity) ? Numerics.valueOf(value) : null;
+    }
+
+    /**
+     * Constructs a range of {@code int} values without upper bound.
+     * This method may return a shared instance, at implementation choice.
+     *
+     * <div class="note"><b>Note:</b> for creating left-bounded ranges of floating point values,
+     * use one of the {@code create(…)} methods with a {@code POSITIVE_INFINITY} constant.
+     * We do not provide variants for other integer types because this method is typically invoked for
+     * defining the {@linkplain org.apache.sis.feature.DefaultFeatureType cardinality of an attribute}.</div>
+     *
+     * @param  minValue       The minimal value.
+     * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
+     * @return The new range of numeric values from {@code minValue} to positive infinity.
+     *
+     * @see #create(int, boolean, int, boolean)
+     *
+     * @since 0.5
+     */
+    public static NumberRange<Integer> createLeftBounded(final int minValue, final boolean isMinIncluded) {
+        return unique(new NumberRange<>(Integer.class, Integer.valueOf(minValue), isMinIncluded, null, false));
     }
 
     /**
@@ -228,6 +281,8 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *   <li>{@code NumberRange<Double>} If none of the above types is suitable.</li>
      * </ul>
      *
+     * This method may return a shared instance, at implementation choice.
+     *
      * @param  minValue       The minimal value, or {@code null} if none.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value, or {@code null} if none.
@@ -240,9 +295,9 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     {
         final Class<? extends Number> type = Numbers.widestClass(
                 Numbers.narrowestClass(minValue), Numbers.narrowestClass(maxValue));
-        return (type == null) ? null :
-            new NumberRange(type, Numbers.cast(minValue, type), isMinIncluded,
-                                  Numbers.cast(maxValue, type), isMaxIncluded);
+        return (type == null) ? null : unique(new NumberRange(type,
+                Numbers.cast(minValue, type), isMinIncluded,
+                Numbers.cast(maxValue, type), isMaxIncluded));
     }
 
     /**
@@ -260,6 +315,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
             return (NumberRange<N>) range;
         }
         // The constructor will ensure that the range element type is a subclass of Number.
+        // Do not invoke unique(NumberRange) because the returned range is often temporary.
         return new NumberRange<>(range);
     }
 

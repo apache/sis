@@ -40,8 +40,8 @@ import java.util.Objects;
  * will be replaced by references to the {@code IdentifiedType} interface.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  */
 public class AbstractIdentifiedType implements Serializable {
@@ -239,6 +239,18 @@ public class AbstractIdentifiedType implements Serializable {
     public InternationalString getDescription() {
         return description;
     }
+
+    /*
+     * ISO 19109 properties omitted for now:
+     *
+     *   - constrainedBy : CharacterString
+     *
+     * Rational: a CharacterString is hardly programmatically usable. A Range would be better but too specific.
+     * We could follow the GeoAPI path and define a "restrictions : Filter" property. That would be more generic,
+     * but we are probably better to wait for Filter to be implemented in SIS.
+     *
+     * Reference: https://issues.apache.org/jira/browse/SIS-175
+     */
 
     /**
      * Returns a hash code value for this type.

@@ -25,8 +25,8 @@ import com.esri.core.geometry.Geometry;
  * Simple Feature class.
  *
  * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  */
 public class DefaultFeature {
