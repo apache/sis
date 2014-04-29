@@ -152,7 +152,6 @@ public class ShapeFile {
             rf.order(ByteOrder.LITTLE_ENDIAN);
             int ShapeType = rf.getInt();
             DefaultFeature f = new DefaultFeature();
-            f.setRecord(new HashMap<String, String>());
 
             if (ShapeType == ShapeTypeEnum.Point.getValue()) {
                 double x = rf.getDouble();
@@ -239,7 +238,7 @@ public class ShapeFile {
                 data = new byte[fd.getLength()];
                 df.get(data);
                 String value = new String(data);
-                f.getRecord().put(fd.getName(), value);
+                f.setAttributeValue(fd.getName(), value);
             }
 
             this.FeatureMap.put(RecordNumber, f);

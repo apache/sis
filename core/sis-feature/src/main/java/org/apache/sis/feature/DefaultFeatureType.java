@@ -40,6 +40,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * When such interface will be available, most references to {@code DefaultFeatureType} in the API
  * will be replaced by references to the {@code FeatureType} interface.</div>
  *
+ * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5

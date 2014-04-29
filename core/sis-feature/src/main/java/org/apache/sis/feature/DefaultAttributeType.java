@@ -17,6 +17,9 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import org.opengis.util.GenericName;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.NumberRange;
@@ -42,8 +45,9 @@ import java.util.Objects;
  * When such interface will be available, most references to {@code DefaultAttributeType} in the API
  * will be replaced by references to the {@code AttributeType} interface.</div>
  *
- * @param <T> The value type.
+ * @param <T> The type of attribute values.
  *
+ * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5
@@ -203,5 +207,33 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
                    cardinality.equals(that.cardinality);
         }
         return false;
+    }
+
+    /**
+     * Returns a string representation of this attribute type.
+     * The returned string is for debugging purpose and may change in any future SIS version.
+     *
+     * @return A string representation of this attribute type for debugging purpose.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        return toString("AttributeType").toString();
+    }
+
+    /**
+     * Implementation of {@link #toString()} to be shared by {@link DefaultAttribute#toString()}.
+     */
+    final StringBuilder toString(final String typeName) {
+        final StringBuilder buffer = new StringBuilder(40).append(typeName).append('[');
+        final GenericName name = super.getName();
+        if (name != null) {
+            buffer.append('“');
+        }
+        buffer.append(name);
+        if (name != null) {
+            buffer.append("” : ");
+        }
+        return buffer.append(Classes.getShortName(valueClass)).append(']');
     }
 }
