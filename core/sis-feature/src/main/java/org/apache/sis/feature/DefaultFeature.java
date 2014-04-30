@@ -18,9 +18,11 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
-import com.esri.core.geometry.Geometry;
+import java.io.Serializable;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -33,19 +35,31 @@ import org.apache.sis.util.ArgumentChecks;
  * @version 0.5
  * @module
  */
-public class DefaultFeature {
+public class DefaultFeature implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 6594295132544357870L;
+
+    /**
+     * Information about the feature.
+     */
+    private final DefaultFeatureType type;
+
     /**
      * The properties (attributes, operations, feature associations) of this feature.
      */
     private final Map<String, DefaultAttribute<?>> properties;
 
-    private Geometry geom;
-
     /**
      * Creates a new features.
+     *
+     * @param type Information about the feature.
      */
-    public DefaultFeature() {
-        properties = new HashMap<>();
+    public DefaultFeature(final DefaultFeatureType type) {
+        ArgumentChecks.ensureNonNull("type", type);
+        this.type = type;
+        properties = new HashMap<>(Math.min(16, Containers.hashMapCapacity(type.getCharacteristics().size())));
     }
 
     /**
@@ -62,8 +76,8 @@ public class DefaultFeature {
     /**
      * Sets the value of the attribute of the given name.
      *
-     * @param name The attribute name.
-     * @param value The new value for the given attribute.
+     * @param name  The attribute name.
+     * @param value The new value for the given attribute (may be {@code null}).
      */
     @SuppressWarnings("unchecked")
     public void setAttributeValue(final String name, final Object value) {
@@ -72,23 +86,51 @@ public class DefaultFeature {
             if (value == null) {
                 return;
             }
-            // TEMPORARY HACK: FeatureType should be defined at construction time.
-            final DefaultAttributeType<Object> type = new DefaultAttributeType<>(
-                    Collections.singletonMap("name", name), Object.class, null, null);
-            attribute = new DefaultAttribute<>(type);
+            final DefaultAttributeType<?> at = type.getProperty(name);
+            if (at == null) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, type.getName(), name));
+            }
+            attribute = new DefaultAttribute<>(at);
         }
         ArgumentChecks.ensureCanCast(name, attribute.getType().getValueClass(), value);
         ((DefaultAttribute) attribute).setValue(value);
     }
 
-    public Geometry getGeom() {
-        return geom;
+    /**
+     * Returns a hash code value for this feature.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return type.hashCode() + 37 * properties.hashCode();
     }
 
-    public void setGeom(Geometry geom) {
-        this.geom = geom;
+    /**
+     * Compares this feature with the given object for equality.
+     *
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (super.equals(obj)) {
+            final DefaultFeature that = (DefaultFeature) obj;
+            return type.equals(that.type) &&
+                   properties.equals(that.properties);
+        }
+        return false;
     }
 
+    /**
+     * Returns a string representation of this feature.
+     * The returned string is for debugging purpose and may change in any future SIS version.
+     *
+     * @return A string representation of this feature for debugging purpose.
+     */
+    @Debug
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
