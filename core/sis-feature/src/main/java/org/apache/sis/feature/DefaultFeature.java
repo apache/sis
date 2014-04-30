@@ -18,11 +18,15 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ConcurrentModificationException;
 import java.io.Serializable;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
@@ -42,7 +46,7 @@ public class DefaultFeature implements Serializable {
     private static final long serialVersionUID = 6594295132544357870L;
 
     /**
-     * Information about the feature.
+     * Information about the feature (name, characteristics, <i>etc.</i>).
      */
     private final DefaultFeatureType type;
 
@@ -54,12 +58,21 @@ public class DefaultFeature implements Serializable {
     /**
      * Creates a new features.
      *
-     * @param type Information about the feature.
+     * @param type Information about the feature (name, characteristics, <i>etc.</i>).
      */
     public DefaultFeature(final DefaultFeatureType type) {
         ArgumentChecks.ensureNonNull("type", type);
         this.type = type;
         properties = new HashMap<>(Math.min(16, Containers.hashMapCapacity(type.getCharacteristics().size())));
+    }
+
+    /**
+     * Returns information about the feature (name, characteristics, <i>etc.</i>).
+     *
+     * @return Information about the feature.
+     */
+    public DefaultFeatureType getType() {
+        return type;
     }
 
     /**
@@ -70,7 +83,14 @@ public class DefaultFeature implements Serializable {
      */
     public Object getAttributeValue(final String name) {
         final DefaultAttribute<?> attribute = properties.get(name);
-        return (attribute != null) ? attribute.getValue() : null;
+        if (attribute == null) {
+            final DefaultAttributeType<?> at = type.getProperty(name);
+            if (at == null) {
+                throw new IllegalArgumentException(propertyNotFound(name));
+            }
+            return at.getDefaultValue();
+        }
+        return attribute.getValue();
     }
 
     /**
@@ -83,17 +103,27 @@ public class DefaultFeature implements Serializable {
     public void setAttributeValue(final String name, final Object value) {
         DefaultAttribute<?> attribute = properties.get(name);
         if (attribute == null) {
-            if (value == null) {
-                return;
-            }
             final DefaultAttributeType<?> at = type.getProperty(name);
             if (at == null) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, type.getName(), name));
+                throw new IllegalArgumentException(propertyNotFound(name));
+            }
+            if (Objects.equals(value, at.getDefaultValue())) {
+                return; // Avoid creating the attribute if not necessary.
             }
             attribute = new DefaultAttribute<>(at);
+            if (properties.put(name, attribute) != null) {
+                throw new ConcurrentModificationException();
+            }
         }
         ArgumentChecks.ensureCanCast(name, attribute.getType().getValueClass(), value);
         ((DefaultAttribute) attribute).setValue(value);
+    }
+
+    /**
+     * Returns the error message for a property not found.
+     */
+    private String propertyNotFound(final String name) {
+        return Errors.format(Errors.Keys.PropertyNotFound_2, type.getName(), name);
     }
 
     /**
