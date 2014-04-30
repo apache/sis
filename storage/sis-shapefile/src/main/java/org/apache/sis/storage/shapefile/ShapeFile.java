@@ -27,8 +27,12 @@ import java.util.Map;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
+import com.esri.core.geometry.Geometry;
 
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.feature.DefaultFeature;
+import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.storage.DataStoreException;
 
 
@@ -36,14 +40,15 @@ import org.apache.sis.storage.DataStoreException;
  * Provides a ShapeFile Reader.
  *
  * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  *
  * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>
  * @see <a href="http://ulisse.elettra.trieste.it/services/doc/dbase/DBFstruct.htm">dBASE III File Structure</a>
  */
 public class ShapeFile {
+    private static final String GEOMETRY_NAME = "geometry";
 
     public int FileCode;   // big
     public int FileLength;  // big // The value for file length is the total length of the file in 16-bit words
@@ -140,6 +145,7 @@ public class ShapeFile {
             this.FDArray.add(fd);
             // loop until you hit the 0Dh field terminator
         }
+        final DefaultFeatureType featureType = getFeatureType(shpfile);
 
         df.get(); // should be 0d for field terminator
 
@@ -151,13 +157,13 @@ public class ShapeFile {
             data = new byte[4];
             rf.order(ByteOrder.LITTLE_ENDIAN);
             int ShapeType = rf.getInt();
-            DefaultFeature f = new DefaultFeature();
+            final DefaultFeature f = new DefaultFeature(featureType);
 
             if (ShapeType == ShapeTypeEnum.Point.getValue()) {
                 double x = rf.getDouble();
                 double y = rf.getDouble();
                 Point pnt = new Point(x,y);
-                f.setGeom(pnt);
+                f.setAttributeValue(GEOMETRY_NAME, pnt);
 
             } else if (ShapeType == ShapeTypeEnum.Polygon.getValue()) {
                 double xmin = rf.getDouble();
@@ -185,7 +191,7 @@ public class ShapeFile {
                     ypnt = rf.getDouble();
                     poly.lineTo(xpnt, ypnt);
                 }
-                f.setGeom(poly);
+                f.setAttributeValue(GEOMETRY_NAME, poly);
 
             } else if (ShapeType == ShapeTypeEnum.PolyLine.getValue()) {
                 double xmin = rf.getDouble();
@@ -221,7 +227,7 @@ public class ShapeFile {
                     }
                 }
 
-                f.setGeom(ply);
+                f.setAttributeValue(GEOMETRY_NAME, ply);
 
             } else {
                 throw new DataStoreException("Unsupported shapefile type: " + this.ShapeType);
@@ -248,6 +254,21 @@ public class ShapeFile {
         fc2.close();
         fis.close();
         fis2.close();
+    }
+
+    private DefaultFeatureType getFeatureType(final String name) {
+        final int n = FDArray.size();
+        final DefaultAttributeType<?>[] attributes = new DefaultAttributeType<?>[n + 1];
+        final NumberRange<Integer> cardinality = NumberRange.create(1, true, 1, true);
+        final Map<String,Object> properties = new HashMap<>(4);
+        for (int i=0; i<n; i++) {
+            properties.put(DefaultAttributeType.NAME_KEY, FDArray.get(i).getName());
+            attributes[i] = new DefaultAttributeType<>(properties, String.class, null, cardinality);
+        }
+        properties.put(DefaultAttributeType.NAME_KEY, GEOMETRY_NAME);
+        attributes[n] = new DefaultAttributeType<>(properties, Geometry.class, null, cardinality);
+        properties.put(DefaultAttributeType.NAME_KEY, name);
+        return new DefaultFeatureType(properties, false, null, attributes);
     }
 
     @Override
