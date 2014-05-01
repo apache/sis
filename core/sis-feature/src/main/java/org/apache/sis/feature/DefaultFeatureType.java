@@ -19,10 +19,16 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Collections;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.lang.reflect.Field;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -40,12 +46,18 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * When such interface will be available, most references to {@code DefaultFeatureType} in the API
  * will be replaced by references to the {@code FeatureType} interface.</div>
  *
+ * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  */
 public class DefaultFeatureType extends AbstractIdentifiedType {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -4357370600723922312L;
+
     /**
      * If {@code true}, the feature type acts as an abstract super-type.
      *
@@ -63,6 +75,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * that carries characteristics of a feature type.
      */
     private final List<DefaultAttributeType<?>> characteristics;
+
+    /**
+     * A lookup table for fetching properties by name.
+     * This map shall not be modified after construction.
+     *
+     * @see #getProperty(String)
+     */
+    private final transient Map<String, DefaultAttributeType<?>> byName;
 
     /**
      * Constructs a feature type from the given properties. The properties map is given unchanged to
@@ -105,33 +125,64 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *        association role that carries characteristics of a feature type.
      */
     public DefaultFeatureType(final Map<String,?> properties, final boolean isAbstract,
-            final DefaultFeatureType[] superTypes, final DefaultAttributeType... characteristics)
+            final DefaultFeatureType[] superTypes, final DefaultAttributeType<?>... characteristics)
     {
         super(properties);
         ArgumentChecks.ensureNonNull("characteristics", characteristics);
         this.isAbstract = isAbstract;
         this.superTypes = (superTypes == null) ? Collections.<DefaultFeatureType>emptySet() :
                           CollectionsExt.<DefaultFeatureType>immutableSet(true, superTypes);
-        final DefaultAttributeType<?>[] copy = new DefaultAttributeType<?>[characteristics.length];
-        for (int i=0; i<characteristics.length; i++) {
-            copy[i] = characteristics[i];
-            ArgumentChecks.ensureNonNullElement("characteristics", i, copy);
-            /*
-             * Ensure there is no conflict in property names.
-             */
-            final GenericName name = copy[i].getName();
+        this.characteristics = (List) UnmodifiableArrayList.wrap(Arrays.copyOf(
+                characteristics, characteristics.length, DefaultAttributeType[].class));
+        byName = byName(this.characteristics);
+    }
+
+    /**
+     * Creates a (<var>name</var>, <var>property</var>) map from the given list.
+     * This is used only for performance purpose when searching for attributes.
+     *
+     * <p>As a side effect, this method checks for missing or duplicated names.</p>
+     *
+     * @param  characteristics The list to convert to a (<var>name</var>, <var>property</var>) map.
+     * @return The map of properties.
+     * @throws IllegalArgumentException if two properties have the same name.
+     */
+    private static Map<String, DefaultAttributeType<?>> byName(final List<DefaultAttributeType<?>> characteristics) {
+        final int length = characteristics.size();
+        final Map<String, DefaultAttributeType<?>> byName =
+                new HashMap<String, DefaultAttributeType<?>>(Containers.hashMapCapacity(length));
+        for (int i=0; i<length; i++) {
+            final DefaultAttributeType<?> c = characteristics.get(i);
+            ArgumentChecks.ensureNonNullElement("characteristics", i, c);
+            final GenericName name = c.getName();
             if (name == null) {
                 throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.MissingValueForProperty_1, "characteristics[" + i + "].name"));
             }
-            for (int j=i; --j >= 0;) {
-                if (name.equals(copy[j].getName())) {
-                    throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.DuplicatedIdentifier_1, name));
-                }
+            final String s = name.toString();
+            if (byName.put(s, c) != null) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, s));
             }
         }
-        this.characteristics = UnmodifiableArrayList.wrap(copy);
+        return byName;
+    }
+
+    /**
+     * Invoked on deserialization for restoring the {@link #byName} map.
+     *
+     * @param  in The input stream from which to deserialize a feature type.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        try {
+            final Field field = DefaultFeatureType.class.getDeclaredField("byName");
+            field.setAccessible(true);
+            field.set(this, byName(characteristics));
+        } catch (Exception e) { // ReflectiveOperationException on the JDK7 branch.
+            throw new AssertionError(e);
+        }
     }
 
     /**
@@ -164,5 +215,44 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      */
     public List<DefaultAttributeType<?>> getCharacteristics() {
         return characteristics;
+    }
+
+    /**
+     * Returns the attribute, operation or association role for the given name.
+     *
+     * @param  name The name of the property to search.
+     * @return The property for the given name, or {@code null} if none.
+     */
+    final DefaultAttributeType<?> getProperty(final String name) {
+        return byName.get(name);
+    }
+
+    /**
+     * Returns a hash code value for this feature type.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + superTypes.hashCode() + 37*superTypes.hashCode();
+    }
+
+    /**
+     * Compares this feature type with the given object for equality.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (super.equals(obj)) {
+            final DefaultFeatureType that = (DefaultFeatureType) obj;
+            return isAbstract == that.isAbstract &&
+                   superTypes.equals(that.superTypes) &&
+                   characteristics.equals(that.characteristics);
+        }
+        return false;
     }
 }

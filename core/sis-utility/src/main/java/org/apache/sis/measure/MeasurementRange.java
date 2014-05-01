@@ -51,7 +51,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see RangeFormat
@@ -72,6 +72,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * Constructs a range of {@code float} values.
+     * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       The minimal value, or {@link Float#NEGATIVE_INFINITY} if none.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -83,13 +84,14 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     public static MeasurementRange<Float> create(float minValue, boolean isMinIncluded,
                                                  float maxValue, boolean isMaxIncluded, Unit<?> unit)
     {
-        return new MeasurementRange<Float>(Float.class,
+        return unique(new MeasurementRange<Float>(Float.class,
                 valueOf("minValue", minValue, Float.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded, unit);
+                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded, unit));
     }
 
     /**
      * Constructs a range of {@code double} values.
+     * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       The minimal value, or {@link Double#NEGATIVE_INFINITY} if none.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -101,15 +103,17 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     public static MeasurementRange<Double> create(double minValue, boolean isMinIncluded,
                                                   double maxValue, boolean isMaxIncluded, Unit<?> unit)
     {
-        return new MeasurementRange<Double>(Double.class,
+        return unique(new MeasurementRange<Double>(Double.class,
                 valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded, unit);
+                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded, unit));
     }
 
     /**
      * Constructs a range using the smallest type of {@link Number} that can hold the given values.
      * This method performs the same work than {@link NumberRange#createBestFit
      * NumberRange.createBestFit(…)} with an additional {@code unit} argument.
+     *
+     * <p>This method may return a shared instance, at implementation choice.</p>
      *
      * @param  minValue       The minimal value, or {@code null} if none.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -126,9 +130,12 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     {
         final Class<? extends Number> type = Numbers.widestClass(
                 Numbers.narrowestClass(minValue), Numbers.narrowestClass(maxValue));
-        return (type == null) ? null :
-            new MeasurementRange(type, Numbers.cast(minValue, type), isMinIncluded,
-                                       Numbers.cast(maxValue, type), isMaxIncluded, unit);
+        if (type == null) {
+            return null;
+        }
+        return (MeasurementRange) unique(new MeasurementRange(type,
+                Numbers.cast(minValue, type), isMinIncluded,
+                Numbers.cast(maxValue, type), isMaxIncluded, unit));
     }
 
     /**
