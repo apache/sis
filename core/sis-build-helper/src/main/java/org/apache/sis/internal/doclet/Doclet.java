@@ -33,7 +33,7 @@ import com.sun.tools.doclets.formats.html.HtmlDoclet;
  * A doclet which delegates the work to the standard doclet, except for the {@code -stylesheet} option.
  * Rather than overwriting the standard stylesheet with the given one, this keep both the standard and
  * the specified stylesheets as separated files. The standard stylesheet will be renamed {@code standard.css}.
- * The stylesheet provided by the user shall contains an import stantement for the standard stylesheet.
+ * The stylesheet provided by the user shall contains an import statement for the standard stylesheet.
  *
  * <p>This class presumes that all CSS files are encoded in UTF-8.</p>
  *

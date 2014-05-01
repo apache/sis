@@ -17,11 +17,12 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
-import org.apache.sis.measure.Range;
+import org.opengis.util.GenericName;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.measure.NumberRange;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -44,11 +45,12 @@ import org.apache.sis.internal.jdk7.Objects;
  * When such interface will be available, most references to {@code DefaultAttributeType} in the API
  * will be replaced by references to the {@code AttributeType} interface.</div>
  *
- * @param <T> The value type.
+ * @param <T> The type of attribute values.
  *
+ * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  */
 public class DefaultAttributeType<T> extends AbstractIdentifiedType {
@@ -65,21 +67,6 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
     private final Class<T> valueClass;
 
     /**
-     * The minimum and maximum attribute value with their unit of measurement, or {@code null} if none.
-     * If this field is non-null, then <code>valueDomain.{@linkplain Range#getElementType() getElementType()}</code>
-     * shall be one of the following:
-     *
-     * <ul>
-     *   <li>If {@link #valueClass} is not an array, then the range element type shall be the same class.</li>
-     *   <li>If {@code valueClass} is an array, then the range element type shall be the wrapper of
-     *       <code>valueClass.{@linkplain Class#getComponentType() getComponentType()}</code>.</li>
-     * </ul>
-     *
-     * @see #getValueDomain()
-     */
-    private final Range<?> valueDomain;
-
-    /**
      * The default value for the attribute, or {@code null} if none.
      *
      * @see #getDefaultValue()
@@ -88,11 +75,8 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
 
     /**
      * The minimum/maximum number of occurrences of the property within its containing entity.
-     *
-     * @see #getMinimumOccurs()
-     * @see #getMaximumOccurs()
      */
-    private final int minimumOccurs, maximumOccurs;
+    private final NumberRange<Integer> cardinality;
 
     /**
      * Constructs an attribute type from the given properties. The properties map is given unchanged to
@@ -128,61 +112,30 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
      *   </tr>
      * </table>
      *
-     * {@section Domain of attribute values}
-     * If {@code valueDomain} argument is non-null, then it shall comply to the following conditions:
-     *
-     * <ul>
-     *   <li>The range shall be non-{@linkplain Range#isEmpty() empty}.</li>
-     *   <li><code>valueDomain.{@linkplain Range#getElementType() getElementType()}</code> shall be equals
-     *       to one of the following:
-     *     <ul>
-     *       <li>to {@code valueClass} if the later is not an array,</li>
-     *       <li>or to <code>{@linkplain Numbers#primitiveToWrapper(Class)
-     *           primitiveToWrapper}(valueClass.{@linkplain Class#getComponentType() getComponentType()})</code>
-     *           if {@code valueClass} is an array.</li>
-     *     </ul>
-     *   </li>
-     * </ul>
-     *
      * @param properties    The name and other properties to be given to this attribute type.
      * @param valueClass    The type of attribute values.
-     * @param valueDomain   The minimum value, maximum value and unit of measurement, or {@code null} if none.
      * @param defaultValue  The default value for the attribute, or {@code null} if none.
-     * @param minimumOccurs The minimum number of occurrences of the property within its containing entity.
-     * @param maximumOccurs The maximum number of occurrences of the property within its containing entity,
-     *                      or {@link Integer#MAX_VALUE} if none.
+     * @param cardinality   The minimum and maximum number of occurrences of the property within its containing entity,
+     *                      or {@code null} if there is no restriction.
      */
-    public DefaultAttributeType(final Map<String,?> properties, final Class<T> valueClass, final Range<?> valueDomain,
-            final T defaultValue, final int minimumOccurs, final int maximumOccurs)
+    public DefaultAttributeType(final Map<String,?> properties, final Class<T> valueClass, final T defaultValue,
+            NumberRange<Integer> cardinality)
     {
         super(properties);
         ensureNonNull("valueClass",   valueClass);
         ensureCanCast("defaultValue", valueClass, defaultValue);
-        if (minimumOccurs < 0 || minimumOccurs > maximumOccurs) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
-        }
-        if (valueDomain != null) {
-            Class<?> componentType = valueClass.getComponentType();
-            if (componentType != null) {
-                componentType = Numbers.primitiveToWrapper(componentType);
-            } else {
-                componentType = valueClass;
-            }
-            final Class<?> elementType = valueDomain.getElementType();
-            if (elementType != componentType) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
-                        "valueDomain", "Range<" + Classes.getShortName(elementType) + '>'));
-            }
-            if (valueDomain.isEmpty()) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2,
-                        valueDomain.getMinValue(), valueDomain.getMaxValue()));
+        if (cardinality == null) {
+            cardinality = NumberRange.createLeftBounded(0, true);
+        } else {
+            final Integer minValue = cardinality.getMinValue();
+            if (minValue == null || minValue < 0) {
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.IllegalArgumentValue_2, "cardinality", cardinality));
             }
         }
-        this.valueClass    = valueClass;
-        this.valueDomain   = valueDomain;
-        this.defaultValue  = Numerics.cached(defaultValue);
-        this.minimumOccurs = minimumOccurs;
-        this.maximumOccurs = maximumOccurs;
+        this.valueClass   = valueClass;
+        this.defaultValue = Numerics.cached(defaultValue);
+        this.cardinality  = cardinality;
     }
 
     /**
@@ -195,23 +148,6 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
     }
 
     /**
-     * Returns the domain of values with their unit of measurement (if any), or {@code null} if none.
-     *
-     * <div class="note"><b>API note:</b> If this method returns a non-null value, then its type is either exactly
-     * {@code Range<T>}, or {@code Range<E>} where {@code <E>} is the {@linkplain Class#getComponentType() component
-     * type} of {@code <T>} (using wrapper classes for primitive types).</div>
-     *
-     * @return The domain of values, or {@code null}.
-     */
-    /* Implementation note: this method is final because the constructor performs various checks on range validity,
-     * and we can not express those rules in the method signature. If the user was allowed to override this method,
-     * there is no way we can ensure that the range element type still valid.
-     */
-    public final Range<?> getValueDomain() {
-        return valueDomain;
-    }
-
-    /**
      * Returns the default value for the attribute.
      * This value is used when an attribute is created and no value for it is specified.
      *
@@ -221,25 +157,27 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
         return defaultValue;
     }
 
-    /**
-     * Returns the minimum number of occurrences of the property within its containing entity.
-     * This value is always an integer greater than or equal to zero.
+    /*
+     * ISO 19109 properties omitted for now:
      *
-     * @return The minimum number of occurrences of the property within its containing entity.
+     *   - valueDomain : CharacterString
+     *
+     * Rational: a CharacterString is hardly programmatically usable. A Range would be better but too specific.
+     * We could follow the GeoAPI path and define a "restrictions : Filter" property. That would be more generic,
+     * but we are probably better to wait for Filter to be implemented in SIS.
+     *
+     * Reference: https://issues.apache.org/jira/browse/SIS-175
      */
-    public int getMinimumOccurs() {
-        return minimumOccurs;
-    }
 
     /**
-     * The maximum number of occurrences of the property within its containing entity.
-     * A value of {@link Integer#MAX_VALUE} means that the maximum number of occurrences is unbounded.
+     * Returns the minimum and maximum number of occurrences of the property within its containing entity.
+     * The bounds are always integer values greater than or equal to zero. The upper bounds may be {@code null}
+     * if there is no maximum number of occurrences.
      *
-     * @return The maximum number of occurrences of the property within its containing entity,
-     *         or {@link Integer#MAX_VALUE} if none.
+     * @return The minimum and maximum number of occurrences of the property within its containing entity.
      */
-    public int getMaximumOccurs() {
-        return maximumOccurs;
+    public NumberRange<Integer> getCardinality() {
+        return cardinality;
     }
 
     /**
@@ -249,8 +187,7 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + valueClass.hashCode() + Objects.hashCode(valueDomain) +
-               31*(Objects.hashCode(defaultValue) + 31*(minimumOccurs + 31*maximumOccurs));
+        return super.hashCode() + valueClass.hashCode() + Objects.hashCode(defaultValue) + 31*cardinality.hashCode();
     }
 
     /**
@@ -265,12 +202,38 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
         }
         if (super.equals(obj)) {
             final DefaultAttributeType<?> that = (DefaultAttributeType<?>) obj;
-            return valueClass    == that.valueClass    &&
-                   minimumOccurs == that.minimumOccurs &&
-                   maximumOccurs == that.maximumOccurs &&
-                   Objects.equals(valueDomain,  that.valueDomain) &&
-                   Objects.equals(defaultValue, that.defaultValue);
+            return valueClass == that.valueClass &&
+                   Objects.equals(defaultValue, that.defaultValue) &&
+                   cardinality.equals(that.cardinality);
         }
         return false;
+    }
+
+    /**
+     * Returns a string representation of this attribute type.
+     * The returned string is for debugging purpose and may change in any future SIS version.
+     *
+     * @return A string representation of this attribute type for debugging purpose.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        return toString("AttributeType").toString();
+    }
+
+    /**
+     * Implementation of {@link #toString()} to be shared by {@link DefaultAttribute#toString()}.
+     */
+    final StringBuilder toString(final String typeName) {
+        final StringBuilder buffer = new StringBuilder(40).append(typeName).append('[');
+        final GenericName name = super.getName();
+        if (name != null) {
+            buffer.append('“');
+        }
+        buffer.append(name);
+        if (name != null) {
+            buffer.append("” : ");
+        }
+        return buffer.append(Classes.getShortName(valueClass)).append(']');
     }
 }

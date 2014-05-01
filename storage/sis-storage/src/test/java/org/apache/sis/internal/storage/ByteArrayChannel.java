@@ -109,7 +109,7 @@ final strictfp class ByteArrayChannel implements ByteChannel {
      */
     public ByteArrayChannel position(final long newPosition) throws IOException {
         ensureOpen();
-        ArgumentChecks.ensureBetween("position", 0, limit, newPosition);
+        ArgumentChecks.ensureBetween("position", 0, data.length, newPosition);
         position = (int) newPosition;
         return this;
     }
