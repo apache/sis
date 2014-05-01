@@ -19,7 +19,6 @@ package org.apache.sis.internal.taglet;
 import java.util.*;
 import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
-import com.sun.tools.doclets.formats.html.ConfigurationImpl;
 
 
 /**
@@ -118,7 +117,7 @@ public final class Preformat extends InlineTaglet {
         try {
             style = Style.valueOf(format);
         } catch (IllegalArgumentException e) {
-            ConfigurationImpl.getInstance().root.printWarning(tag.position(), "Unknown format: " + format);
+            printWarning(tag.position(), "Unknown format: " + format);
             style = Style.text;
         }
         /*

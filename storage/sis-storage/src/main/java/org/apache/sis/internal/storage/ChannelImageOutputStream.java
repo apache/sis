@@ -26,7 +26,6 @@ import javax.imageio.stream.ImageOutputStream;
 import org.apache.sis.util.resources.Errors;
 
 
-
 /**
  * Adds the missing methods in {@code ChannelDataOutput} for implementing the {@code DataOutput} interface.
  * Current implementation does not yet implements the {@code ImageOutputStream} sub-interface, but a future

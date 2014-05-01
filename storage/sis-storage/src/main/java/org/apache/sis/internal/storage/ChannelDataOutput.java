@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Arrays;
 import java.io.Flushable;
 import java.io.IOException;
 import java.nio.Buffer;
@@ -105,7 +106,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
         if (after > buffer.limit()) {
             /*
              * We will increase the limit for every new 'put' operation in order to maintain the number
-             * of valid bytes in the buffer. In the new limit would exceed the buffer capacity, then we
+             * of valid bytes in the buffer. If the new limit would exceed the buffer capacity, then we
              * need to write some bytes now.
              */
             if (after > capacity) {
@@ -479,7 +480,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             while ((length -= n) != 0) {
                 offset += n;
                 ensureBufferAccepts(Math.min(length, view.capacity()) * dataSize);
-                view.position(0).limit(buffer.remaining() / dataSize);
+                view.rewind().limit(buffer.remaining() / dataSize);
                 transfer(offset, n = view.remaining());
                 skipInBuffer(n * dataSize);
             }
@@ -583,7 +584,25 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     }
 
     /**
+     * Fills the buffer with the zero values from its position up to the limit.
+     * After this method call, the position is undetermined and shall be set to
+     * a new value by the caller.
+     */
+    private void clear() {
+        if (buffer.hasArray()) {
+            final int offset = buffer.arrayOffset();
+            Arrays.fill(buffer.array(), offset + buffer.position(), offset + buffer.limit(), (byte) 0);
+        } else {
+            while (buffer.hasRemaining()) {
+                buffer.put((byte) 0);
+            }
+        }
+    }
+
+    /**
      * Moves to the given position in the stream, relative to the stream position at construction time.
+     * If the given position is greater than the stream length, then the values of bytes between the
+     * previous stream length and the given position are unspecified. The limit is unchanged.
      *
      * @param  position The position where to move.
      * @throws IOException If the stream can not be moved to the given position.
@@ -605,6 +624,30 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             flush();
             ((SeekableByteChannel) channel).position(channelOffset + position);
             bufferOffset = position;
+        } else if (p >= 0) {
+            /*
+             * Requested position is after the current buffer limit and
+             * we can not seek, so we have to pad with some zero values.
+             */
+            p -= buffer.limit();
+            flush(); // Also set the position to 0.
+            if (p <= buffer.capacity()) {
+                buffer.limit((int) p);
+                clear();
+                buffer.position((int) p);
+            } else {
+                buffer.clear();
+                clear();
+                do {
+                    if (channel.write(buffer) == 0) {
+                        onEmptyTransfer();
+                    }
+                    bufferOffset += buffer.position();
+                    p -= buffer.position();
+                    buffer.rewind();
+                } while (p > buffer.capacity());
+                buffer.limit((int) p).position((int) p);
+            }
         } else {
             // We can not move position beyond the buffered part.
             throw new IOException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, filename));
@@ -619,7 +662,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      */
     @Override
     public final void flush() throws IOException {
-        buffer.position(0);
+        buffer.rewind();
         writeFully();
         buffer.limit(0);
         clearBitOffset();
@@ -633,7 +676,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     @Override
     final void flushAndSetPosition(final int position) throws IOException {
         final int limit = buffer.limit();
-        buffer.position(0).limit(position);
+        buffer.rewind().limit(position);
         writeFully();
         buffer.limit(limit);
     }
