@@ -17,6 +17,8 @@
 package org.apache.sis.internal.taglet;
 
 import com.sun.javadoc.Tag;
+import com.sun.javadoc.RootDoc;
+import com.sun.javadoc.SourcePosition;
 import com.sun.tools.doclets.Taglet;
 import com.sun.tools.doclets.internal.toolkit.Configuration;
 import com.sun.tools.doclets.formats.html.ConfigurationImpl;
@@ -42,7 +44,7 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Returns the doclet configuration.
      */
-    static synchronized Configuration getConfiguration() {
+    private static synchronized Configuration getConfiguration() {
         if (configuration == null) {
             configuration = new ConfigurationImpl();
         }
@@ -141,5 +143,29 @@ abstract class InlineTaglet implements Taglet {
             buffer.append(toString(tags[i]));
         }
         return buffer.toString();
+    }
+
+    /**
+     * Prints a warning message.
+     */
+    static void printWarning(final SourcePosition position, final String message) {
+        final RootDoc root = getConfiguration().root;
+        if (root != null) {
+            root.printWarning(position, message);
+        } else {
+            System.err.println(message);
+        }
+    }
+
+    /**
+     * Prints an error message.
+     */
+    static void printError(final SourcePosition position, final String message) {
+        final RootDoc root = getConfiguration().root;
+        if (root != null) {
+            root.printError(position, message);
+        } else {
+            System.err.println(message);
+        }
     }
 }
