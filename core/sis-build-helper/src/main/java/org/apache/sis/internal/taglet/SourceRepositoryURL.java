@@ -19,7 +19,6 @@ package org.apache.sis.internal.taglet;
 import java.util.Map;
 import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
-import com.sun.tools.doclets.formats.html.ConfigurationImpl;
 
 
 /**
@@ -87,7 +86,7 @@ public final class SourceRepositoryURL extends InlineTaglet {
                 url.append("/core/sis-referencing/src/test/resources/org/apache/sis/referencing");
             }
             else {
-                ConfigurationImpl.getInstance().root.printWarning(tag.position(), "Unknown keyword: " + keyword);
+                printWarning(tag.position(), "Unknown keyword: " + keyword);
             }
         }
         return url.toString();

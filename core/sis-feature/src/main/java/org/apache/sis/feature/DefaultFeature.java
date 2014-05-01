@@ -18,47 +18,157 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.HashMap;
-import com.esri.core.geometry.Geometry;
+import java.util.ConcurrentModificationException;
+import java.io.Serializable;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.JDK7;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * Simple Feature class.
+ * An instance of {@linkplain DefaultFeatureType feature type} containing values for a real-world phenomena.
  *
  * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.5
+ * @version 0.5
  * @module
  */
-public class DefaultFeature {
+public class DefaultFeature implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 6594295132544357870L;
 
-    private Map<String, String> record;
-    private Geometry geom;
+    /**
+     * Information about the feature (name, characteristics, <i>etc.</i>).
+     */
+    private final DefaultFeatureType type;
 
-    public Map<String, String> getRecord() {
-        return record;
+    /**
+     * The properties (attributes, operations, feature associations) of this feature.
+     */
+    private final Map<String, DefaultAttribute<?>> properties;
+
+    /**
+     * Creates a new features.
+     *
+     * @param type Information about the feature (name, characteristics, <i>etc.</i>).
+     */
+    public DefaultFeature(final DefaultFeatureType type) {
+        ArgumentChecks.ensureNonNull("type", type);
+        this.type = type;
+        properties = new HashMap<String, DefaultAttribute<?>>(
+                Math.min(16, Containers.hashMapCapacity(type.getCharacteristics().size())));
     }
 
-    public void setRecord(HashMap<String, String> record) {
-        this.record = record;
+    /**
+     * Returns information about the feature (name, characteristics, <i>etc.</i>).
+     *
+     * @return Information about the feature.
+     */
+    public DefaultFeatureType getType() {
+        return type;
     }
 
-    public Geometry getGeom() {
-        return geom;
+    /**
+     * Returns the value of the attribute of the given name.
+     *
+     * @param  name The attribute name.
+     * @return The value for the given attribute, or {@code null} if none.
+     */
+    public Object getAttributeValue(final String name) {
+        final DefaultAttribute<?> attribute = properties.get(name);
+        if (attribute == null) {
+            final DefaultAttributeType<?> at = type.getProperty(name);
+            if (at == null) {
+                throw new IllegalArgumentException(propertyNotFound(name));
+            }
+            return at.getDefaultValue();
+        }
+        return attribute.getValue();
     }
 
-    public void setGeom(Geometry geom) {
-        this.geom = geom;
+    /**
+     * Sets the value of the attribute of the given name.
+     *
+     * @param name  The attribute name.
+     * @param value The new value for the given attribute (may be {@code null}).
+     */
+    @SuppressWarnings("unchecked")
+    public void setAttributeValue(final String name, final Object value) {
+        DefaultAttribute<?> attribute = properties.get(name);
+        if (attribute == null) {
+            final DefaultAttributeType<?> at = type.getProperty(name);
+            if (at == null) {
+                throw new IllegalArgumentException(propertyNotFound(name));
+            }
+            if (Objects.equals(value, at.getDefaultValue())) {
+                return; // Avoid creating the attribute if not necessary.
+            }
+            attribute = new DefaultAttribute(at);
+            if (properties.put(name, attribute) != null) {
+                throw new ConcurrentModificationException();
+            }
+        }
+        ArgumentChecks.ensureCanCast(name, attribute.getType().getValueClass(), value);
+        ((DefaultAttribute) attribute).setValue(value);
     }
 
+    /**
+     * Returns the error message for a property not found.
+     */
+    private String propertyNotFound(final String name) {
+        return Errors.format(Errors.Keys.PropertyNotFound_2, type.getName(), name);
+    }
+
+    /**
+     * Returns a hash code value for this feature.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return type.hashCode() + 37 * properties.hashCode();
+    }
+
+    /**
+     * Compares this feature with the given object for equality.
+     *
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (super.equals(obj)) {
+            final DefaultFeature that = (DefaultFeature) obj;
+            return type.equals(that.type) &&
+                   properties.equals(that.properties);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a string representation of this feature.
+     * The returned string is for debugging purpose and may change in any future SIS version.
+     *
+     * @return A string representation of this feature for debugging purpose.
+     */
+    @Debug
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         final String lineSeparator = JDK7.lineSeparator();
-        for (String s : this.record.keySet()) {
-            sb.append(s).append(": ").append(record.get(s)).append(lineSeparator);
+        for (final DefaultAttribute<?> attribute : properties.values()) {
+            sb.append(attribute.getType().getName()).append(": ").append(attribute.getValue()).append(lineSeparator);
         }
         return sb.toString();
     }
