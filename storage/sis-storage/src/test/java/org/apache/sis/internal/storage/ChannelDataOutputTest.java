@@ -24,6 +24,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.InvalidMarkException;
+import java.nio.channels.ByteChannel;
 import javax.imageio.stream.ImageOutputStream;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
@@ -85,6 +86,20 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     }
 
     /**
+     * May be invoked after {@link #initialize(String, int, int)} for replacing the seekable byte channel
+     * by a non-seekable one. Used for testing different code paths in {@link ChannelDataOutput}.
+     */
+    private void nonSeekableChannel() throws IOException {
+        final ByteChannel channel = (ByteChannel) testedStream.channel;
+        testedStream = new ChannelDataOutput(testedStream.filename, new ByteChannel() {
+            @Override public boolean isOpen()                                 {return channel.isOpen();}
+            @Override public int     read(ByteBuffer dst)  throws IOException {return channel.read(dst);}
+            @Override public int     write(ByteBuffer src) throws IOException {return channel.write(src);}
+            @Override public void    close()               throws IOException {channel.close();}
+        }, testedStream.buffer);
+    }
+
+    /**
      * Fills a stream with random data and compares the result with a reference output stream.
      * We allocate a small buffer for the {@code ChannelDataOutput} in order to force frequent
      * interactions between the buffer and the channel.
@@ -136,6 +151,42 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     }
 
     /**
+     * Tests seeking ahead of buffer capacity.
+     *
+     * @throws IOException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testWriteAndSeek")
+    public void testSeekAhead() throws IOException {
+        testSeekAhead(true);
+        testSeekAhead(false);
+    }
+
+    /**
+     * Implementation of {@link #testSeekAhead()} method, testing two different code paths depending
+     * on the {@code seekable} argument value. Note: the two code paths are actually identical on JDK 6.
+     */
+    private void testSeekAhead(final boolean seekable) throws IOException {
+        initialize("testArgumentChecks", 48, 10);
+        if (!seekable) {
+            nonSeekableChannel();
+        }
+        for (int i=0; i<3; i++) {
+            final long v = random.nextLong();
+            referenceStream.writeLong(v);
+            testedStream.writeLong(v);
+        }
+        assertEquals("getStreamPosition()", 24, testedStream.getStreamPosition());
+        testedStream.seek(40); // Move 2 long ahead. Space shall be filled by 0.
+        referenceStream.writeLong(0);
+        referenceStream.writeLong(0);
+        final long v = random.nextLong();
+        referenceStream.writeLong(v);
+        testedStream.writeLong(v);
+        assertStreamContentEquals();
+    }
+
+    /**
      * Tests the argument checks performed by various methods. For example this method
      * tests {@link ChannelDataOutput#seek(long)} with an invalid seek position.
      *
@@ -150,13 +201,6 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("bitOffset"));
-        }
-        try {
-            testedStream.seek(1);
-            fail("Shall not seek further than stream length.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("position"));
         }
         try {
             testedStream.reset();

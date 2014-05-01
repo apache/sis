@@ -19,8 +19,10 @@ package org.apache.sis.internal.storage;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.util.ArgumentChecks;
+
+// Related to JDK7
+import java.nio.channels.SeekableByteChannel;
 
 
 /**
@@ -109,7 +111,7 @@ final strictfp class ByteArrayChannel implements SeekableByteChannel {
     @Override
     public SeekableByteChannel position(final long newPosition) throws IOException {
         ensureOpen();
-        ArgumentChecks.ensureBetween("position", 0, limit, newPosition);
+        ArgumentChecks.ensureBetween("position", 0, data.length, newPosition);
         position = (int) newPosition;
         return this;
     }
