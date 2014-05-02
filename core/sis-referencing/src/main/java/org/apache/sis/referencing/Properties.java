@@ -319,12 +319,9 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
             throw new NoSuchElementException();
         }
 
-        /**
-         * Unsupported operation, since this map is read-only.
+        /*
+         * remove() is an unsupported operation since this map is read-only.
+         * So we inherit the default implementation from Iterator.
          */
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
     }
 }

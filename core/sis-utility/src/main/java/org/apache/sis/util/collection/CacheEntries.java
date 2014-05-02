@@ -150,13 +150,9 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
             throw new NoSuchElementException();
         }
 
-        /**
-         * Unsupported operation, because the wrapped iterator is not after the proper element
-         * (it is after the next one).
+        /*
+         * remove() is an unsupported operation because the wrapped iterator is not after the proper element
+         * (it is after the next one). So we inherit the default implementation from Iterator.
          */
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
     }
 }
