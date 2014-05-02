@@ -437,7 +437,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <encoding>${project.build.sourceEncoding}</encoding>
           <compilerArgs>
             <arg>-Xlint:all</arg>
-            <arg>-Xdoclint:syntax,missing,accessibility/private</arg>
+            <arg>-Xdoclint:syntax,html,missing,accessibility/private</arg>
           </compilerArgs>
         </configuration>
       </plugin>
@@ -597,7 +597,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <additionalparam>
               -link http://www.geoapi.org/snapshot/javadoc/
               -link http://www.geoapi.org/snapshot/pending/
-              -Xdoclint:syntax -Xdoclint:missing -Xdoclint:accessibility
+              -Xdoclint:syntax -Xdoclint:html -Xdoclint:missing -Xdoclint:accessibility
           </additionalparam>
 
           <!-- Separates packages on the overview page into the groups specified. -->
@@ -649,6 +649,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <taglets>
             <taglet><tagletClass>org.apache.sis.internal.taglet.Module</tagletClass></taglet>
             <taglet><tagletClass>org.apache.sis.internal.taglet.Section</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Include</tagletClass></taglet>
             <taglet><tagletClass>org.apache.sis.internal.taglet.Preformat</tagletClass></taglet>
             <taglet><tagletClass>org.apache.sis.internal.taglet.SourceRepositoryURL</tagletClass></taglet>
           </taglets>
