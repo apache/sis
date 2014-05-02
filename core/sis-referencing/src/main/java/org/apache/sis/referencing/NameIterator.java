@@ -86,13 +86,10 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
         return n;
     }
 
-    /**
-     * Unsupported operation since this iterator is read-only.
+    /*
+     * remove() is an unsupported operation since this iterator is read-only.
+     * So we inherit the default implementation from Iterator.
      */
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
 
     /**
      * Returns the number of name and aliases in the given object.

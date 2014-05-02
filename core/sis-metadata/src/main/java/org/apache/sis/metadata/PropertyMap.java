@@ -135,13 +135,10 @@ abstract class PropertyMap<V> extends AbstractMap<String,V> {
             return index < accessor.count();
         }
 
-        /**
-         * Assumes that the underlying map is unmodifiable.
+        /*
+         * remove() is an unsupported operation since we assume that the underlying map is unmodifiable.
+         * So we inherit the default implementation from Iterator.
          */
-        @Override
-        public final void remove() {
-            throw new UnsupportedOperationException();
-        }
     }
 
 
