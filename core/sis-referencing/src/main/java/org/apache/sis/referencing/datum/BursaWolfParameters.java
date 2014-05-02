@@ -79,54 +79,8 @@ import java.util.Objects;
  *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)</center>
  * <center style="font-size: small">(ignoring unit conversions)</center>
  *
- * <p><math display="block" alttext="MathML capable browser required">
- *   <mfenced open="[" close="]">
- *     <mtable>
- *       <mtr><mtd><msub><mi>X</mi><mi>t</mi></msub></mtd></mtr>
- *       <mtr><mtd><msub><mi>Y</mi><mi>t</mi></msub></mtd></mtr>
- *       <mtr><mtd><msub><mi>Z</mi><mi>t</mi></msub></mtd></mtr>
- *     </mtable>
- *   </mfenced>
- *   <mo>=</mo>
- *   <mo>(</mo><mn>1</mn><mo>+</mo><mi>dS</mi><mo>)</mo>
- *   <mo>⋅</mo>
- *   <mfenced open="[" close="]">
- *     <mtable>
- *       <mtr>
- *         <mtd><mn>1</mn></mtd>
- *         <mtd><mo>-</mo><msub><mi>r</mi><mi>z</mi></msub></mtd>
- *         <mtd><mo>+</mo><msub><mi>r</mi><mi>y</mi></msub></mtd>
- *       </mtr>
- *       <mtr>
- *         <mtd><mo>+</mo><msub><mi>r</mi><mi>z</mi></msub></mtd>
- *         <mtd><mn>1</mn></mtd>
- *         <mtd><mo>-</mo><msub><mi>r</mi><mi>x</mi></msub></mtd>
- *       </mtr>
- *       <mtr>
- *         <mtd><mo>-</mo><msub><mi>r</mi><mi>y</mi></msub></mtd>
- *         <mtd><mo>+</mo><msub><mi>r</mi><mi>x</mi></msub></mtd>
- *         <mtd><mn>1</mn></mtd>
- *       </mtr>
- *     </mtable>
- *   </mfenced>
- *   <mo>×</mo>
- *   <mfenced open="[" close="]">
- *     <mtable>
- *       <mtr><mtd><msub><mi>X</mi><mi>s</mi></msub></mtd></mtr>
- *       <mtr><mtd><msub><mi>Y</mi><mi>s</mi></msub></mtd></mtr>
- *       <mtr><mtd><msub><mi>Z</mi><mi>s</mi></msub></mtd></mtr>
- *     </mtable>
- *   </mfenced>
- *   <mo>+</mo>
- *   <mfenced open="[" close="]">
- *     <mtable>
- *       <mtr><mtd><msub><mi>t</mi><mi>x</mi></msub></mtd></mtr>
- *       <mtr><mtd><msub><mi>t</mi><mi>y</mi></msub></mtd></mtr>
- *       <mtr><mtd><msub><mi>t</mi><mi>z</mi></msub></mtd></mtr>
- *     </mtable>
- *   </mfenced>
- * </math></p>
- * </tr></td></table>
+ * <p>{@include formulas.html#Bursa-Wolf}</p>
+ * </td></tr></table>
  *
  * The numerical fields in this {@code BursaWolfParameters} class use the EPSG abbreviations
  * with 4 additional constraints compared to the EPSG definitions:
