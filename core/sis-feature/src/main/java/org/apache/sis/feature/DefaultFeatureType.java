@@ -46,6 +46,10 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * When such interface will be available, most references to {@code DefaultFeatureType} in the API
  * will be replaced by references to the {@code FeatureType} interface.</div>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable if the {@link AttributeType} instances given to the constructor are also immutable.
+ * Such immutable instances can be shared by many objects and passed between threads without synchronization.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
