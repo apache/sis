@@ -45,6 +45,11 @@ import java.util.Objects;
  * When such interface will be available, most references to {@code DefaultAttributeType} in the API
  * will be replaced by references to the {@code AttributeType} interface.</div>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable if the {@link GenericName} and {@link InternationalString} instances given to the
+ * constructor are also immutable. Such immutable instances can be shared by many objects and passed between
+ * threads without synchronization.
+ *
  * @param <T> The type of attribute values.
  *
  * @author  Johann Sorel (Geomatys)
