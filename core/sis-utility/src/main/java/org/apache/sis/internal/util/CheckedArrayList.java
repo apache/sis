@@ -43,6 +43,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>Does not accept null elements.</li>
  * </ul>
  *
+ * The checks are performed only on a <cite>best effort</cite> basis. In current implementation,
+ * holes are known to exist in use cases like {@code sublist(…).set(…)} or when using the list iterator.
+ *
  * @param <E> The type of elements in the list.
  *
  * @author  Martin Desruisseaux (Geomatys)

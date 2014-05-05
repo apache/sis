@@ -42,14 +42,10 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     /**
      * Creates a simple feature type without super-types.
      */
-    static DefaultFeatureType simple() {
+    static DefaultFeatureType cityPopulation() {
         final Map<String,Object> properties = new HashMap<>();
         final DefaultAttributeType<String> city = DefaultAttributeTypeTest.city(properties);
-
-        properties.clear();
-        assertNull(properties.put(DefaultAttributeType.NAME_KEY, "population"));
-        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
-                properties, Integer.class, null, NumberRange.create(1, true, 1, true));
+        final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(properties);
 
         properties.clear();
         assertNull(properties.put(DefaultAttributeType.NAME_KEY, "City population"));
@@ -61,7 +57,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      */
     @Test
     public void testSimple() {
-        final DefaultFeatureType simple = simple();
+        final DefaultFeatureType simple = cityPopulation();
         assertEquals("name", "City population", simple.getName().toString());
         /*
          * Verify content.

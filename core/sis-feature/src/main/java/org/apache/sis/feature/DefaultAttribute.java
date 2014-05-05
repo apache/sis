@@ -37,7 +37,7 @@ import java.util.Objects;
  * @version 0.5
  * @module
  */
-final class DefaultAttribute<T> implements Serializable {
+public class DefaultAttribute<T> implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -78,6 +78,8 @@ final class DefaultAttribute<T> implements Serializable {
      * Returns the attribute value.
      *
      * @return The attribute value (may be {@code null}).
+     *
+     * @see DefaultFeature#getAttributeValue(String)
      */
     public T getValue() {
         return value;
@@ -86,14 +88,33 @@ final class DefaultAttribute<T> implements Serializable {
     /**
      * Sets the attribute value.
      *
-     * <div class="warning">Current implementation does not yet performed any validation.
-     * However future Apache SIS version is likely to check argument validity here.</div>
+     * {@section Validation}
+     * The amount of validation performed by this method is implementation dependent.
+     * The current {@code DefaultAttribute} implementation performs only very cheap (if any) validations.
+     * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
      *
      * @param  value The new value.
-     * @throws IllegalArgumentException If the given value is outside the attribute domain.
+     * @throws RuntimeException If this method performs validation and the given value does not meet the conditions.
+     *         <em>This exception will be changed to {@code IllegalAttributeException} in a future SIS version.</em>
+     *
+     * @see DefaultFeature#setAttributeValue(String, Object)
      */
-    public void setValue(final T value) throws IllegalArgumentException {
+    public void setValue(final T value) {
         this.value = value;
+    }
+
+    /**
+     * Ensures that the current attribute value complies with the constraints defined by the attribute type.
+     * This method can be invoked explicitly on a single attribute, or may be invoked implicitly by a call to
+     * {@link DefaultFeature#validate()}.
+     *
+     * @throws RuntimeException If the current attribute value violates a constraint.
+     *         <em>This exception will be changed to {@code IllegalAttributeException} in a future SIS version.</em>
+     *
+     * @see DefaultFeature#validate()
+     */
+    public void validate() {
+        // TODO: future SIS implementation shall check constraints here.
     }
 
     /**
@@ -116,7 +137,7 @@ final class DefaultAttribute<T> implements Serializable {
         if (obj == this) {
             return true;
         }
-        if (obj.getClass() == getClass()) {
+        if (obj != null && obj.getClass() == getClass()) {
             final DefaultAttribute<?> that = (DefaultAttribute<?>) obj;
             return type.equals(that.type) &&
                    Objects.equals(value, that.value);

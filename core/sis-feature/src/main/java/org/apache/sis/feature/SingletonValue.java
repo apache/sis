@@ -34,6 +34,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * <p>There is no need to keep long-lived references to instances of this class.
  * Instances can be recreated when needed.</p>
  *
+ * {@section Non serialization}
+ * This class is intentionally not serializable, since serializing this instance would imply serializing the whole
+ * map of attributes if we want to keep the <cite>change in this list are reflected in the feature</cite> contract.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5
@@ -68,6 +72,22 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     }
 
     /**
+     * Returns the index of the given element (which can only be 0), or -1 if not present.
+     */
+    @Override
+    public int indexOf(final Object element) {
+        return (element != null) && element.equals(properties.get(key)) ? 0 : -1;
+    }
+
+    /**
+     * Returns the index of the given element (which can only be 0), or -1 if not present.
+     */
+    @Override
+    public int lastIndexOf(final Object element) {
+        return indexOf(element);
+    }
+
+    /**
      * Returns the attribute associated to the key, if present.
      */
     @Override
@@ -88,6 +108,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     public DefaultAttribute<?> set(final int index, final DefaultAttribute<?> element) {
         ensureNonNull("element", element);
         if (index == 0) {
+            modCount++;
             final Object previous = properties.put(key, element);
             if (previous != null) {
                 return (DefaultAttribute<?>) previous;
@@ -107,6 +128,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
         ensureNonNull("element", element);
         if (index == 0) {
             if (properties.putIfAbsent(key, element) == null) {
+                modCount++;
                 return;
             }
             throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
@@ -125,12 +147,17 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
 
     /**
      * Removes the attribute associated to the key.
+     *
+     * This method does not checks if the removal is allowed by the
+     * {@linkplain DefaultAttributeType#getCardinality() cardinality}.
+     * Such check can be performed by {@link DefaultFeature#validate()}.
      */
     @Override
-    public  DefaultAttribute<?> remove(final int index) {
+    public DefaultAttribute<?> remove(final int index) {
         if (index == 0) {
             final Object previous = properties.remove(key);
             if (previous != null) {
+                modCount++;
                 return (DefaultAttribute<?>) previous;
             }
         }
@@ -138,10 +165,29 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     }
 
     /**
+     * Removes the singleton value, if presents.
+     * This method is for {@link Iter#remove()} implementation only.
+     *
+     * @param  c The expected {@link #modCount} value, for check against concurrent modification.
+     * @return {@code true} if the value has been removed.
+     */
+    final boolean clear(final int c) {
+        if (c != modCount) {
+            throw new ConcurrentModificationException();
+        }
+        return properties.remove(key) != null;
+    }
+
+    /**
      * Removes the attribute associated to the key.
+     *
+     * This method does not checks if the removal is allowed by the
+     * {@linkplain DefaultAttributeType#getCardinality() cardinality}.
+     * Such check can be performed by {@link DefaultFeature#validate()}.
      */
     @Override
     public void clear() {
+        modCount++;
         properties.remove(key);
     }
 
@@ -150,23 +196,29 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
      */
     @Override
     public Iterator<DefaultAttribute<?>> iterator() {
-        return new Iter((DefaultAttribute<?>) properties.get(key));
+        return new Iter((DefaultAttribute<?>) properties.get(key), modCount);
     }
 
     /**
      * Implementation of the iterator returned by {@link SingletonValue#iterator()}.
      */
-    private static final class Iter implements Iterator<DefaultAttribute<?>> {
+    private final class Iter implements Iterator<DefaultAttribute<?>> {
         /**
          * The attribute to return, or {@code null} if we reached the iteration end.
          */
         private DefaultAttribute<?> element;
 
         /**
+         * Initial {@link SingletonValue#modCount} value, for checks against concurrent modifications.
+         */
+        private final int c;
+
+        /**
          * Creates a new iterator which will return the given attribute.
          */
-        Iter(final DefaultAttribute<?> element) {
+        Iter(final DefaultAttribute<?> element, final int c) {
             this.element = element;
+            this.c = c;
         }
 
         /**
@@ -188,6 +240,16 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
             }
             element = null;
             return v;
+        }
+
+        /**
+         * Removes the value returned by the last call to {@link #next()}.
+         */
+        @Override
+        public void remove() {
+            if (element != null || !clear(c)) {
+                throw new IllegalStateException();
+            }
         }
     }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature;
 
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ConcurrentModificationException;
@@ -76,10 +77,22 @@ public class DefaultFeature implements Serializable {
     }
 
     /**
-     * Returns the value of the attribute of the given name.
+     * Returns all attributes of the given name.
+     *
+     * @param  name The attribute name.
+     * @return All attributes of the given name, or an empty list if none.
+     */
+    public List<DefaultAttribute<?>> getAttributes(final String name) {
+        return null;
+    }
+
+    /**
+     * Returns the value(s) of the attribute of the given name.
      *
      * @param  name The attribute name.
      * @return The value for the given attribute, or {@code null} if none.
+     *
+     * @see DefaultAttribute#getValue()
      */
     public Object getAttributeValue(final String name) {
         final DefaultAttribute<?> attribute = properties.get(name);
@@ -96,8 +109,15 @@ public class DefaultFeature implements Serializable {
     /**
      * Sets the value of the attribute of the given name.
      *
+     * {@section Validation}
+     * The amount of validation performed by this method is implementation dependent.
+     * The current {@code DefaultFeature} implementation performs only very cheap (if any) validations.
+     * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
+     *
      * @param name  The attribute name.
      * @param value The new value for the given attribute (may be {@code null}).
+     *
+     * @see DefaultAttribute#setValue(Object)
      */
     @SuppressWarnings("unchecked")
     public void setAttributeValue(final String name, final Object value) {
@@ -124,6 +144,19 @@ public class DefaultFeature implements Serializable {
      */
     private String propertyNotFound(final String name) {
         return Errors.format(Errors.Keys.PropertyNotFound_2, type.getName(), name);
+    }
+
+    /**
+     * Ensures that all current property values comply with the constraints defined by the feature type.
+     * This method will implicitly invokes {@link DefaultAttribute#validate()} for all attribute values.
+     *
+     * @throws RuntimeException If the current attribute value violates a constraint.
+     *         <em>This exception will be changed to {@code IllegalAttributeException} in a future SIS version.</em>
+     *
+     * @see DefaultAttribute#validate()
+     */
+    public void validate() {
+        // TODO
     }
 
     /**

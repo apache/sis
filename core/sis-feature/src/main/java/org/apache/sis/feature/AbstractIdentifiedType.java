@@ -270,7 +270,7 @@ public class AbstractIdentifiedType implements Serializable {
      */
     @Override
     public boolean equals(final Object obj) {
-        if (obj != null && getClass() != obj.getClass()) {
+        if (obj != null && getClass() == obj.getClass()) {
             final AbstractIdentifiedType that = (AbstractIdentifiedType) obj;
             return Objects.equals(name,        that.name) &&
                    Objects.equals(definition,  that.definition) &&
