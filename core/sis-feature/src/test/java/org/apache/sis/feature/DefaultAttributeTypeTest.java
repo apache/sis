@@ -23,10 +23,11 @@ import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -59,6 +60,19 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
     }
 
     /**
+     * Creates an attribute type for city population.
+     *
+     * @param properties An empty temporary map (provided only for recycling existing instances).
+     */
+    static DefaultAttributeType<Integer> population(final Map<String,Object> properties) {
+        assertNull(properties.put(DefaultAttributeType.NAME_KEY, "population"));
+        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
+                properties, Integer.class, null, NumberRange.create(1, true, 1, true));
+        properties.clear();
+        return population;
+    }
+
+    /**
      * Tests the creation of a simple {@link DefaultAttributeType} instance for a mandatory singleton.
      */
     @Test
@@ -88,5 +102,28 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
         assertNotNull("cardinality", cardinality);
         assertEquals("cardinality.minValue", Integer.valueOf(1), cardinality.getMinValue());
         assertEquals("cardinality.maxValue", Integer.valueOf(1), cardinality.getMaxValue());
+    }
+
+    /**
+     * Tests attribute comparison.
+     */
+    @Test
+    public void testEquals() {
+        final Map<String,Object> properties = new HashMap<>(4);
+        final DefaultAttributeType<Integer> a1 = population(properties);
+        final DefaultAttributeType<Integer> a2 = population(properties);
+        assertFalse ("equals",   a1.equals(null));
+        assertTrue  ("equals",   a1.equals(a2));
+        assertEquals("hashCode", a1.hashCode(), a2.hashCode());
+    }
+
+    /**
+     * Tests serialization.
+     */
+    @Test
+    @DependsOnMethod("testEquals")
+    public void testSerialization() {
+        final DefaultAttributeType<String> attribute = city(new HashMap<>(4));
+        assertSerializedEquals(attribute);
     }
 }
