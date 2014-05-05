@@ -25,9 +25,18 @@ import java.util.Objects;
 
 
 /**
- * Holds the value of an attribute in a feature. The value can be an arbitrary Java object.
- * Constraints like the base Java class and domain of values are specified by the
- * {@linkplain DefaultAttributeType attribute type} associated to each attribute instance.
+ * Holds the value of an attribute in a feature.
+ * {@code Attribute} holds two main information:
+ *
+ * <ul>
+ *   <li>A reference to an {@linkplain DefaultAttributeType attribute type}
+ *       which define the base Java type and domain of valid values.</li>
+ *   <li>A value.</li>
+ * </ul>
+ *
+ * {@section Usage in multi-thread environment}
+ * {@code DefaultAttribute} are <strong>not</strong> thread-safe.
+ * Synchronization, if needed, shall be done externally by the caller.
  *
  * @param <T> The type of attribute values.
  *

@@ -47,7 +47,8 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * will be replaced by references to the {@code FeatureType} interface.</div>
  *
  * {@section Immutability and thread safety}
- * This class is immutable if the {@link AttributeType} instances given to the constructor are also immutable.
+ * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
+ * instances) and all arguments ({@link AttributeType} instances) given to the constructor are also immutable.
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Johann Sorel (Geomatys)

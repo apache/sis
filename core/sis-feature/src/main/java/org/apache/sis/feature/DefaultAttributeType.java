@@ -46,9 +46,13 @@ import java.util.Objects;
  * will be replaced by references to the {@code AttributeType} interface.</div>
  *
  * {@section Immutability and thread safety}
- * This class is immutable if the {@link GenericName} and {@link InternationalString} instances given to the
- * constructor are also immutable. Such immutable instances can be shared by many objects and passed between
- * threads without synchronization.
+ * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
+ * instances) and all arguments (default value, cardinality) given to the constructor are also immutable.
+ * Such immutable instances can be shared by many objects and passed between threads without synchronization.
+ *
+ * <p>In particular, the {@link #getDefaultValue()} method does <strong>not</strong> clone the returned value.
+ * This means that the same {@code defaultValue} instance may be shared by many {@link DefaultAttribute} instances.
+ * Consequently the default value should be immutable for avoiding unexpected behavior.</p>
  *
  * @param <T> The type of attribute values.
  *
