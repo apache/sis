@@ -44,7 +44,6 @@
     <!-- Replace URL to trunk by URL to the branch on Subversion. -->
     <replace dir="${user.dir}" failOnNoReplacements="true">
       <include name="**/pom.xml"/>
-      <include name="core/sis-build-helper/src/main/java/org/apache/sis/internal/taglet/SourceRepositoryURL.java"/>
       <replacefilter token="svn.apache.org/repos/asf/sis/trunk"
                      value="svn.apache.org/repos/asf/sis/branches/${sis.version}"/>
       <replacefilter token="svn.apache.org/viewvc/sis/trunk"
@@ -60,7 +59,6 @@
     <!-- Replace URL to branch by URL to the branch on Subversion. -->
     <replace dir="${user.dir}" failOnNoReplacements="true">
       <include name="**/pom.xml"/>
-      <include name="core/sis-build-helper/src/main/java/org/apache/sis/internal/taglet/SourceRepositoryURL.java"/>
       <replacefilter token="svn.apache.org/repos/asf/sis/branches/${sis.version}"
                      value="svn.apache.org/repos/asf/sis/tags/${sis.version}"/>
       <replacefilter token="svn.apache.org/viewvc/sis/branches/${sis.version}"
