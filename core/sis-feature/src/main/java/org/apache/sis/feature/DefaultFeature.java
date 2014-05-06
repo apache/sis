@@ -32,7 +32,7 @@ import java.util.Objects;
 
 
 /**
- * An instance of {@linkplain DefaultFeatureType feature type} containing values for a real-world phenomena.
+ * An instance of a {@linkplain DefaultFeatureType feature type} containing values for a real-world phenomena.
  *
  * {@section Usage in multi-thread environment}
  * {@code DefaultFeature} are <strong>not</strong> thread-safe.
@@ -197,7 +197,8 @@ public class DefaultFeature implements Serializable {
      * @param  value The new value for the given attribute (may be {@code null}).
      * @throws IllegalArgumentException If the given argument is not an attribute name of this feature.
      * @throws RuntimeException If this method performs validation and the given value does not meet the conditions.
-     *         <em>This exception will be changed to {@code IllegalAttributeException} in a future SIS version.</em>
+     *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException} in
+     *         a future SIS version.</span>
      *
      * @see DefaultAttribute#setValue(Object)
      */
@@ -255,7 +256,8 @@ public class DefaultFeature implements Serializable {
      * This method will implicitly invokes {@link DefaultAttribute#validate()} for all attribute values.
      *
      * @throws RuntimeException If the current attribute value violates a constraint.
-     *         <em>This exception will be changed to {@code IllegalAttributeException} in a future SIS version.</em>
+     *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException}
+     *         in a future SIS version.</span>
      *
      * @see DefaultAttribute#validate()
      */

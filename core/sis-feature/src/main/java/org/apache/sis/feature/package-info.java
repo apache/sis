@@ -21,20 +21,41 @@
  * The term “feature” may be used in different contexts:
  *
  * <ul>
- *   <li>{@linkplain org.apache.sis.feature.DefaultFeatureType Feature types} define the <em>structure</em> of a
- *       real-world representation. A feature type lists the attributes, operations, or associations to other
+ *   <li>{@linkplain org.apache.sis.feature.DefaultFeatureType Feature types} define the <em>structure</em> of
+ *       real-world representations. A feature type lists the attributes, operations, or associations to other
  *       features (collectively called “properties”) that a feature can have.
  *
  *       <div class="note"><b>Note:</b> a {@code FeatureType} in a Spatial Information System is equivalent to a
  *       {@link java.lang.Class} in the Java language. By extension, {@code AttributeType} and {@code OperationType}
  *       are equivalent to {@link java.lang.reflect.Field} and {@link java.lang.reflect.Method} respectively.</div></li>
  *
- *   <li>{@linkplain org.apache.sis.feature.DefaultFeature Feature instances} holds the <em>content</em> (or values)
- *       that describe one specific real-world object. For example the “Eiffel tower” is a feature <em>instance</em>
- *       belonging to the “Tower” feature <em>type</em>.
+ *   <li>{@linkplain org.apache.sis.feature.DefaultFeature Feature instances} (often called only {@code Feature}s)
+ *       hold the <em>content</em> (or values) that describe one specific real-world object.
  *
- *       <div class="note"><b>Note:</b> feature instances are often called only {@code Feature}s.</div></li>
+ *       <div class="note"><b>Example:</b> the “Eiffel tower” is a feature <em>instance</em> belonging
+ *       to the “Tower” feature <em>type</em>.</div></li>
  * </ul>
+ *
+ * {@section Class hierarchy}
+ * The class hierarchy for features <cite>types</cite> and <cite>instances</cite> are closely related:
+ *
+ * <table class="sis">
+ * <caption>Class hierarchy</caption>
+ * <tr>
+ *   <th>Types</th>
+ *   <th class="sep">Instances</th>
+ * </tr><tr><td style="width: 50%; white-space: nowrap">
+ *                 {@linkplain org.apache.sis.feature.AbstractIdentifiedType    Identified type}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.feature.DefaultFeatureType        Feature type}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.feature.AbstractPropertyType      Property type}<br>
+ * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAttributeType      Attribute type}<br>
+ * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultOperation          Operation}<br>
+ * {@code      └─} {@linkplain org.apache.sis.feature.DefaultFeatureAssociation Feature association role}<br>
+ * </td><td class="sep" style="width: 50%; white-space: nowrap">
+ *             {@linkplain org.apache.sis.feature.DefaultFeature    Feature}<br>
+ *             {@linkplain org.apache.sis.feature.AbstractProperty  Property}<br>
+ * {@code  └─} {@linkplain org.apache.sis.feature.DefaultAttribute  Attribute}<br>
+ * </td></tr></table>
  *
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
