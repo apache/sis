@@ -25,7 +25,7 @@ import java.util.Objects;
 
 
 /**
- * Holds the value of an attribute in a feature.
+ * An instance of an {@linkplain DefaultAttributeType attribute type} containing the value of an attribute in a feature.
  * {@code Attribute} holds two main information:
  *
  * <ul>
@@ -104,7 +104,8 @@ public class DefaultAttribute<T> implements Serializable {
      *
      * @param  value The new value.
      * @throws RuntimeException If this method performs validation and the given value does not meet the conditions.
-     *         <em>This exception will be changed to {@code IllegalAttributeException} in a future SIS version.</em>
+     *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException} in a
+     *         future SIS version.</span>
      *
      * @see DefaultFeature#setAttributeValue(String, Object)
      */
@@ -118,7 +119,8 @@ public class DefaultAttribute<T> implements Serializable {
      * {@link DefaultFeature#validate()}.
      *
      * @throws RuntimeException If the current attribute value violates a constraint.
-     *         <em>This exception will be changed to {@code IllegalAttributeException} in a future SIS version.</em>
+     *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException}
+     *         in a future SIS version.</span>
      *
      * @see DefaultFeature#validate()
      */

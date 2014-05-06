@@ -18,6 +18,7 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
@@ -44,6 +45,18 @@ import java.util.Objects;
  * This class is expected to implement a GeoAPI {@code AttributeType} interface in a future version.
  * When such interface will be available, most references to {@code DefaultAttributeType} in the API
  * will be replaced by references to the {@code AttributeType} interface.</div>
+ *
+ * {@section Value type}
+ * Attributes can be used for both spatial and non-spatial properties.
+ * Some examples are:
+ *
+ * <table class="sis">
+ *   <caption>Attribute value type examples</caption>
+ *   <tr><th>Attribute name</th>      <th>Value type</th></tr>
+ *   <tr><td>Building shape</td>      <td>{@link org.opengis.geometry.Geometry}</td></tr>
+ *   <tr><td>Building owner</td>      <td>{@link org.opengis.metadata.citation.ResponsibleParty}</td></tr>
+ *   <tr><td>Horizontal accuracy</td> <td>{@link org.opengis.metadata.quality.PositionalAccuracy}</td></tr>
+ * </table>
  *
  * {@section Immutability and thread safety}
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}

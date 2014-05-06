@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
