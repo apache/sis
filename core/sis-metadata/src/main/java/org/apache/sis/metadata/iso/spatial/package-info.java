@@ -21,8 +21,7 @@
  * The remaining discussion on this page is specific to the SIS implementation.
  *
  * {@section Overview}
- * For a global overview of metadata in SIS, see the
- * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
+ * For a global overview of metadata in SIS, see the {@link org.apache.sis.metadata} package javadoc.
  *
  * <table class="sis">
  * <caption>Package overview</caption>

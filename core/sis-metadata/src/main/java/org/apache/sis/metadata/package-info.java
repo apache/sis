@@ -16,8 +16,7 @@
  */
 
 /**
- * Root package for various metadata implementations. For a global overview of metadata in SIS,
- * see the <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
+ * Root package for various metadata implementations.
  *
  * {@section Foreword}
  * Many metadata standards exist, including <cite>Dublin core</cite>, <cite>ISO 19115</cite> and the Image I/O

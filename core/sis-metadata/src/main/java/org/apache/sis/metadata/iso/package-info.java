@@ -21,8 +21,7 @@
  * The remaining discussion on this page is specific to the SIS implementation.
  *
  * {@section Overview}
- * For a global overview of metadata in SIS, see the
- * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
+ * For a global overview of metadata in SIS, see the {@link org.apache.sis.metadata} package javadoc.
  * For some explanation about how to use various ISO 19115 elements for scientific dataset, the
  * <a href="https://geo-ide.noaa.gov/wiki/index.php?title=Category:ISO_19115">NOAA wiki page</a>
  * is a good source of information.
