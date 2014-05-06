@@ -50,7 +50,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see Collections#checkedList(List, Class)
@@ -148,9 +148,10 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      *
      * @param  element the object to check, or {@code null}.
      * @return {@code true} if the instance is valid, {@code false} if it shall be ignored.
-     * @throws IllegalArgumentException if the specified element can not be added to this list.
+     * @throws NullPointerException if the given element is {@code null}.
+     * @throws ClassCastException if the given element is not of the expected type.
      */
-    private boolean ensureValid(final E element) throws IllegalArgumentException {
+    private boolean ensureValid(final E element) {
         if (type.isInstance(element)) {
             return true;
         }
@@ -166,7 +167,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
         if (element == null) {
             throw new NullArgumentException(message);
         } else {
-            throw new IllegalArgumentException(message);
+            throw new ClassCastException(message);
         }
     }
 
@@ -175,10 +176,11 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      *
      * @param  collection the collection to check, or {@code null}.
      * @return The potentially filtered collection of elements to add.
-     * @throws IllegalArgumentException if at least one element can not be added to this list.
+     * @throws NullPointerException if an element is {@code null}.
+     * @throws ClassCastException if an element is not of the expected type.
      */
     @SuppressWarnings("unchecked")
-    private List<E> ensureValidCollection(final Collection<? extends E> collection) throws IllegalArgumentException {
+    private List<E> ensureValidCollection(final Collection<? extends E> collection) {
         int count = 0;
         final Object[] array = collection.toArray();
         for (final Object element : array) {
@@ -213,10 +215,11 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * @param  element element to be stored at the specified position.
      * @return the element previously at the specified position.
      * @throws IndexOutOfBoundsException if index out of range.
-     * @throws IllegalArgumentException if the specified element is not of the expected type.
+     * @throws NullPointerException if the given element is {@code null}.
+     * @throws ClassCastException if the given element is not of the expected type.
      */
     @Override
-    public E set(final int index, final E element) throws IllegalArgumentException {
+    public E set(final int index, final E element) {
         if (ensureValid(element)) {
             return super.set(index, element);
         }
@@ -228,10 +231,11 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      *
      * @param  element element to be appended to this list.
      * @return always {@code true}.
-     * @throws IllegalArgumentException if the specified element is not of the expected type.
+     * @throws NullPointerException if the given element is {@code null}.
+     * @throws ClassCastException if the given element is not of the expected type.
      */
     @Override
-    public boolean add(final E element) throws IllegalArgumentException {
+    public boolean add(final E element) {
         if (ensureValid(element)) {
             return super.add(element);
         }
@@ -244,10 +248,11 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * @param  index index at which the specified element is to be inserted.
      * @param  element element to be inserted.
      * @throws IndexOutOfBoundsException if index out of range.
-     * @throws IllegalArgumentException if the specified element is not of the expected type.
+     * @throws NullPointerException if the given element is {@code null}.
+     * @throws ClassCastException if the given element is not of the expected type.
      */
     @Override
-    public void add(final int index, final E element) throws IllegalArgumentException {
+    public void add(final int index, final E element) {
         if (ensureValid(element)) {
             super.add(index, element);
         }
@@ -259,10 +264,11 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      *
      * @param  collection the elements to be inserted into this list.
      * @return {@code true} if this list changed as a result of the call.
-     * @throws IllegalArgumentException if at least one element is not of the expected type.
+     * @throws NullPointerException if an element is {@code null}.
+     * @throws ClassCastException if an element is not of the expected type.
      */
     @Override
-    public boolean addAll(final Collection<? extends E> collection) throws IllegalArgumentException {
+    public boolean addAll(final Collection<? extends E> collection) {
         return super.addAll(ensureValidCollection(collection));
     }
 
@@ -273,10 +279,26 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * @param  index index at which to insert first element fromm the specified collection.
      * @param  collection elements to be inserted into this list.
      * @return {@code true} if this list changed as a result of the call.
-     * @throws IllegalArgumentException if at least one element is not of the expected type.
+     * @throws NullPointerException if an element is {@code null}.
+     * @throws ClassCastException if an element is not of the expected type.
      */
     @Override
-    public boolean addAll(final int index, final Collection<? extends E> collection) throws IllegalArgumentException {
+    public boolean addAll(final int index, final Collection<? extends E> collection) {
         return super.addAll(index, ensureValidCollection(collection));
+    }
+
+    /**
+     * Returns a checked sublist.
+     *
+     * <p><b>Limitation:</b> current implementation checks only the type.
+     * It does not prevent the insertion of {@code null} values.</p>
+     *
+     * @param  fromIndex Index of the first element.
+     * @param  toIndex   Index after the last element.
+     * @return The sublist in the given index range.
+     */
+    @Override
+    public List<E> subList(final int fromIndex, final int toIndex) {
+        return Collections.checkedList(super.subList(fromIndex, toIndex), type);
     }
 }
