@@ -71,12 +71,31 @@ public final strictfp class DefaultAttributeTest extends TestCase {
     public void testEquals() {
         final DefaultAttribute<Integer> a1 = population();
         final DefaultAttribute<Integer> a2 = population();
-        assertFalse ("equals",   a1.equals(null));
+        assertFalse("equals(null)", a1.equals(null));
+        testEquals(a1, a2);
+    }
+
+    /**
+     * Implementation of {@link #testEquals()} used also by {@link #testClone()}.
+     */
+    private static void testEquals(final DefaultAttribute<Integer> a1, final DefaultAttribute<Integer> a2) {
         assertTrue  ("equals",   a1.equals(a2));
         assertEquals("hashCode", a1.hashCode(), a2.hashCode());
         a2.setValue(1000);
         assertFalse("equals",   a1.equals(a2));
         assertFalse("hashCode", a1.hashCode() == a2.hashCode());
+    }
+
+    /**
+     * Tests {@link DefaultAttribute#clone()}.
+     */
+    @Test
+    @DependsOnMethod("testEquals")
+    public void testClone() {
+        final DefaultAttribute<Integer> a1 = population();
+        final DefaultAttribute<Integer> a2 = a1.clone();
+        assertNotSame(a1, a2);
+        testEquals(a1, a2);
     }
 
     /**

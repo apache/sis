@@ -423,6 +423,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedParameterDescriptor_1 = 146;
 
         /**
+         * Mismatched type for “{0}” property.
+         */
+        public static final short MismatchedPropertyType_1 = 154;
+
+        /**
          * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.
          */
         public static final short MissingAuthority_1 = 135;

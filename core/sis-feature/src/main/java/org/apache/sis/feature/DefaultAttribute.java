@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.io.Serializable;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 
 // Related to JDK7
 import java.util.Objects;
@@ -46,7 +47,7 @@ import java.util.Objects;
  * @version 0.5
  * @module
  */
-public class DefaultAttribute<T> implements Serializable {
+public class DefaultAttribute<T> implements Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -125,7 +126,32 @@ public class DefaultAttribute<T> implements Serializable {
      * @see DefaultFeature#validate()
      */
     public void validate() {
-        // TODO: future SIS implementation shall check constraints here.
+        /*
+         * In theory, the following check is useless since the type was constrained by the setValue(T) method signature.
+         * However in practice the call to setValue(…) is sometime done after type erasure, so we are better to check.
+         */
+        if (value != null && !type.getValueClass().isInstance(value)) {
+            throw new RuntimeException( // TODO: IllegalAttributeException, pending GeoAPI revision.
+                    Errors.format(Errors.Keys.IllegalPropertyClass_2, type.getName(), value.getClass()));
+        }
+    }
+
+    /**
+     * Returns a shallow copy of this attribute.
+     * The attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     *
+     * @return A clone of this attribute.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public DefaultAttribute<T> clone() {
+        final DefaultAttribute<T> clone;
+        try {
+            clone = (DefaultAttribute<T>) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e); // Should never happen since we are cloneable.
+        }
+        return clone;
     }
 
     /**

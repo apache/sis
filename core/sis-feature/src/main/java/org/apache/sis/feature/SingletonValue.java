@@ -45,6 +45,16 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  */
 final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     /**
+     * An empty list of attributes.
+     */
+    private static final DefaultAttribute<?>[] EMPTY = new DefaultAttribute<?>[0];
+
+    /**
+     * The type of property elements in the list.
+     */
+    private final AbstractIdentifiedType type;
+
+    /**
      * The map of properties in which to look for the attributes.
      * This is the same reference than {@link DefaultFeature#properties}.
      */
@@ -58,9 +68,10 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     /**
      * Creates a new list for the attribute associated to the given key in the given map.
      */
-    SingletonValue(final Map<String, Object> properties, final String key) {
+    SingletonValue(final AbstractIdentifiedType type, final Map<String, Object> properties, final String key) {
+        this.type       = type;
         this.properties = properties;
-        this.key = key;
+        this.key        = key;
     }
 
     /**
@@ -107,6 +118,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     @Override
     public DefaultAttribute<?> set(final int index, final DefaultAttribute<?> element) {
         ensureNonNull("element", element);
+        Validator.ensureValidType(type, element);
         if (index == 0) {
             modCount++;
             final Object previous = properties.put(key, element);
@@ -126,6 +138,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     @Override
     public void add(final int index, final DefaultAttribute<?> element) {
         ensureNonNull("element", element);
+        Validator.ensureValidType(type, element);
         if (index == 0) {
             if (properties.putIfAbsent(key, element) == null) {
                 modCount++;
@@ -189,6 +202,15 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     public void clear() {
         modCount++;
         properties.remove(key);
+    }
+
+    /**
+     * Returns an array wrapping the singleton value, or an empty array if none.
+     */
+    @Override
+    public Object[] toArray() {
+        final Object element = properties.get(key);
+        return (element == null) ? EMPTY : new DefaultAttribute<?>[] {(DefaultAttribute<?>) element};
     }
 
     /**

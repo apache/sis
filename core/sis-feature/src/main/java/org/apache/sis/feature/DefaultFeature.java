@@ -116,7 +116,7 @@ public class DefaultFeature implements Serializable {
      * @return All properties of the given name, or an empty list if none.
      * @throws IllegalArgumentException If the given argument is not a property name of this feature.
      */
-    public List<DefaultAttribute<?>> getProperties(final String name) throws IllegalArgumentException {
+    public List<DefaultAttribute<?>> properties(final String name) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
         final DefaultAttributeType<?> at = type.getProperty(name);
         if (at == null) {
@@ -129,7 +129,7 @@ public class DefaultFeature implements Serializable {
          * a temporary object which will read and write the Attribute instance directly in the map.
          */
         if (isSingleton(at.getCardinality())) {
-            return new SingletonValue(properties, name);
+            return new SingletonValue(at, properties, name);
         }
         /*
          * If the property allow more than one feature, then we need a real List implementation.
@@ -143,7 +143,7 @@ public class DefaultFeature implements Serializable {
 
     /**
      * Returns the value(s) of all attribute of the given name.
-     * This convenience method combines a call to {@link #getProperties(String)} followed by calls to
+     * This convenience method combines a call to {@link #properties(String)} followed by calls to
      * {@link DefaultAttribute#getValue()} for each attribute, but may potentially be more efficient.
      *
      * <p>Special cases:</p>
