@@ -44,12 +44,12 @@ public final strictfp class DefaultFeatureTest extends TestCase {
     public void testSimple() {
         final DefaultFeature cityPopulation = new DefaultFeature(DefaultFeatureTypeTest.cityPopulation());
 
-        assertEquals("Utopia", cityPopulation.getAttributeValue("city"));
-        cityPopulation.setAttributeValue("city", "Atlantide");
-        assertEquals("Atlantide", cityPopulation.getAttributeValue("city"));
+        assertEquals("Utopia", cityPopulation.getPropertyValue("city"));
+        cityPopulation.setPropertyValue("city", "Atlantide");
+        assertEquals("Atlantide", cityPopulation.getPropertyValue("city"));
 
-        assertNull(cityPopulation.getAttributeValue("population"));
-        cityPopulation.setAttributeValue("population", 1000);
-        assertEquals(1000, cityPopulation.getAttributeValue("population"));
+        assertNull(cityPopulation.getPropertyValue("population"));
+        cityPopulation.setPropertyValue("population", 1000);
+        assertEquals(1000, cityPopulation.getPropertyValue("population"));
     }
 }

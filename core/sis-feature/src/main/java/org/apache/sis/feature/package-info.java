@@ -51,7 +51,7 @@
  * {@code  ├─}     {@linkplain org.apache.sis.feature.DefaultFeatureType        Feature type}<br>
  * {@code  └─}     {@linkplain org.apache.sis.feature.AbstractPropertyType      Property type}<br>
  * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAttributeType      Attribute type}<br>
- * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultOperation          Operation}<br>
+ * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultOperationType      Operation}<br>
  * {@code      └─} {@linkplain org.apache.sis.feature.DefaultFeatureAssociation Feature association role}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *             {@linkplain org.apache.sis.feature.DefaultFeature    Feature}<br>

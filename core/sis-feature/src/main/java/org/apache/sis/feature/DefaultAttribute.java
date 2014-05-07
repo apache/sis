@@ -63,15 +63,28 @@ public class DefaultAttribute<T> implements Cloneable, Serializable {
     private T value;
 
     /**
-     * Creates a new attribute of the given type.
-     * The value is initialized to the {@linkplain DefaultAttributeType#getDefaultValue() default value}.
+     * Creates a new attribute of the given type initialized to the
+     * {@linkplain DefaultAttributeType#getDefaultValue() default value}.
      *
      * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
     public DefaultAttribute(final DefaultAttributeType<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
-        this.type = type;
-        value = type.getDefaultValue();
+        this.type  = type;
+        this.value = type.getDefaultValue();
+    }
+
+    /**
+     * Creates a new attribute of the given type initialized to the given value.
+     * Note that a {@code null} value may not the same as the default value.
+     *
+     * @param type  Information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param value The initial value (may be null {@code null}).
+     */
+    public DefaultAttribute(final DefaultAttributeType<T> type, final Object value) {
+        ArgumentChecks.ensureNonNull("type", type);
+        this.type  = type;
+        this.value = type.getValueClass().cast(value);
     }
 
     /**
@@ -88,7 +101,7 @@ public class DefaultAttribute<T> implements Cloneable, Serializable {
      *
      * @return The attribute value (may be {@code null}).
      *
-     * @see DefaultFeature#getAttributeValue(String)
+     * @see DefaultFeature#getPropertyValue(String)
      */
     public T getValue() {
         return value;
@@ -107,7 +120,7 @@ public class DefaultAttribute<T> implements Cloneable, Serializable {
      *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException} in a
      *         future SIS version.</span>
      *
-     * @see DefaultFeature#setAttributeValue(String, Object)
+     * @see DefaultFeature#setPropertyValue(String, Object)
      */
     public void setValue(final T value) {
         this.value = value;

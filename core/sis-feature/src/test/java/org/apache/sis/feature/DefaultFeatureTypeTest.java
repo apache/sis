@@ -62,7 +62,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         /*
          * Verify content.
          */
-        final List<DefaultAttributeType<?>> characteristics = simple.getCharacteristics();
+        final List<DefaultAttributeType<?>> characteristics = simple.characteristics();
         assertEquals("characteristics.size", 2, characteristics.size());
         assertEquals("characteristics[0]", "city",       characteristics.get(0).getName().toString());
         assertEquals("characteristics[1]", "population", characteristics.get(1).getName().toString());

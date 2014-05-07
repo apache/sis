@@ -16,7 +16,6 @@
  */
 package org.apache.sis.feature;
 
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ConcurrentModificationException;
@@ -26,12 +25,16 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 
-// Related to JDK7
-import java.util.Objects;
-
 
 /**
  * An instance of a {@linkplain DefaultFeatureType feature type} containing values for a real-world phenomena.
+ * Each feature instance can provide values for the following properties:
+ *
+ * <ul>
+ *   <li>{@linkplain DefaultAttribute   Attributes}</li>
+ *   <li>{@linkplain DefaultAssociation Associations to other feature types}</li>
+ *   <li>{@linkplain DefaultOperation   Operations}</li>
+ * </ul>
  *
  * {@section Usage in multi-thread environment}
  * {@code DefaultFeature} are <strong>not</strong> thread-safe.
@@ -57,29 +60,29 @@ public class DefaultFeature implements Serializable {
 
     /**
      * The properties (attributes, operations, feature associations) of this feature.
-     * Each value can be one of the following types (from most generic to most specific):
      *
-     * <ul>
-     *   <li>A {@link PropertyList}, which is a list of {@code Attribute}.</li>
-     *   <li>An {@code Attribute} in the common case of [0…1] cardinality.</li>
-     *   <li>An object in the common case of [0…1] cardinality when only the value
-     *       (not the {@code Attribute} object) is requested.</li>
-     * </ul>
-     *
-     * The intend is to reduce the amount of allocate objects as much as possible,
-     * because typical SIS applications may create a very large amount of features.
+     * Conceptually, values in this map are {@link Property} instances. However at first we will store
+     * only the property <em>values</em>, and build the full {@code Property} objects only if they are
+     * requested. The intend is to reduce the amount of allocated objects as much as possible, because
+     * typical SIS applications may create a very large amount of features.
      */
     private final Map<String, Object> properties;
 
     /**
-     * Creates a new features.
+     * {@code true} if the {@link #properties} map contains fully created {@link Property} instances,
+     * or {@code false} if the map contains only the property values.
+     */
+    private boolean asPropertyInstances;
+
+    /**
+     * Creates a new feature of the given type.
      *
      * @param type Information about the feature (name, characteristics, <i>etc.</i>).
      */
     public DefaultFeature(final DefaultFeatureType type) {
         ArgumentChecks.ensureNonNull("type", type);
         this.type = type;
-        properties = new HashMap<>(Math.min(16, Containers.hashMapCapacity(type.getCharacteristics().size())));
+        properties = new HashMap<>(Math.min(16, Containers.hashMapCapacity(type.characteristics().size())));
     }
 
     /**
@@ -92,101 +95,95 @@ public class DefaultFeature implements Serializable {
     }
 
     /**
-     * Returns all properties (attributes, operations or associations) of the given name.
-     * The returned list is <em>live</em>: change in that list will be immediately reflected
-     * in this {@code DefaultFeature}, and conversely.
+     * Returns the type for the property of the given name.
      *
-     * <div class="warning">In a future SIS version, the type of list elements may be changed
+     * @param  name The property name.
+     * @return The type for the property of the given name (never {@code null}).
+     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     */
+    private DefaultAttributeType<?> getPropertyType(final String name) throws IllegalArgumentException {
+        final DefaultAttributeType<?> pt = type.getProperty(name);
+        if (pt != null) {
+            return pt;
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, type.getName(), name));
+    }
+
+    /**
+     * Returns the property (attribute, operation or association) of the given name.
+     *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
      *
      * @param  name The property name.
-     * @return All properties of the given name, or an empty list if none.
+     * @return The property of the given name.
      * @throws IllegalArgumentException If the given argument is not a property name of this feature.
      */
-    public List<DefaultAttribute<?>> properties(final String name) throws IllegalArgumentException {
+    public DefaultAttribute<?> getProperty(final String name) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
-        final DefaultAttributeType<?> at = type.getProperty(name);
-        if (at == null) {
-            throw new IllegalArgumentException(propertyNotFound(name));
-        }
         /*
-         * In the majority of cases, the feature allows at most one attribute for the given name.
-         * In order to save a little bit of space (because SIS applications may have a very large
-         * amount of features), we will not store the list in this DefaultFeature. Instead, we use
-         * a temporary object which will read and write the Attribute instance directly in the map.
+         * Wraps values in Property objects for all entries in the properties map,
+         * if not already done. This operation is execute at most once per feature.
          */
-        final int maximumOccurs = at.getMaximumOccurs();
-        if (maximumOccurs <= 1) {
-            return new PropertySingleton(at, properties, name);
-        }
-        /*
-         * If the property allows more than one feature, then we need a real List implementation.
-         * This case is less frequent, so we test it last.
-         */
-        Object element = properties.get(name);
-        if (element == null) {
-            element = new PropertyList(at, maximumOccurs);
-            if (properties.put(name, element) != null) {
-                throw new ConcurrentModificationException(name);
+        if (!asPropertyInstances) {
+            asPropertyInstances = true;
+            for (final Map.Entry<String, Object> entry : properties.entrySet()) {
+                final String key   = entry.getKey();
+                final Object value = entry.getValue();
+                if (entry.setValue(new DefaultAttribute<>(getPropertyType(key), value)) != value) {
+                    throw new ConcurrentModificationException(key);
+                }
             }
         }
-        return (PropertyList) element;
+        return getPropertyInstance(name);
     }
 
     /**
-     * Returns the value(s) of all attribute of the given name.
-     * This convenience method combines a call to {@link #properties(String)} followed by calls to
-     * {@link DefaultAttribute#getValue()} for each attribute, but may potentially be more efficient.
+     * Implementation of {@link #getProperty(String)} invoked when we known that the {@link #properties}
+     * map contains {@code Property} instances (as opposed to their value).
+     */
+    private DefaultAttribute<?> getPropertyInstance(final String name) throws IllegalArgumentException {
+        DefaultAttribute<?> property = (DefaultAttribute<?>) properties.get(name);
+        if (property == null) {
+            property = new DefaultAttribute<>(getPropertyType(name));
+            replace(name, null, property);
+        }
+        return property;
+    }
+
+    /**
+     * Returns the value for the property of the given name.
+     * This convenience method is equivalent to the following code,
+     * except that this method is potentially more efficient:
      *
-     * <p>The type of the returned object depends on the {@linkplain DefaultAttributeType#getMaximumOccurs()
-     * maximum number of occurrences} of the named attribute:</p>
+     * {@preformat
+     *     return getProperty(name).getValue();
+     * }
      *
-     * <ul>
-     *   <li>If the attribute is allowed to occur at most once (which is the usual case of <cite>simple
-     *       features</cite>), then this method returns either the singleton value or {@code null}.</li>
-     *   <li>Otherwise this method will always return a {@link List}.
-     *       That list may be empty but never {@code null}.</li>
-     * </ul>
-     *
-     * @param  name The attribute name.
-     * @return The value or list of values for the given attribute(s), or {@code null} if none.
-     * @throws IllegalArgumentException If the given argument is not an attribute name of this feature.
+     * @param  name The property name.
+     * @return The value for the given property, or {@code null} if none.
+     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
      *
      * @see DefaultAttribute#getValue()
      */
-    public Object getAttributeValue(final String name) throws IllegalArgumentException {
+    public Object getPropertyValue(final String name) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
         final Object element = properties.get(name);
-        /*
-         * If there is no value for the given name, first ensure that the name is valid,
-         * then return the default value without storing any object in this DefaultFeature.
-         */
-        if (element == null) {
-            final DefaultAttributeType<?> at = type.getProperty(name);
-            if (at == null) {
-                throw new IllegalArgumentException(propertyNotFound(name));
+        if (element != null) {
+            if (!asPropertyInstances) {
+                return element;
+            } else {
+                return ((DefaultAttribute<?>) element).getValue();
             }
-            final int maximumOccurs = at.getMaximumOccurs();
-            if (maximumOccurs <= 1) {
-                return at.getDefaultValue();
-            }
-            final PropertyList list = new PropertyList(at, maximumOccurs);
-            if (properties.put(name, list) != null) {
-                throw new ConcurrentModificationException(name);
-            }
-            return list;
+        } else if (properties.containsKey(name)) {
+            return null; // Null has been explicitely set.
+        } else {
+            return getPropertyType(name).getDefaultValue();
         }
-        if (element instanceof DefaultAttribute<?>) {
-            return ((DefaultAttribute<?>) element).getValue();
-        }
-        if (element instanceof PropertyList) {
-            // TODO
-        }
-        return element;
     }
 
     /**
-     * Sets the value of the attribute of the given name.
+     * Sets the value for the property of the given name.
      *
      * {@section Validation}
      * The amount of validation performed by this method is implementation dependent.
@@ -196,59 +193,68 @@ public class DefaultFeature implements Serializable {
      * @param  name  The attribute name.
      * @param  value The new value for the given attribute (may be {@code null}).
      * @throws IllegalArgumentException If the given argument is not an attribute name of this feature.
+     * @throws ClassCastException If the value is not assignable to the expected value class.
      * @throws RuntimeException If this method performs validation and the given value does not meet the conditions.
      *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException} in
      *         a future SIS version.</span>
      *
      * @see DefaultAttribute#setValue(Object)
      */
-    public void setAttributeValue(final String name, final Object value) throws IllegalArgumentException {
-        Object element = properties.get(name);
-        if (element == null) {
-            final DefaultAttributeType<?> at = type.getProperty(name);
-            if (at == null) {
-                throw new IllegalArgumentException(propertyNotFound(name));
-            }
-            if (Objects.equals(value, at.getDefaultValue())) {
-                return; // Avoid creating the attribute if not necessary.
-            }
-            final DefaultAttribute<?> attribute = new DefaultAttribute<>(at);
-            setAttributeValue(attribute, value);
-            if (properties.put(name, attribute) != null) {
-                throw new ConcurrentModificationException(name);
-            }
-        } else {
-            // TODO: check for PropertyList list here.
-            if (element instanceof DefaultAttribute<?>) {
-                setAttributeValue((DefaultAttribute<?>) element, value);
-            } else {
-                if (properties.put(name, value) != element) {
-                    throw new ConcurrentModificationException(name);
+    public void setPropertyValue(final String name, final Object value) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("name", name);
+        if (!asPropertyInstances) {
+            final Object previous = properties.put(name, value);
+            /*
+             * Slight optimisation: if we replaced a previous value of the same class, then we can skip the
+             * checks for name and type validity since those checks has been done previously. But if we add
+             * a new value or a value of a different type, then we need to check the name and type validity.
+             */
+            if (previous == null || (value != null && previous.getClass() != value.getClass())) {
+                final DefaultAttributeType<?> pt = type.getProperty(name);
+                if (pt == null || (value != null && !pt.getValueClass().isInstance(value))) {
+                    replace(name, value, previous); // Restore the previous value.
+                    if (pt == null) {
+                        throw new IllegalArgumentException(Errors.format(
+                                Errors.Keys.PropertyNotFound_2, type.getName(), name));
+                    } else {
+                        throw new ClassCastException(Errors.format(
+                                Errors.Keys.IllegalPropertyClass_2, name, value.getClass()));
+                    }
                 }
             }
+        } else {
+            setAttributeValue(getPropertyInstance(name), value);
         }
     }
 
     /**
-     * Sets the attribute value after verification of its type.
+     * Sets a value in the {@link #properties} map.
+     *
+     * @param name     The name of the property to set.
+     * @param oldValue The old value, used for verification purpose.
+     * @param newValue The new value.
+     */
+    private void replace(final String name, final Object oldValue, final Object newValue) {
+        if (properties.put(name, newValue) != oldValue) {
+            throw new ConcurrentModificationException(name);
+        }
+    }
+
+    /**
+     * Sets the attribute value after verification of its type. This method is invoked only for checking
+     * that we are not violating the Java parameterized type contract. For a more exhaustive validation,
+     * use {@link Validator} instead.
      */
     @SuppressWarnings("unchecked")
     private static <T> void setAttributeValue(final DefaultAttribute<T> attribute, final Object value) {
         if (value != null) {
-            final DefaultAttributeType<T> at = attribute.getType();
-            if (!at.getValueClass().isInstance(value)) {
-                throw new RuntimeException( // TODO: use IllegalAttributeException after GeoAPI revision.
-                        Errors.format(Errors.Keys.IllegalPropertyClass_2, at.getName(), value.getClass()));
+            final DefaultAttributeType<T> pt = attribute.getType();
+            if (!pt.getValueClass().isInstance(value)) {
+                throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                        pt.getName(), value.getClass()));
             }
         }
         ((DefaultAttribute) attribute).setValue(value);
-    }
-
-    /**
-     * Returns the error message for a property not found.
-     */
-    private String propertyNotFound(final String name) {
-        return Errors.format(Errors.Keys.PropertyNotFound_2, type.getName(), name);
     }
 
     /**
@@ -307,8 +313,7 @@ public class DefaultFeature implements Serializable {
         for (final Map.Entry<String,Object> entry : properties.entrySet()) {
             final DefaultAttributeType<?> at;
             Object element = entry.getValue();
-            // TODO: check for PropertyList list here.
-            if (element instanceof DefaultAttribute<?>) {
+            if (asPropertyInstances) {
                 at = ((DefaultAttribute<?>) element).getType();
                 element = ((DefaultAttribute<?>) element).getValue();
             } else {

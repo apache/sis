@@ -162,7 +162,7 @@ public class ShapeFile {
                 double x = rf.getDouble();
                 double y = rf.getDouble();
                 Point pnt = new Point(x,y);
-                f.setAttributeValue(GEOMETRY_NAME, pnt);
+                f.setPropertyValue(GEOMETRY_NAME, pnt);
 
             } else if (ShapeType == ShapeTypeEnum.Polygon.getValue()) {
                 double xmin = rf.getDouble();
@@ -190,7 +190,7 @@ public class ShapeFile {
                     ypnt = rf.getDouble();
                     poly.lineTo(xpnt, ypnt);
                 }
-                f.setAttributeValue(GEOMETRY_NAME, poly);
+                f.setPropertyValue(GEOMETRY_NAME, poly);
 
             } else if (ShapeType == ShapeTypeEnum.PolyLine.getValue()) {
                 double xmin = rf.getDouble();
@@ -226,7 +226,7 @@ public class ShapeFile {
                     }
                 }
 
-                f.setAttributeValue(GEOMETRY_NAME, ply);
+                f.setPropertyValue(GEOMETRY_NAME, ply);
 
             } else {
                 throw new DataStoreException("Unsupported shapefile type: " + this.ShapeType);
@@ -243,7 +243,7 @@ public class ShapeFile {
                 data = new byte[fd.getLength()];
                 df.get(data);
                 String value = new String(data);
-                f.setAttributeValue(fd.getName(), value);
+                f.setPropertyValue(fd.getName(), value);
             }
 
             this.FeatureMap.put(RecordNumber, f);
