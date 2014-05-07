@@ -50,7 +50,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     private static final DefaultAttribute<?>[] EMPTY = new DefaultAttribute<?>[0];
 
     /**
-     * The type of property elements in the list.
+     * The type of the property element in this list.
      */
     private final AbstractIdentifiedType type;
 

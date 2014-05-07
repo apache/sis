@@ -25,7 +25,6 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.measure.NumberRange;
 
 // Related to JDK7
 import java.util.Objects;
@@ -93,18 +92,6 @@ public class DefaultFeature implements Serializable {
     }
 
     /**
-     * Returns {@code true} if the given cardinality is for a singleton property.
-     */
-    private static boolean isSingleton(final NumberRange<Integer> cardinality) {
-        switch (cardinality.getMaxValue()) {
-            case 0:
-            case 1:  return true;
-            case 2:  return !cardinality.isMaxIncluded();
-            default: return false;
-        }
-    }
-
-    /**
      * Returns all properties (attributes, operations or associations) of the given name.
      * The returned list is <em>live</em>: change in that list will be immediately reflected
      * in this {@code DefaultFeature}, and conversely.
@@ -128,7 +115,7 @@ public class DefaultFeature implements Serializable {
          * amount of features), we will not store the list in this DefaultFeature. Instead, we use
          * a temporary object which will read and write the Attribute instance directly in the map.
          */
-        if (isSingleton(at.getCardinality())) {
+        if (at.getMaximumOccurs() <= 1) {
             return new SingletonValue(at, properties, name);
         }
         /*
@@ -173,7 +160,7 @@ public class DefaultFeature implements Serializable {
             if (at == null) {
                 throw new IllegalArgumentException(propertyNotFound(name));
             }
-            if (isSingleton(at.getCardinality())) {
+            if (at.getMaximumOccurs() <= 1) {
                 return at.getDefaultValue();
             }
             // TODO

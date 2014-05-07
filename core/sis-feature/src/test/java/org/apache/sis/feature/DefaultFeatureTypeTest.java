@@ -80,13 +80,12 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testSimple")
     public void testNameCollision() {
-        final NumberRange<Integer> cardinality = NumberRange.create(1, true, 1, true);
         final DefaultAttributeType<String> city = new DefaultAttributeType<>(
-                singletonMap(DefaultAttributeType.NAME_KEY, "city"), String.class, null, cardinality);
+                singletonMap(DefaultAttributeType.NAME_KEY, "city"), String.class, 1, 1, null);
         final DefaultAttributeType<Integer> cityId = new DefaultAttributeType<>(
-                singletonMap(DefaultAttributeType.NAME_KEY, "city"), Integer.class, null, cardinality);
+                singletonMap(DefaultAttributeType.NAME_KEY, "city"), Integer.class, 1, 1, null);
         final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
-                singletonMap(DefaultAttributeType.NAME_KEY, "population"), Integer.class, null, cardinality);
+                singletonMap(DefaultAttributeType.NAME_KEY, "population"), Integer.class, 1, 1, null);
 
         final Map<String,String> properties = singletonMap(DefaultAttributeType.NAME_KEY, "City population");
         try {

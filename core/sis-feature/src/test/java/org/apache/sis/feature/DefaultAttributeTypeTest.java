@@ -22,7 +22,6 @@ import java.util.Locale;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -54,7 +53,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
         assertNull(properties.put(DefaultAttributeType.DEFINITION_KEY  + "_ja", "都市の名前。"));
         assertNull(properties.put(DefaultAttributeType.DESCRIPTION_KEY, "Some verbose description."));
         final DefaultAttributeType<String> city = new DefaultAttributeType<>(properties,
-                String.class, "Utopia", NumberRange.create(1, true, 1, true));
+                String.class, 1, 1, "Utopia");
         properties.clear();
         return city;
     }
@@ -67,7 +66,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
     static DefaultAttributeType<Integer> population(final Map<String,Object> properties) {
         assertNull(properties.put(DefaultAttributeType.NAME_KEY, "population"));
         final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
-                properties, Integer.class, null, NumberRange.create(1, true, 1, true));
+                properties, Integer.class, 1, 1, null);
         properties.clear();
         return population;
     }
@@ -98,10 +97,8 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
         assertEquals("valueClass",   String.class, city.getValueClass());
         assertEquals("defaultValue", "Utopia",     city.getDefaultValue());
 
-        final NumberRange<Integer> cardinality = city.getCardinality();
-        assertNotNull("cardinality", cardinality);
-        assertEquals("cardinality.minValue", Integer.valueOf(1), cardinality.getMinValue());
-        assertEquals("cardinality.maxValue", Integer.valueOf(1), cardinality.getMaxValue());
+        assertEquals("minimumOccurs", 1, city.getMinimumOccurs());
+        assertEquals("axnimumOccurs", 1, city.getMaximumOccurs());
     }
 
     /**

@@ -44,4 +44,22 @@ final class Validator {
             throw new RuntimeException(Errors.format(Errors.Keys.MismatchedPropertyType_1, type.getName()));
         }
     }
+
+    /**
+     * Ensures that the given value is valid for the given attribute type.
+     */
+    static void ensureValidValue(final DefaultAttributeType<?> type, final Object value) {
+        if (value == null) {
+            return;
+        }
+        /*
+         * In theory, the following check is unnecessary since the type was constrained by the Attribute.setValue(T)
+         * method signature. However in practice the call to Attribute.setValue(…) is sometime done after type erasure,
+         * so we are better to check.
+         */
+        if (!type.getValueClass().isInstance(value)) {
+            throw new RuntimeException( // TODO: IllegalAttributeException, pending GeoAPI revision.
+                    Errors.format(Errors.Keys.IllegalPropertyClass_2, type.getName(), value.getClass()));
+        }
+    }
 }
