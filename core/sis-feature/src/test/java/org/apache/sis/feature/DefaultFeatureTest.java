@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 @DependsOn({
     DefaultFeatureTypeTest.class,
     DefaultAttributeTest.class,
-    SingletonValueTest.class
+    PropertySingletonTest.class
 })
 public final strictfp class DefaultFeatureTest extends TestCase {
     /**

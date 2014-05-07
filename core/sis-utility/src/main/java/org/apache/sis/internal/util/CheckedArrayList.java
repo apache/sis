@@ -194,15 +194,17 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     }
 
     /**
-     * A wrapper around the given array for use by {@link #addAll(Collection)} only.  This wrapper violates
-     * some {@link List} method contracts, so it must really be used only as a temporary object for passing
-     * the array to {@code AbstractList.addAll(…)} implementation. In particular {@link #toArray()} returns
-     * directly the internal array, because this is the method to be invoked by {@code addAll(…)}  (this is
-     * actually the only important method for this wrapper).
+     * A wrapper around the given array for use by {@link CheckedArrayList#addAll(Collection)} only, or by other
+     * implementations using the same strategy. This wrapper violates some {@link List} method contracts,  so it
+     * shall really be used only as a temporary object for passing array to {@code ArrayList.addAll(…)} methods.
+     * In particular {@link #toArray()} returns directly the internal array, because this is the method to be
+     * invoked by {@code ArrayList.addAll(…)} (this is actually the only important method in this wrapper).
+     *
+     * @param <E> The type or list elements.
      */
-    private static final class Mediator<E> extends AbstractList<E> {
+    public static final class Mediator<E> extends AbstractList<E> {
         private final E[] array;
-        Mediator(final E[] array)           {this.array = array;}
+        public Mediator(final E[] array)    {this.array = array;}
         @Override public int size()         {return array.length;}
         @Override public E   get(int index) {return array[index];}
         @Override public E[] toArray()      {return array;} // See class javadoc.

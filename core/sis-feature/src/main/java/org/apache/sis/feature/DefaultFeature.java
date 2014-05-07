@@ -60,7 +60,7 @@ public class DefaultFeature implements Serializable {
      * Each value can be one of the following types (from most generic to most specific):
      *
      * <ul>
-     *   <li>A {@link MultiValues}, which is a list of {@code Attribute}.</li>
+     *   <li>A {@link PropertyList}, which is a list of {@code Attribute}.</li>
      *   <li>An {@code Attribute} in the common case of [0…1] cardinality.</li>
      *   <li>An object in the common case of [0…1] cardinality when only the value
      *       (not the {@code Attribute} object) is requested.</li>
@@ -110,22 +110,27 @@ public class DefaultFeature implements Serializable {
             throw new IllegalArgumentException(propertyNotFound(name));
         }
         /*
-         * If the majority of cases, the feature allows at most one attribute for the given name.
+         * In the majority of cases, the feature allows at most one attribute for the given name.
          * In order to save a little bit of space (because SIS applications may have a very large
          * amount of features), we will not store the list in this DefaultFeature. Instead, we use
          * a temporary object which will read and write the Attribute instance directly in the map.
          */
-        if (at.getMaximumOccurs() <= 1) {
-            return new SingletonValue(at, properties, name);
+        final int maximumOccurs = at.getMaximumOccurs();
+        if (maximumOccurs <= 1) {
+            return new PropertySingleton(at, properties, name);
         }
         /*
-         * If the property allow more than one feature, then we need a real List implementation.
+         * If the property allows more than one feature, then we need a real List implementation.
+         * This case is less frequent, so we test it last.
          */
-        final Object element = properties.get(name);
+        Object element = properties.get(name);
         if (element == null) {
-            // TODO: create MultiValues list here.
+            element = new PropertyList(at, maximumOccurs);
+            if (properties.put(name, element) != null) {
+                throw new ConcurrentModificationException(name);
+            }
         }
-        throw new UnsupportedOperationException();
+        return (PropertyList) element;
     }
 
     /**
@@ -133,13 +138,14 @@ public class DefaultFeature implements Serializable {
      * This convenience method combines a call to {@link #properties(String)} followed by calls to
      * {@link DefaultAttribute#getValue()} for each attribute, but may potentially be more efficient.
      *
-     * <p>Special cases:</p>
+     * <p>The type of the returned object depends on the {@linkplain DefaultAttributeType#getMaximumOccurs()
+     * maximum number of occurrences} of the named attribute:</p>
+     *
      * <ul>
-     *   <li>If the {@linkplain DefaultAttributeType#getCardinality() attribute cardinality} allows
-     *       more than one occurrence, then this method will always return a {@link List}.
+     *   <li>If the attribute is allowed to occur at most once (which is the usual case of <cite>simple
+     *       features</cite>), then this method returns either the singleton value or {@code null}.</li>
+     *   <li>Otherwise this method will always return a {@link List}.
      *       That list may be empty but never {@code null}.</li>
-     *   <li>Otherwise (if the attribute cardinality allows at most one occurrence),
-     *       this method returns either the singleton value or {@code null}.</li>
      * </ul>
      *
      * @param  name The attribute name.
@@ -160,14 +166,21 @@ public class DefaultFeature implements Serializable {
             if (at == null) {
                 throw new IllegalArgumentException(propertyNotFound(name));
             }
-            if (at.getMaximumOccurs() <= 1) {
+            final int maximumOccurs = at.getMaximumOccurs();
+            if (maximumOccurs <= 1) {
                 return at.getDefaultValue();
             }
-            // TODO
+            final PropertyList list = new PropertyList(at, maximumOccurs);
+            if (properties.put(name, list) != null) {
+                throw new ConcurrentModificationException(name);
+            }
+            return list;
         }
-        // TODO: test MultiValues list here.
         if (element instanceof DefaultAttribute<?>) {
             return ((DefaultAttribute<?>) element).getValue();
+        }
+        if (element instanceof PropertyList) {
+            // TODO
         }
         return element;
     }
@@ -202,15 +215,15 @@ public class DefaultFeature implements Serializable {
             final DefaultAttribute<?> attribute = new DefaultAttribute<>(at);
             setAttributeValue(attribute, value);
             if (properties.put(name, attribute) != null) {
-                throw new ConcurrentModificationException();
+                throw new ConcurrentModificationException(name);
             }
         } else {
-            // TODO: check for MultiValues list here.
+            // TODO: check for PropertyList list here.
             if (element instanceof DefaultAttribute<?>) {
                 setAttributeValue((DefaultAttribute<?>) element, value);
             } else {
                 if (properties.put(name, value) != element) {
-                    throw new ConcurrentModificationException();
+                    throw new ConcurrentModificationException(name);
                 }
             }
         }
@@ -239,8 +252,8 @@ public class DefaultFeature implements Serializable {
     }
 
     /**
-     * Ensures that all current property values comply with the constraints defined by the feature type.
-     * This method will implicitly invokes {@link DefaultAttribute#validate()} for all attribute values.
+     * Ensures that all current properties comply with the constraints defined by the feature type.
+     * This method will implicitly invokes {@link DefaultAttribute#validate()} for all attributes.
      *
      * @throws RuntimeException If the current attribute value violates a constraint.
      *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException}
@@ -272,7 +285,7 @@ public class DefaultFeature implements Serializable {
         if (obj == this) {
             return true;
         }
-        if (super.equals(obj)) {
+        if (obj != null && obj.getClass() == getClass()) {
             final DefaultFeature that = (DefaultFeature) obj;
             return type.equals(that.type) &&
                    properties.equals(that.properties);
@@ -294,7 +307,7 @@ public class DefaultFeature implements Serializable {
         for (final Map.Entry<String,Object> entry : properties.entrySet()) {
             final DefaultAttributeType<?> at;
             Object element = entry.getValue();
-            // TODO: check for MultiValues list here.
+            // TODO: check for PropertyList list here.
             if (element instanceof DefaultAttribute<?>) {
                 at = ((DefaultAttribute<?>) element).getType();
                 element = ((DefaultAttribute<?>) element).getValue();

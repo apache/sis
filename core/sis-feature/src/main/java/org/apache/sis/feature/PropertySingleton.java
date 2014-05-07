@@ -43,7 +43,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.5
  * @module
  */
-final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
+final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
     /**
      * An empty list of attributes.
      */
@@ -68,7 +68,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     /**
      * Creates a new list for the attribute associated to the given key in the given map.
      */
-    SingletonValue(final AbstractIdentifiedType type, final Map<String, Object> properties, final String key) {
+    PropertySingleton(final AbstractIdentifiedType type, final Map<String, Object> properties, final String key) {
         this.type       = type;
         this.properties = properties;
         this.key        = key;
@@ -126,7 +126,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
                 return (DefaultAttribute<?>) previous;
             }
             if (properties.remove(key) != element) {
-                throw new ConcurrentModificationException();
+                throw new ConcurrentModificationException(key);
             }
         }
         throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
@@ -162,7 +162,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
      * Removes the attribute associated to the key.
      *
      * This method does not checks if the removal is allowed by the
-     * {@linkplain DefaultAttributeType#getCardinality() cardinality}.
+     * {@linkplain DefaultAttributeType#getMinimumOccurs() cardinality}.
      * Such check can be performed by {@link DefaultFeature#validate()}.
      */
     @Override
@@ -186,7 +186,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
      */
     final boolean clear(final int c) {
         if (c != modCount) {
-            throw new ConcurrentModificationException();
+            throw new ConcurrentModificationException(key);
         }
         return properties.remove(key) != null;
     }
@@ -195,7 +195,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
      * Removes the attribute associated to the key.
      *
      * This method does not checks if the removal is allowed by the
-     * {@linkplain DefaultAttributeType#getCardinality() cardinality}.
+     * {@linkplain DefaultAttributeType#getMinimumOccurs() cardinality}.
      * Such check can be performed by {@link DefaultFeature#validate()}.
      */
     @Override
@@ -222,7 +222,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
     }
 
     /**
-     * Implementation of the iterator returned by {@link SingletonValue#iterator()}.
+     * Implementation of the iterator returned by {@link PropertySingleton#iterator()}.
      */
     private final class Iter implements Iterator<DefaultAttribute<?>> {
         /**
@@ -231,7 +231,7 @@ final class SingletonValue extends AbstractList<DefaultAttribute<?>> {
         private DefaultAttribute<?> element;
 
         /**
-         * Initial {@link SingletonValue#modCount} value, for checks against concurrent modifications.
+         * Initial {@link PropertySingleton#modCount} value, for checks against concurrent modifications.
          */
         private final int c;
 
