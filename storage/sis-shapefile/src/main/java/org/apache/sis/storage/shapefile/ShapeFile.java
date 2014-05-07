@@ -29,7 +29,6 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Geometry;
 
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.feature.DefaultFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
@@ -259,14 +258,13 @@ public class ShapeFile {
     private DefaultFeatureType getFeatureType(final String name) {
         final int n = FDArray.size();
         final DefaultAttributeType<?>[] attributes = new DefaultAttributeType<?>[n + 1];
-        final NumberRange<Integer> cardinality = NumberRange.create(1, true, 1, true);
         final Map<String,Object> properties = new HashMap<>(4);
         for (int i=0; i<n; i++) {
             properties.put(DefaultAttributeType.NAME_KEY, FDArray.get(i).getName());
-            attributes[i] = new DefaultAttributeType<>(properties, String.class, null, cardinality);
+            attributes[i] = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
         }
         properties.put(DefaultAttributeType.NAME_KEY, GEOMETRY_NAME);
-        attributes[n] = new DefaultAttributeType<>(properties, Geometry.class, null, cardinality);
+        attributes[n] = new DefaultAttributeType<>(properties, Geometry.class, 1, 1, null);
         properties.put(DefaultAttributeType.NAME_KEY, name);
         return new DefaultFeatureType(properties, false, null, attributes);
     }

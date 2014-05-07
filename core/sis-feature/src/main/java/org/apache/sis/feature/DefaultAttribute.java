@@ -19,7 +19,6 @@ package org.apache.sis.feature;
 import java.io.Serializable;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 // Related to JDK7
 import java.util.Objects;
@@ -126,14 +125,7 @@ public class DefaultAttribute<T> implements Cloneable, Serializable {
      * @see DefaultFeature#validate()
      */
     public void validate() {
-        /*
-         * In theory, the following check is useless since the type was constrained by the setValue(T) method signature.
-         * However in practice the call to setValue(…) is sometime done after type erasure, so we are better to check.
-         */
-        if (value != null && !type.getValueClass().isInstance(value)) {
-            throw new RuntimeException( // TODO: IllegalAttributeException, pending GeoAPI revision.
-                    Errors.format(Errors.Keys.IllegalPropertyClass_2, type.getName(), value.getClass()));
-        }
+        Validator.ensureValidValue(type, value);
     }
 
     /**

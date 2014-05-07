@@ -19,7 +19,6 @@ package org.apache.sis.feature;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -73,7 +72,7 @@ public final strictfp class SingletonValueTest extends TestCase {
         otherValues   = singletonMap("other key", "other value");
         properties    = new HashMap<>(otherValues);
         attributeType = new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, KEY),
-                                Integer.class, null, NumberRange.create(0, true, 1, true));
+                                Integer.class, 0, 1, null);
         singleton = new SingletonValue(attributeType, properties, KEY);
     }
 
