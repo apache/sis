@@ -31,7 +31,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests {@link SingletonValue}.
+ * Tests {@link PropertySingleton}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -39,7 +39,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 @DependsOn(DefaultAttributeTest.class)
-public final strictfp class SingletonValueTest extends TestCase {
+public final strictfp class PropertySingletonTest extends TestCase {
     /**
      * The key used for storing value in this test class.
      */
@@ -48,7 +48,7 @@ public final strictfp class SingletonValueTest extends TestCase {
     /**
      * The instance to test.
      */
-    private final SingletonValue singleton;
+    private final PropertySingleton singleton;
 
     /**
      * The type of the attribute value in the {@link #singleton} list.
@@ -68,12 +68,12 @@ public final strictfp class SingletonValueTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public SingletonValueTest() {
+    public PropertySingletonTest() {
         otherValues   = singletonMap("other key", "other value");
         properties    = new HashMap<>(otherValues);
         attributeType = new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, KEY),
                                 Integer.class, 0, 1, null);
-        singleton = new SingletonValue(attributeType, properties, KEY);
+        singleton = new PropertySingleton(attributeType, properties, KEY);
     }
 
     /**
@@ -161,7 +161,7 @@ public final strictfp class SingletonValueTest extends TestCase {
 
     /**
      * Tests the attempt to add an attribute of the wrong type.
-     * {@link SingletonValue} shall not allow this operation.
+     * {@link PropertySingleton} shall not allow this operation.
      */
     @Test
     @DependsOnMethod("testSingleton")
