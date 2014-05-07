@@ -42,6 +42,17 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * Compared to the Java language, {@code FeatureType} is equivalent to {@link Class} while
  * {@code Feature} instances are equivalent to {@link Object} instances of that class.</div>
  *
+ * A feature type can inherit the properties of one or more other feature types.
+ * Each feature type can provide descriptions for the following properties:
+ *
+ * <ul>
+ *   <li>{@linkplain DefaultAttributeType   Attributes}</li>
+ *   <li>{@linkplain DefaultAssociationRole Associations to other feature types}</li>
+ *   <li>{@linkplain DefaultOperationType   Operations}</li>
+ * </ul>
+ *
+ * The description of all those properties are collectively called {@linkplain #characteristics() characteristics}.
+ *
  * <div class="warning"><b>Warning:</b>
  * This class is expected to implement a GeoAPI {@code FeatureType} interface in a future version.
  * When such interface will be available, most references to {@code DefaultFeatureType} in the API
@@ -124,6 +135,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *   </tr>
      * </table>
      *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the type of array elements may be
+     * changed to {@code org.opengis.feature.FeatureType} {@code org.opengis.feature.PropertyType}.
+     * This change is pending GeoAPI revision.</div>
+     *
      * @param properties The name and other properties to be given to this feature type.
      * @param isAbstract If {@code true}, the feature type acts as an abstract super-type.
      * @param superTypes The parents of this feature type, or {@code null} or empty if none.
@@ -202,6 +217,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     /**
      * Returns the parents of this feature type.
      *
+     * <div class="warning"><b>Warning:</b>
+     * The type of list elements will be changed to {@code FeatureType} if and when such interface
+     * will be defined in GeoAPI.</div>
+     *
      * @return The parents of this feature type, or an empty set if none.
      */
     public Set<DefaultFeatureType> superTypes() {
@@ -218,7 +237,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *
      * @return Feature operation, attribute type and association role that carries characteristics of a feature type.
      */
-    public List<DefaultAttributeType<?>> getCharacteristics() {
+    public List<DefaultAttributeType<?>> characteristics() {
         return characteristics;
     }
 

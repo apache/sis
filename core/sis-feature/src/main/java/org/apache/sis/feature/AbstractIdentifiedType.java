@@ -179,21 +179,12 @@ public class AbstractIdentifiedType implements Serializable {
         } else if (value instanceof GenericName) {
             name = (GenericName) value;
         } else {
-            throw illegalPropertyType(properties, NAME_KEY, value);
+            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    Errors.Keys.IllegalPropertyClass_2, NAME_KEY, value.getClass()));
         }
         definition  = Types.toInternationalString(properties, DEFINITION_KEY );
         designation = Types.toInternationalString(properties, DESIGNATION_KEY);
         description = Types.toInternationalString(properties, DESCRIPTION_KEY);
-    }
-
-    /**
-     * Returns the exception to be thrown when a property is of illegal type.
-     */
-    private static IllegalArgumentException illegalPropertyType(
-            final Map<String,?> properties, final String key, final Object value)
-    {
-        return new IllegalArgumentException(Errors.getResources(properties)
-                .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
     }
 
     /**
