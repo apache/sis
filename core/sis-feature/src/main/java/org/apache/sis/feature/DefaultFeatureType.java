@@ -46,9 +46,9 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * Each feature type can provide descriptions for the following properties:
  *
  * <ul>
- *   <li>{@linkplain DefaultAttributeType   Attributes}</li>
- *   <li>{@linkplain DefaultAssociationRole Associations to other feature types}</li>
- *   <li>{@linkplain DefaultOperationType   Operations}</li>
+ *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
+ *   <li>{@linkplain DefaultAssociationRole  Associations to other feature types}</li>
+ *   <li>{@linkplain DefaultFeatureOperation Operations}</li>
  * </ul>
  *
  * The description of all those properties are collectively called {@linkplain #characteristics() characteristics}.
@@ -91,7 +91,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * Any feature operation, any feature attribute type and any feature association role
      * that carries characteristics of a feature type.
      */
-    private final List<DefaultAttributeType<?>> characteristics;
+    private final List<PropertyType> characteristics;
 
     /**
      * A lookup table for fetching properties by name.
@@ -99,7 +99,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *
      * @see #getProperty(String)
      */
-    private final transient Map<String, DefaultAttributeType<?>> byName;
+    private final transient Map<String, PropertyType> byName;
 
     /**
      * Constructs a feature type from the given properties. The properties map is given unchanged to
@@ -136,8 +136,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * </table>
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the type of array elements may be
-     * changed to {@code org.opengis.feature.FeatureType} {@code org.opengis.feature.PropertyType}.
-     * This change is pending GeoAPI revision.</div>
+     * changed to {@code org.opengis.feature.FeatureType} and {@code org.opengis.feature.PropertyType}.
+     * This change is pending GeoAPI revision. In the meantime, make sure that the {@code characteristics}
+     * array contains only attribute types, association roles or operations, <strong>not</strong> other
+     * feature types since the later are not properties in the ISO sense.</div>
      *
      * @param properties The name and other properties to be given to this feature type.
      * @param isAbstract If {@code true}, the feature type acts as an abstract super-type.
@@ -146,7 +148,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *        association role that carries characteristics of a feature type.
      */
     public DefaultFeatureType(final Map<String,?> properties, final boolean isAbstract,
-            final DefaultFeatureType[] superTypes, final DefaultAttributeType<?>... characteristics)
+            final DefaultFeatureType[] superTypes, final AbstractIdentifiedType... characteristics)
     {
         super(properties);
         ArgumentChecks.ensureNonNull("characteristics", characteristics);
@@ -154,7 +156,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         this.superTypes = (superTypes == null) ? Collections.<DefaultFeatureType>emptySet() :
                           CollectionsExt.<DefaultFeatureType>immutableSet(true, superTypes);
         this.characteristics = UnmodifiableArrayList.wrap(Arrays.copyOf(
-                characteristics, characteristics.length, DefaultAttributeType[].class));
+                characteristics, characteristics.length, PropertyType[].class));
         byName = byName(this.characteristics);
     }
 
@@ -168,11 +170,11 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * @return The map of properties.
      * @throws IllegalArgumentException if two properties have the same name.
      */
-    private static Map<String, DefaultAttributeType<?>> byName(final List<DefaultAttributeType<?>> characteristics) {
+    private static Map<String, PropertyType> byName(final List<PropertyType> characteristics) {
         final int length = characteristics.size();
-        final Map<String, DefaultAttributeType<?>> byName = new HashMap<>(Containers.hashMapCapacity(length));
+        final Map<String, PropertyType> byName = new HashMap<>(Containers.hashMapCapacity(length));
         for (int i=0; i<length; i++) {
-            final DefaultAttributeType<?> c = characteristics.get(i);
+            final PropertyType c = characteristics.get(i);
             ArgumentChecks.ensureNonNullElement("characteristics", i, c);
             final GenericName name = c.getName();
             if (name == null) {
@@ -237,8 +239,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *
      * @return Feature operation, attribute type and association role that carries characteristics of a feature type.
      */
-    public List<DefaultAttributeType<?>> characteristics() {
-        return characteristics;
+    public List<AbstractIdentifiedType> characteristics() {
+        return (List) characteristics; // Cast is safe because the list is read-only.
     }
 
     /**
@@ -247,7 +249,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * @param  name The name of the property to search.
      * @return The property for the given name, or {@code null} if none.
      */
-    final DefaultAttributeType<?> getProperty(final String name) {
+    final PropertyType getProperty(final String name) {
         return byName.get(name);
     }
 

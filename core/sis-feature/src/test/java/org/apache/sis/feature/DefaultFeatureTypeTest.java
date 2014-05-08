@@ -19,7 +19,6 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -62,7 +61,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         /*
          * Verify content.
          */
-        final List<DefaultAttributeType<?>> characteristics = simple.characteristics();
+        final List<AbstractIdentifiedType> characteristics = simple.characteristics();
         assertEquals("characteristics.size", 2, characteristics.size());
         assertEquals("characteristics[0]", "city",       characteristics.get(0).getName().toString());
         assertEquals("characteristics[1]", "population", characteristics.get(1).getName().toString());

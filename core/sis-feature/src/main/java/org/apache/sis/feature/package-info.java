@@ -23,19 +23,18 @@
  * <ul>
  *   <li>{@linkplain org.apache.sis.feature.DefaultFeatureType Feature types} define the <em>structure</em> of
  *       real-world representations. A feature type lists the attributes, operations, or associations to other
- *       features (collectively called “properties”) that a feature can have.</li>
+ *       features (collectively called “characteristics”) that a feature can have.
+ *
+ *       <p style="font-size:small"><b>Analogy:</b> a {@code FeatureType} in a Spatial Information System is equivalent
+ *       to a {@link java.lang.Class} in the Java language. By extension, {@code AttributeType} and {@code Operation}
+ *       are equivalent to {@link java.lang.reflect.Field} and {@link java.lang.reflect.Method} respectively.</p></li>
  *
  *   <li>{@linkplain org.apache.sis.feature.DefaultFeature Feature instances} (often called only {@code Feature}s)
- *       hold the <em>content</em> (or values) that describe one specific real-world object.</li>
+ *       hold the <em>content</em> (or values) that describe one specific real-world object.
+ *
+ *       <p style="font-size:small"><b>Example:</b> the “Eiffel tower” is a <em>feature instance</em> belonging
+ *       to the “Tower” <em>feature type</em>.</p></li>
  * </ul>
- *
- * <div class="note"><b>Note:</b> a {@code FeatureType} in a Spatial Information System is equivalent to a
- * {@link java.lang.Class} in the Java language, while a {@code Feature} instance is equivalent to a Java
- * {@link java.lang.Object} of that class. By extension, {@code AttributeType} and {@code Operation} are
- * equivalent to {@link java.lang.reflect.Field} and {@link java.lang.reflect.Method} respectively.</div>
- *
- * <div class="note"><b>Example:</b> the “Eiffel tower” is a feature <em>instance</em> belonging
- * to the “Tower” feature <em>type</em>.</div>
  *
  * {@section Class hierarchy}
  * The class hierarchy for feature <cite>types</cite> is derived from ISO 19109 specification.
@@ -47,16 +46,17 @@
  *   <th>Types</th>
  *   <th class="sep">Instances</th>
  * </tr><tr><td style="width: 50%; white-space: nowrap">
- *                 {@linkplain org.apache.sis.feature.AbstractIdentifiedType    Identified type}<br>
- * {@code  ├─}     {@linkplain org.apache.sis.feature.DefaultFeatureType        Feature type}<br>
- * {@code  └─}     {@linkplain org.apache.sis.feature.AbstractPropertyType      Property type}<br>
- * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAttributeType      Attribute type}<br>
- * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultOperationType      Operation}<br>
- * {@code      └─} {@linkplain org.apache.sis.feature.DefaultFeatureAssociation Feature association role}<br>
+ *                 {@linkplain org.apache.sis.feature.AbstractIdentifiedType  Identified type}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.feature.DefaultFeatureType      Feature type}<br>
+ * {@code  └─}                                                                Property type<br>
+ * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAttributeType    Attribute type}<br>
+ * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAssociationRole  Feature association role}<br>
+ * {@code      └─} {@linkplain org.apache.sis.feature.DefaultFeatureOperation Operation}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
- *             {@linkplain org.apache.sis.feature.DefaultFeature    Feature}<br>
- *             {@linkplain org.apache.sis.feature.AbstractProperty  Property}<br>
- * {@code  └─} {@linkplain org.apache.sis.feature.DefaultAttribute  Attribute}<br>
+ *             {@linkplain org.apache.sis.feature.DefaultFeature     Feature}<br>
+ *                                                                   Property<br>
+ * {@code  ├─} {@linkplain org.apache.sis.feature.DefaultAttribute   Attribute}<br>
+ * {@code  └─} {@linkplain org.apache.sis.feature.DefaultAssociation Feature association}<br>
  * </td></tr></table>
  *
  * @author  Travis L. Pinney
