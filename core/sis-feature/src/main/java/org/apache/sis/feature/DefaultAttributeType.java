@@ -74,7 +74,7 @@ import java.util.Objects;
  * @version 0.5
  * @module
  */
-public class DefaultAttributeType<T> extends AbstractIdentifiedType {
+public class DefaultAttributeType<T> extends PropertyType {
     /**
      * For cross-version compatibility.
      */

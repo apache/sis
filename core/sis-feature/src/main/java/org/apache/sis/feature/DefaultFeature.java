@@ -32,7 +32,7 @@ import org.apache.sis.util.collection.Containers;
  *
  * <ul>
  *   <li>{@linkplain DefaultAttribute   Attributes}</li>
- *   <li>{@linkplain DefaultAssociation Associations to other feature types}</li>
+ *   <li>{@linkplain DefaultAssociation Associations to other features}</li>
  *   <li>{@linkplain DefaultOperation   Operations}</li>
  * </ul>
  *
@@ -88,6 +88,9 @@ public class DefaultFeature implements Serializable {
     /**
      * Returns information about the feature (name, characteristics, <i>etc.</i>).
      *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
+     * to {@code org.opengis.feature.FeatureType}. This change is pending GeoAPI revision.</div>
+     *
      * @return Information about the feature.
      */
     public DefaultFeatureType getType() {
@@ -101,8 +104,8 @@ public class DefaultFeature implements Serializable {
      * @return The type for the property of the given name (never {@code null}).
      * @throws IllegalArgumentException If the given argument is not a property name of this feature.
      */
-    private DefaultAttributeType<?> getPropertyType(final String name) throws IllegalArgumentException {
-        final DefaultAttributeType<?> pt = type.getProperty(name);
+    private PropertyType getPropertyType(final String name) throws IllegalArgumentException {
+        final PropertyType pt = type.getProperty(name);
         if (pt != null) {
             return pt;
         }
@@ -119,7 +122,7 @@ public class DefaultFeature implements Serializable {
      * @return The property of the given name.
      * @throws IllegalArgumentException If the given argument is not a property name of this feature.
      */
-    public DefaultAttribute<?> getProperty(final String name) throws IllegalArgumentException {
+    public Object getProperty(final String name) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
         /*
          * Wraps values in Property objects for all entries in the properties map,
@@ -127,11 +130,20 @@ public class DefaultFeature implements Serializable {
          */
         if (!asPropertyInstances) {
             asPropertyInstances = true;
-            for (final Map.Entry<String, Object> entry : properties.entrySet()) {
-                final String key   = entry.getKey();
-                final Object value = entry.getValue();
-                if (entry.setValue(new DefaultAttribute<>(getPropertyType(key), value)) != value) {
-                    throw new ConcurrentModificationException(key);
+            if (!properties.isEmpty()) { // The map is typically empty when this method is first invoked.
+                for (final Map.Entry<String, Object> entry : properties.entrySet()) {
+                    final String key      = entry.getKey();
+                    final Object value    = entry.getValue();
+                    final PropertyType pt = getPropertyType(key);
+                    final Property property;
+                    if (pt instanceof DefaultAttributeType<?>) {
+                        property = new DefaultAttribute<>((DefaultAttributeType<?>) pt, value);
+                    } else {
+                        throw new UnsupportedOperationException(); // TODO
+                    }
+                    if (entry.setValue(property) != value) {
+                        throw new ConcurrentModificationException(key);
+                    }
                 }
             }
         }
@@ -139,13 +151,18 @@ public class DefaultFeature implements Serializable {
     }
 
     /**
-     * Implementation of {@link #getProperty(String)} invoked when we known that the {@link #properties}
+     * Implementation of {@link #getProperty(String)} invoked when we know that the {@link #properties}
      * map contains {@code Property} instances (as opposed to their value).
      */
-    private DefaultAttribute<?> getPropertyInstance(final String name) throws IllegalArgumentException {
-        DefaultAttribute<?> property = (DefaultAttribute<?>) properties.get(name);
+    private Property getPropertyInstance(final String name) throws IllegalArgumentException {
+        Property property = (Property) properties.get(name);
         if (property == null) {
-            property = new DefaultAttribute<>(getPropertyType(name));
+            final PropertyType pt = getPropertyType(name);
+            if (pt instanceof DefaultAttributeType<?>) {
+                property = new DefaultAttribute<>((DefaultAttributeType<?>) pt);
+            } else {
+                throw new UnsupportedOperationException(); // TODO
+            }
             replace(name, null, property);
         }
         return property;
@@ -156,7 +173,7 @@ public class DefaultFeature implements Serializable {
      * This convenience method is equivalent to the following code,
      * except that this method is potentially more efficient:
      *
-     * {@preformat
+     * {@preformat java
      *     return getProperty(name).getValue();
      * }
      *
@@ -178,7 +195,12 @@ public class DefaultFeature implements Serializable {
         } else if (properties.containsKey(name)) {
             return null; // Null has been explicitely set.
         } else {
-            return getPropertyType(name).getDefaultValue();
+            final PropertyType pt = getPropertyType(name);
+            if (pt instanceof DefaultAttributeType<?>) {
+                return ((DefaultAttributeType<?>) pt).getDefaultValue();
+            } else {
+                throw new UnsupportedOperationException(); // TODO
+            }
         }
     }
 
@@ -210,8 +232,8 @@ public class DefaultFeature implements Serializable {
              * a new value or a value of a different type, then we need to check the name and type validity.
              */
             if (previous == null || (value != null && previous.getClass() != value.getClass())) {
-                final DefaultAttributeType<?> pt = type.getProperty(name);
-                if (pt == null || (value != null && !pt.getValueClass().isInstance(value))) {
+                final PropertyType pt = type.getProperty(name);
+                if (!isValidAttributeValue(pt, value)) {
                     replace(name, value, previous); // Restore the previous value.
                     if (pt == null) {
                         throw new IllegalArgumentException(Errors.format(
@@ -223,7 +245,12 @@ public class DefaultFeature implements Serializable {
                 }
             }
         } else {
-            setAttributeValue(getPropertyInstance(name), value);
+            final Property property = getPropertyInstance(name);
+            if (property instanceof DefaultAttribute<?>) {
+                setAttributeValue((DefaultAttribute<?>) property, value);
+            } else {
+                throw new UnsupportedOperationException();
+            }
         }
     }
 
@@ -238,6 +265,20 @@ public class DefaultFeature implements Serializable {
         if (properties.put(name, newValue) != oldValue) {
             throw new ConcurrentModificationException(name);
         }
+    }
+
+    /**
+     * Returns {@code true} if the given type is an attribute type, and if the given value
+     * is valid for that attribute type.
+     */
+    private static boolean isValidAttributeValue(final PropertyType type, final Object value) {
+        if (!(type instanceof DefaultAttributeType<?>)) {
+            return false;
+        }
+        if (value == null) {
+            return true;
+        }
+        return ((DefaultAttributeType<?>) type).getValueClass().isInstance(value);
     }
 
     /**
@@ -311,15 +352,15 @@ public class DefaultFeature implements Serializable {
         final StringBuilder sb = new StringBuilder();
         final String lineSeparator = System.lineSeparator();
         for (final Map.Entry<String,Object> entry : properties.entrySet()) {
-            final DefaultAttributeType<?> at;
+            final PropertyType pt;
             Object element = entry.getValue();
             if (asPropertyInstances) {
-                at = ((DefaultAttribute<?>) element).getType();
+                pt = ((DefaultAttribute<?>) element).getType();
                 element = ((DefaultAttribute<?>) element).getValue();
             } else {
-                at = type.getProperty(entry.getKey());
+                pt = type.getProperty(entry.getKey());
             }
-            sb.append(at.getName()).append(": ").append(element).append(lineSeparator);
+            sb.append(pt.getName()).append(": ").append(element).append(lineSeparator);
         }
         return sb.toString();
     }
