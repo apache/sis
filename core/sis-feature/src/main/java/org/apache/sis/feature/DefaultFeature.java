@@ -36,6 +36,9 @@ import org.apache.sis.util.collection.Containers;
  *   <li>{@linkplain DefaultOperation   Operations}</li>
  * </ul>
  *
+ * If a feature allows only attributes and operations (no associations), and if the cardinality of all attributes
+ * is constrained to [1 … 1], then the feature is said “simple”.
+ *
  * {@section Usage in multi-thread environment}
  * {@code DefaultFeature} are <strong>not</strong> thread-safe.
  * Synchronization, if needed, shall be done externally by the caller.

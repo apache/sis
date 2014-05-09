@@ -107,22 +107,22 @@ public class DefaultAttributeType<T> extends FieldType {
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
-     *     <td>{@link org.opengis.util.GenericName} or {@link String}</td>
+     *     <td>{@link GenericName} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDefinition()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDesignation()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
      * </table>
