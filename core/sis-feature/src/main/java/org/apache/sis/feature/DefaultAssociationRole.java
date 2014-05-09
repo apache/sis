@@ -17,6 +17,8 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -24,6 +26,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 /**
  * Indicates the role played by the association between two features.
+ *
+ * {@section Immutability and thread safety}
+ * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
+ * instances) and all arguments (e.g. {@code valueType}) given to the constructor are also immutable.
+ * Such immutable instances can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -57,22 +64,22 @@ public class DefaultAssociationRole extends FieldType {
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
-     *     <td>{@link org.opengis.util.GenericName} or {@link String}</td>
+     *     <td>{@link GenericName} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDefinition()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDesignation()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
      * </table>
@@ -102,7 +109,6 @@ public class DefaultAssociationRole extends FieldType {
     public final DefaultFeatureType getValueType() {
         return valueType;
     }
-
 
     /**
      * Returns the minimum number of occurrences of the association within its containing entity.
@@ -156,10 +162,10 @@ public class DefaultAssociationRole extends FieldType {
     }
 
     /**
-     * Returns a string representation of this attribute type.
+     * Returns a string representation of this association role.
      * The returned string is for debugging purpose and may change in any future SIS version.
      *
-     * @return A string representation of this attribute type for debugging purpose.
+     * @return A string representation of this association role for debugging purpose.
      */
     @Debug
     @Override

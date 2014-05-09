@@ -92,7 +92,7 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      * Returns information about the attribute (base Java class, domain of values, <i>etc.</i>).
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
-     * to {@code org.opengis.feature.AttrbuteType}. This change is pending GeoAPI revision.</div>
+     * to {@code org.opengis.feature.AttributeType}. This change is pending GeoAPI revision.</div>
      *
      * @return Information about the attribute.
      */

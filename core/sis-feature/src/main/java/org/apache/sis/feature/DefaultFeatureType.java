@@ -133,22 +133,22 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
-     *     <td>{@link org.opengis.util.GenericName} or {@link String}</td>
+     *     <td>{@link GenericName} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDefinition()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDesignation()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
      * </table>
@@ -204,16 +204,24 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
             if (byName.put(s, property) != null) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, s));
             }
-            if (!(property instanceof DefaultOperation)) {
-                if (property instanceof DefaultAttributeType<?>) {
-                    switch (((DefaultAttributeType<?>) property).getMaximumOccurs()) {
-                        case 0:  continue;
-                        case 1:  isSimple &= (((DefaultAttributeType<?>) property).getMinimumOccurs() == 1); break;
-                        default: isSimple = false; break;
-                    }
-                } else {
+            /*
+             * Stores indices that the property elements would have in a flat array,
+             * and opportunistically check if the FeatureType is "simple".
+             */
+            final int maximumOccurs;
+            if (property instanceof DefaultAttributeType<?>) { // TODO: check for AttributeType instead (after GeoAPI upgrade).
+                maximumOccurs = ((DefaultAttributeType<?>) property).getMaximumOccurs();
+                if (isSimple && ((DefaultAttributeType<?>) property).getMinimumOccurs() != maximumOccurs) {
                     isSimple = false;
                 }
+            } else if (property instanceof FieldType) { // TODO: check for AssociationRole instead (after GeoAPI upgrade).
+                maximumOccurs = ((FieldType) property).getMaximumOccurs();
+                isSimple = false;
+            } else {
+                continue; // For feature operations, maximumOccurs is implicitly 0.
+            }
+            if (maximumOccurs != 0) {
+                isSimple &= (maximumOccurs == 1);
                 indices.put(s, index++);
             }
         }
