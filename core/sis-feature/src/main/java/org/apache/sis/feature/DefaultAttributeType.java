@@ -21,7 +21,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -74,7 +73,7 @@ import java.util.Objects;
  * @version 0.5
  * @module
  */
-public class DefaultAttributeType<T> extends PropertyType {
+public class DefaultAttributeType<T> extends FieldType {
     /**
      * For cross-version compatibility.
      */
@@ -86,17 +85,6 @@ public class DefaultAttributeType<T> extends PropertyType {
      * @see #getValueClass()
      */
     private final Class<T> valueClass;
-
-    /**
-     * The minimum number of occurrences of the property within its containing entity.
-     */
-    private final int minimumOccurs;
-
-    /**
-     * The maximum number of occurrences of the property within its containing entity,
-     * or {@link Integer#MAX_VALUE} if there is no limit.
-     */
-    private final int maximumOccurs;
 
     /**
      * The default value for the attribute, or {@code null} if none.
@@ -141,25 +129,19 @@ public class DefaultAttributeType<T> extends PropertyType {
      *
      * @param properties    The name and other properties to be given to this attribute type.
      * @param valueClass    The type of attribute values.
-     * @param minimumOccurs The minimum number of occurrences of the property within its containing entity.
-     * @param maximumOccurs The maximum number of occurrences of the property within its containing entity,
+     * @param minimumOccurs The minimum number of occurrences of the attribute within its containing entity.
+     * @param maximumOccurs The maximum number of occurrences of the attribute within its containing entity,
      *                      or {@link Integer#MAX_VALUE} if there is no restriction.
      * @param defaultValue  The default value for the attribute, or {@code null} if none.
      */
     public DefaultAttributeType(final Map<String,?> properties, final Class<T> valueClass,
             final int minimumOccurs, final int maximumOccurs, final T defaultValue)
     {
-        super(properties);
+        super(properties, minimumOccurs, maximumOccurs);
         ensureNonNull("valueClass",   valueClass);
         ensureCanCast("defaultValue", valueClass, defaultValue);
-        if (minimumOccurs < 0 || maximumOccurs < minimumOccurs) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
-        }
-        this.valueClass    = valueClass;
-        this.minimumOccurs = minimumOccurs;
-        this.maximumOccurs = maximumOccurs;
-        this.defaultValue  = Numerics.cached(defaultValue);
+        this.valueClass   = valueClass;
+        this.defaultValue = Numerics.cached(defaultValue);
     }
 
     /**
@@ -189,8 +171,9 @@ public class DefaultAttributeType<T> extends PropertyType {
      *
      * @return The minimum number of occurrences of the property within its containing entity.
      */
-    public int getMinimumOccurs() {
-        return minimumOccurs;
+    @Override
+    public final int getMinimumOccurs() {
+        return super.getMinimumOccurs();
     }
 
     /**
@@ -201,8 +184,9 @@ public class DefaultAttributeType<T> extends PropertyType {
      * @return The maximum number of occurrences of the property within its containing entity,
      *         or {@link Integer#MAX_VALUE} if none.
      */
-    public int getMaximumOccurs() {
-        return maximumOccurs;
+    @Override
+    public final int getMaximumOccurs() {
+        return super.getMaximumOccurs();
     }
 
     /**
@@ -222,8 +206,7 @@ public class DefaultAttributeType<T> extends PropertyType {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + valueClass.hashCode() + 37*(minimumOccurs ^ maximumOccurs) +
-               Objects.hashCode(defaultValue);
+        return super.hashCode() + valueClass.hashCode() + Objects.hashCode(defaultValue);
     }
 
     /**
@@ -238,9 +221,7 @@ public class DefaultAttributeType<T> extends PropertyType {
         }
         if (super.equals(obj)) {
             final DefaultAttributeType<?> that = (DefaultAttributeType<?>) obj;
-            return valueClass    == that.valueClass    &&
-                   minimumOccurs == that.minimumOccurs &&
-                   maximumOccurs == that.maximumOccurs &&
+            return valueClass == that.valueClass &&
                    Objects.equals(defaultValue, that.defaultValue);
         }
         return false;
@@ -255,22 +236,6 @@ public class DefaultAttributeType<T> extends PropertyType {
     @Debug
     @Override
     public String toString() {
-        return toString("AttributeType").toString();
-    }
-
-    /**
-     * Implementation of {@link #toString()} to be shared by {@link DefaultAttribute#toString()}.
-     */
-    final StringBuilder toString(final String typeName) {
-        final StringBuilder buffer = new StringBuilder(40).append(typeName).append('[');
-        final GenericName name = super.getName();
-        if (name != null) {
-            buffer.append('“');
-        }
-        buffer.append(name);
-        if (name != null) {
-            buffer.append("” : ");
-        }
-        return buffer.append(Classes.getShortName(valueClass)).append(']');
+        return toString("AttributeType", Classes.getShortName(valueClass)).toString();
     }
 }

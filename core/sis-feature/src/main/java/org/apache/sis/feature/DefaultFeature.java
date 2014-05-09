@@ -46,6 +46,8 @@ import org.apache.sis.util.collection.Containers;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultFeatureType
  */
 public class DefaultFeature implements Serializable {
     /**
@@ -65,14 +67,20 @@ public class DefaultFeature implements Serializable {
      * only the property <em>values</em>, and build the full {@code Property} objects only if they are
      * requested. The intend is to reduce the amount of allocated objects as much as possible, because
      * typical SIS applications may create a very large amount of features.
+     *
+     * @see #propertiesAreInstantiated
      */
     private final Map<String, Object> properties;
 
     /**
-     * {@code true} if the {@link #properties} map contains fully created {@link Property} instances,
-     * or {@code false} if the map contains only the property values.
+     * {@code true} if the values in the {@link #properties} map are {@link Property} instances,
+     * or {@code false} if the map contains only the "raw" property values.
+     *
+     * <p>This field is initially {@code false}, and will be set to {@code true} only if at least one
+     * {@code Property} instance has been requested. In such case, all property values will have been
+     * wrapped into their appropriate {@code Property} instance.</p>
      */
-    private boolean asPropertyInstances;
+    private boolean propertiesAreInstantiated;
 
     /**
      * Creates a new feature of the given type.
@@ -82,7 +90,7 @@ public class DefaultFeature implements Serializable {
     public DefaultFeature(final DefaultFeatureType type) {
         ArgumentChecks.ensureNonNull("type", type);
         this.type = type;
-        properties = new HashMap<>(Math.min(16, Containers.hashMapCapacity(type.characteristics().size())));
+        properties = new HashMap<>(Math.min(16, Containers.hashMapCapacity(type.getInstanceSize())));
     }
 
     /**
@@ -128,8 +136,8 @@ public class DefaultFeature implements Serializable {
          * Wraps values in Property objects for all entries in the properties map,
          * if not already done. This operation is execute at most once per feature.
          */
-        if (!asPropertyInstances) {
-            asPropertyInstances = true;
+        if (!propertiesAreInstantiated) {
+            propertiesAreInstantiated = true;
             if (!properties.isEmpty()) { // The map is typically empty when this method is first invoked.
                 for (final Map.Entry<String, Object> entry : properties.entrySet()) {
                     final String key      = entry.getKey();
@@ -187,7 +195,7 @@ public class DefaultFeature implements Serializable {
         ArgumentChecks.ensureNonNull("name", name);
         final Object element = properties.get(name);
         if (element != null) {
-            if (!asPropertyInstances) {
+            if (!propertiesAreInstantiated) {
                 return element;
             } else {
                 return ((DefaultAttribute<?>) element).getValue();
@@ -224,7 +232,7 @@ public class DefaultFeature implements Serializable {
      */
     public void setPropertyValue(final String name, final Object value) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
-        if (!asPropertyInstances) {
+        if (!propertiesAreInstantiated) {
             final Object previous = properties.put(name, value);
             /*
              * Slight optimisation: if we replaced a previous value of the same class, then we can skip the
@@ -354,7 +362,7 @@ public class DefaultFeature implements Serializable {
         for (final Map.Entry<String,Object> entry : properties.entrySet()) {
             final PropertyType pt;
             Object element = entry.getValue();
-            if (asPropertyInstances) {
+            if (propertiesAreInstantiated) {
                 pt = ((DefaultAttribute<?>) element).getType();
                 element = ((DefaultAttribute<?>) element).getValue();
             } else {

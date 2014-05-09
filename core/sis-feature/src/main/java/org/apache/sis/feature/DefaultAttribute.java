@@ -18,6 +18,7 @@ package org.apache.sis.feature;
 
 import java.io.Serializable;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 
 // Related to JDK7
@@ -199,6 +200,7 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
     @Debug
     @Override
     public String toString() {
-        return type.toString("Attribute").append(" = ").append(value).toString();
+        return type.toString("Attribute", Classes.getShortName(type.getValueClass()))
+                .append(" = ").append(value).toString();
     }
 }

@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.lang.reflect.Field;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
@@ -48,7 +47,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * <ul>
  *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
  *   <li>{@linkplain DefaultAssociationRole  Associations to other feature types}</li>
- *   <li>{@linkplain DefaultFeatureOperation Operations}</li>
+ *   <li>{@linkplain DefaultOperation        Operations}</li>
  * </ul>
  *
  * The description of all those properties are collectively called {@linkplain #characteristics() characteristics}.
@@ -68,6 +67,8 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultFeature
  */
 public class DefaultFeatureType extends AbstractIdentifiedType {
     /**
@@ -81,6 +82,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * @see #isAbstract()
      */
     private final boolean isAbstract;
+
+    /**
+     * {@code true} if this feature type contains only attributes constrained to the [1 … 1] cardinality,
+     * or operations.
+     *
+     * @see #isSimple()
+     */
+    private transient boolean isSimple;
 
     /**
      * The parents of this feature type, or an empty set if none.
@@ -99,7 +108,16 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *
      * @see #getProperty(String)
      */
-    private final transient Map<String, PropertyType> byName;
+    private transient Map<String, PropertyType> byName;
+
+    /**
+     * Indices of properties in an array of properties similar to {@link #characteristics},
+     * but excluding operations.
+     *
+     * The size of this map may be smaller than the {@link #byName} size.
+     * This map shall not be modified after construction.
+     */
+    private transient Map<String, Integer> indices;
 
     /**
      * Constructs a feature type from the given properties. The properties map is given unchanged to
@@ -157,36 +175,48 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
                           CollectionsExt.<DefaultFeatureType>immutableSet(true, superTypes);
         this.characteristics = UnmodifiableArrayList.wrap(Arrays.copyOf(
                 characteristics, characteristics.length, PropertyType[].class));
-        byName = byName(this.characteristics);
+        computeTransientFields();
     }
 
     /**
-     * Creates a (<var>name</var>, <var>property</var>) map from the given list.
-     * This is used only for performance purpose when searching for attributes.
+     * Creates a (<var>name</var>, <var>property</var>) map from the characteristics list.
      *
      * <p>As a side effect, this method checks for missing or duplicated names.</p>
      *
-     * @param  characteristics The list to convert to a (<var>name</var>, <var>property</var>) map.
-     * @return The map of properties.
      * @throws IllegalArgumentException if two properties have the same name.
      */
-    private static Map<String, PropertyType> byName(final List<PropertyType> characteristics) {
+    private void computeTransientFields() {
         final int length = characteristics.size();
-        final Map<String, PropertyType> byName = new HashMap<>(Containers.hashMapCapacity(length));
+        final int capacity = Containers.hashMapCapacity(length);
+        byName   = new HashMap<>(capacity);
+        indices  = new HashMap<>(capacity);
+        isSimple = true;
+        int index = 0;
         for (int i=0; i<length; i++) {
-            final PropertyType c = characteristics.get(i);
-            ArgumentChecks.ensureNonNullElement("characteristics", i, c);
-            final GenericName name = c.getName();
+            final PropertyType property = characteristics.get(i);
+            ArgumentChecks.ensureNonNullElement("characteristics", i, property);
+            final GenericName name = property.getName();
             if (name == null) {
                 throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.MissingValueForProperty_1, "characteristics[" + i + "].name"));
             }
             final String s = name.toString();
-            if (byName.put(s, c) != null) {
+            if (byName.put(s, property) != null) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, s));
             }
+            if (!(property instanceof DefaultOperation)) {
+                if (property instanceof DefaultAttributeType<?>) {
+                    switch (((DefaultAttributeType<?>) property).getMaximumOccurs()) {
+                        case 0:  continue;
+                        case 1:  isSimple &= (((DefaultAttributeType<?>) property).getMinimumOccurs() == 1); break;
+                        default: isSimple = false; break;
+                    }
+                } else {
+                    isSimple = false;
+                }
+                indices.put(s, index++);
+            }
         }
-        return byName;
     }
 
     /**
@@ -198,13 +228,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        try {
-            final Field field = DefaultFeatureType.class.getDeclaredField("byName");
-            field.setAccessible(true);
-            field.set(this, byName(characteristics));
-        } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
-        }
+        computeTransientFields();
     }
 
     /**
@@ -214,6 +238,16 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      */
     public boolean isAbstract() {
         return isAbstract;
+    }
+
+    /**
+     * Returns {@code true} if this feature type contains only attributes constrained to the [1 … 1] cardinality,
+     * or operations. Such feature types can be handled as a {@link org.opengis.util.Record}s.
+     *
+     * @return {@code true} if this feature type contains only simple attributes or operations.
+     */
+    public boolean isSimple() {
+        return isSimple;
     }
 
     /**
@@ -251,6 +285,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      */
     final PropertyType getProperty(final String name) {
         return byName.get(name);
+    }
+
+    /**
+     * Returns the number of attributes and features (not operations) that instance will have
+     * if all attributes are handled as simple attributes (maximum occurrences of 1).
+     */
+    final int getInstanceSize() {
+        return indices.size();
     }
 
     /**

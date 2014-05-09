@@ -21,19 +21,23 @@
  * The term “feature” may be used in different contexts:
  *
  * <ul>
- *   <li>{@linkplain org.apache.sis.feature.DefaultFeatureType Feature types} define the <em>structure</em> of
- *       real-world representations. A feature type lists the attributes, operations, or associations to other
- *       features (collectively called “characteristics”) that a feature can have.
+ *   <li><p><b>{@linkplain org.apache.sis.feature.DefaultFeatureType Feature types}</b><br>
+ *       Define the <em>structure</em> of real-world representations. A feature type lists the attributes, operations,
+ *       or associations to other features (collectively called “characteristics”) that a feature can have.</p>
  *
- *       <p style="font-size:small"><b>Analogy:</b> a {@code FeatureType} in a Spatial Information System is equivalent
- *       to a {@link java.lang.Class} in the Java language. By extension, {@code AttributeType} and {@code Operation}
- *       are equivalent to {@link java.lang.reflect.Field} and {@link java.lang.reflect.Method} respectively.</p></li>
+ *       <div class="note"><b>Analogy:</b> a {@code FeatureType} in a Spatial Information System is equivalent to a
+ *       {@link java.lang.Class} in the Java language. By extension, {@code AttributeType} and {@code Operation} are
+ *       equivalent to {@link java.lang.reflect.Field} and {@link java.lang.reflect.Method} respectively.</div></li>
  *
- *   <li>{@linkplain org.apache.sis.feature.DefaultFeature Feature instances} (often called only {@code Feature}s)
- *       hold the <em>content</em> (or values) that describe one specific real-world object.
+ *   <li><p><b>{@linkplain org.apache.sis.feature.DefaultFeature Feature instances}</b> (often called only Features)<br>
+ *       Hold the <em>content</em> (or values) that describe one specific real-world object.</p>
  *
- *       <p style="font-size:small"><b>Example:</b> the “Eiffel tower” is a <em>feature instance</em> belonging
- *       to the “Tower” <em>feature type</em>.</p></li>
+ *       <div class="note"><b>Example:</b> the “Eiffel tower” is a <em>feature instance</em> belonging
+ *       to the “Tower” <em>feature type</em>.</div></li>
+ *
+ *   <li><p><b>{@linkplain org.apache.sis.feature.DefaultFeatureType#isSimple() Simple features}</b><br>
+ *       Are instances of a feature type with no association to other features, and where all attributes
+ *       are constrained to the [1 … 1] cardinality. Such simple features are very common.</p></li>
  * </ul>
  *
  * {@section Class hierarchy}
@@ -51,7 +55,7 @@
  * {@code  └─}                                                                Property type<br>
  * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAttributeType    Attribute type}<br>
  * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAssociationRole  Feature association role}<br>
- * {@code      └─} {@linkplain org.apache.sis.feature.DefaultFeatureOperation Operation}<br>
+ * {@code      └─} {@linkplain org.apache.sis.feature.DefaultOperation        Operation}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *             {@linkplain org.apache.sis.feature.DefaultFeature     Feature}<br>
  *                                                                   Property<br>

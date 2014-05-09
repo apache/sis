@@ -42,8 +42,8 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * Creates a simple feature type without super-types.
      */
     static DefaultFeatureType cityPopulation() {
-        final Map<String,Object> properties = new HashMap<>();
-        final DefaultAttributeType<String> city = DefaultAttributeTypeTest.city(properties);
+        final Map<String,Object>            properties = new HashMap<>();
+        final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(properties);
         final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(properties);
 
         properties.clear();
@@ -53,18 +53,22 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
 
     /**
      * Tests the construction of a simple feature without super-types.
+     * A feature is said "simple" if the cardinality of all attributes is [1 … 1].
      */
     @Test
     public void testSimple() {
         final DefaultFeatureType simple = cityPopulation();
         assertEquals("name", "City population", simple.getName().toString());
+        assertEquals("instanceSize", 2, simple.getInstanceSize());
+        assertFalse ("isAbstract",      simple.isAbstract());
+        assertTrue  ("isSimple",        simple.isSimple());
         /*
          * Verify content.
          */
         final List<AbstractIdentifiedType> characteristics = simple.characteristics();
-        assertEquals("characteristics.size", 2, characteristics.size());
-        assertEquals("characteristics[0]", "city",       characteristics.get(0).getName().toString());
-        assertEquals("characteristics[1]", "population", characteristics.get(1).getName().toString());
+        assertEquals("characteristics.size", 2,            characteristics.size());
+        assertEquals("characteristics[0]",   "city",       characteristics.get(0).getName().toString());
+        assertEquals("characteristics[1]",   "population", characteristics.get(1).getName().toString());
         /*
          * Verify search by name.
          */
@@ -74,7 +78,54 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
-     * Ensures that we can not use two property with the same name.
+     * Tests the construction of a "complex" feature without super-types.
+     * A feature is said "complex" if it contains at least one attribute
+     * with a cardinality different than [0 … 0] and [1 … 1].
+     */
+    @Test
+    @DependsOnMethod("testSimple")
+    public void testComplex() {
+        final Map<String,Object>            properties = new HashMap<>();
+        final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(properties);
+        final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(properties);
+        properties.clear();
+        for (int i=0; i<=4; i++) {
+            final int minimumOccurs, maximumOccurs;
+            switch (i) {
+                case 0: minimumOccurs = 0; maximumOccurs = 0; break; // Simple
+                case 1: minimumOccurs = 0; maximumOccurs = 1; break;
+                case 2: minimumOccurs = 0; maximumOccurs = 2; break;
+                case 3: minimumOccurs = 1; maximumOccurs = 2; break;
+                case 4: minimumOccurs = 1; maximumOccurs = 1; break; // Simple
+                default: throw new AssertionError(i);
+            }
+            properties.put(DefaultAttributeType.NAME_KEY, "festival");
+            final DefaultAttributeType<String> festival = new DefaultAttributeType<>(
+                    properties, String.class, minimumOccurs, maximumOccurs, null);
+            /*
+             * Build the feature.
+             */
+            properties.put(DefaultAttributeType.NAME_KEY, "City festival");
+            final DefaultFeatureType complex = new DefaultFeatureType(properties, false, null, city, population, festival);
+            final List<AbstractIdentifiedType> characteristics = complex.characteristics();
+            /*
+             * Verify content.
+             */
+            assertEquals("name",                 "City festival",                complex.getName().toString());
+            assertFalse ("isAbstract",                                           complex.isAbstract());
+            assertEquals("isSimple",             maximumOccurs == minimumOccurs, complex.isSimple());
+            assertEquals("instanceSize",         maximumOccurs == 0 ? 2 : 3,     complex.getInstanceSize());
+            assertEquals("characteristics.size", 3,                              characteristics.size());
+            assertSame  ("characteristics[0]",   city,                           characteristics.get(0));
+            assertSame  ("characteristics[1]",   population,                     characteristics.get(1));
+            assertSame  ("characteristics[3]",   festival,                       characteristics.get(2));
+            assertEquals("minimumOccurs",        minimumOccurs,                  festival.getMinimumOccurs());
+            assertEquals("maximumOccurs",        maximumOccurs,                  festival.getMaximumOccurs());
+        }
+    }
+
+    /**
+     * Ensures that we can not use two properties with the same name.
      */
     @Test
     @DependsOnMethod("testSimple")
