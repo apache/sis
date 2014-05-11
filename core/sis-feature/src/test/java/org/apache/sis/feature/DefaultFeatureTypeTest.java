@@ -47,7 +47,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(properties);
 
         properties.clear();
-        assertNull(properties.put(DefaultAttributeType.NAME_KEY, "City population"));
+        assertNull(properties.put(DefaultFeatureType.NAME_KEY, "City population"));
         return new DefaultFeatureType(properties, false, null, city, population);
     }
 

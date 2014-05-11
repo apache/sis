@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.io.Serializable;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 
 // Related to JDK7
 import java.util.Objects;
@@ -106,12 +107,38 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      * <div class="warning"><b>Warning:</b> In a future SIS version, the argument type may be changed
      * to {@code org.opengis.feature.Feature}. This change is pending GeoAPI revision.</div>
      *
-     * @param  value The new value.
+     * @param  value The new value, or {@code null}.
+     * @throws RuntimeException If this method performs validation and the given value does not meet the conditions.
+     *         <span style="color:firebrick">This exception may be changed to {@code IllegalPropertyException} in a
+     *         future SIS version.</span>
      *
      * @see DefaultFeature#setPropertyValue(String, Object)
      */
     public void setValue(final DefaultFeature value) {
+        if (value != null) {
+            final DefaultFeatureType base = role.getValueType();
+            final DefaultFeatureType type = value.getType();
+            if (!base.equals(type) && !isAssignableFrom(base, type.superTypes())) {
+                throw new RuntimeException( // TODO: IllegalPropertyException, pending GeoAPI revision.
+                        Errors.format(Errors.Keys.IllegalArgumentClass_3, role.getName(), base.getName(), type.getName()));
+            }
+        }
         this.value = value;
+    }
+
+    /**
+     * Returns {@code true} if the given {@code base} is assignable from any of the given types.
+     */
+    private static boolean isAssignableFrom(final DefaultFeatureType base, final Iterable<DefaultFeatureType> types) {
+        for (final DefaultFeatureType type : types) {
+            if (base.equals(type)) {
+                return true;
+            }
+            if (isAssignableFrom(base, type.superTypes())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
