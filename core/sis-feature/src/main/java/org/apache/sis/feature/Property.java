@@ -30,4 +30,5 @@ package org.apache.sis.feature;
  * @module
  */
 abstract class Property {
+    public abstract void validate();
 }

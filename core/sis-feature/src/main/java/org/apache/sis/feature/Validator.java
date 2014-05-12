@@ -47,6 +47,19 @@ final class Validator {
 
     /**
      * Ensures that the given value is valid for the given attribute type.
+     * This method delegates to one of the {@code ensureValidValue(…)} methods depending of the value type.
+     */
+    static void ensureValid(final PropertyType type, final Object value) {
+        if (type instanceof DefaultAttributeType<?>) {
+            ensureValidValue((DefaultAttributeType<?>) type, value);
+        }
+        if (type instanceof DefaultAssociationRole) {
+            ensureValidValue((DefaultAssociationRole) type, (DefaultFeature) value);
+        }
+    }
+
+    /**
+     * Ensures that the given value is valid for the given attribute type.
      */
     static void ensureValidValue(final DefaultAttributeType<?> type, final Object value) {
         if (value == null) {
@@ -60,6 +73,20 @@ final class Validator {
         if (!type.getValueClass().isInstance(value)) {
             throw new RuntimeException( // TODO: IllegalAttributeException, pending GeoAPI revision.
                     Errors.format(Errors.Keys.IllegalPropertyClass_2, type.getName(), value.getClass()));
+        }
+    }
+
+    /**
+     * Ensures that the given value is valid for the given association role.
+     */
+    static void ensureValidValue(final DefaultAssociationRole role, final DefaultFeature value) {
+        if (value == null) {
+            return;
+        }
+        final DefaultFeatureType type = value.getType();
+        if (!role.getValueType().isAssignableFrom(type)) {
+            throw new RuntimeException( // TODO: IllegalAttributeException, pending GeoAPI revision.
+                    Errors.format(Errors.Keys.IllegalPropertyClass_2, role.getName(), type.getName()));
         }
     }
 }

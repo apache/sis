@@ -40,8 +40,8 @@
  *       are constrained to the [1 … 1] cardinality. Such simple features are very common.</p></li>
  * </ul>
  *
- * Each feature type has a {@linkplain org.apache.sis.feature.DefaultFeatureType#getName() name}, which shall be unique.
- * Those names are the only criterion used for checking if a feature type
+ * Each feature type has a {@linkplain org.apache.sis.feature.DefaultFeatureType#getName() name},
+ * which should be unique. Those names are the main criterion used for checking if a feature type
  * {@linkplain org.apache.sis.feature.DefaultFeatureType#isAssignableFrom is assignable from} another type.
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *

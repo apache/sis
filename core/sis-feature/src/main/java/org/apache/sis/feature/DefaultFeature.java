@@ -318,9 +318,17 @@ public class DefaultFeature implements Serializable {
      *         in a future SIS version.</span>
      *
      * @see DefaultAttribute#validate()
+     * @see DefaultAssociation#validate()
      */
     public void validate() {
-        // TODO
+        for (final Map.Entry<String, Object> entry : properties.entrySet()) {
+            final Object value = entry.getValue();
+            if (value instanceof Property) {
+                ((Property) value).validate();
+            } else {
+                Validator.ensureValid(getPropertyType(entry.getKey()), value);
+            }
+        }
     }
 
     /**

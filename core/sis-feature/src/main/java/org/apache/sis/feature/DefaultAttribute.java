@@ -141,6 +141,7 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      *
      * @see DefaultFeature#validate()
      */
+    @Override
     public void validate() {
         Validator.ensureValidValue(type, value);
     }
