@@ -118,27 +118,12 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
         if (value != null) {
             final DefaultFeatureType base = role.getValueType();
             final DefaultFeatureType type = value.getType();
-            if (!base.equals(type) && !isAssignableFrom(base, type.superTypes())) {
+            if (base != type && !base.isAssignableFrom(type)) {
                 throw new RuntimeException( // TODO: IllegalPropertyException, pending GeoAPI revision.
                         Errors.format(Errors.Keys.IllegalArgumentClass_3, role.getName(), base.getName(), type.getName()));
             }
         }
         this.value = value;
-    }
-
-    /**
-     * Returns {@code true} if the given {@code base} is assignable from any of the given types.
-     */
-    private static boolean isAssignableFrom(final DefaultFeatureType base, final Iterable<DefaultFeatureType> types) {
-        for (final DefaultFeatureType type : types) {
-            if (base.equals(type)) {
-                return true;
-            }
-            if (isAssignableFrom(base, type.superTypes())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
