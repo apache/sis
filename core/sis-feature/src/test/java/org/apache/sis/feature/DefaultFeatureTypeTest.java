@@ -52,6 +52,19 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
+     * Creates a sub-type of the "city" type with only one additional property,
+     * a string giving the date since the city is a capital.
+     *
+     * <p>We do not specify the country, since this will be the purpose of an other test class.</p>
+     */
+    static DefaultFeatureType capital() {
+        return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "capital"), false,
+                new DefaultFeatureType[] {cityPopulation()},
+                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "since"),
+                        String.class, 1, 1, null));
+    }
+
+    /**
      * Tests the construction of a simple feature without super-types.
      * A feature is said "simple" if the cardinality of all attributes is [1 … 1].
      */
@@ -74,7 +87,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
          */
         assertSame(characteristics.get(0), simple.getProperty("city"));
         assertSame(characteristics.get(1), simple.getProperty("population"));
-        assertNull(simple.getProperty("apple"));
+        assertNull(                        simple.getProperty("apple"));
     }
 
     /**
@@ -145,5 +158,41 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains("city"));
         }
+    }
+
+    /**
+     * Tests a feature type which inherit from an other feature type.
+     */
+    @Test
+    @DependsOnMethod("testSimple")
+    public void testInheritance() {
+        final DefaultFeatureType capital = capital();
+        final DefaultFeatureType city = cityPopulation();
+
+        // Check based only on name.
+        assertTrue ("maybeAssignableFrom", city.maybeAssignableFrom(capital));
+        assertFalse("maybeAssignableFrom", capital.maybeAssignableFrom(city));
+
+        // Public API.
+        assertTrue ("isAssignableFrom", city.isAssignableFrom(capital));
+        assertFalse("isAssignableFrom", capital.isAssignableFrom(city));
+        /*
+         * Verify content.
+         */
+        List<AbstractIdentifiedType> characteristics = city.characteristics();
+        assertEquals("characteristics.size", 2,            characteristics.size());
+        assertEquals("characteristics[0]",   "city",       characteristics.get(0).getName().toString());
+        assertEquals("characteristics[1]",   "population", characteristics.get(1).getName().toString());
+
+        characteristics = capital.characteristics();
+        assertEquals("characteristics.size", 1,            characteristics.size());
+        assertEquals("characteristics[0]",   "since",      characteristics.get(0).getName().toString());
+        /*
+         * Verify search by name.
+         */
+        assertEquals("city",       capital.getProperty("city")      .getName().toString());
+        assertEquals("population", capital.getProperty("population").getName().toString());
+        assertEquals("since",      capital.getProperty("since")     .getName().toString());
+        assertNull  (              capital.getProperty("apple"));
     }
 }

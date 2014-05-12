@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,7 +50,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * will be replaced by references to the {@code FeatureType} interface.</div>
  *
  * {@section Naming}
- * The feature type {@linkplain #getName() name} is mandatory and shall be unique. Those names are the only
+ * The feature type {@linkplain #getName() name} is mandatory and should be unique. Those names are the main
  * criterion used for deciding if a feature type {@linkplain #isAssignableFrom is assignable from} another type.
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
@@ -120,7 +122,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     private final List<PropertyType> characteristics;
 
     /**
-     * A lookup table for fetching properties by name.
+     * A lookup table for fetching properties by name, including the properties from super-types.
      * This map shall not be modified after construction.
      *
      * @see #getProperty(String)
@@ -129,7 +131,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
 
     /**
      * Indices of properties in an array of properties similar to {@link #characteristics},
-     * but excluding operations.
+     * but excluding operations. This map includes the properties from the super-types.
      *
      * The size of this map may be smaller than the {@link #byName} size.
      * This map shall not be modified after construction.
@@ -205,14 +207,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     private void computeTransientFields() {
         final int capacity = Containers.hashMapCapacity(characteristics.size());
         isSimple     = true;
-        byName       = new HashMap<>(capacity);
+        byName       = new LinkedHashMap<>(capacity);
         indices      = new HashMap<>(capacity);
         assignableTo = new HashSet<>(4);
         assignableTo.add(getName());
         scanCharacteristicsFrom(this);
-        assignableTo = CollectionsExt.unmodifiableOrCopy(assignableTo);
         byName       = CollectionsExt.unmodifiableOrCopy(byName);
         indices      = CollectionsExt.unmodifiableOrCopy(indices);
+        assignableTo = CollectionsExt.unmodifiableOrCopy(assignableTo);
     }
 
     /**
@@ -303,34 +305,72 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     }
 
     /**
+     * Returns {@code true} if this type may be the same or a super-type of the given type, using only
+     * the name as a criterion. This is a faster check than {@link #isAssignableFrom(DefaultFeatureType)}
+     */
+    final boolean maybeAssignableFrom(final DefaultFeatureType type) {
+        return type.assignableTo.contains(getName());
+    }
+
+    /**
      * Returns {@code true} if this type is same or a super-type of the given type.
-     * The check is based only on the feature type {@linkplain #getName() name}, which shall be unique.
+     * The check is based mainly on the feature type {@linkplain #getName() name}, which should be unique.
+     * However as a safety, this method also checks that all properties in this feature type is assignable
+     * from a property of the same name in the given type.
      *
      * @param  type The type to be checked.
      * @return {@code true} if instances of the given type can be assigned to association of this type.
      */
     public boolean isAssignableFrom(final DefaultFeatureType type) {
+        if (type == this) {
+            return true; // Optimization for a common case.
+        }
         ArgumentChecks.ensureNonNull("type", type);
-        return type.assignableTo.contains(getName());
+        return maybeAssignableFrom(type) && isSubsetOf(type, new IdentityHashMap<>(4));
     }
 
-    /*
-     * Returns {@code true} if the given {@code base} is assignable from any of the given types.
+    /**
+     * Return {@code true} if all properties in this type are also properties in the given type.
      *
-     * TODO - to be used as a fallback when argument is not an instance of DefaultFeatureType.
-     *
-    private static boolean isAssignableFrom(final DefaultFeatureType base, final Iterable<DefaultFeatureType> types) {
-        for (final DefaultFeatureType type : types) {
-            if (base.getName().equals(type.getName())) {
-                return true;
-            }
-            if (isAssignableFrom(base, type.superTypes())) {
-                return true;
+     * @param type The type to check.
+     * @param done An initially empty map to be used for avoiding infinite recursivity.
+     */
+    private boolean isSubsetOf(final DefaultFeatureType type, final Map<DefaultFeatureType,Boolean> done) {
+        if (done.put(this, Boolean.TRUE) == null) {
+            /*
+             * Ensures that all properties defined in this feature type is also defined
+             * in the given property, and that the former is assignable from the later.
+             */
+            for (final Map.Entry<String, PropertyType> entry : byName.entrySet()) {
+                final PropertyType property = entry.getValue();
+                final PropertyType other = type.getProperty(entry.getKey());
+                if (property != other) {
+                    if (other == null) {
+                        return false;
+                    }
+                    boolean isAssignable = true;
+                    /*
+                     * TODO: DefaultAttributeType and DefaultAssociationRole to be replaced by GeoAPI interfaces
+                     *       (pending GeoAPI review).
+                     */
+                    if (property instanceof DefaultAttributeType<?>) {
+                        isAssignable &= (other instanceof DefaultAttributeType<?>) &&
+                                        ((DefaultAttributeType<?>) property).getValueClass().isAssignableFrom(
+                                        ((DefaultAttributeType<?>) other   ).getValueClass());
+                    }
+                    if (property instanceof DefaultAssociationRole) {
+                        isAssignable &= (other instanceof DefaultAssociationRole) &&
+                                        ((DefaultAssociationRole) property).getValueType().isSubsetOf(
+                                        ((DefaultAssociationRole) other   ).getValueType(), done);
+                    }
+                    if (!isAssignable) {
+                        return false;
+                    }
+                }
             }
         }
-        return false;
+        return true;
     }
-    */
 
     /**
      * Returns the direct parents of this feature type.
@@ -346,14 +386,16 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     }
 
     /**
-     * Returns any feature operation, any feature attribute type and any feature association role
-     * that carries characteristics of a feature type.
+     * Returns any feature operation, any feature attribute type and any feature association role that
+     * carries characteristics of a feature type. The returned list does not include the characteristics
+     * inherited from the {@linkplain #superTypes() super types}.
      *
      * <div class="warning"><b>Warning:</b>
      * The type of list elements will be changed to {@code PropertyType} if and when such interface
      * will be defined in GeoAPI.</div>
      *
-     * @return Feature operation, attribute type and association role that carries characteristics of a feature type.
+     * @return Feature operation, attribute type and association role that carries characteristics of this
+     *         feature type (not including parent types).
      */
     public List<AbstractIdentifiedType> characteristics() {
         return (List) characteristics; // Cast is safe because the list is read-only.
