@@ -107,16 +107,8 @@ Implementations of Coordinate Reference Systems (CRS),
       <artifactId>sis-metadata</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-pending</artifactId>
-    </dependency>
 
     <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
-    </dependency>
     <dependency>
       <groupId>gov.nist.math</groupId>
       <artifactId>jama</artifactId>

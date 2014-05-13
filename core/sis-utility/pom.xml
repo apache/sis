@@ -166,17 +166,6 @@ Miscellaneous utilities.
            Dependencies
        =========================================================== -->
   <dependencies>
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-pending</artifactId>
-    </dependency>
-
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
-    </dependency>
-
     <!-- Optional dependencies (provided scope) -->
     <dependency>
       <groupId>org.osgi</groupId>
