@@ -17,6 +17,8 @@
 package org.apache.sis.feature;
 
 import java.io.Serializable;
+import org.opengis.metadata.quality.DataQuality;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
@@ -114,6 +116,12 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
     /**
      * Sets the attribute value.
      *
+     * {@section Validation}
+     * The amount of validation performed by this method is implementation dependent.
+     * Usually, only the most basic constraints are verified. This is so for performance reasons
+     * and also because some rules may be temporarily broken while constructing a feature.
+     * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
+     *
      * @param value The new value.
      *
      * @see DefaultFeature#setPropertyValue(String, Object)
@@ -123,15 +131,44 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
     }
 
     /**
-     * Ensures that the current attribute value complies with the constraints defined by the attribute type.
-     * This method can be invoked explicitly on a single attribute, or may be invoked implicitly by a call to
-     * {@link DefaultFeature#validate()}.
+     * Verifies if the current attribute value mets the constraints defined by the attribute type.
+     * This method returns {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
+     * reports} for all constraint violations found, if any.
+     *
+     * <div class="note"><b>Example:</b> given an attribute named “population” with [1 … 1] cardinality,
+     * if no value has been assigned to that attribute, then this {@code validate()} method will return
+     * the following data quality report:
+     *
+     * {@preformat text
+     *   Data quality
+     *     ├─Scope
+     *     │   └─Level………………………………………………… Attribute
+     *     └─Report
+     *         ├─Measure identification
+     *         │   └─Code………………………………………… population
+     *         ├─Evaluation method type…… Direct internal
+     *         └─Result
+     *             ├─Explanation……………………… Missing value for “population” property.
+     *             └─Pass………………………………………… false
+     * }
+     * </div>
+     *
+     * This attribute is valid if this method does not report any
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
+     *
+     * @return Reports on all constraint violations found.
      *
      * @see DefaultFeature#validate()
      */
-    @Override
-    public void validate() {
-        Validator.ensureValidValue(type, value);
+    /*
+     * API NOTE: this method is final for now because if we allowed users to override it, users would
+     * expect their method to be invoked by DefaultFeature.validate(). But this is not yet the case.
+     */
+    public final DataQuality validate() {
+        final Validator v = new Validator(ScopeCode.ATTRIBUTE);
+        v.validate(type, value);
+        return v.quality;
     }
 
     /**

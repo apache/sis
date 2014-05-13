@@ -16,13 +16,19 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Locale;
 import java.util.HashMap;
+import org.opengis.metadata.quality.DataQuality;
+import org.opengis.metadata.quality.DomainConsistency;
+import org.opengis.metadata.quality.ConformanceResult;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -62,6 +68,44 @@ public final strictfp class DefaultAttributeTest extends TestCase {
         assertEquals("value", Integer.valueOf(1000), attribute.getValue());
         attribute.setValue(null);
         assertNull("value", attribute.getValue());
+    }
+
+    /**
+     * Tests {@link DefaultAttribute#validate()}.
+     */
+    @Test
+    @DependsOnMethod("testValue")
+    @SuppressWarnings("unchecked")
+    public void testValidate() {
+        final DefaultAttribute<Integer> attribute = population();
+        DataQuality quality = attribute.validate();
+        assertEquals("scope.level", ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
+        assertDomainConsistencyEquals("population", "Missing value for “population” property.",
+                (DomainConsistency) getSingleton(quality.getReports()));
+        /*
+         * Intentionally store a value of the wrong type, and test again.
+         */
+        ((DefaultAttribute) attribute).setValue(4.5f);
+        quality = attribute.validate();
+        assertEquals("scope.level", ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
+        assertDomainConsistencyEquals("population", "Property “population” does not accept instances of ‘Float’.",
+                (DomainConsistency) getSingleton(quality.getReports()));
+    }
+
+    /**
+     * Verifies that the given element reports a validation failure with the given explanation.
+     *
+     * @param propertyName The name of the property that failed validation.
+     * @param explanation  The expected explanation.
+     * @param consistency  The report element to test.
+     */
+    private static void assertDomainConsistencyEquals(final String propertyName, final String explanation,
+            final DomainConsistency consistency)
+    {
+        assertEquals("report.measureIdentification", propertyName, consistency.getMeasureIdentification().getCode());
+        final ConformanceResult result = (ConformanceResult) getSingleton(consistency.getResults());
+        assertFalse ("report.result.pass", result.pass());
+        assertEquals("report.result.explanation", explanation, result.getExplanation().toString(Locale.US));
     }
 
     /**
