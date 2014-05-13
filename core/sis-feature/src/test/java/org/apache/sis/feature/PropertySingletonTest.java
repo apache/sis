@@ -169,7 +169,7 @@ public final strictfp class PropertySingletonTest extends TestCase {
         final DefaultAttribute<Integer> a1 = DefaultAttributeTest.population();
         try {
             singleton.add(a1);
-        } catch (RuntimeException e) { // TODO: IllegalAttributeException after GeoAPI review.
+        } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains(KEY));
         }

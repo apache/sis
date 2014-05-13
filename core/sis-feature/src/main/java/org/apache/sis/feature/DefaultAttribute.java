@@ -114,15 +114,7 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
     /**
      * Sets the attribute value.
      *
-     * {@section Validation}
-     * The amount of validation performed by this method is implementation dependent.
-     * The current {@code DefaultAttribute} implementation performs only very cheap (if any) validations.
-     * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
-     *
-     * @param  value The new value.
-     * @throws RuntimeException If this method performs validation and the given value does not meet the conditions.
-     *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException} in a
-     *         future SIS version.</span>
+     * @param value The new value.
      *
      * @see DefaultFeature#setPropertyValue(String, Object)
      */
@@ -134,10 +126,6 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      * Ensures that the current attribute value complies with the constraints defined by the attribute type.
      * This method can be invoked explicitly on a single attribute, or may be invoked implicitly by a call to
      * {@link DefaultFeature#validate()}.
-     *
-     * @throws RuntimeException If the current attribute value violates a constraint.
-     *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException}
-     *         in a future SIS version.</span>
      *
      * @see DefaultFeature#validate()
      */

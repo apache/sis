@@ -227,9 +227,6 @@ public class DefaultFeature implements Serializable {
      * @param  value The new value for the given attribute (may be {@code null}).
      * @throws IllegalArgumentException If the given argument is not an attribute name of this feature.
      * @throws ClassCastException If the value is not assignable to the expected value class.
-     * @throws RuntimeException If this method performs validation and the given value does not meet the conditions.
-     *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException} in
-     *         a future SIS version.</span>
      *
      * @see DefaultAttribute#setValue(Object)
      */
@@ -312,10 +309,6 @@ public class DefaultFeature implements Serializable {
     /**
      * Ensures that all current properties comply with the constraints defined by the feature type.
      * This method will implicitly invokes {@link DefaultAttribute#validate()} for all attributes.
-     *
-     * @throws RuntimeException If the current attribute value violates a constraint.
-     *         <span style="color:firebrick">This exception will be changed to {@code IllegalAttributeException}
-     *         in a future SIS version.</span>
      *
      * @see DefaultAttribute#validate()
      * @see DefaultAssociation#validate()

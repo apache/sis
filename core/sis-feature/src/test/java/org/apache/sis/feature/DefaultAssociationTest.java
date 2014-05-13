@@ -63,7 +63,7 @@ public final strictfp class DefaultAssociationTest extends TestCase {
                 singletonMap(DefaultFeatureType.NAME_KEY, "Population"), false, null, population));
         try {
             association.setValue(otherFeature);
-        } catch (RuntimeException e) { // TODO: IllegalPropertyException after we upgraded GeoAPI.
+        } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("Twin town"));
             assertTrue(message, message.contains("Population"));
