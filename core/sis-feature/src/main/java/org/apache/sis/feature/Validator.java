@@ -40,8 +40,7 @@ final class Validator {
      */
     static void ensureValidType(final AbstractIdentifiedType type, final DefaultAttribute<?> element) {
         if (element.getType() != type) {
-            // TODO: replace RuntimeException by IllegalAttributeException after GeoAPI review.
-            throw new RuntimeException(Errors.format(Errors.Keys.MismatchedPropertyType_1, type.getName()));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, type.getName()));
         }
     }
 
@@ -71,7 +70,7 @@ final class Validator {
          * so we are better to check.
          */
         if (!type.getValueClass().isInstance(value)) {
-            throw new RuntimeException( // TODO: IllegalAttributeException, pending GeoAPI revision.
+            throw new IllegalStateException(
                     Errors.format(Errors.Keys.IllegalPropertyClass_2, type.getName(), value.getClass()));
         }
     }
@@ -85,7 +84,7 @@ final class Validator {
         }
         final DefaultFeatureType type = value.getType();
         if (!role.getValueType().isAssignableFrom(type)) {
-            throw new RuntimeException( // TODO: IllegalAttributeException, pending GeoAPI revision.
+            throw new IllegalStateException(
                     Errors.format(Errors.Keys.IllegalPropertyClass_2, role.getName(), type.getName()));
         }
     }
