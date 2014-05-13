@@ -118,7 +118,7 @@ final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
     @Override
     public DefaultAttribute<?> set(final int index, final DefaultAttribute<?> element) {
         ensureNonNull("element", element);
-        Validator.ensureValidType(type, element);
+        ensureValidType(element);
         if (index == 0) {
             modCount++;
             final Object previous = properties.put(key, element);
@@ -133,12 +133,22 @@ final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
     }
 
     /**
+     * Ensures that the give element is an instance of the expected type.
+     * The caller shall ensure that the element is non-null before to invoke this method.
+     */
+    private void ensureValidType(final DefaultAttribute<?> element) {
+        if (element.getType() != type) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, type.getName()));
+        }
+    }
+
+    /**
      * Sets the attribute associated to the key, if no instance existed prior this method call.
      */
     @Override
     public void add(final int index, final DefaultAttribute<?> element) {
         ensureNonNull("element", element);
-        Validator.ensureValidType(type, element);
+        ensureValidType(element);
         if (index == 0) {
             if (properties.putIfAbsent(key, element) == null) {
                 modCount++;

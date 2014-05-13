@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.ConcurrentModificationException;
 import java.io.Serializable;
+import org.opengis.metadata.quality.DataQuality;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -220,13 +222,14 @@ public class DefaultFeature implements Serializable {
      *
      * {@section Validation}
      * The amount of validation performed by this method is implementation dependent.
-     * The current {@code DefaultFeature} implementation performs only minimal validations.
+     * Usually, only the most basic constraints are verified. This is so for performance reasons
+     * and also because some rules may be temporarily broken while constructing a feature.
      * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
      *
      * @param  name  The attribute name.
      * @param  value The new value for the given attribute (may be {@code null}).
-     * @throws IllegalArgumentException If the given argument is not an attribute name of this feature.
      * @throws ClassCastException If the value is not assignable to the expected value class.
+     * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
      *
      * @see DefaultAttribute#setValue(Object)
      */
@@ -307,21 +310,47 @@ public class DefaultFeature implements Serializable {
     }
 
     /**
-     * Ensures that all current properties comply with the constraints defined by the feature type.
-     * This method will implicitly invokes {@link DefaultAttribute#validate()} for all attributes.
+     * Verifies if all current properties met the constraints defined by the feature type.
+     * This method returns {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
+     * reports} for all constraint violations found, if any.
+     *
+     * <div class="note"><b>Example:</b> given a feature with an attribute named “population”.
+     * If this attribute is mandatory ([1 … 1] cardinality) but no value has been assigned to it,
+     * then this {@code validate()} method will return the following data quality report:
+     *
+     * {@preformat text
+     *   Data quality
+     *     ├─Scope
+     *     │   └─Level………………………………………………… Feature
+     *     └─Report
+     *         ├─Measure identification
+     *         │   └─Code………………………………………… population
+     *         ├─Evaluation method type…… Direct internal
+     *         └─Result
+     *             ├─Explanation……………………… Missing value for “population” property.
+     *             └─Pass………………………………………… false
+     * }
+     * </div>
+     *
+     * This feature is valid if this method does not report any
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
+     *
+     * @return Reports on all constraint violations found.
      *
      * @see DefaultAttribute#validate()
      * @see DefaultAssociation#validate()
      */
-    public void validate() {
+    /*
+     * API NOTE: this method is final for now because if we allowed users to override it, users would
+     * expect their method to be invoked by DefaultAssociation.validate(). But this is not yet the case.
+     */
+    public final DataQuality validate() {
+        final Validator v = new Validator(ScopeCode.FEATURE);
         for (final Map.Entry<String, Object> entry : properties.entrySet()) {
-            final Object value = entry.getValue();
-            if (value instanceof Property) {
-                ((Property) value).validate();
-            } else {
-                Validator.ensureValid(getPropertyType(entry.getKey()), value);
-            }
+            v.validateAny(getPropertyType(entry.getKey()), entry.getValue());
         }
+        return v.quality;
     }
 
     /**

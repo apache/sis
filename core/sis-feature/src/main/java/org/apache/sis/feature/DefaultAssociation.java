@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.io.Serializable;
+import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -109,7 +110,8 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      *
      * {@section Validation}
      * The amount of validation performed by this method is implementation dependent.
-     * The current {@code DefaultAssociation} implementation performs only very cheap validations.
+     * Usually, only the most basic constraints are verified. This is so for performance reasons
+     * and also because some rules may be temporarily broken while constructing a feature.
      * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
      *
      * @param  value The new value, or {@code null}.
@@ -130,15 +132,27 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
     }
 
     /**
-     * Ensures that the current association value complies with the constraints defined by the association role.
-     * This method can be invoked explicitly on a single association, or may be invoked implicitly by a call to
-     * {@link DefaultFeature#validate()}.
+     * Verifies if the current association value mets the constraints defined by the association role.
+     * This method returns {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
+     * reports} for all constraint violations found, if any.
+     * See {@link DefaultAttribute#validate()} for an example.
+     *
+     * <p>This association is valid if this method does not report any
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.</p>
+     *
+     * @return Reports on all constraint violations found.
      *
      * @see DefaultFeature#validate()
      */
-    @Override
-    public void validate() {
-        Validator.ensureValidValue(role, value);
+    /*
+     * API NOTE: this method is final for now because if we allowed users to override it, users would
+     * expect their method to be invoked by DefaultFeature.validate(). But this is not yet the case.
+     */
+    public final DataQuality validate() {
+        final Validator v = new Validator(null);
+        v.validate(role, value);
+        return v.quality;
     }
 
     /**
