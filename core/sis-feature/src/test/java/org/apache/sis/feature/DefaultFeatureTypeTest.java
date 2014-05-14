@@ -47,8 +47,10 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      *   <li>{@code city}       as a  {@link String}  (mandatory)</li>
      *   <li>{@code population} as an {@link Integer} (mandatory)</li>
      * </ul>
+     *
+     * @return The feature for a city.
      */
-    static DefaultFeatureType city() {
+    public static DefaultFeatureType city() {
         final Map<String,Object> identification = new HashMap<>();
         final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(identification);
         final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(identification);
@@ -59,12 +61,18 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
-     * Creates a sub-type of the "city" type with only one additional property,
-     * a string giving the parliament name.
+     * Creates a sub-type of the "city" type with only one additional property, a string giving the parliament name.
+     * The feature contains the following attribute:
      *
-     * <p>We do not specify the country, since this will be the purpose of an other test class.</p>
+     * <ul>
+     *   <li>{@code city}       as a  {@link String}  (mandatory)</li>
+     *   <li>{@code population} as an {@link Integer} (mandatory)</li>
+     *   <li>{@code parliament} as a  {@link String}  (mandatory)</li>
+     * </ul>
+     *
+     * @return The feature for a capital.
      */
-    static DefaultFeatureType capital() {
+    public static DefaultFeatureType capital() {
         return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "Capital"), false,
                 new DefaultFeatureType[] {city()},
                 new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "parliament"),
@@ -72,7 +80,33 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
+     * Creates a sub-type of the "city" type with two additional properties.
+     * The feature contains the following attribute:
+     *
+     * <ul>
+     *   <li>{@code city}       as a  {@link String}  (mandatory)</li>
+     *   <li>{@code population} as an {@link Integer} (mandatory)</li>
+     *   <li>{@code region}     as a  {@link String}  (mandatory) — the region for which the city is a metropolis.</li>
+     *   <li>{@code isGlobal}   as a  {@link Boolean} (mandatory) — whether the city has an effect on global affairs.</li>
+     * </ul>
+     *
+     * @return The feature for a metropolis.
+     */
+    public static DefaultFeatureType metropolis() {
+        final Map<String,Object> identification = new HashMap<>(4);
+        assertNull(identification.put(DefaultFeatureType.NAME_KEY,         "Metropolis"));
+        assertNull(identification.put(DefaultFeatureType.NAME_KEY + "_fr", "Métropole"));
+        return new DefaultFeatureType(identification, false,
+                new DefaultFeatureType[] {city()},
+                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"),
+                        String.class, 1, 1, null),
+                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "isGlobal"),
+                        Boolean.class, 1, 1, null));
+    }
+
+    /**
      * Returns the string representation of the names of all properties in the given collection.
+     * This method is used with {@code assertArrayEquals(…)} for verifying the collection of feature properties.
      */
     private static String[] getNames(final Collection<? extends AbstractIdentifiedType> properties) {
         final String[] names = new String[properties.size()];
@@ -87,6 +121,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
 
     /**
      * Performs some basic validations on the given feature.
+     * This method does <strong>not</strong> validate recursively the properties.
      */
     private static void validate(final DefaultFeatureType feature) {
         final Collection<?> explicitProperties = feature.properties(false);
@@ -211,13 +246,14 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
-     * Tests a feature type which inherit from an other feature type.
+     * Tests a feature type which inherit from an other feature type, but without property overriding.
      */
     @Test
     @DependsOnMethod("testComplex")
     public void testInheritance() {
         final DefaultFeatureType capital = capital();
-        final DefaultFeatureType city = city();
+        final DefaultFeatureType city    = city();
+        validate(capital);
 
         // Check based only on name.
         assertTrue ("maybeAssignableFrom", city.maybeAssignableFrom(capital));
@@ -231,13 +267,6 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 new String[] {"city", "population"},
                 getNames(city.properties(false)));
 
-        verifyCapital(capital);
-    }
-
-    /**
-     * Verifies the content of a feature created by {@link #capital()}.
-     */
-    private static void verifyCapital(final DefaultFeatureType capital) {
         assertArrayEquals("properties",
                 new String[] {"parliament"},
                 getNames(capital.properties(false)));
@@ -246,10 +275,45 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 new String[] {"city", "population", "parliament"},
                 getNames(capital.properties(true)));
 
+        testGetPropertiesOfCapital(capital);
+    }
+
+    /**
+     * Verifies the content of a feature created by {@link #capital()}.
+     * This is a partial implementation of {@link #testInheritance()},
+     * also shared by {@link #testSerialization()}.
+     */
+    private static void testGetPropertiesOfCapital(final DefaultFeatureType capital) {
         assertEquals("city",       capital.getProperty("city")      .getName().toString());
         assertEquals("population", capital.getProperty("population").getName().toString());
         assertEquals("parliament", capital.getProperty("parliament").getName().toString());
         assertNull  (              capital.getProperty("apple"));
+    }
+
+    /**
+     * Tests the inheritance of 2 types having the same common parent.
+     */
+    @Test
+    @DependsOnMethod("testInheritance")
+    public void testMultiInheritance() {
+        final DefaultFeatureType capital = new DefaultFeatureType(
+                singletonMap(DefaultFeatureType.NAME_KEY, "Metropolis and capital"), false,
+                new DefaultFeatureType[] {metropolis(), capital()},
+                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "country"),
+                        String.class, 1, 1, null));
+
+        validate(capital);
+        assertArrayEquals("properties",
+                new String[] {"country"},
+                getNames(capital.properties(false)));
+        assertArrayEquals("properties",
+                new String[] {"city", "population", "region", "isGlobal", "parliament", "country"},
+                getNames(capital.properties(true)));
+
+        testGetPropertiesOfCapital(capital);
+        assertEquals("country",  capital.getProperty("country") .getName().toString());
+        assertEquals("region",   capital.getProperty("region")  .getName().toString());
+        assertEquals("isGlobal", capital.getProperty("isGlobal").getName().toString());
     }
 
     /**
@@ -258,7 +322,6 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testInheritance")
     public void testSerialization() {
-        final DefaultFeatureType capital = capital();
-        verifyCapital(assertSerializedEquals(capital));
+        testGetPropertiesOfCapital(assertSerializedEquals(capital()));
     }
 }
