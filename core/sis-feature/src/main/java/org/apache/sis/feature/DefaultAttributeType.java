@@ -94,14 +94,14 @@ public class DefaultAttributeType<T> extends FieldType {
     private final T defaultValue;
 
     /**
-     * Constructs an attribute type from the given properties. The properties map is given unchanged to
+     * Constructs an attribute type from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
-     * The following table is a reminder of main (not all) properties:
+     * The following table is a reminder of main (not all) recognized map entries:
      *
      * <table class="sis">
-     *   <caption>Recognized properties (non exhaustive list)</caption>
+     *   <caption>Recognized map entries (non exhaustive list)</caption>
      *   <tr>
-     *     <th>Property name</th>
+     *     <th>Map key</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
      *   </tr>
@@ -127,17 +127,17 @@ public class DefaultAttributeType<T> extends FieldType {
      *   </tr>
      * </table>
      *
-     * @param properties    The name and other properties to be given to this attribute type.
-     * @param valueClass    The type of attribute values.
-     * @param minimumOccurs The minimum number of occurrences of the attribute within its containing entity.
-     * @param maximumOccurs The maximum number of occurrences of the attribute within its containing entity,
-     *                      or {@link Integer#MAX_VALUE} if there is no restriction.
-     * @param defaultValue  The default value for the attribute, or {@code null} if none.
+     * @param identification The name and other information to be given to this attribute type.
+     * @param valueClass     The type of attribute values.
+     * @param minimumOccurs  The minimum number of occurrences of the attribute within its containing entity.
+     * @param maximumOccurs  The maximum number of occurrences of the attribute within its containing entity,
+     *                       or {@link Integer#MAX_VALUE} if there is no restriction.
+     * @param defaultValue   The default value for the attribute, or {@code null} if none.
      */
-    public DefaultAttributeType(final Map<String,?> properties, final Class<T> valueClass,
+    public DefaultAttributeType(final Map<String,?> identification, final Class<T> valueClass,
             final int minimumOccurs, final int maximumOccurs, final T defaultValue)
     {
-        super(properties, minimumOccurs, maximumOccurs);
+        super(identification, minimumOccurs, maximumOccurs);
         ensureNonNull("valueClass",   valueClass);
         ensureCanCast("defaultValue", valueClass, defaultValue);
         this.valueClass   = valueClass;

@@ -130,7 +130,8 @@ final class Validator {
             }
         } else {
             if (maximumOccurs == 0) {
-                // TODO
+                addViolationReport(type, Errors.formatInternational(
+                        Errors.Keys.ForbiddenProperty_1, type.getName()));
             }
         }
     }

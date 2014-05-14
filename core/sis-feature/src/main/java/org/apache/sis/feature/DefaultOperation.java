@@ -58,17 +58,17 @@ public class DefaultOperation extends PropertyType {
     private final DefaultAttributeType<?> result;
 
     /**
-     * Constructs an attribute type from the given properties. The properties map is given unchanged to
+     * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
-     * @param properties The name and other properties to be given to this operation.
-     * @param parameters A description of the input parameters.
-     * @param result     The type of the result, or {@code null} if none.
+     * @param identification The name and other information to be given to this operation.
+     * @param parameters     A description of the input parameters.
+     * @param result         The type of the result, or {@code null} if none.
      */
-    public DefaultOperation(final Map<String,?> properties,
+    public DefaultOperation(final Map<String,?> identification,
             final ParameterDescriptorGroup parameters, final DefaultAttributeType<?> result)
     {
-        super(properties);
+        super(identification);
         ArgumentChecks.ensureNonNull("inputs", parameters);
         this.parameters = parameters;
         this.result     = result;

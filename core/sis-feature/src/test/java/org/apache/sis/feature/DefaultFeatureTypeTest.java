@@ -42,13 +42,13 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * Creates a simple feature type without super-types.
      */
     static DefaultFeatureType cityPopulation() {
-        final Map<String,Object>            properties = new HashMap<>();
-        final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(properties);
-        final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(properties);
+        final Map<String,Object> identification = new HashMap<>();
+        final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(identification);
+        final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(identification);
 
-        properties.clear();
-        assertNull(properties.put(DefaultFeatureType.NAME_KEY, "City population"));
-        return new DefaultFeatureType(properties, false, null, city, population);
+        identification.clear();
+        assertNull(identification.put(DefaultFeatureType.NAME_KEY, "City population"));
+        return new DefaultFeatureType(identification, false, null, city, population);
     }
 
     /**
@@ -78,15 +78,15 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         /*
          * Verify content.
          */
-        final List<AbstractIdentifiedType> characteristics = simple.characteristics();
-        assertEquals("characteristics.size", 2,            characteristics.size());
-        assertEquals("characteristics[0]",   "city",       characteristics.get(0).getName().toString());
-        assertEquals("characteristics[1]",   "population", characteristics.get(1).getName().toString());
+        final List<AbstractIdentifiedType> properties = simple.properties();
+        assertEquals("properties.size", 2,            properties.size());
+        assertEquals("properties[0]",   "city",       properties.get(0).getName().toString());
+        assertEquals("properties[1]",   "population", properties.get(1).getName().toString());
         /*
          * Verify search by name.
          */
-        assertSame(characteristics.get(0), simple.getProperty("city"));
-        assertSame(characteristics.get(1), simple.getProperty("population"));
+        assertSame(properties.get(0), simple.getProperty("city"));
+        assertSame(properties.get(1), simple.getProperty("population"));
         assertNull(                        simple.getProperty("apple"));
     }
 
@@ -98,10 +98,10 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testSimple")
     public void testComplex() {
-        final Map<String,Object>            properties = new HashMap<>();
-        final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(properties);
-        final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(properties);
-        properties.clear();
+        final Map<String,Object> identification = new HashMap<>();
+        final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(identification);
+        final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(identification);
+        identification.clear();
         for (int i=0; i<=4; i++) {
             final int minimumOccurs, maximumOccurs;
             switch (i) {
@@ -112,28 +112,28 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 case 4: minimumOccurs = 1; maximumOccurs = 1; break; // Simple
                 default: throw new AssertionError(i);
             }
-            properties.put(DefaultAttributeType.NAME_KEY, "festival");
+            identification.put(DefaultAttributeType.NAME_KEY, "festival");
             final DefaultAttributeType<String> festival = new DefaultAttributeType<>(
-                    properties, String.class, minimumOccurs, maximumOccurs, null);
+                    identification, String.class, minimumOccurs, maximumOccurs, null);
             /*
              * Build the feature.
              */
-            properties.put(DefaultAttributeType.NAME_KEY, "City festival");
-            final DefaultFeatureType complex = new DefaultFeatureType(properties, false, null, city, population, festival);
-            final List<AbstractIdentifiedType> characteristics = complex.characteristics();
+            identification.put(DefaultAttributeType.NAME_KEY, "City festival");
+            final DefaultFeatureType complex = new DefaultFeatureType(identification, false, null, city, population, festival);
+            final List<AbstractIdentifiedType> properties = complex.properties();
             /*
              * Verify content.
              */
-            assertEquals("name",                 "City festival",                complex.getName().toString());
-            assertFalse ("isAbstract",                                           complex.isAbstract());
-            assertEquals("isSimple",             maximumOccurs == minimumOccurs, complex.isSimple());
-            assertEquals("instanceSize",         maximumOccurs == 0 ? 2 : 3,     complex.getInstanceSize());
-            assertEquals("characteristics.size", 3,                              characteristics.size());
-            assertSame  ("characteristics[0]",   city,                           characteristics.get(0));
-            assertSame  ("characteristics[1]",   population,                     characteristics.get(1));
-            assertSame  ("characteristics[3]",   festival,                       characteristics.get(2));
-            assertEquals("minimumOccurs",        minimumOccurs,                  festival.getMinimumOccurs());
-            assertEquals("maximumOccurs",        maximumOccurs,                  festival.getMaximumOccurs());
+            assertEquals("name",            "City festival",                complex.getName().toString());
+            assertFalse ("isAbstract",                                      complex.isAbstract());
+            assertEquals("isSimple",        maximumOccurs == minimumOccurs, complex.isSimple());
+            assertEquals("instanceSize",    maximumOccurs == 0 ? 2 : 3,     complex.getInstanceSize());
+            assertEquals("properties.size", 3,                              properties.size());
+            assertSame  ("properties[0]",   city,                           properties.get(0));
+            assertSame  ("properties[1]",   population,                     properties.get(1));
+            assertSame  ("properties[3]",   festival,                       properties.get(2));
+            assertEquals("minimumOccurs",   minimumOccurs,                  festival.getMinimumOccurs());
+            assertEquals("maximumOccurs",   maximumOccurs,                  festival.getMaximumOccurs());
         }
     }
 
@@ -150,9 +150,9 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "population"), Integer.class, 1, 1, null);
 
-        final Map<String,String> properties = singletonMap(DefaultAttributeType.NAME_KEY, "City population");
+        final Map<String,String> identification = singletonMap(DefaultAttributeType.NAME_KEY, "City population");
         try {
-            new DefaultFeatureType(properties, false, null, city, population, cityId);
+            new DefaultFeatureType(identification, false, null, city, population, cityId);
             fail("Duplicated attribute names shall not be allowed.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
@@ -179,14 +179,14 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         /*
          * Verify content.
          */
-        List<AbstractIdentifiedType> characteristics = city.characteristics();
-        assertEquals("characteristics.size", 2,            characteristics.size());
-        assertEquals("characteristics[0]",   "city",       characteristics.get(0).getName().toString());
-        assertEquals("characteristics[1]",   "population", characteristics.get(1).getName().toString());
+        List<AbstractIdentifiedType> properties = city.properties();
+        assertEquals("properties.size", 2,            properties.size());
+        assertEquals("properties[0]",   "city",       properties.get(0).getName().toString());
+        assertEquals("properties[1]",   "population", properties.get(1).getName().toString());
 
-        characteristics = capital.characteristics();
-        assertEquals("characteristics.size", 1,            characteristics.size());
-        assertEquals("characteristics[0]",   "since",      characteristics.get(0).getName().toString());
+        properties = capital.properties();
+        assertEquals("properties.size", 1,            properties.size());
+        assertEquals("properties[0]",   "since",      properties.get(0).getName().toString());
         /*
          * Verify search by name.
          */

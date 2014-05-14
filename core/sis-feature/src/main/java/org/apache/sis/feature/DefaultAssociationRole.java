@@ -53,12 +53,12 @@ public class DefaultAssociationRole extends FieldType {
     /**
      * Constructs an association role from the given properties. The properties map is given unchanged
      * to the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
-     * The following table is a reminder of main (not all) properties:
+     * The following table is a reminder of main (not all) recognized map entries:
      *
      * <table class="sis">
-     *   <caption>Recognized properties (non exhaustive list)</caption>
+     *   <caption>Recognized map entries (non exhaustive list)</caption>
      *   <tr>
-     *     <th>Property name</th>
+     *     <th>Map key</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
      *   </tr>
@@ -84,16 +84,16 @@ public class DefaultAssociationRole extends FieldType {
      *   </tr>
      * </table>
      *
-     * @param properties    The name and other properties to be given to this association role.
-     * @param valueType     The type of feature values.
-     * @param minimumOccurs The minimum number of occurrences of the association within its containing entity.
-     * @param maximumOccurs The maximum number of occurrences of the association within its containing entity,
-     *                      or {@link Integer#MAX_VALUE} if there is no restriction.
+     * @param identification The name and other information to be given to this association role.
+     * @param valueType      The type of feature values.
+     * @param minimumOccurs  The minimum number of occurrences of the association within its containing entity.
+     * @param maximumOccurs  The maximum number of occurrences of the association within its containing entity,
+     *                       or {@link Integer#MAX_VALUE} if there is no restriction.
      */
-    public DefaultAssociationRole(final Map<String,?> properties, final DefaultFeatureType valueType,
+    public DefaultAssociationRole(final Map<String,?> identification, final DefaultFeatureType valueType,
             final int minimumOccurs, final int maximumOccurs)
     {
-        super(properties, minimumOccurs, maximumOccurs);
+        super(identification, minimumOccurs, maximumOccurs);
         ensureNonNull("valueType", valueType);
         this.valueType = valueType;
     }
