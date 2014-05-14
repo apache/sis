@@ -40,7 +40,7 @@ class PropertyType extends AbstractIdentifiedType {
     /**
      * Passes the given properties unchanged to the super-class constructor.
      */
-    PropertyType(final Map<String,?> properties) throws IllegalArgumentException {
-        super(properties);
+    PropertyType(final Map<String,?> identification) throws IllegalArgumentException {
+        super(identification);
     }
 }

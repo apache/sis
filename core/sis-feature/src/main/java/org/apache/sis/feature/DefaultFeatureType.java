@@ -55,8 +55,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
  * {@section Properties and inheritance}
- * A feature type can inherit the properties of one or more other feature types.
- * Each feature type can provide descriptions for the following properties:
+ * Each feature type can provide descriptions for the following {@linkplain #properties() properties}:
  *
  * <ul>
  *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
@@ -64,7 +63,15 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *   <li>{@linkplain DefaultOperation        Operations}</li>
  * </ul>
  *
- * The description of all those properties are collectively called {@linkplain #characteristics() characteristics}.
+ * In addition, a feature type can inherit the properties of one or more other feature types.
+ * Properties defined in the sub-type can override properties of the same name defined in the
+ * {@linkplain #superTypes() super-types}, provided that values of the sub-type property are
+ * assignable to the super-type property.
+ *
+ * <div class="note"><b>Analogy:</b> compared to the Java language, the above rule is similar to overriding a method
+ * with a more specific return type (a.k.a. <cite>covariant return type</cite>). This is also similar to Java arrays,
+ * which are implicitly <cite>covariant</cite> (i.e. {@code String[]} can be casted to {@code CharSequence[]}, which
+ * is safe for read operations but not for write operations — the later may throw {@link ArrayStoreException}).</div>
  *
  * {@section Immutability and thread safety}
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
@@ -119,7 +126,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * Any feature operation, any feature attribute type and any feature association role
      * that carries characteristics of a feature type.
      */
-    private final List<PropertyType> characteristics;
+    private final List<PropertyType> properties;
 
     /**
      * A lookup table for fetching properties by name, including the properties from super-types.
@@ -130,7 +137,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     private transient Map<String, PropertyType> byName;
 
     /**
-     * Indices of properties in an array of properties similar to {@link #characteristics},
+     * Indices of properties in an array of properties similar to {@link #properties},
      * but excluding operations. This map includes the properties from the super-types.
      *
      * The size of this map may be smaller than the {@link #byName} size.
@@ -139,14 +146,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     private transient Map<String, Integer> indices;
 
     /**
-     * Constructs a feature type from the given properties. The properties map is given unchanged to
+     * Constructs a feature type from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
-     * The following table is a reminder of main (not all) properties:
+     * The following table is a reminder of main (not all) recognized map entries:
      *
      * <table class="sis">
-     *   <caption>Recognized properties (non exhaustive list)</caption>
+     *   <caption>Recognized map entries (non exhaustive list)</caption>
      *   <tr>
-     *     <th>Property name</th>
+     *     <th>Map key</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
      *   </tr>
@@ -174,27 +181,52 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the type of array elements may be
      * changed to {@code org.opengis.feature.FeatureType} and {@code org.opengis.feature.PropertyType}.
-     * This change is pending GeoAPI revision. In the meantime, make sure that the {@code characteristics}
+     * This change is pending GeoAPI revision. In the meantime, make sure that the {@code properties}
      * array contains only attribute types, association roles or operations, <strong>not</strong> other
      * feature types since the later are not properties in the ISO sense.</div>
      *
-     * @param properties The name and other properties to be given to this feature type.
-     * @param isAbstract If {@code true}, the feature type acts as an abstract super-type.
-     * @param superTypes The parents of this feature type, or {@code null} or empty if none.
-     * @param characteristics Any feature operation, any feature attribute type and any feature
-     *        association role that carries characteristics of a feature type.
+     * @param identification The name and other information to be given to this feature type.
+     * @param isAbstract     If {@code true}, the feature type acts as an abstract super-type.
+     * @param superTypes     The parents of this feature type, or {@code null} or empty if none.
+     * @param properties     Any feature operation, any feature attribute type and any feature
+     *                       association role that carries characteristics of a feature type.
      */
-    public DefaultFeatureType(final Map<String,?> properties, final boolean isAbstract,
-            final DefaultFeatureType[] superTypes, final AbstractIdentifiedType... characteristics)
+    public DefaultFeatureType(final Map<String,?> identification, final boolean isAbstract,
+            final DefaultFeatureType[] superTypes, final AbstractIdentifiedType... properties)
     {
-        super(properties);
-        ArgumentChecks.ensureNonNull("characteristics", characteristics);
+        super(identification);
+        ArgumentChecks.ensureNonNull("properties", properties);
         this.isAbstract = isAbstract;
         this.superTypes = (superTypes == null) ? Collections.<DefaultFeatureType>emptySet() :
                           CollectionsExt.<DefaultFeatureType>immutableSet(true, superTypes);
-        this.characteristics = UnmodifiableArrayList.wrap(Arrays.copyOf(
-                characteristics, characteristics.length, PropertyType[].class));
+        this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(
+                properties, properties.length, PropertyType[].class));
         computeTransientFields();
+    }
+
+    /**
+     * Returns the string representation of the given name, making sure that the name is non-null
+     * and the string non-empty. This method is used for checking argument validity.
+     *
+     * @param name   The name for which to get the string representation.
+     * @param source The feature which contains the property (typically {@code this}).
+     * @param index  Index of the property having the given name.
+     */
+    private String toString(final GenericName name, final DefaultFeatureType source, final int index) {
+        short key = Errors.Keys.MissingValueForProperty_1;
+        if (name != null) {
+            final String s = name.toString();
+            if (!s.isEmpty()) {
+                return s;
+            }
+            key = Errors.Keys.EmptyProperty_1;
+        }
+        final StringBuilder b = new StringBuilder(30);
+        if (source != this) {
+            b.append(source.getName()).append('.');
+        }
+        throw new IllegalArgumentException(Errors.format(key,
+                b.append("properties[").append(index).append("].name").toString()));
     }
 
     /**
@@ -205,13 +237,13 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * @throws IllegalArgumentException if two properties have the same name.
      */
     private void computeTransientFields() {
-        final int capacity = Containers.hashMapCapacity(characteristics.size());
+        final int capacity = Containers.hashMapCapacity(properties.size());
         isSimple     = true;
         byName       = new LinkedHashMap<>(capacity);
         indices      = new HashMap<>(capacity);
         assignableTo = new HashSet<>(4);
         assignableTo.add(getName());
-        scanCharacteristicsFrom(this);
+        scanPropertiesFrom(this);
         byName       = CollectionsExt.unmodifiableOrCopy(byName);
         indices      = CollectionsExt.unmodifiableOrCopy(indices);
         assignableTo = CollectionsExt.unmodifiableOrCopy(assignableTo);
@@ -221,34 +253,33 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * Computes the transient fields using the non-transient information in the given {@code source}.
      * This method invokes itself recursively in order to use the information provided in super-types.
      */
-    private void scanCharacteristicsFrom(final DefaultFeatureType source) {
+    private void scanPropertiesFrom(final DefaultFeatureType source) {
         /*
          * Process all super-types before to process the given type. The intend is to have the
-         * super-types characteristics indexed before the sub-types ones in the 'indices' map.
+         * super-types properties indexed before the sub-types ones in the 'indices' map.
          */
         for (final DefaultFeatureType parent : source.superTypes()) {
             if (assignableTo.add(parent.getName())) {
-                scanCharacteristicsFrom(parent);
+                scanPropertiesFrom(parent);
             }
         }
         int index = -1;
-        for (final PropertyType property : source.characteristics) {
-            ArgumentChecks.ensureNonNullElement("characteristics", ++index, property);
+        Map<DefaultFeatureType,Boolean> done = null;
+        for (final PropertyType property : source.properties) {
+            ArgumentChecks.ensureNonNullElement("properties", ++index, property);
             /*
-             * Fill the (name, property) map, after opportunist verification of argument validity.
+             * Fill the (name, property) map with opportunist verification of argument validity.
              */
-            final GenericName gn = property.getName();
-            if (gn == null) {
-                final StringBuilder b = new StringBuilder(30);
-                if (source != this) {
-                    b.append(source.getName()).append('.');
+            final String name = toString(property.getName(), source, index);
+            final PropertyType previous = byName.put(name, property);
+            if (previous != null) {
+                if (done == null) {
+                    done = new IdentityHashMap<>(4); // Guard against infinite recursivity.
                 }
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1,
-                        b.append("characteristics[").append(index).append("].name")));
-            }
-            final String name = gn.toString();
-            if (byName.put(name, property) != null) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, name));
+                if (!isAssignableIgnoreName(previous, property, done)) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyAlreadyExists_2, name));
+                }
+                done.clear();
             }
             /*
              * Fill the (name, indice) map. Values are indices that the property elements would have
@@ -326,46 +357,72 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
             return true; // Optimization for a common case.
         }
         ArgumentChecks.ensureNonNull("type", type);
-        return maybeAssignableFrom(type) && isSubsetOf(type, new IdentityHashMap<>(4));
+        return maybeAssignableFrom(type) && isAssignableIgnoreName(type, new IdentityHashMap<>(4));
     }
 
     /**
      * Return {@code true} if all properties in this type are also properties in the given type.
+     * This method does not compare the names — this verification is presumed already done by the caller.
      *
      * @param type The type to check.
      * @param done An initially empty map to be used for avoiding infinite recursivity.
      */
-    private boolean isSubsetOf(final DefaultFeatureType type, final Map<DefaultFeatureType,Boolean> done) {
+    private boolean isAssignableIgnoreName(final DefaultFeatureType type, final Map<DefaultFeatureType,Boolean> done) {
         if (done.put(this, Boolean.TRUE) == null) {
             /*
              * Ensures that all properties defined in this feature type is also defined
              * in the given property, and that the former is assignable from the later.
              */
             for (final Map.Entry<String, PropertyType> entry : byName.entrySet()) {
-                final PropertyType property = entry.getValue();
                 final PropertyType other = type.getProperty(entry.getKey());
-                if (property != other) {
-                    if (other == null) {
-                        return false;
-                    }
-                    boolean isAssignable = true;
-                    /*
-                     * TODO: DefaultAttributeType and DefaultAssociationRole to be replaced by GeoAPI interfaces
-                     *       (pending GeoAPI review).
-                     */
-                    if (property instanceof DefaultAttributeType<?>) {
-                        isAssignable &= (other instanceof DefaultAttributeType<?>) &&
-                                        ((DefaultAttributeType<?>) property).getValueClass().isAssignableFrom(
-                                        ((DefaultAttributeType<?>) other   ).getValueClass());
-                    }
-                    if (property instanceof DefaultAssociationRole) {
-                        isAssignable &= (other instanceof DefaultAssociationRole) &&
-                                        ((DefaultAssociationRole) property).getValueType().isSubsetOf(
-                                        ((DefaultAssociationRole) other   ).getValueType(), done);
-                    }
-                    if (!isAssignable) {
-                        return false;
-                    }
+                if (other == null || !isAssignableIgnoreName(entry.getValue(), other, done)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns {@code true} if instances of the {@code other} type are assignable to the given {@code base} type.
+     * This method does not compare the names — this verification is presumed already done by the caller.
+     */
+    private static boolean isAssignableIgnoreName(final PropertyType base, final PropertyType other,
+            final Map<DefaultFeatureType,Boolean> done)
+    {
+        if (base != other) {
+            /*
+             * TODO: DefaultAttributeType and DefaultAssociationRole to be replaced by GeoAPI interfaces
+             *       (pending GeoAPI review).
+             */
+            if (base instanceof DefaultAttributeType<?>) {
+                if (!(other instanceof DefaultAttributeType<?>)) {
+                    return false;
+                }
+                final DefaultAttributeType<?> p0 = (DefaultAttributeType<?>) base;
+                final DefaultAttributeType<?> p1 = (DefaultAttributeType<?>) other;
+                if (!p0.getValueClass().isAssignableFrom(p1.getValueClass()) ||
+                     p0.getMinimumOccurs() > p1.getMinimumOccurs() ||
+                     p0.getMaximumOccurs() < p1.getMaximumOccurs())
+                {
+                    return false;
+                }
+            }
+            if (base instanceof DefaultAssociationRole) {
+                if (!(other instanceof DefaultAssociationRole)) {
+                    return false;
+                }
+                final DefaultAssociationRole p0 = (DefaultAssociationRole) base;
+                final DefaultAssociationRole p1 = (DefaultAssociationRole) other;
+                if (p0.getMinimumOccurs() > p1.getMinimumOccurs() ||
+                    p0.getMaximumOccurs() < p1.getMaximumOccurs())
+                {
+                    return false;
+                }
+                final DefaultFeatureType f0 = p0.getValueType();
+                final DefaultFeatureType f1 = p1.getValueType();
+                if (!f0.maybeAssignableFrom(f1) || !f0.isAssignableIgnoreName(f1, done)) {
+                    return false;
                 }
             }
         }
@@ -397,8 +454,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * @return Feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
-    public List<AbstractIdentifiedType> characteristics() {
-        return (List) characteristics; // Cast is safe because the list is read-only.
+    public List<AbstractIdentifiedType> properties() {
+        return (List) properties; // Cast is safe because the list is read-only.
     }
 
     /**
@@ -426,7 +483,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + superTypes.hashCode() + 37*characteristics.hashCode();
+        return super.hashCode() + superTypes.hashCode() + 37*properties.hashCode();
     }
 
     /**
@@ -443,7 +500,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
             final DefaultFeatureType that = (DefaultFeatureType) obj;
             return isAbstract == that.isAbstract &&
                    superTypes.equals(that.superTypes) &&
-                   characteristics.equals(that.characteristics);
+                   properties.equals(that.properties);
         }
         return false;
     }

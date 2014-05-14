@@ -22,8 +22,12 @@
  *
  * <ul>
  *   <li><p><b>{@linkplain org.apache.sis.feature.DefaultFeatureType Feature types}</b><br>
- *       Define the <em>structure</em> of real-world representations. A feature type lists the attributes, operations,
- *       or associations to other features (collectively called “characteristics”) that a feature can have.</p>
+ *       Define the <em>structure</em> of real-world representations. A feature type lists the
+ *       {@linkplain org.apache.sis.feature.DefaultAttributeType attributes},
+ *       {@linkplain org.apache.sis.feature.DefaultOperation operations} or
+ *       {@linkplain org.apache.sis.feature.DefaultAssociationRole associations to other features}
+ *       (collectively called “{@linkplain org.apache.sis.feature.DefaultFeatureType#properties() properties}”
+ *       or “characteristics”) that a feature can have.</p>
  *
  *       <div class="note"><b>Analogy:</b> a {@code FeatureType} in a Spatial Information System is equivalent to a
  *       {@link java.lang.Class} in the Java language. By extension, {@code AttributeType} and {@code Operation} are
@@ -40,6 +44,12 @@
  *       are constrained to the [1 … 1] cardinality. Such simple features are very common.</p></li>
  * </ul>
  *
+ * In addition, a feature type can inherit the properties of one or more other feature types.
+ * Properties defined in the sub-type can override properties of the same name defined in the
+ * {@linkplain org.apache.sis.feature.DefaultFeatureType#superTypes() super-types}, provided
+ * that values of the sub-type property are assignable to the super-type property.
+ *
+ * {@section Naming}
  * Each feature type has a {@linkplain org.apache.sis.feature.DefaultFeatureType#getName() name},
  * which should be unique. Those names are the main criterion used for checking if a feature type
  * {@linkplain org.apache.sis.feature.DefaultFeatureType#isAssignableFrom is assignable from} another type.

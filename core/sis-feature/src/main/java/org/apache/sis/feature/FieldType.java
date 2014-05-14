@@ -48,16 +48,16 @@ abstract class FieldType extends PropertyType {
     private final int maximumOccurs;
 
     /**
-     * Constructs a field type from the given properties. The properties map is given unchanged to
+     * Constructs a field type from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
-     * @param properties    The name and other properties to be given to this field type.
-     * @param minimumOccurs The minimum number of occurrences of the property within its containing entity.
-     * @param maximumOccurs The maximum number of occurrences of the property within its containing entity,
-     *                      or {@link Integer#MAX_VALUE} if there is no restriction.
+     * @param identification The name and other information to be given to this field type.
+     * @param minimumOccurs  The minimum number of occurrences of the property within its containing entity.
+     * @param maximumOccurs  The maximum number of occurrences of the property within its containing entity,
+     *                       or {@link Integer#MAX_VALUE} if there is no restriction.
      */
-    FieldType(final Map<String,?> properties, final int minimumOccurs, final int maximumOccurs) {
-        super(properties);
+    FieldType(final Map<String,?> identification, final int minimumOccurs, final int maximumOccurs) {
+        super(identification);
         if (minimumOccurs < 0 || maximumOccurs < minimumOccurs) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
