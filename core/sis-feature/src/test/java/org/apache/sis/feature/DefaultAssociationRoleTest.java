@@ -38,8 +38,8 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
      * Creates an association.
      */
     static DefaultAssociationRole twinTown() {
-        return new DefaultAssociationRole(singletonMap(DefaultAssociationRole.NAME_KEY, "Twin town"),
-                DefaultFeatureTypeTest.cityPopulation(), 0, Integer.MAX_VALUE);
+        return new DefaultAssociationRole(singletonMap(DefaultAssociationRole.NAME_KEY, "twin town"),
+                DefaultFeatureTypeTest.city(), 0, Integer.MAX_VALUE);
     }
 
     /**

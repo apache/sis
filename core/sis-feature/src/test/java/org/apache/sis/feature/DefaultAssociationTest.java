@@ -44,7 +44,7 @@ public final strictfp class DefaultAssociationTest extends TestCase {
      * and Le Mans, France in 836.” — source: Wikipedia</blockquote>
      */
     static DefaultAssociation twinTown() {
-        final DefaultFeature twinTown = new DefaultFeature(DefaultFeatureTypeTest.cityPopulation());
+        final DefaultFeature twinTown = new DefaultFeature(DefaultFeatureTypeTest.city());
         twinTown.setPropertyValue("city", "Le Mans");
         twinTown.setPropertyValue("population", 148169);
         final DefaultAssociation association = new DefaultAssociation(DefaultAssociationRoleTest.twinTown());
@@ -65,9 +65,9 @@ public final strictfp class DefaultAssociationTest extends TestCase {
             association.setValue(otherFeature);
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
-            assertTrue(message, message.contains("Twin town"));
+            assertTrue(message, message.contains("twin town"));
             assertTrue(message, message.contains("Population"));
-            assertTrue(message, message.contains("City population"));
+            assertTrue(message, message.contains("City"));
         }
     }
 
