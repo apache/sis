@@ -16,14 +16,15 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
-import java.util.HashSet;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -55,7 +56,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
  * {@section Properties and inheritance}
- * Each feature type can provide descriptions for the following {@linkplain #properties() properties}:
+ * Each feature type can provide descriptions for the following {@linkplain #properties(boolean) properties}:
  *
  * <ul>
  *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
@@ -205,28 +206,15 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     }
 
     /**
-     * Returns the string representation of the given name, making sure that the name is non-null
-     * and the string non-empty. This method is used for checking argument validity.
+     * Invoked on deserialization for restoring the {@link #byName} and other transient fields.
      *
-     * @param name   The name for which to get the string representation.
-     * @param source The feature which contains the property (typically {@code this}).
-     * @param index  Index of the property having the given name.
+     * @param  in The input stream from which to deserialize a feature type.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
-    private String toString(final GenericName name, final DefaultFeatureType source, final int index) {
-        short key = Errors.Keys.MissingValueForProperty_1;
-        if (name != null) {
-            final String s = name.toString();
-            if (!s.isEmpty()) {
-                return s;
-            }
-            key = Errors.Keys.EmptyProperty_1;
-        }
-        final StringBuilder b = new StringBuilder(30);
-        if (source != this) {
-            b.append(source.getName()).append('.');
-        }
-        throw new IllegalArgumentException(Errors.format(key,
-                b.append("properties[").append(index).append("].name").toString()));
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        computeTransientFields();
     }
 
     /**
@@ -277,7 +265,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
                     done = new IdentityHashMap<>(4); // Guard against infinite recursivity.
                 }
                 if (!isAssignableIgnoreName(previous, property, done)) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyAlreadyExists_2, name));
+                    final GenericName owner = ownerOf(previous);
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyAlreadyExists_2,
+                            (owner != null) ? owner : "?", name));
                 }
                 done.clear();
             }
@@ -305,16 +295,51 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     }
 
     /**
-     * Invoked on deserialization for restoring the {@link #byName} map.
-     *
-     * @param  in The input stream from which to deserialize a feature type.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * Returns the name of the feature which defines the given property, or {@code null} if not found.
+     * This method is for information purpose when producing an error message - its implementation does
+     * not need to be efficient.
      */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        computeTransientFields();
+    private GenericName ownerOf(final PropertyType property) {
+        if (properties.contains(property)) {
+            return getName();
+        }
+        for (final DefaultFeatureType type : superTypes) {
+            final GenericName owner = type.ownerOf(property);
+            if (owner != null) {
+                return owner;
+            }
+        }
+        return null;
     }
+
+    /**
+     * Returns the string representation of the given name, making sure that the name is non-null
+     * and the string non-empty. This method is used for checking argument validity.
+     *
+     * @param name   The name for which to get the string representation.
+     * @param source The feature which contains the property (typically {@code this}).
+     * @param index  Index of the property having the given name.
+     */
+    private String toString(final GenericName name, final DefaultFeatureType source, final int index) {
+        short key = Errors.Keys.MissingValueForProperty_1;
+        if (name != null) {
+            final String s = name.toString();
+            if (!s.isEmpty()) {
+                return s;
+            }
+            key = Errors.Keys.EmptyProperty_1;
+        }
+        final StringBuilder b = new StringBuilder(30);
+        if (source != this) {
+            b.append(source.getName()).append('.');
+        }
+        throw new IllegalArgumentException(Errors.format(key,
+                b.append("properties[").append(index).append("].name").toString()));
+    }
+
+
+    // -------- END OF CONSTRUCTORS ------------------------------------------------------------------------------
+
 
     /**
      * Returns {@code true} if the feature type acts as an abstract super-type.
@@ -444,18 +469,22 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
 
     /**
      * Returns any feature operation, any feature attribute type and any feature association role that
-     * carries characteristics of a feature type. The returned list does not include the characteristics
-     * inherited from the {@linkplain #superTypes() super types}.
+     * carries characteristics of a feature type. The returned collection will include the properties
+     * inherited from the {@linkplain #superTypes() super-types} only if {@code includeSuperTypes} is
+     * {@code true}.
      *
      * <div class="warning"><b>Warning:</b>
      * The type of list elements will be changed to {@code PropertyType} if and when such interface
      * will be defined in GeoAPI.</div>
      *
+     * @param  includeSuperTypes {@code true} for including the properties inherited from the super-types,
+     *         or {@code false} for returning only the properties defined explicitely in this type.
      * @return Feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
-    public List<AbstractIdentifiedType> properties() {
-        return (List) properties; // Cast is safe because the list is read-only.
+    public Collection<AbstractIdentifiedType> properties(final boolean includeSuperTypes) {
+        // TODO: temporary cast to be removed after we upgraded GeoAPI.
+        return (Collection) (includeSuperTypes ? byName.values() : properties);
     }
 
     /**
