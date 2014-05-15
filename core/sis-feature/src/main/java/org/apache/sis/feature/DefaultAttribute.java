@@ -48,6 +48,8 @@ import java.util.Objects;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultAttributeType
  */
 public class DefaultAttribute<T> extends Property implements Cloneable, Serializable {
     /**

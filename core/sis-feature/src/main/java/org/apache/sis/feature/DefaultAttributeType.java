@@ -72,6 +72,8 @@ import java.util.Objects;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultAttribute
  */
 public class DefaultAttributeType<T> extends FieldType {
     /**

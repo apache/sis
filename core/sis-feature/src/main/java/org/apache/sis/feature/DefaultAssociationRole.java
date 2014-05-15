@@ -26,6 +26,15 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 /**
  * Indicates the role played by the association between two features.
+ * In the area of geographic information, there exist multiple kinds of associations:
+ *
+ * <ul>
+ *   <li><b>Aggregation</b> represents associations between features which can exist even if the aggregate is destroyed.</li>
+ *   <li><b>Composition</b> represents relationships where the owned features are destroyed together with the composite.</li>
+ *   <li><b>Spatial</b> represents spatial or topological relationships that may exist between features (e.g. “east of”).</li>
+ *   <li><b>Temporal</b> may represent for example a sequence of changes over time involving the replacement of some
+ *       feature instances by other feature instances.</li>
+ * </ul>
  *
  * {@section Immutability and thread safety}
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
@@ -36,6 +45,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultAssociation
  */
 public class DefaultAssociationRole extends FieldType {
     /**
