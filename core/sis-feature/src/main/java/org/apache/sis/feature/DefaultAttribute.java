@@ -17,7 +17,11 @@
 package org.apache.sis.feature;
 
 import java.io.Serializable;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.quality.DataQuality;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 
 // Related to JDK7
@@ -25,9 +29,18 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * Holds the value of an attribute in a feature. The value can be an arbitrary Java object.
- * Constraints like the base Java class and domain of values are specified by the
- * {@linkplain DefaultAttributeType attribute type} associated to each attribute instance.
+ * An instance of an {@linkplain DefaultAttributeType attribute type} containing the value of an attribute in a feature.
+ * {@code Attribute} holds two main information:
+ *
+ * <ul>
+ *   <li>A reference to an {@linkplain DefaultAttributeType attribute type}
+ *       which define the base Java type and domain of valid values.</li>
+ *   <li>A value.</li>
+ * </ul>
+ *
+ * {@section Usage in multi-thread environment}
+ * {@code DefaultAttribute} are <strong>not</strong> thread-safe.
+ * Synchronization, if needed, shall be done externally by the caller.
  *
  * @param <T> The type of attribute values.
  *
@@ -36,8 +49,10 @@ import org.apache.sis.internal.jdk7.Objects;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultAttributeType
  */
-final class DefaultAttribute<T> implements Serializable {
+public class DefaultAttribute<T> extends Property implements Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -54,19 +69,46 @@ final class DefaultAttribute<T> implements Serializable {
     private T value;
 
     /**
-     * Creates a new attribute of the given type.
-     * The value is initialized to the {@linkplain DefaultAttributeType#getDefaultValue() default value}.
+     * Creates a new attribute of the given type initialized to the
+     * {@linkplain DefaultAttributeType#getDefaultValue() default value}.
      *
      * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
     public DefaultAttribute(final DefaultAttributeType<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
-        this.type = type;
-        value = type.getDefaultValue();
+        this.type  = type;
+        this.value = type.getDefaultValue();
+    }
+
+    /**
+     * Creates a new attribute of the given type initialized to the given value.
+     * Note that a {@code null} value may not the same as the default value.
+     *
+     * @param type  Information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param value The initial value (may be null {@code null}).
+     */
+    public DefaultAttribute(final DefaultAttributeType<T> type, final Object value) {
+        ArgumentChecks.ensureNonNull("type", type);
+        this.type  = type;
+        this.value = type.getValueClass().cast(value);
+    }
+
+    /**
+     * Returns the name of this attribute as defined by its {@linkplain #getType() type}.
+     * This convenience method delegates to {@link DefaultAttributeType#getName()}.
+     *
+     * @return The attribute name specified by its type.
+     */
+    @Override
+    public GenericName getName() {
+        return type.getName();
     }
 
     /**
      * Returns information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
+     * to {@code org.opengis.feature.AttributeType}. This change is pending GeoAPI revision.</div>
      *
      * @return Information about the attribute.
      */
@@ -78,6 +120,8 @@ final class DefaultAttribute<T> implements Serializable {
      * Returns the attribute value.
      *
      * @return The attribute value (may be {@code null}).
+     *
+     * @see DefaultFeature#getPropertyValue(String)
      */
     public T getValue() {
         return value;
@@ -86,14 +130,77 @@ final class DefaultAttribute<T> implements Serializable {
     /**
      * Sets the attribute value.
      *
-     * <div class="warning">Current implementation does not yet performed any validation.
-     * However future Apache SIS version is likely to check argument validity here.</div>
+     * {@section Validation}
+     * The amount of validation performed by this method is implementation dependent.
+     * Usually, only the most basic constraints are verified. This is so for performance reasons
+     * and also because some rules may be temporarily broken while constructing a feature.
+     * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
      *
-     * @param  value The new value.
-     * @throws IllegalArgumentException If the given value is outside the attribute domain.
+     * @param value The new value.
+     *
+     * @see DefaultFeature#setPropertyValue(String, Object)
      */
-    public void setValue(final T value) throws IllegalArgumentException {
+    public void setValue(final T value) {
         this.value = value;
+    }
+
+    /**
+     * Verifies if the current attribute value mets the constraints defined by the attribute type.
+     * This method returns {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
+     * reports} for all constraint violations found, if any.
+     *
+     * <div class="note"><b>Example:</b> given an attribute named “population” with [1 … 1] cardinality,
+     * if no value has been assigned to that attribute, then this {@code validate()} method will return
+     * the following data quality report:
+     *
+     * {@preformat text
+     *   Data quality
+     *     ├─Scope
+     *     │   └─Level………………………………………………… Attribute
+     *     └─Report
+     *         ├─Measure identification
+     *         │   └─Code………………………………………… population
+     *         ├─Evaluation method type…… Direct internal
+     *         └─Result
+     *             ├─Explanation……………………… Missing value for “population” property.
+     *             └─Pass………………………………………… false
+     * }
+     * </div>
+     *
+     * This attribute is valid if this method does not report any
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
+     *
+     * @return Reports on all constraint violations found.
+     *
+     * @see DefaultFeature#validate()
+     */
+    /*
+     * API NOTE: this method is final for now because if we allowed users to override it, users would
+     * expect their method to be invoked by DefaultFeature.validate(). But this is not yet the case.
+     */
+    public final DataQuality validate() {
+        final Validator v = new Validator(ScopeCode.ATTRIBUTE);
+        v.validate(type, value);
+        return v.quality;
+    }
+
+    /**
+     * Returns a shallow copy of this attribute.
+     * The attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     *
+     * @return A clone of this attribute.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public DefaultAttribute<T> clone() {
+        final DefaultAttribute<T> clone;
+        try {
+            clone = (DefaultAttribute<T>) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e); // Should never happen since we are cloneable.
+        }
+        return clone;
     }
 
     /**
@@ -116,7 +223,7 @@ final class DefaultAttribute<T> implements Serializable {
         if (obj == this) {
             return true;
         }
-        if (obj.getClass() == getClass()) {
+        if (obj != null && obj.getClass() == getClass()) {
             final DefaultAttribute<?> that = (DefaultAttribute<?>) obj;
             return type.equals(that.type) &&
                    Objects.equals(value, that.value);
@@ -133,6 +240,10 @@ final class DefaultAttribute<T> implements Serializable {
     @Debug
     @Override
     public String toString() {
-        return type.toString("Attribute").append(" = ").append(value).toString();
+        final StringBuilder buffer = type.toString("Attribute", Classes.getShortName(type.getValueClass()));
+        if (value != null) {
+            buffer.append(" = ").append(value);
+        }
+        return buffer.toString();
     }
 }

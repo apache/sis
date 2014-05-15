@@ -32,7 +32,12 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     org.apache.sis.feature.DefaultAttributeTypeTest.class,
     org.apache.sis.feature.DefaultFeatureTypeTest.class,
-    org.apache.sis.feature.DefaultFeatureTest.class
+    org.apache.sis.feature.DefaultAttributeTest.class,
+    org.apache.sis.feature.PropertySingletonTest.class,
+    org.apache.sis.feature.DefaultFeatureTest.class,
+    org.apache.sis.feature.DefaultAssociationRoleTest.class,
+    org.apache.sis.feature.DefaultAssociationTest.class,
+    org.apache.sis.feature.DefaultOperationTest.class
 })
 public final strictfp class FeatureTestSuite extends TestSuite {
     /**
