@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
+import org.opengis.util.InternationalString;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -106,6 +107,18 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
+     * Creates a sub-type of the "metropolis" type with the "region" attribute overridden to the given type.
+     * The given type should be {@link InternationalString}, but we allow other type for testing argument checks.
+     */
+    private static DefaultFeatureType worldMetropolis(final DefaultFeatureType metropolis, final Class<?> regionType) {
+        return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "World metropolis"), false,
+                new DefaultFeatureType[] {metropolis},
+                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"),
+                        regionType, 1, 1, null));
+
+    }
+
+    /**
      * Verifies that {@code DefaultFeatureType} methods returns unmodifiable collections.
      * This method does <strong>not</strong> check recursively the properties.
      */
@@ -175,11 +188,12 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     public void testSimple() {
         final DefaultFeatureType simple = city();
         assertUnmodifiable(simple);
-        assertEquals("name", "City",    simple.getName().toString());
-        assertTrue  ("superTypes",      simple.superTypes().isEmpty());
-        assertFalse ("isAbstract",      simple.isAbstract());
-        assertTrue  ("isSimple",        simple.isSimple());
-        assertEquals("instanceSize", 2, simple.getInstanceSize());
+        assertEquals("name", "City",     simple.getName().toString());
+        assertTrue  ("superTypes",       simple.superTypes().isEmpty());
+        assertFalse ("isAbstract",       simple.isAbstract());
+        assertTrue  ("isSimple",         simple.isSimple());
+        assertTrue  ("isAssignableFrom", simple.isAssignableFrom(simple));
+        assertEquals("instanceSize", 2,  simple.getInstanceSize());
         assertPropertiesEquals(simple, false, "city", "population");
     }
 
@@ -223,6 +237,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
 
         assertEquals("name",            "Festival",                     complex.getName().toString());
         assertTrue  ("superTypes",                                      complex.superTypes().isEmpty());
+        assertTrue  ("isAssignableFrom",                                complex.isAssignableFrom(complex));
         assertFalse ("isAbstract",                                      complex.isAbstract());
         assertEquals("isSimple",        maximumOccurs == minimumOccurs, complex.isSimple());
         assertEquals("instanceSize",    maximumOccurs == 0 ? 2 : 3,     complex.getInstanceSize());
@@ -276,6 +291,10 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertTrue  ("isSimple",        capital.isSimple());
         assertEquals("instanceSize", 3, capital.getInstanceSize());
 
+        assertPropertiesEquals(city,    false, "city", "population");
+        assertPropertiesEquals(capital, false, "parliament");
+        assertPropertiesEquals(capital, true,  "city", "population", "parliament");
+
         // Check based only on name.
         assertTrue ("maybeAssignableFrom", city.maybeAssignableFrom(capital));
         assertFalse("maybeAssignableFrom", capital.maybeAssignableFrom(city));
@@ -283,10 +302,6 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         // Public API.
         assertTrue ("isAssignableFrom", city.isAssignableFrom(capital));
         assertFalse("isAssignableFrom", capital.isAssignableFrom(city));
-
-        assertPropertiesEquals(city,    false, "city", "population");
-        assertPropertiesEquals(capital, false, "parliament");
-        assertPropertiesEquals(capital, true,  "city", "population", "parliament");
     }
 
     /**
@@ -295,22 +310,74 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testInheritance")
     public void testMultiInheritance() {
-        final DefaultFeatureType metropolis = metropolis();
-        final DefaultFeatureType capital    = capital(); // Tested by 'testComplex()'.
-        final DefaultFeatureType city = new DefaultFeatureType(
+        final DefaultFeatureType metropolis   = metropolis();
+        final DefaultFeatureType capital      = capital(); // Tested by 'testComplex()'.
+        final DefaultFeatureType metroCapital = new DefaultFeatureType(
                 singletonMap(DefaultFeatureType.NAME_KEY, "Metropolis and capital"), false,
                 new DefaultFeatureType[] {metropolis, capital},
                 new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "country"),
                         String.class, 1, 1, null));
 
-        assertUnmodifiable(city);
-        assertEquals     ("name", "Metropolis and capital", city.getName().toString());
-        assertArrayEquals("superTypes", new Object[] {metropolis, capital}, city.superTypes().toArray());
-        assertFalse      ("isAbstract",      city.isAbstract());
-        assertTrue       ("isSimple",        city.isSimple());
-        assertEquals     ("instanceSize", 6, city.getInstanceSize());
-        assertPropertiesEquals(city, false, "country");
-        assertPropertiesEquals(city, true, "city", "population", "region", "isGlobal", "parliament", "country");
+        assertUnmodifiable(metroCapital);
+        assertEquals     ("name", "Metropolis and capital", metroCapital.getName().toString());
+        assertArrayEquals("superTypes", new Object[] {metropolis, capital}, metroCapital.superTypes().toArray());
+        assertFalse      ("isAbstract",      metroCapital.isAbstract());
+        assertTrue       ("isSimple",        metroCapital.isSimple());
+        assertEquals     ("instanceSize", 6, metroCapital.getInstanceSize());
+
+        assertPropertiesEquals(metroCapital, false, "country");
+        assertPropertiesEquals(metroCapital, true, "city", "population", "region", "isGlobal", "parliament", "country");
+        assertEquals("property(“region”).valueClass", CharSequence.class,
+                ((DefaultAttributeType) metroCapital.getProperty("region")).getValueClass());
+
+        // Check based only on name.
+        assertTrue ("maybeAssignableFrom", capital.maybeAssignableFrom(metroCapital));
+        assertFalse("maybeAssignableFrom", metroCapital.maybeAssignableFrom(capital));
+        assertTrue ("maybeAssignableFrom", metropolis.maybeAssignableFrom(metroCapital));
+        assertFalse("maybeAssignableFrom", metroCapital.maybeAssignableFrom(metropolis));
+
+        // Public API.
+        assertTrue ("isAssignableFrom", capital.isAssignableFrom(metroCapital));
+        assertFalse("isAssignableFrom", metroCapital.isAssignableFrom(capital));
+        assertTrue ("isAssignableFrom", metropolis.isAssignableFrom(metroCapital));
+        assertFalse("isAssignableFrom", metroCapital.isAssignableFrom(metropolis));
+    }
+
+    /**
+     * Tests inheritance with a property that override an other property with a more specific type.
+     */
+    @Test
+    @DependsOnMethod({"testMultiInheritance", "testNameCollision"})
+    public void testPropertyOverride() {
+        final DefaultFeatureType metropolis = metropolis();
+        try {
+            worldMetropolis(metropolis, Integer.class);
+            fail("Shall not be allowed to override a 'CharSequence' attribute with an 'Integer' one.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("region"));
+            assertTrue(message, message.contains("Metropolis"));
+        }
+        final DefaultFeatureType worldMetropolis = worldMetropolis(metropolis, InternationalString.class);
+        assertUnmodifiable(worldMetropolis);
+        assertEquals     ("name", "World metropolis", worldMetropolis.getName().toString());
+        assertArrayEquals("superTypes", new Object[] {metropolis}, worldMetropolis.superTypes().toArray());
+        assertFalse      ("isAbstract",      worldMetropolis.isAbstract());
+        assertTrue       ("isSimple",        worldMetropolis.isSimple());
+        assertEquals     ("instanceSize", 4, worldMetropolis.getInstanceSize());
+
+        assertPropertiesEquals(worldMetropolis, false, "region");
+        assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal");
+        assertEquals("property(“region”).valueClass", InternationalString.class,
+                ((DefaultAttributeType) worldMetropolis.getProperty("region")).getValueClass());
+
+        // Check based only on name.
+        assertTrue ("maybeAssignableFrom", metropolis.maybeAssignableFrom(worldMetropolis));
+        assertFalse("maybeAssignableFrom", worldMetropolis.maybeAssignableFrom(metropolis));
+
+        // Public API.
+        assertTrue ("isAssignableFrom", metropolis.isAssignableFrom(worldMetropolis));
+        assertFalse("isAssignableFrom", worldMetropolis.isAssignableFrom(metropolis));
     }
 
     /**
