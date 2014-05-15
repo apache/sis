@@ -17,8 +17,6 @@
 package org.apache.sis.feature;
 
 import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -41,39 +39,22 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(DefaultAttributeTest.class)
 public final strictfp class PropertySingletonTest extends TestCase {
     /**
-     * The key used for storing value in this test class.
-     */
-    private static final String KEY = "test key";
-
-    /**
      * The instance to test.
      */
-    private final PropertySingleton singleton;
+    private final PropertySingleton<Integer> singleton;
 
     /**
-     * The type of the attribute value in the {@link #singleton} list.
+     * The attribute wrapped by the {@link #singleton} list.
      */
-    private final DefaultAttributeType<Integer> attributeType;
-
-    /**
-     * The map of properties given to the {@link #singleton} instance to test.
-     */
-    private final Map<String, Object> properties;
-
-    /**
-     * Arbitrary values added to {@link #properties} for making sure
-     */
-    private final Map<String,?> otherValues;
+    private final DefaultAttribute<Integer> attribute;
 
     /**
      * Creates a new test case.
      */
     public PropertySingletonTest() {
-        otherValues   = singletonMap("other key", "other value");
-        properties    = new HashMap<>(otherValues);
-        attributeType = new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, KEY),
-                                Integer.class, 0, 1, null);
-        singleton = new PropertySingleton(attributeType, properties, KEY);
+        attribute = new DefaultAttribute<>(new DefaultAttributeType<>(
+                singletonMap(DefaultAttributeType.NAME_KEY, "test"), Integer.class, 0, 1, null));
+        singleton = new PropertySingleton<>(attribute);
     }
 
     /**
@@ -98,7 +79,6 @@ public final strictfp class PropertySingletonTest extends TestCase {
         } catch (IndexOutOfBoundsException e) {
             assertNotNull(e.getMessage());
         }
-        assertEquals("Other values shall be unmodified.", otherValues, properties);
     }
 
     /**
@@ -107,10 +87,8 @@ public final strictfp class PropertySingletonTest extends TestCase {
     @Test
     @DependsOnMethod("testEmpty")
     public void testSingleton() {
-        final DefaultAttribute<Integer> a1 = new DefaultAttribute<>(attributeType);
-        final DefaultAttribute<Integer> a2 = new DefaultAttribute<>(attributeType);
-        a1.setValue(1000);
-        a2.setValue(2000);
+        final Integer a1 = 1000;
+        final Integer a2 = 2000;
         assertEquals("indexOf",  -1, singleton.indexOf(a1));
         assertTrue  ("add",          singleton.add(a1));
         assertEquals("size",      1, singleton.size());
@@ -121,11 +99,10 @@ public final strictfp class PropertySingletonTest extends TestCase {
         assertSame  ("set",      a1, singleton.set(0, a2));
         assertSame  ("get",      a2, singleton.get(0));
         assertSame  ("iterator", a2, getSingleton(singleton));
-        assertArrayEquals("toArray", new DefaultAttribute<?>[] {a2}, singleton.toArray());
+        assertArrayEquals("toArray", new Object[] {a2}, singleton.toArray());
 
         assertSame  ("remove",   a2, singleton.remove(0));
         assertEquals("size",      0, singleton.size());
-        assertEquals("Other values shall be unmodified.", otherValues, properties);
     }
 
     /**
@@ -134,15 +111,15 @@ public final strictfp class PropertySingletonTest extends TestCase {
     @Test
     @DependsOnMethod("testSingleton")
     public void testMaximumOccurrence() {
-        final DefaultAttribute<Integer> a1 = new DefaultAttribute<>(attributeType);
-        final DefaultAttribute<Integer> a2 = new DefaultAttribute<>(attributeType);
+        final Integer a1 = 1000;
+        final Integer a2 = 2000;
         assertTrue("add", singleton.add(a1));
         try {
             assertTrue("add", singleton.add(a2));
             fail("Shall not be allowed to add more than 1 element.");
         } catch (IllegalStateException e) {
             final String message = e.getMessage();
-            assertTrue(message, message.contains(KEY));
+            assertTrue(message, message.contains("test"));
         }
     }
 
@@ -152,26 +129,10 @@ public final strictfp class PropertySingletonTest extends TestCase {
     @Test
     @DependsOnMethod("testSingleton")
     public void testRemoveAll() {
-        final Set<DefaultAttribute<Integer>> attributes = singleton(new DefaultAttribute<>(attributeType));
+        final Set<Integer> attributes = singleton(1000);
         assertTrue (singleton.addAll(attributes));
         assertFalse(singleton.isEmpty());
         assertTrue (singleton.removeAll(attributes));
         assertTrue (singleton.isEmpty());
-    }
-
-    /**
-     * Tests the attempt to add an attribute of the wrong type.
-     * {@link PropertySingleton} shall not allow this operation.
-     */
-    @Test
-    @DependsOnMethod("testSingleton")
-    public void testAddWrongType() {
-        final DefaultAttribute<Integer> a1 = DefaultAttributeTest.population();
-        try {
-            singleton.add(a1);
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains(KEY));
-        }
     }
 }
