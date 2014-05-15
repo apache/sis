@@ -118,7 +118,7 @@ abstract class FieldType extends PropertyType {
      */
     final StringBuilder toString(final String typeName, final String valueName) {
         final StringBuilder buffer = new StringBuilder(40).append(typeName).append('[');
-        final GenericName name = super.getName();
+        final GenericName name = getName();
         if (name != null) {
             buffer.append('“');
         }

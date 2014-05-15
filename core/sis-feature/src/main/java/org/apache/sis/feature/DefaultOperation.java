@@ -137,7 +137,7 @@ public class DefaultOperation extends PropertyType {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(40).append("Operation").append('[');
-        final GenericName name = super.getName();
+        final GenericName name = getName();
         if (name != null) {
             buffer.append('“');
         }

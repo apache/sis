@@ -16,6 +16,8 @@
  */
 package org.apache.sis.feature;
 
+import org.opengis.util.GenericName;
+
 
 /**
  * Place-holder for an interface not available in GeoAPI 3.0.
@@ -30,4 +32,5 @@ package org.apache.sis.feature;
  * @module
  */
 abstract class Property {
+    public abstract GenericName getName();
 }
