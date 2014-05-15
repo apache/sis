@@ -16,8 +16,7 @@
  */
 
 /**
- * Root package for various metadata implementations. For a global overview of metadata in SIS,
- * see the <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
+ * Root package for various metadata implementations.
  *
  * {@section Foreword}
  * Many metadata standards exist, including <cite>Dublin core</cite>, <cite>ISO 19115</cite> and the Image I/O
@@ -30,8 +29,8 @@
  * For example the ISO 19115 standard is defined by the <a href="http://www.geoapi.org">GeoAPI</a> interfaces
  * defined in the {@link org.opengis.metadata} package and sub-packages. That standard is identified in SIS by the
  * {@link org.apache.sis.metadata.MetadataStandard#ISO_19115} constant. Other standards are defined as well,
- * for example the {@link org.apache.sis.metadata.MetadataStandard#ISO_19119} constant stands for the standards
- * defined by the interfaces in the {@link org.opengis.service} package and sub-packages.
+ * for example the {@link org.apache.sis.metadata.MetadataStandard#ISO_19123} constant stands for the standards
+ * defined by the interfaces in the {@link org.opengis.coverage} package and sub-packages.
  *
  * <p>For each interface, the collection of declared getter methods defines its <cite>properties</cite>
  * (or <cite>attributes</cite>). If a {@link org.opengis.annotation.UML} annotation is attached to the getter method,

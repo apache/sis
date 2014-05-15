@@ -22,11 +22,11 @@ import java.util.Locale;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.measure.NumberRange;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -41,21 +41,34 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
     /**
      * Creates an attribute type for city name.
      *
-     * @param properties An empty temporary map (provided only for recycling existing instances).
+     * @param identification An empty temporary map (provided only for recycling existing instances).
      */
-    static DefaultAttributeType<String> city(final Map<String,Object> properties) {
-        assertNull(properties.put(DefaultAttributeType.NAME_KEY, "city"));
-        assertNull(properties.put(DefaultAttributeType.DESIGNATION_KEY + "_en", "City"));
-        assertNull(properties.put(DefaultAttributeType.DESIGNATION_KEY + "_fr", "Ville"));
-        assertNull(properties.put(DefaultAttributeType.DESIGNATION_KEY + "_ja", "都市"));
-        assertNull(properties.put(DefaultAttributeType.DEFINITION_KEY  + "_en", "The name of the city."));
-        assertNull(properties.put(DefaultAttributeType.DEFINITION_KEY  + "_fr", "Le nom de la ville."));
-        assertNull(properties.put(DefaultAttributeType.DEFINITION_KEY  + "_ja", "都市の名前。"));
-        assertNull(properties.put(DefaultAttributeType.DESCRIPTION_KEY, "Some verbose description."));
-        final DefaultAttributeType<String> city = new DefaultAttributeType<>(properties,
-                String.class, "Utopia", NumberRange.create(1, true, 1, true));
-        properties.clear();
+    static DefaultAttributeType<String> city(final Map<String,Object> identification) {
+        assertNull(identification.put(DefaultAttributeType.NAME_KEY, "city"));
+        assertNull(identification.put(DefaultAttributeType.DESIGNATION_KEY + "_en", "City"));
+        assertNull(identification.put(DefaultAttributeType.DESIGNATION_KEY + "_fr", "Ville"));
+        assertNull(identification.put(DefaultAttributeType.DESIGNATION_KEY + "_ja", "都市"));
+        assertNull(identification.put(DefaultAttributeType.DEFINITION_KEY  + "_en", "The name of the city."));
+        assertNull(identification.put(DefaultAttributeType.DEFINITION_KEY  + "_fr", "Le nom de la ville."));
+        assertNull(identification.put(DefaultAttributeType.DEFINITION_KEY  + "_ja", "都市の名前。"));
+        assertNull(identification.put(DefaultAttributeType.DESCRIPTION_KEY, "Some verbose description."));
+        final DefaultAttributeType<String> city = new DefaultAttributeType<>(identification,
+                String.class, 1, 1, "Utopia");
+        identification.clear();
         return city;
+    }
+
+    /**
+     * Creates an attribute type for city population.
+     *
+     * @param identification An empty temporary map (provided only for recycling existing instances).
+     */
+    static DefaultAttributeType<Integer> population(final Map<String,Object> identification) {
+        assertNull(identification.put(DefaultAttributeType.NAME_KEY, "population"));
+        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
+                identification, Integer.class, 1, 1, null);
+        identification.clear();
+        return population;
     }
 
     /**
@@ -84,9 +97,39 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
         assertEquals("valueClass",   String.class, city.getValueClass());
         assertEquals("defaultValue", "Utopia",     city.getDefaultValue());
 
-        final NumberRange<Integer> cardinality = city.getCardinality();
-        assertNotNull("cardinality", cardinality);
-        assertEquals("cardinality.minValue", Integer.valueOf(1), cardinality.getMinValue());
-        assertEquals("cardinality.maxValue", Integer.valueOf(1), cardinality.getMaxValue());
+        assertEquals("minimumOccurs", 1, city.getMinimumOccurs());
+        assertEquals("axnimumOccurs", 1, city.getMaximumOccurs());
+    }
+
+    /**
+     * Tests attribute comparison.
+     */
+    @Test
+    public void testEquals() {
+        final Map<String,Object> identification = new HashMap<>(4);
+        final DefaultAttributeType<Integer> a1 = population(identification);
+        final DefaultAttributeType<Integer> a2 = population(identification);
+        assertFalse ("equals",   a1.equals(null));
+        assertTrue  ("equals",   a1.equals(a2));
+        assertEquals("hashCode", a1.hashCode(), a2.hashCode());
+    }
+
+    /**
+     * Tests serialization.
+     */
+    @Test
+    @DependsOnMethod("testEquals")
+    public void testSerialization() {
+        final DefaultAttributeType<String> attribute = city(new HashMap<String,Object>(4));
+        assertSerializedEquals(attribute);
+    }
+
+    /**
+     * Tests {@link DefaultAttributeType#toString()}.
+     */
+    @Test
+    public void testToString() {
+        final DefaultAttributeType<String> city = city(new HashMap<String,Object>());
+        assertEquals("AttributeType[“city” : String]", city.toString());
     }
 }

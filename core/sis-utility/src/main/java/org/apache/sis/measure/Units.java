@@ -77,6 +77,17 @@ public final class Units extends Static {
     public static final Unit<Dimensionless> PPM = Unit.ONE.times(1E-6);//.alternate("ppm");
 
     /**
+     * Salinity measured using PSS-78. While this is a dimensionless measurement, the {@code "psu"} symbol
+     * is sometime added to PSS-78 measurement. However this is officially discouraged.
+     */
+    static final Unit<Dimensionless> PSU = Unit.ONE.alternate("psu");
+
+    /**
+     * Sigma-level, used in oceanography. This is a way to measure a depth as a fraction of the sea floor depth.
+     */
+    static final Unit<Dimensionless> SIGMA = Unit.ONE.alternate("sigma");
+
+    /**
      * Returns {@code true} if the given unit is a linear unit.
      * Linear units are convertible to {@link NonSI#DEGREE_ANGLE}.
      *
@@ -395,12 +406,10 @@ public final class Units extends Static {
             if (equalsIgnorePlural(uom, "second")) return SI   .SECOND;
             if (equalsIgnorePlural(uom, "pixel"))  return NonSI.PIXEL;
             if (isCelsius(uom))                    return SI.CELSIUS;
-            if (uom.isEmpty() ||
-                uom.equalsIgnoreCase("psu") ||   // Pratical Salinity Scale (oceanography)
-                uom.equalsIgnoreCase("level"))   // Sigma level (oceanography)
-            {
-                return Unit.ONE;
-            }
+            if (uom.isEmpty())                     return Unit.ONE;
+            if (uom.equalsIgnoreCase("ppm"))       return PPM;
+            if (uom.equalsIgnoreCase("psu"))       return PSU;
+            if (uom.equalsIgnoreCase("sigma"))     return SIGMA;
         }
         final Unit<?> unit;
         try {
@@ -408,6 +417,13 @@ public final class Units extends Static {
         } catch (IllegalArgumentException e) {
             // Provides a better error message than the default JSR-275 0.9.4 implementation.
             throw Exceptions.setMessage(e, Errors.format(Errors.Keys.IllegalArgumentValue_2, "uom", uom), true);
+        }
+        /*
+         * Special case: JSR-275 version 0.6.1 parses "1/s" and "s-1" as "Baud", which is not what
+         * we use in geoscience. Replace "Baud" by "Hertz" if the symbol was not explicitely "Bd".
+         */
+        if (unit.isCompatible(SI.HERTZ) && !uom.equals("Bd")) {
+            return SI.HERTZ;
         }
         return UnitsMap.canonicalize(unit);
     }
@@ -559,7 +575,7 @@ public final class Units extends Static {
      */
     public static Integer getEpsgCode(final Unit<?> unit, final boolean inAxis) {
         Integer code = UnitsMap.EPSG_CODES.get(unit);
-        if (inAxis && code != null && code.intValue() == 9102) {
+        if (inAxis && code != null && code == 9102) {
             code = UnitsMap.I9122;
         }
         return code;

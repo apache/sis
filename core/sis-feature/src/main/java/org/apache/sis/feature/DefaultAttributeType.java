@@ -18,11 +18,10 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.measure.NumberRange;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -42,8 +41,29 @@ import java.util.Objects;
  *
  * <div class="warning"><b>Warning:</b>
  * This class is expected to implement a GeoAPI {@code AttributeType} interface in a future version.
- * When such interface will be available, most references to {@code DefaultAttributeType} in the API
- * will be replaced by references to the {@code AttributeType} interface.</div>
+ * When such interface will be available, most references to {@code DefaultAttributeType} in current
+ * API will be replaced by references to the {@code AttributeType} interface.</div>
+ *
+ * {@section Value type}
+ * Attributes can be used for both spatial and non-spatial properties.
+ * Some examples are:
+ *
+ * <table class="sis">
+ *   <caption>Attribute value type examples</caption>
+ *   <tr><th>Attribute name</th>      <th>Value type</th></tr>
+ *   <tr><td>Building shape</td>      <td>{@link org.opengis.geometry.Geometry}</td></tr>
+ *   <tr><td>Building owner</td>      <td>{@link org.opengis.metadata.citation.ResponsibleParty}</td></tr>
+ *   <tr><td>Horizontal accuracy</td> <td>{@link org.opengis.metadata.quality.PositionalAccuracy}</td></tr>
+ * </table>
+ *
+ * {@section Immutability and thread safety}
+ * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
+ * instances) and all arguments (e.g. {@code defaultValue}) given to the constructor are also immutable.
+ * Such immutable instances can be shared by many objects and passed between threads without synchronization.
+ *
+ * <p>In particular, the {@link #getDefaultValue()} method does <strong>not</strong> clone the returned value.
+ * This means that the same {@code defaultValue} instance may be shared by many {@link DefaultAttribute} instances.
+ * Consequently the default value should be immutable for avoiding unexpected behavior.</p>
  *
  * @param <T> The type of attribute values.
  *
@@ -52,8 +72,10 @@ import java.util.Objects;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultAttribute
  */
-public class DefaultAttributeType<T> extends AbstractIdentifiedType {
+public class DefaultAttributeType<T> extends FieldType {
     /**
      * For cross-version compatibility.
      */
@@ -74,68 +96,54 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
     private final T defaultValue;
 
     /**
-     * The minimum/maximum number of occurrences of the property within its containing entity.
-     */
-    private final NumberRange<Integer> cardinality;
-
-    /**
-     * Constructs an attribute type from the given properties. The properties map is given unchanged to
+     * Constructs an attribute type from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
-     * The following table is a reminder of main (not all) properties:
+     * The following table is a reminder of main (not all) recognized map entries:
      *
      * <table class="sis">
-     *   <caption>Recognized properties (non exhaustive list)</caption>
+     *   <caption>Recognized map entries (non exhaustive list)</caption>
      *   <tr>
-     *     <th>Property name</th>
+     *     <th>Map key</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
-     *     <td>{@link org.opengis.util.GenericName} or {@link String}</td>
+     *     <td>{@link GenericName} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDefinition()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDesignation()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
      * </table>
      *
-     * @param properties    The name and other properties to be given to this attribute type.
-     * @param valueClass    The type of attribute values.
-     * @param defaultValue  The default value for the attribute, or {@code null} if none.
-     * @param cardinality   The minimum and maximum number of occurrences of the property within its containing entity,
-     *                      or {@code null} if there is no restriction.
+     * @param identification The name and other information to be given to this attribute type.
+     * @param valueClass     The type of attribute values.
+     * @param minimumOccurs  The minimum number of occurrences of the attribute within its containing entity.
+     * @param maximumOccurs  The maximum number of occurrences of the attribute within its containing entity,
+     *                       or {@link Integer#MAX_VALUE} if there is no restriction.
+     * @param defaultValue   The default value for the attribute, or {@code null} if none.
      */
-    public DefaultAttributeType(final Map<String,?> properties, final Class<T> valueClass, final T defaultValue,
-            NumberRange<Integer> cardinality)
+    public DefaultAttributeType(final Map<String,?> identification, final Class<T> valueClass,
+            final int minimumOccurs, final int maximumOccurs, final T defaultValue)
     {
-        super(properties);
+        super(identification, minimumOccurs, maximumOccurs);
         ensureNonNull("valueClass",   valueClass);
         ensureCanCast("defaultValue", valueClass, defaultValue);
-        if (cardinality == null) {
-            cardinality = NumberRange.createLeftBounded(0, true);
-        } else {
-            final Integer minValue = cardinality.getMinValue();
-            if (minValue == null || minValue < 0) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.IllegalArgumentValue_2, "cardinality", cardinality));
-            }
-        }
         this.valueClass   = valueClass;
         this.defaultValue = Numerics.cached(defaultValue);
-        this.cardinality  = cardinality;
     }
 
     /**
@@ -145,16 +153,6 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
      */
     public final Class<T> getValueClass() {
         return valueClass;
-    }
-
-    /**
-     * Returns the default value for the attribute.
-     * This value is used when an attribute is created and no value for it is specified.
-     *
-     * @return The default value for the attribute, or {@code null} if none.
-     */
-    public T getDefaultValue() {
-        return defaultValue;
     }
 
     /*
@@ -170,14 +168,37 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
      */
 
     /**
-     * Returns the minimum and maximum number of occurrences of the property within its containing entity.
-     * The bounds are always integer values greater than or equal to zero. The upper bounds may be {@code null}
-     * if there is no maximum number of occurrences.
+     * Returns the minimum number of occurrences of the property within its containing entity.
+     * The returned value is greater than or equal to zero.
      *
-     * @return The minimum and maximum number of occurrences of the property within its containing entity.
+     * @return The minimum number of occurrences of the property within its containing entity.
      */
-    public NumberRange<Integer> getCardinality() {
-        return cardinality;
+    @Override
+    public final int getMinimumOccurs() {
+        return super.getMinimumOccurs();
+    }
+
+    /**
+     * Returns the maximum number of occurrences of the property within its containing entity.
+     * The returned value is greater than or equal to the {@link #getMinimumOccurs()} value.
+     * If there is no maximum, then this method returns {@link Integer#MAX_VALUE}.
+     *
+     * @return The maximum number of occurrences of the property within its containing entity,
+     *         or {@link Integer#MAX_VALUE} if none.
+     */
+    @Override
+    public final int getMaximumOccurs() {
+        return super.getMaximumOccurs();
+    }
+
+    /**
+     * Returns the default value for the attribute.
+     * This value is used when an attribute is created and no value for it is specified.
+     *
+     * @return The default value for the attribute, or {@code null} if none.
+     */
+    public T getDefaultValue() {
+        return defaultValue;
     }
 
     /**
@@ -187,7 +208,7 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + valueClass.hashCode() + Objects.hashCode(defaultValue) + 31*cardinality.hashCode();
+        return super.hashCode() + valueClass.hashCode() + Objects.hashCode(defaultValue);
     }
 
     /**
@@ -203,8 +224,7 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
         if (super.equals(obj)) {
             final DefaultAttributeType<?> that = (DefaultAttributeType<?>) obj;
             return valueClass == that.valueClass &&
-                   Objects.equals(defaultValue, that.defaultValue) &&
-                   cardinality.equals(that.cardinality);
+                   Objects.equals(defaultValue, that.defaultValue);
         }
         return false;
     }
@@ -218,22 +238,6 @@ public class DefaultAttributeType<T> extends AbstractIdentifiedType {
     @Debug
     @Override
     public String toString() {
-        return toString("AttributeType").toString();
-    }
-
-    /**
-     * Implementation of {@link #toString()} to be shared by {@link DefaultAttribute#toString()}.
-     */
-    final StringBuilder toString(final String typeName) {
-        final StringBuilder buffer = new StringBuilder(40).append(typeName).append('[');
-        final GenericName name = super.getName();
-        if (name != null) {
-            buffer.append('“');
-        }
-        buffer.append(name);
-        if (name != null) {
-            buffer.append("” : ");
-        }
-        return buffer.append(Classes.getShortName(valueClass)).append(']');
+        return toString("AttributeType", Classes.getShortName(valueClass)).toString();
     }
 }
