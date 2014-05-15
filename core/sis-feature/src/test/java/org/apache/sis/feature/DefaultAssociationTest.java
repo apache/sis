@@ -78,4 +78,13 @@ public final strictfp class DefaultAssociationTest extends TestCase {
     public void testSerialization() {
         assertSerializedEquals(twinTown());
     }
+
+    /**
+     * Tests {@link DefaultAssociation#toString()}.
+     */
+    @Test
+    public void testToString() {
+        final DefaultAssociation twinTown = twinTown();
+        assertEquals("FeatureAssociation[“twin town” : City] = Le Mans", twinTown.toString());
+    }
 }

@@ -123,4 +123,13 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
         final DefaultAttributeType<String> attribute = city(new HashMap<>(4));
         assertSerializedEquals(attribute);
     }
+
+    /**
+     * Tests {@link DefaultAttributeType#toString()}.
+     */
+    @Test
+    public void testToString() {
+        final DefaultAttributeType<String> city = city(new HashMap<>());
+        assertEquals("AttributeType[“city” : String]", city.toString());
+    }
 }

@@ -16,6 +16,9 @@
  */
 package org.apache.sis.feature;
 
+import java.util.HashMap;
+import org.opengis.parameter.ParameterDescriptor;
+import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -25,46 +28,41 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link DefaultAssociationRole}.
+ * Tests {@link DefaultOperationTest}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5
  * @module
  */
-@DependsOn(DefaultFeatureTypeTest.class)
-public final strictfp class DefaultAssociationRoleTest extends TestCase {
+@DependsOn(DefaultAttributeTest.class)
+public final strictfp class DefaultOperationTest extends TestCase {
     /**
-     * Creates an association.
+     * Returns an operation that found new cities.
      */
-    static DefaultAssociationRole twinTown() {
-        return new DefaultAssociationRole(singletonMap(DefaultAssociationRole.NAME_KEY, "twin town"),
-                DefaultFeatureTypeTest.city(), 0, Integer.MAX_VALUE);
+    static DefaultOperation foundCity() {
+        final ParameterBuilder builder = new ParameterBuilder();
+        final ParameterDescriptor<?>[] parameters = {
+            builder.addName("founder").create(String.class, null)
+        };
+        return new DefaultOperation(singletonMap(DefaultOperation.NAME_KEY, "found city"),
+                builder.addName("found city").createGroup(parameters),
+                DefaultAttributeTypeTest.city(new HashMap<>(4)));
     }
 
     /**
-     * Tests serialization of an {@link DefaultAssociationRole} instance.
+     * Tests serialization of {@link DefaultOperation}.
      */
     @Test
     public void testSerialization() {
-        assertSerializedEquals(twinTown());
+        assertSerializedEquals(foundCity());
     }
 
     /**
-     * Tests {@link DefaultAssociationRole#getTitleProperty()}.
-     */
-    @Test
-    public void testGetTitleProperty() {
-        final DefaultAssociationRole twinTown = twinTown();
-        assertEquals("city", twinTown.getTitleProperty());
-    }
-
-    /**
-     * Tests {@link DefaultAssociationRole#toString()}.
+     * Tests {@link DefaultOperation#toString()}.
      */
     @Test
     public void testToString() {
-        final DefaultAssociationRole twinTown = twinTown();
-        assertEquals("FeatureAssociationRole[“twin town” : City]", twinTown.toString());
+        assertEquals("Operation[“found city” (founder) : city]", foundCity().toString());
     }
 }

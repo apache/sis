@@ -151,4 +151,16 @@ public final strictfp class DefaultAttributeTest extends TestCase {
         final DefaultAttribute<String> attribute = city();
         assertSerializedEquals(attribute);
     }
+
+    /**
+     * Tests {@link DefaultAttribute#toString()}.
+     */
+    @Test
+    @DependsOnMethod("testValue")
+    public void testToString() {
+        final DefaultAttribute<String> city = city();
+        assertEquals("Attribute[“city” : String] = Utopia", city.toString());
+        city.setValue("Dystopia");
+        assertEquals("Attribute[“city” : String] = Dystopia", city.toString());
+    }
 }

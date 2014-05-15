@@ -17,8 +17,15 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import org.opengis.util.GenericName;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Debug;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
@@ -69,7 +76,7 @@ public class DefaultOperation extends PropertyType {
             final ParameterDescriptorGroup parameters, final DefaultAttributeType<?> result)
     {
         super(identification);
-        ArgumentChecks.ensureNonNull("inputs", parameters);
+        ArgumentChecks.ensureNonNull("parameters", parameters);
         this.parameters = parameters;
         this.result     = result;
     }
@@ -90,5 +97,65 @@ public class DefaultOperation extends PropertyType {
      */
     public DefaultAttributeType<?> getResult() {
         return result;
+    }
+
+    /**
+     * Returns a hash code value for this operation.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + parameters.hashCode() + Objects.hashCode(result);
+    }
+
+    /**
+     * Compares this operation with the given object for equality.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (super.equals(obj)) {
+            final DefaultOperation that = (DefaultOperation) obj;
+            return parameters.equals(that.parameters) &&
+                   Objects.equals(result, that.result);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a string representation of this operation.
+     * The returned string is for debugging purpose and may change in any future SIS version.
+     *
+     * @return A string representation of this operation for debugging purpose.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder(40).append("Operation").append('[');
+        final GenericName name = super.getName();
+        if (name != null) {
+            buffer.append('“');
+        }
+        buffer.append(name);
+        if (name != null) {
+            buffer.append('”');
+        }
+        String separator = " (";
+        for (final GeneralParameterDescriptor param : parameters.descriptors()) {
+            buffer.append(separator).append(IdentifiedObjects.toString(param.getName()));
+            separator = ", ";
+        }
+        if (separator == ", ") { // Identity comparaison is okay here.
+            buffer.append(')');
+        }
+        if (result != null) {
+            buffer.append(" : ").append(result.getName());
+        }
+        return buffer.append(']').toString();
     }
 }
