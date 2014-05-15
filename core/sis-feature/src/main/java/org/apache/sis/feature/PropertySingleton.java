@@ -16,7 +16,6 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Map;
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -27,59 +26,37 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A list containing 0 or 1 attribute. This implementation is used in the very common case where a
- * {@link DefaultFeature} accepts at most one attribute for a given name. Its main purpose is to
- * reduce the amount of objects in memory, compared to using an {@link java.util.ArrayList}.
+ * A list containing 0 or 1 value. This implementation is used in the very common case where a
+ * {@link DefaultAttribute} accepts at most one value. Its main purpose is to reduce the amount
+ * of objects in memory compared to {@link java.util.ArrayList}.
  *
  * <p>There is no need to keep long-lived references to instances of this class.
  * Instances can be recreated when needed.</p>
- *
- * {@section Non serialization}
- * This class is intentionally not serializable, since serializing this instance would imply serializing the whole
- * map of attributes if we want to keep the <cite>change in this list are reflected in the feature</cite> contract.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5
  * @module
  */
-final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
+final class PropertySingleton<V> extends AbstractList<V> {
     /**
-     * An empty list of attributes.
+     * The property where to read and write the value.
      */
-    private static final DefaultAttribute<?>[] EMPTY = new DefaultAttribute<?>[0];
+    private final DefaultAttribute<V> property;
 
     /**
-     * The type of the property element in this list.
+     * Creates a new list for the value of the given property.
      */
-    private final AbstractIdentifiedType type;
-
-    /**
-     * The map of properties in which to look for the attributes.
-     * This is the same reference than {@link DefaultFeature#properties}.
-     */
-    private final Map<String, Object> properties;
-
-    /**
-     * The key for the attribute in the {@link #properties} map.
-     */
-    private final String key;
-
-    /**
-     * Creates a new list for the attribute associated to the given key in the given map.
-     */
-    PropertySingleton(final AbstractIdentifiedType type, final Map<String, Object> properties, final String key) {
-        this.type       = type;
-        this.properties = properties;
-        this.key        = key;
+    PropertySingleton(final DefaultAttribute<V> property) {
+        this.property = property;
     }
 
     /**
-     * Returns 1 or 0, depending on whether or not an attribute is associated to the key.
+     * Returns 1 or 0, depending on whether or not a value exists.
      */
     @Override
     public int size() {
-        return properties.get(key) != null ? 1 : 0;
+        return property.getValue() == null ? 0 : 1;
     }
 
     /**
@@ -87,7 +64,7 @@ final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
      */
     @Override
     public int indexOf(final Object element) {
-        return (element != null) && element.equals(properties.get(key)) ? 0 : -1;
+        return (element != null) && element.equals(property.getValue()) ? 0 : -1;
     }
 
     /**
@@ -99,89 +76,75 @@ final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
     }
 
     /**
-     * Returns the attribute associated to the key, if present.
+     * Returns the property value, if present.
      */
     @Override
-    public DefaultAttribute<?> get(final int index) {
+    public V get(final int index) {
         if (index == 0) {
-            final Object element = properties.get(key);
+            final V element = property.getValue();
             if (element != null) {
-                return (DefaultAttribute<?>) element;
+                return element;
             }
         }
         throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
     }
 
     /**
-     * Sets the attribute associated to the key, if an instance already exists.
+     * Sets the property value, if an instance already exists.
      */
     @Override
-    public DefaultAttribute<?> set(final int index, final DefaultAttribute<?> element) {
+    public V set(final int index, final V element) {
         ensureNonNull("element", element);
-        ensureValidType(element);
         if (index == 0) {
-            modCount++;
-            final Object previous = properties.put(key, element);
+            final V previous = property.getValue();
             if (previous != null) {
-                return (DefaultAttribute<?>) previous;
-            }
-            if (properties.remove(key) != element) {
-                throw new ConcurrentModificationException(key);
-            }
-        }
-        throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
-    }
-
-    /**
-     * Ensures that the give element is an instance of the expected type.
-     * The caller shall ensure that the element is non-null before to invoke this method.
-     */
-    private void ensureValidType(final DefaultAttribute<?> element) {
-        if (element.getType() != type) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, type.getName()));
-        }
-    }
-
-    /**
-     * Sets the attribute associated to the key, if no instance existed prior this method call.
-     */
-    @Override
-    public void add(final int index, final DefaultAttribute<?> element) {
-        ensureNonNull("element", element);
-        ensureValidType(element);
-        if (index == 0) {
-            if (properties.putIfAbsent(key, element) == null) {
+                property.setValue(element);
                 modCount++;
-                return;
+                return previous;
             }
-            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
         }
         throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
     }
 
     /**
-     * Sets the attribute associated to the key, if no instance existed prior this method call.
+     * Sets the property value, if no instance existed prior this method call.
      */
     @Override
-    public boolean add(final DefaultAttribute<?> element) {
-        add(0, element);
-        return true;
+    public void add(final int index, final V element) {
+        if (index != 0) {
+            throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
+        }
+        add(element);
     }
 
     /**
-     * Removes the attribute associated to the key.
+     * Sets the property value, if no instance existed prior this method call.
+     */
+    @Override
+    public boolean add(final V element) {
+        ensureNonNull("element", element);
+        if (property.getValue() == null) {
+            property.setValue(element);
+            modCount++;
+            return true;
+        }
+        throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, property.getName()));
+    }
+
+    /**
+     * Removes the property value.
      *
      * This method does not checks if the removal is allowed by the
      * {@linkplain DefaultAttributeType#getMinimumOccurs() cardinality}.
      * Such check can be performed by {@link DefaultFeature#validate()}.
      */
     @Override
-    public DefaultAttribute<?> remove(final int index) {
+    public V remove(final int index) {
         if (index == 0) {
-            final Object previous = properties.remove(key);
+            final V previous = property.getValue();
             if (previous != null) {
-                modCount++;
-                return (DefaultAttribute<?>) previous;
+                clear();
+                return previous;
             }
         }
         throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
@@ -192,17 +155,16 @@ final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
      * This method is for {@link Iter#remove()} implementation only.
      *
      * @param  c The expected {@link #modCount} value, for check against concurrent modification.
-     * @return {@code true} if the value has been removed.
      */
-    final boolean clear(final int c) {
+    final void clear(final int c) {
         if (c != modCount) {
-            throw new ConcurrentModificationException(key);
+            throw new ConcurrentModificationException(String.valueOf(property.getName()));
         }
-        return properties.remove(key) != null;
+        property.setValue(null);
     }
 
     /**
-     * Removes the attribute associated to the key.
+     * Removes the property value.
      *
      * This method does not checks if the removal is allowed by the
      * {@linkplain DefaultAttributeType#getMinimumOccurs() cardinality}.
@@ -210,8 +172,8 @@ final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
      */
     @Override
     public void clear() {
+        property.setValue(null);
         modCount++;
-        properties.remove(key);
     }
 
     /**
@@ -219,26 +181,26 @@ final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
      */
     @Override
     public Object[] toArray() {
-        final Object element = properties.get(key);
-        return (element == null) ? EMPTY : new DefaultAttribute<?>[] {(DefaultAttribute<?>) element};
+        final V element = property.getValue();
+        return (element == null) ? new Object[0] : new Object[] {element};
     }
 
     /**
      * Returns an iterator over the unique element in this list.
      */
     @Override
-    public Iterator<DefaultAttribute<?>> iterator() {
-        return new Iter((DefaultAttribute<?>) properties.get(key), modCount);
+    public Iterator<V> iterator() {
+        return new Iter(property.getValue(), modCount);
     }
 
     /**
      * Implementation of the iterator returned by {@link PropertySingleton#iterator()}.
      */
-    private final class Iter implements Iterator<DefaultAttribute<?>> {
+    private final class Iter implements Iterator<V> {
         /**
-         * The attribute to return, or {@code null} if we reached the iteration end.
+         * The property value to return, or {@code null} if we reached the iteration end.
          */
-        private DefaultAttribute<?> element;
+        private V element;
 
         /**
          * Initial {@link PropertySingleton#modCount} value, for checks against concurrent modifications.
@@ -248,7 +210,7 @@ final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
         /**
          * Creates a new iterator which will return the given attribute.
          */
-        Iter(final DefaultAttribute<?> element, final int c) {
+        Iter(final V element, final int c) {
             this.element = element;
             this.c = c;
         }
@@ -262,11 +224,11 @@ final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
         }
 
         /**
-         * Returns the singleton attribute, if present.
+         * Returns the singleton value, if present.
          */
         @Override
-        public DefaultAttribute<?> next() {
-            final DefaultAttribute<?> v = element;
+        public V next() {
+            final V v = element;
             if (v == null) {
                 throw new NoSuchElementException();
             }
@@ -279,9 +241,10 @@ final class PropertySingleton extends AbstractList<DefaultAttribute<?>> {
          */
         @Override
         public void remove() {
-            if (element != null || !clear(c)) {
+            if (element != null) {
                 throw new IllegalStateException();
             }
+            clear(c);
         }
     }
 }
