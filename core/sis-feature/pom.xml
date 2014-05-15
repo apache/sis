@@ -86,12 +86,18 @@ Representations of geographic features.
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi</artifactId>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-utility</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-utility</artifactId>
+      <artifactId>sis-metadata</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-referencing</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -100,10 +106,6 @@ Representations of geographic features.
     </dependency>
 
     <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>

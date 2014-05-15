@@ -31,21 +31,25 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @module
  */
-@DependsOn(DefaultFeatureTypeTest.class)
+@DependsOn({
+    DefaultFeatureTypeTest.class,
+    DefaultAttributeTest.class,
+    PropertySingletonTest.class
+})
 public final strictfp class DefaultFeatureTest extends TestCase {
     /**
      * Tests the construction of a simple feature without super-types.
      */
     @Test
     public void testSimple() {
-        final DefaultFeature simple = new DefaultFeature(DefaultFeatureTypeTest.simple());
+        final DefaultFeature cityPopulation = new DefaultFeature(DefaultFeatureTypeTest.city());
 
-        assertEquals("Utopia", simple.getAttributeValue("city"));
-        simple.setAttributeValue("city", "Atlantide");
-        assertEquals("Atlantide", simple.getAttributeValue("city"));
+        assertEquals("Utopia", cityPopulation.getPropertyValue("city"));
+        cityPopulation.setPropertyValue("city", "Atlantide");
+        assertEquals("Atlantide", cityPopulation.getPropertyValue("city"));
 
-        assertNull(simple.getAttributeValue("population"));
-        simple.setAttributeValue("population", 1000);
-        assertEquals(1000, simple.getAttributeValue("population"));
+        assertNull(cityPopulation.getPropertyValue("population"));
+        cityPopulation.setPropertyValue("population", 1000);
+        assertEquals(1000, cityPopulation.getPropertyValue("population"));
     }
 }

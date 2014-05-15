@@ -32,7 +32,11 @@ import static org.apache.sis.test.Assert.*;
 /**
  * Tests XML (un)marshalling of various metadata objects.
  * For every metadata objects tested by this class, the expected XML representation
- * is provided by {@code *.xml} files <a href="{@scmUrl metadata}/">here</a>.
+ * is provided by {@code *.xml} files in the following directory:
+ *
+ * <ul>
+ *   <li>{@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso"}</li>
+ * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

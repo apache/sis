@@ -88,8 +88,7 @@ final class DerivedIterator<S,E> implements Iterator<E> {
     /**
      * Removes from the underlying set the last element returned by the iterator.
      *
-     * @throws UnsupportedOperationException if the underlying collection doesn't supports the
-     * {@code remove} operation.
+     * @throws UnsupportedOperationException if the underlying collection doesn't supports the {@code remove} operation.
      */
     @Override
     public void remove() {
