@@ -225,6 +225,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ForbiddenAttribute_2 = 26;
 
         /**
+         * Property “{0}” is not allowed.
+         */
+        public static final short ForbiddenProperty_1 = 155;
+
+        /**
          * Identifier “{0}” is already associated to another object.
          */
         public static final short IdentifierAlreadyBound_1 = 27;
@@ -421,6 +426,11 @@ public final class Errors extends IndexedResourceBundle {
          * Mismatched descriptor for “{0}” parameter.
          */
         public static final short MismatchedParameterDescriptor_1 = 146;
+
+        /**
+         * Mismatched type for “{0}” property.
+         */
+        public static final short MismatchedPropertyType_1 = 154;
 
         /**
          * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.
@@ -626,6 +636,11 @@ public final class Errors extends IndexedResourceBundle {
          * No parameter named “{1}” has been found in “{0}”.
          */
         public static final short ParameterNotFound_2 = 147;
+
+        /**
+         * Property “{1}” is already exists in “{0}”.
+         */
+        public static final short PropertyAlreadyExists_2 = 156;
 
         /**
          * No property named “{1}” has been found in “{0}”.

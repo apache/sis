@@ -780,7 +780,7 @@ public enum CommonCRS {
      *   <caption>Geodetic objects accessible by enumeration constants</caption>
      *   <tr><th>Name or alias</th>             <th>Object type</th> <th>Enumeration value</th></tr>
      *   <tr><td>Barometric altitude</td>       <td>CRS, Datum</td>  <td>{@link #BAROMETRIC}</td></tr>
-     *   <tr><td><s>Ellipsoidal height</s></td> <td>CRS, Datum</td>  <td><s>{@link #ELLIPSOIDAL}</s></td></tr>
+     *   <!-- <s>Ellipsoidal height</s> intentionally omitted        <td><s>{@link #ELLIPSOIDAL}</s></td> -->
      *   <tr><td>Mean Sea Level</td>            <td>Datum</td>       <td>{@link #MEAN_SEA_LEVEL}</td></tr>
      *   <tr><td>Mean Sea Level depth</td>      <td>CRS</td>         <td>{@link #DEPTH}</td></tr>
      *   <tr><td>Mean Sea Level height</td>     <td>CRS</td>         <td>{@link #MEAN_SEA_LEVEL}</td></tr>
@@ -925,7 +925,7 @@ public enum CommonCRS {
          *   <caption>Commonly used vertical CRS</caption>
          *   <tr><th>Name or alias</th>             <th>Enum</th>                        <th>EPSG</th></tr>
          *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
-         *   <tr><td><s>Ellipsoidal height</s></td> <td><s>{@link #ELLIPSOIDAL}</s></td> <td></td></tr>
+         *   <!-- <s>Ellipsoidal height</s> intentionally omitted -->
          *   <tr><td>Mean Sea Level depth</td>      <td>{@link #DEPTH}</td>              <td>5715</td></tr>
          *   <tr><td>Mean Sea Level height</td>     <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5714</td></tr>
          *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
@@ -991,7 +991,7 @@ public enum CommonCRS {
          *   <caption>Commonly used vertical datum</caption>
          *   <tr><th>Name or alias</th>             <th>Enum</th>                        <th>EPSG</th></tr>
          *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
-         *   <tr><td><s>Ellipsoidal height</s></td> <td><s>{@link #ELLIPSOIDAL}</s></td> <td></td></tr>
+         *   <!-- <s>Ellipsoidal height</s> intentionally omitted -->
          *   <tr><td>Mean Sea Level</td>            <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5100</td></tr>
          *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
          * </table></blockquote>

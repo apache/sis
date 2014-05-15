@@ -29,7 +29,6 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Geometry;
 
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.feature.DefaultFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
@@ -163,7 +162,7 @@ public class ShapeFile {
                 double x = rf.getDouble();
                 double y = rf.getDouble();
                 Point pnt = new Point(x,y);
-                f.setAttributeValue(GEOMETRY_NAME, pnt);
+                f.setPropertyValue(GEOMETRY_NAME, pnt);
 
             } else if (ShapeType == ShapeTypeEnum.Polygon.getValue()) {
                 double xmin = rf.getDouble();
@@ -191,7 +190,7 @@ public class ShapeFile {
                     ypnt = rf.getDouble();
                     poly.lineTo(xpnt, ypnt);
                 }
-                f.setAttributeValue(GEOMETRY_NAME, poly);
+                f.setPropertyValue(GEOMETRY_NAME, poly);
 
             } else if (ShapeType == ShapeTypeEnum.PolyLine.getValue()) {
                 double xmin = rf.getDouble();
@@ -227,7 +226,7 @@ public class ShapeFile {
                     }
                 }
 
-                f.setAttributeValue(GEOMETRY_NAME, ply);
+                f.setPropertyValue(GEOMETRY_NAME, ply);
 
             } else {
                 throw new DataStoreException("Unsupported shapefile type: " + this.ShapeType);
@@ -244,7 +243,7 @@ public class ShapeFile {
                 data = new byte[fd.getLength()];
                 df.get(data);
                 String value = new String(data);
-                f.setAttributeValue(fd.getName(), value);
+                f.setPropertyValue(fd.getName(), value);
             }
 
             this.FeatureMap.put(RecordNumber, f);
@@ -259,14 +258,13 @@ public class ShapeFile {
     private DefaultFeatureType getFeatureType(final String name) {
         final int n = FDArray.size();
         final DefaultAttributeType<?>[] attributes = new DefaultAttributeType<?>[n + 1];
-        final NumberRange<Integer> cardinality = NumberRange.create(1, true, 1, true);
         final Map<String,Object> properties = new HashMap<>(4);
         for (int i=0; i<n; i++) {
             properties.put(DefaultAttributeType.NAME_KEY, FDArray.get(i).getName());
-            attributes[i] = new DefaultAttributeType<>(properties, String.class, null, cardinality);
+            attributes[i] = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
         }
         properties.put(DefaultAttributeType.NAME_KEY, GEOMETRY_NAME);
-        attributes[n] = new DefaultAttributeType<>(properties, Geometry.class, null, cardinality);
+        attributes[n] = new DefaultAttributeType<>(properties, Geometry.class, 1, 1, null);
         properties.put(DefaultAttributeType.NAME_KEY, name);
         return new DefaultFeatureType(properties, false, null, attributes);
     }

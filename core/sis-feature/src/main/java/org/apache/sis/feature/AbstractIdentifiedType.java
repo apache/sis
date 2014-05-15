@@ -119,12 +119,12 @@ public class AbstractIdentifiedType implements Serializable {
     /**
      * Constructs a type from the given properties. Keys are strings from the table below.
      * The map given in argument shall contain an entry at least for the {@value #NAME_KEY}.
-     * Other properties listed in the table below are optional.
+     * Other entries listed in the table below are optional.
      *
      * <table class="sis">
-     *   <caption>Recognized properties</caption>
+     *   <caption>Recognized map entries</caption>
      *   <tr>
-     *     <th>Property name</th>
+     *     <th>Map key</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
      *   </tr>
@@ -165,35 +165,26 @@ public class AbstractIdentifiedType implements Serializable {
      * is used only on a <cite>best effort</cite> basis. The locale is discarded after successful construction
      * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
      *
-     * @param  properties The name and other properties to be given to this identified type.
+     * @param  identification The name and other information to be given to this identified type.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
-    protected AbstractIdentifiedType(final Map<String,?> properties) throws IllegalArgumentException {
-        ensureNonNull("properties", properties);
-        Object value = properties.get(NAME_KEY);
+    protected AbstractIdentifiedType(final Map<String,?> identification) throws IllegalArgumentException {
+        ensureNonNull("identification", identification);
+        Object value = identification.get(NAME_KEY);
         if (value == null) {
-            throw new IllegalArgumentException(Errors.getResources(properties)
+            throw new IllegalArgumentException(Errors.getResources(identification)
                     .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
         } else if (value instanceof String) {
             name = DefaultFactories.NAMES.createLocalName(null, (String) value);
         } else if (value instanceof GenericName) {
             name = (GenericName) value;
         } else {
-            throw illegalPropertyType(properties, NAME_KEY, value);
+            throw new IllegalArgumentException(Errors.getResources(identification).getString(
+                    Errors.Keys.IllegalPropertyClass_2, NAME_KEY, value.getClass()));
         }
-        definition  = Types.toInternationalString(properties, DEFINITION_KEY );
-        designation = Types.toInternationalString(properties, DESIGNATION_KEY);
-        description = Types.toInternationalString(properties, DESCRIPTION_KEY);
-    }
-
-    /**
-     * Returns the exception to be thrown when a property is of illegal type.
-     */
-    private static IllegalArgumentException illegalPropertyType(
-            final Map<String,?> properties, final String key, final Object value)
-    {
-        return new IllegalArgumentException(Errors.getResources(properties)
-                .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+        definition  = Types.toInternationalString(identification, DEFINITION_KEY );
+        designation = Types.toInternationalString(identification, DESIGNATION_KEY);
+        description = Types.toInternationalString(identification, DESCRIPTION_KEY);
     }
 
     /**
@@ -222,7 +213,7 @@ public class AbstractIdentifiedType implements Serializable {
 
     /**
      * Returns a natural language designator for the element.
-     * This can be used as an alternative to the {@linkplain #getName()} in user interfaces.
+     * This can be used as an alternative to the {@linkplain #getName() name} in user interfaces.
      *
      * @return Natural language designator for the element.
      */
@@ -270,7 +261,7 @@ public class AbstractIdentifiedType implements Serializable {
      */
     @Override
     public boolean equals(final Object obj) {
-        if (obj != null && getClass() != obj.getClass()) {
+        if (obj != null && getClass() == obj.getClass()) {
             final AbstractIdentifiedType that = (AbstractIdentifiedType) obj;
             return Objects.equals(name,        that.name) &&
                    Objects.equals(definition,  that.definition) &&
