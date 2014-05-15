@@ -56,7 +56,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
  * {@section Properties and inheritance}
- * Each feature type can provide descriptions for the following {@linkplain #properties(boolean) properties}:
+ * Each feature type can provide descriptions for the following {@link #getProperties(boolean) properties}:
  *
  * <ul>
  *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
@@ -66,7 +66,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *
  * In addition, a feature type can inherit the properties of one or more other feature types.
  * Properties defined in the sub-type can override properties of the same name defined in the
- * {@linkplain #superTypes() super-types}, provided that values of the sub-type property are
+ * {@link #getSuperTypes() super-types}, provided that values of the sub-type property are
  * assignable to the super-type property.
  *
  * <div class="note"><b>Analogy:</b> compared to the Java language, the above rule is similar to overriding a method
@@ -111,7 +111,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     /**
      * The direct parents of this feature type, or an empty set if none.
      *
-     * @see #superTypes()
+     * @see #getSuperTypes()
      */
     private final Set<DefaultFeatureType> superTypes;
 
@@ -126,6 +126,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     /**
      * Any feature operation, any feature attribute type and any feature association role
      * that carries characteristics of a feature type.
+     *
+     * @see #getProperties(boolean)
      */
     private final List<PropertyType> properties;
 
@@ -249,7 +251,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
          * Process all super-types before to process the given type. The intend is to have the
          * super-types properties indexed before the sub-types ones in the 'indices' map.
          */
-        for (final DefaultFeatureType parent : source.superTypes()) {
+        for (final DefaultFeatureType parent : source.getSuperTypes()) {
             if (assignableTo.add(parent.getName())) {
                 scanPropertiesFrom(parent);
             }
@@ -466,14 +468,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *
      * @return The parents of this feature type, or an empty set if none.
      */
-    public Set<DefaultFeatureType> superTypes() {
+    public Set<DefaultFeatureType> getSuperTypes() {
         return superTypes;
     }
 
     /**
      * Returns any feature operation, any feature attribute type and any feature association role that
      * carries characteristics of a feature type. The returned collection will include the properties
-     * inherited from the {@linkplain #superTypes() super-types} only if {@code includeSuperTypes} is
+     * inherited from the {@link #getSuperTypes() super-types} only if {@code includeSuperTypes} is
      * {@code true}.
      *
      * <div class="warning"><b>Warning:</b>
@@ -485,7 +487,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * @return Feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
-    public Collection<AbstractIdentifiedType> properties(final boolean includeSuperTypes) {
+    public Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
         // TODO: temporary cast to be removed after we upgraded GeoAPI.
         return (Collection) (includeSuperTypes ? byName.values() : properties);
     }

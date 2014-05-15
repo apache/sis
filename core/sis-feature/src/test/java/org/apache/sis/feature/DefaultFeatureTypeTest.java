@@ -123,9 +123,9 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * This method does <strong>not</strong> check recursively the properties.
      */
     private static void assertUnmodifiable(final DefaultFeatureType feature) {
-        final Collection<?> superTypes         = feature.superTypes();
-        final Collection<?> declaredProperties = feature.properties(false);
-        final Collection<?> allProperties      = feature.properties(true);
+        final Collection<?> superTypes         = feature.getSuperTypes();
+        final Collection<?> declaredProperties = feature.getProperties(false);
+        final Collection<?> allProperties      = feature.getProperties(true);
         if (!superTypes.isEmpty()) try {
             superTypes.clear();
             fail("Super-types collection shall not be modifiable.");
@@ -154,7 +154,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * This method tests the following {@code FeatureType} methods:
      *
      * <ul>
-     *   <li>{@link DefaultFeatureType#properties(boolean)}</li>
+     *   <li>{@link DefaultFeatureType#getProperties(boolean)}</li>
      *   <li>{@link DefaultFeatureType#getProperty(String)}</li>
      * </ul>
      *
@@ -167,7 +167,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             final String... expected)
     {
         int index = 0;
-        for (final AbstractIdentifiedType property : feature.properties(includeSuperTypes)) {
+        for (final AbstractIdentifiedType property : feature.getProperties(includeSuperTypes)) {
             assertTrue("Found more properties than expected.", index < expected.length);
             final String name = expected[index++];
             assertNotNull(name, property);
@@ -189,7 +189,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         final DefaultFeatureType simple = city();
         assertUnmodifiable(simple);
         assertEquals("name", "City",     simple.getName().toString());
-        assertTrue  ("superTypes",       simple.superTypes().isEmpty());
+        assertTrue  ("superTypes",       simple.getSuperTypes().isEmpty());
         assertFalse ("isAbstract",       simple.isAbstract());
         assertTrue  ("isSimple",         simple.isSimple());
         assertTrue  ("isAssignableFrom", simple.isAssignableFrom(simple));
@@ -232,11 +232,11 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 false, null, city, population, festival);
 
         assertUnmodifiable(complex);
-        final Collection<AbstractIdentifiedType> properties = complex.properties(false);
+        final Collection<AbstractIdentifiedType> properties = complex.getProperties(false);
         final Iterator<AbstractIdentifiedType> it = properties.iterator();
 
         assertEquals("name",            "Festival",                     complex.getName().toString());
-        assertTrue  ("superTypes",                                      complex.superTypes().isEmpty());
+        assertTrue  ("superTypes",                                      complex.getSuperTypes().isEmpty());
         assertTrue  ("isAssignableFrom",                                complex.isAssignableFrom(complex));
         assertFalse ("isAbstract",                                      complex.isAbstract());
         assertEquals("isSimple",        maximumOccurs == minimumOccurs, complex.isSimple());
@@ -286,7 +286,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         final DefaultFeatureType capital = capital();
         assertUnmodifiable(capital);
         assertEquals("name", "Capital", capital.getName().toString());
-        assertEquals("superTypes",      city, getSingleton(capital.superTypes()));
+        assertEquals("superTypes",      city, getSingleton(capital.getSuperTypes()));
         assertFalse ("isAbstract",      capital.isAbstract());
         assertTrue  ("isSimple",        capital.isSimple());
         assertEquals("instanceSize", 3, capital.getInstanceSize());
@@ -320,7 +320,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
 
         assertUnmodifiable(metroCapital);
         assertEquals     ("name", "Metropolis and capital", metroCapital.getName().toString());
-        assertArrayEquals("superTypes", new Object[] {metropolis, capital}, metroCapital.superTypes().toArray());
+        assertArrayEquals("superTypes", new Object[] {metropolis, capital}, metroCapital.getSuperTypes().toArray());
         assertFalse      ("isAbstract",      metroCapital.isAbstract());
         assertTrue       ("isSimple",        metroCapital.isSimple());
         assertEquals     ("instanceSize", 6, metroCapital.getInstanceSize());
@@ -361,7 +361,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         final DefaultFeatureType worldMetropolis = worldMetropolis(metropolis, InternationalString.class);
         assertUnmodifiable(worldMetropolis);
         assertEquals     ("name", "World metropolis", worldMetropolis.getName().toString());
-        assertArrayEquals("superTypes", new Object[] {metropolis}, worldMetropolis.superTypes().toArray());
+        assertArrayEquals("superTypes", new Object[] {metropolis}, worldMetropolis.getSuperTypes().toArray());
         assertFalse      ("isAbstract",      worldMetropolis.isAbstract());
         assertTrue       ("isSimple",        worldMetropolis.isSimple());
         assertEquals     ("instanceSize", 4, worldMetropolis.getInstanceSize());
