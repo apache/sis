@@ -26,7 +26,7 @@
  *       {@linkplain org.apache.sis.feature.DefaultAttributeType attributes},
  *       {@linkplain org.apache.sis.feature.DefaultOperation operations} or
  *       {@linkplain org.apache.sis.feature.DefaultAssociationRole associations to other features}
- *       (collectively called “{@linkplain org.apache.sis.feature.DefaultFeatureType#properties(boolean) properties}”
+ *       (collectively called “{@linkplain org.apache.sis.feature.DefaultFeatureType#getProperties(boolean) properties}”
  *       or “characteristics”) that a feature can have.</p>
  *
  *       <div class="note"><b>Analogy:</b> a {@code FeatureType} in a Spatial Information System is equivalent to a
@@ -46,7 +46,7 @@
  *
  * In addition, a feature type can inherit the properties of one or more other feature types.
  * Properties defined in the sub-type can override properties of the same name defined in the
- * {@linkplain org.apache.sis.feature.DefaultFeatureType#superTypes() super-types}, provided
+ * {@linkplain org.apache.sis.feature.DefaultFeatureType#getSuperTypes() super-types}, provided
  * that values of the sub-type property are assignable to the super-type property.
  *
  * {@section Naming}
