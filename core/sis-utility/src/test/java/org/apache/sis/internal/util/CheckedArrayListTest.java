@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -30,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class CheckedArrayListTest extends TestCase {
@@ -90,16 +92,40 @@ public final strictfp class CheckedArrayListTest extends TestCase {
      * Ensures that we can not element of the wrong type.
      */
     @Test
-    @SuppressWarnings({"unchecked","rawtypes"})
     public void testAddWrongType() {
-        final CheckedArrayList list = new CheckedArrayList<String>(String.class);
+        final CheckedArrayList<String> list = new CheckedArrayList<String>(String.class);
+        final String message = testAddWrongType(list);
+        assertTrue("element", message.contains("element"));
+        assertTrue("Integer", message.contains("Integer"));
+        assertTrue("String",  message.contains("String"));
+    }
+
+    /**
+     * Implementation of {@link #testAddWrongType()}, also shared by {@link #testAddWrongTypeToSublist()}.
+     * Returns the exception message.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private static String testAddWrongType(final List list) {
         try {
             list.add(Integer.valueOf(4));
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue("element", message.contains("element"));
-            assertTrue("Integer", message.contains("Integer"));
-            assertTrue("String",  message.contains("String"));
+            fail("Shall not be allowed to add an integer to the list.");
+            return null;
+        } catch (ClassCastException e) {
+            return e.getMessage();
         }
+    }
+
+    /**
+     * Ensures that we can not element of the wrong type in a sublist.
+     */
+    @Test
+    @DependsOnMethod("testAddWrongType")
+    public void testAddWrongTypeToSublist() {
+        final CheckedArrayList<String> list = new CheckedArrayList<String>(String.class);
+        assertTrue(list.add("One"));
+        assertTrue(list.add("Two"));
+        assertTrue(list.add("Three"));
+        testAddWrongType(list.subList(1, 3));
+        // Exception message is JDK-dependent, so we can not test it.
     }
 }

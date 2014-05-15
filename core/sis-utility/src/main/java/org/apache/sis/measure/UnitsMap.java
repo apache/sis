@@ -71,7 +71,7 @@ final class UnitsMap extends Static {
      */
     private static final Map<Unit<?>,Unit<?>> COMMONS = new HashMap<Unit<?>,Unit<?>>(48);
     static {
-        COMMONS.put(PPM, PPM);
+        COMMONS.put(MILLISECOND, MILLISECOND);
         boolean nonSI = false;
         do for (final Field field : (nonSI ? NonSI.class : SI.class).getFields()) {
             final int modifiers = field.getModifiers();

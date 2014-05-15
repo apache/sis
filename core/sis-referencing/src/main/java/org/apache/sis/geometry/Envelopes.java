@@ -155,7 +155,7 @@ public final class Envelopes extends Static {
         }
         final StringBuilder buffer = new StringBuilder("POLYGON(");
         String separator = "(";
-        for (int corner=0; corner<CORNERS.length; corner+=2) {
+        for (int corner = 0; corner < CORNERS.length; corner += 2) {
             for (int i=0; i<dimension; i++) {
                 final double value;
                 switch (i) {
