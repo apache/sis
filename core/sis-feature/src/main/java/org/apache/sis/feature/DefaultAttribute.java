@@ -228,7 +228,10 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
     @Debug
     @Override
     public String toString() {
-        return type.toString("Attribute", Classes.getShortName(type.getValueClass()))
-                .append(" = ").append(value).toString();
+        final StringBuilder buffer = type.toString("Attribute", Classes.getShortName(type.getValueClass()));
+        if (value != null) {
+            buffer.append(" = ").append(value);
+        }
+        return buffer.toString();
     }
 }

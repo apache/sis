@@ -62,6 +62,15 @@ public class DefaultAssociationRole extends FieldType {
     private final DefaultFeatureType valueType;
 
     /**
+     * The name of the property to use as a title for the associated feature, or an empty string if none.
+     * This field is initially null, then computed when first needed.
+     * This field is used only by {@link DefaultAssociation#toString()} implementation.
+     *
+     * @see #getTitleProperty()
+     */
+    private volatile transient String titleProperty;
+
+    /**
      * Constructs an association role from the given properties. The properties map is given unchanged
      * to the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      * The following table is a reminder of main (not all) recognized map entries:
@@ -119,6 +128,28 @@ public class DefaultAssociationRole extends FieldType {
      */
     public final DefaultFeatureType getValueType() {
         return valueType;
+    }
+
+    /**
+     * Returns the name of the property to use as a title for the associated feature, or {@code null} if none.
+     * This method search for the first attribute having a value class assignable to {@link CharSequence}.
+     */
+    final String getTitleProperty() {
+        String p = titleProperty; // No synchronization - not a big deal if computed twice.
+        if (p == null) {
+            p = "";
+            for (final AbstractIdentifiedType type : valueType.properties(true)) {
+                if (type instanceof DefaultAttributeType<?>) {
+                    final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) type;
+                    if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {
+                        p = pt.getName().toString();
+                        break;
+                    }
+                }
+            }
+            titleProperty = p;
+        }
+        return p.isEmpty() ? null : p;
     }
 
     /**
@@ -181,6 +212,6 @@ public class DefaultAssociationRole extends FieldType {
     @Debug
     @Override
     public String toString() {
-        return toString("AssociationRole", valueType.getName().toString()).toString();
+        return toString("FeatureAssociationRole", valueType.getName().toString()).toString();
     }
 }
