@@ -43,7 +43,7 @@ public final strictfp class DefaultProcessStepTest extends XMLTestCase {
      * Tests the (un)marshalling of a metadata mixing elements from ISO 19115 and ISO 19115-2 standards.
      *
      * <p><b>XML test file:</b>
-     * <a href="{@scmUrl metadata}/lineage/ProcessStep.xml">ProcessStep.xml</a></p>
+     * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/lineage/ProcessStep.xml"}</p>
      *
      * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
      */

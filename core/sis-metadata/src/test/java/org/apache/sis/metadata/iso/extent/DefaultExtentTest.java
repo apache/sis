@@ -41,7 +41,11 @@ import static org.apache.sis.test.TestUtilities.date;
 public final strictfp class DefaultExtentTest extends XMLTestCase {
     /**
      * Returns the URL to the XML file of the given name.
-     * The argument shall be one of the files listed <a href="{@scmUrl metadata}/extent/">here</a>.
+     * The argument shall be one of the files listed in the following directory:
+     *
+     * <ul>
+     *   <li>{@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/extent"}</li>
+     * </ul>
      *
      * @param  filename The name of the XML file.
      * @return The URL to the given XML file.
@@ -57,7 +61,7 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
      * This test opportunistically tests setting {@code "gml:id"} value.
      *
      * <p><b>XML test file:</b>
-     * <a href="{@scmUrl metadata}/extent/Extent.xml">Extent.xml</a></p>
+     * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/extent/Extent.xml"}</p>
      *
      * @throws IOException   If an error occurred while reading the XML file.
      * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.

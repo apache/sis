@@ -50,7 +50,7 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
      * elaborated.
      *
      * <p><b>XML test file:</b>
-     * <a href="{@scmUrl metadata}/quality/PositionalAccuracy.xml">PositionalAccuracy.xml</a></p>
+     * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/quality/PositionalAccuracy.xml"}</p>
      *
      * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
      *
