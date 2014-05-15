@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.io.Serializable;
+import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.Debug;
@@ -90,6 +91,17 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
         ArgumentChecks.ensureNonNull("type", type);
         this.type  = type;
         this.value = type.getValueClass().cast(value);
+    }
+
+    /**
+     * Returns the name of this attribute as defined by its {@linkplain #getType() type}.
+     * This convenience method delegates to {@link DefaultAttributeType#getName()}.
+     *
+     * @return The attribute name specified by its type.
+     */
+    @Override
+    public GenericName getName() {
+        return type.getName();
     }
 
     /**

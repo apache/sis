@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.io.Serializable;
+import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
@@ -79,6 +80,17 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
     }
 
     /**
+     * Returns the name of this association as defined by its {@linkplain #getRole() role}.
+     * This convenience method delegates to {@link DefaultAssociationRole#getName()}.
+     *
+     * @return The association name specified by its role.
+     */
+    @Override
+    public GenericName getName() {
+        return role.getName();
+    }
+
+    /**
      * Returns information about the association.
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
@@ -127,7 +139,7 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
             final DefaultFeatureType type = value.getType();
             if (base != type && !base.maybeAssignableFrom(type)) {
                 throw new IllegalArgumentException(
-                        Errors.format(Errors.Keys.IllegalArgumentClass_3, role.getName(), base.getName(), type.getName()));
+                        Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
             }
         }
         this.value = value;
