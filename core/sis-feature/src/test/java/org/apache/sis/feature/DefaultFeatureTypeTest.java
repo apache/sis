@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singletonMap;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -84,10 +85,10 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * The feature contains the following attribute:
      *
      * <ul>
-     *   <li>{@code city}       as a  {@link String}  (mandatory)</li>
-     *   <li>{@code population} as an {@link Integer} (mandatory)</li>
-     *   <li>{@code region}     as a  {@link String}  (mandatory) — the region for which the city is a metropolis.</li>
-     *   <li>{@code isGlobal}   as a  {@link Boolean} (mandatory) — whether the city has an effect on global affairs.</li>
+     *   <li>{@code city}       as a  {@link String}       (mandatory)</li>
+     *   <li>{@code population} as an {@link Integer}      (mandatory)</li>
+     *   <li>{@code region}     as a  {@link CharSequence} (mandatory) — the region for which the city is a metropolis.</li>
+     *   <li>{@code isGlobal}   as a  {@link Boolean}      (mandatory) — whether the city has an effect on global affairs.</li>
      * </ul>
      *
      * @return The feature for a metropolis.
@@ -99,75 +100,87 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         return new DefaultFeatureType(identification, false,
                 new DefaultFeatureType[] {city()},
                 new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"),
-                        String.class, 1, 1, null),
+                        CharSequence.class, 1, 1, null),
                 new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "isGlobal"),
                         Boolean.class, 1, 1, null));
     }
 
     /**
-     * Returns the string representation of the names of all properties in the given collection.
-     * This method is used with {@code assertArrayEquals(…)} for verifying the collection of feature properties.
+     * Verifies that {@code DefaultFeatureType} methods returns unmodifiable collections.
+     * This method does <strong>not</strong> check recursively the properties.
      */
-    private static String[] getNames(final Collection<? extends AbstractIdentifiedType> properties) {
-        final String[] names = new String[properties.size()];
-        int index = 0;
-        for (final AbstractIdentifiedType property : properties) {
-            assertNotNull(properties);
-            names[index++] = property.getName().toString();
+    private static void assertUnmodifiable(final DefaultFeatureType feature) {
+        final Collection<?> superTypes         = feature.superTypes();
+        final Collection<?> declaredProperties = feature.properties(false);
+        final Collection<?> allProperties      = feature.properties(true);
+        if (!superTypes.isEmpty()) try {
+            superTypes.clear();
+            fail("Super-types collection shall not be modifiable.");
+        } catch (UnsupportedOperationException e) {
+            assertFalse(superTypes.isEmpty());
         }
-        assertEquals(names.length, index);
-        return names;
-    }
-
-    /**
-     * Performs some basic validations on the given feature.
-     * This method does <strong>not</strong> validate recursively the properties.
-     */
-    private static void validate(final DefaultFeatureType feature) {
-        final Collection<?> explicitProperties = feature.properties(false);
-        final Collection<?> allProperties = feature.properties(true);
-        assertTrue("'properties(true)' shall contain all 'properties(false)' elements.",
-                allProperties.containsAll(explicitProperties));
-        try {
-            explicitProperties.clear();
+        if (!declaredProperties.isEmpty()) try {
+            declaredProperties.clear();
             fail("Properties collection shall not be modifiable.");
         } catch (UnsupportedOperationException e) {
-            assertFalse(explicitProperties.isEmpty());
+            assertFalse(declaredProperties.isEmpty());
         }
-        try {
+        if (!allProperties.isEmpty()) try {
             allProperties.clear();
             fail("Properties collection shall not be modifiable.");
         } catch (UnsupportedOperationException e) {
             assertFalse(allProperties.isEmpty());
         }
+        // Opportunist check.
+        assertTrue("'properties(true)' shall contain all 'properties(false)' elements.",
+                allProperties.containsAll(declaredProperties));
+    }
+
+    /**
+     * Asserts that the given feature contains the given properties, in the same order.
+     * This method tests the following {@code FeatureType} methods:
+     *
+     * <ul>
+     *   <li>{@link DefaultFeatureType#properties(boolean)}</li>
+     *   <li>{@link DefaultFeatureType#getProperty(String)}</li>
+     * </ul>
+     *
+     * @param feature The feature to verify.
+     * @param includeSuperTypes {@code true} for including the properties inherited from the super-types,
+     *        or {@code false} for returning only the properties defined explicitely in the feature type.
+     * @param expected Names of the expected properties.
+     */
+    private static void assertPropertiesEquals(final DefaultFeatureType feature, final boolean includeSuperTypes,
+            final String... expected)
+    {
+        int index = 0;
+        for (final AbstractIdentifiedType property : feature.properties(includeSuperTypes)) {
+            assertTrue("Found more properties than expected.", index < expected.length);
+            final String name = expected[index++];
+            assertNotNull(name, property);
+            assertEquals (name, property.getName().toString());
+            assertSame   (name, property, feature.getProperty(name));
+        }
+        assertEquals("Unexpected number of properties.", expected.length, index);
+        assertNull("Shall not found a non-existent property.", feature.getProperty("apple"));
     }
 
     /**
      * Tests the construction of a simple feature without super-types.
      * A feature is said "simple" if the cardinality of all attributes is [1 … 1].
+     *
+     * <p>Current implementation performs its tests on the {@link #city()} feature.</p>
      */
     @Test
     public void testSimple() {
         final DefaultFeatureType simple = city();
+        assertUnmodifiable(simple);
         assertEquals("name", "City",    simple.getName().toString());
-        assertEquals("instanceSize", 2, simple.getInstanceSize());
+        assertTrue  ("superTypes",      simple.superTypes().isEmpty());
         assertFalse ("isAbstract",      simple.isAbstract());
         assertTrue  ("isSimple",        simple.isSimple());
-        validate(simple);
-        /*
-         * Verify content.
-         */
-        assertArrayEquals("properties",
-                new String[] {"city", "population"},
-                getNames(simple.properties(false)));
-        /*
-         * Verify search by name.
-         */
-        final Iterator<AbstractIdentifiedType> it = simple.properties(false).iterator();
-        assertSame(it.next(), simple.getProperty("city"));
-        assertSame(it.next(), simple.getProperty("population"));
-        assertNull(           simple.getProperty("apple"));
-        assertFalse(it.hasNext());
+        assertEquals("instanceSize", 2, simple.getInstanceSize());
+        assertPropertiesEquals(simple, false, "city", "population");
     }
 
     /**
@@ -204,11 +217,12 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 singletonMap(DefaultAttributeType.NAME_KEY, "Festival"),
                 false, null, city, population, festival);
 
-        validate(complex);
+        assertUnmodifiable(complex);
         final Collection<AbstractIdentifiedType> properties = complex.properties(false);
         final Iterator<AbstractIdentifiedType> it = properties.iterator();
 
         assertEquals("name",            "Festival",                     complex.getName().toString());
+        assertTrue  ("superTypes",                                      complex.superTypes().isEmpty());
         assertFalse ("isAbstract",                                      complex.isAbstract());
         assertEquals("isSimple",        maximumOccurs == minimumOccurs, complex.isSimple());
         assertEquals("instanceSize",    maximumOccurs == 0 ? 2 : 3,     complex.getInstanceSize());
@@ -217,7 +231,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertEquals("properties.size", 3,                              properties.size());
         assertSame  ("properties[0]",   city,                           it.next());
         assertSame  ("properties[1]",   population,                     it.next());
-        assertSame  ("properties[3]",   festival,                       it.next());
+        assertSame  ("properties[2]",   festival,                       it.next());
         assertFalse (it.hasNext());
     }
 
@@ -247,13 +261,20 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
 
     /**
      * Tests a feature type which inherit from an other feature type, but without property overriding.
+     *
+     * <p>Current implementation performs its tests on the {@link #capital()} feature.</p>
      */
     @Test
-    @DependsOnMethod("testComplex")
+    @DependsOnMethod({"testComplex", "testEquals"})
     public void testInheritance() {
+        final DefaultFeatureType city    = city(); // Tested by 'testSimple()'.
         final DefaultFeatureType capital = capital();
-        final DefaultFeatureType city    = city();
-        validate(capital);
+        assertUnmodifiable(capital);
+        assertEquals("name", "Capital", capital.getName().toString());
+        assertEquals("superTypes",      city, getSingleton(capital.superTypes()));
+        assertFalse ("isAbstract",      capital.isAbstract());
+        assertTrue  ("isSimple",        capital.isSimple());
+        assertEquals("instanceSize", 3, capital.getInstanceSize());
 
         // Check based only on name.
         assertTrue ("maybeAssignableFrom", city.maybeAssignableFrom(capital));
@@ -263,31 +284,9 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertTrue ("isAssignableFrom", city.isAssignableFrom(capital));
         assertFalse("isAssignableFrom", capital.isAssignableFrom(city));
 
-        assertArrayEquals("properties",
-                new String[] {"city", "population"},
-                getNames(city.properties(false)));
-
-        assertArrayEquals("properties",
-                new String[] {"parliament"},
-                getNames(capital.properties(false)));
-
-        assertArrayEquals("properties",
-                new String[] {"city", "population", "parliament"},
-                getNames(capital.properties(true)));
-
-        testGetPropertiesOfCapital(capital);
-    }
-
-    /**
-     * Verifies the content of a feature created by {@link #capital()}.
-     * This is a partial implementation of {@link #testInheritance()},
-     * also shared by {@link #testSerialization()}.
-     */
-    private static void testGetPropertiesOfCapital(final DefaultFeatureType capital) {
-        assertEquals("city",       capital.getProperty("city")      .getName().toString());
-        assertEquals("population", capital.getProperty("population").getName().toString());
-        assertEquals("parliament", capital.getProperty("parliament").getName().toString());
-        assertNull  (              capital.getProperty("apple"));
+        assertPropertiesEquals(city,    false, "city", "population");
+        assertPropertiesEquals(capital, false, "parliament");
+        assertPropertiesEquals(capital, true,  "city", "population", "parliament");
     }
 
     /**
@@ -296,32 +295,41 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testInheritance")
     public void testMultiInheritance() {
-        final DefaultFeatureType capital = new DefaultFeatureType(
+        final DefaultFeatureType metropolis = metropolis();
+        final DefaultFeatureType capital    = capital(); // Tested by 'testComplex()'.
+        final DefaultFeatureType city = new DefaultFeatureType(
                 singletonMap(DefaultFeatureType.NAME_KEY, "Metropolis and capital"), false,
-                new DefaultFeatureType[] {metropolis(), capital()},
+                new DefaultFeatureType[] {metropolis, capital},
                 new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "country"),
                         String.class, 1, 1, null));
 
-        validate(capital);
-        assertArrayEquals("properties",
-                new String[] {"country"},
-                getNames(capital.properties(false)));
-        assertArrayEquals("properties",
-                new String[] {"city", "population", "region", "isGlobal", "parliament", "country"},
-                getNames(capital.properties(true)));
+        assertUnmodifiable(city);
+        assertEquals     ("name", "Metropolis and capital", city.getName().toString());
+        assertArrayEquals("superTypes", new Object[] {metropolis, capital}, city.superTypes().toArray());
+        assertFalse      ("isAbstract",      city.isAbstract());
+        assertTrue       ("isSimple",        city.isSimple());
+        assertEquals     ("instanceSize", 6, city.getInstanceSize());
+        assertPropertiesEquals(city, false, "country");
+        assertPropertiesEquals(city, true, "city", "population", "region", "isGlobal", "parliament", "country");
+    }
 
-        testGetPropertiesOfCapital(capital);
-        assertEquals("country",  capital.getProperty("country") .getName().toString());
-        assertEquals("region",   capital.getProperty("region")  .getName().toString());
-        assertEquals("isGlobal", capital.getProperty("isGlobal").getName().toString());
+    /**
+     * Tests {@link DefaultFeatureType#equals(Object)}.
+     */
+    @Test
+    @DependsOnMethod("testSimple")
+    public void testEquals() {
+        final DefaultFeatureType city = city();
+        assertTrue (city.equals(city()));
+        assertFalse(city.equals(capital()));
     }
 
     /**
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testInheritance")
+    @DependsOnMethod({"testInheritance", "testEquals"})
     public void testSerialization() {
-        testGetPropertiesOfCapital(assertSerializedEquals(capital()));
+        assertPropertiesEquals(assertSerializedEquals(capital()), true, "city", "population", "parliament");
     }
 }

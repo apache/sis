@@ -200,8 +200,11 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         this.isAbstract = isAbstract;
         this.superTypes = (superTypes == null) ? Collections.<DefaultFeatureType>emptySet() :
                           CollectionsExt.<DefaultFeatureType>immutableSet(true, superTypes);
-        this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(
-                properties, properties.length, PropertyType[].class));
+        switch (properties.length) {
+            case 0:  this.properties = Collections.emptyList(); break;
+            case 1:  this.properties = Collections.singletonList((PropertyType) properties[0]); break;
+            default: this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(properties, properties.length, PropertyType[].class)); break;
+        }
         computeTransientFields();
     }
 
