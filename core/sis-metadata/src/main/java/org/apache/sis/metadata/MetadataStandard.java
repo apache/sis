@@ -120,8 +120,11 @@ public class MetadataStandard implements Serializable {
 
     /**
      * An instance working on ISO 19119 standard as defined by GeoAPI interfaces
-     * in the {@link org.opengis.service} package and sub-packages.
+     * in the {@code org.opengis.service} package and sub-packages.
+     *
+     * @deprecated Merged with {@link #ISO_19115} as of ISO 19115:2014 revision.
      */
+    @Deprecated
     public static final MetadataStandard ISO_19119;
 
     /**
