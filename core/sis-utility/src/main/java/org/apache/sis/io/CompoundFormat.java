@@ -358,7 +358,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * See {@link #createFormat(Class)} for the list of value types recognized by the default
      * {@code CompoundFormat} implementation.
      *
-     * @param  valueType The base type of values to parse or format.
+     * @param  valueType The base type of values to parse or format, or {@code null} if unknown.
      * @return The format to use for parsing and formatting values of the given type or any
      *         parent type, or {@code null} if none.
      */

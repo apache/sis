@@ -538,4 +538,16 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         }
         return false;
     }
+
+    /**
+     * Formats this feature in a tabular format.
+     *
+     * @return A string representation of this feature in a tabular format.
+     *
+     * @see FeatureFormat
+     */
+    @Override
+    public String toString() {
+        return FeatureFormat.sharedFormat(this);
+    }
 }

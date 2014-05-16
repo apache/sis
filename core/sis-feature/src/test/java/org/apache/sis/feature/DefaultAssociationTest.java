@@ -46,7 +46,7 @@ public final strictfp class DefaultAssociationTest extends TestCase {
     static DefaultAssociation twinTown() {
         final DefaultFeature twinTown = new DefaultFeature(DefaultFeatureTypeTest.city());
         twinTown.setPropertyValue("city", "Le Mans");
-        twinTown.setPropertyValue("population", 148169);
+        twinTown.setPropertyValue("population", 143240); // In 2011.
         final DefaultAssociation association = new DefaultAssociation(DefaultAssociationRoleTest.twinTown());
         association.setValue(twinTown);
         return association;

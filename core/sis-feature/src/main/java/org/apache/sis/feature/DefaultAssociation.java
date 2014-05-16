@@ -223,7 +223,7 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = role.toString("FeatureAssociation", role.getValueType().getName().toString());
+        final StringBuilder buffer = role.toString("FeatureAssociation", role.getValueType().getName());
         if (value != null) {
             final String pt = role.getTitleProperty();
             if (pt != null) {
