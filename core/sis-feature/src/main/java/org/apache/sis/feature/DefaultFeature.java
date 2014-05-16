@@ -22,7 +22,6 @@ import java.util.ConcurrentModificationException;
 import java.io.Serializable;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
@@ -206,8 +205,12 @@ public class DefaultFeature implements Serializable {
         if (element != null) {
             if (!propertiesAreInstantiated) {
                 return element;
-            } else {
+            } else if (element instanceof DefaultAttribute<?>) {
                 return ((DefaultAttribute<?>) element).getValue();
+            } else if (element instanceof DefaultAssociation) {
+                return ((DefaultAssociation) element).getValue();
+            } else {
+                throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnknownType_1, element.getClass()));
             }
         } else if (properties.containsKey(name)) {
             return null; // Null has been explicitely set.
@@ -215,8 +218,10 @@ public class DefaultFeature implements Serializable {
             final PropertyType pt = getPropertyType(name);
             if (pt instanceof DefaultAttributeType<?>) {
                 return ((DefaultAttributeType<?>) pt).getDefaultValue();
+            } else if (pt instanceof DefaultAssociationRole) {
+                return null;
             } else {
-                throw new UnsupportedOperationException(); // TODO
+                throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnknownType_1, pt.getClass()));
             }
         }
     }
@@ -283,17 +288,29 @@ public class DefaultFeature implements Serializable {
     }
 
     /**
-     * Returns {@code true} if the given type is an attribute type, and if the given value
-     * is valid for that attribute type.
+     * Returns {@code true} if the given type is an attribute type or association role,
+     * and if the given value is valid for that type or role.
      */
     private static boolean isValidAttributeValue(final PropertyType type, final Object value) {
-        if (!(type instanceof DefaultAttributeType<?>)) {
-            return false;
+        if (type instanceof DefaultAttributeType<?>) {
+            if (value == null) {
+                return true;
+            }
+            if (((DefaultAttributeType<?>) type).getValueClass().isInstance(value)) {
+                return true;
+            }
         }
-        if (value == null) {
-            return true;
+        if (type instanceof DefaultAssociationRole) {
+            if (value == null) {
+                return true;
+            }
+            if (value instanceof DefaultFeature) {
+                if (((DefaultAssociationRole) type).getValueType().maybeAssignableFrom(((DefaultFeature) value).getType())) {
+                    return true;
+                }
+            }
         }
-        return ((DefaultAttributeType<?>) type).getValueClass().isInstance(value);
+        return false;
     }
 
     /**
@@ -386,27 +403,14 @@ public class DefaultFeature implements Serializable {
     }
 
     /**
-     * Returns a string representation of this feature.
-     * The returned string is for debugging purpose and may change in any future SIS version.
+     * Formats this feature in a tabular format.
      *
-     * @return A string representation of this feature for debugging purpose.
+     * @return A string representation of this feature in a tabular format.
+     *
+     * @see FeatureFormat
      */
-    @Debug
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        final String lineSeparator = System.lineSeparator();
-        for (final Map.Entry<String,Object> entry : properties.entrySet()) {
-            final PropertyType pt;
-            Object element = entry.getValue();
-            if (propertiesAreInstantiated) {
-                pt = ((DefaultAttribute<?>) element).getType();
-                element = ((DefaultAttribute<?>) element).getValue();
-            } else {
-                pt = type.getProperty(entry.getKey());
-            }
-            sb.append(pt.getName()).append(": ").append(element).append(lineSeparator);
-        }
-        return sb.toString();
+        return FeatureFormat.sharedFormat(this);
     }
 }

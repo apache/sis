@@ -21,6 +21,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static java.util.Collections.singletonMap;
 
 
 /**
@@ -37,6 +38,27 @@ import static org.junit.Assert.*;
     PropertySingletonTest.class
 })
 public final strictfp class DefaultFeatureTest extends TestCase {
+    /**
+     * Creates a feature for twin towns.
+     */
+    static DefaultFeature twinTown() {
+        final DefaultAssociationRole twinTown = DefaultAssociationRoleTest.twinTown();
+        final DefaultFeatureType     city     = twinTown.getValueType();
+        final DefaultFeatureType     type     = new DefaultFeatureType(
+                singletonMap(DefaultFeatureType.NAME_KEY, "Twin town"), false,
+                new DefaultFeatureType[] {city}, twinTown);
+
+        final DefaultFeature leMans = new DefaultFeature(type);
+        leMans.setPropertyValue("city", "Le Mans");
+        leMans.setPropertyValue("population", 143240); // In 2011.
+
+        final DefaultFeature paderborn = new DefaultFeature(type);
+        paderborn.setPropertyValue("city", "Paderborn");
+        paderborn.setPropertyValue("population", 143174); // December 31th, 2011
+        paderborn.setPropertyValue("twin town", leMans);
+        return paderborn;
+    }
+
     /**
      * Tests the construction of a simple feature without super-types.
      */
