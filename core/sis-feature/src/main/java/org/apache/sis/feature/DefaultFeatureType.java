@@ -132,6 +132,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     private final List<PropertyType> properties;
 
     /**
+     * All properties, including the ones declared in the super-types.
+     * This is an unmodifiable view of the {@link #byName} values.
+     *
+     * @see #getProperties(boolean)
+     */
+    private transient Collection<PropertyType> allProperties;
+
+    /**
      * A lookup table for fetching properties by name, including the properties from super-types.
      * This map shall not be modified after construction.
      *
@@ -237,9 +245,29 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         assignableTo = new HashSet<>(4);
         assignableTo.add(getName());
         scanPropertiesFrom(this);
-        byName       = CollectionsExt.unmodifiableOrCopy(byName);
-        indices      = CollectionsExt.unmodifiableOrCopy(indices);
-        assignableTo = CollectionsExt.unmodifiableOrCopy(assignableTo);
+        byName        = compact(byName);
+        indices       = compact(indices);
+        assignableTo  = CollectionsExt.unmodifiableOrCopy(assignableTo);
+        allProperties = byName.values();
+        if (byName instanceof HashMap<?,?>) {
+            allProperties = Collections.unmodifiableCollection(allProperties);
+        }
+    }
+
+    /**
+     * Returns a more compact representation of the given map. This method is similar to
+     * {@link CollectionsExt#unmodifiableOrCopy(Map)}, except that it does not wrap the
+     * map in an unmodifiable view. The intend is to avoid one level of indirection for
+     * performance and memory reasons (keeping in mind that we will have lot of features).
+     * This is okay if we guaranteed that the map does not escape outside this class.
+     */
+    private static <K,V> Map<K,V> compact(final Map<K,V> map) {
+        switch (map.size()) {
+            case 0:  return Collections.emptyMap();
+            case 1:  final Map.Entry<K,V> entry = map.entrySet().iterator().next();
+                     return Collections.singletonMap(entry.getKey(), entry.getValue());
+            default: return map;
+        }
     }
 
     /**
@@ -489,7 +517,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      */
     public Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
         // TODO: temporary cast to be removed after we upgraded GeoAPI.
-        return (Collection) (includeSuperTypes ? byName.values() : properties);
+        return (Collection) (includeSuperTypes ? allProperties : properties);
     }
 
     /**
