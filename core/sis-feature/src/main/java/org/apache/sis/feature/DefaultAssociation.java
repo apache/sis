@@ -77,6 +77,9 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
         ArgumentChecks.ensureNonNull("role", role);
         this.role  = role;
         this.value = value;
+        if (value != null) {
+            ensureValid(role.getValueType(), value.getType());
+        }
     }
 
     /**
@@ -135,14 +138,20 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      */
     public void setValue(final DefaultFeature value) {
         if (value != null) {
-            final DefaultFeatureType base = role.getValueType();
-            final DefaultFeatureType type = value.getType();
-            if (base != type && !base.maybeAssignableFrom(type)) {
-                throw new IllegalArgumentException(
-                        Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
-            }
+            ensureValid(role.getValueType(), value.getType());
         }
         this.value = value;
+    }
+
+    /**
+     * Ensures that storing a feature of the given type is valid for an association
+     * expecting the given base type.
+     */
+    private void ensureValid(final DefaultFeatureType base, final DefaultFeatureType type) {
+        if (base != type && !base.maybeAssignableFrom(type)) {
+            throw new IllegalArgumentException(
+                    Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
+        }
     }
 
     /**
