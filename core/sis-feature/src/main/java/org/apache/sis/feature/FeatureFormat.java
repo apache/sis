@@ -31,12 +31,26 @@ import org.apache.sis.io.TabularFormat;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.util.X364;
 
 
 /**
  * Formats {@linkplain DefaultFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
  * This format assumes a monospaced font and an encoding supporting drawing box characters (e.g. UTF-8).
+ *
+ * <div class="note"><b>Example:</b> a feature named “City” and containing 3 properties (“name”, “population” and
+ * “twin town”) may be formatted like below. The two first properties are {@linkplain DefaultAttribute attributes}
+ * while the last property is an {@linkplain DefaultAssociation association} to an other feature.
+ *
+ * {@preformat text
+ *   City
+ *   ┌────────────┬─────────┬─────────────┬───────────┐
+ *   │ Name       │ Type    │ Cardinality │ Value     │
+ *   ├────────────┼─────────┼─────────────┼───────────┤
+ *   │ name       │ String  │ [1 … 1]     │ Paderborn │
+ *   │ population │ Integer │ [1 … 1]     │ 143,174   │
+ *   │ twin town  │ City    │ [0 … ∞]     │ Le Mans   │
+ *   └────────────┴─────────┴─────────────┴───────────┘
+ * }</div>
  *
  * <div class="warning"><b>Limitation:</b>
  * Current implementation supports only formatting, not parsing.

@@ -164,7 +164,7 @@ public class DefaultFeature implements Serializable {
         if (valuesKind != PROPERTIES) {
             if (!properties.isEmpty()) { // The map is typically empty when this method is first invoked.
                 if (valuesKind != VALUES) {
-                    throw new CorruptedObjectException(toString());
+                    throw new CorruptedObjectException(String.valueOf(type.getName()));
                 }
                 valuesKind = CORRUPTED;
                 for (final Map.Entry<String, Object> entry : properties.entrySet()) {
@@ -241,7 +241,7 @@ public class DefaultFeature implements Serializable {
             } else if (valuesKind == PROPERTIES) {
                 unsupported = ((Property) element).getName();
             } else {
-                throw new CorruptedObjectException(toString());
+                throw new CorruptedObjectException(String.valueOf(type.getName()));
             }
         } else if (properties.containsKey(name)) {
             return null; // Null has been explicitely set.
