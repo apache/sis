@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Formats {@linkplain DefaultFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
+ * Formats {@link AbstractFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
  * This format assumes a monospaced font and an encoding supporting drawing box characters (e.g. UTF-8).
  *
  * <div class="note"><b>Example:</b> a feature named “City” and containing 3 properties (“name”, “population” and
@@ -149,9 +149,9 @@ public class FeatureFormat extends TabularFormat<Object> {
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
         final DefaultFeatureType featureType;
-        final DefaultFeature     feature;
-        if (object instanceof DefaultFeature) {
-            feature     = (DefaultFeature) object;
+        final AbstractFeature     feature;
+        if (object instanceof AbstractFeature) {
+            feature     = (AbstractFeature) object;
             featureType = feature.getType();
         } else if (object instanceof DefaultFeatureType) {
             featureType = (DefaultFeatureType) object;
@@ -221,7 +221,7 @@ header: for (int i=0; ; i++) {
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
                 valueType     = toString(pt.getValueType().getName());
-                valueClass    = DefaultFeature.class;
+                valueClass    = AbstractFeature.class;
             } else if (propertyType instanceof DefaultOperation) {
                 final DefaultAttributeType<?> resultType = ((DefaultOperation) propertyType).getResult();
                 valueType   = toString(resultType.getName());
@@ -258,8 +258,8 @@ header: for (int i=0; ; i++) {
                     value = format.format(value, buffer, dummyFP);
                 } else if (value instanceof InternationalString) {
                     value = ((InternationalString) value).toString(displayLocale);
-                } else if (value instanceof DefaultFeature && propertyType instanceof DefaultAssociationRole) {
-                    value = ((DefaultFeature) value).getPropertyValue(
+                } else if (value instanceof AbstractFeature && propertyType instanceof DefaultAssociationRole) {
+                    value = ((AbstractFeature) value).getPropertyValue(
                             ((DefaultAssociationRole) propertyType).getTitleProperty());
                 }
                 table.append(value.toString());

@@ -39,7 +39,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 /**
  * Abstraction of a real-world phenomena. A {@code FeatureType} instance describes the class of all
- * {@link DefaultFeature} instances of that type.
+ * {@linkplain AbstractFeature feature} instances of that type.
  *
  * <div class="note"><b>Note:</b>
  * Compared to the Java language, {@code FeatureType} is equivalent to {@link Class} while
@@ -85,7 +85,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @version 0.5
  * @module
  *
- * @see DefaultFeature
+ * @see AbstractFeature
  */
 public class DefaultFeatureType extends AbstractIdentifiedType {
     /**
@@ -107,6 +107,12 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * @see #isSimple()
      */
     private transient boolean isSimple;
+
+    /**
+     * {@code true} if the feature instances are expected to have lot of unset properties, or
+     * {@code false} if we expect most properties to be specified.
+     */
+    private transient boolean isSparse;
 
     /**
      * The direct parents of this feature type, or an empty set if none.
@@ -239,19 +245,49 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      */
     private void computeTransientFields() {
         final int capacity = Containers.hashMapCapacity(properties.size());
-        isSimple     = true;
         byName       = new LinkedHashMap<>(capacity);
         indices      = new HashMap<>(capacity);
         assignableTo = new HashSet<>(4);
         assignableTo.add(getName());
         scanPropertiesFrom(this);
         byName        = compact(byName);
-        indices       = compact(indices);
         assignableTo  = CollectionsExt.unmodifiableOrCopy(assignableTo);
         allProperties = byName.values();
         if (byName instanceof HashMap<?,?>) {
             allProperties = Collections.unmodifiableCollection(allProperties);
         }
+        /*
+         * Now check if the feature is simple/complex or dense/sparse. We perform this check after we finished
+         * to create the list of all properties, because some properties may be overridden and we want to take
+         * in account only the most specific ones.
+         */
+        isSimple = true;
+        int mandatory = 0; // Count of mandatory properties.
+        for (final Map.Entry<String,PropertyType> entry : byName.entrySet()) {
+            final int minimumOccurs, maximumOccurs;
+            final PropertyType property = entry.getValue();
+            if (property instanceof DefaultAttributeType<?>) { // TODO: check for AttributeType instead (after GeoAPI upgrade).
+                minimumOccurs = ((DefaultAttributeType<?>) property).getMinimumOccurs();
+                maximumOccurs = ((DefaultAttributeType<?>) property).getMaximumOccurs();
+                isSimple &= (minimumOccurs == maximumOccurs);
+            } else if (property instanceof FieldType) { // TODO: check for AssociationRole instead (after GeoAPI upgrade).
+                minimumOccurs = ((FieldType) property).getMinimumOccurs();
+                maximumOccurs = ((FieldType) property).getMaximumOccurs();
+                isSimple = false;
+            } else {
+                continue; // For feature operations, maximumOccurs is implicitly 0.
+            }
+            if (maximumOccurs != 0) {
+                isSimple &= (maximumOccurs == 1);
+                indices.put(entry.getKey(), indices.size());
+                if (minimumOccurs != 0) {
+                    mandatory++;
+                }
+            }
+        }
+        indices = compact(indices);
+        final int n = indices.size();
+        isSparse = (n > 16) && (mandatory < n/2); // Arbitrary criterion.
     }
 
     /**
@@ -271,14 +307,11 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     }
 
     /**
-     * Computes the transient fields using the non-transient information in the given {@code source}.
+     * Fills the {@link #byName} map using the non-transient information in the given {@code source}.
      * This method invokes itself recursively in order to use the information provided in super-types.
+     * This method also performs an opportunist verification of argument validity.
      */
     private void scanPropertiesFrom(final DefaultFeatureType source) {
-        /*
-         * Process all super-types before to process the given type. The intend is to have the
-         * super-types properties indexed before the sub-types ones in the 'indices' map.
-         */
         for (final DefaultFeatureType parent : source.getSuperTypes()) {
             if (assignableTo.add(parent.getName())) {
                 scanPropertiesFrom(parent);
@@ -288,9 +321,6 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         Map<DefaultFeatureType,Boolean> done = null;
         for (final PropertyType property : source.properties) {
             ArgumentChecks.ensureNonNullElement("properties", ++index, property);
-            /*
-             * Fill the (name, property) map with opportunist verification of argument validity.
-             */
             final String name = toString(property.getName(), source, index);
             final PropertyType previous = byName.put(name, property);
             if (previous != null) {
@@ -303,26 +333,6 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
                             (owner != null) ? owner : "?", name));
                 }
                 done.clear();
-            }
-            /*
-             * Fill the (name, indice) map. Values are indices that the property elements would have
-             * in a flat array. This block also opportunistically check if the FeatureType is "simple".
-             */
-            final int maximumOccurs;
-            if (property instanceof DefaultAttributeType<?>) { // TODO: check for AttributeType instead (after GeoAPI upgrade).
-                maximumOccurs = ((DefaultAttributeType<?>) property).getMaximumOccurs();
-                if (isSimple && ((DefaultAttributeType<?>) property).getMinimumOccurs() != maximumOccurs) {
-                    isSimple = false;
-                }
-            } else if (property instanceof FieldType) { // TODO: check for AssociationRole instead (after GeoAPI upgrade).
-                maximumOccurs = ((FieldType) property).getMaximumOccurs();
-                isSimple = false;
-            } else {
-                continue; // For feature operations, maximumOccurs is implicitly 0.
-            }
-            if (maximumOccurs != 0) {
-                isSimple &= (maximumOccurs == 1);
-                indices.put(name, indices.size());
             }
         }
     }
@@ -531,11 +541,20 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     }
 
     /**
-     * Returns the number of attributes and features (not operations) that instance will have
-     * if all attributes are handled as simple attributes (maximum occurrences of 1).
+     * Returns the map from names to indices in an array of properties.
+     * This is used for {@link DenseFeature} implementation.
      */
-    final int getInstanceSize() {
-        return indices.size();
+    final Map<String,Integer> indices() {
+        return indices;
+    }
+
+    /**
+     * Creates a new feature instance of this type.
+     *
+     * @return A new feature instance.
+     */
+    public AbstractFeature newInstance() {
+        return isSparse ? new SparseFeature(this) : new DenseFeature(this);
     }
 
     /**

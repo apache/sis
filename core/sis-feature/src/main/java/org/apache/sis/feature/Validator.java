@@ -81,7 +81,7 @@ final class Validator {
             validate((DefaultAttributeType<?>) type, value);
         }
         if (type instanceof DefaultAssociationRole) {
-            validate((DefaultAssociationRole) type, (DefaultFeature) value);
+            validate((DefaultAssociationRole) type, (AbstractFeature) value);
         }
     }
 
@@ -106,7 +106,7 @@ final class Validator {
     /**
      * Verifies if the given value is valid for the given association role.
      */
-    void validate(final DefaultAssociationRole role, final DefaultFeature value) {
+    void validate(final DefaultAssociationRole role, final AbstractFeature value) {
         if (value != null) {
             final DefaultFeatureType type = value.getType();
             if (!role.getValueType().isAssignableFrom(type)) {

@@ -32,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.5
  * @module
  */
-@DependsOn(DefaultFeatureTest.class)
+@DependsOn(DenseFeatureTest.class)
 public final strictfp class FeatureFormatTest extends TestCase {
     /**
      * Tests the formatting of a {@link DefaultFeatureType}.
@@ -54,11 +54,11 @@ public final strictfp class FeatureFormatTest extends TestCase {
     }
 
     /**
-     * Tests the formatting of a {@link DefaultFeature}.
+     * Tests the formatting of an {@link AbstractFeature}.
      */
     @Test
     public void testFeature() {
-        final DefaultFeature feature = DefaultFeatureTest.twinTown();
+        final AbstractFeature feature = FeatureTestCase.twinTown();
         final FeatureFormat format = new FeatureFormat(Locale.US, null);
         final String text = format.format(feature);
         assertMultilinesEquals("Twin town\n" +

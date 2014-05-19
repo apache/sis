@@ -34,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  */
 @DependsOn({
     DefaultAssociationRoleTest.class,
-    DefaultFeatureTest.class
+    DenseFeatureTest.class
 })
 public final strictfp class DefaultAssociationTest extends TestCase {
     /**
@@ -44,7 +44,7 @@ public final strictfp class DefaultAssociationTest extends TestCase {
      * and Le Mans, France in 836.” — source: Wikipedia</blockquote>
      */
     static DefaultAssociation twinTown() {
-        final DefaultFeature twinTown = new DefaultFeature(DefaultFeatureTypeTest.city());
+        final AbstractFeature twinTown = DefaultFeatureTypeTest.city().newInstance();
         twinTown.setPropertyValue("city", "Le Mans");
         twinTown.setPropertyValue("population", 143240); // In 2011.
         final DefaultAssociation association = new DefaultAssociation(DefaultAssociationRoleTest.twinTown());
@@ -59,8 +59,8 @@ public final strictfp class DefaultAssociationTest extends TestCase {
     public void testWrongValue() {
         final DefaultAssociation association  = twinTown();
         final PropertyType       population   = association.getRole().getValueType().getProperty("population");
-        final DefaultFeature     otherFeature = new DefaultFeature(new DefaultFeatureType(
-                singletonMap(DefaultFeatureType.NAME_KEY, "Population"), false, null, population));
+        final AbstractFeature     otherFeature = new DefaultFeatureType(
+                singletonMap(DefaultFeatureType.NAME_KEY, "Population"), false, null, population).newInstance();
         try {
             association.setValue(otherFeature);
         } catch (IllegalArgumentException e) {

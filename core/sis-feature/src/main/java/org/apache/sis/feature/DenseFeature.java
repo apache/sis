@@ -1,0 +1,217 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.feature;
+
+import java.util.Map;
+import java.util.Arrays;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
+
+
+/**
+ * A feature in which most properties are expected to be provided. This implementation uses a plain array for
+ * its internal storage of properties. This consumes less memory than {@link java.util.Map} when we know that
+ * all (or almost all) elements in the array will be assigned a value.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.5
+ * @version 0.5
+ * @module
+ *
+ * @see SparseFeature
+ * @see DefaultFeatureType
+ */
+final class DenseFeature extends AbstractFeature {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -2041120433733230588L;
+
+    /**
+     * The map of property names to indices in the {@link #properties} array. This map is a reference to the
+     * {@link DefaultFeatureType#indices} map (potentially shared by many feature instances) and shall not be
+     * modified.
+     */
+    private final Map<String, Integer> indices;
+
+    /**
+     * The properties (attributes, operations, feature associations) of this feature.
+     *
+     * Conceptually, values in this array are {@link Property} instances. However at first we will store only
+     * the property <em>values</em>, and convert to an array of type {@code Property[]} only when at least one
+     * property is requested. The intend is to reduce the amount of allocated objects as much as possible,
+     * because typical SIS applications may create a very large amount of features.
+     */
+    private Object[] properties;
+
+    /**
+     * Creates a new feature of the given type.
+     *
+     * @param type Information about the feature (name, characteristics, <i>etc.</i>).
+     */
+    public DenseFeature(final DefaultFeatureType type) {
+        super(type);
+        indices = type.indices();
+    }
+
+    /**
+     * Returns the index for the property of the given name.
+     *
+     * @param  name The property name.
+     * @return The index for the property of the given name.
+     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     */
+    private int getIndex(final String name) throws IllegalArgumentException {
+        final Integer index = indices.get(name);
+        if (index != null) {
+            return index;
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+    }
+
+    /**
+     * Returns the property (attribute, operation or association) of the given name.
+     *
+     * @param  name The property name.
+     * @return The property of the given name.
+     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     */
+    @Override
+    public Object getProperty(final String name) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("name", name);
+        final int index = getIndex(name);
+        if (properties instanceof Property[]) {
+            return ((Property[]) properties)[index];
+        }
+        if (properties == null) {
+            properties = new Property[indices.size()];
+        } else {
+            wrapValuesInProperties();
+        }
+        final Property property = createProperty(name);
+        properties[index] = property;
+        return property;
+    }
+
+    /**
+     * Wraps values in {@code Property} objects for all elements in the {@link #properties} array.
+     * This operation is executed at most once per feature.
+     */
+    private void wrapValuesInProperties() {
+        final Property[] c = new Property[properties.length];
+        for (final Map.Entry<String, Integer> entry : indices.entrySet()) {
+            final int   index  = entry.getValue();
+            final Object value = properties[index];
+            if (value != null) {
+                c[index] = createProperty(entry.getKey(), value);
+            }
+        }
+        properties = c; // Store only on success.
+    }
+
+    /**
+     * Returns the value for the property of the given name.
+     *
+     * @param  name The property name.
+     * @return The value for the given property, or {@code null} if none.
+     * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
+     */
+    @Override
+    public Object getPropertyValue(final String name) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("name", name);
+        if (properties != null) {
+            final Object element = properties[getIndex(name)];
+            if (element != null) {
+                if (!(properties instanceof Property[])) {
+                    return element; // Most common case.
+                } else if (element instanceof DefaultAttribute<?>) {
+                    return ((DefaultAttribute<?>) element).getValue();
+                } else if (element instanceof DefaultAssociation) {
+                    return ((DefaultAssociation) element).getValue();
+                } else {
+                    throw new IllegalArgumentException(unsupportedPropertyType(((Property) element).getName()));
+                }
+            }
+        }
+        return getDefaultValue(name);
+    }
+
+    /**
+     * Sets the value for the property of the given name.
+     *
+     * @param  name  The attribute name.
+     * @param  value The new value for the given attribute (may be {@code null}).
+     * @throws ClassCastException If the value is not assignable to the expected value class.
+     * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
+     */
+    @Override
+    public void setPropertyValue(final String name, final Object value) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("name", name);
+        final int index = getIndex(name);
+        if (properties == null) {
+            final int n = indices.size();
+            properties = (value != null) ? new Object[n] : new Property[n];
+        }
+        if (!(properties instanceof Property[])) {
+            if (value != null) {
+                final Object previous = properties[index];
+                if (previous == null || previous.getClass() != value.getClass()) {
+                    final RuntimeException e = verifyValueType(name, value);
+                    if (e != null) {
+                        throw e;
+                    }
+                }
+                properties[index] = value;
+                return;
+            } else {
+                wrapValuesInProperties();
+            }
+        }
+        Property property = ((Property[]) properties)[index];
+        if (property == null) {
+            property = createProperty(name);
+            properties[index] = property;
+        }
+        setPropertyValue(property, value);
+    }
+
+    /**
+     * Returns a hash code value for this feature.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + 37 * Arrays.hashCode(properties);
+    }
+
+    /**
+     * Compares this feature with the given object for equality.
+     *
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (super.equals(obj)) {
+            return Arrays.equals(properties, ((DenseFeature) obj).properties);
+        }
+        return false;
+    }
+}
