@@ -16,7 +16,6 @@
  */
 package org.apache.sis.feature;
 
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -25,34 +24,29 @@ import static java.util.Collections.singletonMap;
 
 
 /**
- * Tests {@link DefaultFeature}.
+ * Base class of {@link DenseFeatureTest} and {@link SparseFeatureTest}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5
  * @module
  */
-@DependsOn({
-    DefaultFeatureTypeTest.class,
-    DefaultAttributeTest.class,
-    PropertySingletonTest.class
-})
-public final strictfp class DefaultFeatureTest extends TestCase {
+strictfp class FeatureTestCase extends TestCase {
     /**
      * Creates a feature for twin towns.
      */
-    static DefaultFeature twinTown() {
+    static AbstractFeature twinTown() {
         final DefaultAssociationRole twinTown = DefaultAssociationRoleTest.twinTown();
         final DefaultFeatureType     city     = twinTown.getValueType();
         final DefaultFeatureType     type     = new DefaultFeatureType(
                 singletonMap(DefaultFeatureType.NAME_KEY, "Twin town"), false,
                 new DefaultFeatureType[] {city}, twinTown);
 
-        final DefaultFeature leMans = new DefaultFeature(type);
+        final AbstractFeature leMans = new DenseFeature(type);
         leMans.setPropertyValue("city", "Le Mans");
         leMans.setPropertyValue("population", 143240); // In 2011.
 
-        final DefaultFeature paderborn = new DefaultFeature(type);
+        final AbstractFeature paderborn = new DenseFeature(type);
         paderborn.setPropertyValue("city", "Paderborn");
         paderborn.setPropertyValue("population", 143174); // December 31th, 2011
         paderborn.setPropertyValue("twin town", leMans);
@@ -64,7 +58,7 @@ public final strictfp class DefaultFeatureTest extends TestCase {
      */
     @Test
     public void testSimple() {
-        final DefaultFeature cityPopulation = new DefaultFeature(DefaultFeatureTypeTest.city());
+        final AbstractFeature cityPopulation = new DenseFeature(DefaultFeatureTypeTest.city());
 
         assertEquals("Utopia", cityPopulation.getPropertyValue("city"));
         cityPopulation.setPropertyValue("city", "Atlantide");

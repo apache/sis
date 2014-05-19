@@ -121,7 +121,7 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      *
      * @return The attribute value (may be {@code null}).
      *
-     * @see DefaultFeature#getPropertyValue(String)
+     * @see AbstractFeature#getPropertyValue(String)
      */
     public T getValue() {
         return value;
@@ -138,7 +138,7 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      *
      * @param value The new value.
      *
-     * @see DefaultFeature#setPropertyValue(String, Object)
+     * @see AbstractFeature#setPropertyValue(String, Object)
      */
     public void setValue(final T value) {
         this.value = value;
@@ -173,11 +173,11 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      *
      * @return Reports on all constraint violations found.
      *
-     * @see DefaultFeature#validate()
+     * @see AbstractFeature#validate()
      */
     /*
      * API NOTE: this method is final for now because if we allowed users to override it, users would
-     * expect their method to be invoked by DefaultFeature.validate(). But this is not yet the case.
+     * expect their method to be invoked by AbstractFeature.validate(). But this is not yet the case.
      */
     public final DataQuality validate() {
         final Validator v = new Validator(ScopeCode.ATTRIBUTE);

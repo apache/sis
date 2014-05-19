@@ -55,7 +55,7 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
     /**
      * The associated feature.
      */
-    private DefaultFeature value;
+    private AbstractFeature value;
 
     /**
      * Creates a new association of the given type.
@@ -73,7 +73,7 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      * @param role  Information about the association.
      * @param value The initial value.
      */
-    public DefaultAssociation(final DefaultAssociationRole role, final DefaultFeature value) {
+    public DefaultAssociation(final DefaultAssociationRole role, final AbstractFeature value) {
         ArgumentChecks.ensureNonNull("role", role);
         this.role  = role;
         this.value = value;
@@ -113,9 +113,9 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      *
      * @return The associated feature (may be {@code null}).
      *
-     * @see DefaultFeature#getPropertyValue(String)
+     * @see AbstractFeature#getPropertyValue(String)
      */
-    public DefaultFeature getValue() {
+    public AbstractFeature getValue() {
         return value;
     }
 
@@ -134,9 +134,9 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      * @param  value The new value, or {@code null}.
      * @throws IllegalArgumentException If the given feature is not valid for this association.
      *
-     * @see DefaultFeature#setPropertyValue(String, Object)
+     * @see AbstractFeature#setPropertyValue(String, Object)
      */
-    public void setValue(final DefaultFeature value) {
+    public void setValue(final AbstractFeature value) {
         if (value != null) {
             ensureValid(role.getValueType(), value.getType());
         }
@@ -166,11 +166,11 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      *
      * @return Reports on all constraint violations found.
      *
-     * @see DefaultFeature#validate()
+     * @see AbstractFeature#validate()
      */
     /*
      * API NOTE: this method is final for now because if we allowed users to override it, users would
-     * expect their method to be invoked by DefaultFeature.validate(). But this is not yet the case.
+     * expect their method to be invoked by AbstractFeature.validate(). But this is not yet the case.
      */
     public final DataQuality validate() {
         final Validator v = new Validator(null);
