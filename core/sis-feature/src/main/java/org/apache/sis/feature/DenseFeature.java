@@ -97,9 +97,11 @@ final class DenseFeature extends AbstractFeature {
         ArgumentChecks.ensureNonNull("name", name);
         final int index = getIndex(name);
         if (properties instanceof Property[]) {
-            return ((Property[]) properties)[index];
-        }
-        if (properties == null) {
+            final Property property = ((Property[]) properties)[index];
+            if (property != null) {
+                return property;
+            }
+        } else if (properties == null) {
             properties = new Property[indices.size()];
         } else {
             wrapValuesInProperties();

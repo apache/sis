@@ -20,7 +20,7 @@ import org.apache.sis.test.DependsOn;
 
 
 /**
- * Tests {@link DenseFeature}.
+ * Tests {@link SparseFeature}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -32,13 +32,13 @@ import org.apache.sis.test.DependsOn;
     DefaultAttributeTest.class,
     PropertySingletonTest.class
 })
-public final strictfp class DenseFeatureTest extends FeatureTestCase {
+public final strictfp class SparseFeatureTest extends FeatureTestCase {
     /**
      * Creates a new feature for the given type.
      */
     @Override
     final AbstractFeature createFeature(final DefaultFeatureType type) {
-        return new DenseFeature(type);
+        return new SparseFeature(type);
     }
 
     // Inherit all tests from the super-class.

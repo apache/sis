@@ -394,6 +394,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     }
 
     /**
+     * Returns {@code true} if the feature instances are expected to have lot of unset properties,
+     * or {@code false} if we expect most properties to be specified.
+     */
+    final boolean isSparse() {
+        return isSparse;
+    }
+
+    /**
      * Returns {@code true} if this feature type contains only attributes constrained to the [1 … 1] cardinality,
      * or operations. Such feature types can be handled as a {@link org.opengis.util.Record}s.
      *

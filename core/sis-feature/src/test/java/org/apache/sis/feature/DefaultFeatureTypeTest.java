@@ -191,6 +191,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertEquals("name", "City",     simple.getName().toString());
         assertTrue  ("superTypes",       simple.getSuperTypes().isEmpty());
         assertFalse ("isAbstract",       simple.isAbstract());
+        assertFalse ("isSparse",         simple.isSparse());
         assertTrue  ("isSimple",         simple.isSimple());
         assertTrue  ("isAssignableFrom", simple.isAssignableFrom(simple));
         assertEquals("instanceSize", 2,  simple.indices().size());
@@ -239,6 +240,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertTrue  ("superTypes",                                      complex.getSuperTypes().isEmpty());
         assertTrue  ("isAssignableFrom",                                complex.isAssignableFrom(complex));
         assertFalse ("isAbstract",                                      complex.isAbstract());
+        assertFalse ("isSparse",                                        complex.isSparse());
         assertEquals("isSimple",        maximumOccurs == minimumOccurs, complex.isSimple());
         assertEquals("instanceSize",    maximumOccurs == 0 ? 2 : 3,     complex.indices().size());
         assertEquals("minimumOccurs",   minimumOccurs,                  festival.getMinimumOccurs());
@@ -288,6 +290,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertEquals("name", "Capital", capital.getName().toString());
         assertEquals("superTypes",      city, getSingleton(capital.getSuperTypes()));
         assertFalse ("isAbstract",      capital.isAbstract());
+        assertFalse ("isSparse",        capital.isSparse());
         assertTrue  ("isSimple",        capital.isSimple());
         assertEquals("instanceSize", 3, capital.indices().size());
 
@@ -322,6 +325,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertEquals     ("name", "Metropolis and capital", metroCapital.getName().toString());
         assertArrayEquals("superTypes", new Object[] {metropolis, capital}, metroCapital.getSuperTypes().toArray());
         assertFalse      ("isAbstract",      metroCapital.isAbstract());
+        assertFalse      ("isSparse",        metroCapital.isSparse());
         assertTrue       ("isSimple",        metroCapital.isSimple());
         assertEquals     ("instanceSize", 6, metroCapital.indices().size());
 
@@ -363,6 +367,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertEquals     ("name", "World metropolis", worldMetropolis.getName().toString());
         assertArrayEquals("superTypes", new Object[] {metropolis}, worldMetropolis.getSuperTypes().toArray());
         assertFalse      ("isAbstract",      worldMetropolis.isAbstract());
+        assertFalse      ("isSparse",        worldMetropolis.isSparse());
         assertTrue       ("isSimple",        worldMetropolis.isSimple());
         assertEquals     ("instanceSize", 4, worldMetropolis.indices().size());
 
