@@ -71,14 +71,14 @@ public final strictfp class DefaultAttributeTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultAttribute#validate()}.
+     * Tests {@link DefaultAttribute#quality()}.
      */
     @Test
     @DependsOnMethod("testValue")
     @SuppressWarnings("unchecked")
-    public void testValidate() {
+    public void testQuality() {
         final DefaultAttribute<Integer> attribute = population();
-        DataQuality quality = attribute.validate();
+        DataQuality quality = attribute.quality();
         assertEquals("scope.level", ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
         assertDomainConsistencyEquals("population", "Missing value for “population” property.",
                 (DomainConsistency) getSingleton(quality.getReports()));
@@ -86,7 +86,7 @@ public final strictfp class DefaultAttributeTest extends TestCase {
          * Intentionally store a value of the wrong type, and test again.
          */
         ((DefaultAttribute) attribute).setValue(4.5f);
-        quality = attribute.validate();
+        quality = attribute.quality();
         assertEquals("scope.level", ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
         assertDomainConsistencyEquals("population", "Property “population” does not accept instances of ‘Float’.",
                 (DomainConsistency) getSingleton(quality.getReports()));

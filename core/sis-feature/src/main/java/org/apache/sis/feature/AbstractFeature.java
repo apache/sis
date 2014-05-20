@@ -84,8 +84,8 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Return the type name as a non-null string. This is used mostly for formatting error message.
-     * This method should not be used when a null name should be considered as an error.
+     * Return the {@linkplain #type} name as a non-null string. This is used mostly for formatting error message.
+     * This method shall not be invoked when a null name should be considered as an error.
      */
     final String getName() {
         return String.valueOf(type.getName());
@@ -211,7 +211,7 @@ public abstract class AbstractFeature implements Serializable {
      * The amount of validation performed by this method is implementation dependent.
      * Usually, only the most basic constraints are verified. This is so for performance reasons
      * and also because some rules may be temporarily broken while constructing a feature.
-     * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
+     * A more exhaustive verification can be performed by invoking the {@link #quality()} method.
      *
      * @param  name  The attribute name.
      * @param  value The new value for the given attribute (may be {@code null}).
@@ -309,13 +309,33 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Verifies if all current properties met the constraints defined by the feature type.
-     * This method returns {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
-     * reports} for all constraint violations found, if any.
+     * Evaluates the quality of this feature at this method invocation time. The data quality reports
+     * may include information about whether the property values met the constraints defined by the
+     * property types, or any other criterion at implementation choice.
+     *
+     * <p>The default implementation reports data quality with at least the following information:</p>
+     * <ul>
+     *   <li>
+     *     The {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getScope() scope}
+     *     {@linkplain org.apache.sis.metadata.iso.quality.DefaultScope#getLevel() level} is set to
+     *     {@link org.opengis.metadata.maintenance.ScopeCode#FEATURE}.
+     *   </li><li>
+     *     The {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports() reports} list contains
+     *     at most one {@linkplain org.apache.sis.metadata.iso.quality.DefaultDomainConsistency domain consistency}
+     *     element per property. Implementations are free to omit element for properties having nothing to report.
+     *   </li><li>
+     *     Each report may have one or more {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult
+     *     conformance result}, as documented on {@link DefaultAttribute#quality()} javadoc.
+     *   </li>
+     * </ul>
+     *
+     * This feature is valid if this method does not report any
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
      *
      * <div class="note"><b>Example:</b> given a feature with an attribute named “population”.
      * If this attribute is mandatory ([1 … 1] cardinality) but no value has been assigned to it,
-     * then this {@code validate()} method will return the following data quality report:
+     * then this {@code quality()} method will return the following data quality report:
      *
      * {@preformat text
      *   Data quality
@@ -331,24 +351,27 @@ public abstract class AbstractFeature implements Serializable {
      * }
      * </div>
      *
-     * This feature is valid if this method does not report any
-     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
-     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
-     *
      * @return Reports on all constraint violations found.
      *
-     * @see DefaultAttribute#validate()
-     * @see DefaultAssociation#validate()
+     * @see DefaultAttribute#quality()
+     * @see DefaultAssociation#quality()
      */
-    /*
-     * API NOTE: this method is final for now because if we allowed users to override it, users would
-     * expect their method to be invoked by DefaultAssociation.validate(). But this is not yet the case.
-     */
-    public final DataQuality validate() {
+    public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.FEATURE);
-//        for (final Map.Entry<String, Object> entry : properties.entrySet()) {
-//            v.validateAny(getPropertyType(entry.getKey()), entry.getValue());
-//        }
+        for (final String name : type.indices().keySet()) {
+            final Property property = (Property) getProperty(name);
+            final DataQuality quality;
+            if (property instanceof DefaultAttribute<?>) {
+                quality = ((DefaultAttribute<?>) property).quality();
+            } else if (property instanceof DefaultAssociation) {
+                quality = ((DefaultAssociation) property).quality();
+            } else {
+                continue;
+            }
+            if (quality != null) { // Should not be null, but let be safe.
+                v.quality.getReports().addAll(quality.getReports());
+            }
+        }
         return v.quality;
     }
 

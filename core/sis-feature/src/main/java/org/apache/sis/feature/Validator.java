@@ -21,6 +21,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.EvaluationMethodType;
+import org.apache.sis.metadata.iso.quality.AbstractElement;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.metadata.iso.quality.DefaultDomainConsistency;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
@@ -57,19 +58,35 @@ final class Validator {
     }
 
     /**
-     * Adds a report for a constraint violation.
+     * Adds a report for a constraint violation. If the given {@code report} is {@code null}, then this method creates
+     * a new {@link DefaultDomainConsistency} instance with the measure identification set to the property name.
      *
-     * @param type        Description of the property for which a constraint violation has been found.
-     * @param explanation Explanation of the constraint violation.
+     * <div class="note"><b>Note:</b>
+     * setting {@code measureIdentification} to the property name may look like a departure from ISO intend,
+     * since the former should be an identification of the <em>quality measurement</em> rather then the measure itself.
+     * (setting {@code measureDescription} to {@code type.getDescription()} would probably be wrong for that reason).
+     * However {@code measureIdentification} is only an identifier, not a full description of the quality measurement
+     * We are not strictly forbidden to use the same identifier for both the quality measurement than the measurement
+     * itself. However strictly speaking, maybe we should use a different scope.</div>
+     *
+     * @param  report      Where to add the result, or {@code null} if not yet created.
+     * @param  type        Description of the property for which a constraint violation has been found.
+     * @param  explanation Explanation of the constraint violation.
+     * @return The {@code report}, or a new report if {@code report} was null.
      */
-    void addViolationReport(final AbstractIdentifiedType type, final InternationalString explanation) {
-        final DefaultDomainConsistency report = new DefaultDomainConsistency();
-        final GenericName name = type.getName();
-        report.setMeasureIdentification(name instanceof Identifier ? (Identifier) name : new NamedIdentifier(name));
-        report.setMeasureDescription(type.getDescription());
-        report.setEvaluationMethodType(EvaluationMethodType.DIRECT_INTERNAL);
+    private AbstractElement addViolationReport(AbstractElement report,
+            final AbstractIdentifiedType type, final InternationalString explanation)
+    {
+        if (report == null) {
+            final GenericName name = type.getName();
+            report = new DefaultDomainConsistency();
+            // Do not invoke report.setMeasureDescription(type.getDescription()) - see above javadoc.
+            report.setMeasureIdentification(name instanceof Identifier ? (Identifier) name : new NamedIdentifier(name));
+            report.setEvaluationMethodType(EvaluationMethodType.DIRECT_INTERNAL);
+            quality.getReports().add(report);
+        }
         report.getResults().add(new DefaultConformanceResult(null, explanation, false));
-        quality.getReports().add(report);
+        return report;
     }
 
     /**
@@ -89,6 +106,7 @@ final class Validator {
      * Verifies if the given value is valid for the given attribute type.
      */
     void validate(final DefaultAttributeType<?> type, final Object value) {
+        AbstractElement report = null;
         if (value != null) {
             /*
              * In theory, the following check is unnecessary since the type was constrained by the Attribute.setValue(T)
@@ -96,41 +114,44 @@ final class Validator {
              * so we are better to check.
              */
             if (!type.getValueClass().isInstance(value)) {
-                addViolationReport(type, Errors.formatInternational(
+                report = addViolationReport(report, type, Errors.formatInternational(
                         Errors.Keys.IllegalPropertyClass_2, type.getName(), value.getClass()));
             }
         }
-        verifyCardinality(type, type.getMinimumOccurs(), type.getMaximumOccurs(), value);
+        verifyCardinality(report, type, type.getMinimumOccurs(), type.getMaximumOccurs(), value);
     }
 
     /**
      * Verifies if the given value is valid for the given association role.
      */
     void validate(final DefaultAssociationRole role, final AbstractFeature value) {
+        AbstractElement report = null;
         if (value != null) {
             final DefaultFeatureType type = value.getType();
             if (!role.getValueType().isAssignableFrom(type)) {
-                addViolationReport(role, Errors.formatInternational(
+                report = addViolationReport(report, role, Errors.formatInternational(
                         Errors.Keys.IllegalPropertyClass_2, role.getName(), type.getName()));
             }
         }
-        verifyCardinality(role, role.getMinimumOccurs(), role.getMaximumOccurs(), value);
+        verifyCardinality(report, role, role.getMinimumOccurs(), role.getMaximumOccurs(), value);
     }
 
     /**
      * Verifies if the given value mets the cardinality constraint.
+     *
+     * @param report Where to add the result, or {@code null} if not yet created.
      */
-    private void verifyCardinality(final AbstractIdentifiedType type,
+    private void verifyCardinality(final AbstractElement report, final AbstractIdentifiedType type,
             final int minimumOccurs, final int maximumOccurs, final Object value)
     {
         if (value == null) {
             if (minimumOccurs != 0) {
-                addViolationReport(type, Errors.formatInternational(
+                addViolationReport(report, type, Errors.formatInternational(
                         Errors.Keys.MissingValueForProperty_1, type.getName()));
             }
         } else {
             if (maximumOccurs == 0) {
-                addViolationReport(type, Errors.formatInternational(
+                addViolationReport(report, type, Errors.formatInternational(
                         Errors.Keys.ForbiddenProperty_1, type.getName()));
             }
         }
