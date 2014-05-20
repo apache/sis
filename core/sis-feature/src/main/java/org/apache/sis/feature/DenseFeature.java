@@ -18,6 +18,8 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.Arrays;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -187,6 +189,26 @@ final class DenseFeature extends AbstractFeature {
             properties[index] = property;
         }
         setPropertyValue(property, value);
+    }
+
+    /**
+     * Verifies if all current properties met the constraints defined by the feature type. This method returns
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports() reports} for all invalid
+     * properties, if any.
+     */
+    @Override
+    public DataQuality quality() {
+        if (properties != null && !(properties instanceof Property[])) {
+            final Validator v = new Validator(ScopeCode.FEATURE);
+            for (final Map.Entry<String, Integer> entry : indices.entrySet()) {
+                v.validateAny(getPropertyType(entry.getKey()), properties[entry.getValue()]);
+            }
+            return v.quality;
+        }
+        /*
+         * Slower path when there is a possibility that user overridden the Property.quality() methods.
+         */
+        return super.quality();
     }
 
     /**

@@ -129,7 +129,7 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      * The amount of validation performed by this method is implementation dependent.
      * Usually, only the most basic constraints are verified. This is so for performance reasons
      * and also because some rules may be temporarily broken while constructing a feature.
-     * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
+     * A more exhaustive verification can be performed by invoking the {@link #quality()} method.
      *
      * @param  value The new value, or {@code null}.
      * @throws IllegalArgumentException If the given feature is not valid for this association.
@@ -156,9 +156,10 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
 
     /**
      * Verifies if the current association value mets the constraints defined by the association role.
-     * This method returns {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
-     * reports} for all constraint violations found, if any.
-     * See {@link DefaultAttribute#validate()} for an example.
+     * This method returns at most one {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
+     * report} with a {@linkplain org.apache.sis.metadata.iso.quality.DefaultDomainConsistency#getResults() result} for
+     * each constraint violations found, if any.
+     * See {@link DefaultAttribute#quality()} for an example.
      *
      * <p>This association is valid if this method does not report any
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
@@ -166,13 +167,9 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      *
      * @return Reports on all constraint violations found.
      *
-     * @see AbstractFeature#validate()
+     * @see AbstractFeature#quality()
      */
-    /*
-     * API NOTE: this method is final for now because if we allowed users to override it, users would
-     * expect their method to be invoked by AbstractFeature.validate(). But this is not yet the case.
-     */
-    public final DataQuality validate() {
+    public DataQuality quality() {
         final Validator v = new Validator(null);
         v.validate(role, value);
         return v.quality;

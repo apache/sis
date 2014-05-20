@@ -19,6 +19,8 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ConcurrentModificationException;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
 
@@ -211,6 +213,26 @@ final class SparseFeature extends AbstractFeature {
         if (properties.put(name, newValue) != oldValue) {
             throw new ConcurrentModificationException(name);
         }
+    }
+
+    /**
+     * Verifies if all current properties met the constraints defined by the feature type. This method returns
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports() reports} for all invalid
+     * properties, if any.
+     */
+    @Override
+    public DataQuality quality() {
+        if (valuesKind == VALUES) {
+            final Validator v = new Validator(ScopeCode.FEATURE);
+            for (final Map.Entry<String, Object> entry : properties.entrySet()) {
+                v.validateAny(getPropertyType(entry.getKey()), entry.getValue());
+            }
+            return v.quality;
+        }
+        /*
+         * Slower path when there is a possibility that user overridden the Property.quality() methods.
+         */
+        return super.quality();
     }
 
     /**
