@@ -17,8 +17,10 @@
 package org.apache.sis.feature;
 
 import java.util.Locale;
+import java.util.Random;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -58,7 +60,8 @@ public final strictfp class FeatureFormatTest extends TestCase {
      */
     @Test
     public void testFeature() {
-        final AbstractFeature feature = FeatureTestCase.twinTown();
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        final AbstractFeature feature = FeatureTestCase.twinTown(random.nextBoolean());
         final FeatureFormat format = new FeatureFormat(Locale.US, null);
         final String text = format.format(feature);
         assertMultilinesEquals("Twin town\n" +
