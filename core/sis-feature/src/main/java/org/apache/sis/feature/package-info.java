@@ -33,7 +33,7 @@
  *       {@link java.lang.Class} in the Java language. By extension, {@code AttributeType} and {@code Operation} are
  *       equivalent to {@link java.lang.reflect.Field} and {@link java.lang.reflect.Method} respectively.</div></li>
  *
- *   <li><p><b>{@linkplain org.apache.sis.feature.DefaultFeature Feature instances}</b> (often called only Features)<br>
+ *   <li><p><b>{@linkplain org.apache.sis.feature.AbstractFeature Feature instances}</b> (often called only Features)<br>
  *       Hold the <em>content</em> (or values) that describe one specific real-world object.</p>
  *
  *       <div class="note"><b>Example:</b> the “Eiffel tower” is a <em>feature instance</em> belonging
@@ -72,7 +72,7 @@
  * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAssociationRole  Feature association role}<br>
  * {@code      └─} {@linkplain org.apache.sis.feature.DefaultOperation        Operation}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
- *             {@linkplain org.apache.sis.feature.DefaultFeature     Feature}<br>
+ *             {@linkplain org.apache.sis.feature.AbstractFeature    Feature}<br>
  *                                                                   Property<br>
  * {@code  ├─} {@linkplain org.apache.sis.feature.DefaultAttribute   Attribute}<br>
  * {@code  └─} {@linkplain org.apache.sis.feature.DefaultAssociation Feature association}<br>

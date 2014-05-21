@@ -433,6 +433,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedPropertyType_1 = 154;
 
         /**
+         * Class of “{0}” values is ‘{2}’, but the requested type is ‘{1}’.
+         */
+        public static final short MismatchedValueClass_3 = 157;
+
+        /**
          * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.
          */
         public static final short MissingAuthority_1 = 135;

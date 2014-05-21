@@ -116,7 +116,7 @@ abstract class FieldType extends PropertyType {
     /**
      * Implementation of {@link #toString()} to be shared by subclasses and {@link DefaultAttribute#toString()}.
      */
-    final StringBuilder toString(final String typeName, final String valueName) {
+    final StringBuilder toString(final String typeName, final Object valueName) {
         final StringBuilder buffer = new StringBuilder(40).append(typeName).append('[');
         final GenericName name = getName();
         if (name != null) {
