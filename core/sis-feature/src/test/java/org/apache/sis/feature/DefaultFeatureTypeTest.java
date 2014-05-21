@@ -76,9 +76,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      */
     public static DefaultFeatureType capital() {
         return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "Capital"), false,
-                new DefaultFeatureType[] {city()},
-                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "parliament"),
-                        String.class, 1, 1, null));
+                new DefaultFeatureType[] {city()}, DefaultAttributeTypeTest.parliament());
     }
 
     /**

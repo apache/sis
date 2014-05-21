@@ -124,11 +124,48 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
      *
+     * <div class="note"><b>Tip:</b> This method returns the property <em>instance</em>. If only the property
+     * <em>value</em> is desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a
+     * chance to avoid the creation of {@link DefaultAttribute} or {@link DefaultAssociation} instances.</div>
+     *
      * @param  name The property name.
-     * @return The property of the given name.
+     * @return The property of the given name (never {@code null}).
      * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     *
+     * @see #getPropertyValue(String)
      */
     public abstract Object getProperty(final String name) throws IllegalArgumentException;
+
+    /**
+     * Sets the property (attribute, operation or association).
+     * The given property shall comply to the following conditions:
+     *
+     * <ul>
+     *   <li>It must be non-null.</li>
+     *   <li>Its {@linkplain Property#getName() name} shall be the name of the property to set in this feature.</li>
+     *   <li>Its type shall be the same instance than the {@linkplain AbstractFeature#getPropertyType(String)
+     *       property type} defined by the feature type for the above name.
+     *       In other words, the following condition shall hold:</li>
+     * </ul>
+     *
+     * {@preformat java
+     *     assert property.getType() == getType().getPropertyType(property.getName());
+     * }
+     *
+     * <div class="note"><b>Note:</b> This method is useful for storing non-default {@code Attribute} or
+     * {@code Association} implementations in this feature. When default implementations are sufficient,
+     * the {@link #setPropertyValue(String, Object)} method is preferred.</div>
+     *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the argument may be changed
+     * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
+     *
+     * @param  property The property to set.
+     * @throws IllegalArgumentException if the type of the given property is not one of the types
+     *         known to this feature, or if the property can not be set of an other reason.
+     *
+     * @see #setPropertyValue(String, Object)
+     */
+    public abstract void setProperty(final Object property) throws IllegalArgumentException;
 
     /**
      * Wraps the given value in a {@link Property} object. This method is invoked only by
@@ -272,6 +309,28 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
     }
 
     /**
+     * Returns {@code true} if the caller can skip the call to {@link #verifyValueType(String, Object)}.
+     * This is a slight optimization for the case when we replaced an attribute value by a new value of
+     * the same class. Since the type check has already been done by the previous assignation, we do not
+     * need to perform it again.
+     *
+     * @param previous The previous value, or {@code null}.
+     * @param value    The new value, or {@code null}.
+     * @return         {@code true} if the caller can skip the verification performed by {@code verifyValueType}.
+     */
+    static boolean canSkipVerification(final Object previous, final Object value) {
+        if (previous != null) {
+            if (value == null) {
+                return true;
+            }
+            if (previous.getClass() == value.getClass() && !(value instanceof AbstractFeature)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Verifies the validity of the given value for the property of the given name. If a check failed,
      * returns the exception to throw. Otherwise returns {@code null}. This method does not throw the
      * exception immediately in order to give to the caller a chance to perform cleanup operation first.
@@ -299,6 +358,27 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
         }
         return new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
                 name, value.getClass())); // 'value' should not be null at this point.
+    }
+
+    /**
+     * Verifies if the given properties can be assigned to this feature.
+     *
+     * @param name Shall be {@code property.getName().toString()}.
+     * @param property The property to verify.
+     */
+    final void verifyPropertyType(final String name, final Property property) {
+        final PropertyType type;
+        if (property instanceof DefaultAttribute<?>) {
+            type = ((DefaultAttribute<?>) property).getType();
+        } else if (property instanceof DefaultAssociation) {
+            type = ((DefaultAssociation) property).getRole();
+        } else {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalArgumentClass_2, "property", property.getClass()));
+        }
+        if (type != getPropertyType(name)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, name));
+        }
     }
 
     /**
