@@ -286,8 +286,17 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
             }
         }
         indices = compact(indices);
+        /*
+         * Rational for choosing whether the feature is sparse: By default, java.util.HashMap implementation creates
+         * an internal array of length 16 (see HashMap.DEFAULT_INITIAL_CAPACITY).  In addition, the HashMap instance
+         * itself consumes approximatively 8 "words" in memory.  Consequently there is no advantage in using HashMap
+         * unless the number of properties is greater than 16 + 8 (note: we could specify a smaller initial capacity,
+         * but the memory consumed by each internal Map.Entry quickly exceed the few saved words). Next, the default
+         * HashMap threshold is 0.75, so there is again no advantage in using HashMap if we do not expect at least 25%
+         * of unused properties. Our current implementation arbitrarily sets the threshold to 50%.
+         */
         final int n = indices.size();
-        isSparse = (n > 16) && (mandatory < n/2); // Arbitrary criterion.
+        isSparse = (n > 24) && (mandatory <= n/2);
     }
 
     /**

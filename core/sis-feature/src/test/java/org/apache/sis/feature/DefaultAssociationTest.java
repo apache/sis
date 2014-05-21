@@ -59,7 +59,7 @@ public final strictfp class DefaultAssociationTest extends TestCase {
     public void testWrongValue() {
         final DefaultAssociation association  = twinTown();
         final PropertyType       population   = association.getRole().getValueType().getProperty("population");
-        final AbstractFeature     otherFeature = new DefaultFeatureType(
+        final AbstractFeature    otherFeature = new DefaultFeatureType(
                 singletonMap(DefaultFeatureType.NAME_KEY, "Population"), false, null, population).newInstance();
         try {
             association.setValue(otherFeature);
@@ -76,7 +76,8 @@ public final strictfp class DefaultAssociationTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        assertSerializedEquals(twinTown());
+        final DefaultAssociation twinTown = twinTown();
+        assertNotSame(twinTown, assertSerializedEquals(twinTown));
     }
 
     /**
