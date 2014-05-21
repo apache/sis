@@ -32,14 +32,14 @@ import static java.util.Collections.singletonMap;
 
 
 /**
- * Base class of {@link DenseFeatureTest} and {@link SparseFeatureTest}.
+ * Tests common to {@link DenseFeatureTest} and {@link SparseFeatureTest}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5
  * @module
  */
-abstract strictfp class FeatureTestCase extends TestCase {
+public abstract strictfp class FeatureTestCase extends TestCase {
     /**
      * The feature being tested.
      */

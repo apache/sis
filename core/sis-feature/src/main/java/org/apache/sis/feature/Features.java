@@ -37,7 +37,7 @@ public final class Features extends Static {
 
     /**
      * Casts the given attribute type to the given parameterized type.
-     * An exception is thrown immediately if the type does not have the expected
+     * An exception is thrown immediately if the given type does not have the expected
      * {@linkplain DefaultAttributeType#getValueClass() value class}.
      *
      * @param  <T>        The expected value class.
@@ -57,9 +57,39 @@ public final class Features extends Static {
             // We require a strict equality - not type.isAssignableFrom(actual) - because in
             // the later case we could have (to be strict) to return a <? extends T> type.
             if (!valueClass.equals(actual)) {
-                throw new ClassCastException(Errors.format(Errors.Keys.MismatchedPropertyType_1, type.getName()));
+                throw new ClassCastException(Errors.format(Errors.Keys.MismatchedValueClass_3,
+                        type.getName(), valueClass, actual));
             }
         }
         return (DefaultAttributeType<T>) type;
+    }
+
+    /**
+     * Casts the given attribute instance to the given parameterized type.
+     * An exception is thrown immediately if the given instance does not have the expected
+     * {@linkplain DefaultAttributeType#getValueClass() value class}.
+     *
+     * @param  <T>        The expected value class.
+     * @param  attribute  The attribute instance to cast, or {@code null}.
+     * @param  valueClass The expected value class.
+     * @return The attribute instance casted to the given value class, or {@code null} if the given instance was null.
+     * @throws ClassCastException if the given attribute instance does not have the expected value class.
+     *
+     * @category verification
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> DefaultAttribute<T> cast(final DefaultAttribute<?> attribute, final Class<T> valueClass)
+            throws ClassCastException
+    {
+        if (attribute != null) {
+            final Class<?> actual = attribute.getType().getValueClass();
+            // We require a strict equality - not type.isAssignableFrom(actual) - because in
+            // the later case we could have (to be strict) to return a <? extends T> type.
+            if (!valueClass.equals(actual)) {
+                throw new ClassCastException(Errors.format(Errors.Keys.MismatchedValueClass_3,
+                        attribute.getName(), valueClass, actual));
+            }
+        }
+        return (DefaultAttribute<T>) attribute;
     }
 }
