@@ -246,7 +246,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     private void computeTransientFields() {
         final int capacity = Containers.hashMapCapacity(properties.size());
         byName       = new LinkedHashMap<>(capacity);
-        indices      = new HashMap<>(capacity);
+        indices      = new LinkedHashMap<>(capacity);
         assignableTo = new HashSet<>(4);
         assignableTo.add(getName());
         scanPropertiesFrom(this);

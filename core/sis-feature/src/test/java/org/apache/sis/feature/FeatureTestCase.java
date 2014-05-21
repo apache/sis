@@ -133,8 +133,16 @@ abstract strictfp class FeatureTestCase extends TestCase {
             assertTrue(message, message.contains("Integer"));
         }
         assertEquals("Property shall not have been modified.", "Atlantide", getAttributeValue("city"));
+        /*
+         * Before we set the population attribute, the feature should be considered invalid.
+         * After we set it, the feature should be valid since all mandatory attributes are set.
+         */
+        assertQualityReports("population", "population");
         setAttributeValue("population", null, 1000);
-        assertValid();
+        assertQualityReports(null, null);
+        /*
+         * Opportunist tests using the existing instance.
+         */
         testSerialization();
         try {
             testClone("population", 1000, 1500);
@@ -170,7 +178,6 @@ abstract strictfp class FeatureTestCase extends TestCase {
          * in order to test the conversion of existing values to property instances.
          */
         getValuesFromProperty = true;
-        setAttributeValue("isGlobal", null, Boolean.TRUE);
         final SimpleInternationalString region = new SimpleInternationalString("State of New York");
         setAttributeValue("region", null, region);
         /*
@@ -186,7 +193,16 @@ abstract strictfp class FeatureTestCase extends TestCase {
             assertTrue(message, message.contains("String"));
         }
         assertSame("region", region, getAttributeValue("region"));
-        assertValid();
+        /*
+         * Before we set the 'isGlobal' attribute, the feature should be considered invalid.
+         * After we set it, the feature should be valid since all mandatory attributes are set.
+         */
+        assertQualityReports("isGlobal", "isGlobal");
+        setAttributeValue("isGlobal", null, Boolean.TRUE);
+        assertQualityReports(null, null);
+        /*
+         * Opportunist tests using the existing instance.
+         */
         testSerialization();
         try {
             testClone("population", 8405837, 8405838); // A birth...
@@ -196,15 +212,26 @@ abstract strictfp class FeatureTestCase extends TestCase {
     }
 
     /**
-     * Asserts that {@link AbstractFeature#quality()} reports no anomaly.
+     * Asserts that {@link AbstractFeature#quality()} reports no anomaly, or only an anomaly for the given property.
+     *
+     * @param property The property for which we expect a report, or {@code null} if none.
+     * @param keyword  A keyword which is expected to exists in the explanation.
      */
-    private void assertValid() {
+    private void assertQualityReports(final String property, final String keyword) {
+        int numOccurrences = 0;
         for (final Element report : feature.quality().getReports()) {
             for (final Result result : report.getResults()) {
                 assertInstanceOf("result", ConformanceResult.class, result);
-                assertTrue("result.pass", ((ConformanceResult) result).pass());
+                if (!((ConformanceResult) result).pass()) {
+                    final String identifier  = report.getMeasureIdentification().toString();
+                    final String explanation = ((ConformanceResult) result).getExplanation().toString();
+                    assertEquals("quality.report.measureIdentification", property, identifier);
+                    assertTrue("quality.report.result.explanation", explanation.contains(keyword));
+                    numOccurrences++;
+                }
             }
         }
+        assertEquals("Number of reports.", property == null ? 0 : 1, numOccurrences);
     }
 
     /**
