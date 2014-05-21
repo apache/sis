@@ -17,14 +17,10 @@
 package org.apache.sis.feature;
 
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link DefaultFeature}.
+ * Tests {@link DenseFeature}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -36,20 +32,14 @@ import static org.junit.Assert.*;
     DefaultAttributeTest.class,
     PropertySingletonTest.class
 })
-public final strictfp class DefaultFeatureTest extends TestCase {
+public final strictfp class DenseFeatureTest extends FeatureTestCase {
     /**
-     * Tests the construction of a simple feature without super-types.
+     * Creates a new feature for the given type.
      */
-    @Test
-    public void testSimple() {
-        final DefaultFeature cityPopulation = new DefaultFeature(DefaultFeatureTypeTest.city());
-
-        assertEquals("Utopia", cityPopulation.getPropertyValue("city"));
-        cityPopulation.setPropertyValue("city", "Atlantide");
-        assertEquals("Atlantide", cityPopulation.getPropertyValue("city"));
-
-        assertNull(cityPopulation.getPropertyValue("population"));
-        cityPopulation.setPropertyValue("population", 1000);
-        assertEquals(1000, cityPopulation.getPropertyValue("population"));
+    @Override
+    final AbstractFeature createFeature(final DefaultFeatureType type) {
+        return new DenseFeature(type);
     }
+
+    // Inherit all tests from the super-class.
 }

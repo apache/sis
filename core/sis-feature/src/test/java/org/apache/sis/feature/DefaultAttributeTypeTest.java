@@ -26,6 +26,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -69,6 +70,14 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
                 identification, Integer.class, 1, 1, null);
         identification.clear();
         return population;
+    }
+
+    /**
+     * Creates an attribute type for a parliament name.
+     */
+    static DefaultAttributeType<String> parliament() {
+        return new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "parliament"),
+                        String.class, 1, 1, null);
     }
 
     /**

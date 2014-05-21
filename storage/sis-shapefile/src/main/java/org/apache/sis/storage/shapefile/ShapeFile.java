@@ -29,7 +29,7 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Geometry;
 
-import org.apache.sis.feature.DefaultFeature;
+import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.storage.DataStoreException;
@@ -74,7 +74,7 @@ public class ShapeFile {
     // reserve 4 bytes
 
     public ArrayList<FieldDescriptor> FDArray = new ArrayList<FieldDescriptor>();
-    public Map<Integer, DefaultFeature> FeatureMap = new HashMap<Integer, DefaultFeature>();
+    public Map<Integer, AbstractFeature> FeatureMap = new HashMap<Integer, AbstractFeature>();
 
 
 
@@ -156,7 +156,7 @@ public class ShapeFile {
             data = new byte[4];
             rf.order(ByteOrder.LITTLE_ENDIAN);
             int ShapeType = rf.getInt();
-            final DefaultFeature f = new DefaultFeature(featureType);
+            final AbstractFeature f = featureType.newInstance();
 
             if (ShapeType == ShapeTypeEnum.Point.getValue()) {
                 double x = rf.getDouble();
