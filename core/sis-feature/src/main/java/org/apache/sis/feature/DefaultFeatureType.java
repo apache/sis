@@ -56,7 +56,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
  * {@section Properties and inheritance}
- * Each feature type can provide descriptions for the following {@link #getProperties(boolean) properties}:
+ * Each feature type can provide descriptions for the following {@linkplain #getProperties(boolean) properties}:
  *
  * <ul>
  *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
