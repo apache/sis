@@ -96,19 +96,10 @@ final class SparseFeature extends AbstractFeature {
     }
 
     /**
-     * Returns the property (attribute, operation or association) of the given name.
-     *
-     * @param  name The property name.
-     * @return The property of the given name.
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * Ensures that the {@link #properties} map contains {@link Property} instances instead than
+     * property values. The conversion, if needed, will be performed at most once per feature.
      */
-    @Override
-    public Object getProperty(final String name) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("name", name);
-        /*
-         * Wraps values in Property objects for all entries in the properties map,
-         * if not already done. This operation is executed at most once per feature.
-         */
+    private void ensurePropertyMap() {
         if (valuesKind != PROPERTIES) {
             if (!properties.isEmpty()) { // The map is typically empty when this method is first invoked.
                 if (valuesKind != VALUES) {
@@ -125,6 +116,19 @@ final class SparseFeature extends AbstractFeature {
             }
             valuesKind = PROPERTIES; // Set only on success.
         }
+    }
+
+    /**
+     * Returns the property (attribute, operation or association) of the given name.
+     *
+     * @param  name The property name.
+     * @return The property of the given name.
+     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     */
+    @Override
+    public Object getProperty(final String name) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("name", name);
+        ensurePropertyMap();
         return getPropertyInstance(name);
     }
 
@@ -140,6 +144,22 @@ final class SparseFeature extends AbstractFeature {
             replace(name, null, property);
         }
         return property;
+    }
+
+    /**
+     * Sets the property (attribute, operation or association).
+     *
+     * @param  property The property to set.
+     * @throws IllegalArgumentException if the type of the given property is not one of the types
+     *         known to this feature.
+     */
+    @Override
+    public void setProperty(final Object property) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("property", property);
+        final String name = ((Property) property).getName().toString();
+        verifyPropertyType(name, (Property) property);
+        ensurePropertyMap();
+        properties.put(name, property);
     }
 
     /**
@@ -186,11 +206,11 @@ final class SparseFeature extends AbstractFeature {
         if (valuesKind == VALUES) {
             final Object previous = properties.put(name, value);
             /*
-             * Slight optimisation:  if we replaced a previous value of the same class, then we can skip the
+             * Slight optimization:  if we replaced a previous value of the same class, then we can skip the
              * checks for name and type validity since those checks have been done previously. But if we add
              * a new value or a value of a different type, then we need to check the name and type validity.
              */
-            if (previous == null || (value != null && previous.getClass() != value.getClass())) {
+            if (!canSkipVerification(previous, value)) {
                 final RuntimeException e = verifyValueType(name, value);
                 if (e != null) {
                     replace(name, value, previous); // Restore the previous value.

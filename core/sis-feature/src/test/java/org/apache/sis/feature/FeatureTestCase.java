@@ -16,11 +16,14 @@
  */
 package org.apache.sis.feature;
 
+import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.ConformanceResult;
+import org.opengis.metadata.quality.QuantitativeResult;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -127,6 +130,7 @@ abstract strictfp class FeatureTestCase extends TestCase {
         setAttributeValue("city", "Utopia", "Atlantide");
         try {
             feature.setPropertyValue("city", 2000);
+            fail("Shall not be allowed to set a value of the wrong type.");
         } catch (ClassCastException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("city"));
@@ -187,6 +191,7 @@ abstract strictfp class FeatureTestCase extends TestCase {
          */
         try {
             feature.setPropertyValue("region", "State of New York");
+            fail("Shall not be allowed to set a value of the wrong type.");
         } catch (ClassCastException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("region"));
@@ -212,17 +217,59 @@ abstract strictfp class FeatureTestCase extends TestCase {
     }
 
     /**
+     * Tests the possibility to plugin custom attributes via {@link AbstractFeature#setProperty(Property)}.
+     */
+    @Test
+    @DependsOnMethod({"testSimpleValues", "testSimpleProperties"})
+    public void testCustomAttribute() {
+        feature = createFeature(DefaultFeatureTypeTest.city());
+        final DefaultAttribute<String> wrong = DefaultAttributeTest.parliament();
+        final CustomAttribute<String> city = new CustomAttribute<>(Features.cast(
+                (DefaultAttributeType<?>) feature.getType().getProperty("city"), String.class));
+
+        feature.setProperty(city);
+        setAttributeValue("city", "Utopia", "Atlantide");
+        try {
+            feature.setProperty(wrong);
+            fail("Shall not be allowed to set a property of the wrong type.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("parliament"));
+            assertTrue(message, message.contains("City"));
+        }
+        assertSame(city, feature.getProperty("city"));
+        /*
+         * The quality report is expected to contains a custom element.
+         */
+        int numOccurrences = 0;
+        final DataQuality quality = assertQualityReports("population", "population");
+        for (final Element report : quality.getReports()) {
+            final String identifier = report.getMeasureIdentification().toString();
+            if (identifier.equals("city")) {
+                numOccurrences++;
+                final Result result = TestUtilities.getSingleton(report.getResults());
+                assertInstanceOf("result", QuantitativeResult.class, result);
+                assertEquals("quality.report.result.errorStatistic",
+                        CustomAttribute.ADDITIONAL_QUALITY_INFO,
+                        String.valueOf(((QuantitativeResult) result).getErrorStatistic()));
+            }
+        }
+        assertEquals("Number of reports.", 1, numOccurrences);
+    }
+
+    /**
      * Asserts that {@link AbstractFeature#quality()} reports no anomaly, or only an anomaly for the given property.
      *
-     * @param property The property for which we expect a report, or {@code null} if none.
-     * @param keyword  A keyword which is expected to exists in the explanation.
+     * @param  property The property for which we expect a report, or {@code null} if none.
+     * @param  keyword  A keyword which is expected to exists in the explanation.
+     * @return The data quality report.
      */
-    private void assertQualityReports(final String property, final String keyword) {
+    private DataQuality assertQualityReports(final String property, final String keyword) {
         int numOccurrences = 0;
-        for (final Element report : feature.quality().getReports()) {
+        final DataQuality quality = feature.quality();
+        for (final Element report : quality.getReports()) {
             for (final Result result : report.getResults()) {
-                assertInstanceOf("result", ConformanceResult.class, result);
-                if (!((ConformanceResult) result).pass()) {
+                if (result instanceof ConformanceResult && !((ConformanceResult) result).pass()) {
                     final String identifier  = report.getMeasureIdentification().toString();
                     final String explanation = ((ConformanceResult) result).getExplanation().toString();
                     assertEquals("quality.report.measureIdentification", property, identifier);
@@ -232,6 +279,7 @@ abstract strictfp class FeatureTestCase extends TestCase {
             }
         }
         assertEquals("Number of reports.", property == null ? 0 : 1, numOccurrences);
+        return quality;
     }
 
     /**

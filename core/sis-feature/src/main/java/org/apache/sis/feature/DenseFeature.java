@@ -102,8 +102,6 @@ final class DenseFeature extends AbstractFeature {
             if (property != null) {
                 return property;
             }
-        } else if (properties == null) {
-            properties = new Property[indices.size()];
         } else {
             wrapValuesInProperties();
         }
@@ -113,16 +111,37 @@ final class DenseFeature extends AbstractFeature {
     }
 
     /**
+     * Sets the property (attribute, operation or association).
+     *
+     * @param  property The property to set.
+     * @throws IllegalArgumentException if the type of the given property is not one of the types
+     *         known to this feature.
+     */
+    @Override
+    public void setProperty(final Object property) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("property", property);
+        final String name = ((Property) property).getName().toString();
+        verifyPropertyType(name, (Property) property);
+        if (!(properties instanceof Property[])) {
+            wrapValuesInProperties();
+        }
+        properties[indices.get(name)] = property;
+    }
+
+    /**
      * Wraps values in {@code Property} objects for all elements in the {@link #properties} array.
      * This operation is executed at most once per feature.
      */
     private void wrapValuesInProperties() {
-        final Property[] c = new Property[properties.length];
-        for (final Map.Entry<String, Integer> entry : indices.entrySet()) {
-            final int   index  = entry.getValue();
-            final Object value = properties[index];
-            if (value != null) {
-                c[index] = createProperty(entry.getKey(), value);
+        final Property[] c = new Property[indices.size()];
+        if (properties != null) {
+            assert c.length == properties.length;
+            for (final Map.Entry<String, Integer> entry : indices.entrySet()) {
+                final int   index  = entry.getValue();
+                final Object value = properties[index];
+                if (value != null) {
+                    c[index] = createProperty(entry.getKey(), value);
+                }
             }
         }
         properties = c; // Store only on success.
@@ -173,8 +192,7 @@ final class DenseFeature extends AbstractFeature {
         }
         if (!(properties instanceof Property[])) {
             if (value != null) {
-                final Object previous = properties[index];
-                if (previous == null || previous.getClass() != value.getClass()) {
+                if (!canSkipVerification(properties[index], value)) {
                     final RuntimeException e = verifyValueType(name, value);
                     if (e != null) {
                         throw e;

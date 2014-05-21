@@ -58,6 +58,14 @@ public final strictfp class DefaultAttributeTest extends TestCase {
     }
 
     /**
+     * Creates an attribute for a singleton value.
+     * This attribute has no default value.
+     */
+    static DefaultAttribute<String> parliament() {
+        return new DefaultAttribute<>(DefaultAttributeTypeTest.parliament());
+    }
+
+    /**
      * Tests getting and setting an attribute value.
      */
     @Test
