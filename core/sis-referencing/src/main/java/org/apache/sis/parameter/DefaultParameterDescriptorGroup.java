@@ -156,6 +156,8 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
      * @param maximumOccurs The {@linkplain #getMaximumOccurs() maximum number of times}
      *                      that values for this parameter group are required.
      * @param parameters    The {@linkplain #descriptors() parameter descriptors} for this group.
+     *
+     * @throws InvalidParameterNameException If a parameter name is duplicated.
      */
     public DefaultParameterDescriptorGroup(final Map<String,?> properties,
             final int minimumOccurs, final int maximumOccurs, GeneralParameterDescriptor... parameters)

@@ -43,25 +43,26 @@ public final class Parameters extends Static {
 
     /**
      * Casts the given parameter descriptor to the given type.
-     * An exception is thrown immediately if the parameter does not have the expected value class.
+     * An exception is thrown immediately if the parameter does not have the expected
+     * {@linkplain DefaultParameterDescriptor#getValueClass() value class}.
      *
-     * @param  <T> The expected value class.
+     * @param  <T>        The expected value class.
      * @param  descriptor The descriptor to cast, or {@code null}.
-     * @param  type The expected value class.
-     * @return The descriptor casted to the given type, or {@code null} if the given descriptor was null.
-     * @throws ClassCastException if the given descriptor doesn't have the expected value class.
+     * @param  valueClass The expected value class.
+     * @return The descriptor casted to the given value class, or {@code null} if the given descriptor was null.
+     * @throws ClassCastException if the given descriptor does not have the expected value class.
      *
      * @category verification
      */
     @SuppressWarnings("unchecked")
-    public static <T> ParameterDescriptor<T> cast(final ParameterDescriptor<?> descriptor, final Class<T> type)
+    public static <T> ParameterDescriptor<T> cast(final ParameterDescriptor<?> descriptor, final Class<T> valueClass)
             throws ClassCastException
     {
         if (descriptor != null) {
             final Class<?> actual = descriptor.getValueClass();
             // We require a strict equality - not type.isAssignableFrom(actual) - because in
             // the later case we could have (to be strict) to return a <? extends T> type.
-            if (!type.equals(actual)) {
+            if (!valueClass.equals(actual)) {
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalParameterType_2,
                         descriptor.getName().getCode(), actual));
             }
