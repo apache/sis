@@ -226,8 +226,8 @@ final class SparseFeature extends AbstractFeature {
     public DataQuality quality() {
         if (valuesKind == VALUES) {
             final Validator v = new Validator(ScopeCode.FEATURE);
-            for (final Map.Entry<String, Object> entry : properties.entrySet()) {
-                v.validateAny(getPropertyType(entry.getKey()), entry.getValue());
+            for (final String name : super.getType().indices().keySet()) {
+                v.validateAny(getPropertyType(name), properties.get(name));
             }
             return v.quality;
         }
