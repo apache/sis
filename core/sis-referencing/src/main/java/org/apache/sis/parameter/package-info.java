@@ -67,7 +67,7 @@
  * }
  * </div>
  *
- * Calls to {@code parameter(…)} throw a {@link org.opengis.parameter.InvalidParameterNameException}
+ * Calls to {@code parameter(…)} throw a {@link org.opengis.parameter.ParameterNotFoundException}
  * if the given name is unknown to the group.
  * Calls to {@code setValue(…)} throw a {@link org.opengis.parameter.InvalidParameterValueException}
  * if the given value is not assignable to the expected class or is not inside the value domain.

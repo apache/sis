@@ -55,7 +55,7 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
     /**
      * The associated feature.
      */
-    private DefaultFeature value;
+    private AbstractFeature value;
 
     /**
      * Creates a new association of the given type.
@@ -73,10 +73,13 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      * @param role  Information about the association.
      * @param value The initial value.
      */
-    public DefaultAssociation(final DefaultAssociationRole role, final DefaultFeature value) {
+    public DefaultAssociation(final DefaultAssociationRole role, final AbstractFeature value) {
         ArgumentChecks.ensureNonNull("role", role);
         this.role  = role;
         this.value = value;
+        if (value != null) {
+            ensureValid(role.getValueType(), value.getType());
+        }
     }
 
     /**
@@ -110,9 +113,9 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      *
      * @return The associated feature (may be {@code null}).
      *
-     * @see DefaultFeature#getPropertyValue(String)
+     * @see AbstractFeature#getPropertyValue(String)
      */
-    public DefaultFeature getValue() {
+    public AbstractFeature getValue() {
         return value;
     }
 
@@ -126,30 +129,37 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      * The amount of validation performed by this method is implementation dependent.
      * Usually, only the most basic constraints are verified. This is so for performance reasons
      * and also because some rules may be temporarily broken while constructing a feature.
-     * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
+     * A more exhaustive verification can be performed by invoking the {@link #quality()} method.
      *
      * @param  value The new value, or {@code null}.
      * @throws IllegalArgumentException If the given feature is not valid for this association.
      *
-     * @see DefaultFeature#setPropertyValue(String, Object)
+     * @see AbstractFeature#setPropertyValue(String, Object)
      */
-    public void setValue(final DefaultFeature value) {
+    public void setValue(final AbstractFeature value) {
         if (value != null) {
-            final DefaultFeatureType base = role.getValueType();
-            final DefaultFeatureType type = value.getType();
-            if (base != type && !base.maybeAssignableFrom(type)) {
-                throw new IllegalArgumentException(
-                        Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
-            }
+            ensureValid(role.getValueType(), value.getType());
         }
         this.value = value;
     }
 
     /**
+     * Ensures that storing a feature of the given type is valid for an association
+     * expecting the given base type.
+     */
+    private void ensureValid(final DefaultFeatureType base, final DefaultFeatureType type) {
+        if (base != type && !base.maybeAssignableFrom(type)) {
+            throw new IllegalArgumentException(
+                    Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
+        }
+    }
+
+    /**
      * Verifies if the current association value mets the constraints defined by the association role.
-     * This method returns {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
-     * reports} for all constraint violations found, if any.
-     * See {@link DefaultAttribute#validate()} for an example.
+     * This method returns at most one {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
+     * report} with a {@linkplain org.apache.sis.metadata.iso.quality.DefaultDomainConsistency#getResults() result} for
+     * each constraint violations found, if any.
+     * See {@link DefaultAttribute#quality()} for an example.
      *
      * <p>This association is valid if this method does not report any
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
@@ -157,33 +167,27 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      *
      * @return Reports on all constraint violations found.
      *
-     * @see DefaultFeature#validate()
+     * @see AbstractFeature#quality()
      */
-    /*
-     * API NOTE: this method is final for now because if we allowed users to override it, users would
-     * expect their method to be invoked by DefaultFeature.validate(). But this is not yet the case.
-     */
-    public final DataQuality validate() {
+    public DataQuality quality() {
         final Validator v = new Validator(null);
         v.validate(role, value);
         return v.quality;
     }
 
     /**
-     * Returns a shallow copy of this association.
-     * The association {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * Returns a copy of this association.
+     * The default implementation returns a <em>shallow</em> copy:
+     * the association {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * However subclasses may choose to do otherwise.
      *
      * @return A clone of this association.
+     * @throws CloneNotSupportedException if this association can not be cloned.
+     *         The default implementation never throw this exception. However subclasses may throw it.
      */
     @Override
-    public DefaultAssociation clone() {
-        final DefaultAssociation clone;
-        try {
-            clone = (DefaultAssociation) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e); // Should never happen since we are cloneable.
-        }
-        return clone;
+    public DefaultAssociation clone() throws CloneNotSupportedException {
+        return (DefaultAssociation) super.clone();
     }
 
     /**
@@ -223,7 +227,7 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = role.toString("FeatureAssociation", role.getValueType().getName().toString());
+        final StringBuilder buffer = role.toString("FeatureAssociation", role.getValueType().getName());
         if (value != null) {
             final String pt = role.getTitleProperty();
             if (pt != null) {

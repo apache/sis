@@ -31,8 +31,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * <ul>
  *   <li><b>Aggregation</b> represents associations between features which can exist even if the aggregate is destroyed.</li>
  *   <li><b>Composition</b> represents relationships where the owned features are destroyed together with the composite.</li>
- *   <li><b>Spatial</b> represents spatial or topological relationships that may exist between features (e.g. “east of”).</li>
- *   <li><b>Temporal</b> may represent for example a sequence of changes over time involving the replacement of some
+ *   <li><b>Spatial</b> association represents spatial or topological relationships that may exist between features (e.g. “<cite>east of</cite>”).</li>
+ *   <li><b>Temporal</b> association may represent for example a sequence of changes over time involving the replacement of some
  *       feature instances by other feature instances.</li>
  * </ul>
  *
@@ -212,6 +212,6 @@ public class DefaultAssociationRole extends FieldType {
     @Debug
     @Override
     public String toString() {
-        return toString("FeatureAssociationRole", valueType.getName().toString()).toString();
+        return toString("FeatureAssociationRole", valueType.getName()).toString();
     }
 }
