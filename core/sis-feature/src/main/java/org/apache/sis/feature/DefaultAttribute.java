@@ -121,7 +121,7 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      *
      * @return The attribute value (may be {@code null}).
      *
-     * @see DefaultFeature#getPropertyValue(String)
+     * @see AbstractFeature#getPropertyValue(String)
      */
     public T getValue() {
         return value;
@@ -134,23 +134,64 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      * The amount of validation performed by this method is implementation dependent.
      * Usually, only the most basic constraints are verified. This is so for performance reasons
      * and also because some rules may be temporarily broken while constructing a feature.
-     * A more exhaustive verification can be performed by invoking the {@link #validate()} method.
+     * A more exhaustive verification can be performed by invoking the {@link #quality()} method.
      *
      * @param value The new value.
      *
-     * @see DefaultFeature#setPropertyValue(String, Object)
+     * @see AbstractFeature#setPropertyValue(String, Object)
      */
     public void setValue(final T value) {
         this.value = value;
     }
 
     /**
-     * Verifies if the current attribute value mets the constraints defined by the attribute type.
-     * This method returns {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
-     * reports} for all constraint violations found, if any.
+     * Evaluates the quality of this attribute at this method invocation time. The data quality reports
+     * may include information about whether the attribute value mets the constraints defined by the
+     * {@linkplain DefaultAttributeType attribute type}, or any other criterion at implementation choice.
+     *
+     * <p>The default implementation reports data quality with at least the following information:</p>
+     * <ul>
+     *   <li>
+     *     The {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getScope() scope}
+     *     {@linkplain org.apache.sis.metadata.iso.quality.DefaultScope#getLevel() level} is set to
+     *     {@link org.opengis.metadata.maintenance.ScopeCode#ATTRIBUTE}.
+     *   </li><li>
+     *     At most one {@linkplain org.apache.sis.metadata.iso.quality.DefaultDomainConsistency domain consistency}
+     *     element is added to the {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
+     *     reports} list (implementations are free to omit that element if they have nothing to report).
+     *     If a report is provided, then it will contain at least the following information:
+     *     <ul>
+     *       <li>
+     *         The {@linkplain #getName() attribute name} as the data quality
+     *         {@linkplain org.apache.sis.metadata.iso.quality.DefaultDomainConsistency#getMeasureIdentification()
+     *         measure identification}.
+     *
+     *         <div class="note"><b>Note:</b> strictly speaking, {@code measureIdentification} identifies the
+     *         <em>quality measurement</em>, not the “real” measurement itself. However this implementation
+     *         uses the same set of identifiers for both for simplicity.</div>
+     *       </li><li>
+     *         If the attribute {@linkplain #getValue() value} is not an {@linkplain Class#isInstance instance}
+     *         of the expected {@linkplain DefaultAttributeType#getValueClass() value class}, or if the number
+     *         of occurrences is not inside the cardinality range, or if any other constraint is violated, then
+     *         a {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} is
+     *         added for each violation with an
+     *         {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#getExplanation() explanation}
+     *         set to the error message.
+     *
+     *         <div class="warning"><b>Note:</b> this is a departure from ISO intend, since {@code explanation}
+     *         should be a statement about what a successful conformance means. This point may be reformulated
+     *         in a future SIS version.</div>
+     *       </li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * This attribute is valid if this method does not report any
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
+     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
      *
      * <div class="note"><b>Example:</b> given an attribute named “population” with [1 … 1] cardinality,
-     * if no value has been assigned to that attribute, then this {@code validate()} method will return
+     * if no value has been assigned to that attribute, then this {@code quality()} method will return
      * the following data quality report:
      *
      * {@preformat text
@@ -167,40 +208,31 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      * }
      * </div>
      *
-     * This attribute is valid if this method does not report any
-     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
-     * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
-     *
      * @return Reports on all constraint violations found.
      *
-     * @see DefaultFeature#validate()
+     * @see AbstractFeature#quality()
      */
-    /*
-     * API NOTE: this method is final for now because if we allowed users to override it, users would
-     * expect their method to be invoked by DefaultFeature.validate(). But this is not yet the case.
-     */
-    public final DataQuality validate() {
+    public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.ATTRIBUTE);
         v.validate(type, value);
         return v.quality;
     }
 
     /**
-     * Returns a shallow copy of this attribute.
-     * The attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * Returns a copy of this attribute.
+     * The default implementation returns a <em>shallow</em> copy:
+     * the attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * However subclasses may choose to do otherwise.
      *
      * @return A clone of this attribute.
+     * @throws CloneNotSupportedException if this attribute can not be cloned.
+     *         The default implementation never throw this exception. However subclasses may throw it,
+     *         for example on attempt to clone the attribute value.
      */
     @Override
     @SuppressWarnings("unchecked")
-    public DefaultAttribute<T> clone() {
-        final DefaultAttribute<T> clone;
-        try {
-            clone = (DefaultAttribute<T>) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e); // Should never happen since we are cloneable.
-        }
-        return clone;
+    public DefaultAttribute<T> clone() throws CloneNotSupportedException {
+        return (DefaultAttribute<T>) super.clone();
     }
 
     /**
