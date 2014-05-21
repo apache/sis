@@ -219,21 +219,20 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
     }
 
     /**
-     * Returns a shallow copy of this attribute.
-     * The attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * Returns a copy of this attribute.
+     * The default implementation returns a <em>shallow</em> copy:
+     * the attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * However subclasses may choose to do otherwise.
      *
      * @return A clone of this attribute.
+     * @throws CloneNotSupportedException if this attribute can not be cloned.
+     *         The default implementation never throw this exception. However subclasses may throw it,
+     *         for example on attempt to clone the attribute value.
      */
     @Override
     @SuppressWarnings("unchecked")
-    public DefaultAttribute<T> clone() {
-        final DefaultAttribute<T> clone;
-        try {
-            clone = (DefaultAttribute<T>) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e); // Should never happen since we are cloneable.
-        }
-        return clone;
+    public DefaultAttribute<T> clone() throws CloneNotSupportedException {
+        return (DefaultAttribute<T>) super.clone();
     }
 
     /**

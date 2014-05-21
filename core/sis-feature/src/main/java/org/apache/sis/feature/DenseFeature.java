@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Arrays;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
+import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -211,6 +212,29 @@ final class DenseFeature extends AbstractFeature {
          * Slower path when there is a possibility that user overridden the Property.quality() methods.
          */
         return super.quality();
+    }
+
+    /**
+     * Returns a shallow copy of this feature.
+     * The properties are cloned, but not the property values.
+     *
+     * @return A clone of this feature.
+     */
+    @Override
+    public AbstractFeature clone() throws CloneNotSupportedException {
+        final DenseFeature clone = (DenseFeature) super.clone();
+        clone.properties = clone.properties.clone();
+        if (clone.properties instanceof Property[]) {
+            final Property[] p = (Property[]) clone.properties;
+            final Cloner cloner = new Cloner();
+            for (int i=0; i<p.length; i++) {
+                final Property property = p[i];
+                if (property instanceof Cloneable) {
+                    p[i] = (Property) cloner.clone(property);
+                }
+            }
+        }
+        return clone;
     }
 
     /**

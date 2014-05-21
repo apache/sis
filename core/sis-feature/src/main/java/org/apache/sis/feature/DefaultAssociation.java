@@ -176,20 +176,18 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
     }
 
     /**
-     * Returns a shallow copy of this association.
-     * The association {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * Returns a copy of this association.
+     * The default implementation returns a <em>shallow</em> copy:
+     * the association {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * However subclasses may choose to do otherwise.
      *
      * @return A clone of this association.
+     * @throws CloneNotSupportedException if this association can not be cloned.
+     *         The default implementation never throw this exception. However subclasses may throw it.
      */
     @Override
-    public DefaultAssociation clone() {
-        final DefaultAssociation clone;
-        try {
-            clone = (DefaultAssociation) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e); // Should never happen since we are cloneable.
-        }
-        return clone;
+    public DefaultAssociation clone() throws CloneNotSupportedException {
+        return (DefaultAssociation) super.clone();
     }
 
     /**

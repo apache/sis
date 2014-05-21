@@ -132,10 +132,12 @@ public final strictfp class DefaultAttributeTest extends TestCase {
 
     /**
      * Tests {@link DefaultAttribute#clone()}.
+     *
+     * @throws CloneNotSupportedException Should never happen.
      */
     @Test
     @DependsOnMethod("testEquals")
-    public void testClone() {
+    public void testClone() throws CloneNotSupportedException {
         final DefaultAttribute<Integer> a1 = population();
         final DefaultAttribute<Integer> a2 = a1.clone();
         assertNotSame(a1, a2);
@@ -149,7 +151,7 @@ public final strictfp class DefaultAttributeTest extends TestCase {
     @DependsOnMethod("testEquals")
     public void testSerialization() {
         final DefaultAttribute<String> attribute = city();
-        assertSerializedEquals(attribute);
+        assertNotSame(attribute, assertSerializedEquals(attribute));
     }
 
     /**

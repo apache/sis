@@ -107,6 +107,14 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
+     * Creates a sub-type of the "metropolis" type with the "region" attribute overridden to
+     * {@link InternationalString}.
+     */
+    static DefaultFeatureType worldMetropolis() {
+        return worldMetropolis(metropolis(), InternationalString.class);
+    }
+
+    /**
      * Creates a sub-type of the "metropolis" type with the "region" attribute overridden to the given type.
      * The given type should be {@link InternationalString}, but we allow other type for testing argument checks.
      */

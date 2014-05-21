@@ -62,7 +62,7 @@ import org.apache.sis.util.CorruptedObjectException;
  *
  * @see DefaultFeatureType#newInstance()
  */
-public abstract class AbstractFeature implements Serializable {
+public abstract class AbstractFeature implements Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -373,6 +373,22 @@ public abstract class AbstractFeature implements Serializable {
             }
         }
         return v.quality;
+    }
+
+    /**
+     * Returns a copy of this feature
+     * This method clones also all {@linkplain Cloneable cloneable} property instances in this feature,
+     * but not necessarily property values. Whether the property values are cloned or not (i.e. whether
+     * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
+     * property {@code clone()} methods (see for example {@link DefaultAttribute#clone()}).
+     *
+     * @return A clone of this attribute.
+     * @throws CloneNotSupportedException if this feature can not be cloned, typically because
+     *         {@code clone()} on a property instance failed.
+     */
+    @Override
+    public AbstractFeature clone() throws CloneNotSupportedException {
+        return (AbstractFeature) super.clone();
     }
 
     /**
