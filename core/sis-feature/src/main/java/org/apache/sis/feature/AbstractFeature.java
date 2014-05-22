@@ -371,29 +371,28 @@ public abstract class AbstractFeature implements Serializable {
      */
     final Object verifyValueType(final String name, final Object value) {
         final PropertyType pt = getPropertyType(name);
-        /*
-         * Attribute :
-         *   - May be a singleton,  in which case the value class is verified.
-         *   - May be a collection, in which case the class each elemets in the collection is verified.
-         */
         if (pt instanceof DefaultAttributeType<?>) {
+            /*
+             * Attribute :
+             *   - May be a singleton,  in which case the value class is verified.
+             *   - May be a collection, in which case the class each elemets in the collection is verified.
+             */
             if (value != null) {
                 final Class<?> valueClass = ((DefaultAttributeType<?>) pt).getValueClass();
                 if (!valueClass.isInstance(value)) {
                     if (value instanceof Collection<?>) {
-                        return CheckedArrayList.wrapOrCopy((Collection<?>) value, valueClass);
+                        return CheckedArrayList.castOrCopy((Collection<?>) value, valueClass);
+                    } else {
+                        throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                                name, value.getClass()));
                     }
-                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                            name, value.getClass()));
                 }
             }
-            return value;
-        }
-        /*
-         * Association:
-         *   - May be a singleton,  in which case the feature type is verified.
-         */
-        if (pt instanceof DefaultAssociationRole) {
+        } else if (pt instanceof DefaultAssociationRole) {
+            /*
+             * Association:
+             *   - May be a singleton,  in which case the feature type is verified.
+             */
             if (value != null) {
                 if (value instanceof AbstractFeature) {
                     final DefaultFeatureType valueType = ((AbstractFeature) value).getType();
@@ -406,9 +405,14 @@ public abstract class AbstractFeature implements Serializable {
                             name, value.getClass()));
                 }
             }
-            return value;
+        } else {
+            /*
+             * Operation (or any other type):
+             *   - Legal in FeatureType, but not expected in Feature instance.
+             */
+            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
         }
-        throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
+        return value;
     }
 
     /**

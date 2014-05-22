@@ -101,7 +101,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * @since 0.5
      */
     @SuppressWarnings("unchecked")
-    public static <E> CheckedArrayList<E> wrapOrCopy(final Collection<?> collection, final Class<E> type) {
+    public static <E> CheckedArrayList<E> castOrCopy(final Collection<?> collection, final Class<E> type) {
         if (collection == null) {
             return null;
         }
