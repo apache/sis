@@ -30,7 +30,7 @@ import org.apache.sis.util.CorruptedObjectException;
  * Each feature instance can provide values for the following properties:
  *
  * <ul>
- *   <li>{@linkplain DefaultAttribute   Attributes}</li>
+ *   <li>{@linkplain AbstractAttribute  Attributes}</li>
  *   <li>{@linkplain DefaultAssociation Associations to other features}</li>
  *   <li>{@linkplain DefaultOperation   Operations}</li>
  * </ul>
@@ -62,7 +62,7 @@ import org.apache.sis.util.CorruptedObjectException;
  *
  * @see DefaultFeatureType#newInstance()
  */
-public abstract class AbstractFeature implements Cloneable, Serializable {
+public abstract class AbstractFeature implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -71,7 +71,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
     /**
      * Information about the feature (name, characteristics, <i>etc.</i>).
      */
-    private final DefaultFeatureType type;
+    final DefaultFeatureType type;
 
     /**
      * Creates a new feature of the given type.
@@ -126,7 +126,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      *
      * <div class="note"><b>Tip:</b> This method returns the property <em>instance</em>. If only the property
      * <em>value</em> is desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a
-     * chance to avoid the creation of {@link DefaultAttribute} or {@link DefaultAssociation} instances.</div>
+     * chance to avoid the creation of {@link AbstractAttribute} or {@link DefaultAssociation} instances.</div>
      *
      * @param  name The property name.
      * @return The property of the given name (never {@code null}).
@@ -178,7 +178,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
     final Property createProperty(final String name, final Object value) {
         final PropertyType pt = getPropertyType(name);
         if (pt instanceof DefaultAttributeType<?>) {
-            return new DefaultAttribute<>((DefaultAttributeType<?>) pt, value);
+            return new SingletonAttribute<>((DefaultAttributeType<?>) pt, value);
         } else if (pt instanceof DefaultAssociationRole) {
             return new DefaultAssociation((DefaultAssociationRole) pt, (AbstractFeature) value);
         } else {
@@ -197,7 +197,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
     final Property createProperty(final String name) throws IllegalArgumentException {
         final PropertyType pt = getPropertyType(name);
         if (pt instanceof DefaultAttributeType<?>) {
-            return new DefaultAttribute<>((DefaultAttributeType<?>) pt);
+            return new SingletonAttribute<>((DefaultAttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
             return new DefaultAssociation((DefaultAssociationRole) pt);
         } else {
@@ -229,7 +229,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      *
      * <ul>
      *   <li>Get the property of the given name.</li>
-     *   <li>Delegates to {@link DefaultAttribute#getValue()} or {@link DefaultAssociation#getValue()},
+     *   <li>Delegates to {@link AbstractAttribute#getValue()} or {@link DefaultAssociation#getValue()},
      *       depending on the property type.
      * </ul>
      *
@@ -237,7 +237,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      * @return The value for the given property, or {@code null} if none.
      * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
      *
-     * @see DefaultAttribute#getValue()
+     * @see AbstractAttribute#getValue()
      */
     public abstract Object getPropertyValue(final String name) throws IllegalArgumentException;
 
@@ -255,7 +255,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      * @throws ClassCastException If the value is not assignable to the expected value class.
      * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
      *
-     * @see DefaultAttribute#setValue(Object)
+     * @see AbstractAttribute#setValue(Object)
      */
     public abstract void setPropertyValue(final String name, final Object value) throws IllegalArgumentException;
 
@@ -263,8 +263,8 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      * Sets the value of the given property, with some minimal checks.
      */
     static void setPropertyValue(final Property property, final Object value) {
-        if (property instanceof DefaultAttribute<?>) {
-            setAttributeValue((DefaultAttribute<?>) property, value);
+        if (property instanceof AbstractAttribute<?>) {
+            setAttributeValue((AbstractAttribute<?>) property, value);
         } else if (property instanceof DefaultAssociation) {
             ArgumentChecks.ensureCanCast("value", AbstractFeature.class, value);
             setAssociationValue((DefaultAssociation) property, (AbstractFeature) value);
@@ -279,7 +279,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      * use {@link Validator} instead.
      */
     @SuppressWarnings("unchecked")
-    private static <T> void setAttributeValue(final DefaultAttribute<T> attribute, final Object value) {
+    private static <T> void setAttributeValue(final AbstractAttribute<T> attribute, final Object value) {
         if (value != null) {
             final DefaultAttributeType<T> pt = attribute.getType();
             final Class<?> base = pt.getValueClass();
@@ -288,7 +288,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
                         pt.getName(), value.getClass()));
             }
         }
-        ((DefaultAttribute) attribute).setValue(value);
+        ((AbstractAttribute) attribute).setValue(value);
     }
 
     /**
@@ -368,8 +368,8 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      */
     final void verifyPropertyType(final String name, final Property property) {
         final PropertyType type;
-        if (property instanceof DefaultAttribute<?>) {
-            type = ((DefaultAttribute<?>) property).getType();
+        if (property instanceof AbstractAttribute<?>) {
+            type = ((AbstractAttribute<?>) property).getType();
         } else if (property instanceof DefaultAssociation) {
             type = ((DefaultAssociation) property).getRole();
         } else {
@@ -405,7 +405,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      *     element per property. Implementations are free to omit element for properties having nothing to report.
      *   </li><li>
      *     Each report may have one or more {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult
-     *     conformance result}, as documented on {@link DefaultAttribute#quality()} javadoc.
+     *     conformance result}, as documented on {@link AbstractAttribute#quality()} javadoc.
      *   </li>
      * </ul>
      *
@@ -433,7 +433,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      *
      * @return Reports on all constraint violations found.
      *
-     * @see DefaultAttribute#quality()
+     * @see AbstractAttribute#quality()
      * @see DefaultAssociation#quality()
      */
     public DataQuality quality() {
@@ -441,8 +441,8 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
         for (final String name : type.indices().keySet()) {
             final Property property = (Property) getProperty(name);
             final DataQuality quality;
-            if (property instanceof DefaultAttribute<?>) {
-                quality = ((DefaultAttribute<?>) property).quality();
+            if (property instanceof AbstractAttribute<?>) {
+                quality = ((AbstractAttribute<?>) property).quality();
             } else if (property instanceof DefaultAssociation) {
                 quality = ((DefaultAssociation) property).quality();
             } else {
@@ -453,45 +453,6 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
             }
         }
         return v.quality;
-    }
-
-    /**
-     * Returns a copy of this feature
-     * This method clones also all {@linkplain Cloneable cloneable} property instances in this feature,
-     * but not necessarily property values. Whether the property values are cloned or not (i.e. whether
-     * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
-     * property {@code clone()} methods (see for example {@link DefaultAttribute#clone()}).
-     *
-     * @return A clone of this attribute.
-     * @throws CloneNotSupportedException if this feature can not be cloned, typically because
-     *         {@code clone()} on a property instance failed.
-     */
-    @Override
-    public AbstractFeature clone() throws CloneNotSupportedException {
-        return (AbstractFeature) super.clone();
-    }
-
-    /**
-     * Returns a hash code value for this feature.
-     *
-     * @return A hash code value.
-     */
-    @Override
-    public int hashCode() {
-        return type.hashCode();
-    }
-
-    /**
-     * Compares this feature with the given object for equality.
-     *
-     * @return {@code true} if both objects are equal.
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj != null && obj.getClass() == getClass()) {
-            return type.equals(((AbstractFeature) obj).type);
-        }
-        return false;
     }
 
     /**

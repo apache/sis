@@ -35,7 +35,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.5
  * @module
  */
-@DependsOn(DefaultAttributeTest.class)
+@DependsOn(SingletonAttributeTest.class)
 public final strictfp class DefaultOperationTest extends TestCase {
     /**
      * Returns an operation that found new cities.

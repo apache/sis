@@ -78,7 +78,7 @@ public final class Features extends Static {
      * @category verification
      */
     @SuppressWarnings("unchecked")
-    public static <T> DefaultAttribute<T> cast(final DefaultAttribute<?> attribute, final Class<T> valueClass)
+    public static <T> AbstractAttribute<T> cast(final AbstractAttribute<?> attribute, final Class<T> valueClass)
             throws ClassCastException
     {
         if (attribute != null) {
@@ -90,6 +90,6 @@ public final class Features extends Static {
                         attribute.getName(), valueClass, actual));
             }
         }
-        return (DefaultAttribute<T>) attribute;
+        return (AbstractAttribute<T>) attribute;
     }
 }

@@ -32,7 +32,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests {@link DefaultAttribute}.
+ * Tests {@link SingletonAttribute}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -40,29 +40,29 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 @DependsOn(DefaultAttributeTypeTest.class)
-public final strictfp class DefaultAttributeTest extends TestCase {
+public final strictfp class SingletonAttributeTest extends TestCase {
     /**
      * Creates an attribute for the city name.
      * This attribute has a default value.
      */
-    static DefaultAttribute<String> city() {
-        return new DefaultAttribute<>(DefaultAttributeTypeTest.city(new HashMap<>(4)));
+    static SingletonAttribute<String> city() {
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.city(new HashMap<>(4)));
     }
 
     /**
      * Creates an attribute for a singleton value.
      * This attribute has no default value.
      */
-    static DefaultAttribute<Integer> population() {
-        return new DefaultAttribute<>(DefaultAttributeTypeTest.population(new HashMap<>(4)));
+    static SingletonAttribute<Integer> population() {
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.population(new HashMap<>(4)));
     }
 
     /**
      * Creates an attribute for a singleton value.
      * This attribute has no default value.
      */
-    static DefaultAttribute<String> parliament() {
-        return new DefaultAttribute<>(DefaultAttributeTypeTest.parliament());
+    static SingletonAttribute<String> parliament() {
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.parliament());
     }
 
     /**
@@ -70,7 +70,7 @@ public final strictfp class DefaultAttributeTest extends TestCase {
      */
     @Test
     public void testValue() {
-        final DefaultAttribute<Integer> attribute = population();
+        final AbstractAttribute<Integer> attribute = population();
         assertNull("value", attribute.getValue());
         attribute.setValue(1000);
         assertEquals("value", Integer.valueOf(1000), attribute.getValue());
@@ -79,13 +79,13 @@ public final strictfp class DefaultAttributeTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultAttribute#quality()}.
+     * Tests {@link SingletonAttribute#quality()}.
      */
     @Test
     @DependsOnMethod("testValue")
     @SuppressWarnings("unchecked")
     public void testQuality() {
-        final DefaultAttribute<Integer> attribute = population();
+        final AbstractAttribute<Integer> attribute = population();
         DataQuality quality = attribute.quality();
         assertEquals("scope.level", ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
         assertDomainConsistencyEquals("population", "Missing value for “population” property.",
@@ -93,7 +93,7 @@ public final strictfp class DefaultAttributeTest extends TestCase {
         /*
          * Intentionally store a value of the wrong type, and test again.
          */
-        ((DefaultAttribute) attribute).setValue(4.5f);
+        ((AbstractAttribute) attribute).setValue(4.5f);
         quality = attribute.quality();
         assertEquals("scope.level", ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
         assertDomainConsistencyEquals("population", "Property “population” does not accept instances of ‘Float’.",
@@ -121,8 +121,8 @@ public final strictfp class DefaultAttributeTest extends TestCase {
      */
     @Test
     public void testEquals() {
-        final DefaultAttribute<Integer> a1 = population();
-        final DefaultAttribute<Integer> a2 = population();
+        final AbstractAttribute<Integer> a1 = population();
+        final AbstractAttribute<Integer> a2 = population();
         assertFalse("equals(null)", a1.equals(null));
         testEquals(a1, a2);
     }
@@ -130,7 +130,7 @@ public final strictfp class DefaultAttributeTest extends TestCase {
     /**
      * Implementation of {@link #testEquals()} used also by {@link #testClone()}.
      */
-    private static void testEquals(final DefaultAttribute<Integer> a1, final DefaultAttribute<Integer> a2) {
+    private static void testEquals(final AbstractAttribute<Integer> a1, final AbstractAttribute<Integer> a2) {
         assertTrue  ("equals",   a1.equals(a2));
         assertEquals("hashCode", a1.hashCode(), a2.hashCode());
         a2.setValue(1000);
@@ -139,15 +139,15 @@ public final strictfp class DefaultAttributeTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultAttribute#clone()}.
+     * Tests {@link SingletonAttribute#clone()}.
      *
      * @throws CloneNotSupportedException Should never happen.
      */
     @Test
     @DependsOnMethod("testEquals")
     public void testClone() throws CloneNotSupportedException {
-        final DefaultAttribute<Integer> a1 = population();
-        final DefaultAttribute<Integer> a2 = a1.clone();
+        final SingletonAttribute<Integer> a1 = population();
+        final SingletonAttribute<Integer> a2 = a1.clone();
         assertNotSame(a1, a2);
         testEquals(a1, a2);
     }
@@ -158,17 +158,17 @@ public final strictfp class DefaultAttributeTest extends TestCase {
     @Test
     @DependsOnMethod("testEquals")
     public void testSerialization() {
-        final DefaultAttribute<String> attribute = city();
+        final AbstractAttribute<String> attribute = city();
         assertNotSame(attribute, assertSerializedEquals(attribute));
     }
 
     /**
-     * Tests {@link DefaultAttribute#toString()}.
+     * Tests {@link SingletonAttribute#toString()}.
      */
     @Test
     @DependsOnMethod("testValue")
     public void testToString() {
-        final DefaultAttribute<String> city = city();
+        final AbstractAttribute<String> city = city();
         assertEquals("Attribute[“city” : String] = Utopia", city.toString());
         city.setValue("Dystopia");
         assertEquals("Attribute[“city” : String] = Dystopia", city.toString());

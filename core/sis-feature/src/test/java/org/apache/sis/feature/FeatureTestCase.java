@@ -43,7 +43,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     /**
      * The feature being tested.
      */
-    private AbstractFeature feature;
+    AbstractFeature feature;
 
     /**
      * {@code true} if {@link #getAttributeValue(String)} should invoke {@link AbstractFeature#getProperty(String)},
@@ -84,19 +84,24 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     abstract AbstractFeature createFeature(final DefaultFeatureType type);
 
     /**
+     * Clones the {@link #feature} instance.
+     */
+    abstract AbstractFeature cloneFeature() throws CloneNotSupportedException;
+
+    /**
      * Returns the attribute value of the current {@link #feature} for the given name.
      */
     private Object getAttributeValue(final String name) {
         final Object value = feature.getPropertyValue(name);
         if (getValuesFromProperty) {
             final Property property = (Property) feature.getProperty(name);
-            assertInstanceOf(name, DefaultAttribute.class, property);
+            assertInstanceOf(name, AbstractAttribute.class, property);
 
             // The AttributeType shall be the same than the one provided by FeatureType for the given name.
-            assertSame(name, feature.getType().getProperty(name), ((DefaultAttribute<?>) property).getType());
+            assertSame(name, feature.getType().getProperty(name), ((AbstractAttribute<?>) property).getType());
 
             // Attribute value shall be the same than the one provided by FeatureType convenience method.
-            assertSame(name, feature.getPropertyValue(name), ((DefaultAttribute<?>) property).getValue());
+            assertSame(name, feature.getPropertyValue(name), ((AbstractAttribute<?>) property).getValue());
 
             // Invoking getProperty(name) twice shall return the same Property instance.
             assertSame(name, property, feature.getProperty(name));
@@ -223,7 +228,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     @DependsOnMethod({"testSimpleValues", "testSimpleProperties"})
     public void testCustomAttribute() {
         feature = createFeature(DefaultFeatureTypeTest.city());
-        final DefaultAttribute<String> wrong = DefaultAttributeTest.parliament();
+        final AbstractAttribute<String> wrong = SingletonAttributeTest.parliament();
         final CustomAttribute<String> city = new CustomAttribute<>(Features.cast(
                 (DefaultAttributeType<?>) feature.getType().getProperty("city"), String.class));
 
@@ -294,7 +299,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     private void testClone(final String property, final Object oldValue, final Object newValue)
             throws CloneNotSupportedException
     {
-        final AbstractFeature clone = feature.clone();
+        final AbstractFeature clone = cloneFeature();
         assertNotSame("clone",      clone, feature);
         assertTrue   ("equals",     clone.equals(feature));
         assertTrue   ("hashCode",   clone.hashCode() == feature.hashCode());

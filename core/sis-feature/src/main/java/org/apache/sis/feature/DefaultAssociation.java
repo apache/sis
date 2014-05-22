@@ -159,7 +159,7 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      * This method returns at most one {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
      * report} with a {@linkplain org.apache.sis.metadata.iso.quality.DefaultDomainConsistency#getResults() result} for
      * each constraint violations found, if any.
-     * See {@link DefaultAttribute#quality()} for an example.
+     * See {@link AbstractAttribute#quality()} for an example.
      *
      * <p>This association is valid if this method does not report any
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a

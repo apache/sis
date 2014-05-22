@@ -27,7 +27,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 /**
  * A list containing 0 or 1 value. This implementation is used in the very common case where a
- * {@link DefaultAttribute} accepts at most one value. Its main purpose is to reduce the amount
+ * {@link AbstractAttribute} accepts at most one value. Its main purpose is to reduce the amount
  * of objects in memory compared to {@link java.util.ArrayList}.
  *
  * <p>There is no need to keep long-lived references to instances of this class.
@@ -42,12 +42,12 @@ final class PropertySingleton<V> extends AbstractList<V> {
     /**
      * The property where to read and write the value.
      */
-    private final DefaultAttribute<V> property;
+    private final AbstractAttribute<V> property;
 
     /**
      * Creates a new list for the value of the given property.
      */
-    PropertySingleton(final DefaultAttribute<V> property) {
+    PropertySingleton(final AbstractAttribute<V> property) {
         this.property = property;
     }
 
