@@ -693,7 +693,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short TooManyArguments_2 = 105;
 
         /**
-         * Too many occurrences of “{1}”. There is already {0} of them.
+         * Too many occurrences of “{1}”. The maximum is {0}.
          */
         public static final short TooManyOccurrences_2 = 149;
 

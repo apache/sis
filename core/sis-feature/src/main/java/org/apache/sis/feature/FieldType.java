@@ -17,12 +17,18 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import java.util.Iterator;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.resources.Errors;
 
 
 /**
  * Base class of property types having a value and a cardinality.
+ * This include {@code AttributeType} and {@code AssociationRole}, but not {@code Operation}.
+ *
+ * <div class="note"><b>Analogy:</b> if we compare {@code FeatureType} to a class in the Java language,
+ * attributes and associations would be fields while operations would be methods. This analogy explains
+ * the {@code FieldType} name of this class.</div>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -107,14 +113,19 @@ abstract class FieldType extends PropertyType {
     public boolean equals(final Object obj) {
         if (super.equals(obj)) {
             final FieldType that = (FieldType) obj;
-            return minimumOccurs  == that.minimumOccurs  &&
-                   maximumOccurs  == that.maximumOccurs;
+            return minimumOccurs == that.minimumOccurs &&
+                   maximumOccurs == that.maximumOccurs;
         }
         return false;
     }
 
     /**
-     * Implementation of {@link #toString()} to be shared by subclasses and {@link DefaultAttribute#toString()}.
+     * Helper method for implementation of {@code PropertyType.toString()} methods.
+     * Example:
+     *
+     * {@preformat text
+     *     FooType[“name” : ValueClass]
+     * }
      */
     final StringBuilder toString(final String typeName, final Object valueName) {
         final StringBuilder buffer = new StringBuilder(40).append(typeName).append('[');
@@ -127,5 +138,34 @@ abstract class FieldType extends PropertyType {
             buffer.append("” : ");
         }
         return buffer.append(valueName).append(']');
+    }
+
+    /**
+     * Helper method for implementation of {@code Property.toString()} methods.
+     * Example:
+     *
+     * {@preformat text
+     *     FooType[“name” : ValueClass] = {value1, value2, ...}
+     * }
+     */
+    final String toString(final String typeName, final Object valueName, final Iterator<?> values) {
+        final StringBuilder buffer = toString(typeName, valueName);
+        if (values.hasNext()) {
+            final Object value = values.next();
+            final boolean isMultiValued = values.hasNext();
+            buffer.append(" = ");
+            if (isMultiValued) {
+                buffer.append('{');
+            }
+            buffer.append(value);
+            if (isMultiValued) {
+                buffer.append(", ").append(values.next());
+                if (values.hasNext()) {
+                    buffer.append(", ...");
+                }
+                buffer.append('}');
+            }
+        }
+        return buffer.toString();
     }
 }

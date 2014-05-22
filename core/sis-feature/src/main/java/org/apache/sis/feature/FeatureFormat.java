@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * This format assumes a monospaced font and an encoding supporting drawing box characters (e.g. UTF-8).
  *
  * <div class="note"><b>Example:</b> a feature named “City” and containing 3 properties (“name”, “population” and
- * “twin town”) may be formatted like below. The two first properties are {@linkplain DefaultAttribute attributes}
+ * “twin town”) may be formatted like below. The two first properties are {@linkplain AbstractAttribute attributes}
  * while the last property is an {@linkplain DefaultAssociation association} to an other feature.
  *
  * {@preformat text

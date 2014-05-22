@@ -42,7 +42,7 @@ import org.apache.sis.util.CorruptedObjectException;
  * @see DenseFeature
  * @see DefaultFeatureType
  */
-final class SparseFeature extends AbstractFeature {
+final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * For cross-version compatibility.
      */
@@ -176,8 +176,8 @@ final class SparseFeature extends AbstractFeature {
         if (element != null) {
             if (valuesKind == VALUES) {
                 return element; // Most common case.
-            } else if (element instanceof DefaultAttribute<?>) {
-                return ((DefaultAttribute<?>) element).getValue();
+            } else if (element instanceof AbstractAttribute<?>) {
+                return ((AbstractAttribute<?>) element).getValue();
             } else if (element instanceof DefaultAssociation) {
                 return ((DefaultAssociation) element).getValue();
             } else if (valuesKind == PROPERTIES) {
@@ -246,7 +246,7 @@ final class SparseFeature extends AbstractFeature {
     public DataQuality quality() {
         if (valuesKind == VALUES) {
             final Validator v = new Validator(ScopeCode.FEATURE);
-            for (final String name : super.getType().indices().keySet()) {
+            for (final String name : type.indices().keySet()) {
                 v.validateAny(getPropertyType(name), properties.get(name));
             }
             return v.quality;
@@ -258,13 +258,18 @@ final class SparseFeature extends AbstractFeature {
     }
 
     /**
-     * Returns a copy of this feature.
-     * The properties are cloned, but not the property values.
+     * Returns a copy of this feature
+     * This method clones also all {@linkplain Cloneable cloneable} property instances in this feature,
+     * but not necessarily property values. Whether the property values are cloned or not (i.e. whether
+     * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
+     * property {@code clone()} methods.
      *
-     * @return A clone of this feature.
+     * @return A clone of this attribute.
+     * @throws CloneNotSupportedException if this feature can not be cloned, typically because
+     *         {@code clone()} on a property instance failed.
      */
     @Override
-    public AbstractFeature clone() throws CloneNotSupportedException {
+    public SparseFeature clone() throws CloneNotSupportedException {
         final SparseFeature clone = (SparseFeature) super.clone();
         try {
             final Field field = SparseFeature.class.getDeclaredField("properties");
@@ -298,7 +303,7 @@ final class SparseFeature extends AbstractFeature {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + 37 * properties.hashCode();
+        return type.hashCode() + 37 * properties.hashCode();
     }
 
     /**
@@ -311,8 +316,9 @@ final class SparseFeature extends AbstractFeature {
         if (obj == this) {
             return true;
         }
-        if (super.equals(obj)) {
-            return properties.equals(((SparseFeature) obj).properties);
+        if (obj instanceof SparseFeature) {
+            final SparseFeature that = (SparseFeature) obj;
+            return type.equals(that.type) && properties.equals(that.properties);
         }
         return false;
     }

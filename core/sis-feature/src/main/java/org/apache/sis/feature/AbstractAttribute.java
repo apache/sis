@@ -16,6 +16,8 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
@@ -23,9 +25,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
-
-// Related to JDK7
-import java.util.Objects;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -35,12 +35,17 @@ import java.util.Objects;
  * <ul>
  *   <li>A reference to an {@linkplain DefaultAttributeType attribute type}
  *       which define the base Java type and domain of valid values.</li>
- *   <li>A value.</li>
+ *   <li>A value, which may be a singleton ([0 … 1] cardinality) or multi-valued ([0 … ∞] cardinality).</li>
  * </ul>
  *
- * {@section Usage in multi-thread environment}
- * {@code DefaultAttribute} are <strong>not</strong> thread-safe.
- * Synchronization, if needed, shall be done externally by the caller.
+ * {@section Limitations}
+ * <ul>
+ *   <li><b>Multi-threading:</b> {@code AbstractAttribute} instances are <strong>not</strong> thread-safe.
+ *       Synchronization, if needed, shall be done externally by the caller.</li>
+ *   <li><b>Serialization:</b> serialized objects of this class are not guaranteed to be compatible with future
+ *       versions. Serialization should be used only for short term storage or RMI between applications running
+ *       the same SIS version.</li>
+ * </ul>
  *
  * @param <T> The type of attribute values.
  *
@@ -52,45 +57,25 @@ import java.util.Objects;
  *
  * @see DefaultAttributeType
  */
-public class DefaultAttribute<T> extends Property implements Cloneable, Serializable {
+public abstract class AbstractAttribute<T> extends Property implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -8103788797446754561L;
+    private static final long serialVersionUID = 7442739120526654676L;
 
     /**
      * Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
-    private final DefaultAttributeType<T> type;
+    final DefaultAttributeType<T> type;
 
     /**
-     * The attribute value.
-     */
-    private T value;
-
-    /**
-     * Creates a new attribute of the given type initialized to the
-     * {@linkplain DefaultAttributeType#getDefaultValue() default value}.
+     * Creates a new attribute of the given type.
      *
      * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
-    public DefaultAttribute(final DefaultAttributeType<T> type) {
+    public AbstractAttribute(final DefaultAttributeType<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
-        this.type  = type;
-        this.value = type.getDefaultValue();
-    }
-
-    /**
-     * Creates a new attribute of the given type initialized to the given value.
-     * Note that a {@code null} value may not the same as the default value.
-     *
-     * @param type  Information about the attribute (base Java class, domain of values, <i>etc.</i>).
-     * @param value The initial value (may be null {@code null}).
-     */
-    public DefaultAttribute(final DefaultAttributeType<T> type, final Object value) {
-        ArgumentChecks.ensureNonNull("type", type);
-        this.type  = type;
-        this.value = type.getValueClass().cast(value);
+        this.type = type;
     }
 
     /**
@@ -117,18 +102,33 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
     }
 
     /**
-     * Returns the attribute value.
+     * Returns the attribute value, or {@code null} if none. This convenience method can be invoked in
+     * the common case where the {@linkplain DefaultAttributeType#getMaximumOccurs() maximum number}
+     * of attribute values is restricted to 1 or 0.
      *
      * @return The attribute value (may be {@code null}).
+     * @throws IllegalStateException if this attribute contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
-    public T getValue() {
-        return value;
+    public abstract T getValue() throws IllegalStateException;
+
+    /**
+     * Returns all attribute values, or an empty collection if none.
+     * The returned collection is <cite>live</cite>: changes in the returned collection
+     * will be reflected immediately in this {@code Attribute} instance, and conversely.
+     *
+     * <p>The default implementation returns a collection which will delegate its work to
+     * {@link #getValue()} and {@link #setValue(Object)}.</p>
+     *
+     * @return The attribute values in a <cite>live</cite> collection.
+     */
+    public Collection<T> getValues() {
+        return new PropertySingleton<>(this);
     }
 
     /**
-     * Sets the attribute value.
+     * Sets the attribute value. All previous values are replaced by the given singleton.
      *
      * {@section Validation}
      * The amount of validation performed by this method is implementation dependent.
@@ -136,12 +136,31 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      * and also because some rules may be temporarily broken while constructing a feature.
      * A more exhaustive verification can be performed by invoking the {@link #quality()} method.
      *
-     * @param value The new value.
+     * @param value The new value, or {@code null} for removing all values from this attribute.
      *
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
-    public void setValue(final T value) {
-        this.value = value;
+    public abstract void setValue(final T value);
+
+    /**
+     * Set the attribute values. All previous values are replaced by the given collection.
+     *
+     * <p>The default implementation ensures that the given collection contains at most one element,
+     * then delegates to {@link #setValue(Object)}.</p>
+     *
+     * @param values The new values.
+     */
+    public void setValues(final Collection<? extends T> values) {
+        T value = null;
+        ArgumentChecks.ensureNonNull("values", values);
+        final Iterator<? extends T> it = values.iterator();
+        if (it.hasNext()) {
+            value = it.next();
+            if (it.hasNext()) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.TooManyOccurrences_2, 1, getName()));
+            }
+        }
+        setValue(value);
     }
 
     /**
@@ -162,21 +181,21 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      *     If a report is provided, then it will contain at least the following information:
      *     <ul>
      *       <li>
-     *         The {@linkplain #getName() attribute name} as the data quality
+     *         <p>The {@linkplain #getName() attribute name} as the data quality
      *         {@linkplain org.apache.sis.metadata.iso.quality.DefaultDomainConsistency#getMeasureIdentification()
-     *         measure identification}.
+     *         measure identification}.</p>
      *
      *         <div class="note"><b>Note:</b> strictly speaking, {@code measureIdentification} identifies the
      *         <em>quality measurement</em>, not the “real” measurement itself. However this implementation
      *         uses the same set of identifiers for both for simplicity.</div>
      *       </li><li>
-     *         If the attribute {@linkplain #getValue() value} is not an {@linkplain Class#isInstance instance}
+     *         <p>If the attribute {@linkplain #getValue() value} is not an {@linkplain Class#isInstance instance}
      *         of the expected {@linkplain DefaultAttributeType#getValueClass() value class}, or if the number
      *         of occurrences is not inside the cardinality range, or if any other constraint is violated, then
      *         a {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} is
      *         added for each violation with an
      *         {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#getExplanation() explanation}
-     *         set to the error message.
+     *         set to the error message.</p>
      *
      *         <div class="warning"><b>Note:</b> this is a departure from ISO intend, since {@code explanation}
      *         should be a statement about what a successful conformance means. This point may be reformulated
@@ -214,53 +233,8 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
      */
     public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.ATTRIBUTE);
-        v.validate(type, value);
+        v.validate(type, getValue());
         return v.quality;
-    }
-
-    /**
-     * Returns a copy of this attribute.
-     * The default implementation returns a <em>shallow</em> copy:
-     * the attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
-     * However subclasses may choose to do otherwise.
-     *
-     * @return A clone of this attribute.
-     * @throws CloneNotSupportedException if this attribute can not be cloned.
-     *         The default implementation never throw this exception. However subclasses may throw it,
-     *         for example on attempt to clone the attribute value.
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public DefaultAttribute<T> clone() throws CloneNotSupportedException {
-        return (DefaultAttribute<T>) super.clone();
-    }
-
-    /**
-     * Returns a hash code value for this attribute type.
-     *
-     * @return A hash code value.
-     */
-    @Override
-    public int hashCode() {
-        return type.hashCode() + Objects.hashCode(value);
-    }
-
-    /**
-     * Compares this attribute with the given object for equality.
-     *
-     * @return {@code true} if both objects are equal.
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj != null && obj.getClass() == getClass()) {
-            final DefaultAttribute<?> that = (DefaultAttribute<?>) obj;
-            return type.equals(that.type) &&
-                   Objects.equals(value, that.value);
-        }
-        return false;
     }
 
     /**
@@ -272,10 +246,6 @@ public class DefaultAttribute<T> extends Property implements Cloneable, Serializ
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = type.toString("Attribute", Classes.getShortName(type.getValueClass()));
-        if (value != null) {
-            buffer.append(" = ").append(value);
-        }
-        return buffer.toString();
+        return type.toString("Attribute", Classes.getShortName(type.getValueClass()), getValues().iterator());
     }
 }
