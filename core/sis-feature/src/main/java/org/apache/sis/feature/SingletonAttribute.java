@@ -61,6 +61,7 @@ final class SingletonAttribute<T> extends AbstractAttribute<T> implements Clonea
      */
     public SingletonAttribute(final DefaultAttributeType<T> type) {
         super(type);
+        assert type.getMaximumOccurs() <= 1;
         value = type.getDefaultValue();
     }
 
@@ -73,6 +74,7 @@ final class SingletonAttribute<T> extends AbstractAttribute<T> implements Clonea
      */
     SingletonAttribute(final DefaultAttributeType<T> type, final Object value) {
         super(type);
+        assert type.getMaximumOccurs() <= 1;
         this.value = type.getValueClass().cast(value);
     }
 

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Iterator;
+import java.util.Collection;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
@@ -23,6 +25,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CorruptedObjectException;
+import org.apache.sis.internal.util.CheckedArrayList;
 
 
 /**
@@ -197,7 +200,10 @@ public abstract class AbstractFeature implements Serializable {
     final Property createProperty(final String name) throws IllegalArgumentException {
         final PropertyType pt = getPropertyType(name);
         if (pt instanceof DefaultAttributeType<?>) {
-            return new SingletonAttribute<>((DefaultAttributeType<?>) pt);
+            final DefaultAttributeType<?> at = (DefaultAttributeType<?>) pt;
+            return (at.getMaximumOccurs() <= 1)
+                   ? new SingletonAttribute<>(at)
+                   : new MultiValuedAttribute<>(at);
         } else if (pt instanceof DefaultAssociationRole) {
             return new DefaultAssociation((DefaultAssociationRole) pt);
         } else {
@@ -225,13 +231,21 @@ public abstract class AbstractFeature implements Serializable {
 
     /**
      * Returns the value for the property of the given name.
-     * This convenience method is equivalent to the following steps:
+     * This convenience method is equivalent to invoking {@link #getProperty(String)} for the given name,
+     * then to perform one of the following actions depending on the property type and the cardinality:
      *
-     * <ul>
-     *   <li>Get the property of the given name.</li>
-     *   <li>Delegates to {@link AbstractAttribute#getValue()} or {@link DefaultAssociation#getValue()},
-     *       depending on the property type.
-     * </ul>
+     * <table class="sis">
+     *   <caption>Class of returned value</caption>
+     *   <tr><th>Property type</th>           <th>max. occurs</th> <th>Method invoked</th>                  <th>Return type</th></tr>
+     *   <tr><td>{@link AttributeType}</td>   <td>0 or 1</td>      <td>{@link Attribute#getValue()}</td>    <td>{@link Object}</td></tr>
+     *   <tr><td>{@code AttributeType}</td>   <td>2 or more</td>   <td>{@link Attribute#getValues()}</td>   <td>{@code Collection<?>}</td></tr>
+     *   <tr><td>{@link AssociationRole}</td> <td>0 or 1</td>      <td>{@link Association#getValue()}</td>  <td>{@link Feature}</td></tr>
+     *   <tr><td>{@code AssociationRole}</td> <td>2 or more</td>   <td>{@link Association#getValues()}</td> <td>{@code Collection<Feature>}</td></tr>
+     * </table>
+     *
+     * <div class="note"><b>Note:</b> “max. occurs” is the {@linkplain DefaultAttributeType#getMaximumOccurs() maximum
+     * number of occurrences} and does not depend on the actual number of values. If an attribute allows more than one
+     * value, then this method will always return a collection for that attribute even if the collection is empty.</div>
      *
      * @param  name The property name.
      * @return The value for the given property, or {@code null} if none.
@@ -260,6 +274,14 @@ public abstract class AbstractFeature implements Serializable {
     public abstract void setPropertyValue(final String name, final Object value) throws IllegalArgumentException;
 
     /**
+     * Returns the value of the given attribute, as a singleton or as a collection depending
+     * on the maximum number of occurrences.
+     */
+    static Object getAttributeValue(final AbstractAttribute<?> attribute) {
+        return attribute.getType().getMaximumOccurs() <= 1 ? attribute.getValue() : attribute.getValues();
+    }
+
+    /**
      * Sets the value of the given property, with some minimal checks.
      */
     static void setPropertyValue(final Property property, final Object value) {
@@ -284,8 +306,21 @@ public abstract class AbstractFeature implements Serializable {
             final DefaultAttributeType<T> pt = attribute.getType();
             final Class<?> base = pt.getValueClass();
             if (!base.isInstance(value)) {
+                Object element = value;
+                if (value instanceof Collection<?>) {
+                    /*
+                     * If the given value is a collection, verify the class of all values
+                     * before to delegate to Attribute.setValues(Collection<? extends T>).
+                     */
+                    final Iterator<?> it = ((Collection<?>) value).iterator();
+                    do if (!it.hasNext()) {
+                        ((AbstractAttribute) attribute).setValues((Collection) value);
+                        return;
+                    } while (base.isInstance(element = it.next()) || element == null);
+                    // Found an illegal value. Exeption is thrown below.
+                }
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                        pt.getName(), value.getClass()));
+                        pt.getName(), element.getClass()));
             }
         }
         ((AbstractAttribute) attribute).setValue(value);
@@ -331,33 +366,49 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Verifies the validity of the given value for the property of the given name. If a check failed,
-     * returns the exception to throw. Otherwise returns {@code null}. This method does not throw the
-     * exception immediately in order to give to the caller a chance to perform cleanup operation first.
+     * Verifies the validity of the given value for the property of the given name, then returns the value
+     * to store. The returned value is usually the same than the given one, except in the case of collections.
      */
-    final RuntimeException verifyValueType(final String name, final Object value) {
+    final Object verifyValueType(final String name, final Object value) {
         final PropertyType pt = getPropertyType(name);
+        /*
+         * Attribute :
+         *   - May be a singleton,  in which case the value class is verified.
+         *   - May be a collection, in which case the class each elemets in the collection is verified.
+         */
         if (pt instanceof DefaultAttributeType<?>) {
-            if (value == null || ((DefaultAttributeType<?>) pt).getValueClass().isInstance(value)) {
-                return null;
-            }
-        } else if (pt instanceof DefaultAssociationRole) {
-            if (value == null) {
-                return null;
-            }
-            if (value instanceof AbstractFeature) {
-                final DefaultFeatureType valueType = ((AbstractFeature) value).getType();
-                if (((DefaultAssociationRole) pt).getValueType().maybeAssignableFrom(valueType)) {
-                    return null;
+            if (value != null) {
+                final Class<?> valueClass = ((DefaultAttributeType<?>) pt).getValueClass();
+                if (!valueClass.isInstance(value)) {
+                    if (value instanceof Collection<?>) {
+                        return CheckedArrayList.wrapOrCopy((Collection<?>) value, valueClass);
+                    }
+                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                            name, value.getClass()));
                 }
-                return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                        name, valueType.getName()));
             }
-        } else {
-            return new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
+            return value;
         }
-        return new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                name, value.getClass())); // 'value' should not be null at this point.
+        /*
+         * Association:
+         *   - May be a singleton,  in which case the feature type is verified.
+         */
+        if (pt instanceof DefaultAssociationRole) {
+            if (value != null) {
+                if (value instanceof AbstractFeature) {
+                    final DefaultFeatureType valueType = ((AbstractFeature) value).getType();
+                    if (!((DefaultAssociationRole) pt).getValueType().maybeAssignableFrom(valueType)) {
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                                name, valueType.getName()));
+                    }
+                } else {
+                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                            name, value.getClass()));
+                }
+            }
+            return value;
+        }
+        throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
     }
 
     /**

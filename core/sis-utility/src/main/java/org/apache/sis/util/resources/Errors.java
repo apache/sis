@@ -593,6 +593,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NotAPrimitiveWrapper_1 = 90;
 
         /**
+         * The “{0}” collection is not a singleton.
+         */
+        public static final short NotASingleton_1 = 158;
+
+        /**
          * Matrix is not skew-symmetric.
          */
         public static final short NotASkewSymmetricMatrix = 91;

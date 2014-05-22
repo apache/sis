@@ -42,6 +42,15 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
     /**
      * Creates an attribute type for city name.
      *
+     * @return An attribute type for a city name.
+     */
+    public static DefaultAttributeType<String> city() {
+        return city(new HashMap<>());
+    }
+
+    /**
+     * Implementation of {@link #city()} using the given map (for reusing existing objects).
+     *
      * @param identification An empty temporary map (provided only for recycling existing instances).
      */
     static DefaultAttributeType<String> city(final Map<String,Object> identification) {
@@ -66,6 +75,8 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      */
     static DefaultAttributeType<Integer> population(final Map<String,Object> identification) {
         assertNull(identification.put(DefaultAttributeType.NAME_KEY, "population"));
+        // We may add more properties here in a future version.
+
         final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
                 identification, Integer.class, 1, 1, null);
         identification.clear();
@@ -74,10 +85,27 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
 
     /**
      * Creates an attribute type for a parliament name.
+     * This applies only to features of type "Capital".
+     * This is used for testing feature type inheritance.
+     *
+     * @return An attribute type for the name of the parliament in a capital.
      */
-    static DefaultAttributeType<String> parliament() {
-        return new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "parliament"),
-                        String.class, 1, 1, null);
+    public static DefaultAttributeType<String> parliament() {
+        return new DefaultAttributeType<>(
+                singletonMap(DefaultAttributeType.NAME_KEY, "parliament"),
+                String.class, 1, 1, null);
+    }
+
+    /**
+     * Creates an attribute type for a list of universities.
+     * The cardinality is [0 … ∞].
+     *
+     * @return An attribute type for university names.
+     */
+    public static DefaultAttributeType<String> universities() {
+        return new DefaultAttributeType<>(
+                singletonMap(DefaultAttributeType.NAME_KEY, "universities"),
+                String.class, 0, Integer.MAX_VALUE, null);
     }
 
     /**
@@ -85,7 +113,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      */
     @Test
     public void testMandatorySingleton() {
-        final DefaultAttributeType<String> city = city(new HashMap<>());
+        final DefaultAttributeType<String> city = city();
         final GenericName name = city.getName();
         assertInstanceOf("city.name", LocalName.class, name);
         assertEquals("city.name", "city", name.toString());
@@ -129,7 +157,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testEquals")
     public void testSerialization() {
-        final DefaultAttributeType<String> attribute = city(new HashMap<>(4));
+        final DefaultAttributeType<String> attribute = city();
         assertSerializedEquals(attribute);
     }
 
@@ -138,7 +166,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      */
     @Test
     public void testToString() {
-        final DefaultAttributeType<String> city = city(new HashMap<>());
+        final DefaultAttributeType<String> city = city();
         assertEquals("AttributeType[“city” : String]", city.toString());
     }
 }

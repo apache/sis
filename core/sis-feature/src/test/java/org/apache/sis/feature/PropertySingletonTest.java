@@ -18,7 +18,6 @@ package org.apache.sis.feature;
 
 import java.util.Set;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -36,7 +35,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.5
  * @module
  */
-@DependsOn(SingletonAttributeTest.class)
 public final strictfp class PropertySingletonTest extends TestCase {
     /**
      * The instance to test.
