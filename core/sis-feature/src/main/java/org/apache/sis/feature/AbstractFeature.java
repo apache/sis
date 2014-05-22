@@ -18,6 +18,7 @@ package org.apache.sis.feature;
 
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
@@ -181,7 +182,7 @@ public abstract class AbstractFeature implements Serializable {
     final Property createProperty(final String name, final Object value) {
         final PropertyType pt = getPropertyType(name);
         if (pt instanceof DefaultAttributeType<?>) {
-            return new SingletonAttribute<>((DefaultAttributeType<?>) pt, value);
+            return AbstractAttribute.create((DefaultAttributeType<?>) pt, value);
         } else if (pt instanceof DefaultAssociationRole) {
             return new DefaultAssociation((DefaultAssociationRole) pt, (AbstractFeature) value);
         } else {
@@ -200,10 +201,7 @@ public abstract class AbstractFeature implements Serializable {
     final Property createProperty(final String name) throws IllegalArgumentException {
         final PropertyType pt = getPropertyType(name);
         if (pt instanceof DefaultAttributeType<?>) {
-            final DefaultAttributeType<?> at = (DefaultAttributeType<?>) pt;
-            return (at.getMaximumOccurs() <= 1)
-                   ? new SingletonAttribute<>(at)
-                   : new MultiValuedAttribute<>(at);
+            return AbstractAttribute.create((DefaultAttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
             return new DefaultAssociation((DefaultAssociationRole) pt);
         } else {
@@ -212,7 +210,8 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Returns the default value for the property of the given name.
+     * Returns the default value to be returned by {@link #getPropertyValue(String)}
+     * for the property of the given name.
      *
      * @param  name The name of the property for which to get the default value.
      * @return The default value for the {@code Property} of the given name.
@@ -221,11 +220,24 @@ public abstract class AbstractFeature implements Serializable {
     final Object getDefaultValue(final String name) throws IllegalArgumentException {
         final PropertyType pt = getPropertyType(name);
         if (pt instanceof DefaultAttributeType<?>) {
-            return ((DefaultAttributeType<?>) pt).getDefaultValue();
+            return getDefaultValue((DefaultAttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
             return null; // No default value for associations.
         } else {
             throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
+        }
+    }
+
+    /**
+     * Returns the default value to be returned by {@link #getPropertyValue(String)} for the given attribute type.
+     */
+    private static <V> Object getDefaultValue(final DefaultAttributeType<V> attribute) {
+        final V defaultValue = attribute.getDefaultValue();
+        if (attribute.getMaximumOccurs() <= 1) {
+            return defaultValue;
+        } else {
+            // Following is for compliance with getPropertyValue(String) method contract - see its javadoc.
+            return (defaultValue != null) ? Collections.singletonList(defaultValue) : Collections.emptyList();
         }
     }
 
@@ -301,26 +313,26 @@ public abstract class AbstractFeature implements Serializable {
      * use {@link Validator} instead.
      */
     @SuppressWarnings("unchecked")
-    private static <T> void setAttributeValue(final AbstractAttribute<T> attribute, final Object value) {
+    private static <V> void setAttributeValue(final AbstractAttribute<V> attribute, final Object value) {
         if (value != null) {
-            final DefaultAttributeType<T> pt = attribute.getType();
+            final DefaultAttributeType<V> pt = attribute.getType();
             final Class<?> base = pt.getValueClass();
             if (!base.isInstance(value)) {
                 Object element = value;
                 if (value instanceof Collection<?>) {
                     /*
                      * If the given value is a collection, verify the class of all values
-                     * before to delegate to Attribute.setValues(Collection<? extends T>).
+                     * before to delegate to Attribute.setValues(Collection<? extends V>).
                      */
                     final Iterator<?> it = ((Collection<?>) value).iterator();
                     do if (!it.hasNext()) {
                         ((AbstractAttribute) attribute).setValues((Collection) value);
                         return;
-                    } while (base.isInstance(element = it.next()) || element == null);
+                    } while ((element = it.next()) == null || base.isInstance(element));
                     // Found an illegal value. Exeption is thrown below.
                 }
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                        pt.getName(), element.getClass()));
+                        pt.getName(), element.getClass())); // 'element' can not be null here.
             }
         }
         ((AbstractAttribute) attribute).setValue(value);
@@ -330,7 +342,7 @@ public abstract class AbstractFeature implements Serializable {
      * Sets the association value after verification of its type.
      * For a more exhaustive validation, use {@link Validator} instead.
      */
-    private static <T> void setAssociationValue(final DefaultAssociation association, final AbstractFeature value) {
+    private static void setAssociationValue(final DefaultAssociation association, final AbstractFeature value) {
         if (value != null) {
             final DefaultAssociationRole pt = association.getRole();
             final DefaultFeatureType base = pt.getValueType();
@@ -344,14 +356,14 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Returns {@code true} if the caller can skip the call to {@link #verifyValueType(String, Object)}.
+     * Returns {@code true} if the caller can skip the call to {@link #verifyPropertyValue(String, Object)}.
      * This is a slight optimization for the case when we replaced an attribute value by a new value of
      * the same class. Since the type check has already been done by the previous assignation, we do not
      * need to perform it again.
      *
      * @param previous The previous value, or {@code null}.
      * @param value    The new value, or {@code null}.
-     * @return         {@code true} if the caller can skip the verification performed by {@code verifyValueType}.
+     * @return         {@code true} if the caller can skip the verification performed by {@code verifyPropertyValue}.
      */
     static boolean canSkipVerification(final Object previous, final Object value) {
         if (previous != null) {
@@ -363,56 +375,6 @@ public abstract class AbstractFeature implements Serializable {
             }
         }
         return false;
-    }
-
-    /**
-     * Verifies the validity of the given value for the property of the given name, then returns the value
-     * to store. The returned value is usually the same than the given one, except in the case of collections.
-     */
-    final Object verifyValueType(final String name, final Object value) {
-        final PropertyType pt = getPropertyType(name);
-        if (pt instanceof DefaultAttributeType<?>) {
-            /*
-             * Attribute :
-             *   - May be a singleton,  in which case the value class is verified.
-             *   - May be a collection, in which case the class each elemets in the collection is verified.
-             */
-            if (value != null) {
-                final Class<?> valueClass = ((DefaultAttributeType<?>) pt).getValueClass();
-                if (!valueClass.isInstance(value)) {
-                    if (value instanceof Collection<?>) {
-                        return CheckedArrayList.castOrCopy((Collection<?>) value, valueClass);
-                    } else {
-                        throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                                name, value.getClass()));
-                    }
-                }
-            }
-        } else if (pt instanceof DefaultAssociationRole) {
-            /*
-             * Association:
-             *   - May be a singleton,  in which case the feature type is verified.
-             */
-            if (value != null) {
-                if (value instanceof AbstractFeature) {
-                    final DefaultFeatureType valueType = ((AbstractFeature) value).getType();
-                    if (!((DefaultAssociationRole) pt).getValueType().maybeAssignableFrom(valueType)) {
-                        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                                name, valueType.getName()));
-                    }
-                } else {
-                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                            name, value.getClass()));
-                }
-            }
-        } else {
-            /*
-             * Operation (or any other type):
-             *   - Legal in FeatureType, but not expected in Feature instance.
-             */
-            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
-        }
-        return value;
     }
 
     /**
@@ -434,6 +396,82 @@ public abstract class AbstractFeature implements Serializable {
         if (type != getPropertyType(name)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, name));
         }
+    }
+
+    /**
+     * Verifies the validity of the given value for the property of the given name, then returns the value
+     * to store. The returned value is usually the same than the given one, except in the case of collections.
+     */
+    final Object verifyPropertyValue(final String name, final Object value) {
+        final PropertyType pt = getPropertyType(name);
+        if (pt instanceof DefaultAttributeType<?>) {
+            if (value != null) {
+                return verifyAttributeValue((DefaultAttributeType<?>) pt, value);
+            }
+        } else if (pt instanceof DefaultAssociationRole) {
+            if (value != null) {
+                if (!(value instanceof AbstractFeature)) {
+                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                            name, value.getClass()));
+                }
+                return verifyAssociationValue((DefaultAssociationRole) pt, (AbstractFeature) value);
+            }
+        } else {
+            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
+        }
+        return value;
+    }
+
+    /**
+     * Verifies the validity of the given attribute value, and returns the value to store in the feature.
+     * An attribute:
+     * <ul>
+     *   <li>May be a singleton,  in which case the value class is verified.</li>
+     *   <li>May be a collection, in which case the class each elements in the collection is verified.</li>
+     * </ul>
+     */
+    private static <T> Object verifyAttributeValue(final DefaultAttributeType<T> type, final Object value) {
+        final Class<T> valueClass = type.getValueClass();
+        final boolean isMultiValued = type.getMaximumOccurs() > 1;
+        if (valueClass.isInstance(value)) {
+            if (isMultiValued) {
+                return singleton(valueClass, type.getMinimumOccurs(), value);
+            }
+        } else {
+            if (isMultiValued && value instanceof Collection<?>) {
+                return CheckedArrayList.castOrCopy((Collection<?>) value, valueClass);
+            } else {
+                throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                        type.getName(), value.getClass()));
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Verifies the validity of the given association value, and returns the value to store in the feature.
+     * An association:
+     * <ul>
+     *   <li>May be a singleton,  in which case the feature type is verified.</li>
+     * </ul>
+     */
+    private static Object verifyAssociationValue(final DefaultAssociationRole role, final AbstractFeature value) {
+        final DefaultFeatureType valueType = value.getType();
+        if (!role.getValueType().maybeAssignableFrom(valueType)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                    role.getName(), valueType.getName()));
+        }
+        return value;
+    }
+
+    /**
+     * Creates a collection which will initially contain only the given value.
+     */
+    @SuppressWarnings("unchecked")
+    private static <V> Collection<V> singleton(final Class<V> valueClass, final int minimumOccurs, final Object value) {
+        final CheckedArrayList<V> values = new CheckedArrayList<>(valueClass, Math.max(minimumOccurs, 4));
+        values.add((V) value); // Type will be checked by CheckedArrayList.
+        return values;
     }
 
     /**

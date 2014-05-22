@@ -65,7 +65,7 @@ import java.util.Objects;
  * This means that the same {@code defaultValue} instance may be shared by many {@link AbstractAttribute} instances.
  * Consequently the default value should be immutable for avoiding unexpected behavior.</p>
  *
- * @param <T> The type of attribute values.
+ * @param <V> The type of attribute values.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -75,7 +75,7 @@ import java.util.Objects;
  *
  * @see AbstractAttribute
  */
-public class DefaultAttributeType<T> extends FieldType {
+public class DefaultAttributeType<V> extends FieldType {
     /**
      * For cross-version compatibility.
      */
@@ -86,14 +86,14 @@ public class DefaultAttributeType<T> extends FieldType {
      *
      * @see #getValueClass()
      */
-    private final Class<T> valueClass;
+    private final Class<V> valueClass;
 
     /**
      * The default value for the attribute, or {@code null} if none.
      *
      * @see #getDefaultValue()
      */
-    private final T defaultValue;
+    private final V defaultValue;
 
     /**
      * Constructs an attribute type from the given properties. The identification map is given unchanged to
@@ -136,8 +136,8 @@ public class DefaultAttributeType<T> extends FieldType {
      *                       or {@link Integer#MAX_VALUE} if there is no restriction.
      * @param defaultValue   The default value for the attribute, or {@code null} if none.
      */
-    public DefaultAttributeType(final Map<String,?> identification, final Class<T> valueClass,
-            final int minimumOccurs, final int maximumOccurs, final T defaultValue)
+    public DefaultAttributeType(final Map<String,?> identification, final Class<V> valueClass,
+            final int minimumOccurs, final int maximumOccurs, final V defaultValue)
     {
         super(identification, minimumOccurs, maximumOccurs);
         ensureNonNull("valueClass",   valueClass);
@@ -151,7 +151,7 @@ public class DefaultAttributeType<T> extends FieldType {
      *
      * @return The type of attribute values.
      */
-    public final Class<T> getValueClass() {
+    public final Class<V> getValueClass() {
         return valueClass;
     }
 
@@ -202,7 +202,7 @@ public class DefaultAttributeType<T> extends FieldType {
      *
      * @return The default value for the attribute, or {@code null} if none.
      */
-    public T getDefaultValue() {
+    public V getDefaultValue() {
         return defaultValue;
     }
 

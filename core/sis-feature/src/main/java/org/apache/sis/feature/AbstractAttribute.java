@@ -47,7 +47,7 @@ import org.apache.sis.util.resources.Errors;
  *       the same SIS version.</li>
  * </ul>
  *
- * @param <T> The type of attribute values.
+ * @param <V> The type of attribute values.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -57,7 +57,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see DefaultAttributeType
  */
-public abstract class AbstractAttribute<T> extends Property implements Serializable {
+public abstract class AbstractAttribute<V> extends Property implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -66,16 +66,46 @@ public abstract class AbstractAttribute<T> extends Property implements Serializa
     /**
      * Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
-    final DefaultAttributeType<T> type;
+    final DefaultAttributeType<V> type;
 
     /**
      * Creates a new attribute of the given type.
      *
      * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
-    public AbstractAttribute(final DefaultAttributeType<T> type) {
-        ArgumentChecks.ensureNonNull("type", type);
+    protected AbstractAttribute(final DefaultAttributeType<V> type) {
         this.type = type;
+    }
+
+    /**
+     * Creates a new attribute of the given type initialized to the
+     * {@linkplain DefaultAttributeType#getDefaultValue() default value}.
+     *
+     * @param  <V>  The type of attribute values.
+     * @param  type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @return The new attribute.
+     */
+    public static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type) {
+        ArgumentChecks.ensureNonNull("type", type);
+        return (type.getMaximumOccurs() <= 1)
+               ? new SingletonAttribute<>(type)
+               : new MultiValuedAttribute<>(type);
+    }
+
+    /**
+     * Creates a new attribute of the given type initialized to the given value.
+     * Note that a {@code null} value may not be the same as the default value.
+     *
+     * @param  <V>   The type of attribute values.
+     * @param  type  Information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param  value The initial value (may be {@code null}).
+     * @return The new attribute.
+     */
+    static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type, final Object value) {
+        ArgumentChecks.ensureNonNull("type", type);
+        return (type.getMaximumOccurs() <= 1)
+               ? new SingletonAttribute<>(type, value)
+               : new MultiValuedAttribute<>(type, value);
     }
 
     /**
@@ -97,7 +127,7 @@ public abstract class AbstractAttribute<T> extends Property implements Serializa
      *
      * @return Information about the attribute.
      */
-    public DefaultAttributeType<T> getType() {
+    public DefaultAttributeType<V> getType() {
         return type;
     }
 
@@ -111,7 +141,7 @@ public abstract class AbstractAttribute<T> extends Property implements Serializa
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
-    public abstract T getValue() throws IllegalStateException;
+    public abstract V getValue() throws IllegalStateException;
 
     /**
      * Returns all attribute values, or an empty collection if none.
@@ -123,7 +153,7 @@ public abstract class AbstractAttribute<T> extends Property implements Serializa
      *
      * @return The attribute values in a <cite>live</cite> collection.
      */
-    public Collection<T> getValues() {
+    public Collection<V> getValues() {
         return new PropertySingleton<>(this);
     }
 
@@ -140,7 +170,7 @@ public abstract class AbstractAttribute<T> extends Property implements Serializa
      *
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
-    public abstract void setValue(final T value);
+    public abstract void setValue(final V value);
 
     /**
      * Set the attribute values. All previous values are replaced by the given collection.
@@ -150,10 +180,10 @@ public abstract class AbstractAttribute<T> extends Property implements Serializa
      *
      * @param values The new values.
      */
-    public void setValues(final Collection<? extends T> values) {
-        T value = null;
+    public void setValues(final Collection<? extends V> values) {
+        V value = null;
         ArgumentChecks.ensureNonNull("values", values);
-        final Iterator<? extends T> it = values.iterator();
+        final Iterator<? extends V> it = values.iterator();
         if (it.hasNext()) {
             value = it.next();
             if (it.hasNext()) {
@@ -233,7 +263,7 @@ public abstract class AbstractAttribute<T> extends Property implements Serializa
      */
     public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.ATTRIBUTE);
-        v.validate(type, getValue());
+        v.validate(type, getValues());
         return v.quality;
     }
 

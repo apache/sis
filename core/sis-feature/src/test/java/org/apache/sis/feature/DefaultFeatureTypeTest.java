@@ -63,6 +63,23 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
+     * Creates a sub-type of the "city" type with only one additional property, an arbitrary amount of strings.
+     * The feature contains the following attribute:
+     *
+     * <ul>
+     *   <li>{@code city}         as a  {@link String}  (mandatory)</li>
+     *   <li>{@code population}   as an {@link Integer} (mandatory)</li>
+     *   <li>{@code universities} as an arbitrary amount of {@link String}</li>
+     * </ul>
+     *
+     * @return The feature for an university city.
+     */
+    public static DefaultFeatureType universityCity() {
+        return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "University city"), false,
+                new DefaultFeatureType[] {city()}, DefaultAttributeTypeTest.universities());
+    }
+
+    /**
      * Creates a sub-type of the "city" type with only one additional property, a string giving the parliament name.
      * The feature contains the following attribute:
      *
@@ -106,19 +123,21 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
 
     /**
      * Creates a sub-type of the "metropolis" type with the "region" attribute overridden to
-     * {@link InternationalString}.
+     * {@link InternationalString} and an arbitrary amount of universities.
      */
     static DefaultFeatureType worldMetropolis() {
-        return worldMetropolis(metropolis(), InternationalString.class);
+        return worldMetropolis(metropolis(), universityCity(), InternationalString.class);
     }
 
     /**
      * Creates a sub-type of the "metropolis" type with the "region" attribute overridden to the given type.
      * The given type should be {@link InternationalString}, but we allow other type for testing argument checks.
      */
-    private static DefaultFeatureType worldMetropolis(final DefaultFeatureType metropolis, final Class<?> regionType) {
+    private static DefaultFeatureType worldMetropolis(final DefaultFeatureType metropolis,
+            final DefaultFeatureType universityCity, final Class<?> regionType)
+    {
         return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "World metropolis"), false,
-                new DefaultFeatureType[] {metropolis},
+                new DefaultFeatureType[] {metropolis, universityCity},
                 new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"),
                         regionType, 1, 1, null));
 
@@ -359,26 +378,27 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod({"testMultiInheritance", "testNameCollision"})
     public void testPropertyOverride() {
-        final DefaultFeatureType metropolis = metropolis();
+        final DefaultFeatureType metropolis     = metropolis();
+        final DefaultFeatureType universityCity = universityCity();
         try {
-            worldMetropolis(metropolis, Integer.class);
+            worldMetropolis(metropolis, universityCity, Integer.class);
             fail("Shall not be allowed to override a 'CharSequence' attribute with an 'Integer' one.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("region"));
             assertTrue(message, message.contains("Metropolis"));
         }
-        final DefaultFeatureType worldMetropolis = worldMetropolis(metropolis, InternationalString.class);
+        final DefaultFeatureType worldMetropolis = worldMetropolis(metropolis, universityCity, InternationalString.class);
         assertUnmodifiable(worldMetropolis);
         assertEquals     ("name", "World metropolis", worldMetropolis.getName().toString());
-        assertArrayEquals("superTypes", new Object[] {metropolis}, worldMetropolis.getSuperTypes().toArray());
+        assertArrayEquals("superTypes", new Object[] {metropolis, universityCity}, worldMetropolis.getSuperTypes().toArray());
         assertFalse      ("isAbstract",      worldMetropolis.isAbstract());
         assertFalse      ("isSparse",        worldMetropolis.isSparse());
-        assertTrue       ("isSimple",        worldMetropolis.isSimple());
-        assertEquals     ("instanceSize", 4, worldMetropolis.indices().size());
+        assertFalse      ("isSimple",        worldMetropolis.isSimple()); // Because of the arbitrary amount of universities.
+        assertEquals     ("instanceSize", 5, worldMetropolis.indices().size());
 
         assertPropertiesEquals(worldMetropolis, false, "region");
-        assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal");
+        assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal", "universities");
         assertEquals("property(“region”).valueClass", InternationalString.class,
                 ((DefaultAttributeType) worldMetropolis.getProperty("region")).getValueClass());
 

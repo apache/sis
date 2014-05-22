@@ -16,6 +16,8 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -90,50 +92,65 @@ final class Validator {
     }
 
     /**
-     * Verifies if the given value is valid for the given attribute type.
-     * This method delegates to one of the {@code validate(…)} methods depending of the value type.
+     * Wraps singleton value in a collection for processing by {@code validate(…)} methods.
      */
-    void validateAny(final PropertyType type, final Object value) {
-        if (type instanceof DefaultAttributeType<?>) {
-            validate((DefaultAttributeType<?>) type, value);
-        }
-        if (type instanceof DefaultAssociationRole) {
-            validate((DefaultAssociationRole) type, (AbstractFeature) value);
+    private static Collection<?> asList(final Object value, final int maximumOccurrences) {
+        if (maximumOccurrences <= 1) {
+            return (value != null) ? Collections.singletonList(value) : Collections.emptyList();
+        } else {
+            return (Collection<?>) value;
         }
     }
 
     /**
      * Verifies if the given value is valid for the given attribute type.
+     * This method delegates to one of the {@code validate(…)} methods depending of the value type.
      */
-    void validate(final DefaultAttributeType<?> type, final Object value) {
+    void validateAny(final PropertyType type, final Object value) {
+        if (type instanceof DefaultAttributeType<?>) {
+            validate((DefaultAttributeType<?>) type, asList(value,
+                    ((DefaultAttributeType<?>) type).getMaximumOccurs()));
+        }
+        if (type instanceof DefaultAssociationRole) {
+            validate((DefaultAssociationRole) type, asList(value,
+                    ((DefaultAssociationRole) type).getMaximumOccurs()));
+        }
+    }
+
+    /**
+     * Verifies if the given values are valid for the given attribute type.
+     */
+    void validate(final DefaultAttributeType<?> type, final Collection<?> values) {
         AbstractElement report = null;
-        if (value != null) {
+        for (final Object value : values) {
             /*
-             * In theory, the following check is unnecessary since the type was constrained by the Attribute.setValue(T)
+             * In theory, the following check is unnecessary since the type was constrained by the Attribute.setValue(V)
              * method signature. However in practice the call to Attribute.setValue(…) is sometime done after type erasure,
              * so we are better to check.
              */
             if (!type.getValueClass().isInstance(value)) {
                 report = addViolationReport(report, type, Errors.formatInternational(
                         Errors.Keys.IllegalPropertyClass_2, type.getName(), value.getClass()));
+                break; // Report only the first violation for now.
             }
         }
-        verifyCardinality(report, type, type.getMinimumOccurs(), type.getMaximumOccurs(), value);
+        verifyCardinality(report, type, type.getMinimumOccurs(), type.getMaximumOccurs(), values.size());
     }
 
     /**
      * Verifies if the given value is valid for the given association role.
      */
-    void validate(final DefaultAssociationRole role, final AbstractFeature value) {
+    void validate(final DefaultAssociationRole role, final Collection<?> values) {
         AbstractElement report = null;
-        if (value != null) {
-            final DefaultFeatureType type = value.getType();
+        for (final Object value : values) {
+            final DefaultFeatureType type = ((AbstractFeature) value).getType();
             if (!role.getValueType().isAssignableFrom(type)) {
                 report = addViolationReport(report, role, Errors.formatInternational(
                         Errors.Keys.IllegalPropertyClass_2, role.getName(), type.getName()));
+                break; // Report only the first violation for now.
             }
         }
-        verifyCardinality(report, role, role.getMinimumOccurs(), role.getMaximumOccurs(), value);
+        verifyCardinality(report, role, role.getMinimumOccurs(), role.getMaximumOccurs(), values.size());
     }
 
     /**
@@ -142,18 +159,24 @@ final class Validator {
      * @param report Where to add the result, or {@code null} if not yet created.
      */
     private void verifyCardinality(final AbstractElement report, final AbstractIdentifiedType type,
-            final int minimumOccurs, final int maximumOccurs, final Object value)
+            final int minimumOccurs, final int maximumOccurs, final int count)
     {
-        if (value == null) {
-            if (minimumOccurs != 0) {
-                addViolationReport(report, type, Errors.formatInternational(
-                        Errors.Keys.MissingValueForProperty_1, type.getName()));
+        if (count < minimumOccurs) {
+            final InternationalString message;
+            if (count == 0) {
+                message = Errors.formatInternational(Errors.Keys.MissingValueForProperty_1, type.getName());
+            } else {
+                message = Errors.formatInternational(Errors.Keys.TooFewOccurrences_2, minimumOccurs, type.getName());
             }
-        } else {
+            addViolationReport(report, type, message);
+        } else if (count > maximumOccurs) {
+            final InternationalString message;
             if (maximumOccurs == 0) {
-                addViolationReport(report, type, Errors.formatInternational(
-                        Errors.Keys.ForbiddenProperty_1, type.getName()));
+                message = Errors.formatInternational(Errors.Keys.ForbiddenProperty_1, type.getName());
+            } else {
+                message = Errors.formatInternational(Errors.Keys.TooManyOccurrences_2, maximumOccurs, type.getName());
             }
+            addViolationReport(report, type, message);
         }
     }
 }

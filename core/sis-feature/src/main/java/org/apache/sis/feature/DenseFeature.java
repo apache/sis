@@ -193,7 +193,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
         if (!(properties instanceof Property[])) {
             if (value != null) {
                 if (!canSkipVerification(properties[index], value)) {
-                    value = verifyValueType(name, value);
+                    value = verifyPropertyValue(name, value);
                 }
                 properties[index] = value;
                 return;
