@@ -41,18 +41,19 @@ public final strictfp class FeatureFormatTest extends TestCase {
      */
     @Test
     public void testFeatureType() {
-        final DefaultFeatureType feature = DefaultFeatureTypeTest.metropolis();
+        final DefaultFeatureType feature = DefaultFeatureTypeTest.worldMetropolis();
         final FeatureFormat format = new FeatureFormat(Locale.US, null);
         final String text = format.format(feature);
-        assertMultilinesEquals("Metropolis\n" +
-                "┌────────────┬──────────────┬─────────────┬───────────────┐\n" +
-                "│ Name       │ Type         │ Cardinality │ Default value │\n" +
-                "├────────────┼──────────────┼─────────────┼───────────────┤\n" +
-                "│ city       │ String       │ [1 … 1]     │ Utopia        │\n" +
-                "│ population │ Integer      │ [1 … 1]     │               │\n" +
-                "│ region     │ CharSequence │ [1 … 1]     │               │\n" +
-                "│ isGlobal   │ Boolean      │ [1 … 1]     │               │\n" +
-                "└────────────┴──────────────┴─────────────┴───────────────┘\n", text);
+        assertMultilinesEquals("World metropolis\n" +
+                "┌──────────────┬─────────────────────┬─────────────┬───────────────┐\n" +
+                "│ Name         │ Type                │ Cardinality │ Default value │\n" +
+                "├──────────────┼─────────────────────┼─────────────┼───────────────┤\n" +
+                "│ city         │ String              │ [1 … 1]     │ Utopia        │\n" +
+                "│ population   │ Integer             │ [1 … 1]     │               │\n" +
+                "│ region       │ InternationalString │ [1 … 1]     │               │\n" +
+                "│ isGlobal     │ Boolean             │ [1 … 1]     │               │\n" +
+                "│ universities │ String              │ [0 … ∞]     │               │\n" +
+                "└──────────────┴─────────────────────┴─────────────┴───────────────┘\n", text);
     }
 
     /**

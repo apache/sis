@@ -71,9 +71,9 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      * Creates a new association of the given type initialized to the given value.
      *
      * @param role  Information about the association.
-     * @param value The initial value.
+     * @param value The initial value (may be {@code null}).
      */
-    public DefaultAssociation(final DefaultAssociationRole role, final AbstractFeature value) {
+    DefaultAssociation(final DefaultAssociationRole role, final AbstractFeature value) {
         ArgumentChecks.ensureNonNull("role", role);
         this.role  = role;
         this.value = value;
@@ -117,6 +117,12 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      */
     public AbstractFeature getValue() {
         return value;
+    }
+
+    final java.util.Collection<AbstractFeature> getValues() {
+        return (value == null)
+               ? java.util.Collections.emptyList()
+               : java.util.Collections.singletonList(value);
     }
 
     /**
@@ -171,7 +177,7 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      */
     public DataQuality quality() {
         final Validator v = new Validator(null);
-        v.validate(role, value);
+        v.validate(role, getValues());
         return v.quality;
     }
 

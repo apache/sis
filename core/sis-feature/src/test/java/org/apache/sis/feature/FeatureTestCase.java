@@ -16,6 +16,8 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Result;
@@ -94,14 +96,21 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     private Object getAttributeValue(final String name) {
         final Object value = feature.getPropertyValue(name);
         if (getValuesFromProperty) {
-            final Property property = (Property) feature.getProperty(name);
-            assertInstanceOf(name, AbstractAttribute.class, property);
+            final AbstractAttribute<?> property = (AbstractAttribute<?>) feature.getProperty(name);
 
             // The AttributeType shall be the same than the one provided by FeatureType for the given name.
-            assertSame(name, feature.getType().getProperty(name), ((AbstractAttribute<?>) property).getType());
+            assertSame(name, feature.getType().getProperty(name), property.getType());
 
             // Attribute value shall be the same than the one provided by FeatureType convenience method.
-            assertSame(name, feature.getPropertyValue(name), ((AbstractAttribute<?>) property).getValue());
+            assertSame(name, value, property.getValue());
+
+            // Collection view shall contains the same value, or be empty.
+            final Collection<?> values = property.getValues();
+            if (value != null) {
+                assertSame(name, value, TestUtilities.getSingleton(values));
+            } else {
+                assertTrue(name, values.isEmpty());
+            }
 
             // Invoking getProperty(name) twice shall return the same Property instance.
             assertSame(name, property, feature.getProperty(name));
@@ -174,7 +183,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
 
     /**
      * Tests {@link AbstractFeature#getProperty(String)} and {@link AbstractFeature#getPropertyValue(String)}
-     * on a "complex" feature, involving inheritance and property overriding.
+     * on a "complex" feature, involving multi-valued properties, inheritances and property overriding.
      */
     @Test
     @DependsOnMethod({"testSimpleValues", "testSimpleProperties"})
@@ -183,12 +192,26 @@ public abstract strictfp class FeatureTestCase extends TestCase {
         setAttributeValue("city", "Utopia", "New York");
         setAttributeValue("population", null, 8405837); // Estimation for 2013.
         /*
+         * Set the attribute value on a property having [0 … ∞] cardinality.
+         * The feature implementation should put the value in a list.
+         */
+        assertEquals("universities", Collections.emptyList(), getAttributeValue("universities"));
+        feature.setPropertyValue("universities", "University of arts");
+        assertEquals("universities", Collections.singletonList("University of arts"), getAttributeValue("universities"));
+        /*
          * Switch to 'getProperty' mode only after we have set at least one value,
          * in order to test the conversion of existing values to property instances.
          */
         getValuesFromProperty = true;
         final SimpleInternationalString region = new SimpleInternationalString("State of New York");
         setAttributeValue("region", null, region);
+        /*
+         * Adds more universities.
+         */
+        @SuppressWarnings("unchecked")
+        final Collection<String> universities = (Collection<String>) feature.getPropertyValue("universities");
+        assertTrue(universities.add("University of sciences"));
+        assertTrue(universities.add("University of international development"));
         /*
          * In our 'metropolis' feature type, the region can be any CharSequence. But 'worldMetropolis'
          * feature type overrides the region property with a restriction to InternationalString.

@@ -32,7 +32,7 @@ import java.util.Objects;
  *       Synchronization, if needed, shall be done externally by the caller.</li>
  * </ul>
  *
- * @param <T> The type of the attribute value.
+ * @param <V> The type of the attribute value.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -42,7 +42,7 @@ import java.util.Objects;
  *
  * @see DefaultAttributeType
  */
-final class SingletonAttribute<T> extends AbstractAttribute<T> implements Cloneable {
+final class SingletonAttribute<V> extends AbstractAttribute<V> implements Cloneable {
     /**
      * For cross-version compatibility.
      */
@@ -51,7 +51,7 @@ final class SingletonAttribute<T> extends AbstractAttribute<T> implements Clonea
     /**
      * The attribute value, or {@code null} if none.
      */
-    private T value;
+    private V value;
 
     /**
      * Creates a new attribute of the given type initialized to the
@@ -59,7 +59,7 @@ final class SingletonAttribute<T> extends AbstractAttribute<T> implements Clonea
      *
      * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
-    public SingletonAttribute(final DefaultAttributeType<T> type) {
+    public SingletonAttribute(final DefaultAttributeType<V> type) {
         super(type);
         assert type.getMaximumOccurs() <= 1;
         value = type.getDefaultValue();
@@ -67,12 +67,12 @@ final class SingletonAttribute<T> extends AbstractAttribute<T> implements Clonea
 
     /**
      * Creates a new attribute of the given type initialized to the given value.
-     * Note that a {@code null} value may not the same as the default value.
+     * Note that a {@code null} value may not be the same as the default value.
      *
      * @param type  Information about the attribute (base Java class, domain of values, <i>etc.</i>).
-     * @param value The initial value (may be null {@code null}).
+     * @param value The initial value (may be {@code null}).
      */
-    SingletonAttribute(final DefaultAttributeType<T> type, final Object value) {
+    SingletonAttribute(final DefaultAttributeType<V> type, final Object value) {
         super(type);
         assert type.getMaximumOccurs() <= 1;
         this.value = type.getValueClass().cast(value);
@@ -86,7 +86,7 @@ final class SingletonAttribute<T> extends AbstractAttribute<T> implements Clonea
      * @see AbstractFeature#getPropertyValue(String)
      */
     @Override
-    public T getValue() {
+    public V getValue() {
         return value;
     }
 
@@ -96,7 +96,7 @@ final class SingletonAttribute<T> extends AbstractAttribute<T> implements Clonea
      * @param value The new value.
      */
     @Override
-    public void setValue(final T value) {
+    public void setValue(final V value) {
         this.value = value;
     }
 
@@ -113,8 +113,8 @@ final class SingletonAttribute<T> extends AbstractAttribute<T> implements Clonea
      */
     @Override
     @SuppressWarnings("unchecked")
-    public SingletonAttribute<T> clone() throws CloneNotSupportedException {
-        return (SingletonAttribute<T>) super.clone();
+    public SingletonAttribute<V> clone() throws CloneNotSupportedException {
+        return (SingletonAttribute<V>) super.clone();
     }
 
     /**

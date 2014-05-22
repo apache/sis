@@ -213,7 +213,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
             if (!canSkipVerification(previous, value)) {
                 Object toStore = previous; // This initial value will restore the previous value if the check fail.
                 try {
-                    toStore = verifyValueType(name, value);
+                    toStore = verifyPropertyValue(name, value);
                 } finally {
                     if (toStore != value) {
                         replace(name, value, toStore);

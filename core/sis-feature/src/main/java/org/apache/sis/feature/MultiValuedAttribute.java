@@ -16,9 +16,9 @@
  */
 package org.apache.sis.feature;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.lang.reflect.Field;
+import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -33,9 +33,12 @@ import org.apache.sis.util.resources.Errors;
  * <ul>
  *   <li><b>Multi-threading:</b> {@code MultiValuedAttribute} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
+ *   <li><b>Serialization:</b> serialized objects of this class are not guaranteed to be compatible with future
+ *       versions. Serialization should be used only for short term storage or RMI between applications running
+ *       the same SIS version.</li>
  * </ul>
  *
- * @param <T> The type of the attribute values.
+ * @param <V> The type of the attribute values.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -45,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see DefaultAttributeType
  */
-final class MultiValuedAttribute<T> extends AbstractAttribute<T> implements Cloneable {
+final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Cloneable {
     /**
      * For cross-version compatibility.
      */
@@ -54,7 +57,7 @@ final class MultiValuedAttribute<T> extends AbstractAttribute<T> implements Clon
     /**
      * The attribute values.
      */
-    private final ArrayList<T> values;
+    private final CheckedArrayList<V> values;
 
     /**
      * Creates a new attribute of the given type initialized to the
@@ -62,12 +65,32 @@ final class MultiValuedAttribute<T> extends AbstractAttribute<T> implements Clon
      *
      * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
-    public MultiValuedAttribute(final DefaultAttributeType<T> type) {
+    public MultiValuedAttribute(final DefaultAttributeType<V> type) {
         super(type);
-        values = new ArrayList<>();
-        final T value = type.getDefaultValue();
+        values = new CheckedArrayList<>(type.getValueClass());
+        final V value = type.getDefaultValue();
         if (value != null) {
             values.add(value);
+        }
+    }
+
+    /**
+     * Creates a new attribute of the given type initialized to the given values.
+     * Note that a {@code null} value may not be the same as the default value.
+     *
+     * @param type   Information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param values The initial values, or {@code null} for initializing to an empty list.
+     */
+    @SuppressWarnings("unchecked")
+    MultiValuedAttribute(final DefaultAttributeType<V> type, final Object values) {
+        super(type);
+        final Class<V> valueClass = type.getValueClass();
+        if (values == null) {
+            this.values = new CheckedArrayList<>(valueClass);
+        } else if (((CheckedArrayList<?>) values).getElementType() == valueClass) {
+            this.values = (CheckedArrayList<V>) values;
+        } else {
+            throw new ClassCastException();
         }
     }
 
@@ -78,7 +101,7 @@ final class MultiValuedAttribute<T> extends AbstractAttribute<T> implements Clon
      * @throws IllegalStateException if this attribute contains more than one value.
      */
     @Override
-    public T getValue() {
+    public V getValue() {
         switch (values.size()) {
             case 0:  return null;
             case 1:  return values.get(0);
@@ -94,7 +117,7 @@ final class MultiValuedAttribute<T> extends AbstractAttribute<T> implements Clon
      * @return The attribute values in a <cite>live</cite> collection.
      */
     @Override
-    public Collection<T> getValues() {
+    public Collection<V> getValues() {
         return values;
     }
 
@@ -104,7 +127,7 @@ final class MultiValuedAttribute<T> extends AbstractAttribute<T> implements Clon
      * @param value The new value, or {@code null} for removing all values from this attribute.
      */
     @Override
-    public void setValue(final T value) {
+    public void setValue(final V value) {
         values.clear();
         if (value != null) {
             values.add(value);
@@ -117,7 +140,7 @@ final class MultiValuedAttribute<T> extends AbstractAttribute<T> implements Clon
      * @param values The new values.
      */
     @Override
-    public void setValues(final Collection<? extends T> values) {
+    public void setValues(final Collection<? extends V> values) {
         ArgumentChecks.ensureNonNull("values", values);
         this.values.clear();
         this.values.addAll(values);
@@ -136,8 +159,8 @@ final class MultiValuedAttribute<T> extends AbstractAttribute<T> implements Clon
      */
     @Override
     @SuppressWarnings("unchecked")
-    public MultiValuedAttribute<T> clone() throws CloneNotSupportedException {
-        final MultiValuedAttribute<T> clone = (MultiValuedAttribute<T>) super.clone();
+    public MultiValuedAttribute<V> clone() throws CloneNotSupportedException {
+        final MultiValuedAttribute<V> clone = (MultiValuedAttribute<V>) super.clone();
         try {
             final Field field = MultiValuedAttribute.class.getDeclaredField("values");
             field.setAccessible(true);
