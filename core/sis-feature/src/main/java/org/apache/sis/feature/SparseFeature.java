@@ -177,7 +177,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
             if (valuesKind == VALUES) {
                 return element; // Most common case.
             } else if (element instanceof AbstractAttribute<?>) {
-                return ((AbstractAttribute<?>) element).getValue();
+                return getAttributeValue((AbstractAttribute<?>) element);
             } else if (element instanceof DefaultAssociation) {
                 return ((DefaultAssociation) element).getValue();
             } else if (valuesKind == PROPERTIES) {
@@ -211,10 +211,13 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
              * a new value or a value of a different type, then we need to check the name and type validity.
              */
             if (!canSkipVerification(previous, value)) {
-                final RuntimeException e = verifyValueType(name, value);
-                if (e != null) {
-                    replace(name, value, previous); // Restore the previous value.
-                    throw e;
+                Object toStore = previous; // This initial value will restore the previous value if the check fail.
+                try {
+                    toStore = verifyValueType(name, value);
+                } finally {
+                    if (toStore != value) {
+                        replace(name, value, toStore);
+                    }
                 }
             }
         } else if (valuesKind == PROPERTIES) {

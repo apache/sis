@@ -39,18 +39,21 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.5
  * @module
  */
-@DependsOn(DefaultAttributeTypeTest.class)
+@DependsOn({
+    DefaultAttributeTypeTest.class,
+    PropertySingletonTest.class
+})
 public final strictfp class SingletonAttributeTest extends TestCase {
     /**
      * Creates an attribute for the city name.
      * This attribute has a default value.
      */
     static SingletonAttribute<String> city() {
-        return new SingletonAttribute<>(DefaultAttributeTypeTest.city(new HashMap<>(4)));
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.city());
     }
 
     /**
-     * Creates an attribute for a singleton value.
+     * Creates an attribute for a city population value.
      * This attribute has no default value.
      */
     static SingletonAttribute<Integer> population() {
@@ -58,8 +61,8 @@ public final strictfp class SingletonAttributeTest extends TestCase {
     }
 
     /**
-     * Creates an attribute for a singleton value.
-     * This attribute has no default value.
+     * Creates an attribute type for a parliament name.
+     * This applies only to features of type "Capital".
      */
     static SingletonAttribute<String> parliament() {
         return new SingletonAttribute<>(DefaultAttributeTypeTest.parliament());
@@ -71,11 +74,17 @@ public final strictfp class SingletonAttributeTest extends TestCase {
     @Test
     public void testValue() {
         final AbstractAttribute<Integer> attribute = population();
-        assertNull("value", attribute.getValue());
-        attribute.setValue(1000);
-        assertEquals("value", Integer.valueOf(1000), attribute.getValue());
+        assertNull("value",  attribute.getValue());
+        assertTrue("values", attribute.getValues().isEmpty());
+
+        final Integer value = 1000;
+        attribute.setValue(value);
+        assertEquals     ("value",                 value,  attribute.getValue());
+        assertArrayEquals("values", new Integer[] {value}, attribute.getValues().toArray());
+
         attribute.setValue(null);
-        assertNull("value", attribute.getValue());
+        assertNull("value",  attribute.getValue());
+        assertTrue("values", attribute.getValues().isEmpty());
     }
 
     /**
@@ -120,6 +129,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
      * Tests attribute comparison.
      */
     @Test
+    @DependsOnMethod("testValue")
     public void testEquals() {
         final AbstractAttribute<Integer> a1 = population();
         final AbstractAttribute<Integer> a2 = population();
@@ -130,7 +140,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
     /**
      * Implementation of {@link #testEquals()} used also by {@link #testClone()}.
      */
-    private static void testEquals(final AbstractAttribute<Integer> a1, final AbstractAttribute<Integer> a2) {
+    static void testEquals(final AbstractAttribute<Integer> a1, final AbstractAttribute<Integer> a2) {
         assertTrue  ("equals",   a1.equals(a2));
         assertEquals("hashCode", a1.hashCode(), a2.hashCode());
         a2.setValue(1000);
@@ -159,6 +169,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
     @DependsOnMethod("testEquals")
     public void testSerialization() {
         final AbstractAttribute<String> attribute = city();
+        attribute.setValue("Atlantide");
         assertNotSame(attribute, assertSerializedEquals(attribute));
     }
 

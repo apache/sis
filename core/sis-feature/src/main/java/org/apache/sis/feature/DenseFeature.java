@@ -163,7 +163,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
                 if (!(properties instanceof Property[])) {
                     return element; // Most common case.
                 } else if (element instanceof AbstractAttribute<?>) {
-                    return ((AbstractAttribute<?>) element).getValue();
+                    return getAttributeValue((AbstractAttribute<?>) element);
                 } else if (element instanceof DefaultAssociation) {
                     return ((DefaultAssociation) element).getValue();
                 } else {
@@ -183,7 +183,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
      */
     @Override
-    public void setPropertyValue(final String name, final Object value) throws IllegalArgumentException {
+    public void setPropertyValue(final String name, Object value) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
         final int index = getIndex(name);
         if (properties == null) {
@@ -193,10 +193,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
         if (!(properties instanceof Property[])) {
             if (value != null) {
                 if (!canSkipVerification(properties[index], value)) {
-                    final RuntimeException e = verifyValueType(name, value);
-                    if (e != null) {
-                        throw e;
-                    }
+                    value = verifyValueType(name, value);
                 }
                 properties[index] = value;
                 return;

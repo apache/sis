@@ -32,8 +32,9 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     org.apache.sis.feature.DefaultAttributeTypeTest.class,
     org.apache.sis.feature.DefaultFeatureTypeTest.class,
-    org.apache.sis.feature.SingletonAttributeTest.class,
     org.apache.sis.feature.PropertySingletonTest.class,
+    org.apache.sis.feature.SingletonAttributeTest.class,
+    org.apache.sis.feature.MultiValuedAttributeTest.class,
     org.apache.sis.feature.DenseFeatureTest.class,
     org.apache.sis.feature.SparseFeatureTest.class,
     org.apache.sis.feature.DefaultAssociationRoleTest.class,
