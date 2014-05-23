@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
 import org.opengis.util.InternationalString;
+import org.opengis.feature.IdentifiedType;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -192,7 +193,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             final String... expected)
     {
         int index = 0;
-        for (final AbstractIdentifiedType property : feature.getProperties(includeSuperTypes)) {
+        for (final IdentifiedType property : feature.getProperties(includeSuperTypes)) {
             assertTrue("Found more properties than expected.", index < expected.length);
             final String name = expected[index++];
             assertNotNull(name, property);
@@ -258,8 +259,8 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 false, null, city, population, festival);
 
         assertUnmodifiable(complex);
-        final Collection<AbstractIdentifiedType> properties = complex.getProperties(false);
-        final Iterator<AbstractIdentifiedType> it = properties.iterator();
+        final Collection<IdentifiedType> properties = complex.getProperties(false);
+        final Iterator<IdentifiedType> it = properties.iterator();
 
         assertEquals("name",            "Festival",                     complex.getName().toString());
         assertTrue  ("superTypes",                                      complex.getSuperTypes().isEmpty());
