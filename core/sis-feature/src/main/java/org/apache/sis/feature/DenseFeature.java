@@ -165,9 +165,9 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
                 } else if (element instanceof AbstractAttribute<?>) {
                     return getAttributeValue((AbstractAttribute<?>) element);
                 } else if (element instanceof AbstractAssociation) {
-                    return ((AbstractAssociation) element).getValue();
+                    return getAssociationValue((AbstractAssociation) element);
                 } else {
-                    throw new IllegalArgumentException(unsupportedPropertyType(((Property) element).getName()));
+                    throw unsupportedPropertyType(((Property) element).getName());
                 }
             }
         }

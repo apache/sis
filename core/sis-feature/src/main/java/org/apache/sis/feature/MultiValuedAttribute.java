@@ -135,7 +135,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
     }
 
     /**
-     * Set the attribute values. All previous values are replaced by the given collection.
+     * Sets the attribute values. All previous values are replaced by the given collection.
      *
      * @param values The new values.
      */
@@ -172,7 +172,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
     }
 
     /**
-     * Returns a hash code value for this attribute type.
+     * Returns a hash code value for this attribute.
      *
      * @return A hash code value.
      */

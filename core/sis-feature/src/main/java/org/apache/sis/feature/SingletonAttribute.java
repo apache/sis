@@ -61,7 +61,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> implements Clonea
      */
     public SingletonAttribute(final DefaultAttributeType<V> type) {
         super(type);
-        assert type.getMaximumOccurs() <= 1;
+        assert isSingleton(type.getMaximumOccurs());
         value = type.getDefaultValue();
     }
 
@@ -74,7 +74,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> implements Clonea
      */
     SingletonAttribute(final DefaultAttributeType<V> type, final Object value) {
         super(type);
-        assert type.getMaximumOccurs() <= 1;
+        assert isSingleton(type.getMaximumOccurs());
         this.value = type.getValueClass().cast(value);
     }
 
@@ -116,7 +116,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> implements Clonea
     }
 
     /**
-     * Returns a hash code value for this attribute type.
+     * Returns a hash code value for this attribute.
      *
      * @return A hash code value.
      */

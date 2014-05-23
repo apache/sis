@@ -70,6 +70,8 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      * Creates a new attribute of the given type.
      *
      * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     *
+     * @see #create(DefaultAttributeType)
      */
     protected AbstractAttribute(final DefaultAttributeType<V> type) {
         this.type = type;
@@ -85,7 +87,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      */
     public static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type) {
         ArgumentChecks.ensureNonNull("type", type);
-        return (type.getMaximumOccurs() <= 1)
+        return isSingleton(type.getMaximumOccurs())
                ? new SingletonAttribute<>(type)
                : new MultiValuedAttribute<>(type);
     }
@@ -101,7 +103,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      */
     static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type, final Object value) {
         ArgumentChecks.ensureNonNull("type", type);
-        return (type.getMaximumOccurs() <= 1)
+        return isSingleton(type.getMaximumOccurs())
                ? new SingletonAttribute<>(type, value)
                : new MultiValuedAttribute<>(type, value);
     }
@@ -174,7 +176,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
     public abstract void setValue(final V value);
 
     /**
-     * Set the attribute values. All previous values are replaced by the given collection.
+     * Sets the attribute values. All previous values are replaced by the given collection.
      *
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(Object)}.</p>
