@@ -16,7 +16,6 @@
  */
 package org.apache.sis.feature;
 
-import java.util.HashMap;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.test.DependsOn;
@@ -35,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.5
  * @module
  */
-@DependsOn(DefaultAttributeTest.class)
+@DependsOn(SingletonAttributeTest.class)
 public final strictfp class DefaultOperationTest extends TestCase {
     /**
      * Returns an operation that found new cities.
@@ -47,7 +46,7 @@ public final strictfp class DefaultOperationTest extends TestCase {
         };
         return new DefaultOperation(singletonMap(DefaultOperation.NAME_KEY, "found city"),
                 builder.addName("found city").createGroup(parameters),
-                DefaultAttributeTypeTest.city(new HashMap<String,Object>(4)));
+                DefaultAttributeTypeTest.city());
     }
 
     /**

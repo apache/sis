@@ -16,6 +16,8 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
@@ -23,16 +25,18 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
-// Related to JDK7
-import java.util.Objects;
-
 
 /**
  * Indicates the role played by the association between two features.
  *
- * {@section Usage in multi-thread environment}
- * {@code DefaultAssociation} are <strong>not</strong> thread-safe.
- * Synchronization, if needed, shall be done externally by the caller.
+ * {@section Limitations}
+ * <ul>
+ *   <li><b>Multi-threading:</b> {@code AbstractAssociation} instances are <strong>not</strong> thread-safe.
+ *       Synchronization, if needed, shall be done externally by the caller.</li>
+ *   <li><b>Serialization:</b> serialized objects of this class are not guaranteed to be compatible with future
+ *       versions. Serialization should be used only for short term storage or RMI between applications running
+ *       the same SIS version.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -41,45 +45,53 @@ import java.util.Objects;
  *
  * @see DefaultAssociationRole
  */
-public class DefaultAssociation extends Property implements Cloneable, Serializable {
+public abstract class AbstractAssociation extends Field<AbstractFeature> implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1175014792131253528L;
+    private static final long serialVersionUID = 5992169056331267867L;
 
     /**
      * Information about the association.
      */
-    private final DefaultAssociationRole role;
+    final DefaultAssociationRole role;
 
     /**
-     * The associated feature.
-     */
-    private AbstractFeature value;
-
-    /**
-     * Creates a new association of the given type.
+     * Creates a new association of the given role.
      *
      * @param role Information about the association.
+     *
+     * @see #create(DefaultAssociationRole)
      */
-    public DefaultAssociation(final DefaultAssociationRole role) {
-        ArgumentChecks.ensureNonNull("role", role);
+    protected AbstractAssociation(final DefaultAssociationRole role) {
         this.role = role;
     }
 
     /**
-     * Creates a new association of the given type initialized to the given value.
+     * Creates a new association of the given role.
      *
-     * @param role  Information about the association.
-     * @param value The initial value.
+     * @param  role Information about the association.
+     * @return The new association.
      */
-    public DefaultAssociation(final DefaultAssociationRole role, final AbstractFeature value) {
+    public static AbstractAssociation create(final DefaultAssociationRole role) {
         ArgumentChecks.ensureNonNull("role", role);
-        this.role  = role;
-        this.value = value;
-        if (value != null) {
-            ensureValid(role.getValueType(), value.getType());
-        }
+        return isSingleton(role.getMaximumOccurs())
+               ? new SingletonAssociation(role)
+               : new MultiValuedAssociation(role);
+    }
+
+    /**
+     * Creates a new association of the given role initialized to the given value.
+     *
+     * @param  role  Information about the association.
+     * @param  value The initial value (may be {@code null}).
+     * @return The new association.
+     */
+    static AbstractAssociation create(final DefaultAssociationRole role, final Object value) {
+        ArgumentChecks.ensureNonNull("role", role);
+        return isSingleton(role.getMaximumOccurs())
+               ? new SingletonAssociation(role, (AbstractFeature) value)
+               : new MultiValuedAssociation(role, value);
     }
 
     /**
@@ -106,17 +118,34 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
     }
 
     /**
-     * Returns the associated feature.
+     * Returns the associated feature, or {@code null} if none. This convenience method can be invoked in
+     * the common case where the {@linkplain DefaultAssociationRole#getMaximumOccurs() maximum number} of
+     * features is restricted to 1 or 0.
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.Feature}. This change is pending GeoAPI revision.</div>
      *
      * @return The associated feature (may be {@code null}).
+     * @throws IllegalStateException if this association contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
-    public AbstractFeature getValue() {
-        return value;
+    @Override
+    public abstract AbstractFeature getValue();
+
+    /**
+     * Returns all features, or an empty collection if none.
+     * The returned collection is <cite>live</cite>: changes in the returned collection
+     * will be reflected immediately in this {@code Association} instance, and conversely.
+     *
+     * <p>The default implementation returns a collection which will delegate its work to
+     * {@link #getValue()} and {@link #setValue(Object)}.</p>
+     *
+     * @return The features in a <cite>live</cite> collection.
+     */
+    @Override
+    public Collection<AbstractFeature> getValues() {
+        return super.getValues();
     }
 
     /**
@@ -136,18 +165,27 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      *
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
-    public void setValue(final AbstractFeature value) {
-        if (value != null) {
-            ensureValid(role.getValueType(), value.getType());
-        }
-        this.value = value;
+    @Override
+    public abstract void setValue(final AbstractFeature value);
+
+    /**
+     * Sets the features. All previous values are replaced by the given collection.
+     *
+     * <p>The default implementation ensures that the given collection contains at most one element,
+     * then delegates to {@link #setValue(AbstractFeature)}.</p>
+     *
+     * @param values The new values.
+     */
+    @Override
+    public void setValues(final Collection<? extends AbstractFeature> values) {
+        super.setValues(values);
     }
 
     /**
      * Ensures that storing a feature of the given type is valid for an association
      * expecting the given base type.
      */
-    private void ensureValid(final DefaultFeatureType base, final DefaultFeatureType type) {
+    final void ensureValid(final DefaultFeatureType base, final DefaultFeatureType type) {
         if (base != type && !base.maybeAssignableFrom(type)) {
             throw new IllegalArgumentException(
                     Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
@@ -159,7 +197,7 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      * This method returns at most one {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality#getReports()
      * report} with a {@linkplain org.apache.sis.metadata.iso.quality.DefaultDomainConsistency#getResults() result} for
      * each constraint violations found, if any.
-     * See {@link DefaultAttribute#quality()} for an example.
+     * See {@link AbstractAttribute#quality()} for an example.
      *
      * <p>This association is valid if this method does not report any
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
@@ -171,51 +209,8 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
      */
     public DataQuality quality() {
         final Validator v = new Validator(null);
-        v.validate(role, value);
+        v.validate(role, getValues());
         return v.quality;
-    }
-
-    /**
-     * Returns a copy of this association.
-     * The default implementation returns a <em>shallow</em> copy:
-     * the association {@linkplain #getValue() value} is <strong>not</strong> cloned.
-     * However subclasses may choose to do otherwise.
-     *
-     * @return A clone of this association.
-     * @throws CloneNotSupportedException if this association can not be cloned.
-     *         The default implementation never throw this exception. However subclasses may throw it.
-     */
-    @Override
-    public DefaultAssociation clone() throws CloneNotSupportedException {
-        return (DefaultAssociation) super.clone();
-    }
-
-    /**
-     * Returns a hash code value for this association.
-     *
-     * @return A hash code value.
-     */
-    @Override
-    public int hashCode() {
-        return role.hashCode() + Objects.hashCode(value);
-    }
-
-    /**
-     * Compares this association with the given object for equality.
-     *
-     * @return {@code true} if both objects are equal.
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj != null && obj.getClass() == getClass()) {
-            final DefaultAssociation that = (DefaultAssociation) obj;
-            return role.equals(that.role) &&
-                   Objects.equals(value, that.value);
-        }
-        return false;
     }
 
     /**
@@ -227,13 +222,21 @@ public class DefaultAssociation extends Property implements Cloneable, Serializa
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = role.toString("FeatureAssociation", role.getValueType().getName());
-        if (value != null) {
-            final String pt = role.getTitleProperty();
-            if (pt != null) {
-                buffer.append(" = ").append(value.getPropertyValue(pt));
+        final String pt = role.getTitleProperty();
+        final Iterator<AbstractFeature> it = getValues().iterator();
+        return role.toString("FeatureAssociation", role.getValueType().getName(), new Iterator<Object>() {
+            @Override public boolean hasNext() {
+                return it.hasNext();
             }
-        }
-        return buffer.toString();
+
+            @Override public Object next() {
+                return it.next().getPropertyValue(pt);
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        });
     }
 }

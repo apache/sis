@@ -128,4 +128,34 @@ public final strictfp class CheckedArrayListTest extends TestCase {
         testAddWrongType(list.subList(1, 3));
         // Exception message is JDK-dependent, so we can not test it.
     }
+
+    /**
+     * Tests {@link CheckedArrayList#castOrCopy(Collection, Class)}.
+     */
+    @Test
+    @DependsOnMethod("testAddAll")
+    public void testCastOrCopy() {
+        assertNull(CheckedArrayList.castOrCopy(null, String.class));
+        final List<String> fruits = Arrays.asList("Apple", "Orange", "Raisin");
+        final CheckedArrayList<String> asStrings = CheckedArrayList.castOrCopy(fruits, String.class);
+        assertEquals ("Should have the given element type.", String.class, asStrings.getElementType());
+        assertNotSame("Should have created a new instance.", fruits, asStrings);
+        assertEquals ("Should contain the same data.",       fruits, asStrings);
+        assertSame   ("Should cast existing instance.", asStrings, CheckedArrayList.castOrCopy(asStrings, String.class));
+
+        final CheckedArrayList<CharSequence> asChars = CheckedArrayList.castOrCopy(asStrings, CharSequence.class);
+        assertEquals ("Should have the given element type.", CharSequence.class, asChars.getElementType());
+        assertNotSame("Should have created a new instance.", asStrings, asChars);
+        assertEquals ("Should contain the same data.",       asStrings, asChars);
+        assertEquals ("Should contain the same data.",       fruits,    asChars);
+
+        try {
+            CheckedArrayList.castOrCopy(asChars, Integer.class);
+            fail("Should not be allowed to cast String to Integer.");
+        } catch (ClassCastException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("String"));
+            assertTrue(message, message.contains("Integer"));
+        }
+    }
 }

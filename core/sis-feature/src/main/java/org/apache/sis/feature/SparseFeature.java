@@ -19,7 +19,6 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ConcurrentModificationException;
-import java.lang.reflect.Field;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.internal.util.Cloner;
@@ -42,7 +41,7 @@ import org.apache.sis.util.CorruptedObjectException;
  * @see DenseFeature
  * @see DefaultFeatureType
  */
-final class SparseFeature extends AbstractFeature {
+final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * For cross-version compatibility.
      */
@@ -73,7 +72,7 @@ final class SparseFeature extends AbstractFeature {
      *
      * @see #valuesKind
      */
-    private final HashMap<String, Object> properties;
+    private HashMap<String, Object> properties;
 
     /**
      * {@link #PROPERTIES} if the values in the {@link #properties} map are {@link Property} instances,
@@ -176,12 +175,12 @@ final class SparseFeature extends AbstractFeature {
         if (element != null) {
             if (valuesKind == VALUES) {
                 return element; // Most common case.
-            } else if (element instanceof DefaultAttribute<?>) {
-                return ((DefaultAttribute<?>) element).getValue();
-            } else if (element instanceof DefaultAssociation) {
-                return ((DefaultAssociation) element).getValue();
+            } else if (element instanceof AbstractAttribute<?>) {
+                return getAttributeValue((AbstractAttribute<?>) element);
+            } else if (element instanceof AbstractAssociation) {
+                return getAssociationValue((AbstractAssociation) element);
             } else if (valuesKind == PROPERTIES) {
-                throw new IllegalArgumentException(unsupportedPropertyType(((Property) element).getName()));
+                throw unsupportedPropertyType(((Property) element).getName());
             } else {
                 throw new CorruptedObjectException(String.valueOf(getName()));
             }
@@ -211,10 +210,13 @@ final class SparseFeature extends AbstractFeature {
              * a new value or a value of a different type, then we need to check the name and type validity.
              */
             if (!canSkipVerification(previous, value)) {
-                final RuntimeException e = verifyValueType(name, value);
-                if (e != null) {
-                    replace(name, value, previous); // Restore the previous value.
-                    throw e;
+                Object toStore = previous; // This initial value will restore the previous value if the check fail.
+                try {
+                    toStore = verifyPropertyValue(name, value);
+                } finally {
+                    if (toStore != value) {
+                        replace(name, value, toStore);
+                    }
                 }
             }
         } else if (valuesKind == PROPERTIES) {
@@ -246,7 +248,7 @@ final class SparseFeature extends AbstractFeature {
     public DataQuality quality() {
         if (valuesKind == VALUES) {
             final Validator v = new Validator(ScopeCode.FEATURE);
-            for (final String name : super.getType().indices().keySet()) {
+            for (final String name : type.indices().keySet()) {
                 v.validateAny(getPropertyType(name), properties.get(name));
             }
             return v.quality;
@@ -258,21 +260,21 @@ final class SparseFeature extends AbstractFeature {
     }
 
     /**
-     * Returns a copy of this feature.
-     * The properties are cloned, but not the property values.
+     * Returns a copy of this feature
+     * This method clones also all {@linkplain Cloneable cloneable} property instances in this feature,
+     * but not necessarily property values. Whether the property values are cloned or not (i.e. whether
+     * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
+     * property {@code clone()} methods.
      *
-     * @return A clone of this feature.
+     * @return A clone of this attribute.
+     * @throws CloneNotSupportedException if this feature can not be cloned, typically because
+     *         {@code clone()} on a property instance failed.
      */
     @Override
-    public AbstractFeature clone() throws CloneNotSupportedException {
+    @SuppressWarnings("unchecked")
+    public SparseFeature clone() throws CloneNotSupportedException {
         final SparseFeature clone = (SparseFeature) super.clone();
-        try {
-            final Field field = SparseFeature.class.getDeclaredField("properties");
-            field.setAccessible(true);
-            field.set(clone, clone.properties.clone());
-        } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
-        }
+        clone.properties = (HashMap<String,Object>) clone.properties.clone();
         switch (clone.valuesKind) {
             default:        throw new AssertionError(clone.valuesKind);
             case CORRUPTED: throw new CorruptedObjectException(clone.getName());
@@ -298,7 +300,7 @@ final class SparseFeature extends AbstractFeature {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + 37 * properties.hashCode();
+        return type.hashCode() + 37 * properties.hashCode();
     }
 
     /**
@@ -311,8 +313,9 @@ final class SparseFeature extends AbstractFeature {
         if (obj == this) {
             return true;
         }
-        if (super.equals(obj)) {
-            return properties.equals(((SparseFeature) obj).properties);
+        if (obj instanceof SparseFeature) {
+            final SparseFeature that = (SparseFeature) obj;
+            return type.equals(that.type) && properties.equals(that.properties);
         }
         return false;
     }

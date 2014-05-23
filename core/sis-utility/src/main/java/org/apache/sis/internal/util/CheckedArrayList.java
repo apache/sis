@@ -90,6 +90,31 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     }
 
     /**
+     * Returns the given collection as a {@code CheckedArrayList} instance of the given element type.
+     *
+     * @param  <E>        The element type.
+     * @param  collection The collection or {@code null}.
+     * @param  type       The element type.
+     * @return The given collection as a {@code CheckedArrayList}, or {@code null} if the given collection was null.
+     * @throws ClassCastException if an element is not of the expected type.
+     *
+     * @since 0.5
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> CheckedArrayList<E> castOrCopy(final Collection<?> collection, final Class<E> type) {
+        if (collection == null) {
+            return null;
+        }
+        if (collection instanceof CheckedArrayList<?> && ((CheckedArrayList<?>) collection).type == type) {
+            return (CheckedArrayList<E>) collection;
+        } else {
+            final CheckedArrayList<E> list = new CheckedArrayList<>(type, collection.size());
+            list.addAll((Collection) collection); // addAll will perform the type checks.
+            return list;
+        }
+    }
+
+    /**
      * Returns the element type given at construction time.
      */
     @Override

@@ -18,7 +18,6 @@ package org.apache.sis.feature;
 
 import java.util.Set;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -36,7 +35,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.5
  * @module
  */
-@DependsOn(DefaultAttributeTest.class)
 public final strictfp class PropertySingletonTest extends TestCase {
     /**
      * The instance to test.
@@ -46,13 +44,13 @@ public final strictfp class PropertySingletonTest extends TestCase {
     /**
      * The attribute wrapped by the {@link #singleton} list.
      */
-    private final DefaultAttribute<Integer> attribute;
+    private final AbstractAttribute<Integer> attribute;
 
     /**
      * Creates a new test case.
      */
     public PropertySingletonTest() {
-        attribute = new DefaultAttribute<>(new DefaultAttributeType<>(
+        attribute = new SingletonAttribute<>(new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "test"), Integer.class, 0, 1, null));
         singleton = new PropertySingleton<>(attribute);
     }
