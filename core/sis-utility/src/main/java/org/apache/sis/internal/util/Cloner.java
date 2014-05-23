@@ -17,6 +17,7 @@
 package org.apache.sis.internal.util;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.InvocationTargetException;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
@@ -28,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @Workaround(library="JDK", version="1.7")
@@ -85,15 +86,40 @@ public class Cloner {
         if (object == null) {
             return null;
         }
+        SecurityException security = null;
         final Class<?> valueType = object.getClass();
         try {
             if (valueType != type) {
                 method = valueType.getMethod("clone", (Class<?>[]) null);
                 type = valueType; // Set only if the above line succeed.
+                /*
+                 * If the class implementing the 'clone()' method is not public, we may not be able to access that
+                 * method even if it is public. Try to make the method accessible. If we fail for security reason,
+                 * we will still attempt to clone (maybe a parent class is public), but we remember the exception
+                 * in order to report it in case of failure.
+                 */
+                if (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) try {
+                    method.setAccessible(true);
+                } catch (SecurityException e) {
+                    security = e;
+                }
             }
-            if (method != null) { // May be null if previous call threw NoSuchMethodException.
+            /*
+             * 'method' may be null if a previous call to this clone(Object) method threw NoSuchMethodException
+             * (see the first 'catch' block below). In this context, 'null' means "no public clone() method".
+             */
+            if (method != null) {
                 return method.invoke(object, (Object[]) null);
             }
+        } catch (NoSuchMethodException e) {
+            if (isCloneRequired(object)) {
+                throw fail(e);
+            }
+            method = null;
+            type = valueType;
+        } catch (IllegalAccessException e) {
+            // JDK7 branch has the following: e.addSuppressed(security);
+            throw fail(e);
         } catch (InvocationTargetException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof CloneNotSupportedException) {
@@ -106,13 +132,7 @@ public class Cloner {
                 throw (Error) cause;
             }
             throw fail(e);
-        } catch (NoSuchMethodException e) {
-            if (isCloneRequired(object)) {
-                throw fail(e);
-            }
-            method = null;
-            type = valueType;
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7
+        } catch (SecurityException e) {
             throw fail(e);
         }
         return object;

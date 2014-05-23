@@ -21,6 +21,7 @@ import org.apache.sis.test.DependsOn;
 
 /**
  * Tests {@link DenseFeature}.
+ * This class inherits all tests defined in {@link FeatureTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -29,7 +30,7 @@ import org.apache.sis.test.DependsOn;
  */
 @DependsOn({
     DefaultFeatureTypeTest.class,
-    DefaultAttributeTest.class,
+    SingletonAttributeTest.class,
     PropertySingletonTest.class
 })
 public final strictfp class DenseFeatureTest extends FeatureTestCase {
@@ -39,6 +40,14 @@ public final strictfp class DenseFeatureTest extends FeatureTestCase {
     @Override
     final AbstractFeature createFeature(final DefaultFeatureType type) {
         return new DenseFeature(type);
+    }
+
+    /**
+     * Clones the {@link #feature} instance.
+     */
+    @Override
+    final AbstractFeature cloneFeature() throws CloneNotSupportedException {
+        return ((DenseFeature) feature).clone();
     }
 
     // Inherit all tests from the super-class.

@@ -40,7 +40,7 @@ public final class Features extends Static {
      * An exception is thrown immediately if the given type does not have the expected
      * {@linkplain DefaultAttributeType#getValueClass() value class}.
      *
-     * @param  <T>        The expected value class.
+     * @param  <V>        The expected value class.
      * @param  type       The attribute type to cast, or {@code null}.
      * @param  valueClass The expected value class.
      * @return The attribute type casted to the given value class, or {@code null} if the given type was null.
@@ -49,19 +49,19 @@ public final class Features extends Static {
      * @category verification
      */
     @SuppressWarnings("unchecked")
-    public static <T> DefaultAttributeType<T> cast(final DefaultAttributeType<?> type, final Class<T> valueClass)
+    public static <V> DefaultAttributeType<V> cast(final DefaultAttributeType<?> type, final Class<V> valueClass)
             throws ClassCastException
     {
         if (type != null) {
             final Class<?> actual = type.getValueClass();
             // We require a strict equality - not type.isAssignableFrom(actual) - because in
-            // the later case we could have (to be strict) to return a <? extends T> type.
+            // the later case we could have (to be strict) to return a <? extends V> type.
             if (!valueClass.equals(actual)) {
                 throw new ClassCastException(Errors.format(Errors.Keys.MismatchedValueClass_3,
                         type.getName(), valueClass, actual));
             }
         }
-        return (DefaultAttributeType<T>) type;
+        return (DefaultAttributeType<V>) type;
     }
 
     /**
@@ -69,7 +69,7 @@ public final class Features extends Static {
      * An exception is thrown immediately if the given instance does not have the expected
      * {@linkplain DefaultAttributeType#getValueClass() value class}.
      *
-     * @param  <T>        The expected value class.
+     * @param  <V>        The expected value class.
      * @param  attribute  The attribute instance to cast, or {@code null}.
      * @param  valueClass The expected value class.
      * @return The attribute instance casted to the given value class, or {@code null} if the given instance was null.
@@ -78,18 +78,18 @@ public final class Features extends Static {
      * @category verification
      */
     @SuppressWarnings("unchecked")
-    public static <T> DefaultAttribute<T> cast(final DefaultAttribute<?> attribute, final Class<T> valueClass)
+    public static <V> AbstractAttribute<V> cast(final AbstractAttribute<?> attribute, final Class<V> valueClass)
             throws ClassCastException
     {
         if (attribute != null) {
             final Class<?> actual = attribute.getType().getValueClass();
             // We require a strict equality - not type.isAssignableFrom(actual) - because in
-            // the later case we could have (to be strict) to return a <? extends T> type.
+            // the later case we could have (to be strict) to return a <? extends V> type.
             if (!valueClass.equals(actual)) {
                 throw new ClassCastException(Errors.format(Errors.Keys.MismatchedValueClass_3,
                         attribute.getName(), valueClass, actual));
             }
         }
-        return (DefaultAttribute<T>) attribute;
+        return (AbstractAttribute<V>) attribute;
     }
 }
