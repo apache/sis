@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @module
  */
-@DependsOn(DefaultAttributeTest.class)
+@DependsOn(SingletonAttributeTest.class)
 public final strictfp class FeaturesTest extends TestCase {
     /**
      * Tests {@link Features#cast(AttributeType, Class)}.
@@ -56,7 +56,7 @@ public final strictfp class FeaturesTest extends TestCase {
      */
     @Test
     public void testCastAttributeInstance() {
-        final DefaultAttribute<String> parliament = DefaultAttributeTest.parliament();
+        final AbstractAttribute<String> parliament = SingletonAttributeTest.parliament();
         assertSame(parliament, Features.cast(parliament, String.class));
         try {
             Features.cast(parliament, CharSequence.class);

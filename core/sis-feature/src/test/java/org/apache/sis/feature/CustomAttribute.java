@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * For testing {@link DefaultAttribute} customization.
+ * For testing {@link AbstractAttribute} customization.
  * This implementation adds its own criterion to the attribute quality evaluation.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -36,17 +36,39 @@ import static org.junit.Assert.*;
  * @module
  */
 @SuppressWarnings("serial")
-final strictfp class CustomAttribute<V> extends DefaultAttribute<V> {
+final strictfp class CustomAttribute<V> extends AbstractAttribute<V> {
     /**
      * A quality information that this attribute will report in addition to the default ones.
      */
     static final String ADDITIONAL_QUALITY_INFO = "Some statistical quality measurement.";
 
     /**
+     * The singleton value.
+     */
+    private V value;
+
+    /**
      * Creates a new attribute.
      */
     public CustomAttribute(final DefaultAttributeType<V> type) {
         super(type);
+        value = type.getDefaultValue();
+    }
+
+    /**
+     * Returns the singleton value.
+     */
+    @Override
+    public V getValue() {
+        return value;
+    }
+
+    /**
+     * Sets the singleton value.
+     */
+    @Override
+    public void setValue(final V value) {
+        this.value = value;
     }
 
     /**
