@@ -25,7 +25,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link DefaultAssociation}.
+ * Tests {@link SingletonAssociation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -36,18 +36,18 @@ import static org.apache.sis.test.Assert.*;
     DefaultAssociationRoleTest.class,
     DenseFeatureTest.class
 })
-public final strictfp class DefaultAssociationTest extends TestCase {
+public final strictfp class SingletonAssociationTest extends TestCase {
     /**
      * Returns an association to use for testing purpose.
      *
      * <blockquote>“The earliest known town twinning in Europe was between Paderborn, Germany
      * and Le Mans, France in 836.” — source: Wikipedia</blockquote>
      */
-    static DefaultAssociation twinTown() {
+    static AbstractAssociation twinTown() {
         final AbstractFeature twinTown = DefaultFeatureTypeTest.city().newInstance();
         twinTown.setPropertyValue("city", "Le Mans");
         twinTown.setPropertyValue("population", 143240); // In 2011.
-        final DefaultAssociation association = new DefaultAssociation(DefaultAssociationRoleTest.twinTown());
+        final AbstractAssociation association = new SingletonAssociation(DefaultAssociationRoleTest.twinTown());
         association.setValue(twinTown);
         return association;
     }
@@ -57,7 +57,7 @@ public final strictfp class DefaultAssociationTest extends TestCase {
      */
     @Test
     public void testWrongValue() {
-        final DefaultAssociation association  = twinTown();
+        final AbstractAssociation association  = twinTown();
         final PropertyType       population   = association.getRole().getValueType().getProperty("population");
         final AbstractFeature    otherFeature = new DefaultFeatureType(
                 singletonMap(DefaultFeatureType.NAME_KEY, "Population"), false, null, population).newInstance();
@@ -76,16 +76,16 @@ public final strictfp class DefaultAssociationTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final DefaultAssociation twinTown = twinTown();
+        final AbstractAssociation twinTown = twinTown();
         assertNotSame(twinTown, assertSerializedEquals(twinTown));
     }
 
     /**
-     * Tests {@link DefaultAssociation#toString()}.
+     * Tests {@link SingletonAssociation#toString()}.
      */
     @Test
     public void testToString() {
-        final DefaultAssociation twinTown = twinTown();
+        final AbstractAssociation twinTown = twinTown();
         assertEquals("FeatureAssociation[“twin town” : City] = Le Mans", twinTown.toString());
     }
 }

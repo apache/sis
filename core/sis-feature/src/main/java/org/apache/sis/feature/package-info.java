@@ -72,10 +72,10 @@
  * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAssociationRole  Feature association role}<br>
  * {@code      └─} {@linkplain org.apache.sis.feature.DefaultOperation        Operation}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
- *             {@linkplain org.apache.sis.feature.AbstractFeature    Feature}<br>
- *                                                                   Property<br>
- * {@code  ├─} {@linkplain org.apache.sis.feature.AbstractAttribute  Attribute}<br>
- * {@code  └─} {@linkplain org.apache.sis.feature.DefaultAssociation Feature association}<br>
+ *             {@linkplain org.apache.sis.feature.AbstractFeature     Feature}<br>
+ *                                                                    Property<br>
+ * {@code  ├─} {@linkplain org.apache.sis.feature.AbstractAttribute   Attribute}<br>
+ * {@code  └─} {@linkplain org.apache.sis.feature.AbstractAssociation Feature association}<br>
  * </td></tr></table>
  *
  * @author  Travis L. Pinney

@@ -82,8 +82,6 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> implements Clonea
      * Returns the attribute value.
      *
      * @return The attribute value (may be {@code null}).
-     *
-     * @see AbstractFeature#getPropertyValue(String)
      */
     @Override
     public V getValue() {

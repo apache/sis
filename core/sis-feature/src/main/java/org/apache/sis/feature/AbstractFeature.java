@@ -35,7 +35,7 @@ import org.apache.sis.internal.util.CheckedArrayList;
  *
  * <ul>
  *   <li>{@linkplain AbstractAttribute  Attributes}</li>
- *   <li>{@linkplain DefaultAssociation Associations to other features}</li>
+ *   <li>{@link AbstractAssociation Associations to other features}</li>
  *   <li>{@linkplain DefaultOperation   Operations}</li>
  * </ul>
  *
@@ -130,7 +130,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * <div class="note"><b>Tip:</b> This method returns the property <em>instance</em>. If only the property
      * <em>value</em> is desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a
-     * chance to avoid the creation of {@link AbstractAttribute} or {@link DefaultAssociation} instances.</div>
+     * chance to avoid the creation of {@link AbstractAttribute} or {@link AbstractAssociation} instances.</div>
      *
      * @param  name The property name.
      * @return The property of the given name (never {@code null}).
@@ -184,7 +184,7 @@ public abstract class AbstractFeature implements Serializable {
         if (pt instanceof DefaultAttributeType<?>) {
             return AbstractAttribute.create((DefaultAttributeType<?>) pt, value);
         } else if (pt instanceof DefaultAssociationRole) {
-            return new DefaultAssociation((DefaultAssociationRole) pt, (AbstractFeature) value);
+            return new SingletonAssociation((DefaultAssociationRole) pt, (AbstractFeature) value);
         } else {
             // Should never happen, unless the user gave us some mutable FeatureType.
             throw new CorruptedObjectException(Errors.format(Errors.Keys.UnknownType_1, pt));
@@ -203,7 +203,7 @@ public abstract class AbstractFeature implements Serializable {
         if (pt instanceof DefaultAttributeType<?>) {
             return AbstractAttribute.create((DefaultAttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
-            return new DefaultAssociation((DefaultAssociationRole) pt);
+            return new SingletonAssociation((DefaultAssociationRole) pt);
         } else {
             throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
         }
@@ -299,9 +299,9 @@ public abstract class AbstractFeature implements Serializable {
     static void setPropertyValue(final Property property, final Object value) {
         if (property instanceof AbstractAttribute<?>) {
             setAttributeValue((AbstractAttribute<?>) property, value);
-        } else if (property instanceof DefaultAssociation) {
+        } else if (property instanceof AbstractAssociation) {
             ArgumentChecks.ensureCanCast("value", AbstractFeature.class, value);
-            setAssociationValue((DefaultAssociation) property, (AbstractFeature) value);
+            setAssociationValue((AbstractAssociation) property, (AbstractFeature) value);
         } else {
             throw new IllegalArgumentException(unsupportedPropertyType(property.getName()));
         }
@@ -342,7 +342,7 @@ public abstract class AbstractFeature implements Serializable {
      * Sets the association value after verification of its type.
      * For a more exhaustive validation, use {@link Validator} instead.
      */
-    private static void setAssociationValue(final DefaultAssociation association, final AbstractFeature value) {
+    private static void setAssociationValue(final AbstractAssociation association, final AbstractFeature value) {
         if (value != null) {
             final DefaultAssociationRole pt = association.getRole();
             final DefaultFeatureType base = pt.getValueType();
@@ -387,8 +387,8 @@ public abstract class AbstractFeature implements Serializable {
         final PropertyType type;
         if (property instanceof AbstractAttribute<?>) {
             type = ((AbstractAttribute<?>) property).getType();
-        } else if (property instanceof DefaultAssociation) {
-            type = ((DefaultAssociation) property).getRole();
+        } else if (property instanceof AbstractAssociation) {
+            type = ((AbstractAssociation) property).getRole();
         } else {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentClass_2, "property", property.getClass()));
@@ -527,7 +527,7 @@ public abstract class AbstractFeature implements Serializable {
      * @return Reports on all constraint violations found.
      *
      * @see AbstractAttribute#quality()
-     * @see DefaultAssociation#quality()
+     * @see AbstractAssociation#quality()
      */
     public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.FEATURE);
@@ -536,8 +536,8 @@ public abstract class AbstractFeature implements Serializable {
             final DataQuality quality;
             if (property instanceof AbstractAttribute<?>) {
                 quality = ((AbstractAttribute<?>) property).quality();
-            } else if (property instanceof DefaultAssociation) {
-                quality = ((DefaultAssociation) property).quality();
+            } else if (property instanceof AbstractAssociation) {
+                quality = ((AbstractAssociation) property).quality();
             } else {
                 continue;
             }
