@@ -64,6 +64,11 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * Type ‘{0}’ is abstract.
+         */
+        public static final short AbstractType_1 = 159;
+
+        /**
          * Name “{2}” is ambiguous because it can be understood as either “{0}” or “{1}”.
          */
         public static final short AmbiguousName_3 = 151;
@@ -593,6 +598,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NotAPrimitiveWrapper_1 = 90;
 
         /**
+         * The “{0}” collection is not a singleton.
+         */
+        public static final short NotASingleton_1 = 158;
+
+        /**
          * Matrix is not skew-symmetric.
          */
         public static final short NotASkewSymmetricMatrix = 91;
@@ -693,7 +703,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short TooManyArguments_2 = 105;
 
         /**
-         * Too many occurrences of “{1}”. There is already {0} of them.
+         * Too many occurrences of “{1}”. The maximum is {0}.
          */
         public static final short TooManyOccurrences_2 = 149;
 

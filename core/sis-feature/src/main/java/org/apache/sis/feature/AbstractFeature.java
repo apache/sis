@@ -16,6 +16,9 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Iterator;
+import java.util.Collection;
+import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
@@ -23,6 +26,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CorruptedObjectException;
+import org.apache.sis.internal.util.CheckedArrayList;
 
 
 /**
@@ -30,8 +34,8 @@ import org.apache.sis.util.CorruptedObjectException;
  * Each feature instance can provide values for the following properties:
  *
  * <ul>
- *   <li>{@linkplain DefaultAttribute   Attributes}</li>
- *   <li>{@linkplain DefaultAssociation Associations to other features}</li>
+ *   <li>{@linkplain AbstractAttribute  Attributes}</li>
+ *   <li>{@link AbstractAssociation Associations to other features}</li>
  *   <li>{@linkplain DefaultOperation   Operations}</li>
  * </ul>
  *
@@ -62,7 +66,7 @@ import org.apache.sis.util.CorruptedObjectException;
  *
  * @see DefaultFeatureType#newInstance()
  */
-public abstract class AbstractFeature implements Cloneable, Serializable {
+public abstract class AbstractFeature implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -71,14 +75,16 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
     /**
      * Information about the feature (name, characteristics, <i>etc.</i>).
      */
-    private final DefaultFeatureType type;
+    final DefaultFeatureType type;
 
     /**
      * Creates a new feature of the given type.
      *
      * @param type Information about the feature (name, characteristics, <i>etc.</i>).
+     *
+     * @see DefaultFeatureType#newInstance()
      */
-    public AbstractFeature(final DefaultFeatureType type) {
+    protected AbstractFeature(final DefaultFeatureType type) {
         ArgumentChecks.ensureNonNull("type", type);
         this.type = type;
     }
@@ -126,7 +132,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      *
      * <div class="note"><b>Tip:</b> This method returns the property <em>instance</em>. If only the property
      * <em>value</em> is desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a
-     * chance to avoid the creation of {@link DefaultAttribute} or {@link DefaultAssociation} instances.</div>
+     * chance to avoid the creation of {@link AbstractAttribute} or {@link AbstractAssociation} instances.</div>
      *
      * @param  name The property name.
      * @return The property of the given name (never {@code null}).
@@ -179,9 +185,9 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
     final Property createProperty(final String name, final Object value) {
         final PropertyType pt = getPropertyType(name);
         if (pt instanceof DefaultAttributeType<?>) {
-            return new DefaultAttribute((DefaultAttributeType<?>) pt, value);
+            return AbstractAttribute.create((DefaultAttributeType<?>) pt, value);
         } else if (pt instanceof DefaultAssociationRole) {
-            return new DefaultAssociation((DefaultAssociationRole) pt, (AbstractFeature) value);
+            return AbstractAssociation.create((DefaultAssociationRole) pt, value);
         } else {
             // Should never happen, unless the user gave us some mutable FeatureType.
             throw new CorruptedObjectException(Errors.format(Errors.Keys.UnknownType_1, pt));
@@ -199,16 +205,17 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
     final Property createProperty(final String name) throws IllegalArgumentException {
         final PropertyType pt = getPropertyType(name);
         if (pt instanceof DefaultAttributeType<?>) {
-            return new DefaultAttribute((DefaultAttributeType<?>) pt);
+            return AbstractAttribute.create((DefaultAttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
-            return new DefaultAssociation((DefaultAssociationRole) pt);
+            return AbstractAssociation.create((DefaultAssociationRole) pt);
         } else {
-            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
+            throw unsupportedPropertyType(pt.getName());
         }
     }
 
     /**
-     * Returns the default value for the property of the given name.
+     * Returns the default value to be returned by {@link #getPropertyValue(String)}
+     * for the property of the given name.
      *
      * @param  name The name of the property for which to get the default value.
      * @return The default value for the {@code Property} of the given name.
@@ -217,29 +224,50 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
     final Object getDefaultValue(final String name) throws IllegalArgumentException {
         final PropertyType pt = getPropertyType(name);
         if (pt instanceof DefaultAttributeType<?>) {
-            return ((DefaultAttributeType<?>) pt).getDefaultValue();
+            return getDefaultValue((DefaultAttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
             return null; // No default value for associations.
         } else {
-            throw new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
+            throw unsupportedPropertyType(pt.getName());
+        }
+    }
+
+    /**
+     * Returns the default value to be returned by {@link #getPropertyValue(String)} for the given attribute type.
+     */
+    private static <V> Object getDefaultValue(final DefaultAttributeType<V> attribute) {
+        final V defaultValue = attribute.getDefaultValue();
+        if (Field.isSingleton(attribute.getMaximumOccurs())) {
+            return defaultValue;
+        } else {
+            // Following is for compliance with getPropertyValue(String) method contract - see its javadoc.
+            return (defaultValue != null) ? Collections.singletonList(defaultValue) : Collections.emptyList();
         }
     }
 
     /**
      * Returns the value for the property of the given name.
-     * This convenience method is equivalent to the following steps:
+     * This convenience method is equivalent to invoking {@link #getProperty(String)} for the given name,
+     * then to perform one of the following actions depending on the property type and the cardinality:
      *
-     * <ul>
-     *   <li>Get the property of the given name.</li>
-     *   <li>Delegates to {@link DefaultAttribute#getValue()} or {@link DefaultAssociation#getValue()},
-     *       depending on the property type.
-     * </ul>
+     * <table class="sis">
+     *   <caption>Class of returned value</caption>
+     *   <tr><th>Property type</th>           <th>max. occurs</th> <th>Method invoked</th>                  <th>Return type</th></tr>
+     *   <tr><td>{@link AttributeType}</td>   <td>0 or 1</td>      <td>{@link Attribute#getValue()}</td>    <td>{@link Object}</td></tr>
+     *   <tr><td>{@code AttributeType}</td>   <td>2 or more</td>   <td>{@link Attribute#getValues()}</td>   <td>{@code Collection<?>}</td></tr>
+     *   <tr><td>{@link AssociationRole}</td> <td>0 or 1</td>      <td>{@link Association#getValue()}</td>  <td>{@link Feature}</td></tr>
+     *   <tr><td>{@code AssociationRole}</td> <td>2 or more</td>   <td>{@link Association#getValues()}</td> <td>{@code Collection<Feature>}</td></tr>
+     * </table>
+     *
+     * <div class="note"><b>Note:</b> “max. occurs” is the {@linkplain DefaultAttributeType#getMaximumOccurs() maximum
+     * number of occurrences} and does not depend on the actual number of values. If an attribute allows more than one
+     * value, then this method will always return a collection for that attribute even if the collection is empty.</div>
      *
      * @param  name The property name.
      * @return The value for the given property, or {@code null} if none.
      * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
      *
-     * @see DefaultAttribute#getValue()
+     * @see AbstractAttribute#getValue()
      */
     public abstract Object getPropertyValue(final String name) throws IllegalArgumentException;
 
@@ -257,21 +285,36 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      * @throws ClassCastException If the value is not assignable to the expected value class.
      * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
      *
-     * @see DefaultAttribute#setValue(Object)
+     * @see AbstractAttribute#setValue(Object)
      */
     public abstract void setPropertyValue(final String name, final Object value) throws IllegalArgumentException;
+
+    /**
+     * Returns the value of the given attribute, as a singleton or as a collection depending
+     * on the maximum number of occurrences.
+     */
+    static Object getAttributeValue(final AbstractAttribute<?> property) {
+        return Field.isSingleton(property.getType().getMaximumOccurs()) ? property.getValue() : property.getValues();
+    }
+
+    /**
+     * Returns the value of the given association, as a singleton or as a collection depending
+     * on the maximum number of occurrences.
+     */
+    static Object getAssociationValue(final AbstractAssociation property) {
+        return Field.isSingleton(property.getRole().getMaximumOccurs()) ? property.getValue() : property.getValues();
+    }
 
     /**
      * Sets the value of the given property, with some minimal checks.
      */
     static void setPropertyValue(final Property property, final Object value) {
-        if (property instanceof DefaultAttribute<?>) {
-            setAttributeValue((DefaultAttribute<?>) property, value);
-        } else if (property instanceof DefaultAssociation) {
-            ArgumentChecks.ensureCanCast("value", AbstractFeature.class, value);
-            setAssociationValue((DefaultAssociation) property, (AbstractFeature) value);
+        if (property instanceof AbstractAttribute<?>) {
+            setAttributeValue((AbstractAttribute<?>) property, value);
+        } else if (property instanceof AbstractAssociation) {
+            setAssociationValue((AbstractAssociation) property, value);
         } else {
-            throw new IllegalArgumentException(unsupportedPropertyType(property.getName()));
+            throw unsupportedPropertyType(property.getName());
         }
     }
 
@@ -281,44 +324,64 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      * use {@link Validator} instead.
      */
     @SuppressWarnings("unchecked")
-    private static <T> void setAttributeValue(final DefaultAttribute<T> attribute, final Object value) {
+    private static <V> void setAttributeValue(final AbstractAttribute<V> attribute, final Object value) {
         if (value != null) {
-            final DefaultAttributeType<T> pt = attribute.getType();
+            final DefaultAttributeType<V> pt = attribute.getType();
             final Class<?> base = pt.getValueClass();
             if (!base.isInstance(value)) {
-                throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                        pt.getName(), value.getClass()));
+                Object element = value;
+                if (value instanceof Collection<?>) {
+                    /*
+                     * If the given value is a collection, verify the class of all values
+                     * before to delegate to Attribute.setValues(Collection<? extends V>).
+                     */
+                    final Iterator<?> it = ((Collection<?>) value).iterator();
+                    do if (!it.hasNext()) {
+                        ((AbstractAttribute) attribute).setValues((Collection) value);
+                        return;
+                    } while ((element = it.next()) == null || base.isInstance(element));
+                    // Found an illegal value. Exeption is thrown below.
+                }
+                throw illegalValueClass(attribute.getName(), element); // 'element' can not be null here.
             }
         }
-        ((DefaultAttribute) attribute).setValue(value);
+        ((AbstractAttribute) attribute).setValue(value);
     }
 
     /**
      * Sets the association value after verification of its type.
      * For a more exhaustive validation, use {@link Validator} instead.
      */
-    private static <T> void setAssociationValue(final DefaultAssociation association, final AbstractFeature value) {
+    @SuppressWarnings("unchecked")
+    private static void setAssociationValue(final AbstractAssociation association, final Object value) {
         if (value != null) {
-            final DefaultAssociationRole pt = association.getRole();
-            final DefaultFeatureType base = pt.getValueType();
-            final DefaultFeatureType actual = value.getType();
-            if (!base.maybeAssignableFrom(actual)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                        pt.getName(), actual.getName()));
+            final DefaultAssociationRole role = association.getRole();
+            final DefaultFeatureType base = role.getValueType();
+            if (value instanceof AbstractFeature) {
+                final DefaultFeatureType actual = ((AbstractFeature) value).getType();
+                if (!base.maybeAssignableFrom(actual)) {
+                    throw illegalPropertyType(role.getName(), actual.getName());
+                }
+            } else if (value instanceof Collection<?>) {
+                verifyAssociationValues(role, (Collection<?>) value);
+                association.setValues((Collection<? extends AbstractFeature>) value);
+                return; // Skip the setter at the end of this method.
+            } else {
+                throw illegalValueClass(association.getName(), value);
             }
         }
-        association.setValue(value);
+        association.setValue((AbstractFeature) value);
     }
 
     /**
-     * Returns {@code true} if the caller can skip the call to {@link #verifyValueType(String, Object)}.
+     * Returns {@code true} if the caller can skip the call to {@link #verifyPropertyValue(String, Object)}.
      * This is a slight optimization for the case when we replaced an attribute value by a new value of
      * the same class. Since the type check has already been done by the previous assignation, we do not
      * need to perform it again.
      *
      * @param previous The previous value, or {@code null}.
      * @param value    The new value, or {@code null}.
-     * @return         {@code true} if the caller can skip the verification performed by {@code verifyValueType}.
+     * @return         {@code true} if the caller can skip the verification performed by {@code verifyPropertyValue}.
      */
     static boolean canSkipVerification(final Object previous, final Object value) {
         if (previous != null) {
@@ -333,61 +396,151 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
     }
 
     /**
-     * Verifies the validity of the given value for the property of the given name. If a check failed,
-     * returns the exception to throw. Otherwise returns {@code null}. This method does not throw the
-     * exception immediately in order to give to the caller a chance to perform cleanup operation first.
-     */
-    final RuntimeException verifyValueType(final String name, final Object value) {
-        final PropertyType pt = getPropertyType(name);
-        if (pt instanceof DefaultAttributeType<?>) {
-            if (value == null || ((DefaultAttributeType<?>) pt).getValueClass().isInstance(value)) {
-                return null;
-            }
-        } else if (pt instanceof DefaultAssociationRole) {
-            if (value == null) {
-                return null;
-            }
-            if (value instanceof AbstractFeature) {
-                final DefaultFeatureType valueType = ((AbstractFeature) value).getType();
-                if (((DefaultAssociationRole) pt).getValueType().maybeAssignableFrom(valueType)) {
-                    return null;
-                }
-                return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                        name, valueType.getName()));
-            }
-        } else {
-            return new IllegalArgumentException(unsupportedPropertyType(pt.getName()));
-        }
-        return new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                name, value.getClass())); // 'value' should not be null at this point.
-    }
-
-    /**
      * Verifies if the given properties can be assigned to this feature.
      *
      * @param name Shall be {@code property.getName().toString()}.
      * @param property The property to verify.
      */
     final void verifyPropertyType(final String name, final Property property) {
-        final PropertyType type;
-        if (property instanceof DefaultAttribute<?>) {
-            type = ((DefaultAttribute<?>) property).getType();
-        } else if (property instanceof DefaultAssociation) {
-            type = ((DefaultAssociation) property).getRole();
+        final PropertyType type, base = getPropertyType(name);
+        if (property instanceof AbstractAttribute<?>) {
+            type = ((AbstractAttribute<?>) property).getType();
+        } else if (property instanceof AbstractAssociation) {
+            type = ((AbstractAssociation) property).getRole();
         } else {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentClass_2, "property", property.getClass()));
+            throw illegalPropertyType(base.getName(), property.getClass());
         }
-        if (type != getPropertyType(name)) {
+        if (type != base) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, name));
         }
     }
 
     /**
-     * Returns the exception message for a property type which neither an attribute or an association.
+     * Verifies the validity of the given value for the property of the given name, then returns the value
+     * to store. The returned value is usually the same than the given one, except in the case of collections.
      */
-    static String unsupportedPropertyType(final GenericName name) {
-        return Errors.format(Errors.Keys.CanNotInstantiate_1, name);
+    final Object verifyPropertyValue(final String name, final Object value) {
+        final PropertyType pt = getPropertyType(name);
+        if (pt instanceof DefaultAttributeType<?>) {
+            if (value != null) {
+                return verifyAttributeValue((DefaultAttributeType<?>) pt, value);
+            }
+        } else if (pt instanceof DefaultAssociationRole) {
+            if (value != null) {
+                return verifyAssociationValue((DefaultAssociationRole) pt, value);
+            }
+        } else {
+            throw unsupportedPropertyType(pt.getName());
+        }
+        return value;
+    }
+
+    /**
+     * Verifies the validity of the given attribute value, and returns the value to store in the feature.
+     * An attribute:
+     * <ul>
+     *   <li>May be a singleton,  in which case the value class is verified.</li>
+     *   <li>May be a collection, in which case the class each elements in the collection is verified.</li>
+     * </ul>
+     *
+     * @param value The value, which shall be non-null.
+     */
+    private static <T> Object verifyAttributeValue(final DefaultAttributeType<T> type, final Object value) {
+        final Class<T> valueClass = type.getValueClass();
+        final boolean isSingleton = Field.isSingleton(type.getMaximumOccurs());
+        if (valueClass.isInstance(value)) {
+            return isSingleton ? value : singletonList(valueClass, type.getMinimumOccurs(), value);
+        } else if (!isSingleton && value instanceof Collection<?>) {
+            return CheckedArrayList.castOrCopy((Collection<?>) value, valueClass);
+        } else {
+            throw illegalValueClass(type.getName(), value);
+        }
+    }
+
+    /**
+     * Verifies the validity of the given association value, and returns the value to store in the feature.
+     * An association:
+     * <ul>
+     *   <li>May be a singleton,  in which case the feature type is verified.</li>
+     *   <li>May be a collection, in which case the class each elements in the collection is verified.</li>
+     * </ul>
+     *
+     * @param value The value, which shall be non-null.
+     */
+    private static Object verifyAssociationValue(final DefaultAssociationRole role, final Object value) {
+        final boolean isSingleton = Field.isSingleton(role.getMaximumOccurs());
+        if (value instanceof AbstractFeature) {
+            /*
+             * If the user gave us a single value, first verify its validity.
+             * Then wrap it in a list of 1 element if this property is multi-valued.
+             */
+            final DefaultFeatureType valueType = ((AbstractFeature) value).getType();
+            if (role.getValueType().maybeAssignableFrom(valueType)) {
+                return isSingleton ? value : singletonList(AbstractFeature.class, role.getMinimumOccurs(), value);
+            } else {
+                throw illegalPropertyType(role.getName(), valueType.getName());
+            }
+        } else if (!isSingleton && value instanceof Collection<?>) {
+            verifyAssociationValues(role, (Collection<?>) value);
+            return CheckedArrayList.castOrCopy((Collection<?>) value, AbstractFeature.class);
+        } else {
+            throw illegalValueClass(role.getName(), value);
+        }
+    }
+
+    /**
+     * Verifies if all values in the given collection are valid instances of feature for the given association role.
+     */
+    private static void verifyAssociationValues(final DefaultAssociationRole role, final Collection<?> values) {
+        final DefaultFeatureType base = role.getValueType();
+        int index = 0;
+        for (final Object value : values) {
+            ArgumentChecks.ensureNonNullElement("values", index, value);
+            if (!(value instanceof AbstractFeature)) {
+                throw illegalValueClass(role.getName(), value);
+            }
+            final DefaultFeatureType type = ((AbstractFeature) value).getType();
+            if (!base.maybeAssignableFrom(type)) {
+                throw illegalPropertyType(role.getName(), type.getName());
+            }
+            index++;
+        }
+    }
+
+    /**
+     * Creates a collection which will initially contain only the given value.
+     * At the difference of {@link Collections#singletonList(Object)}, this method returns a modifiable list.
+     */
+    @SuppressWarnings("unchecked")
+    private static <V> Collection<V> singletonList(final Class<V> valueClass, final int minimumOccurs, final Object value) {
+        final CheckedArrayList<V> values = new CheckedArrayList<V>(valueClass, Math.max(minimumOccurs, 4));
+        values.add((V) value); // Type will be checked by CheckedArrayList.
+        return values;
+    }
+
+    /**
+     * Returns the exception for a property type which neither an attribute or an association.
+     * This method is invoked after a {@link PropertyType} has been found for the user-supplied name,
+     * but that property can not be stored in a {@link Property} instance.
+     */
+    static IllegalArgumentException unsupportedPropertyType(final GenericName name) {
+        return new IllegalArgumentException(Errors.format(Errors.Keys.CanNotInstantiate_1, name));
+    }
+
+    /**
+     * Returns the exception for a property value of wrong Java class.
+     *
+     * @param value The value, which shall be non-null.
+     */
+    private static ClassCastException illegalValueClass(final GenericName name, final Object value) {
+        return new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, value.getClass()));
+    }
+
+    /**
+     * Returns the exception for a property value (usually a feature) of wrong type.
+     */
+    private static IllegalArgumentException illegalPropertyType(final GenericName name, final Object value) {
+        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, value));
     }
 
     /**
@@ -407,7 +560,7 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      *     element per property. Implementations are free to omit element for properties having nothing to report.
      *   </li><li>
      *     Each report may have one or more {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult
-     *     conformance result}, as documented on {@link DefaultAttribute#quality()} javadoc.
+     *     conformance result}, as documented on {@link AbstractAttribute#quality()} javadoc.
      *   </li>
      * </ul>
      *
@@ -435,18 +588,18 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
      *
      * @return Reports on all constraint violations found.
      *
-     * @see DefaultAttribute#quality()
-     * @see DefaultAssociation#quality()
+     * @see AbstractAttribute#quality()
+     * @see AbstractAssociation#quality()
      */
     public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.FEATURE);
         for (final String name : type.indices().keySet()) {
             final Property property = (Property) getProperty(name);
             final DataQuality quality;
-            if (property instanceof DefaultAttribute<?>) {
-                quality = ((DefaultAttribute<?>) property).quality();
-            } else if (property instanceof DefaultAssociation) {
-                quality = ((DefaultAssociation) property).quality();
+            if (property instanceof AbstractAttribute<?>) {
+                quality = ((AbstractAttribute<?>) property).quality();
+            } else if (property instanceof AbstractAssociation) {
+                quality = ((AbstractAssociation) property).quality();
             } else {
                 continue;
             }
@@ -455,45 +608,6 @@ public abstract class AbstractFeature implements Cloneable, Serializable {
             }
         }
         return v.quality;
-    }
-
-    /**
-     * Returns a copy of this feature
-     * This method clones also all {@linkplain Cloneable cloneable} property instances in this feature,
-     * but not necessarily property values. Whether the property values are cloned or not (i.e. whether
-     * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
-     * property {@code clone()} methods (see for example {@link DefaultAttribute#clone()}).
-     *
-     * @return A clone of this attribute.
-     * @throws CloneNotSupportedException if this feature can not be cloned, typically because
-     *         {@code clone()} on a property instance failed.
-     */
-    @Override
-    public AbstractFeature clone() throws CloneNotSupportedException {
-        return (AbstractFeature) super.clone();
-    }
-
-    /**
-     * Returns a hash code value for this feature.
-     *
-     * @return A hash code value.
-     */
-    @Override
-    public int hashCode() {
-        return type.hashCode();
-    }
-
-    /**
-     * Compares this feature with the given object for equality.
-     *
-     * @return {@code true} if both objects are equal.
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj != null && obj.getClass() == getClass()) {
-            return type.equals(((AbstractFeature) obj).type);
-        }
-        return false;
     }
 
     /**

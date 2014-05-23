@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
  * @see SparseFeature
  * @see DefaultFeatureType
  */
-final class DenseFeature extends AbstractFeature {
+final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
      * For cross-version compatibility.
      */
@@ -162,12 +162,12 @@ final class DenseFeature extends AbstractFeature {
             if (element != null) {
                 if (!(properties instanceof Property[])) {
                     return element; // Most common case.
-                } else if (element instanceof DefaultAttribute<?>) {
-                    return ((DefaultAttribute<?>) element).getValue();
-                } else if (element instanceof DefaultAssociation) {
-                    return ((DefaultAssociation) element).getValue();
+                } else if (element instanceof AbstractAttribute<?>) {
+                    return getAttributeValue((AbstractAttribute<?>) element);
+                } else if (element instanceof AbstractAssociation) {
+                    return getAssociationValue((AbstractAssociation) element);
                 } else {
-                    throw new IllegalArgumentException(unsupportedPropertyType(((Property) element).getName()));
+                    throw unsupportedPropertyType(((Property) element).getName());
                 }
             }
         }
@@ -183,7 +183,7 @@ final class DenseFeature extends AbstractFeature {
      * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
      */
     @Override
-    public void setPropertyValue(final String name, final Object value) throws IllegalArgumentException {
+    public void setPropertyValue(final String name, Object value) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
         final int index = getIndex(name);
         if (properties == null) {
@@ -193,10 +193,7 @@ final class DenseFeature extends AbstractFeature {
         if (!(properties instanceof Property[])) {
             if (value != null) {
                 if (!canSkipVerification(properties[index], value)) {
-                    final RuntimeException e = verifyValueType(name, value);
-                    if (e != null) {
-                        throw e;
-                    }
+                    value = verifyPropertyValue(name, value);
                 }
                 properties[index] = value;
                 return;
@@ -233,13 +230,18 @@ final class DenseFeature extends AbstractFeature {
     }
 
     /**
-     * Returns a shallow copy of this feature.
-     * The properties are cloned, but not the property values.
+     * Returns a copy of this feature
+     * This method clones also all {@linkplain Cloneable cloneable} property instances in this feature,
+     * but not necessarily property values. Whether the property values are cloned or not (i.e. whether
+     * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
+     * property {@code clone()} methods.
      *
-     * @return A clone of this feature.
+     * @return A clone of this attribute.
+     * @throws CloneNotSupportedException if this feature can not be cloned, typically because
+     *         {@code clone()} on a property instance failed.
      */
     @Override
-    public AbstractFeature clone() throws CloneNotSupportedException {
+    public DenseFeature clone() throws CloneNotSupportedException {
         final DenseFeature clone = (DenseFeature) super.clone();
         clone.properties = clone.properties.clone();
         if (clone.properties instanceof Property[]) {
@@ -262,7 +264,7 @@ final class DenseFeature extends AbstractFeature {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + 37 * Arrays.hashCode(properties);
+        return type.hashCode() + 37 * Arrays.hashCode(properties);
     }
 
     /**
@@ -275,8 +277,9 @@ final class DenseFeature extends AbstractFeature {
         if (obj == this) {
             return true;
         }
-        if (super.equals(obj)) {
-            return Arrays.equals(properties, ((DenseFeature) obj).properties);
+        if (obj instanceof DenseFeature) {
+            final DenseFeature that = (DenseFeature) obj;
+            return type.equals(that.type) && Arrays.equals(properties, that.properties);
         }
         return false;
     }

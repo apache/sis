@@ -395,10 +395,11 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
 
     /**
      * Returns {@code true} if the feature type acts as an abstract super-type.
+     * Abstract types can not be {@linkplain #newInstance() instantiated}.
      *
      * @return {@code true} if the feature type acts as an abstract super-type.
      */
-    public boolean isAbstract() {
+    public final boolean isAbstract() {
         return isAbstract;
     }
 
@@ -570,8 +571,12 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * Creates a new feature instance of this type.
      *
      * @return A new feature instance.
+     * @throws IllegalStateException if this feature type {@linkplain #isAbstract() is abstract}.
      */
-    public AbstractFeature newInstance() {
+    public AbstractFeature newInstance() throws IllegalStateException {
+        if (isAbstract) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.AbstractType_1, getName()));
+        }
         return isSparse ? new SparseFeature(this) : new DenseFeature(this);
     }
 

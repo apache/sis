@@ -208,9 +208,10 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
                 count++;
             }
         }
-        if (count >= desc.getMaximumOccurs()) {
+        final int max = desc.getMaximumOccurs();
+        if (count >= max) {
             throw new InvalidParameterCardinalityException(Errors.format(
-                    Errors.Keys.TooManyOccurrences_2, count, name), name.getCode());
+                    Errors.Keys.TooManyOccurrences_2, max, name), name.getCode());
         }
         addUnchecked(parameter);
         modCount++;
@@ -263,9 +264,10 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
                 count++;
             }
         }
-        if (count >= desc.getMaximumOccurs()) {
+        final int max = desc.getMaximumOccurs();
+        if (count >= max) {
             throw new InvalidParameterCardinalityException(Errors.format(
-                    Errors.Keys.TooManyOccurrences_2, count, name), name.getCode());
+                    Errors.Keys.TooManyOccurrences_2, max, name), name.getCode());
         }
     }
 
