@@ -71,7 +71,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
                 "├────────────┼─────────┼─────────────┼───────────┤\n" +
                 "│ city       │ String  │ [1 … 1]     │ Paderborn │\n" +
                 "│ population │ Integer │ [1 … 1]     │ 143,174   │\n" +
-                "│ twin town  │ City    │ [0 … ∞]     │ Le Mans   │\n" +
+                "│ twin town  │ City    │ [0 … 1]     │ Le Mans   │\n" +
                 "└────────────┴─────────┴─────────────┴───────────┘\n", text);
     }
 }

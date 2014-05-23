@@ -57,13 +57,41 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     final DefaultAssociationRole role;
 
     /**
-     * Creates a new association of the given type.
+     * Creates a new association of the given role.
      *
      * @param role Information about the association.
+     *
+     * @see #create(DefaultAssociationRole)
      */
-    public AbstractAssociation(final DefaultAssociationRole role) {
-        ArgumentChecks.ensureNonNull("role", role);
+    protected AbstractAssociation(final DefaultAssociationRole role) {
         this.role = role;
+    }
+
+    /**
+     * Creates a new association of the given role.
+     *
+     * @param  role Information about the association.
+     * @return The new association.
+     */
+    public static AbstractAssociation create(final DefaultAssociationRole role) {
+        ArgumentChecks.ensureNonNull("role", role);
+        return isSingleton(role.getMaximumOccurs())
+               ? new SingletonAssociation(role)
+               : new MultiValuedAssociation(role);
+    }
+
+    /**
+     * Creates a new association of the given role initialized to the given value.
+     *
+     * @param  role  Information about the association.
+     * @param  value The initial value (may be {@code null}).
+     * @return The new association.
+     */
+    static AbstractAssociation create(final DefaultAssociationRole role, final Object value) {
+        ArgumentChecks.ensureNonNull("role", role);
+        return isSingleton(role.getMaximumOccurs())
+               ? new SingletonAssociation(role, (AbstractFeature) value)
+               : new MultiValuedAssociation(role, value);
     }
 
     /**
@@ -141,7 +169,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     public abstract void setValue(final AbstractFeature value);
 
     /**
-     * Set the features. All previous values are replaced by the given collection.
+     * Sets the features. All previous values are replaced by the given collection.
      *
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(AbstractFeature)}.</p>

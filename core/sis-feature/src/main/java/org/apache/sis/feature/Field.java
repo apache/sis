@@ -39,6 +39,17 @@ abstract class Field<V> extends Property {
     }
 
     /**
+     * Returns {@code true} if an attribute type or association role having the given
+     * maximum number of occurrences should be treated as a singleton.
+     *
+     * This method gives us a simple keyword to search for every places in the code
+     * where a decision regarding "singleton versus multi-valued" is made.
+     */
+    static boolean isSingleton(final int maximumOccurs) {
+        return maximumOccurs <= 1;
+    }
+
+    /**
      * Returns the field feature or attribute value, or {@code null} if none.
      *
      * @return The feature or attribute value (may be {@code null}).
@@ -69,7 +80,7 @@ abstract class Field<V> extends Property {
     public abstract void setValue(final V value);
 
     /**
-     * Set the features or attribute values. All previous values are replaced by the given collection.
+     * Sets the features or attribute values. All previous values are replaced by the given collection.
      *
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(Object)}.</p>
