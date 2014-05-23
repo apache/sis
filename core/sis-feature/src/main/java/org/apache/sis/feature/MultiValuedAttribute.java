@@ -17,7 +17,6 @@
 package org.apache.sis.feature;
 
 import java.util.Collection;
-import java.lang.reflect.Field;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -57,7 +56,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
     /**
      * The attribute values.
      */
-    private final CheckedArrayList<V> values;
+    private CheckedArrayList<V> values;
 
     /**
      * Creates a new attribute of the given type initialized to the
@@ -161,13 +160,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
     @SuppressWarnings("unchecked")
     public MultiValuedAttribute<V> clone() throws CloneNotSupportedException {
         final MultiValuedAttribute<V> clone = (MultiValuedAttribute<V>) super.clone();
-        try {
-            final Field field = MultiValuedAttribute.class.getDeclaredField("values");
-            field.setAccessible(true);
-            field.set(clone, clone.values.clone());
-        } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
-        }
+        clone.values = (CheckedArrayList<V>) clone.values.clone();
         return clone;
     }
 

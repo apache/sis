@@ -64,6 +64,11 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * Type ‘{0}’ is abstract.
+         */
+        public static final short AbstractType_1 = 159;
+
+        /**
          * Name “{2}” is ambiguous because it can be understood as either “{0}” or “{1}”.
          */
         public static final short AmbiguousName_3 = 151;
