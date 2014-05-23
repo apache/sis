@@ -19,7 +19,6 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ConcurrentModificationException;
-import java.lang.reflect.Field;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.internal.util.Cloner;
@@ -73,7 +72,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      *
      * @see #valuesKind
      */
-    private final HashMap<String, Object> properties;
+    private HashMap<String, Object> properties;
 
     /**
      * {@link #PROPERTIES} if the values in the {@link #properties} map are {@link Property} instances,
@@ -272,15 +271,10 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      *         {@code clone()} on a property instance failed.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public SparseFeature clone() throws CloneNotSupportedException {
         final SparseFeature clone = (SparseFeature) super.clone();
-        try {
-            final Field field = SparseFeature.class.getDeclaredField("properties");
-            field.setAccessible(true);
-            field.set(clone, clone.properties.clone());
-        } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
-        }
+        clone.properties = (HashMap<String,Object>) clone.properties.clone();
         switch (clone.valuesKind) {
             default:        throw new AssertionError(clone.valuesKind);
             case CORRUPTED: throw new CorruptedObjectException(clone.getName());
