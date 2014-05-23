@@ -38,7 +38,7 @@ import org.junit.BeforeClass;
     org.apache.sis.feature.DenseFeatureTest.class,
     org.apache.sis.feature.SparseFeatureTest.class,
     org.apache.sis.feature.DefaultAssociationRoleTest.class,
-    org.apache.sis.feature.DefaultAssociationTest.class,
+    org.apache.sis.feature.SingletonAssociationTest.class,
     org.apache.sis.feature.DefaultOperationTest.class,
     org.apache.sis.feature.FeatureFormatTest.class,
     org.apache.sis.feature.FeaturesTest.class

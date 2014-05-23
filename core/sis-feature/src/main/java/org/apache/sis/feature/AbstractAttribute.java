@@ -17,7 +17,6 @@
 package org.apache.sis.feature;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
@@ -25,7 +24,6 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -57,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see DefaultAttributeType
  */
-public abstract class AbstractAttribute<V> extends Property implements Serializable {
+public abstract class AbstractAttribute<V> extends Field<V> implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -141,6 +139,7 @@ public abstract class AbstractAttribute<V> extends Property implements Serializa
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
+    @Override
     public abstract V getValue() throws IllegalStateException;
 
     /**
@@ -153,8 +152,9 @@ public abstract class AbstractAttribute<V> extends Property implements Serializa
      *
      * @return The attribute values in a <cite>live</cite> collection.
      */
+    @Override
     public Collection<V> getValues() {
-        return new PropertySingleton<>(this);
+        return super.getValues();
     }
 
     /**
@@ -170,6 +170,7 @@ public abstract class AbstractAttribute<V> extends Property implements Serializa
      *
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
+    @Override
     public abstract void setValue(final V value);
 
     /**
@@ -180,17 +181,9 @@ public abstract class AbstractAttribute<V> extends Property implements Serializa
      *
      * @param values The new values.
      */
+    @Override
     public void setValues(final Collection<? extends V> values) {
-        V value = null;
-        ArgumentChecks.ensureNonNull("values", values);
-        final Iterator<? extends V> it = values.iterator();
-        if (it.hasNext()) {
-            value = it.next();
-            if (it.hasNext()) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.TooManyOccurrences_2, 1, getName()));
-            }
-        }
-        setValue(value);
+        super.setValues(values);
     }
 
     /**

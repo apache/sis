@@ -42,12 +42,12 @@ final class PropertySingleton<V> extends AbstractList<V> {
     /**
      * The property where to read and write the value.
      */
-    private final AbstractAttribute<V> property;
+    private final Field<V> property;
 
     /**
      * Creates a new list for the value of the given property.
      */
-    PropertySingleton(final AbstractAttribute<V> property) {
+    PropertySingleton(final Field<V> property) {
         this.property = property;
     }
 

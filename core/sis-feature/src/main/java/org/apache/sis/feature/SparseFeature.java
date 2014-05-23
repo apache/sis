@@ -178,8 +178,8 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
                 return element; // Most common case.
             } else if (element instanceof AbstractAttribute<?>) {
                 return getAttributeValue((AbstractAttribute<?>) element);
-            } else if (element instanceof DefaultAssociation) {
-                return ((DefaultAssociation) element).getValue();
+            } else if (element instanceof AbstractAssociation) {
+                return ((AbstractAssociation) element).getValue();
             } else if (valuesKind == PROPERTIES) {
                 throw new IllegalArgumentException(unsupportedPropertyType(((Property) element).getName()));
             } else {
