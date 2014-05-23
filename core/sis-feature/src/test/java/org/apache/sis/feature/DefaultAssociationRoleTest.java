@@ -35,11 +35,12 @@ import static org.apache.sis.test.Assert.*;
 @DependsOn(DefaultFeatureTypeTest.class)
 public final strictfp class DefaultAssociationRoleTest extends TestCase {
     /**
-     * Creates an association.
+     * Creates an association to a twin town. We arbitrarily fix the maximum number
+     * of occurrences to 1, even if in reality some cities have many twin towns.
      */
     static DefaultAssociationRole twinTown() {
         return new DefaultAssociationRole(singletonMap(DefaultAssociationRole.NAME_KEY, "twin town"),
-                DefaultFeatureTypeTest.city(), 0, Integer.MAX_VALUE);
+                DefaultFeatureTypeTest.city(), 0, 1);
     }
 
     /**

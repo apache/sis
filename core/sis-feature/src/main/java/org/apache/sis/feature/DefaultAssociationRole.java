@@ -46,7 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @version 0.5
  * @module
  *
- * @see DefaultAssociation
+ * @see AbstractAssociation
  */
 public class DefaultAssociationRole extends FieldType {
     /**
@@ -64,7 +64,7 @@ public class DefaultAssociationRole extends FieldType {
     /**
      * The name of the property to use as a title for the associated feature, or an empty string if none.
      * This field is initially null, then computed when first needed.
-     * This field is used only by {@link DefaultAssociation#toString()} implementation.
+     * This information is used only by {@link AbstractAssociation#toString()} implementation.
      *
      * @see #getTitleProperty()
      */
