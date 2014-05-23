@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.feature.IdentifiedType;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
@@ -209,7 +210,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *                       association role that carries characteristics of a feature type.
      */
     public DefaultFeatureType(final Map<String,?> identification, final boolean isAbstract,
-            final DefaultFeatureType[] superTypes, final AbstractIdentifiedType... properties)
+            final DefaultFeatureType[] superTypes, final IdentifiedType... properties)
     {
         super(identification);
         ArgumentChecks.ensureNonNull("properties", properties);
@@ -543,7 +544,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * @return Feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
-    public Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
+    public Collection<IdentifiedType> getProperties(final boolean includeSuperTypes) {
         // TODO: temporary cast to be removed after we upgraded GeoAPI.
         return (Collection) (includeSuperTypes ? allProperties : properties);
     }

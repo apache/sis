@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.feature.IdentifiedType;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -138,7 +139,7 @@ public class DefaultAssociationRole extends FieldType {
         String p = titleProperty; // No synchronization - not a big deal if computed twice.
         if (p == null) {
             p = "";
-            for (final AbstractIdentifiedType type : valueType.getProperties(true)) {
+            for (final IdentifiedType type : valueType.getProperties(true)) {
                 if (type instanceof DefaultAttributeType<?>) {
                     final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) type;
                     if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {
