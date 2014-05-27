@@ -27,7 +27,7 @@ import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

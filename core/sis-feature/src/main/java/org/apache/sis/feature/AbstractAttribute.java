@@ -271,6 +271,6 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
     @Debug
     @Override
     public String toString() {
-        return type.toString("Attribute", Classes.getShortName(type.getValueClass()), getValues().iterator());
+        return FieldType.toString("Attribute", type, Classes.getShortName(type.getValueClass()), getValues().iterator());
     }
 }

@@ -218,7 +218,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
                           CollectionsExt.<DefaultFeatureType>immutableSet(true, superTypes);
         switch (properties.length) {
             case 0:  this.properties = Collections.emptyList(); break;
-            case 1:  this.properties = Collections.singletonList((PropertyType) properties[0]); break;
+            case 1:  this.properties = Collections.singletonList((PropertyType) properties[0]); break; // There is no cast on other SIS branches.
             default: this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(properties, properties.length, PropertyType[].class)); break;
         }
         computeTransientFields();
@@ -266,7 +266,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         for (final Map.Entry<String,PropertyType> entry : byName.entrySet()) {
             final int minimumOccurs, maximumOccurs;
             final PropertyType property = entry.getValue();
-            if (property instanceof DefaultAttributeType<?>) { // TODO: check for AttributeType instead (after GeoAPI upgrade).
+            if (property instanceof DefaultAttributeType<?>) { // Other SIS branches check for AttributeType instead.
                 minimumOccurs = ((DefaultAttributeType<?>) property).getMinimumOccurs();
                 maximumOccurs = ((DefaultAttributeType<?>) property).getMaximumOccurs();
                 isSimple &= (minimumOccurs == maximumOccurs);
@@ -479,8 +479,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     {
         if (base != other) {
             /*
-             * TODO: DefaultAttributeType and DefaultAssociationRole to be replaced by GeoAPI interfaces
-             *       (pending GeoAPI review).
+             * Note: other SIS branches use AttributeType and FeatureAssociationRole
+             *       instead than DefaultAttributeType and DefaultAssociationRole.
              */
             if (base instanceof DefaultAttributeType<?>) {
                 if (!(other instanceof DefaultAttributeType<?>)) {
@@ -544,8 +544,15 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * @return Feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
+    @SuppressWarnings("unchecked")
     public Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
-        // TODO: temporary cast to be removed after we upgraded GeoAPI.
+        /*
+         * Cast is a workaround for "Apache SIS on GeoAPI 3.0" branch only (other branches do not need cast).
+         * This is because GeoAPI 3.0 does not provide the 'org.opengis.feature.PropertyType' interface, and
+         * we do not want to put our internal PropertyType class in public API. Our closest public class is
+         * AbstractIdentifiedType. Because of the way Java parameterized types are implemented (type erasure),
+         * this cast is okay if the collections are read-only.
+         */
         return (Collection) (includeSuperTypes ? allProperties : properties);
     }
 

@@ -77,7 +77,7 @@ final class Validator {
      * @return The {@code report}, or a new report if {@code report} was null.
      */
     private AbstractElement addViolationReport(AbstractElement report,
-            final AbstractIdentifiedType type, final InternationalString explanation)
+            final PropertyType type, final InternationalString explanation)
     {
         if (report == null) {
             final GenericName name = type.getName();
@@ -158,7 +158,7 @@ final class Validator {
      *
      * @param report Where to add the result, or {@code null} if not yet created.
      */
-    private void verifyCardinality(final AbstractElement report, final AbstractIdentifiedType type,
+    private void verifyCardinality(final AbstractElement report, final PropertyType type,
             final int minimumOccurs, final int maximumOccurs, final int count)
     {
         if (count < minimumOccurs) {

@@ -212,6 +212,6 @@ public class DefaultAssociationRole extends FieldType {
     @Debug
     @Override
     public String toString() {
-        return toString("FeatureAssociationRole", valueType.getName()).toString();
+        return toString("FeatureAssociationRole", this, valueType.getName()).toString();
     }
 }
