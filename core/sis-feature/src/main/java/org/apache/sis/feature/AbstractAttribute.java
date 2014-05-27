@@ -25,6 +25,9 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 
+// Branch-dependent imports
+import org.opengis.feature.AttributeType;
+
 
 /**
  * An instance of an {@linkplain DefaultAttributeType attribute type} containing the value of an attribute in a feature.
@@ -64,16 +67,16 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
     /**
      * Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
-    final DefaultAttributeType<V> type;
+    final AttributeType<V> type;
 
     /**
      * Creates a new attribute of the given type.
      *
      * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      *
-     * @see #create(DefaultAttributeType)
+     * @see #create(AttributeType)
      */
-    protected AbstractAttribute(final DefaultAttributeType<V> type) {
+    protected AbstractAttribute(final AttributeType<V> type) {
         this.type = type;
     }
 
@@ -85,7 +88,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      * @param  type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      * @return The new attribute.
      */
-    public static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type) {
+    public static <V> AbstractAttribute<V> create(final AttributeType<V> type) {
         ArgumentChecks.ensureNonNull("type", type);
         return isSingleton(type.getMaximumOccurs())
                ? new SingletonAttribute<>(type)
@@ -101,7 +104,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      * @param  value The initial value (may be {@code null}).
      * @return The new attribute.
      */
-    static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type, final Object value) {
+    static <V> AbstractAttribute<V> create(final AttributeType<V> type, final Object value) {
         ArgumentChecks.ensureNonNull("type", type);
         return isSingleton(type.getMaximumOccurs())
                ? new SingletonAttribute<>(type, value)
@@ -110,7 +113,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
 
     /**
      * Returns the name of this attribute as defined by its {@linkplain #getType() type}.
-     * This convenience method delegates to {@link DefaultAttributeType#getName()}.
+     * This convenience method delegates to {@link AttributeType#getName()}.
      *
      * @return The attribute name specified by its type.
      */
@@ -122,12 +125,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
     /**
      * Returns information about the attribute (base Java class, domain of values, <i>etc.</i>).
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
-     * to {@code org.opengis.feature.AttributeType}. This change is pending GeoAPI revision.</div>
-     *
      * @return Information about the attribute.
      */
-    public DefaultAttributeType<V> getType() {
+    public AttributeType<V> getType() {
         return type;
     }
 
@@ -271,6 +271,6 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
     @Debug
     @Override
     public String toString() {
-        return type.toString("Attribute", Classes.getShortName(type.getValueClass()), getValues().iterator());
+        return FieldType.toString("Attribute", type, Classes.getShortName(type.getValueClass()), getValues().iterator());
     }
 }

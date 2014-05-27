@@ -27,6 +27,7 @@ import org.apache.sis.util.Debug;
 // Branch-dependent imports
 import java.util.Objects;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -63,7 +64,7 @@ public class DefaultOperation extends AbstractIdentifiedType implements Property
     /**
      * The type of the result, or {@code null} if none.
      */
-    private final DefaultAttributeType<?> result;
+    private final AttributeType<?> result;
 
     /**
      * Constructs an operation from the given properties. The identification map is given unchanged to
@@ -74,7 +75,7 @@ public class DefaultOperation extends AbstractIdentifiedType implements Property
      * @param result         The type of the result, or {@code null} if none.
      */
     public DefaultOperation(final Map<String,?> identification,
-            final ParameterDescriptorGroup parameters, final DefaultAttributeType<?> result)
+            final ParameterDescriptorGroup parameters, final AttributeType<?> result)
     {
         super(identification);
         ArgumentChecks.ensureNonNull("parameters", parameters);
@@ -96,7 +97,7 @@ public class DefaultOperation extends AbstractIdentifiedType implements Property
      *
      * @return The type of the result, or {@code null} if none.
      */
-    public DefaultAttributeType<?> getResult() {
+    public AttributeType<?> getResult() {
         return result;
     }
 
