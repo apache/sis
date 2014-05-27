@@ -24,7 +24,6 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.concurrent.atomic.AtomicReference;
-import org.opengis.feature.IdentifiedType;
 import org.opengis.util.InternationalString;
 import org.opengis.util.GenericName;
 import org.apache.sis.io.TableAppender;
@@ -32,6 +31,9 @@ import org.apache.sis.io.TabularFormat;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
 
 
 /**
@@ -185,7 +187,7 @@ header: for (int i=0; ; i++) {
          * Done writing the header. Now write all property rows.
          * Rows without value will be skipped only if optional.
          */
-        for (final IdentifiedType propertyType : featureType.getProperties(true)) {
+        for (final PropertyType propertyType : featureType.getProperties(true)) {
             Object value;
             if (feature != null) {
                 value = feature.getPropertyValue(propertyType.getName().toString());

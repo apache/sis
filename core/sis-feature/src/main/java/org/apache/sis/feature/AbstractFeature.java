@@ -28,6 +28,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CheckedArrayList;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+
 
 /**
  * An instance of a {@linkplain DefaultFeatureType feature type} containing values for a real-world phenomena.

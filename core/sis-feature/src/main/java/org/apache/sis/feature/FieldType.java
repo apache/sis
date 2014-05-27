@@ -21,6 +21,9 @@ import java.util.Iterator;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+
 
 /**
  * Base class of property types having a value and a cardinality.
@@ -36,7 +39,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.5
  * @module
  */
-abstract class FieldType extends PropertyType {
+abstract class FieldType extends AbstractIdentifiedType implements PropertyType {
     /**
      * For cross-version compatibility.
      */
