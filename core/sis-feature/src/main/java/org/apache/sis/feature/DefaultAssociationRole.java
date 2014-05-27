@@ -25,6 +25,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -142,8 +143,8 @@ public class DefaultAssociationRole extends FieldType {
         if (p == null) {
             p = "";
             for (final PropertyType type : valueType.getProperties(true)) {
-                if (type instanceof DefaultAttributeType<?>) {
-                    final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) type;
+                if (type instanceof AttributeType<?>) {
+                    final AttributeType<?> pt = (AttributeType<?>) type;
                     if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {
                         p = pt.getName().toString();
                         break;
@@ -215,6 +216,6 @@ public class DefaultAssociationRole extends FieldType {
     @Debug
     @Override
     public String toString() {
-        return toString("FeatureAssociationRole", valueType.getName()).toString();
+        return toString("FeatureAssociationRole", this, valueType.getName()).toString();
     }
 }

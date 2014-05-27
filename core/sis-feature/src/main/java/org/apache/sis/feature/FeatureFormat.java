@@ -34,6 +34,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -196,8 +197,8 @@ header: for (int i=0; ; i++) {
                         continue; // If no value, skip the full row.
                     }
                 }
-            } else if (propertyType instanceof DefaultAttributeType<?>) {
-                value = ((DefaultAttributeType<?>) propertyType).getDefaultValue();
+            } else if (propertyType instanceof AttributeType<?>) {
+                value = ((AttributeType<?>) propertyType).getDefaultValue();
             } else {
                 value = null;
             }
@@ -212,8 +213,8 @@ header: for (int i=0; ; i++) {
             final String   valueType;
             final Class<?> valueClass;
             final int minimumOccurs, maximumOccurs;
-            if (propertyType instanceof DefaultAttributeType<?>) {
-                final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) propertyType;
+            if (propertyType instanceof AttributeType<?>) {
+                final AttributeType<?> pt = (AttributeType<?>) propertyType;
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
                 valueClass    = pt.getValueClass();
@@ -226,7 +227,7 @@ header: for (int i=0; ; i++) {
                 valueType     = toString(pt.getValueType().getName());
                 valueClass    = AbstractFeature.class;
             } else if (propertyType instanceof DefaultOperation) {
-                final DefaultAttributeType<?> resultType = ((DefaultOperation) propertyType).getResult();
+                final AttributeType<?> resultType = ((DefaultOperation) propertyType).getResult();
                 valueType   = toString(resultType.getName());
                 valueClass  = null;
                 minimumOccurs = -1;

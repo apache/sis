@@ -33,6 +33,7 @@ import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -110,9 +111,9 @@ final class Validator {
      * This method delegates to one of the {@code validate(…)} methods depending of the value type.
      */
     void validateAny(final PropertyType type, final Object value) {
-        if (type instanceof DefaultAttributeType<?>) {
-            validate((DefaultAttributeType<?>) type, asList(value,
-                    ((DefaultAttributeType<?>) type).getMaximumOccurs()));
+        if (type instanceof AttributeType<?>) {
+            validate((AttributeType<?>) type, asList(value,
+                    ((AttributeType<?>) type).getMaximumOccurs()));
         }
         if (type instanceof DefaultAssociationRole) {
             validate((DefaultAssociationRole) type, asList(value,
@@ -123,7 +124,7 @@ final class Validator {
     /**
      * Verifies if the given values are valid for the given attribute type.
      */
-    void validate(final DefaultAttributeType<?> type, final Collection<?> values) {
+    void validate(final AttributeType<?> type, final Collection<?> values) {
         AbstractElement report = null;
         for (final Object value : values) {
             /*

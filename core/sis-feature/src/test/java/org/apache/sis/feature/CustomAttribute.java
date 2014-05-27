@@ -25,6 +25,9 @@ import org.apache.sis.referencing.NamedIdentifier;
 
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.feature.AttributeType;
+
 
 /**
  * For testing {@link AbstractAttribute} customization.
@@ -50,7 +53,7 @@ final strictfp class CustomAttribute<V> extends AbstractAttribute<V> {
     /**
      * Creates a new attribute.
      */
-    public CustomAttribute(final DefaultAttributeType<V> type) {
+    public CustomAttribute(final AttributeType<V> type) {
         super(type);
         value = type.getDefaultValue();
     }

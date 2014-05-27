@@ -19,6 +19,9 @@ package org.apache.sis.feature;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.opengis.feature.AttributeType;
+
 
 /**
  * Static methods working on features.
@@ -49,7 +52,7 @@ public final class Features extends Static {
      * @category verification
      */
     @SuppressWarnings("unchecked")
-    public static <V> DefaultAttributeType<V> cast(final DefaultAttributeType<?> type, final Class<V> valueClass)
+    public static <V> AttributeType<V> cast(final AttributeType<?> type, final Class<V> valueClass)
             throws ClassCastException
     {
         if (type != null) {
@@ -61,7 +64,7 @@ public final class Features extends Static {
                         type.getName(), valueClass, actual));
             }
         }
-        return (DefaultAttributeType<V>) type;
+        return (AttributeType<V>) type;
     }
 
     /**

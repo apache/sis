@@ -38,6 +38,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -263,9 +264,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         for (final Map.Entry<String,PropertyType> entry : byName.entrySet()) {
             final int minimumOccurs, maximumOccurs;
             final PropertyType property = entry.getValue();
-            if (property instanceof DefaultAttributeType<?>) { // TODO: check for AttributeType instead (after GeoAPI upgrade).
-                minimumOccurs = ((DefaultAttributeType<?>) property).getMinimumOccurs();
-                maximumOccurs = ((DefaultAttributeType<?>) property).getMaximumOccurs();
+            if (property instanceof AttributeType<?>) {
+                minimumOccurs = ((AttributeType<?>) property).getMinimumOccurs();
+                maximumOccurs = ((AttributeType<?>) property).getMaximumOccurs();
                 isSimple &= (minimumOccurs == maximumOccurs);
             } else if (property instanceof FieldType) { // TODO: check for AssociationRole instead (after GeoAPI upgrade).
                 minimumOccurs = ((FieldType) property).getMinimumOccurs();
@@ -475,15 +476,15 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     {
         if (base != other) {
             /*
-             * TODO: DefaultAttributeType and DefaultAssociationRole to be replaced by GeoAPI interfaces
+             * TODO: DefaultAssociationRole to be replaced by GeoAPI interfaces
              *       (pending GeoAPI review).
              */
-            if (base instanceof DefaultAttributeType<?>) {
-                if (!(other instanceof DefaultAttributeType<?>)) {
+            if (base instanceof AttributeType<?>) {
+                if (!(other instanceof AttributeType<?>)) {
                     return false;
                 }
-                final DefaultAttributeType<?> p0 = (DefaultAttributeType<?>) base;
-                final DefaultAttributeType<?> p1 = (DefaultAttributeType<?>) other;
+                final AttributeType<?> p0 = (AttributeType<?>) base;
+                final AttributeType<?> p1 = (AttributeType<?>) other;
                 if (!p0.getValueClass().isAssignableFrom(p1.getValueClass()) ||
                      p0.getMinimumOccurs() > p1.getMinimumOccurs() ||
                      p0.getMaximumOccurs() < p1.getMaximumOccurs())
