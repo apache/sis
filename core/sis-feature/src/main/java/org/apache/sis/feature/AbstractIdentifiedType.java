@@ -21,15 +21,15 @@ import java.util.Locale;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.feature.IdentifiedType;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
+import org.opengis.feature.IdentifiedType;
 
 
 /**

@@ -24,8 +24,9 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
+import org.opengis.feature.PropertyType;
 
 
 /**
@@ -48,7 +49,7 @@ import java.util.Objects;
  * @version 0.5
  * @module
  */
-public class DefaultOperation extends PropertyType {
+public class DefaultOperation extends AbstractIdentifiedType implements PropertyType {
     /**
      * For cross-version compatibility.
      */
