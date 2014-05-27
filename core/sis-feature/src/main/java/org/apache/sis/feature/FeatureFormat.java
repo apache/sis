@@ -32,6 +32,10 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
+
 
 /**
  * Formats {@link AbstractFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
@@ -168,7 +172,7 @@ header: for (int i=0; ; i++) {
          * Done writing the header. Now write all property rows.
          * Rows without value will be skipped only if optional.
          */
-        for (final AbstractIdentifiedType propertyType : featureType.getProperties(true)) {
+        for (final PropertyType propertyType : featureType.getProperties(true)) {
             Object value;
             if (feature != null) {
                 value = feature.getPropertyValue(propertyType.getName().toString());
@@ -177,8 +181,8 @@ header: for (int i=0; ; i++) {
                         continue; // If no value, skip the full row.
                     }
                 }
-            } else if (propertyType instanceof DefaultAttributeType<?>) {
-                value = ((DefaultAttributeType<?>) propertyType).getDefaultValue();
+            } else if (propertyType instanceof AttributeType<?>) {
+                value = ((AttributeType<?>) propertyType).getDefaultValue();
             } else {
                 value = null;
             }
@@ -193,8 +197,8 @@ header: for (int i=0; ; i++) {
             final String   valueType;
             final Class<?> valueClass;
             final int minimumOccurs, maximumOccurs;
-            if (propertyType instanceof DefaultAttributeType<?>) {
-                final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) propertyType;
+            if (propertyType instanceof AttributeType<?>) {
+                final AttributeType<?> pt = (AttributeType<?>) propertyType;
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
                 valueClass    = pt.getValueClass();
@@ -207,7 +211,7 @@ header: for (int i=0; ; i++) {
                 valueType     = toString(pt.getValueType().getName());
                 valueClass    = AbstractFeature.class;
             } else if (propertyType instanceof DefaultOperation) {
-                final DefaultAttributeType<?> resultType = ((DefaultOperation) propertyType).getResult();
+                final AttributeType<?> resultType = ((DefaultOperation) propertyType).getResult();
                 valueType   = toString(resultType.getName());
                 valueClass  = null;
                 minimumOccurs = -1;

@@ -21,6 +21,9 @@ import java.util.Iterator;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+
 
 /**
  * Base class of property types having a value and a cardinality.
@@ -36,7 +39,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.5
  * @module
  */
-abstract class FieldType extends PropertyType {
+abstract class FieldType extends AbstractIdentifiedType implements PropertyType {
     /**
      * For cross-version compatibility.
      */
@@ -124,12 +127,16 @@ abstract class FieldType extends PropertyType {
      * Example:
      *
      * {@preformat text
-     *     FooType[“name” : ValueClass]
+     *     PropertyType[“name” : ValueClass]
      * }
+     *
+     * @param className The interface name of the object on which {@code toString()} is invoked.
+     * @param type      The property type, sometime {@code this} or sometime an other object.
+     * @param valueType The name of value class (attribute), or the feature type name (association).
      */
-    final StringBuilder toString(final String typeName, final Object valueName) {
-        final StringBuilder buffer = new StringBuilder(40).append(typeName).append('[');
-        final GenericName name = getName();
+    static StringBuilder toString(final String className, final PropertyType type, final Object valueType) {
+        final StringBuilder buffer = new StringBuilder(40).append(className).append('[');
+        final GenericName name = type.getName();
         if (name != null) {
             buffer.append('“');
         }
@@ -137,7 +144,7 @@ abstract class FieldType extends PropertyType {
         if (name != null) {
             buffer.append("” : ");
         }
-        return buffer.append(valueName).append(']');
+        return buffer.append(valueType).append(']');
     }
 
     /**
@@ -145,11 +152,16 @@ abstract class FieldType extends PropertyType {
      * Example:
      *
      * {@preformat text
-     *     FooType[“name” : ValueClass] = {value1, value2, ...}
+     *     Property[“name” : ValueClass] = {value1, value2, ...}
      * }
+     *
+     * @param className The interface name of the object on which {@code toString()} is invoked.
+     * @param type      The property type associated to the object to format.
+     * @param valueType The name of value class (attribute), or the feature type name (association).
+     * @param values    The actual values.
      */
-    final String toString(final String typeName, final Object valueName, final Iterator<?> values) {
-        final StringBuilder buffer = toString(typeName, valueName);
+    static String toString(final String className, final PropertyType type, final Object valueType, final Iterator<?> values) {
+        final StringBuilder buffer = toString(className, type, valueType);
         if (values.hasNext()) {
             final Object value = values.next();
             final boolean isMultiValued = values.hasNext();

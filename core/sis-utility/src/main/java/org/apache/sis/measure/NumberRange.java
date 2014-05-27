@@ -73,9 +73,8 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * <p>All {@code create} static methods may return a shared instance. Those methods are preferred
  * to the constructors when the range is expected to have a long lifetime, typically as instance
- * given to {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameter descriptor}
- * or {@linkplain org.apache.sis.feature.DefaultAttributeType attribute type} constructor. Other
- * methods do not check for shared instances, since the created object is often temporary.</p>
+ * given to {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameter descriptor}.
+ * Other methods do not check for shared instances, since the created object is often temporary.</p>
  *
  * @param <E> The type of range elements as a subclass of {@link Number}.
  *

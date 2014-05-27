@@ -30,6 +30,9 @@ import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+
 
 /**
  * Tests {@link DefaultFeatureType}.
@@ -192,7 +195,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             final String... expected)
     {
         int index = 0;
-        for (final AbstractIdentifiedType property : feature.getProperties(includeSuperTypes)) {
+        for (final PropertyType property : feature.getProperties(includeSuperTypes)) {
             assertTrue("Found more properties than expected.", index < expected.length);
             final String name = expected[index++];
             assertNotNull(name, property);
@@ -258,8 +261,8 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 false, null, city, population, festival);
 
         assertUnmodifiable(complex);
-        final Collection<AbstractIdentifiedType> properties = complex.getProperties(false);
-        final Iterator<AbstractIdentifiedType> it = properties.iterator();
+        final Collection<PropertyType> properties = complex.getProperties(false);
+        final Iterator<PropertyType> it = properties.iterator();
 
         assertEquals("name",            "Festival",                     complex.getName().toString());
         assertTrue  ("superTypes",                                      complex.getSuperTypes().isEmpty());
