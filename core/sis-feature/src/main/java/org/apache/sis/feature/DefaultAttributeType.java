@@ -25,7 +25,7 @@ import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -243,6 +243,6 @@ public class DefaultAttributeType<V> extends FieldType {
     @Debug
     @Override
     public String toString() {
-        return toString("AttributeType", Classes.getShortName(valueClass)).toString();
+        return toString("AttributeType", this, Classes.getShortName(valueClass)).toString();
     }
 }
