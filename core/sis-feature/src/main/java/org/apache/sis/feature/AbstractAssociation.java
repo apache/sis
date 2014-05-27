@@ -224,7 +224,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     public String toString() {
         final String pt = role.getTitleProperty();
         final Iterator<AbstractFeature> it = getValues().iterator();
-        return role.toString("FeatureAssociation", role.getValueType().getName(), new Iterator<Object>() {
+        return FieldType.toString("FeatureAssociation", role, role.getValueType().getName(), new Iterator<Object>() {
             @Override public boolean hasNext() {
                 return it.hasNext();
             }

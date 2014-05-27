@@ -23,6 +23,10 @@ import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
+
 
 /**
  * Indicates the role played by the association between two features.
@@ -138,9 +142,9 @@ public class DefaultAssociationRole extends FieldType {
         String p = titleProperty; // No synchronization - not a big deal if computed twice.
         if (p == null) {
             p = "";
-            for (final AbstractIdentifiedType type : valueType.getProperties(true)) {
-                if (type instanceof DefaultAttributeType<?>) {
-                    final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) type;
+            for (final PropertyType type : valueType.getProperties(true)) {
+                if (type instanceof AttributeType<?>) {
+                    final AttributeType<?> pt = (AttributeType<?>) type;
                     if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {
                         p = pt.getName().toString();
                         break;
@@ -212,6 +216,6 @@ public class DefaultAssociationRole extends FieldType {
     @Debug
     @Override
     public String toString() {
-        return toString("FeatureAssociationRole", valueType.getName()).toString();
+        return toString("FeatureAssociationRole", this, valueType.getName()).toString();
     }
 }

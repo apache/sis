@@ -25,8 +25,9 @@ import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -38,11 +39,6 @@ import org.apache.sis.internal.jdk7.Objects;
  * <div class="note"><b>Note:</b>
  * Compared to the Java language, {@code AttributeType} is equivalent to {@link java.lang.reflect.Field}
  * while {@code FeatureType} is equivalent to {@link Class}.</div>
- *
- * <div class="warning"><b>Warning:</b>
- * This class is expected to implement a GeoAPI {@code AttributeType} interface in a future version.
- * When such interface will be available, most references to {@code DefaultAttributeType} in current
- * API will be replaced by references to the {@code AttributeType} interface.</div>
  *
  * {@section Value type}
  * Attributes can be used for both spatial and non-spatial properties.
@@ -75,7 +71,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @see AbstractAttribute
  */
-public class DefaultAttributeType<V> extends FieldType {
+public class DefaultAttributeType<V> extends FieldType implements AttributeType<V> {
     /**
      * For cross-version compatibility.
      */
@@ -151,6 +147,7 @@ public class DefaultAttributeType<V> extends FieldType {
      *
      * @return The type of attribute values.
      */
+    @Override
     public final Class<V> getValueClass() {
         return valueClass;
     }
@@ -202,6 +199,7 @@ public class DefaultAttributeType<V> extends FieldType {
      *
      * @return The default value for the attribute, or {@code null} if none.
      */
+    @Override
     public V getDefaultValue() {
         return defaultValue;
     }
@@ -243,6 +241,6 @@ public class DefaultAttributeType<V> extends FieldType {
     @Debug
     @Override
     public String toString() {
-        return toString("AttributeType", Classes.getShortName(valueClass)).toString();
+        return toString("AttributeType", this, Classes.getShortName(valueClass)).toString();
     }
 }

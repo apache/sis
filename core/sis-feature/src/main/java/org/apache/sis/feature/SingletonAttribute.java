@@ -16,8 +16,9 @@
  */
 package org.apache.sis.feature;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -59,7 +60,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> implements Clonea
      *
      * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
-    public SingletonAttribute(final DefaultAttributeType<V> type) {
+    public SingletonAttribute(final AttributeType<V> type) {
         super(type);
         assert isSingleton(type.getMaximumOccurs());
         value = type.getDefaultValue();
@@ -72,7 +73,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> implements Clonea
      * @param type  Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      * @param value The initial value (may be {@code null}).
      */
-    SingletonAttribute(final DefaultAttributeType<V> type, final Object value) {
+    SingletonAttribute(final AttributeType<V> type, final Object value) {
         super(type);
         assert isSingleton(type.getMaximumOccurs());
         this.value = type.getValueClass().cast(value);
