@@ -27,24 +27,20 @@ import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
+import org.opengis.feature.IdentifiedType;
 
 
 /**
  * Identification and description information inherited by property types and feature types.
- *
- * <div class="warning"><b>Warning:</b>
- * This class is expected to implement a GeoAPI {@code IdentifiedType} interface in a future version.
- * When such interface will be available, most references to {@code AbstractIdentifiedType} in the API
- * will be replaced by references to the {@code IdentifiedType} interface.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5
  * @module
  */
-public class AbstractIdentifiedType implements Serializable {
+public class AbstractIdentifiedType implements IdentifiedType, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -198,6 +194,7 @@ public class AbstractIdentifiedType implements Serializable {
      *
      * @return The type name.
      */
+    @Override
     public GenericName getName() {
         return name;
     }
@@ -207,6 +204,7 @@ public class AbstractIdentifiedType implements Serializable {
      *
      * @return Concise definition of the element.
      */
+    @Override
     public InternationalString getDefinition() {
         return definition;
     }
@@ -217,6 +215,7 @@ public class AbstractIdentifiedType implements Serializable {
      *
      * @return Natural language designator for the element.
      */
+    @Override
     public InternationalString getDesignation() {
         return designation;
     }
@@ -227,6 +226,7 @@ public class AbstractIdentifiedType implements Serializable {
      *
      * @return Information beyond that required for concise definition of the element, or {@code null} if none.
      */
+    @Override
     public InternationalString getDescription() {
         return description;
     }

@@ -23,6 +23,9 @@ import org.junit.Test;
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+
 
 /**
  * Tests {@link SingletonAssociation}.

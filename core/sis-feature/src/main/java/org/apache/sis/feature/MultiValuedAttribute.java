@@ -21,6 +21,9 @@ import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.opengis.feature.AttributeType;
+
 
 /**
  * An instance of an {@linkplain DefaultAttributeType attribute type} containing an arbitrary amount of values.
@@ -64,7 +67,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
      *
      * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
-    public MultiValuedAttribute(final DefaultAttributeType<V> type) {
+    public MultiValuedAttribute(final AttributeType<V> type) {
         super(type);
         values = new CheckedArrayList<>(type.getValueClass());
         final V value = type.getDefaultValue();
@@ -81,7 +84,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
      * @param values The initial values, or {@code null} for initializing to an empty list.
      */
     @SuppressWarnings("unchecked")
-    MultiValuedAttribute(final DefaultAttributeType<V> type, final Object values) {
+    MultiValuedAttribute(final AttributeType<V> type, final Object values) {
         super(type);
         final Class<V> valueClass = type.getValueClass();
         if (values == null) {

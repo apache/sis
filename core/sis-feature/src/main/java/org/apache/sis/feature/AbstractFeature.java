@@ -28,6 +28,10 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CheckedArrayList;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
+
 
 /**
  * An instance of a {@linkplain DefaultFeatureType feature type} containing values for a real-world phenomena.
@@ -183,8 +187,8 @@ public abstract class AbstractFeature implements Serializable {
      */
     final Property createProperty(final String name, final Object value) {
         final PropertyType pt = getPropertyType(name);
-        if (pt instanceof DefaultAttributeType<?>) {
-            return AbstractAttribute.create((DefaultAttributeType<?>) pt, value);
+        if (pt instanceof AttributeType<?>) {
+            return AbstractAttribute.create((AttributeType<?>) pt, value);
         } else if (pt instanceof DefaultAssociationRole) {
             return AbstractAssociation.create((DefaultAssociationRole) pt, value);
         } else {
@@ -202,8 +206,8 @@ public abstract class AbstractFeature implements Serializable {
      */
     final Property createProperty(final String name) throws IllegalArgumentException {
         final PropertyType pt = getPropertyType(name);
-        if (pt instanceof DefaultAttributeType<?>) {
-            return AbstractAttribute.create((DefaultAttributeType<?>) pt);
+        if (pt instanceof AttributeType<?>) {
+            return AbstractAttribute.create((AttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
             return AbstractAssociation.create((DefaultAssociationRole) pt);
         } else {
@@ -221,8 +225,8 @@ public abstract class AbstractFeature implements Serializable {
      */
     final Object getDefaultValue(final String name) throws IllegalArgumentException {
         final PropertyType pt = getPropertyType(name);
-        if (pt instanceof DefaultAttributeType<?>) {
-            return getDefaultValue((DefaultAttributeType<?>) pt);
+        if (pt instanceof AttributeType<?>) {
+            return getDefaultValue((AttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
             return null; // No default value for associations.
         } else {
@@ -233,7 +237,7 @@ public abstract class AbstractFeature implements Serializable {
     /**
      * Returns the default value to be returned by {@link #getPropertyValue(String)} for the given attribute type.
      */
-    private static <V> Object getDefaultValue(final DefaultAttributeType<V> attribute) {
+    private static <V> Object getDefaultValue(final AttributeType<V> attribute) {
         final V defaultValue = attribute.getDefaultValue();
         if (Field.isSingleton(attribute.getMaximumOccurs())) {
             return defaultValue;
@@ -324,7 +328,7 @@ public abstract class AbstractFeature implements Serializable {
     @SuppressWarnings("unchecked")
     private static <V> void setAttributeValue(final AbstractAttribute<V> attribute, final Object value) {
         if (value != null) {
-            final DefaultAttributeType<V> pt = attribute.getType();
+            final AttributeType<V> pt = attribute.getType();
             final Class<?> base = pt.getValueClass();
             if (!base.isInstance(value)) {
                 Object element = value;
@@ -419,9 +423,9 @@ public abstract class AbstractFeature implements Serializable {
      */
     final Object verifyPropertyValue(final String name, final Object value) {
         final PropertyType pt = getPropertyType(name);
-        if (pt instanceof DefaultAttributeType<?>) {
+        if (pt instanceof AttributeType<?>) {
             if (value != null) {
-                return verifyAttributeValue((DefaultAttributeType<?>) pt, value);
+                return verifyAttributeValue((AttributeType<?>) pt, value);
             }
         } else if (pt instanceof DefaultAssociationRole) {
             if (value != null) {
@@ -443,7 +447,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @param value The value, which shall be non-null.
      */
-    private static <T> Object verifyAttributeValue(final DefaultAttributeType<T> type, final Object value) {
+    private static <T> Object verifyAttributeValue(final AttributeType<T> type, final Object value) {
         final Class<T> valueClass = type.getValueClass();
         final boolean isSingleton = Field.isSingleton(type.getMaximumOccurs());
         if (valueClass.isInstance(value)) {

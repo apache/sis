@@ -31,6 +31,10 @@ import org.apache.sis.metadata.iso.quality.DefaultScope;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
+
 
 /**
  * Provides validation methods to be shared by different implementations.
@@ -77,7 +81,7 @@ final class Validator {
      * @return The {@code report}, or a new report if {@code report} was null.
      */
     private AbstractElement addViolationReport(AbstractElement report,
-            final AbstractIdentifiedType type, final InternationalString explanation)
+            final PropertyType type, final InternationalString explanation)
     {
         if (report == null) {
             final GenericName name = type.getName();
@@ -107,9 +111,9 @@ final class Validator {
      * This method delegates to one of the {@code validate(…)} methods depending of the value type.
      */
     void validateAny(final PropertyType type, final Object value) {
-        if (type instanceof DefaultAttributeType<?>) {
-            validate((DefaultAttributeType<?>) type, asList(value,
-                    ((DefaultAttributeType<?>) type).getMaximumOccurs()));
+        if (type instanceof AttributeType<?>) {
+            validate((AttributeType<?>) type, asList(value,
+                    ((AttributeType<?>) type).getMaximumOccurs()));
         }
         if (type instanceof DefaultAssociationRole) {
             validate((DefaultAssociationRole) type, asList(value,
@@ -120,7 +124,7 @@ final class Validator {
     /**
      * Verifies if the given values are valid for the given attribute type.
      */
-    void validate(final DefaultAttributeType<?> type, final Collection<?> values) {
+    void validate(final AttributeType<?> type, final Collection<?> values) {
         AbstractElement report = null;
         for (final Object value : values) {
             /*
@@ -158,7 +162,7 @@ final class Validator {
      *
      * @param report Where to add the result, or {@code null} if not yet created.
      */
-    private void verifyCardinality(final AbstractElement report, final AbstractIdentifiedType type,
+    private void verifyCardinality(final AbstractElement report, final PropertyType type,
             final int minimumOccurs, final int maximumOccurs, final int count)
     {
         if (count < minimumOccurs) {
