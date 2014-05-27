@@ -11,7 +11,7 @@
     Consider a ShapeFile or a database table with millions of records.
     Each record is represented by one <code>Feature</code> instance.
     Sophisticated <code>DataStore</code> implementations will create and discard <code>Feature</code>
-    instances on the fly, but not all <code>DataStore</code> can do that.
+    instances on the fly, but not all <code>DataStore</code> do that.
     As a safety, Apache SIS tries to implement <code>Feature</code> in a way that allow applications
     to scale higher before to die with an <code>OutOfMemoryError</code>.</p>
 
@@ -20,7 +20,9 @@
     final Map&lt;String,Object&gt; attributes = new HashMap&lt;&gt;(8);
 }</pre></blockquote>
 
-    <p>The above <code>SimpleFeature</code> does not supports multi-valued properties and meta-information about the properties.
+    <p>The above <code>SimpleFeature</code> does not supports explicitely multi-valued properties and metadata
+    about the properties (admittedly multi-values could be stored as <code>java.util.Collection</code>,
+    but this approach has implications on the way we ensure type safety).
     A more complete but still straightforward implementation could be:</p>
     <blockquote><pre>class ComplexFeature {
     final Map&lt;String,Property&gt; properties = new HashMap&lt;&gt;(8);
@@ -31,8 +33,9 @@ class Property {
 
 
     <p>A more sophisticated implementation would take advantage of our knowledge that all records in a table have the
-    same attribute names. Apache SIS uses this knowledge, together with lazy instantiations of <code>Property</code>.
-    The above simple implementation has been compared with the Apache SIS one in a micro-benchmark consisting for the
+    same attribute names, and that the vast majority of attributes are singleton.
+    Apache SIS uses this knowledge, together with lazy instantiations of <code>Property</code>.
+    The above simple implementation has been compared with the Apache SIS one in a micro-benchmark consisting of the
     following steps:</p>
 
     <ol>
@@ -57,7 +60,7 @@ class Property {
     </ol>
 
     <h2>Results and discussion</h2>
-    The benchmarks have been executed about 8 times for each implementations
+    The benchmarks have been executed about 8 times for each implementation
     (<cite>simple</cite> and <cite>complex</cite> versus <cite>SIS</cite>).
     Results of the simple feature implementation were very stable.
     But results of the SIS implementation randomly fall in two modes, one twice faster than the other
@@ -101,11 +104,11 @@ class Property {
     implementation before the application get an <code>OutOfMemoryError</code>.
     We presume that this is caused by the <code>Map.Entry</code> instances that <code>HashMap</code> must
     create internally for each attribute.
-    Compared to <code>ComplexFeature</code>, SIS allows 3.3 times more instances while functionally equivalent.</p>
+    Compared to <code>ComplexFeature</code>, SIS allows 3.3 times more instances while being functionally equivalent.</p>
 
     <p>The speed comparisons are subject to more cautions, in part because each run has created a different amount
     of instances before the test stopped. So even the slowest SIS case would be almost twice faster than
-    <cite>SimpleFeature</cite> because it created two times more instances in an equivalent amount of time.
+    <code>SimpleFeature</code> because it created two times more instances in an equivalent amount of time.
     However this may be highly dependent on garbage collector activities (it has not been verified).</p>
   </body>
 </html>

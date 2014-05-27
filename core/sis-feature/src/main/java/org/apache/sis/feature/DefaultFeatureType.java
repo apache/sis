@@ -36,6 +36,10 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
+
 
 /**
  * Abstraction of a real-world phenomena. A {@code FeatureType} instance describes the class of all
@@ -196,12 +200,6 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *   </tr>
      * </table>
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the type of array elements may be
-     * changed to {@code org.opengis.feature.FeatureType} and {@code org.opengis.feature.PropertyType}.
-     * This change is pending GeoAPI revision. In the meantime, make sure that the {@code properties}
-     * array contains only attribute types, association roles or operations, <strong>not</strong> other
-     * feature types since the later are not properties in the ISO sense.</div>
-     *
      * @param identification The name and other information to be given to this feature type.
      * @param isAbstract     If {@code true}, the feature type acts as an abstract super-type.
      * @param superTypes     The parents of this feature type, or {@code null} or empty if none.
@@ -209,7 +207,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *                       association role that carries characteristics of a feature type.
      */
     public DefaultFeatureType(final Map<String,?> identification, final boolean isAbstract,
-            final DefaultFeatureType[] superTypes, final AbstractIdentifiedType... properties)
+            final DefaultFeatureType[] superTypes, final PropertyType... properties)
     {
         super(identification);
         ArgumentChecks.ensureNonNull("properties", properties);
@@ -218,7 +216,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
                           CollectionsExt.<DefaultFeatureType>immutableSet(true, superTypes);
         switch (properties.length) {
             case 0:  this.properties = Collections.emptyList(); break;
-            case 1:  this.properties = Collections.singletonList((PropertyType) properties[0]); break;
+            case 1:  this.properties = Collections.singletonList(properties[0]); break;
             default: this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(properties, properties.length, PropertyType[].class)); break;
         }
         computeTransientFields();
@@ -266,9 +264,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         for (final Map.Entry<String,PropertyType> entry : byName.entrySet()) {
             final int minimumOccurs, maximumOccurs;
             final PropertyType property = entry.getValue();
-            if (property instanceof DefaultAttributeType<?>) { // TODO: check for AttributeType instead (after GeoAPI upgrade).
-                minimumOccurs = ((DefaultAttributeType<?>) property).getMinimumOccurs();
-                maximumOccurs = ((DefaultAttributeType<?>) property).getMaximumOccurs();
+            if (property instanceof AttributeType<?>) {
+                minimumOccurs = ((AttributeType<?>) property).getMinimumOccurs();
+                maximumOccurs = ((AttributeType<?>) property).getMaximumOccurs();
                 isSimple &= (minimumOccurs == maximumOccurs);
             } else if (property instanceof FieldType) { // TODO: check for AssociationRole instead (after GeoAPI upgrade).
                 minimumOccurs = ((FieldType) property).getMinimumOccurs();
@@ -479,15 +477,15 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     {
         if (base != other) {
             /*
-             * TODO: DefaultAttributeType and DefaultAssociationRole to be replaced by GeoAPI interfaces
+             * TODO: DefaultAssociationRole to be replaced by GeoAPI interfaces
              *       (pending GeoAPI review).
              */
-            if (base instanceof DefaultAttributeType<?>) {
-                if (!(other instanceof DefaultAttributeType<?>)) {
+            if (base instanceof AttributeType<?>) {
+                if (!(other instanceof AttributeType<?>)) {
                     return false;
                 }
-                final DefaultAttributeType<?> p0 = (DefaultAttributeType<?>) base;
-                final DefaultAttributeType<?> p1 = (DefaultAttributeType<?>) other;
+                final AttributeType<?> p0 = (AttributeType<?>) base;
+                final AttributeType<?> p1 = (AttributeType<?>) other;
                 if (!p0.getValueClass().isAssignableFrom(p1.getValueClass()) ||
                      p0.getMinimumOccurs() > p1.getMinimumOccurs() ||
                      p0.getMaximumOccurs() < p1.getMaximumOccurs())
@@ -535,18 +533,13 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * inherited from the {@link #getSuperTypes() super-types} only if {@code includeSuperTypes} is
      * {@code true}.
      *
-     * <div class="warning"><b>Warning:</b>
-     * The type of list elements will be changed to {@code PropertyType} if and when such interface
-     * will be defined in GeoAPI.</div>
-     *
      * @param  includeSuperTypes {@code true} for including the properties inherited from the super-types,
      *         or {@code false} for returning only the properties defined explicitely in this type.
      * @return Feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
-    public Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
-        // TODO: temporary cast to be removed after we upgraded GeoAPI.
-        return (Collection) (includeSuperTypes ? allProperties : properties);
+    public Collection<PropertyType> getProperties(final boolean includeSuperTypes) {
+        return includeSuperTypes ? allProperties : properties;
     }
 
     /**
