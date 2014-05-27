@@ -36,24 +36,28 @@ import java.util.Objects;
 
 /**
  * Base class for sequence of identifiers rooted within the context of a {@linkplain DefaultNameSpace namespace}.
- * Names are <em>immutable</em>. They may be {@linkplain #toFullyQualifiedName() fully qualified}
- * like {@code "org.opengis.util.Record"}, or they may be relative to a {@linkplain #scope() scope}
- * like {@code "util.Record"} in the {@code "org.opengis"} scope.
- * See the {@linkplain GenericName GeoAPI javadoc} for an illustration.
+ * Names shall be <em>immutable</em> and thread-safe. A name may be:
  *
- * <p>Subclasses need only to implement the following methods:</p>
  * <ul>
- *   <li>{@link #scope()}</li>
- *   <li>{@link #getParsedNames()}</li>
+ *   <li>{@linkplain #toFullyQualifiedName() fully qualified} (e.g. {@code "org.apache.sis.util.iso"}), or</li>
+ *   <li>relative to a {@linkplain #scope() scope} (e.g. {@code "util.iso"} in the {@code "org.apache.sis"} namespace).</li>
  * </ul>
+ *
+ * See the {@linkplain org.apache.sis.util.iso package javadoc} for an illustration.
  *
  * {@section <code>Comparable</code> ordering}
  * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
  * See {@link #compareTo(GenericName)} for more information.
  *
- * {@section Immutability and thread safety}
- * This base class is immutable and thread-safe. Subclasses shall make sure that any overridden methods
- * remain safe to call from multiple threads and do not change any public {@code GenericName} state.
+ * {@section Note for implemetors}
+ * Subclasses need only to implement the following methods:
+ * <ul>
+ *   <li>{@link #scope()}</li>
+ *   <li>{@link #getParsedNames()}</li>
+ * </ul>
+ *
+ * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads
+ * and do not change any public {@code GenericName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)

@@ -313,7 +313,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         // -------------------------------------------------------------------
         value = properties.get(ALIAS_KEY);
         try {
-            alias = immutableSet(true, Types.toGenericNames(value, null));
+            alias = immutableSet(true, org.apache.sis.util.iso.Names.toGenericNames(value));
         } catch (ClassCastException e) {
             throw (IllegalArgumentException) illegalPropertyType(properties, ALIAS_KEY, value).initCause(e);
         }

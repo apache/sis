@@ -51,7 +51,7 @@
  * (<span style="background:LightSkyBlue"><var>path</var></span>.<span style="background:Yellow"><var>tip</var></span>)
  * pairs of attributes, respectively:
  *
- * <blockquote><table class="compact" style="border-spacing:21pt 0" summary="Anatomy of a name">
+ * <table class="compact" style="border-spacing:21pt 0; white-space: nowrap" summary="Anatomy of a name">
  *   <tr>
  *     <th>{@linkplain org.apache.sis.util.iso.AbstractName#scope() scope}.name</th>
  *     <th>{@linkplain org.apache.sis.util.iso.AbstractName#head() head}.{@linkplain org.apache.sis.util.iso.DefaultScopedName#tail() tail}</th>
@@ -84,7 +84,23 @@
  *     <td><code>org.apache.sis.util.<span style="background:Yellow">iso</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultLocalName Local name}</td>
  *   </tr>
- * </table></blockquote>
+ * </table>
+ *
+ * <div class="note"><b>Comparison with Java Content Repository (JCR) names</b><br>
+ * In the Java standard {@link javax.xml.namespace.QName} class and in the Java Content Repository (JCR) specification,
+ * a name is an ordered pair of (<var>Name space</var>, <var>Local part</var>) strings. A JCR name can take two lexical
+ * forms: <cite>expanded form</cite> and <cite>qualified form</cite>. Those names are defined as:
+ *
+ * {@preformat text
+ *   ExpandedName  ::= '{' Namespace '}' LocalName
+ *   QualifiedName ::= [Prefix ':'] LocalName
+ * }
+ *
+ * In GeoAPI equivalence, an <cite>expanded name</cite> can be a {@code GenericName} with a
+ * {@linkplain org.apache.sis.util.iso.AbstractName#scope() scope} set to the namespace,
+ * while a <cite>qualified name</cite> can be a {@code ScopedName} in the global namespace.
+ * In the later case, the prefix may be the name {@linkplain org.apache.sis.util.iso.DefaultScopedName#head() head}
+ * or {@linkplain org.apache.sis.util.iso.DefaultScopedName#path() path}.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
