@@ -19,7 +19,6 @@ package org.apache.sis.util.iso;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.SortedMap;
-import java.util.Collection;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -535,36 +534,7 @@ public final class Types extends Static {
         if (name == null || name.isEmpty()) {
             return null;
         }
-        // -------- Begin workaround for GeoAPI 3.0 (TODO: remove after upgrade to GeoAPI 3.1) ------------
-        final String typeName = codeType.getName();
-        try {
-            // Forces initialization of the given class in order
-            // to register its list of static final constants.
-            Class.forName(typeName, true, codeType.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new TypeNotPresentException(typeName, e); // Should never happen.
-        }
-        // -------- End workaround ------------------------------------------------------------------------
         return CodeList.valueOf(codeType, new CodeListFilter(name, canCreate));
-    }
-
-    /**
-     * Returns the given characters sequence as an international string. If the given sequence is
-     * null or an instance of {@link InternationalString}, this this method returns it unchanged.
-     * Otherwise, this method copies the {@link InternationalString#toString()} value in a new
-     * {@link SimpleInternationalString} instance and returns it.
-     *
-     * @param  string The characters sequence to convert, or {@code null}.
-     * @return The given sequence as an international string,
-     *         or {@code null} if the given sequence was null.
-     *
-     * @see DefaultNameFactory#createInternationalString(Map)
-     */
-    public static InternationalString toInternationalString(final CharSequence string) {
-        if (string == null || string instanceof InternationalString) {
-            return (InternationalString) string;
-        }
-        return new SimpleInternationalString(string.toString());
     }
 
     /**
@@ -676,11 +646,30 @@ public final class Types extends Static {
     }
 
     /**
+     * Returns the given characters sequence as an international string. If the given sequence is
+     * null or an instance of {@link InternationalString}, this this method returns it unchanged.
+     * Otherwise, this method copies the {@link InternationalString#toString()} value in a new
+     * {@link SimpleInternationalString} instance and returns it.
+     *
+     * @param  string The characters sequence to convert, or {@code null}.
+     * @return The given sequence as an international string,
+     *         or {@code null} if the given sequence was null.
+     *
+     * @see DefaultNameFactory#createInternationalString(Map)
+     */
+    public static InternationalString toInternationalString(final CharSequence string) {
+        if (string == null || string instanceof InternationalString) {
+            return (InternationalString) string;
+        }
+        return new SimpleInternationalString(string.toString());
+    }
+
+    /**
      * Returns the given array of {@code CharSequence}s as an array of {@code InternationalString}s.
      * If the given array is null or an instance of {@code InternationalString[]}, then this method
      * returns it unchanged. Otherwise a new array of type {@code InternationalString[]} is created
      * and every elements from the given array is copied or
-     * {@linkplain #toInternationalString(CharSequence) converted} in the new array.
+     * {@linkplain #toInternationalString(CharSequence) casted} in the new array.
      *
      * <p>If a defensive copy of the {@code strings} array is wanted, then the caller needs to check
      * if the returned array is the same instance than the one given in argument to this method.</p>
@@ -723,7 +712,10 @@ public final class Types extends Static {
      * @return The generic names, or {@code null} if the given {@code value} was null.
      *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
      * @throws ClassCastException if {@code value} can't be casted.
+     *
+     * @deprecated Moved to the {@link Names} class.
      */
+    @Deprecated
     public static GenericName[] toGenericNames(Object value, NameFactory factory) throws ClassCastException {
         if (value == null) {
             return null;
@@ -731,61 +723,6 @@ public final class Types extends Static {
         if (factory == null) {
             factory = DefaultFactories.NAMES;
         }
-        GenericName name = toGenericName(value, factory);
-        if (name != null) {
-            return new GenericName[] {
-                name
-            };
-        }
-        /*
-         * Above code checked for a singleton. Now check for a collection or an array.
-         */
-        final Object[] values;
-        if (value instanceof Object[]) {
-            values = (Object[]) value;
-            if (values instanceof GenericName[]) {
-                return (GenericName[]) values;
-            }
-        } else if (value instanceof Collection<?>) {
-            values = ((Collection<?>) value).toArray();
-        } else {
-            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
-                    "value", value.getClass()));
-        }
-        final GenericName[] names = new GenericName[values.length];
-        for (int i=0; i<values.length; i++) {
-            value = values[i];
-            if (value != null) {
-                name = toGenericName(value, factory);
-                if (name == null) {
-                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
-                            "value[" + i + ']', value.getClass()));
-                }
-                names[i] = name;
-            }
-        }
-        return names;
-    }
-
-    /**
-     * Creates a generic name from the given value. The value may be an instance of
-     * {@link GenericName}, {@link Identifier} or {@link CharSequence}. If the given
-     * object is not recognized, then this method returns {@code null}.
-     *
-     * @param  value The object to convert.
-     * @param  factory The factory to use for creating names.
-     * @return The converted object, or {@code null} if {@code value} is not convertible.
-     */
-    private static GenericName toGenericName(final Object value, final NameFactory factory) {
-        if (value instanceof GenericName) {
-            return (GenericName) value;
-        }
-        if (value instanceof Identifier) {
-            return factory.parseGenericName(null, ((Identifier) value).getCode());
-        }
-        if (value instanceof CharSequence) {
-            return factory.parseGenericName(null, (CharSequence) value);
-        }
-        return null;
+       return Names.toGenericNames(value, factory);
     }
 }
