@@ -442,14 +442,34 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     }
 
     /**
-     * Returns a string representation of this namespace.
+     * Returns a JCR-like lexical form representation of this namespace.
+     * Following the <cite>Java Content Repository</cite> (JCR) convention,
+     * this method returns the string representation of {@linkplain #name()} between curly brackets.
      *
-     * @return A string representation of this namespace.
+     * <div class="note"><b>Example:</b> if the name of this namespace is “<code>org.apache.sis</code>”,
+     * then this method returns “<code>{org.apache.sis}</code>”.</div>
+     *
+     * {@section Usage}
+     * With this convention, it would be possible to create an <cite>expanded form</cite> of a generic name
+     * (except for escaping of illegal characters) with a simple concatenation as in the following code example:
+     *
+     * {@preformat java
+     *     GenericName name = ...; // A name
+     *     println("Expanded form = " + name.scope() + name);
+     * }
+     *
+     * However the convention followed by this {@code DefaultNameSpace} implementation is not specified in the
+     * {@link NameSpace} contract. This implementation follows the JCR convention for debugging convenience,
+     * but applications needing better guarantees should use {@link Names#toExpandedString(GenericName)} instead.
+     *
+     * @return A JCR-like lexical form of this namespace.
+     *
+     * @see Names#toExpandedString(GenericName)
      */
     @Debug
     @Override
     public String toString() {
-        return "NameSpace[\"" + name() + "\"]";
+        return new StringBuilder(name.length() + 2).append('{').append(name).append('}').toString();
     }
 
     /**

@@ -142,7 +142,7 @@ public class DefaultAssociationRole extends FieldType {
         String p = titleProperty; // No synchronization - not a big deal if computed twice.
         if (p == null) {
             p = "";
-            for (final PropertyType type : valueType.getProperties(true)) {
+            for (final PropertyType type : valueType.getPropertyTypes(true)) {
                 if (type instanceof AttributeType<?>) {
                     final AttributeType<?> pt = (AttributeType<?>) type;
                     if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {
