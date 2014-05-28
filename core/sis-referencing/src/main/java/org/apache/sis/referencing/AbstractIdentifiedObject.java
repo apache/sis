@@ -43,6 +43,7 @@ import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;
@@ -312,11 +313,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         // "alias": CharSequence, CharSequence[], GenericName or GenericName[]
         // -------------------------------------------------------------------
         value = properties.get(ALIAS_KEY);
+        final GenericName[] names;
         try {
-            alias = immutableSet(true, org.apache.sis.util.iso.Names.toGenericNames(value));
+            /*
+             * Note: DefaultFactories.SIS_NAMES is guarantee to be a DefaultNameFactory class, not a sub-class.
+             * However for the purpose of this method, any sub-class would be okay. We should revisit this code
+             * with this flexibility in mind when we will use dependency injection.
+             */
+            names = DefaultFactories.SIS_NAMES.toGenericNames(value);
         } catch (ClassCastException e) {
             throw (IllegalArgumentException) illegalPropertyType(properties, ALIAS_KEY, value).initCause(e);
         }
+        alias = immutableSet(true, names);
 
         // -----------------------------------------------------------
         // "identifiers": ReferenceIdentifier or ReferenceIdentifier[]

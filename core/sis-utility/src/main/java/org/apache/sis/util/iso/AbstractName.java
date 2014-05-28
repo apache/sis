@@ -36,14 +36,14 @@ import java.util.Objects;
 
 /**
  * Base class for sequence of identifiers rooted within the context of a {@linkplain DefaultNameSpace namespace}.
- * Names shall be <em>immutable</em> and thread-safe. A name may be:
+ * Names shall be <em>immutable</em> and thread-safe. A name can be local to a namespace.
+ * See the {@linkplain org.apache.sis.util.iso package javadoc} for an illustration of name anatomy.
  *
- * <ul>
- *   <li>{@linkplain #toFullyQualifiedName() fully qualified} (e.g. {@code "org.apache.sis.util.iso"}), or</li>
- *   <li>relative to a {@linkplain #scope() scope} (e.g. {@code "util.iso"} in the {@code "org.apache.sis"} namespace).</li>
- * </ul>
- *
- * See the {@linkplain org.apache.sis.util.iso package javadoc} for an illustration.
+ * <p>The easiest way to create a name is to use the {@link Names#createLocalName(CharSequence, CharSequence)}
+ * convenience static method. That method supports the common case where the name is made only of a
+ * (<var>namespace</var>, <var>local part</var>) pair of strings. However generic names can be more fine grained.
+ * For example the above-cited strings can both be split in finer components.
+ * For finer grain control, use {@link DefaultNameFactory} instead of {@link Names}.</p>
  *
  * {@section <code>Comparable</code> ordering}
  * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
