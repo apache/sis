@@ -60,7 +60,7 @@ import org.opengis.feature.AttributeType;
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
  * {@section Properties and inheritance}
- * Each feature type can provide descriptions for the following {@link #getPropertyTypes(boolean) properties}:
+ * Each feature type can provide descriptions for the following {@linkplain #getPropertyTypes(boolean) properties}:
  *
  * <ul>
  *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
