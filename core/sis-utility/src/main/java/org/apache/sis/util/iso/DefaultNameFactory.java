@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.ArrayList;
+import java.util.Collection;
+import org.opengis.metadata.Identifier;
 import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
@@ -58,6 +60,7 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  *
  * <ul>
  *   <li>{@link #parseGenericName(NameSpace, CharSequence)}</li>
+ *   <li>{@link #toGenericNames(Object)}</li>
  * </ul>
  *
  * {@section Thread safety}
@@ -67,7 +70,7 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public class DefaultNameFactory extends AbstractFactory implements NameFactory {
@@ -281,5 +284,91 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
             return createLocalName(scope, name);
         }
         return createGenericName(scope, names.toArray(new String[names.size()]));
+    }
+
+    /**
+     * Converts the given value to an array of generic names. If the given value is an instance of
+     * {@link GenericName}, {@link String} or any other type enumerated below, then it is converted
+     * and returned in an array of length 1. If the given value is an array or a collection, then an
+     * array of same length is returned where each element has been converted.
+     *
+     * <p>Allowed types or element types are:</p>
+     * <ul>
+     *   <li>{@link GenericName}, to be casted and returned as-is.</li>
+     *   <li>{@link CharSequence} (usually a {@link String} or an {@link InternationalString}),
+     *       to be parsed as a generic name using the {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator.</li>
+     *   <li>{@link Identifier}, its {@linkplain Identifier#getCode() code} to be parsed as a generic name
+     *       using the {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator.</li>
+     * </ul>
+     *
+     * If {@code value} is an array or a collection containing {@code null} elements,
+     * then the corresponding element in the returned array will also be {@code null}.
+     *
+     * @param  value The object to cast into an array of generic names, or {@code null}.
+     * @return The generic names, or {@code null} if the given {@code value} was null.
+     *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
+     * @throws ClassCastException if {@code value} can't be casted.
+     *
+     * @since 0.5
+     */
+    public GenericName[] toGenericNames(Object value) throws ClassCastException {
+        if (value == null) {
+            return null;
+        }
+        GenericName name = toGenericName(value);
+        if (name != null) {
+            return new GenericName[] {
+                name
+            };
+        }
+        /*
+         * Above code checked for a singleton. Now check for a collection or an array.
+         */
+        final Object[] values;
+        if (value instanceof Object[]) {
+            values = (Object[]) value;
+            if (values instanceof GenericName[]) {
+                return (GenericName[]) values;
+            }
+        } else if (value instanceof Collection<?>) {
+            values = ((Collection<?>) value).toArray();
+        } else {
+            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
+                    "value", value.getClass()));
+        }
+        final GenericName[] names = new GenericName[values.length];
+        for (int i=0; i<values.length; i++) {
+            value = values[i];
+            if (value != null) {
+                name = toGenericName(value);
+                if (name == null) {
+                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
+                            "value[" + i + ']', value.getClass()));
+                }
+                names[i] = name;
+            }
+        }
+        return names;
+    }
+
+    /**
+     * Creates a generic name from the given value. The value may be an instance of
+     * {@link GenericName}, {@link Identifier} or {@link CharSequence}. If the given
+     * object is not recognized, then this method returns {@code null}.
+     *
+     * @param  value The object to convert.
+     * @return The converted object, or {@code null} if {@code value} is not convertible.
+     */
+    private GenericName toGenericName(final Object value) {
+        if (value instanceof GenericName) {
+            return (GenericName) value;
+        }
+        if (value instanceof Identifier) {
+            return parseGenericName(null, ((Identifier) value).getCode());
+        }
+        if (value instanceof CharSequence) {
+            return parseGenericName(null, (CharSequence) value);
+        }
+        return null;
     }
 }

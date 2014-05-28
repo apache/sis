@@ -41,8 +41,8 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * Abstraction of a real-world phenomena. A {@code FeatureType} instance describes the class of all
  * {@linkplain AbstractFeature feature} instances of that type.
  *
- * <div class="note"><b>Note:</b>
- * Compared to the Java language, {@code FeatureType} is equivalent to {@link Class} while
+ * <div class="note"><b>Analogy:</b>
+ * compared to the Java language, {@code FeatureType} is equivalent to {@link Class} while
  * {@code Feature} instances are equivalent to {@link Object} instances of that class.</div>
  *
  * <div class="warning"><b>Warning:</b>
@@ -56,17 +56,17 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
  * {@section Properties and inheritance}
- * Each feature type can provide descriptions for the following {@linkplain #getProperties(boolean) properties}:
+ * Each feature type can provide descriptions for the following {@link #getPropertyTypes(boolean) properties}:
  *
  * <ul>
  *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
- *   <li>{@linkplain DefaultAssociationRole  Associations to other feature types}</li>
+ *   <li>{@linkplain DefaultAssociationRole  Associations to other features}</li>
  *   <li>{@linkplain DefaultOperation        Operations}</li>
  * </ul>
  *
  * In addition, a feature type can inherit the properties of one or more other feature types.
  * Properties defined in the sub-type can override properties of the same name defined in the
- * {@link #getSuperTypes() super-types}, provided that values of the sub-type property are
+ * {@linkplain #getSuperTypes() super-types}, provided that values of the sub-type property are
  * assignable to the super-type property.
  *
  * <div class="note"><b>Analogy:</b> compared to the Java language, the above rule is similar to overriding a method
@@ -133,7 +133,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * Any feature operation, any feature attribute type and any feature association role
      * that carries characteristics of a feature type.
      *
-     * @see #getProperties(boolean)
+     * @see #getPropertyTypes(boolean)
      */
     private final List<PropertyType> properties;
 
@@ -141,7 +141,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * All properties, including the ones declared in the super-types.
      * This is an unmodifiable view of the {@link #byName} values.
      *
-     * @see #getProperties(boolean)
+     * @see #getPropertyTypes(boolean)
      */
     private transient Collection<PropertyType> allProperties;
 
@@ -435,6 +435,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * However as a safety, this method also checks that all properties in this feature type is assignable
      * from a property of the same name in the given type.
      *
+     * <div class="note"><b>Analogy:</b>
+     * if we compare {@code FeatureType} to {@link Class} in the Java language, then this method is equivalent
+     * to {@link Class#isAssignableFrom(Class)}.</div>
+     *
      * @param  type The type to be checked.
      * @return {@code true} if instances of the given type can be assigned to association of this type.
      */
@@ -519,6 +523,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     /**
      * Returns the direct parents of this feature type.
      *
+     * <div class="note"><b>Analogy:</b>
+     * if we compare {@code FeatureType} to {@link Class} in the Java language, then this method is equivalent
+     * to {@link Class#getSuperclass()} except that feature types allow multi-inheritance.</div>
+     *
      * <div class="warning"><b>Warning:</b>
      * The type of list elements will be changed to {@code FeatureType} if and when such interface
      * will be defined in GeoAPI.</div>
@@ -532,8 +540,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     /**
      * Returns any feature operation, any feature attribute type and any feature association role that
      * carries characteristics of a feature type. The returned collection will include the properties
-     * inherited from the {@link #getSuperTypes() super-types} only if {@code includeSuperTypes} is
-     * {@code true}.
+     * inherited from the {@linkplain #getSuperTypes() super-types} only if {@code includeSuperTypes}
+     * is {@code true}.
      *
      * <div class="warning"><b>Warning:</b>
      * The type of list elements will be changed to {@code PropertyType} if and when such interface
@@ -545,7 +553,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *         feature type (not including parent types).
      */
     @SuppressWarnings("unchecked")
-    public Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
+    public Collection<AbstractIdentifiedType> getPropertyTypes(final boolean includeSuperTypes) {
         /*
          * Cast is a workaround for "Apache SIS on GeoAPI 3.0" branch only (other branches do not need cast).
          * This is because GeoAPI 3.0 does not provide the 'org.opengis.feature.PropertyType' interface, and
@@ -576,6 +584,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
 
     /**
      * Creates a new feature instance of this type.
+     *
+     * <div class="note"><b>Analogy:</b>
+     * if we compare {@code FeatureType} to {@link Class} and {@code Feature} to {@link Object} in the Java language,
+     * then this method is equivalent to {@link Class#newInstance()}.</div>
      *
      * @return A new feature instance.
      * @throws IllegalStateException if this feature type {@linkplain #isAbstract() is abstract}.

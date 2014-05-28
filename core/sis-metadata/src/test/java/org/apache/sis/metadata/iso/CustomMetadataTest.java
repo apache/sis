@@ -101,13 +101,13 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
             @Override public InternationalString getAbstract() {
                 Map<Locale, String> names = new HashMap<Locale, String>();
                 names.put(Locale.ENGLISH, "Description");
-                return DefaultFactories.NAMES.createInternationalString(names);
+                return DefaultFactories.SIS_NAMES.createInternationalString(names);
             }
 
             @Override public InternationalString getEnvironmentDescription() {
                 Map<Locale, String> names = new HashMap<Locale, String>();
                 names.put(Locale.ENGLISH, "Environment");
-                return DefaultFactories.NAMES.createInternationalString(names);
+                return DefaultFactories.SIS_NAMES.createInternationalString(names);
             }
 
             @Override public InternationalString                   getSupplementalInformation()    {return null;}

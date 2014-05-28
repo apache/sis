@@ -29,7 +29,7 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public final class DefaultFactories extends SystemListener {
@@ -37,6 +37,9 @@ public final class DefaultFactories extends SystemListener {
      * A name factory which is guaranteed to be an instance of SIS {@link DefaultNameFactory}.
      * We use this factory when we need to ensure that the created names are instances of the
      * SIS {@link org.apache.sis.util.iso.AbstractName} implementation.
+     *
+     * <p>Note that this need to be the exact SIS class, not a user-provided subclass,
+     * otherwise we could not guarantee the above-cited requirement.</p>
      */
     public static final DefaultNameFactory SIS_NAMES = new DefaultNameFactory();
 
