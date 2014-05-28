@@ -33,6 +33,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Branch-dependent imports
+import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 
@@ -227,7 +228,7 @@ header: for (int i=0; ; i++) {
                 valueType     = toString(pt.getValueType().getName());
                 valueClass    = AbstractFeature.class;
             } else if (propertyType instanceof DefaultOperation) {
-                final AttributeType<?> resultType = ((DefaultOperation) propertyType).getResult();
+                final IdentifiedType resultType = ((DefaultOperation) propertyType).getResult();
                 valueType   = toString(resultType.getName());
                 valueClass  = null;
                 minimumOccurs = -1;
