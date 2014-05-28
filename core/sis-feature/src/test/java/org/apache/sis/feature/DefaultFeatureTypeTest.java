@@ -152,8 +152,8 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      */
     private static void assertUnmodifiable(final DefaultFeatureType feature) {
         final Collection<?> superTypes         = feature.getSuperTypes();
-        final Collection<?> declaredProperties = feature.getProperties(false);
-        final Collection<?> allProperties      = feature.getProperties(true);
+        final Collection<?> declaredProperties = feature.getPropertyTypes(false);
+        final Collection<?> allProperties      = feature.getPropertyTypes(true);
         if (!superTypes.isEmpty()) try {
             superTypes.clear();
             fail("Super-types collection shall not be modifiable.");
@@ -182,7 +182,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * This method tests the following {@code FeatureType} methods:
      *
      * <ul>
-     *   <li>{@link DefaultFeatureType#getProperties(boolean)}</li>
+     *   <li>{@link DefaultFeatureType#getPropertyTypes(boolean)}</li>
      *   <li>{@link DefaultFeatureType#getProperty(String)}</li>
      * </ul>
      *
@@ -195,7 +195,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             final String... expected)
     {
         int index = 0;
-        for (final PropertyType property : feature.getProperties(includeSuperTypes)) {
+        for (final PropertyType property : feature.getPropertyTypes(includeSuperTypes)) {
             assertTrue("Found more properties than expected.", index < expected.length);
             final String name = expected[index++];
             assertNotNull(name, property);
@@ -261,7 +261,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 false, null, city, population, festival);
 
         assertUnmodifiable(complex);
-        final Collection<PropertyType> properties = complex.getProperties(false);
+        final Collection<PropertyType> properties = complex.getPropertyTypes(false);
         final Iterator<PropertyType> it = properties.iterator();
 
         assertEquals("name",            "Festival",                     complex.getName().toString());
