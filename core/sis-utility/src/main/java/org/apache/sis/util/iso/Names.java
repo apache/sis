@@ -44,10 +44,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     <th>JCR name</th>
  *     <th>GeoAPI equivalence</th>
  *   </tr><tr>
- *     <td><pre>ExpandedName  ::= '{' Namespace '}' LocalName</pre></td>
+ *     <td><code>ExpandedName  ::= '{' Namespace '}' LocalName</code></td>
  *     <td>{@code GenericName} with its {@linkplain AbstractName#scope() scope} set to the JCR namespace.</td>
  *   </tr><tr>
- *     <td><pre>QualifiedName ::= [Prefix ':'] LocalName</pre></td>
+ *     <td><code>QualifiedName ::= [Prefix ':'] LocalName</code></td>
  *     <td>{@code ScopedName} in the global namespace, with its {@linkplain DefaultScopedName#head() head} or
  *         {@linkplain DefaultScopedName#path() path} set to the JCR prefix.</td>
  *   </tr>
@@ -142,7 +142,7 @@ public final class Names extends Static {
      * The expanded form is defined as below:
      *
      * <blockquote><pre> ExpandedName ::= '{' NameSpace '}' LocalPart
-     * NameSpace    ::= {@linkplain AbstractName#scope() scope()}.{@linkplain DefaultNameSpace#name() name()}.toString()
+     * NameSpace    ::= name.{@linkplain AbstractName#scope() scope()}.{@linkplain DefaultNameSpace#name() name()}.toString()
      * LocalPart    ::= name.{@linkplain AbstractName#toString() toString()}</pre></blockquote>
      *
      * @param  name The generic name to format in expanded form.
