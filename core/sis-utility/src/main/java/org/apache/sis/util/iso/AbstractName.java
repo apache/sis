@@ -41,9 +41,9 @@ import java.util.Objects;
  *
  * <p>The easiest way to create a name is to use the {@link Names#createLocalName(CharSequence, CharSequence)}
  * convenience static method. That method supports the common case where the name is made only of a
- * (<var>namespace</var>, <var>local part</var>) pair of strings. However generic names can be more fine grained.
- * For example the above-cited strings can both be split in finer components.
- * For finer grain control, use {@link DefaultNameFactory} instead of {@link Names}.</p>
+ * (<var>namespace</var>, <var>local part</var>) pair of strings. However generic names allows finer grain.
+ * For example the above-cited strings can both be split into smaller name components.
+ * If such finer grain control is desired, {@link DefaultNameFactory} can be used instead of {@link Names}.</p>
  *
  * {@section <code>Comparable</code> ordering}
  * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.

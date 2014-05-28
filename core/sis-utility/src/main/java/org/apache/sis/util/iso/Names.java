@@ -53,6 +53,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   </tr>
  * </table></blockquote>
  *
+ * <div class="note"><b>Note:</b>
+ * this {@code Names} convenience class takes the above-cited {@code NameSpace} and {@code LocalName} strings
+ * as a whole. However {@code GenericName} allows splitting those strings into smaller name components.
+ * If such finer grain control is desired, {@link DefaultNameFactory} can be used instead of {@code Names}.</div>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5
@@ -83,15 +88,16 @@ public final class Names extends Static {
 
     /**
      * Creates a name which is local in the given namespace, using the
-     * {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR} default separator}.
+     * {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
      * The character sequences can be either {@link String} or {@link InternationalString} instances.
      * Those character sequences are taken verbatim; they are <em>not</em> parsed into their components.
      *
-     * <p>This method creates a name with the following characteristics:</p>
-     * <ul>
-     *   <li><code>name.{@linkplain DefaultLocalName#scope() scope()}.name().toString()</code> contains the given {@code namespace}.</li>
-     *   <li><code>name.{@linkplain DefaultLocalName#toString() toString()}</code> contains the given {@code localPart}.</li>
-     * </ul>
+     * <table class="sis">
+     *   <caption>Mapping from arguments to name components</caption>
+     *   <tr><th>Argument</th> <th>Mapped to</th></tr>
+     *   <tr><td>{@code namespace}</td> <td><code>name.{@linkplain DefaultLocalName#scope() scope()}.name().toString()</code></td></tr>
+     *   <tr><td>{@code localPart}</td> <td><code>name.{@linkplain DefaultLocalName#toString() toString()}</code></td></tr>
+     * </table>
      *
      * @param  namespace The namespace, or {@code null} for the global namespace.
      * @param  localPart The name which is locale in the given namespace.
@@ -104,14 +110,21 @@ public final class Names extends Static {
 
     /**
      * Creates a name which is local in the given namespace, using the given separator.
-     * The character sequences can be either {@link String} or {@link InternationalString} instances.
-     * Those character sequences are taken verbatim; they are <em>not</em> parsed into their components.
+     * This method performs the same work than {@link #createLocalName(CharSequence, CharSequence)},
+     * except that the namespace and the local part are separated by the given separator.
      *
-     * <p>This method creates a name with the following characteristics:</p>
+     * <div class="note"><b>Example:</b>
+     * for a name created by {@code create("http://www.opengis.net/gml/srs/epsg.xml", "#", "4326")}:
      * <ul>
-     *   <li><code>name.{@linkplain DefaultLocalName#scope() scope()}.name().toString()</code> contains the given {@code namespace}.</li>
-     *   <li><code>name.{@linkplain DefaultLocalName#toString() toString()}</code> contains the given {@code localPart}.</li>
-     * </ul>
+     *   <li><code>name.{@linkplain DefaultLocalName#scope() scope()}</code>
+     *       returns the {@code "http://www.opengis.net/gml/srs/epsg.xml"} namespace.</li>
+     *   <li><code>name.{@linkplain DefaultLocalName#toString() toString()}</code>
+     *       returns the {@code "4326"} string.</li>
+     *   <li><code>name.{@linkplain DefaultLocalName#toFullyQualifiedName() toFullyQualifiedName()}</code>
+     *       returns the {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"} name.
+     *   <li><code>{@linkplain #toExpandedString(GenericName) toExpandedString}(name)</code>
+     *       returns the {@code "{http://www.opengis.net/gml/srs/epsg.xml}4326"} string.
+     * </ul></div>
      *
      * @param  namespace The namespace, or {@code null} for the global namespace.
      * @param  separator The separator between the namespace and the local part.
