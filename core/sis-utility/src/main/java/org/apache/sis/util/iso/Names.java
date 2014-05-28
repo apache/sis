@@ -16,26 +16,42 @@
  */
 package org.apache.sis.util.iso;
 
-import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
-import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DefaultFactories;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * Provides static methods for creating, parsing and formatting {@linkplain AbstractName generic names}.
+ * Static methods for creating, parsing and formatting {@linkplain AbstractName generic names}.
+ * This convenience class does not add new functionality compared to {@link DefaultNameFactory},
+ * but makes some tasks easier by avoiding the need to find a factory, and by creating name and
+ * their namespace in a single step.
  *
- * <p>Those convenience methods delegate their work to a default {@linkplain DefaultNameFactory name factory}.
- * Users can get more control by using the name factory directly.</p>
+ * {@section Relationship with Java Content Repository (JCR) names}
+ * In the Java standard {@link javax.xml.namespace.QName} class and in the Java Content Repository (JCR) specification,
+ * a name is an ordered pair of (<var>Name space</var>, <var>Local part</var>) strings. A JCR name can take two lexical
+ * forms: <cite>expanded form</cite> and <cite>qualified form</cite>. Those names are mapped to generic names as below:
+ *
+ * <blockquote><table class="sis">
+ *   <caption>Equivalence between JCR name and {@code GenericName}</caption>
+ *   <tr>
+ *     <th>JCR name</th>
+ *     <th>GeoAPI equivalence</th>
+ *   </tr><tr>
+ *     <td><pre>ExpandedName  ::= '{' Namespace '}' LocalName</pre></td>
+ *     <td>{@code GenericName} with its {@linkplain AbstractName#scope() scope} set to the JCR namespace.</td>
+ *   </tr><tr>
+ *     <td><pre>QualifiedName ::= [Prefix ':'] LocalName</pre></td>
+ *     <td>{@code ScopedName} in the global namespace, with its {@linkplain DefaultScopedName#head() head} or
+ *         {@linkplain DefaultScopedName#path() path} set to the JCR prefix.</td>
+ *   </tr>
+ * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -109,104 +125,12 @@ public final class Names extends Static {
     }
 
     /**
-     * Converts the given value to an array of generic names. If the given value is an instance of
-     * {@link GenericName}, {@link String} or any other type enumerated below, then it is converted
-     * and returned in an array of length 1. If the given value is an array or a collection, then an
-     * array of same length is returned where each element has been converted.
-     *
-     * <p>Allowed types or element types are:</p>
-     * <ul>
-     *   <li>{@link GenericName}, to be casted and returned as-is.</li>
-     *   <li>{@link CharSequence} (usually a {@link String} or an {@link InternationalString}),
-     *       to be parsed as a generic name using the {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator.</li>
-     *   <li>{@link Identifier}, its {@linkplain Identifier#getCode() code} to be parsed as a generic name
-     *       using the {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator.</li>
-     * </ul>
-     *
-     * If {@code value} is an array or a collection containing {@code null} elements,
-     * then the corresponding element in the returned array will also be {@code null}.
-     *
-     * @param  value The object to cast into an array of generic names, or {@code null}.
-     * @return The generic names, or {@code null} if the given {@code value} was null.
-     *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
-     * @throws ClassCastException if {@code value} can't be casted.
-     */
-    public static GenericName[] toGenericNames(Object value) throws ClassCastException {
-        if (value == null) {
-            return null;
-        }
-        return toGenericNames(value, DefaultFactories.NAMES);
-    }
-
-    /**
-     * Implementation of {@link #toGenericName(Object)} using the given factory.
-     */
-    static GenericName[] toGenericNames(Object value, final NameFactory factory) throws ClassCastException {
-        GenericName name = toGenericName(value, factory);
-        if (name != null) {
-            return new GenericName[] {
-                name
-            };
-        }
-        /*
-         * Above code checked for a singleton. Now check for a collection or an array.
-         */
-        final Object[] values;
-        if (value instanceof Object[]) {
-            values = (Object[]) value;
-            if (values instanceof GenericName[]) {
-                return (GenericName[]) values;
-            }
-        } else if (value instanceof Collection<?>) {
-            values = ((Collection<?>) value).toArray();
-        } else {
-            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
-                    "value", value.getClass()));
-        }
-        final GenericName[] names = new GenericName[values.length];
-        for (int i=0; i<values.length; i++) {
-            value = values[i];
-            if (value != null) {
-                name = toGenericName(value, factory);
-                if (name == null) {
-                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
-                            "value[" + i + ']', value.getClass()));
-                }
-                names[i] = name;
-            }
-        }
-        return names;
-    }
-
-    /**
-     * Creates a generic name from the given value. The value may be an instance of
-     * {@link GenericName}, {@link Identifier} or {@link CharSequence}. If the given
-     * object is not recognized, then this method returns {@code null}.
-     *
-     * @param  value The object to convert.
-     * @param  factory The factory to use for creating names.
-     * @return The converted object, or {@code null} if {@code value} is not convertible.
-     */
-    private static GenericName toGenericName(final Object value, final NameFactory factory) {
-        if (value instanceof GenericName) {
-            return (GenericName) value;
-        }
-        if (value instanceof Identifier) {
-            return factory.parseGenericName(null, ((Identifier) value).getCode());
-        }
-        if (value instanceof CharSequence) {
-            return factory.parseGenericName(null, (CharSequence) value);
-        }
-        return null;
-    }
-
-    /**
      * Formats the given name in <cite>expanded form</cite> close to the Java Content Repository (JCR) definition.
      * The expanded form is defined as below:
      *
-     * <blockquote>ExpandedName ::= '{' NameSpace '}' LocalPart
+     * <blockquote><pre> ExpandedName ::= '{' NameSpace '}' LocalPart
      * NameSpace    ::= {@linkplain AbstractName#scope() scope()}.{@linkplain DefaultNameSpace#name() name()}.toString()
-     * LocalPart    ::= name.{@linkplain AbstractName#toString() toString()}</blockquote>
+     * LocalPart    ::= name.{@linkplain AbstractName#toString() toString()}</pre></blockquote>
      *
      * @param  name The generic name to format in expanded form.
      * @return Expanded form of the given generic name.

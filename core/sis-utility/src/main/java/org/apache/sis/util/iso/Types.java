@@ -50,8 +50,6 @@ import org.apache.sis.internal.system.DefaultFactories;
  * This class provides:
  *
  * <ul>
- *   <li>{@link #toInternationalString(CharSequence)} and {@link #toGenericName(Object, NameFactory)}
- *       for creating name-related objects from various objects.</li>
  *   <li>{@link #getStandardName(Class)}, {@link #getListName(CodeList)} and {@link #getCodeName(CodeList)}
  *       for fetching ISO names if possible.</li>
  *   <li>{@link #getCodeTitle(CodeList)}, {@link #getDescription(CodeList)} and
@@ -62,7 +60,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.19)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class Types extends Static {
@@ -89,14 +87,15 @@ public final class Types extends Static {
     /**
      * Returns the ISO name for the given class, or {@code null} if none.
      * This method can be used for GeoAPI interfaces or {@link CodeList}.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li><code>getStandardName({@linkplain org.opengis.metadata.citation.Citation}.class)</code>
      *       (an interface) returns {@code "CI_Citation"}.</li>
      *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code>
      *       (a code list) returns {@code "CS_AxisDirection"}.</li>
      * </ul>
+     * </div>
      *
      * This method looks for the {@link UML} annotation on the given type. It does not search for
      * parent classes or interfaces if the given type is not directly annotated (i.e. {@code @UML}
@@ -131,13 +130,14 @@ public final class Types extends Static {
      * Returns the ISO classname (if available) or the Java classname (as a fallback)
      * of the given code. This method uses the {@link UML} annotation if it exists, or
      * fallback on the {@linkplain Class#getSimpleName() simple class name} otherwise.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code getListName(AxisDirection.NORTH)} returns {@code "CS_AxisDirection"}.</li>
      *   <li>{@code getListName(CharacterSet.UTF_8)} returns {@code "MD_CharacterSetCode"}.</li>
      *   <li>{@code getListName(ImagingCondition.BLURRED_IMAGE)} returns {@code "MD_ImagingConditionCode"}.</li>
      * </ul>
+     * </div>
      *
      * @param  code The code for which to get the class name, or {@code null}.
      * @return The ISO (preferred) or Java (fallback) class name, or {@code null} if the given code is null.
@@ -154,13 +154,14 @@ public final class Types extends Static {
     /**
      * Returns the ISO name (if available) or the Java name (as a fallback) of the given code.
      * If the code has no {@link UML} identifier, then the programmatic name is used as a fallback.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code getCodeName(AxisDirection.NORTH)} returns {@code "north"}.</li>
      *   <li>{@code getCodeName(CharacterSet.UTF_8)} returns {@code "utf8"}.</li>
      *   <li>{@code getCodeName(ImagingCondition.BLURRED_IMAGE)} returns {@code "blurredImage"}.</li>
      * </ul>
+     * </div>
      *
      * @param  code The code for which to get the name, or {@code null}.
      * @return The UML identifiers or programmatic name for the given code,
@@ -187,14 +188,15 @@ public final class Types extends Static {
      *
      * <p>The current heuristic implementation iterates over {@linkplain CodeList#names() all code names},
      * selects the longest one excluding the {@linkplain CodeList#name() field name} if possible, then
-     * {@linkplain CharSequences#camelCaseToSentence(CharSequence) makes a sentence} from that name.
-     * Examples:</p>
+     * {@linkplain CharSequences#camelCaseToSentence(CharSequence) makes a sentence} from that name.</p>
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code getCodeLabel(AxisDirection.NORTH)} returns {@code "North"}.</li>
      *   <li>{@code getCodeLabel(CharacterSet.UTF_8)} returns {@code "UTF-8"}.</li>
      *   <li>{@code getCodeLabel(ImagingCondition.BLURRED_IMAGE)} returns {@code "Blurred image"}.</li>
      * </ul>
+     * </div>
      *
      * @param  code The code from which to get a title, or {@code null}.
      * @return A unlocalized title for the given code, or {@code null} if the given code is null.
@@ -459,12 +461,13 @@ public final class Types extends Static {
      * Returns the GeoAPI interface for the given ISO name, or {@code null} if none.
      * The identifier argument shall be the value documented in the {@link UML#identifier()}
      * annotation associated with the GeoAPI interface.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code forStandardName("CI_Citation")}      returns <code>{@linkplain org.opengis.metadata.citation.Citation}.class</code></li>
      *   <li>{@code forStandardName("CS_AxisDirection")} returns <code>{@linkplain org.opengis.referencing.cs.AxisDirection}.class</code></li>
      * </ul>
+     * </div>
      *
      * Only identifiers for the stable part of GeoAPI are recognized. This method does not handle
      * the identifiers for the {@code geoapi-pending} module.
@@ -713,16 +716,16 @@ public final class Types extends Static {
      *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
      * @throws ClassCastException if {@code value} can't be casted.
      *
-     * @deprecated Moved to the {@link Names} class.
+     * @deprecated Moved to {@link DefaultNameFactory#toGenericNames(Object)}.
      */
     @Deprecated
     public static GenericName[] toGenericNames(Object value, NameFactory factory) throws ClassCastException {
         if (value == null) {
             return null;
         }
-        if (factory == null) {
-            factory = DefaultFactories.NAMES;
+        if (!(factory instanceof DefaultNameFactory)) {
+            factory = DefaultFactories.SIS_NAMES;
         }
-       return Names.toGenericNames(value, factory);
+       return ((DefaultNameFactory) factory).toGenericNames(value);
     }
 }

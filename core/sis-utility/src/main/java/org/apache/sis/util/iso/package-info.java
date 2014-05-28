@@ -38,6 +38,12 @@
  *       <li>{@link org.apache.sis.util.iso.DefaultScopedName} for a composite of a <cite>head</cite> name and a <cite>tail</cite> name.</li>
  *     </ul>
  *   </li>
+ *   <li>Static utility methods:
+ *     <ul>
+ *       <li>{@link org.apache.sis.util.iso.Types} for working with UML identifiers of GeoAPI types.</li>
+ *       <li>{@link org.apache.sis.util.iso.Names} for simple operations on {@code GenericName}.</li>
+ *     </ul>
+ *   </li>
  * </ul>
  *
  * {@section Anatomy of a name}
@@ -86,25 +92,9 @@
  *   </tr>
  * </table>
  *
- * <div class="note"><b>Comparison with Java Content Repository (JCR) names</b><br>
- * In the Java standard {@link javax.xml.namespace.QName} class and in the Java Content Repository (JCR) specification,
- * a name is an ordered pair of (<var>Name space</var>, <var>Local part</var>) strings. A JCR name can take two lexical
- * forms: <cite>expanded form</cite> and <cite>qualified form</cite>. Those names are defined as:
- *
- * {@preformat text
- *   ExpandedName  ::= '{' Namespace '}' LocalName
- *   QualifiedName ::= [Prefix ':'] LocalName
- * }
- *
- * In GeoAPI equivalence, an <cite>expanded name</cite> can be a {@code GenericName} with a
- * {@linkplain org.apache.sis.util.iso.AbstractName#scope() scope} set to the namespace,
- * while a <cite>qualified name</cite> can be a {@code ScopedName} in the global namespace.
- * In the later case, the prefix may be the name {@linkplain org.apache.sis.util.iso.DefaultScopedName#head() head}
- * or {@linkplain org.apache.sis.util.iso.DefaultScopedName#path() path}.</div>
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {
