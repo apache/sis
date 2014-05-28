@@ -26,7 +26,7 @@
  *       {@linkplain org.apache.sis.feature.DefaultAttributeType attributes},
  *       {@linkplain org.apache.sis.feature.DefaultOperation operations} or
  *       {@linkplain org.apache.sis.feature.DefaultAssociationRole associations to other features}
- *       (collectively called “{@linkplain org.apache.sis.feature.DefaultFeatureType#getProperties(boolean) properties}”
+ *       (collectively called “{@linkplain org.apache.sis.feature.DefaultFeatureType#getPropertyTypes(boolean) properties}”
  *       or “characteristics”) that a feature can have.</p>
  *
  *       <div class="note"><b>Analogy:</b> a {@code FeatureType} in a Spatial Information System is equivalent to a

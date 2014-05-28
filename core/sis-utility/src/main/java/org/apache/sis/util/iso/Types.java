@@ -19,7 +19,6 @@ package org.apache.sis.util.iso;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.SortedMap;
-import java.util.Collection;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -51,8 +50,6 @@ import org.apache.sis.internal.system.DefaultFactories;
  * This class provides:
  *
  * <ul>
- *   <li>{@link #toInternationalString(CharSequence)} and {@link #toGenericName(Object, NameFactory)}
- *       for creating name-related objects from various objects.</li>
  *   <li>{@link #getStandardName(Class)}, {@link #getListName(CodeList)} and {@link #getCodeName(CodeList)}
  *       for fetching ISO names if possible.</li>
  *   <li>{@link #getCodeTitle(CodeList)}, {@link #getDescription(CodeList)} and
@@ -63,7 +60,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.19)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class Types extends Static {
@@ -90,14 +87,15 @@ public final class Types extends Static {
     /**
      * Returns the ISO name for the given class, or {@code null} if none.
      * This method can be used for GeoAPI interfaces or {@link CodeList}.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li><code>getStandardName({@linkplain org.opengis.metadata.citation.Citation}.class)</code>
      *       (an interface) returns {@code "CI_Citation"}.</li>
      *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code>
      *       (a code list) returns {@code "CS_AxisDirection"}.</li>
      * </ul>
+     * </div>
      *
      * This method looks for the {@link UML} annotation on the given type. It does not search for
      * parent classes or interfaces if the given type is not directly annotated (i.e. {@code @UML}
@@ -132,13 +130,14 @@ public final class Types extends Static {
      * Returns the ISO classname (if available) or the Java classname (as a fallback)
      * of the given code. This method uses the {@link UML} annotation if it exists, or
      * fallback on the {@linkplain Class#getSimpleName() simple class name} otherwise.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code getListName(AxisDirection.NORTH)} returns {@code "CS_AxisDirection"}.</li>
      *   <li>{@code getListName(CharacterSet.UTF_8)} returns {@code "MD_CharacterSetCode"}.</li>
      *   <li>{@code getListName(ImagingCondition.BLURRED_IMAGE)} returns {@code "MD_ImagingConditionCode"}.</li>
      * </ul>
+     * </div>
      *
      * @param  code The code for which to get the class name, or {@code null}.
      * @return The ISO (preferred) or Java (fallback) class name, or {@code null} if the given code is null.
@@ -155,13 +154,14 @@ public final class Types extends Static {
     /**
      * Returns the ISO name (if available) or the Java name (as a fallback) of the given code.
      * If the code has no {@link UML} identifier, then the programmatic name is used as a fallback.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code getCodeName(AxisDirection.NORTH)} returns {@code "north"}.</li>
      *   <li>{@code getCodeName(CharacterSet.UTF_8)} returns {@code "utf8"}.</li>
      *   <li>{@code getCodeName(ImagingCondition.BLURRED_IMAGE)} returns {@code "blurredImage"}.</li>
      * </ul>
+     * </div>
      *
      * @param  code The code for which to get the name, or {@code null}.
      * @return The UML identifiers or programmatic name for the given code,
@@ -188,14 +188,15 @@ public final class Types extends Static {
      *
      * <p>The current heuristic implementation iterates over {@linkplain CodeList#names() all code names},
      * selects the longest one excluding the {@linkplain CodeList#name() field name} if possible, then
-     * {@linkplain CharSequences#camelCaseToSentence(CharSequence) makes a sentence} from that name.
-     * Examples:</p>
+     * {@linkplain CharSequences#camelCaseToSentence(CharSequence) makes a sentence} from that name.</p>
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code getCodeLabel(AxisDirection.NORTH)} returns {@code "North"}.</li>
      *   <li>{@code getCodeLabel(CharacterSet.UTF_8)} returns {@code "UTF-8"}.</li>
      *   <li>{@code getCodeLabel(ImagingCondition.BLURRED_IMAGE)} returns {@code "Blurred image"}.</li>
      * </ul>
+     * </div>
      *
      * @param  code The code from which to get a title, or {@code null}.
      * @return A unlocalized title for the given code, or {@code null} if the given code is null.
@@ -460,12 +461,13 @@ public final class Types extends Static {
      * Returns the GeoAPI interface for the given ISO name, or {@code null} if none.
      * The identifier argument shall be the value documented in the {@link UML#identifier()}
      * annotation associated with the GeoAPI interface.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code forStandardName("CI_Citation")}      returns <code>{@linkplain org.opengis.metadata.citation.Citation}.class</code></li>
      *   <li>{@code forStandardName("CS_AxisDirection")} returns <code>{@linkplain org.opengis.referencing.cs.AxisDirection}.class</code></li>
      * </ul>
+     * </div>
      *
      * Only identifiers for the stable part of GeoAPI are recognized. This method does not handle
      * the identifiers for the {@code geoapi-pending} module.
@@ -535,36 +537,7 @@ public final class Types extends Static {
         if (name == null || name.isEmpty()) {
             return null;
         }
-        // -------- Begin workaround for GeoAPI 3.0 (TODO: remove after upgrade to GeoAPI 3.1) ------------
-        final String typeName = codeType.getName();
-        try {
-            // Forces initialization of the given class in order
-            // to register its list of static final constants.
-            Class.forName(typeName, true, codeType.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new TypeNotPresentException(typeName, e); // Should never happen.
-        }
-        // -------- End workaround ------------------------------------------------------------------------
         return CodeList.valueOf(codeType, new CodeListFilter(name, canCreate));
-    }
-
-    /**
-     * Returns the given characters sequence as an international string. If the given sequence is
-     * null or an instance of {@link InternationalString}, this this method returns it unchanged.
-     * Otherwise, this method copies the {@link InternationalString#toString()} value in a new
-     * {@link SimpleInternationalString} instance and returns it.
-     *
-     * @param  string The characters sequence to convert, or {@code null}.
-     * @return The given sequence as an international string,
-     *         or {@code null} if the given sequence was null.
-     *
-     * @see DefaultNameFactory#createInternationalString(Map)
-     */
-    public static InternationalString toInternationalString(final CharSequence string) {
-        if (string == null || string instanceof InternationalString) {
-            return (InternationalString) string;
-        }
-        return new SimpleInternationalString(string.toString());
     }
 
     /**
@@ -676,11 +649,30 @@ public final class Types extends Static {
     }
 
     /**
+     * Returns the given characters sequence as an international string. If the given sequence is
+     * null or an instance of {@link InternationalString}, this this method returns it unchanged.
+     * Otherwise, this method copies the {@link InternationalString#toString()} value in a new
+     * {@link SimpleInternationalString} instance and returns it.
+     *
+     * @param  string The characters sequence to convert, or {@code null}.
+     * @return The given sequence as an international string,
+     *         or {@code null} if the given sequence was null.
+     *
+     * @see DefaultNameFactory#createInternationalString(Map)
+     */
+    public static InternationalString toInternationalString(final CharSequence string) {
+        if (string == null || string instanceof InternationalString) {
+            return (InternationalString) string;
+        }
+        return new SimpleInternationalString(string.toString());
+    }
+
+    /**
      * Returns the given array of {@code CharSequence}s as an array of {@code InternationalString}s.
      * If the given array is null or an instance of {@code InternationalString[]}, then this method
      * returns it unchanged. Otherwise a new array of type {@code InternationalString[]} is created
      * and every elements from the given array is copied or
-     * {@linkplain #toInternationalString(CharSequence) converted} in the new array.
+     * {@linkplain #toInternationalString(CharSequence) casted} in the new array.
      *
      * <p>If a defensive copy of the {@code strings} array is wanted, then the caller needs to check
      * if the returned array is the same instance than the one given in argument to this method.</p>
@@ -723,69 +715,17 @@ public final class Types extends Static {
      * @return The generic names, or {@code null} if the given {@code value} was null.
      *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
      * @throws ClassCastException if {@code value} can't be casted.
+     *
+     * @deprecated Moved to {@link DefaultNameFactory#toGenericNames(Object)}.
      */
+    @Deprecated
     public static GenericName[] toGenericNames(Object value, NameFactory factory) throws ClassCastException {
         if (value == null) {
             return null;
         }
-        if (factory == null) {
-            factory = DefaultFactories.NAMES;
+        if (!(factory instanceof DefaultNameFactory)) {
+            factory = DefaultFactories.SIS_NAMES;
         }
-        GenericName name = toGenericName(value, factory);
-        if (name != null) {
-            return new GenericName[] {
-                name
-            };
-        }
-        /*
-         * Above code checked for a singleton. Now check for a collection or an array.
-         */
-        final Object[] values;
-        if (value instanceof Object[]) {
-            values = (Object[]) value;
-            if (values instanceof GenericName[]) {
-                return (GenericName[]) values;
-            }
-        } else if (value instanceof Collection<?>) {
-            values = ((Collection<?>) value).toArray();
-        } else {
-            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
-                    "value", value.getClass()));
-        }
-        final GenericName[] names = new GenericName[values.length];
-        for (int i=0; i<values.length; i++) {
-            value = values[i];
-            if (value != null) {
-                name = toGenericName(value, factory);
-                if (name == null) {
-                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
-                            "value[" + i + ']', value.getClass()));
-                }
-                names[i] = name;
-            }
-        }
-        return names;
-    }
-
-    /**
-     * Creates a generic name from the given value. The value may be an instance of
-     * {@link GenericName}, {@link Identifier} or {@link CharSequence}. If the given
-     * object is not recognized, then this method returns {@code null}.
-     *
-     * @param  value The object to convert.
-     * @param  factory The factory to use for creating names.
-     * @return The converted object, or {@code null} if {@code value} is not convertible.
-     */
-    private static GenericName toGenericName(final Object value, final NameFactory factory) {
-        if (value instanceof GenericName) {
-            return (GenericName) value;
-        }
-        if (value instanceof Identifier) {
-            return factory.parseGenericName(null, ((Identifier) value).getCode());
-        }
-        if (value instanceof CharSequence) {
-            return factory.parseGenericName(null, (CharSequence) value);
-        }
-        return null;
+       return ((DefaultNameFactory) factory).toGenericNames(value);
     }
 }
