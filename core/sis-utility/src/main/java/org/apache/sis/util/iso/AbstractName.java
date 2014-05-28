@@ -36,24 +36,28 @@ import org.apache.sis.internal.jdk7.Objects;
 
 /**
  * Base class for sequence of identifiers rooted within the context of a {@linkplain DefaultNameSpace namespace}.
- * Names are <em>immutable</em>. They may be {@linkplain #toFullyQualifiedName() fully qualified}
- * like {@code "org.opengis.util.Record"}, or they may be relative to a {@linkplain #scope() scope}
- * like {@code "util.Record"} in the {@code "org.opengis"} scope.
- * See the {@linkplain GenericName GeoAPI javadoc} for an illustration.
+ * Names shall be <em>immutable</em> and thread-safe. A name can be local to a namespace.
+ * See the {@linkplain org.apache.sis.util.iso package javadoc} for an illustration of name anatomy.
  *
- * <p>Subclasses need only to implement the following methods:</p>
- * <ul>
- *   <li>{@link #scope()}</li>
- *   <li>{@link #getParsedNames()}</li>
- * </ul>
+ * <p>The easiest way to create a name is to use the {@link Names#createLocalName(CharSequence, CharSequence)}
+ * convenience static method. That method supports the common case where the name is made only of a
+ * (<var>namespace</var>, <var>local part</var>) pair of strings. However generic names allows finer grain.
+ * For example the above-cited strings can both be split into smaller name components.
+ * If such finer grain control is desired, {@link DefaultNameFactory} can be used instead of {@link Names}.</p>
  *
  * {@section <code>Comparable</code> ordering}
  * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
  * See {@link #compareTo(GenericName)} for more information.
  *
- * {@section Immutability and thread safety}
- * This base class is immutable and thread-safe. Subclasses shall make sure that any overridden methods
- * remain safe to call from multiple threads and do not change any public {@code GenericName} state.
+ * {@section Note for implemetors}
+ * Subclasses need only to implement the following methods:
+ * <ul>
+ *   <li>{@link #scope()}</li>
+ *   <li>{@link #getParsedNames()}</li>
+ * </ul>
+ *
+ * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads
+ * and do not change any public {@code GenericName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)

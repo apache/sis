@@ -787,7 +787,7 @@ final class MetadataReader {
         String name = variable.getName();
         if (name != null && !(name = name.trim()).isEmpty()) {
             if (nameFactory == null) {
-                nameFactory = DefaultFactories.NAMES;
+                nameFactory = DefaultFactories.NAMES; // Real dependency injection to be used in a future version.
             }
             band.setSequenceIdentifier(nameFactory.createMemberName(null, name,
                     nameFactory.createTypeName(null, variable.getDataTypeName())));

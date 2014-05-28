@@ -168,7 +168,7 @@ header: for (int i=0; ; i++) {
          * Done writing the header. Now write all property rows.
          * Rows without value will be skipped only if optional.
          */
-        for (final AbstractIdentifiedType propertyType : featureType.getProperties(true)) {
+        for (final AbstractIdentifiedType propertyType : featureType.getPropertyTypes(true)) {
             Object value;
             if (feature != null) {
                 value = feature.getPropertyValue(propertyType.getName().toString());
@@ -207,7 +207,7 @@ header: for (int i=0; ; i++) {
                 valueType     = toString(pt.getValueType().getName());
                 valueClass    = AbstractFeature.class;
             } else if (propertyType instanceof DefaultOperation) {
-                final DefaultAttributeType<?> resultType = ((DefaultOperation) propertyType).getResult();
+                final AbstractIdentifiedType resultType = ((DefaultOperation) propertyType).getResult();
                 valueType   = toString(resultType.getName());
                 valueClass  = null;
                 minimumOccurs = -1;

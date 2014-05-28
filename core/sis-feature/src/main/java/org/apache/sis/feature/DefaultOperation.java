@@ -62,7 +62,7 @@ public class DefaultOperation extends PropertyType {
     /**
      * The type of the result, or {@code null} if none.
      */
-    private final DefaultAttributeType<?> result;
+    private final AbstractIdentifiedType result;
 
     /**
      * Constructs an operation from the given properties. The identification map is given unchanged to
@@ -73,7 +73,7 @@ public class DefaultOperation extends PropertyType {
      * @param result         The type of the result, or {@code null} if none.
      */
     public DefaultOperation(final Map<String,?> identification,
-            final ParameterDescriptorGroup parameters, final DefaultAttributeType<?> result)
+            final ParameterDescriptorGroup parameters, final AbstractIdentifiedType result)
     {
         super(identification);
         ArgumentChecks.ensureNonNull("parameters", parameters);
@@ -95,7 +95,7 @@ public class DefaultOperation extends PropertyType {
      *
      * @return The type of the result, or {@code null} if none.
      */
-    public DefaultAttributeType<?> getResult() {
+    public AbstractIdentifiedType getResult() {
         return result;
     }
 
