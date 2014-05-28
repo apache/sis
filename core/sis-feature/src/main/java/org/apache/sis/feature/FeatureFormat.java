@@ -188,7 +188,7 @@ header: for (int i=0; ; i++) {
          * Done writing the header. Now write all property rows.
          * Rows without value will be skipped only if optional.
          */
-        for (final PropertyType propertyType : featureType.getProperties(true)) {
+        for (final PropertyType propertyType : featureType.getPropertyTypes(true)) {
             Object value;
             if (feature != null) {
                 value = feature.getPropertyValue(propertyType.getName().toString());
