@@ -29,8 +29,9 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.iso.Types;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -64,7 +65,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 abstract class StringConverter<T> extends SystemConverter<String, T> {
@@ -297,6 +298,16 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         @Override java.net.URL doConvert(String source) throws MalformedURLException {
             return new java.net.URL(source);
+        }
+    }
+
+    public static final class Unit extends StringConverter<javax.measure.unit.Unit<?>> {
+        private static final long serialVersionUID = -1809497218136016210L;
+        @SuppressWarnings("unchecked")
+        public Unit() {super((Class) javax.measure.unit.Unit.class);} // Instantiated by ServiceLoader.
+
+        @Override javax.measure.unit.Unit<?> doConvert(String source) throws IllegalArgumentException {
+            return Units.valueOf(source);
         }
     }
 

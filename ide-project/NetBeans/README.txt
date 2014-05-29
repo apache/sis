@@ -11,9 +11,9 @@ source code. The recommended installation steps is as below (from the root
 directory of all SIS-related projects):
 
   mkdir SIS
-  svn checkout https://svn.apache.org/repos/asf/sis/branches/JDK7 SIS/JDK7
+  svn checkout http://svn.apache.org/repos/asf/sis/branches/JDK7 SIS/JDK7
   mkdir GeoAPI
-  svn checkout https://desruisseaux@svn.code.sf.net/p/geoapi/code/trunk GeoAPI/trunk
+  svn checkout http://svn.code.sf.net/p/geoapi/code/trunk GeoAPI/trunk
 
 Above commands should create the following directory structure:
 
