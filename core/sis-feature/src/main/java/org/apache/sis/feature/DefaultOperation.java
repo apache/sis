@@ -27,8 +27,7 @@ import org.apache.sis.util.Debug;
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 import org.opengis.feature.IdentifiedType;
-import org.opengis.feature.PropertyType;
-import org.opengis.feature.AttributeType;
+import org.opengis.feature.Operation;
 
 
 /**
@@ -51,7 +50,7 @@ import org.opengis.feature.AttributeType;
  * @version 0.5
  * @module
  */
-public class DefaultOperation extends AbstractIdentifiedType implements PropertyType {
+public class DefaultOperation extends AbstractIdentifiedType implements Operation {
     /**
      * For cross-version compatibility.
      */
@@ -89,6 +88,7 @@ public class DefaultOperation extends AbstractIdentifiedType implements Property
      *
      * @return Description of the input parameters.
      */
+    @Override
     public ParameterDescriptorGroup getParameters() {
         return parameters;
     }
@@ -98,6 +98,7 @@ public class DefaultOperation extends AbstractIdentifiedType implements Property
      *
      * @return The type of the result, or {@code null} if none.
      */
+    @Override
     public IdentifiedType getResult() {
         return result;
     }

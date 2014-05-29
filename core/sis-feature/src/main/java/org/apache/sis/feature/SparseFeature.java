@@ -25,6 +25,10 @@ import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
 
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.FeatureType;
+
 
 /**
  * A feature in which only a small fraction of properties are expected to be provided. This implementation uses
@@ -89,7 +93,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      *
      * @param type Information about the feature (name, characteristics, <i>etc.</i>).
      */
-    public SparseFeature(final DefaultFeatureType type) {
+    public SparseFeature(final FeatureType type) {
         super(type);
         properties = new HashMap<String, Object>();
     }
@@ -248,8 +252,8 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     public DataQuality quality() {
         if (valuesKind == VALUES) {
             final Validator v = new Validator(ScopeCode.FEATURE);
-            for (final String name : type.indices().keySet()) {
-                v.validateAny(getPropertyType(name), properties.get(name));
+            for (final PropertyType pt : type.getProperties(true)) {
+                v.validateAny(pt, properties.get(pt.getName().toString()));
             }
             return v.quality;
         }

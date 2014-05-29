@@ -16,8 +16,9 @@
  */
 package org.apache.sis.feature;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
@@ -55,7 +56,7 @@ final class SingletonAssociation extends AbstractAssociation implements Cloneabl
      *
      * @param role Information about the association.
      */
-    public SingletonAssociation(final DefaultAssociationRole role) {
+    public SingletonAssociation(final FeatureAssociationRole role) {
         super(role);
         assert isSingleton(role.getMaximumOccurs());
     }
@@ -66,7 +67,7 @@ final class SingletonAssociation extends AbstractAssociation implements Cloneabl
      * @param role  Information about the association.
      * @param value The initial value (may be {@code null}).
      */
-    SingletonAssociation(final DefaultAssociationRole role, final AbstractFeature value) {
+    SingletonAssociation(final FeatureAssociationRole role, final AbstractFeature value) {
         super(role);
         assert isSingleton(role.getMaximumOccurs());
         this.value = value;

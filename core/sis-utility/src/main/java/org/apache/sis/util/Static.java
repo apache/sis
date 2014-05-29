@@ -47,16 +47,16 @@ package org.apache.sis.util;
  * <tr><td>{@link org.apache.sis.math.DecimalFunctions}</td>
  *     <td>Mathematical methods related to base 10 representation of numbers.</td></tr>
  * <tr><td>{@link org.apache.sis.referencing.operation.matrix.Matrices}</td>
- *     <td>Creates and compares {@link org.opengis.referencing.operation.Matrix} objects</td></tr>
+ *     <td>Create and compare {@link org.opengis.referencing.operation.Matrix} objects</td></tr>
  * <tr><td>{@link org.apache.sis.measure.Units}</td>
  *     <td>Get a {@linkplain javax.measure.unit.Unit unit} from a symbol or EPSG code,
  *         and test if a unit is angular, linear or temporal.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">OGC/ISO objects (metadata, referencing, geometries)</th></tr>
  * <tr><td>{@link org.apache.sis.util.iso.Types}</td>
- *     <td>Provide UML identifier and description for GeoAPI types.</td></tr>
+ *     <td>UML identifier and description for GeoAPI types.</td></tr>
  * <tr><td>{@link org.apache.sis.util.iso.Names}</td>
- *     <td>Convenience methods for creating, parsing and formatting {@linkplain org.opengis.util.GenericName} objects.</td></tr>
+ *     <td>Simple creation and operations on {@link org.opengis.util.GenericName} objects.</td></tr>
  * <tr><td>{@link org.apache.sis.metadata.iso.citation.Citations}</td>
  *     <td>Pre-defined {@link org.opengis.metadata.citation.Citation}
  *         and methods for comparing against titles or identifiers.</td></tr>
@@ -94,7 +94,7 @@ package org.apache.sis.util;
  *
  * <tr><th colspan="2" class="hsep">Factories</th></tr>
  * <tr><td>{@link ObjectConverters}</td>
- *     <td>Creates {@link ObjectConverter} instances, or collection views using object converters.</td></tr>
+ *     <td>Create {@link ObjectConverter} instances, or collection views using object converters.</td></tr>
  * </table>
  *
  * @author Martin Desruisseaux (Geomatys)
