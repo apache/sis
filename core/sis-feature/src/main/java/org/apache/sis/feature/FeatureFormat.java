@@ -37,6 +37,7 @@ import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
@@ -222,8 +223,8 @@ header: for (int i=0; ; i++) {
                 valueClass    = pt.getValueClass();
                 valueType     = getFormat(Class.class).format(valueClass, buffer, dummyFP).toString();
                 buffer.setLength(0);
-            } else if (propertyType instanceof DefaultAssociationRole) {
-                final DefaultAssociationRole pt = (DefaultAssociationRole) propertyType;
+            } else if (propertyType instanceof FeatureAssociationRole) {
+                final FeatureAssociationRole pt = (FeatureAssociationRole) propertyType;
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
                 valueType     = toString(pt.getValueType().getName());
@@ -264,11 +265,15 @@ header: for (int i=0; ; i++) {
                     value = format.format(value, buffer, dummyFP);
                 } else if (value instanceof InternationalString) {
                     value = ((InternationalString) value).toString(displayLocale);
-                } else if (value instanceof AbstractFeature && propertyType instanceof DefaultAssociationRole) {
-                    value = ((AbstractFeature) value).getPropertyValue(
-                            ((DefaultAssociationRole) propertyType).getTitleProperty());
+                } else if (value instanceof AbstractFeature && propertyType instanceof FeatureAssociationRole) {
+                    final String p = DefaultAssociationRole.getTitleProperty((FeatureAssociationRole) propertyType);
+                    if (p != null) {
+                        value = ((AbstractFeature) value).getPropertyValue(p);
+                    }
                 }
-                table.append(value.toString());
+                if (value != null) {
+                    table.append(value.toString());
+                }
                 buffer.setLength(0);
             }
             table.nextLine();

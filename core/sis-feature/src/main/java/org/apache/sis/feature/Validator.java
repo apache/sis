@@ -35,6 +35,7 @@ import org.apache.sis.util.resources.Errors;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
@@ -116,9 +117,9 @@ final class Validator {
             validate((AttributeType<?>) type, asList(value,
                     ((AttributeType<?>) type).getMaximumOccurs()));
         }
-        if (type instanceof DefaultAssociationRole) {
-            validate((DefaultAssociationRole) type, asList(value,
-                    ((DefaultAssociationRole) type).getMaximumOccurs()));
+        if (type instanceof FeatureAssociationRole) {
+            validate((FeatureAssociationRole) type, asList(value,
+                    ((FeatureAssociationRole) type).getMaximumOccurs()));
         }
     }
 
@@ -145,7 +146,7 @@ final class Validator {
     /**
      * Verifies if the given value is valid for the given association role.
      */
-    void validate(final DefaultAssociationRole role, final Collection<?> values) {
+    void validate(final FeatureAssociationRole role, final Collection<?> values) {
         AbstractElement report = null;
         for (final Object value : values) {
             final FeatureType type = ((AbstractFeature) value).getType();

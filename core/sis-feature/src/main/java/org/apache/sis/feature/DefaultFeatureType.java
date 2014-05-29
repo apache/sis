@@ -40,6 +40,7 @@ import java.util.Objects;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
@@ -500,12 +501,12 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                     return false;
                 }
             }
-            if (base instanceof DefaultAssociationRole) {
-                if (!(other instanceof DefaultAssociationRole)) {
+            if (base instanceof FeatureAssociationRole) {
+                if (!(other instanceof FeatureAssociationRole)) {
                     return false;
                 }
-                final DefaultAssociationRole p0 = (DefaultAssociationRole) base;
-                final DefaultAssociationRole p1 = (DefaultAssociationRole) other;
+                final FeatureAssociationRole p0 = (FeatureAssociationRole) base;
+                final FeatureAssociationRole p1 = (FeatureAssociationRole) other;
                 if (p0.getMinimumOccurs() > p1.getMinimumOccurs() ||
                     p0.getMaximumOccurs() < p1.getMaximumOccurs())
                 {

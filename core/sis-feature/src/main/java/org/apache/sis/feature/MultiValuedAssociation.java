@@ -23,6 +23,7 @@ import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
@@ -63,7 +64,7 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
      *
      * @param role Information about the association.
      */
-    public MultiValuedAssociation(final DefaultAssociationRole role) {
+    public MultiValuedAssociation(final FeatureAssociationRole role) {
         super(role);
         values = new CheckedArrayList<>(AbstractFeature.class);
     }
@@ -74,7 +75,7 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
      * @param role   Information about the association.
      * @param values The initial values, or {@code null} for initializing to an empty list.
      */
-    MultiValuedAssociation(final DefaultAssociationRole role, final Object values) {
+    MultiValuedAssociation(final FeatureAssociationRole role, final Object values) {
         super(role);
         if (values == null) {
             this.values = new CheckedArrayList<>(AbstractFeature.class);
