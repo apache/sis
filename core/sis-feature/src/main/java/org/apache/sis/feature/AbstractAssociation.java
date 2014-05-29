@@ -186,7 +186,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * expecting the given base type.
      */
     final void ensureValid(final DefaultFeatureType base, final DefaultFeatureType type) {
-        if (base != type && !base.maybeAssignableFrom(type)) {
+        if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
             throw new IllegalArgumentException(
                     Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
         }
@@ -222,7 +222,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     @Debug
     @Override
     public String toString() {
-        final String pt = role.getTitleProperty();
+        final String pt = DefaultAssociationRole.getTitleProperty(role);
         final Iterator<AbstractFeature> it = getValues().iterator();
         return FieldType.toString("FeatureAssociation", role, role.getValueType().getName(), new Iterator<Object>() {
             @Override public boolean hasNext() {

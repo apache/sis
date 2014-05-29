@@ -77,7 +77,7 @@ final class Validator {
      * @return The {@code report}, or a new report if {@code report} was null.
      */
     private AbstractElement addViolationReport(AbstractElement report,
-            final PropertyType type, final InternationalString explanation)
+            final AbstractIdentifiedType type, final InternationalString explanation)
     {
         if (report == null) {
             final GenericName name = type.getName();
@@ -106,7 +106,7 @@ final class Validator {
      * Verifies if the given value is valid for the given attribute type.
      * This method delegates to one of the {@code validate(…)} methods depending of the value type.
      */
-    void validateAny(final PropertyType type, final Object value) {
+    void validateAny(final AbstractIdentifiedType type, final Object value) {
         if (type instanceof DefaultAttributeType<?>) {
             validate((DefaultAttributeType<?>) type, asList(value,
                     ((DefaultAttributeType<?>) type).getMaximumOccurs()));
@@ -158,7 +158,7 @@ final class Validator {
      *
      * @param report Where to add the result, or {@code null} if not yet created.
      */
-    private void verifyCardinality(final AbstractElement report, final PropertyType type,
+    private void verifyCardinality(final AbstractElement report, final AbstractIdentifiedType type,
             final int minimumOccurs, final int maximumOccurs, final int count)
     {
         if (count < minimumOccurs) {

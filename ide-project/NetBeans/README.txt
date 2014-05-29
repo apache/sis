@@ -4,6 +4,37 @@ not a replacement for the Maven build.
 
 
 ==============================================================================
+Installation
+==============================================================================
+The configuration provided in this directory requires a checkout of GeoAPI
+source code. The recommended installation steps is as below (from the root
+directory of all SIS-related projects):
+
+  mkdir SIS
+  svn checkout http://svn.apache.org/repos/asf/sis/trunk SIS/trunk
+  mkdir GeoAPI
+  svn checkout http://svn.code.sf.net/p/geoapi/code/trunk GeoAPI/trunk
+
+Above commands should create the following directory structure:
+
+  +-- GeoAPI
+  |   +-- trunk
+  |       +-- README.txt
+  |       +-- etc...
+  +-- SIS
+      +-- trunk
+          +-- README
+          +-- etc...
+
+If a different directory layout is desired, this is possible provided that
+the following line is added to "nbproject/private/private.properties" file:
+
+  project.GeoAPI = <path to your GeoAPI checkout>/ide-project/NetBeans
+
+
+
+
+==============================================================================
 Recommendations for NetBeans project configuration changes
 ==============================================================================
 There is 3 important files that should be edited BY HAND for preserving user-

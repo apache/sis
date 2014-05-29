@@ -110,21 +110,6 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Returns the type for the property of the given name.
-     *
-     * @param  name The property name.
-     * @return The type for the property of the given name (never {@code null}).
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
-     */
-    final PropertyType getPropertyType(final String name) throws IllegalArgumentException {
-        final PropertyType pt = type.getProperty(name);
-        if (pt != null) {
-            return pt;
-        }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
-    }
-
-    /**
      * Returns the property (attribute, operation or association) of the given name.
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
@@ -149,13 +134,13 @@ public abstract class AbstractFeature implements Serializable {
      * <ul>
      *   <li>It must be non-null.</li>
      *   <li>Its {@linkplain Property#getName() name} shall be the name of the property to set in this feature.</li>
-     *   <li>Its type shall be the same instance than the {@linkplain AbstractFeature#getPropertyType(String)
+     *   <li>Its type shall be the same instance than the {@linkplain DefaultFeatureType#getProperty(String)
      *       property type} defined by the feature type for the above name.
      *       In other words, the following condition shall hold:</li>
      * </ul>
      *
      * {@preformat java
-     *     assert property.getType() == getType().getPropertyType(property.getName());
+     *     assert property.getType() == getType().getProperty(property.getName());
      * }
      *
      * <div class="note"><b>Note:</b> This method is useful for storing non-default {@code Attribute} or
@@ -183,7 +168,7 @@ public abstract class AbstractFeature implements Serializable {
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     final Property createProperty(final String name, final Object value) {
-        final PropertyType pt = getPropertyType(name);
+        final AbstractIdentifiedType pt = type.getProperty(name);
         if (pt instanceof DefaultAttributeType<?>) {
             return AbstractAttribute.create((DefaultAttributeType<?>) pt, value);
         } else if (pt instanceof DefaultAssociationRole) {
@@ -203,7 +188,7 @@ public abstract class AbstractFeature implements Serializable {
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     final Property createProperty(final String name) throws IllegalArgumentException {
-        final PropertyType pt = getPropertyType(name);
+        final AbstractIdentifiedType pt = type.getProperty(name);
         if (pt instanceof DefaultAttributeType<?>) {
             return AbstractAttribute.create((DefaultAttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
@@ -222,7 +207,7 @@ public abstract class AbstractFeature implements Serializable {
      * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
      */
     final Object getDefaultValue(final String name) throws IllegalArgumentException {
-        final PropertyType pt = getPropertyType(name);
+        final AbstractIdentifiedType pt = type.getProperty(name);
         if (pt instanceof DefaultAttributeType<?>) {
             return getDefaultValue((DefaultAttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
@@ -359,7 +344,7 @@ public abstract class AbstractFeature implements Serializable {
             final DefaultFeatureType base = role.getValueType();
             if (value instanceof AbstractFeature) {
                 final DefaultFeatureType actual = ((AbstractFeature) value).getType();
-                if (!base.maybeAssignableFrom(actual)) {
+                if (base != actual && !DefaultFeatureType.maybeAssignableFrom(base, actual)) {
                     throw illegalPropertyType(role.getName(), actual.getName());
                 }
             } else if (value instanceof Collection<?>) {
@@ -402,15 +387,15 @@ public abstract class AbstractFeature implements Serializable {
      * @param property The property to verify.
      */
     final void verifyPropertyType(final String name, final Property property) {
-        final PropertyType type, base = getPropertyType(name);
+        final AbstractIdentifiedType pt, base = type.getProperty(name);
         if (property instanceof AbstractAttribute<?>) {
-            type = ((AbstractAttribute<?>) property).getType();
+            pt = ((AbstractAttribute<?>) property).getType();
         } else if (property instanceof AbstractAssociation) {
-            type = ((AbstractAssociation) property).getRole();
+            pt = ((AbstractAssociation) property).getRole();
         } else {
             throw illegalPropertyType(base.getName(), property.getClass());
         }
-        if (type != base) {
+        if (pt != base) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, name));
         }
     }
@@ -420,7 +405,7 @@ public abstract class AbstractFeature implements Serializable {
      * to store. The returned value is usually the same than the given one, except in the case of collections.
      */
     final Object verifyPropertyValue(final String name, final Object value) {
-        final PropertyType pt = getPropertyType(name);
+        final AbstractIdentifiedType pt = type.getProperty(name);
         if (pt instanceof DefaultAttributeType<?>) {
             if (value != null) {
                 return verifyAttributeValue((DefaultAttributeType<?>) pt, value);
@@ -475,7 +460,8 @@ public abstract class AbstractFeature implements Serializable {
              * Then wrap it in a list of 1 element if this property is multi-valued.
              */
             final DefaultFeatureType valueType = ((AbstractFeature) value).getType();
-            if (role.getValueType().maybeAssignableFrom(valueType)) {
+            final DefaultFeatureType base = role.getValueType();
+            if (base != valueType && DefaultFeatureType.maybeAssignableFrom(base, valueType)) {
                 return isSingleton ? value : singletonList(AbstractFeature.class, role.getMinimumOccurs(), value);
             } else {
                 throw illegalPropertyType(role.getName(), valueType.getName());
@@ -500,7 +486,7 @@ public abstract class AbstractFeature implements Serializable {
                 throw illegalValueClass(role.getName(), value);
             }
             final DefaultFeatureType type = ((AbstractFeature) value).getType();
-            if (!base.maybeAssignableFrom(type)) {
+            if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
                 throw illegalPropertyType(role.getName(), type.getName());
             }
             index++;
@@ -593,8 +579,8 @@ public abstract class AbstractFeature implements Serializable {
      */
     public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.FEATURE);
-        for (final String name : type.indices().keySet()) {
-            final Property property = (Property) getProperty(name);
+        for (final AbstractIdentifiedType pt : type.getProperties(true)) {
+            final Property property = (Property) getProperty(pt.getName().toString());
             final DataQuality quality;
             if (property instanceof AbstractAttribute<?>) {
                 quality = ((AbstractAttribute<?>) property).quality();

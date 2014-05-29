@@ -132,24 +132,36 @@ public class DefaultAssociationRole extends FieldType {
 
     /**
      * Returns the name of the property to use as a title for the associated feature, or {@code null} if none.
-     * This method search for the first attribute having a value class assignable to {@link CharSequence}.
+     * This method searches for the first attribute having a value class assignable to {@link CharSequence}.
+     *
+     * <p><b>API note:</b> a non-static method would be more elegant in this "SIS for GeoAPI 3.0" branch.
+     * However this method needs to be static in other SIS branches, because they work with interfaces
+     * rather than SIS implementation. We keep the method static in this branch too for easier merges.</p>
      */
-    final String getTitleProperty() {
-        String p = titleProperty; // No synchronization - not a big deal if computed twice.
-        if (p == null) {
-            p = "";
-            for (final AbstractIdentifiedType type : valueType.getPropertyTypes(true)) {
-                if (type instanceof DefaultAttributeType<?>) {
-                    final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) type;
-                    if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {
-                        p = pt.getName().toString();
-                        break;
-                    }
+    static String getTitleProperty(final DefaultAssociationRole role) {
+        String p = role.titleProperty; // No synchronization - not a big deal if computed twice.
+        if (p != null) {
+            return p.isEmpty() ? null : p;
+        }
+        p = searchTitleProperty(role);
+        role.titleProperty = (p != null) ? p : "";
+        return p;
+    }
+
+    /**
+     * Implementation of {@link #getTitleProperty(FeatureAssociationRole)} for first search,
+     * or for non-SIS {@code FeatureAssociationRole} implementations.
+     */
+    private static String searchTitleProperty(final DefaultAssociationRole role) {
+        for (final AbstractIdentifiedType type : role.getValueType().getProperties(true)) {
+            if (type instanceof DefaultAttributeType<?>) {
+                final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) type;
+                if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {
+                    return pt.getName().toString();
                 }
             }
-            titleProperty = p;
         }
-        return p.isEmpty() ? null : p;
+        return null;
     }
 
     /**

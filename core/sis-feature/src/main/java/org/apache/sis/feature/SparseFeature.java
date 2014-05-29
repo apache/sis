@@ -248,8 +248,8 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     public DataQuality quality() {
         if (valuesKind == VALUES) {
             final Validator v = new Validator(ScopeCode.FEATURE);
-            for (final String name : type.indices().keySet()) {
-                v.validateAny(getPropertyType(name), properties.get(name));
+            for (final AbstractIdentifiedType pt : type.getProperties(true)) {
+                v.validateAny(pt, properties.get(pt.getName().toString()));
             }
             return v.quality;
         }

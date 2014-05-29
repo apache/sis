@@ -40,8 +40,8 @@
  *   </li>
  *   <li>Static utility methods:
  *     <ul>
- *       <li>{@link org.apache.sis.util.iso.Types} for working with UML identifiers of GeoAPI types.</li>
- *       <li>{@link org.apache.sis.util.iso.Names} for simple operations on {@code GenericName}.</li>
+ *       <li>{@link org.apache.sis.util.iso.Types} for working with UML identifiers and description of GeoAPI types.</li>
+ *       <li>{@link org.apache.sis.util.iso.Names} for simple creation and operations on {@code GenericName}.</li>
  *     </ul>
  *   </li>
  * </ul>

@@ -25,6 +25,8 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
+import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.apache.sis.measure.Angle;
@@ -272,9 +274,19 @@ public final strictfp class StringConverterTest extends TestCase {
      * @throws MalformedURLException Should never happen.
      */
     @Test
-    public void testURL() throws MalformedURLException  {
+    public void testURL() throws MalformedURLException {
         final ObjectConverter<String,URL> c = new StringConverter.URL();
         runInvertibleConversion(c, "file:/home/user/index.txt", new URL("file:/home/user/index.txt"));
+        assertSerializedEquals(c);
+    }
+
+    /**
+     * Tests conversions to {@link Unit}.
+     */
+    @Test
+    public void testUnit() {
+        final ObjectConverter<String,Unit<?>> c = new StringConverter.Unit();
+        runInvertibleConversion(c, "km", SI.KILOMETRE);
         assertSerializedEquals(c);
     }
 

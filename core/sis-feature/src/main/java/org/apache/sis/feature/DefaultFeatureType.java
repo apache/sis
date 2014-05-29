@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
@@ -56,7 +55,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
  * {@section Properties and inheritance}
- * Each feature type can provide descriptions for the following {@link #getPropertyTypes(boolean) properties}:
+ * Each feature type can provide descriptions for the following {@linkplain #getProperties(boolean) properties}:
  *
  * <ul>
  *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
@@ -133,17 +132,17 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * Any feature operation, any feature attribute type and any feature association role
      * that carries characteristics of a feature type.
      *
-     * @see #getPropertyTypes(boolean)
+     * @see #getProperties(boolean)
      */
-    private final List<PropertyType> properties;
+    private final List<AbstractIdentifiedType> properties;
 
     /**
      * All properties, including the ones declared in the super-types.
      * This is an unmodifiable view of the {@link #byName} values.
      *
-     * @see #getPropertyTypes(boolean)
+     * @see #getProperties(boolean)
      */
-    private transient Collection<PropertyType> allProperties;
+    private transient Collection<AbstractIdentifiedType> allProperties;
 
     /**
      * A lookup table for fetching properties by name, including the properties from super-types.
@@ -151,7 +150,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      *
      * @see #getProperty(String)
      */
-    private transient Map<String, PropertyType> byName;
+    private transient Map<String, AbstractIdentifiedType> byName;
 
     /**
      * Indices of properties in an array of properties similar to {@link #properties},
@@ -218,8 +217,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
                           CollectionsExt.<DefaultFeatureType>immutableSet(true, superTypes);
         switch (properties.length) {
             case 0:  this.properties = Collections.emptyList(); break;
-            case 1:  this.properties = Collections.singletonList((PropertyType) properties[0]); break; // There is no cast on other SIS branches.
-            default: this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(properties, properties.length, PropertyType[].class)); break;
+            case 1:  this.properties = Collections.singletonList(properties[0]); break;
+            default: this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(properties, properties.length, AbstractIdentifiedType[].class)); break;
         }
         computeTransientFields();
     }
@@ -245,7 +244,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      */
     private void computeTransientFields() {
         final int capacity = Containers.hashMapCapacity(properties.size());
-        byName       = new LinkedHashMap<String,PropertyType>(capacity);
+        byName       = new LinkedHashMap<String,AbstractIdentifiedType>(capacity);
         indices      = new LinkedHashMap<String,Integer>(capacity);
         assignableTo = new HashSet<GenericName>(4);
         assignableTo.add(getName());
@@ -263,9 +262,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
          */
         isSimple = true;
         int mandatory = 0; // Count of mandatory properties.
-        for (final Map.Entry<String,PropertyType> entry : byName.entrySet()) {
+        for (final Map.Entry<String,AbstractIdentifiedType> entry : byName.entrySet()) {
             final int minimumOccurs, maximumOccurs;
-            final PropertyType property = entry.getValue();
+            final AbstractIdentifiedType property = entry.getValue();
             if (property instanceof DefaultAttributeType<?>) { // Other SIS branches check for AttributeType instead.
                 minimumOccurs = ((DefaultAttributeType<?>) property).getMinimumOccurs();
                 maximumOccurs = ((DefaultAttributeType<?>) property).getMaximumOccurs();
@@ -327,21 +326,16 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
             }
         }
         int index = -1;
-        Map<DefaultFeatureType,Boolean> done = null;
-        for (final PropertyType property : source.properties) {
+        for (final AbstractIdentifiedType property : source.getProperties(false)) {
             ArgumentChecks.ensureNonNullElement("properties", ++index, property);
             final String name = toString(property.getName(), source, index);
-            final PropertyType previous = byName.put(name, property);
+            final AbstractIdentifiedType previous = byName.put(name, property);
             if (previous != null) {
-                if (done == null) {
-                    done = new IdentityHashMap<DefaultFeatureType,Boolean>(4); // Guard against infinite recursivity.
-                }
-                if (!isAssignableIgnoreName(previous, property, done)) {
-                    final GenericName owner = ownerOf(previous);
+                if (!isAssignableIgnoreName(previous, property)) {
+                    final GenericName owner = ownerOf(this, previous);
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyAlreadyExists_2,
                             (owner != null) ? owner : "?", name));
                 }
-                done.clear();
             }
         }
     }
@@ -350,13 +344,17 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * Returns the name of the feature which defines the given property, or {@code null} if not found.
      * This method is for information purpose when producing an error message - its implementation does
      * not need to be efficient.
+     *
+     * <p><b>API note:</b> a non-static method would be more elegant in this "SIS for GeoAPI 3.0" branch.
+     * However this method needs to be static in other SIS branches, because they work with interfaces
+     * rather than SIS implementation. We keep the method static in this branch too for easier merges.</p>
      */
-    private GenericName ownerOf(final PropertyType property) {
-        if (properties.contains(property)) {
-            return getName();
+    private static GenericName ownerOf(final DefaultFeatureType type, final AbstractIdentifiedType property) {
+        if (type.getProperties(false).contains(property)) {
+            return type.getName();
         }
-        for (final DefaultFeatureType type : superTypes) {
-            final GenericName owner = type.ownerOf(property);
+        for (final DefaultFeatureType superType : type.getSuperTypes()) {
+            final GenericName owner = ownerOf(superType, property);
             if (owner != null) {
                 return owner;
             }
@@ -422,11 +420,17 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     }
 
     /**
-     * Returns {@code true} if this type may be the same or a super-type of the given type, using only
-     * the name as a criterion. This is a faster check than {@link #isAssignableFrom(DefaultFeatureType)}
+     * Returns {@code true} if the given base type may be the same or a super-type of the given type, using only
+     * the name as a criterion. This is a faster check than {@link #isAssignableFrom(DefaultFeatureType)}.
+     *
+     * <p>Performance note: callers should verify that {@code base != type} before to invoke this method.</p>
+     *
+     * <p><b>API note:</b> a non-static method would be more elegant in this "SIS for GeoAPI 3.0" branch.
+     * However this method needs to be static in other SIS branches, because they work with interfaces
+     * rather than SIS implementation. We keep the method static in this branch too for easier merges.</p>
      */
-    final boolean maybeAssignableFrom(final DefaultFeatureType type) {
-        return type.assignableTo.contains(getName());
+    static boolean maybeAssignableFrom(final DefaultFeatureType base, final DefaultFeatureType type) {
+        return type.assignableTo.contains(base.getName());
     }
 
     /**
@@ -447,28 +451,29 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
             return true; // Optimization for a common case.
         }
         ArgumentChecks.ensureNonNull("type", type);
-        return maybeAssignableFrom(type) && isAssignableIgnoreName(type,
-                new IdentityHashMap<DefaultFeatureType,Boolean>(4));
-    }
-
-    /**
-     * Return {@code true} if all properties in this type are also properties in the given type.
-     * This method does not compare the names — this verification is presumed already done by the caller.
-     *
-     * @param type The type to check.
-     * @param done An initially empty map to be used for avoiding infinite recursivity.
-     */
-    private boolean isAssignableIgnoreName(final DefaultFeatureType type, final Map<DefaultFeatureType,Boolean> done) {
-        if (done.put(this, Boolean.TRUE) == null) {
-            /*
-             * Ensures that all properties defined in this feature type is also defined
-             * in the given property, and that the former is assignable from the later.
-             */
-            for (final Map.Entry<String, PropertyType> entry : byName.entrySet()) {
-                final PropertyType other = type.getProperty(entry.getKey());
-                if (other == null || !isAssignableIgnoreName(entry.getValue(), other, done)) {
-                    return false;
-                }
+        if (!maybeAssignableFrom(this, type)) {
+            return false;
+        }
+        /*
+         * Ensures that all properties defined in this feature type is also defined
+         * in the given property, and that the former is assignable from the later.
+         */
+        for (final Map.Entry<String, AbstractIdentifiedType> entry : byName.entrySet()) {
+            final AbstractIdentifiedType other;
+            try {
+                other = type.getProperty(entry.getKey());
+            } catch (IllegalArgumentException e) {
+                /*
+                 * A property in this FeatureType does not exist in the given FeatureType.
+                 * Catching exceptions is not an efficient way to perform this check, but
+                 * actually this case should be rare because we verified before this loop
+                 * that the names match. If the names are unique (as recommended), then
+                 * this exception should never happen.
+                 */
+                return false;
+            }
+            if (!isAssignableIgnoreName(entry.getValue(), other)) {
+                return false;
             }
         }
         return true;
@@ -478,9 +483,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * Returns {@code true} if instances of the {@code other} type are assignable to the given {@code base} type.
      * This method does not compare the names — this verification is presumed already done by the caller.
      */
-    private static boolean isAssignableIgnoreName(final PropertyType base, final PropertyType other,
-            final Map<DefaultFeatureType,Boolean> done)
-    {
+    private static boolean isAssignableIgnoreName(final AbstractIdentifiedType base, final AbstractIdentifiedType other) {
         if (base != other) {
             /*
              * Note: other SIS branches use AttributeType and FeatureAssociationRole
@@ -512,8 +515,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
                 }
                 final DefaultFeatureType f0 = p0.getValueType();
                 final DefaultFeatureType f1 = p1.getValueType();
-                if (!f0.maybeAssignableFrom(f1) || !f0.isAssignableIgnoreName(f1, done)) {
-                    return false;
+                if (f0 != f1) {
+                    if (!f0.isAssignableFrom(f1)) {
+                        return false;
+                    }
                 }
             }
         }
@@ -552,26 +557,27 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * @return Feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
-    @SuppressWarnings("unchecked")
-    public Collection<AbstractIdentifiedType> getPropertyTypes(final boolean includeSuperTypes) {
-        /*
-         * Cast is a workaround for "Apache SIS on GeoAPI 3.0" branch only (other branches do not need cast).
-         * This is because GeoAPI 3.0 does not provide the 'org.opengis.feature.PropertyType' interface, and
-         * we do not want to put our internal PropertyType class in public API. Our closest public class is
-         * AbstractIdentifiedType. Because of the way Java parameterized types are implemented (type erasure),
-         * this cast is okay if the collections are read-only.
-         */
-        return (Collection) (includeSuperTypes ? allProperties : properties);
+    public Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
+        return includeSuperTypes ? allProperties : properties;
     }
 
     /**
      * Returns the attribute, operation or association role for the given name.
      *
+     * <div class="warning"><b>Warning:</b>
+     * The type of returned element will be changed to {@code PropertyType} if and when such interface
+     * will be defined in GeoAPI.</div>
+     *
      * @param  name The name of the property to search.
      * @return The property for the given name, or {@code null} if none.
+     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
      */
-    final PropertyType getProperty(final String name) {
-        return byName.get(name);
+    public AbstractIdentifiedType getProperty(final String name) throws IllegalArgumentException {
+        final AbstractIdentifiedType pt = byName.get(name);
+        if (pt != null) {
+            return pt;
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
     }
 
     /**
