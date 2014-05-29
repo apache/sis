@@ -152,8 +152,8 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      */
     private static void assertUnmodifiable(final DefaultFeatureType feature) {
         final Collection<?> superTypes         = feature.getSuperTypes();
-        final Collection<?> declaredProperties = feature.getPropertyTypes(false);
-        final Collection<?> allProperties      = feature.getPropertyTypes(true);
+        final Collection<?> declaredProperties = feature.getProperties(false);
+        final Collection<?> allProperties      = feature.getProperties(true);
         if (!superTypes.isEmpty()) try {
             superTypes.clear();
             fail("Super-types collection shall not be modifiable.");
@@ -182,7 +182,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * This method tests the following {@code FeatureType} methods:
      *
      * <ul>
-     *   <li>{@link DefaultFeatureType#getPropertyTypes(boolean)}</li>
+     *   <li>{@link DefaultFeatureType#getProperties(boolean)}</li>
      *   <li>{@link DefaultFeatureType#getProperty(String)}</li>
      * </ul>
      *
@@ -195,7 +195,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             final String... expected)
     {
         int index = 0;
-        for (final PropertyType property : feature.getPropertyTypes(includeSuperTypes)) {
+        for (final PropertyType property : feature.getProperties(includeSuperTypes)) {
             assertTrue("Found more properties than expected.", index < expected.length);
             final String name = expected[index++];
             assertNotNull(name, property);
@@ -203,7 +203,14 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             assertSame   (name, property, feature.getProperty(name));
         }
         assertEquals("Unexpected number of properties.", expected.length, index);
-        assertNull("Shall not found a non-existent property.", feature.getProperty("apple"));
+        try {
+            feature.getProperty("apple");
+            fail("Shall not found a non-existent property.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("apple"));
+            assertTrue(message, message.contains(feature.getName().toString()));
+        }
     }
 
     /**
@@ -261,7 +268,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 false, null, city, population, festival);
 
         assertUnmodifiable(complex);
-        final Collection<PropertyType> properties = complex.getPropertyTypes(false);
+        final Collection<PropertyType> properties = complex.getProperties(false);
         final Iterator<PropertyType> it = properties.iterator();
 
         assertEquals("name",            "Festival",                     complex.getName().toString());
@@ -327,8 +334,8 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertPropertiesEquals(capital, true,  "city", "population", "parliament");
 
         // Check based only on name.
-        assertTrue ("maybeAssignableFrom", city.maybeAssignableFrom(capital));
-        assertFalse("maybeAssignableFrom", capital.maybeAssignableFrom(city));
+        assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(city, capital));
+        assertFalse("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(capital, city));
 
         // Public API.
         assertTrue ("isAssignableFrom", city.isAssignableFrom(capital));
@@ -363,10 +370,10 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 ((DefaultAttributeType) metroCapital.getProperty("region")).getValueClass());
 
         // Check based only on name.
-        assertTrue ("maybeAssignableFrom", capital.maybeAssignableFrom(metroCapital));
-        assertFalse("maybeAssignableFrom", metroCapital.maybeAssignableFrom(capital));
-        assertTrue ("maybeAssignableFrom", metropolis.maybeAssignableFrom(metroCapital));
-        assertFalse("maybeAssignableFrom", metroCapital.maybeAssignableFrom(metropolis));
+        assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(capital, metroCapital));
+        assertFalse("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(metroCapital, capital));
+        assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(metropolis, metroCapital));
+        assertFalse("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(metroCapital, metropolis));
 
         // Public API.
         assertTrue ("isAssignableFrom", capital.isAssignableFrom(metroCapital));
@@ -406,8 +413,8 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                 ((DefaultAttributeType) worldMetropolis.getProperty("region")).getValueClass());
 
         // Check based only on name.
-        assertTrue ("maybeAssignableFrom", metropolis.maybeAssignableFrom(worldMetropolis));
-        assertFalse("maybeAssignableFrom", worldMetropolis.maybeAssignableFrom(metropolis));
+        assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(metropolis, worldMetropolis));
+        assertFalse("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(worldMetropolis, metropolis));
 
         // Public API.
         assertTrue ("isAssignableFrom", metropolis.isAssignableFrom(worldMetropolis));

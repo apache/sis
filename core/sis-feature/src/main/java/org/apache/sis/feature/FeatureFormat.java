@@ -36,6 +36,9 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.Operation;
 
 
 /**
@@ -137,13 +140,13 @@ public class FeatureFormat extends TabularFormat<Object> {
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
-        final DefaultFeatureType featureType;
-        final AbstractFeature     feature;
+        final FeatureType featureType;
+        final AbstractFeature feature;
         if (object instanceof AbstractFeature) {
             feature     = (AbstractFeature) object;
             featureType = feature.getType();
-        } else if (object instanceof DefaultFeatureType) {
-            featureType = (DefaultFeatureType) object;
+        } else if (object instanceof FeatureType) {
+            featureType = (FeatureType) object;
             feature     = null;
         } else {
             throw new IllegalArgumentException(Errors.getResources(displayLocale)
@@ -173,7 +176,7 @@ header: for (int i=0; ; i++) {
          * Done writing the header. Now write all property rows.
          * Rows without value will be skipped only if optional.
          */
-        for (final PropertyType propertyType : featureType.getPropertyTypes(true)) {
+        for (final PropertyType propertyType : featureType.getProperties(true)) {
             Object value;
             if (feature != null) {
                 value = feature.getPropertyValue(propertyType.getName().toString());
@@ -205,14 +208,14 @@ header: for (int i=0; ; i++) {
                 valueClass    = pt.getValueClass();
                 valueType     = getFormat(Class.class).format(valueClass, buffer, dummyFP).toString();
                 buffer.setLength(0);
-            } else if (propertyType instanceof DefaultAssociationRole) {
-                final DefaultAssociationRole pt = (DefaultAssociationRole) propertyType;
+            } else if (propertyType instanceof FeatureAssociationRole) {
+                final FeatureAssociationRole pt = (FeatureAssociationRole) propertyType;
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
                 valueType     = toString(pt.getValueType().getName());
                 valueClass    = AbstractFeature.class;
-            } else if (propertyType instanceof DefaultOperation) {
-                final IdentifiedType resultType = ((DefaultOperation) propertyType).getResult();
+            } else if (propertyType instanceof Operation) {
+                final IdentifiedType resultType = ((Operation) propertyType).getResult();
                 valueType   = toString(resultType.getName());
                 valueClass  = null;
                 minimumOccurs = -1;
@@ -247,11 +250,15 @@ header: for (int i=0; ; i++) {
                     value = format.format(value, buffer, dummyFP);
                 } else if (value instanceof InternationalString) {
                     value = ((InternationalString) value).toString(displayLocale);
-                } else if (value instanceof AbstractFeature && propertyType instanceof DefaultAssociationRole) {
-                    value = ((AbstractFeature) value).getPropertyValue(
-                            ((DefaultAssociationRole) propertyType).getTitleProperty());
+                } else if (value instanceof AbstractFeature && propertyType instanceof FeatureAssociationRole) {
+                    final String p = DefaultAssociationRole.getTitleProperty((FeatureAssociationRole) propertyType);
+                    if (p != null) {
+                        value = ((AbstractFeature) value).getPropertyValue(p);
+                    }
                 }
-                table.append(value.toString());
+                if (value != null) {
+                    table.append(value.toString());
+                }
                 buffer.setLength(0);
             }
             table.nextLine();

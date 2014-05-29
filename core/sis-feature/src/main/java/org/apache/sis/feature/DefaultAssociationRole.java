@@ -26,6 +26,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
@@ -52,7 +54,7 @@ import org.opengis.feature.AttributeType;
  *
  * @see AbstractAssociation
  */
-public class DefaultAssociationRole extends FieldType {
+public class DefaultAssociationRole extends FieldType implements FeatureAssociationRole {
     /**
      * For cross-version compatibility.
      */
@@ -63,7 +65,7 @@ public class DefaultAssociationRole extends FieldType {
      *
      * @see #getValueType()
      */
-    private final DefaultFeatureType valueType;
+    private final FeatureType valueType;
 
     /**
      * The name of the property to use as a title for the associated feature, or an empty string if none.
@@ -114,7 +116,7 @@ public class DefaultAssociationRole extends FieldType {
      * @param maximumOccurs  The maximum number of occurrences of the association within its containing entity,
      *                       or {@link Integer#MAX_VALUE} if there is no restriction.
      */
-    public DefaultAssociationRole(final Map<String,?> identification, final DefaultFeatureType valueType,
+    public DefaultAssociationRole(final Map<String,?> identification, final FeatureType valueType,
             final int minimumOccurs, final int maximumOccurs)
     {
         super(identification, minimumOccurs, maximumOccurs);
@@ -130,30 +132,42 @@ public class DefaultAssociationRole extends FieldType {
      *
      * @return The type of feature values.
      */
-    public final DefaultFeatureType getValueType() {
+    @Override
+    public final FeatureType getValueType() {
         return valueType;
     }
 
     /**
      * Returns the name of the property to use as a title for the associated feature, or {@code null} if none.
-     * This method search for the first attribute having a value class assignable to {@link CharSequence}.
+     * This method searches for the first attribute having a value class assignable to {@link CharSequence}.
      */
-    final String getTitleProperty() {
-        String p = titleProperty; // No synchronization - not a big deal if computed twice.
-        if (p == null) {
-            p = "";
-            for (final PropertyType type : valueType.getPropertyTypes(true)) {
-                if (type instanceof AttributeType<?>) {
-                    final AttributeType<?> pt = (AttributeType<?>) type;
-                    if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {
-                        p = pt.getName().toString();
-                        break;
-                    }
+    static String getTitleProperty(final FeatureAssociationRole role) {
+        if (role instanceof DefaultAssociationRole) {
+            String p = ((DefaultAssociationRole) role).titleProperty; // No synchronization - not a big deal if computed twice.
+            if (p != null) {
+                return p.isEmpty() ? null : p;
+            }
+            p = searchTitleProperty(role);
+            ((DefaultAssociationRole) role).titleProperty = (p != null) ? p : "";
+            return p;
+        }
+        return searchTitleProperty(role);
+    }
+
+    /**
+     * Implementation of {@link #getTitleProperty(FeatureAssociationRole)} for first search,
+     * or for non-SIS {@code FeatureAssociationRole} implementations.
+     */
+    private static String searchTitleProperty(final FeatureAssociationRole role) {
+        for (final PropertyType type : role.getValueType().getProperties(true)) {
+            if (type instanceof AttributeType<?>) {
+                final AttributeType<?> pt = (AttributeType<?>) type;
+                if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {
+                    return pt.getName().toString();
                 }
             }
-            titleProperty = p;
         }
-        return p.isEmpty() ? null : p;
+        return null;
     }
 
     /**
