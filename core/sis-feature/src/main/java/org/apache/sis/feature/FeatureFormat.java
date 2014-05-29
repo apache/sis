@@ -38,6 +38,7 @@ import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.Operation;
 
 
 /**
@@ -229,8 +230,8 @@ header: for (int i=0; ; i++) {
                 maximumOccurs = pt.getMaximumOccurs();
                 valueType     = toString(pt.getValueType().getName());
                 valueClass    = AbstractFeature.class;
-            } else if (propertyType instanceof DefaultOperation) {
-                final IdentifiedType resultType = ((DefaultOperation) propertyType).getResult();
+            } else if (propertyType instanceof Operation) {
+                final IdentifiedType resultType = ((Operation) propertyType).getResult();
                 valueType   = toString(resultType.getName());
                 valueClass  = null;
                 minimumOccurs = -1;
