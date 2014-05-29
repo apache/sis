@@ -32,6 +32,7 @@ import org.apache.sis.internal.util.CheckedArrayList;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
@@ -175,8 +176,8 @@ public abstract class AbstractFeature implements Serializable {
         final PropertyType pt = type.getProperty(name);
         if (pt instanceof AttributeType<?>) {
             return AbstractAttribute.create((AttributeType<?>) pt, value);
-        } else if (pt instanceof DefaultAssociationRole) {
-            return AbstractAssociation.create((DefaultAssociationRole) pt, value);
+        } else if (pt instanceof FeatureAssociationRole) {
+            return AbstractAssociation.create((FeatureAssociationRole) pt, value);
         } else {
             // Should never happen, unless the user gave us some mutable FeatureType.
             throw new CorruptedObjectException(Errors.format(Errors.Keys.UnknownType_1, pt));
@@ -194,8 +195,8 @@ public abstract class AbstractFeature implements Serializable {
         final PropertyType pt = type.getProperty(name);
         if (pt instanceof AttributeType<?>) {
             return AbstractAttribute.create((AttributeType<?>) pt);
-        } else if (pt instanceof DefaultAssociationRole) {
-            return AbstractAssociation.create((DefaultAssociationRole) pt);
+        } else if (pt instanceof FeatureAssociationRole) {
+            return AbstractAssociation.create((FeatureAssociationRole) pt);
         } else {
             throw unsupportedPropertyType(pt.getName());
         }
@@ -213,7 +214,7 @@ public abstract class AbstractFeature implements Serializable {
         final PropertyType pt = type.getProperty(name);
         if (pt instanceof AttributeType<?>) {
             return getDefaultValue((AttributeType<?>) pt);
-        } else if (pt instanceof DefaultAssociationRole) {
+        } else if (pt instanceof FeatureAssociationRole) {
             return null; // No default value for associations.
         } else {
             throw unsupportedPropertyType(pt.getName());
@@ -343,7 +344,7 @@ public abstract class AbstractFeature implements Serializable {
     @SuppressWarnings("unchecked")
     private static void setAssociationValue(final AbstractAssociation association, final Object value) {
         if (value != null) {
-            final DefaultAssociationRole role = association.getRole();
+            final FeatureAssociationRole role = association.getRole();
             final FeatureType base = role.getValueType();
             if (value instanceof AbstractFeature) {
                 final FeatureType actual = ((AbstractFeature) value).getType();
@@ -413,9 +414,9 @@ public abstract class AbstractFeature implements Serializable {
             if (value != null) {
                 return verifyAttributeValue((AttributeType<?>) pt, value);
             }
-        } else if (pt instanceof DefaultAssociationRole) {
+        } else if (pt instanceof FeatureAssociationRole) {
             if (value != null) {
-                return verifyAssociationValue((DefaultAssociationRole) pt, value);
+                return verifyAssociationValue((FeatureAssociationRole) pt, value);
             }
         } else {
             throw unsupportedPropertyType(pt.getName());
@@ -455,7 +456,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @param value The value, which shall be non-null.
      */
-    private static Object verifyAssociationValue(final DefaultAssociationRole role, final Object value) {
+    private static Object verifyAssociationValue(final FeatureAssociationRole role, final Object value) {
         final boolean isSingleton = Field.isSingleton(role.getMaximumOccurs());
         if (value instanceof AbstractFeature) {
             /*
@@ -480,7 +481,7 @@ public abstract class AbstractFeature implements Serializable {
     /**
      * Verifies if all values in the given collection are valid instances of feature for the given association role.
      */
-    private static void verifyAssociationValues(final DefaultAssociationRole role, final Collection<?> values) {
+    private static void verifyAssociationValues(final FeatureAssociationRole role, final Collection<?> values) {
         final FeatureType base = role.getValueType();
         int index = 0;
         for (final Object value : values) {
