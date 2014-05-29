@@ -48,7 +48,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @version 0.5
  * @module
  */
-public class DefaultOperation extends PropertyType {
+public class DefaultOperation extends AbstractIdentifiedType {
     /**
      * For cross-version compatibility.
      */

@@ -168,7 +168,7 @@ header: for (int i=0; ; i++) {
          * Done writing the header. Now write all property rows.
          * Rows without value will be skipped only if optional.
          */
-        for (final AbstractIdentifiedType propertyType : featureType.getPropertyTypes(true)) {
+        for (final AbstractIdentifiedType propertyType : featureType.getProperties(true)) {
             Object value;
             if (feature != null) {
                 value = feature.getPropertyValue(propertyType.getName().toString());
@@ -243,10 +243,14 @@ header: for (int i=0; ; i++) {
                 } else if (value instanceof InternationalString) {
                     value = ((InternationalString) value).toString(displayLocale);
                 } else if (value instanceof AbstractFeature && propertyType instanceof DefaultAssociationRole) {
-                    value = ((AbstractFeature) value).getPropertyValue(
-                            ((DefaultAssociationRole) propertyType).getTitleProperty());
+                    final String p = DefaultAssociationRole.getTitleProperty((DefaultAssociationRole) propertyType);
+                    if (p != null) {
+                        value = ((AbstractFeature) value).getPropertyValue(p);
+                    }
                 }
-                table.append(value.toString());
+                if (value != null) {
+                    table.append(value.toString());
+                }
                 buffer.setLength(0);
             }
             table.nextLine();

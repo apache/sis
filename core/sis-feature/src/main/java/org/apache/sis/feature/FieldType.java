@@ -36,7 +36,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.5
  * @module
  */
-abstract class FieldType extends PropertyType {
+abstract class FieldType extends AbstractIdentifiedType {
     /**
      * For cross-version compatibility.
      */
@@ -131,7 +131,7 @@ abstract class FieldType extends PropertyType {
      * @param type      The property type, sometime {@code this} or sometime an other object.
      * @param valueType The name of value class (attribute), or the feature type name (association).
      */
-    static StringBuilder toString(final String className, final PropertyType type, final Object valueType) {
+    static StringBuilder toString(final String className, final AbstractIdentifiedType type, final Object valueType) {
         final StringBuilder buffer = new StringBuilder(40).append(className).append('[');
         final GenericName name = type.getName();
         if (name != null) {
@@ -157,7 +157,9 @@ abstract class FieldType extends PropertyType {
      * @param valueType The name of value class (attribute), or the feature type name (association).
      * @param values    The actual values.
      */
-    static String toString(final String className, final PropertyType type, final Object valueType, final Iterator<?> values) {
+    static String toString(final String className, final AbstractIdentifiedType type,
+            final Object valueType, final Iterator<?> values)
+    {
         final StringBuilder buffer = toString(className, type, valueType);
         if (values.hasNext()) {
             final Object value = values.next();

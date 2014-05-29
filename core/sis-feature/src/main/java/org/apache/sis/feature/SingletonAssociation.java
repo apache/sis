@@ -16,7 +16,7 @@
  */
 package org.apache.sis.feature;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

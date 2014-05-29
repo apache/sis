@@ -52,12 +52,12 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultAssociationRole#getTitleProperty()}.
+     * Tests {@link DefaultAssociationRole#getTitleProperty(FeatureAssociationRole)}.
      */
     @Test
     public void testGetTitleProperty() {
         final DefaultAssociationRole twinTown = twinTown();
-        assertEquals("city", twinTown.getTitleProperty());
+        assertEquals("city", DefaultAssociationRole.getTitleProperty(twinTown));
     }
 
     /**

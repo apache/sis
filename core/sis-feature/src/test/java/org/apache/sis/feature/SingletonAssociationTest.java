@@ -57,9 +57,9 @@ public final strictfp class SingletonAssociationTest extends TestCase {
      */
     @Test
     public void testWrongValue() {
-        final AbstractAssociation association  = twinTown();
-        final PropertyType        population   = association.getRole().getValueType().getProperty("population");
-        final AbstractFeature     otherFeature = new DefaultFeatureType(
+        final AbstractAssociation    association  = twinTown();
+        final AbstractIdentifiedType population   = association.getRole().getValueType().getProperty("population");
+        final AbstractFeature        otherFeature = new DefaultFeatureType(
                 singletonMap(DefaultFeatureType.NAME_KEY, "Population"), false, null, population).newInstance();
         try {
             association.setValue(otherFeature);
