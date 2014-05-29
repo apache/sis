@@ -25,6 +25,10 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
+
 
 /**
  * Indicates the role played by the association between two features.
@@ -54,16 +58,16 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     /**
      * Information about the association.
      */
-    final DefaultAssociationRole role;
+    final FeatureAssociationRole role;
 
     /**
      * Creates a new association of the given role.
      *
      * @param role Information about the association.
      *
-     * @see #create(DefaultAssociationRole)
+     * @see #create(FeatureAssociationRole)
      */
-    protected AbstractAssociation(final DefaultAssociationRole role) {
+    protected AbstractAssociation(final FeatureAssociationRole role) {
         this.role = role;
     }
 
@@ -73,7 +77,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * @param  role Information about the association.
      * @return The new association.
      */
-    public static AbstractAssociation create(final DefaultAssociationRole role) {
+    public static AbstractAssociation create(final FeatureAssociationRole role) {
         ArgumentChecks.ensureNonNull("role", role);
         return isSingleton(role.getMaximumOccurs())
                ? new SingletonAssociation(role)
@@ -87,7 +91,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * @param  value The initial value (may be {@code null}).
      * @return The new association.
      */
-    static AbstractAssociation create(final DefaultAssociationRole role, final Object value) {
+    static AbstractAssociation create(final FeatureAssociationRole role, final Object value) {
         ArgumentChecks.ensureNonNull("role", role);
         return isSingleton(role.getMaximumOccurs())
                ? new SingletonAssociation(role, (AbstractFeature) value)
@@ -96,7 +100,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
 
     /**
      * Returns the name of this association as defined by its {@linkplain #getRole() role}.
-     * This convenience method delegates to {@link DefaultAssociationRole#getName()}.
+     * This convenience method delegates to {@link FeatureAssociationRole#getName()}.
      *
      * @return The association name specified by its role.
      */
@@ -108,12 +112,9 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     /**
      * Returns information about the association.
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
-     * to {@code org.opengis.feature.AssociationRole}. This change is pending GeoAPI revision.</div>
-     *
      * @return Information about the association.
      */
-    public DefaultAssociationRole getRole() {
+    public FeatureAssociationRole getRole() {
         return role;
     }
 
@@ -185,8 +186,8 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * Ensures that storing a feature of the given type is valid for an association
      * expecting the given base type.
      */
-    final void ensureValid(final DefaultFeatureType base, final DefaultFeatureType type) {
-        if (base != type && !base.maybeAssignableFrom(type)) {
+    final void ensureValid(final FeatureType base, final FeatureType type) {
+        if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
             throw new IllegalArgumentException(
                     Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
         }
@@ -222,7 +223,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     @Debug
     @Override
     public String toString() {
-        final String pt = role.getTitleProperty();
+        final String pt = DefaultAssociationRole.getTitleProperty(role);
         final Iterator<AbstractFeature> it = getValues().iterator();
         return FieldType.toString("FeatureAssociation", role, role.getValueType().getName(), new Iterator<Object>() {
             @Override public boolean hasNext() {

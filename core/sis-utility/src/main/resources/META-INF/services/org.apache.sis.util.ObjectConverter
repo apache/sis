@@ -16,6 +16,7 @@ org.apache.sis.internal.converter.StringConverter$File
 org.apache.sis.internal.converter.StringConverter$Path
 org.apache.sis.internal.converter.StringConverter$URI
 org.apache.sis.internal.converter.StringConverter$URL
+org.apache.sis.internal.converter.StringConverter$Unit
 org.apache.sis.internal.converter.StringConverter$Angle
 org.apache.sis.internal.converter.AngleConverter
 org.apache.sis.internal.converter.AngleConverter$Inverse
