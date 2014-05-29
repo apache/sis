@@ -21,6 +21,9 @@ import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.opengis.feature.FeatureType;
+
 
 /**
  * An instance of an {@linkplain DefaultAssociationRole association role} containing an arbitrary amount of values.
@@ -129,7 +132,7 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
     @Override
     public void setValues(final Collection<? extends AbstractFeature> values) {
         ArgumentChecks.ensureNonNull("values", values);
-        final DefaultFeatureType base = role.getValueType();
+        final FeatureType base = role.getValueType();
         this.values.clear();
         for (final AbstractFeature value : values) {
             ensureValid(base, value.getType());

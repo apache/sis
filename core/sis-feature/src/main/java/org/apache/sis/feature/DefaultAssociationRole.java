@@ -26,6 +26,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureType;
 
 
 /**
@@ -63,7 +64,7 @@ public class DefaultAssociationRole extends FieldType {
      *
      * @see #getValueType()
      */
-    private final DefaultFeatureType valueType;
+    private final FeatureType valueType;
 
     /**
      * The name of the property to use as a title for the associated feature, or an empty string if none.
@@ -114,7 +115,7 @@ public class DefaultAssociationRole extends FieldType {
      * @param maximumOccurs  The maximum number of occurrences of the association within its containing entity,
      *                       or {@link Integer#MAX_VALUE} if there is no restriction.
      */
-    public DefaultAssociationRole(final Map<String,?> identification, final DefaultFeatureType valueType,
+    public DefaultAssociationRole(final Map<String,?> identification, final FeatureType valueType,
             final int minimumOccurs, final int maximumOccurs)
     {
         super(identification, minimumOccurs, maximumOccurs);
@@ -130,7 +131,7 @@ public class DefaultAssociationRole extends FieldType {
      *
      * @return The type of feature values.
      */
-    public final DefaultFeatureType getValueType() {
+    public final FeatureType getValueType() {
         return valueType;
     }
 
@@ -142,7 +143,7 @@ public class DefaultAssociationRole extends FieldType {
         String p = titleProperty; // No synchronization - not a big deal if computed twice.
         if (p == null) {
             p = "";
-            for (final PropertyType type : valueType.getPropertyTypes(true)) {
+            for (final PropertyType type : valueType.getProperties(true)) {
                 if (type instanceof AttributeType<?>) {
                     final AttributeType<?> pt = (AttributeType<?>) type;
                     if (pt.getMaximumOccurs() != 0 && CharSequence.class.isAssignableFrom(pt.getValueClass())) {

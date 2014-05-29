@@ -25,6 +25,9 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.opengis.feature.FeatureType;
+
 
 /**
  * Indicates the role played by the association between two features.
@@ -185,8 +188,8 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * Ensures that storing a feature of the given type is valid for an association
      * expecting the given base type.
      */
-    final void ensureValid(final DefaultFeatureType base, final DefaultFeatureType type) {
-        if (base != type && !base.maybeAssignableFrom(type)) {
+    final void ensureValid(final FeatureType base, final FeatureType type) {
+        if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
             throw new IllegalArgumentException(
                     Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
         }

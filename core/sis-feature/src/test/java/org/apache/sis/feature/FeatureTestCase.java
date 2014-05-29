@@ -32,6 +32,9 @@ import org.junit.Test;
 import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singletonMap;
 
+// Branch-dependent imports
+import org.opengis.feature.FeatureType;
+
 
 /**
  * Tests common to {@link DenseFeatureTest} and {@link SparseFeatureTest}.
@@ -64,10 +67,10 @@ public abstract strictfp class FeatureTestCase extends TestCase {
      */
     static AbstractFeature twinTown(final boolean isSparse) {
         final DefaultAssociationRole twinTown = DefaultAssociationRoleTest.twinTown();
-        final DefaultFeatureType     city     = twinTown.getValueType();
+        final FeatureType            city     = twinTown.getValueType();
         final DefaultFeatureType     type     = new DefaultFeatureType(
                 singletonMap(DefaultFeatureType.NAME_KEY, "Twin town"), false,
-                new DefaultFeatureType[] {city}, twinTown);
+                new FeatureType[] {city}, twinTown);
 
         final AbstractFeature leMans = isSparse ? new SparseFeature(type) : new DenseFeature(type);
         leMans.setPropertyValue("city", "Le Mans");

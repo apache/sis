@@ -219,7 +219,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
         if (properties != null && !(properties instanceof Property[])) {
             final Validator v = new Validator(ScopeCode.FEATURE);
             for (final Map.Entry<String, Integer> entry : indices.entrySet()) {
-                v.validateAny(getPropertyType(entry.getKey()), properties[entry.getValue()]);
+                v.validateAny(type.getProperty(entry.getKey()), properties[entry.getValue()]);
             }
             return v.quality;
         }
