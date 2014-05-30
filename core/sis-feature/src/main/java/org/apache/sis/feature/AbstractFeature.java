@@ -31,6 +31,7 @@ import org.apache.sis.internal.util.CheckedArrayList;
 // Branch-dependent imports
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
@@ -274,7 +275,7 @@ public abstract class AbstractFeature implements Serializable {
      * Returns the value of the given attribute, as a singleton or as a collection depending
      * on the maximum number of occurrences.
      */
-    static Object getAttributeValue(final AbstractAttribute<?> property) {
+    static Object getAttributeValue(final Attribute<?> property) {
         return Field.isSingleton(property.getType().getMaximumOccurs()) ? property.getValue() : property.getValues();
     }
 
@@ -290,8 +291,8 @@ public abstract class AbstractFeature implements Serializable {
      * Sets the value of the given property, with some minimal checks.
      */
     static void setPropertyValue(final Property property, final Object value) {
-        if (property instanceof AbstractAttribute<?>) {
-            setAttributeValue((AbstractAttribute<?>) property, value);
+        if (property instanceof Attribute<?>) {
+            setAttributeValue((Attribute<?>) property, value);
         } else if (property instanceof AbstractAssociation) {
             setAssociationValue((AbstractAssociation) property, value);
         } else {
@@ -305,7 +306,7 @@ public abstract class AbstractFeature implements Serializable {
      * use {@link Validator} instead.
      */
     @SuppressWarnings("unchecked")
-    private static <V> void setAttributeValue(final AbstractAttribute<V> attribute, final Object value) {
+    private static <V> void setAttributeValue(final Attribute<V> attribute, final Object value) {
         if (value != null) {
             final AttributeType<V> pt = attribute.getType();
             final Class<?> base = pt.getValueClass();
@@ -318,7 +319,7 @@ public abstract class AbstractFeature implements Serializable {
                      */
                     final Iterator<?> it = ((Collection<?>) value).iterator();
                     do if (!it.hasNext()) {
-                        ((AbstractAttribute) attribute).setValues((Collection) value);
+                        ((Attribute) attribute).setValues((Collection) value);
                         return;
                     } while ((element = it.next()) == null || base.isInstance(element));
                     // Found an illegal value. Exeption is thrown below.
@@ -326,7 +327,7 @@ public abstract class AbstractFeature implements Serializable {
                 throw illegalValueClass(attribute.getName(), element); // 'element' can not be null here.
             }
         }
-        ((AbstractAttribute) attribute).setValue(value);
+        ((Attribute) attribute).setValue(value);
     }
 
     /**
@@ -384,8 +385,8 @@ public abstract class AbstractFeature implements Serializable {
      */
     final void verifyPropertyType(final String name, final Property property) {
         final PropertyType pt, base = type.getProperty(name);
-        if (property instanceof AbstractAttribute<?>) {
-            pt = ((AbstractAttribute<?>) property).getType();
+        if (property instanceof Attribute<?>) {
+            pt = ((Attribute<?>) property).getType();
         } else if (property instanceof AbstractAssociation) {
             pt = ((AbstractAssociation) property).getRole();
         } else {
