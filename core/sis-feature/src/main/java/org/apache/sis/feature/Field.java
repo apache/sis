@@ -86,8 +86,9 @@ abstract class Field<V> extends Property {
      * then delegates to {@link #setValue(Object)}.</p>
      *
      * @param values The new values.
+     * @throws IllegalArgumentException if the given collection contains too many elements.
      */
-    public void setValues(final Collection<? extends V> values) {
+    public void setValues(final Collection<? extends V> values) throws IllegalArgumentException {
         V value = null;
         ArgumentChecks.ensureNonNull("values", values);
         final Iterator<? extends V> it = values.iterator();

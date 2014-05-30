@@ -44,6 +44,15 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
     }
 
     /**
+     * Returns a City feature type which may have a twin town.
+     */
+    static DefaultFeatureType twinTownCity() {
+        final DefaultAssociationRole twinTown = twinTown();
+        return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "Twin town"), false,
+                new DefaultFeatureType[] {twinTown.getValueType()}, twinTown);
+    }
+
+    /**
      * Tests serialization of an {@link DefaultAssociationRole} instance.
      */
     @Test

@@ -34,9 +34,9 @@ import org.apache.sis.internal.util.CheckedArrayList;
  * Each feature instance can provide values for the following properties:
  *
  * <ul>
- *   <li>{@linkplain AbstractAttribute  Attributes}</li>
- *   <li>{@link AbstractAssociation Associations to other features}</li>
- *   <li>{@linkplain DefaultOperation   Operations}</li>
+ *   <li>{@linkplain AbstractAttribute   Attributes}</li>
+ *   <li>{@linkplain AbstractAssociation Associations to other features}</li>
+ *   <li>{@linkplain DefaultOperation    Operations}</li>
  * </ul>
  *
  * {@code AbstractFeature} can be instantiated by calls to {@link DefaultFeatureType#newInstance()}.

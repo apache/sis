@@ -166,7 +166,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
     @Override
-    public abstract void setValue(final AbstractFeature value);
+    public abstract void setValue(final AbstractFeature value) throws IllegalArgumentException;
 
     /**
      * Sets the features. All previous values are replaced by the given collection.
@@ -174,10 +174,11 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(AbstractFeature)}.</p>
      *
-     * @param values The new values.
+     * @param  values The new values.
+     * @throws IllegalArgumentException if the given collection contains too many elements.
      */
     @Override
-    public void setValues(final Collection<? extends AbstractFeature> values) {
+    public void setValues(final Collection<? extends AbstractFeature> values) throws IllegalArgumentException {
         super.setValues(values);
     }
 
