@@ -26,6 +26,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 
 
@@ -58,7 +59,7 @@ import org.opengis.feature.AttributeType;
  *
  * @see DefaultAttributeType
  */
-public abstract class AbstractAttribute<V> extends Field<V> implements Serializable {
+public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -127,6 +128,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      *
      * @return Information about the attribute.
      */
+    @Override
     public AttributeType<V> getType() {
         return type;
     }

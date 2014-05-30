@@ -26,6 +26,7 @@ import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import org.opengis.feature.Property;
+import org.opengis.feature.Attribute;
 
 
 /**
@@ -165,8 +166,8 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
             if (element != null) {
                 if (!(properties instanceof Property[])) {
                     return element; // Most common case.
-                } else if (element instanceof AbstractAttribute<?>) {
-                    return getAttributeValue((AbstractAttribute<?>) element);
+                } else if (element instanceof Attribute<?>) {
+                    return getAttributeValue((Attribute<?>) element);
                 } else if (element instanceof AbstractAssociation) {
                     return getAssociationValue((AbstractAssociation) element);
                 } else {
