@@ -87,8 +87,7 @@ public final class Names extends Static {
     }
 
     /**
-     * Creates a name which is local in the given namespace, using the
-     * {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
+     * Creates a name which is local in the given namespace.
      * The character sequences can be either {@link String} or {@link InternationalString} instances.
      * Those character sequences are taken verbatim; they are <em>not</em> parsed into their components.
      *
@@ -99,32 +98,23 @@ public final class Names extends Static {
      *   <tr><td>{@code localPart}</td> <td><code>name.{@linkplain DefaultLocalName#toString() toString()}</code></td></tr>
      * </table>
      *
-     * @param  namespace The namespace, or {@code null} for the global namespace.
-     * @param  localPart The name which is locale in the given namespace.
-     * @return A local name in the given namespace.
-     */
-    public static LocalName createLocalName(final CharSequence namespace, final CharSequence localPart) {
-        ensureNonNull("localPart", localPart);
-        return DefaultFactories.NAMES.createLocalName(createNameSpace(namespace, null), localPart);
-    }
-
-    /**
-     * Creates a name which is local in the given namespace, using the given separator.
-     * This method performs the same work than {@link #createLocalName(CharSequence, CharSequence)},
-     * except that the namespace and the local part are separated by the given separator.
-     *
      * <div class="note"><b>Example:</b>
      * for a name created by {@code create("http://www.opengis.net/gml/srs/epsg.xml", "#", "4326")}:
-     * <ul>
-     *   <li><code>name.{@linkplain DefaultLocalName#scope() scope()}</code>
-     *       returns the {@code "http://www.opengis.net/gml/srs/epsg.xml"} namespace.</li>
-     *   <li><code>name.{@linkplain DefaultLocalName#toString() toString()}</code>
-     *       returns the {@code "4326"} string.</li>
-     *   <li><code>name.{@linkplain DefaultLocalName#toFullyQualifiedName() toFullyQualifiedName()}</code>
-     *       returns the {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"} name.
-     *   <li><code>{@linkplain #toExpandedString(GenericName) toExpandedString}(name)</code>
-     *       returns the {@code "{http://www.opengis.net/gml/srs/epsg.xml}4326"} string.
-     * </ul></div>
+     * <blockquote><table class="compact" summary="Examples of return values for a name built by this method.">
+     *   <tr><td>• <code>name.{@linkplain DefaultLocalName#scope() scope()}</code></td>
+     *       <td>returns the {@code "http://www.opengis.net/gml/srs/epsg.xml"} namespace.</td></tr>
+     *   <tr><td>• <code>name.{@linkplain DefaultLocalName#toString() toString()}</code></td>
+     *       <td>returns the {@code "4326"} string.</td></tr>
+     *   <tr><td>• <code>name.{@linkplain DefaultLocalName#toFullyQualifiedName() toFullyQualifiedName()}</code></td>
+     *       <td>returns the {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"} name.
+     *   <tr><td>• <code>{@linkplain #toExpandedString(GenericName) toExpandedString}(name)</code></td>
+     *       <td>returns the {@code "{http://www.opengis.net/gml/srs/epsg.xml}4326"} string.</td></tr>
+     * </table></blockquote></div>
+     *
+     * <b>Performance note:</b> this method is okay for <em>casual</em> use. If many names need to be created in the
+     * same namespace, a more efficient method is {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}
+     * for avoiding unnecessary creations of the same {@code NameSpace} object. The later can be obtained by creating
+     * a first name using this {@code createLocalName} method, then invoke {@link GenericName#scope()}.
      *
      * @param  namespace The namespace, or {@code null} for the global namespace.
      * @param  separator The separator between the namespace and the local part.

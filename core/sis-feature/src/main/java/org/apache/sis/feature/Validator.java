@@ -34,6 +34,7 @@ import org.apache.sis.util.resources.Errors;
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
 
@@ -149,7 +150,7 @@ final class Validator {
     void validate(final FeatureAssociationRole role, final Collection<?> values) {
         AbstractElement report = null;
         for (final Object value : values) {
-            final FeatureType type = ((AbstractFeature) value).getType();
+            final FeatureType type = ((Feature) value).getType();
             if (!role.getValueType().isAssignableFrom(type)) {
                 report = addViolationReport(report, role, Errors.formatInternational(
                         Errors.Keys.IllegalPropertyClass_2, role.getName(), type.getName()));

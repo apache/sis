@@ -39,7 +39,7 @@ import java.util.Objects;
  * Names shall be <em>immutable</em> and thread-safe. A name can be local to a namespace.
  * See the {@linkplain org.apache.sis.util.iso package javadoc} for an illustration of name anatomy.
  *
- * <p>The easiest way to create a name is to use the {@link Names#createLocalName(CharSequence, CharSequence)}
+ * <p>The easiest way to create a name is to use the {@link Names#createLocalName(CharSequence, String, CharSequence)}
  * convenience static method. That method supports the common case where the name is made only of a
  * (<var>namespace</var>, <var>local part</var>) pair of strings. However generic names allows finer grain.
  * For example the above-cited strings can both be split into smaller name components.
