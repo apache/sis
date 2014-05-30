@@ -24,6 +24,9 @@ import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.opengis.feature.Property;
+
 
 /**
  * A feature in which most properties are expected to be provided. This implementation uses a plain array for
@@ -94,7 +97,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * @throws IllegalArgumentException If the given argument is not a property name of this feature.
      */
     @Override
-    public Object getProperty(final String name) throws IllegalArgumentException {
+    public Property getProperty(final String name) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
         final int index = getIndex(name);
         if (properties instanceof Property[]) {
@@ -118,10 +121,10 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      *         known to this feature.
      */
     @Override
-    public void setProperty(final Object property) throws IllegalArgumentException {
+    public void setProperty(final Property property) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("property", property);
-        final String name = ((Property) property).getName().toString();
-        verifyPropertyType(name, (Property) property);
+        final String name = property.getName().toString();
+        verifyPropertyType(name, property);
         if (!(properties instanceof Property[])) {
             wrapValuesInProperties();
         }

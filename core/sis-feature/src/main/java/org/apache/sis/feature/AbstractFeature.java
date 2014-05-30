@@ -29,6 +29,7 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CheckedArrayList;
 
 // Branch-dependent imports
+import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
@@ -115,9 +116,6 @@ public abstract class AbstractFeature implements Serializable {
     /**
      * Returns the property (attribute, operation or association) of the given name.
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
-     * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
-     *
      * <div class="note"><b>Tip:</b> This method returns the property <em>instance</em>. If only the property
      * <em>value</em> is desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a
      * chance to avoid the creation of {@link AbstractAttribute} or {@link AbstractAssociation} instances.</div>
@@ -128,7 +126,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @see #getPropertyValue(String)
      */
-    public abstract Object getProperty(final String name) throws IllegalArgumentException;
+    public abstract Property getProperty(final String name) throws IllegalArgumentException;
 
     /**
      * Sets the property (attribute, operation or association).
@@ -150,16 +148,13 @@ public abstract class AbstractFeature implements Serializable {
      * {@code Association} implementations in this feature. When default implementations are sufficient,
      * the {@link #setPropertyValue(String, Object)} method is preferred.</div>
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the argument may be changed
-     * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
-     *
      * @param  property The property to set.
      * @throws IllegalArgumentException if the type of the given property is not one of the types
      *         known to this feature, or if the property can not be set of an other reason.
      *
      * @see #setPropertyValue(String, Object)
      */
-    public abstract void setProperty(final Object property) throws IllegalArgumentException;
+    public abstract void setProperty(final Property property) throws IllegalArgumentException;
 
     /**
      * Wraps the given value in a {@link Property} object. This method is invoked only by
@@ -581,7 +576,7 @@ public abstract class AbstractFeature implements Serializable {
     public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.FEATURE);
         for (final PropertyType pt : type.getProperties(true)) {
-            final Property property = (Property) getProperty(pt.getName().toString());
+            final Property property = getProperty(pt.getName().toString());
             final DataQuality quality;
             if (property instanceof AbstractAttribute<?>) {
                 quality = ((AbstractAttribute<?>) property).quality();
