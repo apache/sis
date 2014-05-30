@@ -181,10 +181,11 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(Object)}.</p>
      *
-     * @param values The new values.
+     * @param  values The new values.
+     * @throws IllegalArgumentException if the given collection contains too many elements.
      */
     @Override
-    public void setValues(final Collection<? extends V> values) {
+    public void setValues(final Collection<? extends V> values) throws IllegalArgumentException {
         super.setValues(values);
     }
 
