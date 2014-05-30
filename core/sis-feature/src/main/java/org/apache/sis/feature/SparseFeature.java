@@ -26,6 +26,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
 
 // Branch-dependent imports
+import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.FeatureType;
 
@@ -129,7 +130,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * @throws IllegalArgumentException If the given argument is not a property name of this feature.
      */
     @Override
-    public Object getProperty(final String name) throws IllegalArgumentException {
+    public Property getProperty(final String name) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
         ensurePropertyMap();
         return getPropertyInstance(name);
@@ -157,10 +158,10 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      *         known to this feature.
      */
     @Override
-    public void setProperty(final Object property) throws IllegalArgumentException {
+    public void setProperty(final Property property) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("property", property);
-        final String name = ((Property) property).getName().toString();
-        verifyPropertyType(name, (Property) property);
+        final String name = property.getName().toString();
+        verifyPropertyType(name, property);
         ensurePropertyMap();
         properties.put(name, property);
     }
