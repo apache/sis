@@ -39,6 +39,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import java.util.Objects;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
 
@@ -592,7 +593,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * @return A new feature instance.
      * @throws IllegalStateException if this feature type {@linkplain #isAbstract() is abstract}.
      */
-    public AbstractFeature newInstance() throws IllegalStateException {
+    public Feature newInstance() throws IllegalStateException {
         if (isAbstract) {
             throw new IllegalStateException(Errors.format(Errors.Keys.AbstractType_1, getName()));
         }
