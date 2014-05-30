@@ -532,10 +532,6 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * if we compare {@code FeatureType} to {@link Class} in the Java language, then this method is equivalent
      * to {@link Class#getSuperclass()} except that feature types allow multi-inheritance.</div>
      *
-     * <div class="warning"><b>Warning:</b>
-     * The type of list elements will be changed to {@code FeatureType} if and when such interface
-     * will be defined in GeoAPI.</div>
-     *
      * @return The parents of this feature type, or an empty set if none.
      */
     @Override
