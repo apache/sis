@@ -30,10 +30,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static java.util.Collections.singletonMap;
-
-// Branch-dependent imports
-import org.opengis.feature.FeatureType;
 
 
 /**
@@ -66,17 +62,13 @@ public abstract strictfp class FeatureTestCase extends TestCase {
      * Creates a feature for twin towns.
      */
     static AbstractFeature twinTown(final boolean isSparse) {
-        final DefaultAssociationRole twinTown = DefaultAssociationRoleTest.twinTown();
-        final FeatureType            city     = twinTown.getValueType();
-        final DefaultFeatureType     type     = new DefaultFeatureType(
-                singletonMap(DefaultFeatureType.NAME_KEY, "Twin town"), false,
-                new FeatureType[] {city}, twinTown);
+        final DefaultFeatureType twinTown = DefaultAssociationRoleTest.twinTownCity();
 
-        final AbstractFeature leMans = isSparse ? new SparseFeature(type) : new DenseFeature(type);
+        final AbstractFeature leMans = isSparse ? new SparseFeature(twinTown) : new DenseFeature(twinTown);
         leMans.setPropertyValue("city", "Le Mans");
         leMans.setPropertyValue("population", 143240); // In 2011.
 
-        final AbstractFeature paderborn = isSparse ? new SparseFeature(type) : new DenseFeature(type);
+        final AbstractFeature paderborn = isSparse ? new SparseFeature(twinTown) : new DenseFeature(twinTown);
         paderborn.setPropertyValue("city", "Paderborn");
         paderborn.setPropertyValue("population", 143174); // December 31th, 2011
         paderborn.setPropertyValue("twin town", leMans);

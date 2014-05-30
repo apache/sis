@@ -36,6 +36,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.Operation;
@@ -141,9 +142,9 @@ public class FeatureFormat extends TabularFormat<Object> {
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
         final FeatureType featureType;
-        final AbstractFeature feature;
-        if (object instanceof AbstractFeature) {
-            feature     = (AbstractFeature) object;
+        final Feature feature;
+        if (object instanceof Feature) {
+            feature     = (Feature) object;
             featureType = feature.getType();
         } else if (object instanceof FeatureType) {
             featureType = (FeatureType) object;
@@ -213,7 +214,7 @@ header: for (int i=0; ; i++) {
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
                 valueType     = toString(pt.getValueType().getName());
-                valueClass    = AbstractFeature.class;
+                valueClass    = Feature.class;
             } else if (propertyType instanceof Operation) {
                 final IdentifiedType resultType = ((Operation) propertyType).getResult();
                 valueType   = toString(resultType.getName());
@@ -250,10 +251,10 @@ header: for (int i=0; ; i++) {
                     value = format.format(value, buffer, dummyFP);
                 } else if (value instanceof InternationalString) {
                     value = ((InternationalString) value).toString(displayLocale);
-                } else if (value instanceof AbstractFeature && propertyType instanceof FeatureAssociationRole) {
+                } else if (value instanceof Feature && propertyType instanceof FeatureAssociationRole) {
                     final String p = DefaultAssociationRole.getTitleProperty((FeatureAssociationRole) propertyType);
                     if (p != null) {
-                        value = ((AbstractFeature) value).getPropertyValue(p);
+                        value = ((Feature) value).getPropertyValue(p);
                     }
                 }
                 if (value != null) {

@@ -39,6 +39,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.jdk7.Objects;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
 
@@ -531,10 +532,6 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * if we compare {@code FeatureType} to {@link Class} in the Java language, then this method is equivalent
      * to {@link Class#getSuperclass()} except that feature types allow multi-inheritance.</div>
      *
-     * <div class="warning"><b>Warning:</b>
-     * The type of list elements will be changed to {@code FeatureType} if and when such interface
-     * will be defined in GeoAPI.</div>
-     *
      * @return The parents of this feature type, or an empty set if none.
      */
     @Override
@@ -592,7 +589,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * @return A new feature instance.
      * @throws IllegalStateException if this feature type {@linkplain #isAbstract() is abstract}.
      */
-    public AbstractFeature newInstance() throws IllegalStateException {
+    public Feature newInstance() throws IllegalStateException {
         if (isAbstract) {
             throw new IllegalStateException(Errors.format(Errors.Keys.AbstractType_1, getName()));
         }

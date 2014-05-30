@@ -21,6 +21,8 @@ import java.util.Iterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.opengis.feature.Property;
 
 /**
  * Base class of property that can be stored in a {@link AbstractFeature} instance.
@@ -31,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.5
  * @module
  */
-abstract class Field<V> extends Property {
+abstract class Field<V> implements Property {
     /**
      * For subclass constructors.
      */
@@ -57,6 +59,7 @@ abstract class Field<V> extends Property {
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
+    @Override
     public abstract V getValue() throws IllegalStateException;
 
     /**
@@ -86,8 +89,9 @@ abstract class Field<V> extends Property {
      * then delegates to {@link #setValue(Object)}.</p>
      *
      * @param values The new values.
+     * @throws IllegalArgumentException if the given collection contains too many elements.
      */
-    public void setValues(final Collection<? extends V> values) {
+    public void setValues(final Collection<? extends V> values) throws IllegalArgumentException {
         V value = null;
         ArgumentChecks.ensureNonNull("values", values);
         final Iterator<? extends V> it = values.iterator();
