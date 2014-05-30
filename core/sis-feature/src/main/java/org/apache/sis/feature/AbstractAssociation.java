@@ -126,9 +126,6 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      * the common case where the {@linkplain DefaultAssociationRole#getMaximumOccurs() maximum number} of
      * features is restricted to 1 or 0.
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
-     * to {@code org.opengis.feature.Feature}. This change is pending GeoAPI revision.</div>
-     *
      * @return The associated feature (may be {@code null}).
      * @throws IllegalStateException if this association contains more than one value.
      *
