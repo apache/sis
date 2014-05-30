@@ -24,6 +24,7 @@ import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
+import org.opengis.feature.Feature;
 import org.opengis.feature.PropertyType;
 
 
@@ -47,7 +48,7 @@ public final strictfp class SingletonAssociationTest extends TestCase {
      * and Le Mans, France in 836.” — source: Wikipedia</blockquote>
      */
     static AbstractAssociation twinTown() {
-        final AbstractFeature twinTown = DefaultFeatureTypeTest.city().newInstance();
+        final Feature twinTown = DefaultFeatureTypeTest.city().newInstance();
         twinTown.setPropertyValue("city", "Le Mans");
         twinTown.setPropertyValue("population", 143240); // In 2011.
         final AbstractAssociation association = new SingletonAssociation(DefaultAssociationRoleTest.twinTown());
@@ -61,8 +62,8 @@ public final strictfp class SingletonAssociationTest extends TestCase {
     @Test
     public void testWrongValue() {
         final AbstractAssociation association  = twinTown();
-        final PropertyType        population   = association.getRole().getValueType().getProperty("population");
-        final AbstractFeature     otherFeature = new DefaultFeatureType(
+        final PropertyType population   = association.getRole().getValueType().getProperty("population");
+        final Feature      otherFeature = new DefaultFeatureType(
                 singletonMap(DefaultFeatureType.NAME_KEY, "Population"), false, null, population).newInstance();
         try {
             association.setValue(otherFeature);

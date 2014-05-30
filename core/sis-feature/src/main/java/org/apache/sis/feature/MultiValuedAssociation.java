@@ -22,6 +22,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
 
@@ -57,7 +58,7 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
     /**
      * The association values.
      */
-    private CheckedArrayList<AbstractFeature> values;
+    private CheckedArrayList<Feature> values;
 
     /**
      * Creates a new association of the given role.
@@ -66,7 +67,7 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
      */
     public MultiValuedAssociation(final FeatureAssociationRole role) {
         super(role);
-        values = new CheckedArrayList<>(AbstractFeature.class);
+        values = new CheckedArrayList<>(Feature.class);
     }
 
     /**
@@ -78,9 +79,9 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
     MultiValuedAssociation(final FeatureAssociationRole role, final Object values) {
         super(role);
         if (values == null) {
-            this.values = new CheckedArrayList<>(AbstractFeature.class);
+            this.values = new CheckedArrayList<>(Feature.class);
         } else {
-            this.values = CheckedArrayList.castOrCopy((CheckedArrayList<?>) values, AbstractFeature.class);
+            this.values = CheckedArrayList.castOrCopy((CheckedArrayList<?>) values, Feature.class);
         }
     }
 
@@ -91,7 +92,7 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
      * @throws IllegalStateException if this association contains more than one value.
      */
     @Override
-    public AbstractFeature getValue() {
+    public Feature getValue() {
         switch (values.size()) {
             case 0:  return null;
             case 1:  return values.get(0);
@@ -107,7 +108,7 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
      * @return The features in a <cite>live</cite> collection.
      */
     @Override
-    public Collection<AbstractFeature> getValues() {
+    public Collection<Feature> getValues() {
         return values;
     }
 
@@ -117,7 +118,7 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
      * @param value The new value, or {@code null} for removing all values from this association.
      */
     @Override
-    public void setValue(final AbstractFeature value) {
+    public void setValue(final Feature value) {
         values.clear();
         if (value != null) {
             ensureValid(role.getValueType(), value.getType());
@@ -131,11 +132,11 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
      * @param values The new values.
      */
     @Override
-    public void setValues(final Collection<? extends AbstractFeature> values) {
+    public void setValues(final Collection<? extends Feature> values) {
         ArgumentChecks.ensureNonNull("values", values);
         final FeatureType base = role.getValueType();
         this.values.clear();
-        for (final AbstractFeature value : values) {
+        for (final Feature value : values) {
             ensureValid(base, value.getType());
             this.values.add(value);
         }
@@ -156,7 +157,7 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
     @SuppressWarnings("unchecked")
     public MultiValuedAssociation clone() throws CloneNotSupportedException {
         final MultiValuedAssociation clone = (MultiValuedAssociation) super.clone();
-        clone.values = (CheckedArrayList<AbstractFeature>) clone.values.clone();
+        clone.values = (CheckedArrayList<Feature>) clone.values.clone();
         return clone;
     }
 
