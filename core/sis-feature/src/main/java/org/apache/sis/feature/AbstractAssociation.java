@@ -28,6 +28,7 @@ import org.apache.sis.util.resources.Errors;
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.FeatureAssociationRole;
 
 
@@ -50,7 +51,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @see DefaultAssociationRole
  */
-public abstract class AbstractAssociation extends Field<Feature> implements Serializable {
+public abstract class AbstractAssociation extends Field<Feature> implements FeatureAssociation, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -115,6 +116,7 @@ public abstract class AbstractAssociation extends Field<Feature> implements Seri
      *
      * @return Information about the association.
      */
+    @Override
     public FeatureAssociationRole getRole() {
         return role;
     }

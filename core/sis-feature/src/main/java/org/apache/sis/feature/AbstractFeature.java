@@ -35,6 +35,7 @@ import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.FeatureAssociationRole;
 
 
@@ -289,7 +290,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * Returns the value of the given association, as a singleton or as a collection depending
      * on the maximum number of occurrences.
      */
-    static Object getAssociationValue(final AbstractAssociation property) {
+    static Object getAssociationValue(final FeatureAssociation property) {
         return Field.isSingleton(property.getRole().getMaximumOccurs()) ? property.getValue() : property.getValues();
     }
 
@@ -299,8 +300,8 @@ public abstract class AbstractFeature implements Feature, Serializable {
     static void setPropertyValue(final Property property, final Object value) {
         if (property instanceof Attribute<?>) {
             setAttributeValue((Attribute<?>) property, value);
-        } else if (property instanceof AbstractAssociation) {
-            setAssociationValue((AbstractAssociation) property, value);
+        } else if (property instanceof FeatureAssociation) {
+            setAssociationValue((FeatureAssociation) property, value);
         } else {
             throw unsupportedPropertyType(property.getName());
         }
@@ -341,7 +342,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * For a more exhaustive validation, use {@link Validator} instead.
      */
     @SuppressWarnings("unchecked")
-    private static void setAssociationValue(final AbstractAssociation association, final Object value) {
+    private static void setAssociationValue(final FeatureAssociation association, final Object value) {
         if (value != null) {
             final FeatureAssociationRole role = association.getRole();
             final FeatureType base = role.getValueType();
@@ -393,8 +394,8 @@ public abstract class AbstractFeature implements Feature, Serializable {
         final PropertyType pt, base = type.getProperty(name);
         if (property instanceof Attribute<?>) {
             pt = ((Attribute<?>) property).getType();
-        } else if (property instanceof AbstractAssociation) {
-            pt = ((AbstractAssociation) property).getRole();
+        } else if (property instanceof FeatureAssociation) {
+            pt = ((FeatureAssociation) property).getRole();
         } else {
             throw illegalPropertyType(base.getName(), property.getClass());
         }
