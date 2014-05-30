@@ -29,9 +29,13 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CheckedArrayList;
 
 // Branch-dependent imports
+import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.FeatureAssociationRole;
 
 
@@ -40,9 +44,9 @@ import org.opengis.feature.FeatureAssociationRole;
  * Each feature instance can provide values for the following properties:
  *
  * <ul>
- *   <li>{@linkplain AbstractAttribute  Attributes}</li>
- *   <li>{@link AbstractAssociation Associations to other features}</li>
- *   <li>{@linkplain DefaultOperation   Operations}</li>
+ *   <li>{@linkplain AbstractAttribute   Attributes}</li>
+ *   <li>{@linkplain AbstractAssociation Associations to other features}</li>
+ *   <li>{@linkplain DefaultOperation    Operations}</li>
  * </ul>
  *
  * {@code AbstractFeature} can be instantiated by calls to {@link DefaultFeatureType#newInstance()}.
@@ -72,7 +76,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @see DefaultFeatureType#newInstance()
  */
-public abstract class AbstractFeature implements Serializable {
+public abstract class AbstractFeature implements Feature, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -106,20 +110,15 @@ public abstract class AbstractFeature implements Serializable {
     /**
      * Returns information about the feature (name, characteristics, <i>etc.</i>).
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
-     * to {@code org.opengis.feature.FeatureType}. This change is pending GeoAPI revision.</div>
-     *
      * @return Information about the feature.
      */
+    @Override
     public FeatureType getType() {
         return type;
     }
 
     /**
      * Returns the property (attribute, operation or association) of the given name.
-     *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
-     * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
      *
      * <div class="note"><b>Tip:</b> This method returns the property <em>instance</em>. If only the property
      * <em>value</em> is desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a
@@ -131,7 +130,8 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @see #getPropertyValue(String)
      */
-    public abstract Object getProperty(final String name) throws IllegalArgumentException;
+    @Override
+    public abstract Property getProperty(final String name) throws IllegalArgumentException;
 
     /**
      * Sets the property (attribute, operation or association).
@@ -153,16 +153,14 @@ public abstract class AbstractFeature implements Serializable {
      * {@code Association} implementations in this feature. When default implementations are sufficient,
      * the {@link #setPropertyValue(String, Object)} method is preferred.</div>
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the argument may be changed
-     * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
-     *
      * @param  property The property to set.
      * @throws IllegalArgumentException if the type of the given property is not one of the types
      *         known to this feature, or if the property can not be set of an other reason.
      *
      * @see #setPropertyValue(String, Object)
      */
-    public abstract void setProperty(final Object property) throws IllegalArgumentException;
+    @Override
+    public abstract void setProperty(final Property property) throws IllegalArgumentException;
 
     /**
      * Wraps the given value in a {@link Property} object. This method is invoked only by
@@ -260,6 +258,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @see AbstractAttribute#getValue()
      */
+    @Override
     public abstract Object getPropertyValue(final String name) throws IllegalArgumentException;
 
     /**
@@ -278,13 +277,14 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @see AbstractAttribute#setValue(Object)
      */
+    @Override
     public abstract void setPropertyValue(final String name, final Object value) throws IllegalArgumentException;
 
     /**
      * Returns the value of the given attribute, as a singleton or as a collection depending
      * on the maximum number of occurrences.
      */
-    static Object getAttributeValue(final AbstractAttribute<?> property) {
+    static Object getAttributeValue(final Attribute<?> property) {
         return Field.isSingleton(property.getType().getMaximumOccurs()) ? property.getValue() : property.getValues();
     }
 
@@ -292,7 +292,7 @@ public abstract class AbstractFeature implements Serializable {
      * Returns the value of the given association, as a singleton or as a collection depending
      * on the maximum number of occurrences.
      */
-    static Object getAssociationValue(final AbstractAssociation property) {
+    static Object getAssociationValue(final FeatureAssociation property) {
         return Field.isSingleton(property.getRole().getMaximumOccurs()) ? property.getValue() : property.getValues();
     }
 
@@ -300,10 +300,10 @@ public abstract class AbstractFeature implements Serializable {
      * Sets the value of the given property, with some minimal checks.
      */
     static void setPropertyValue(final Property property, final Object value) {
-        if (property instanceof AbstractAttribute<?>) {
-            setAttributeValue((AbstractAttribute<?>) property, value);
-        } else if (property instanceof AbstractAssociation) {
-            setAssociationValue((AbstractAssociation) property, value);
+        if (property instanceof Attribute<?>) {
+            setAttributeValue((Attribute<?>) property, value);
+        } else if (property instanceof FeatureAssociation) {
+            setAssociationValue((FeatureAssociation) property, value);
         } else {
             throw unsupportedPropertyType(property.getName());
         }
@@ -315,7 +315,7 @@ public abstract class AbstractFeature implements Serializable {
      * use {@link Validator} instead.
      */
     @SuppressWarnings("unchecked")
-    private static <V> void setAttributeValue(final AbstractAttribute<V> attribute, final Object value) {
+    private static <V> void setAttributeValue(final Attribute<V> attribute, final Object value) {
         if (value != null) {
             final AttributeType<V> pt = attribute.getType();
             final Class<?> base = pt.getValueClass();
@@ -328,7 +328,7 @@ public abstract class AbstractFeature implements Serializable {
                      */
                     final Iterator<?> it = ((Collection<?>) value).iterator();
                     do if (!it.hasNext()) {
-                        ((AbstractAttribute) attribute).setValues((Collection) value);
+                        ((Attribute) attribute).setValues((Collection) value);
                         return;
                     } while ((element = it.next()) == null || base.isInstance(element));
                     // Found an illegal value. Exeption is thrown below.
@@ -336,7 +336,7 @@ public abstract class AbstractFeature implements Serializable {
                 throw illegalValueClass(attribute.getName(), element); // 'element' can not be null here.
             }
         }
-        ((AbstractAttribute) attribute).setValue(value);
+        ((Attribute) attribute).setValue(value);
     }
 
     /**
@@ -344,24 +344,24 @@ public abstract class AbstractFeature implements Serializable {
      * For a more exhaustive validation, use {@link Validator} instead.
      */
     @SuppressWarnings("unchecked")
-    private static void setAssociationValue(final AbstractAssociation association, final Object value) {
+    private static void setAssociationValue(final FeatureAssociation association, final Object value) {
         if (value != null) {
             final FeatureAssociationRole role = association.getRole();
             final FeatureType base = role.getValueType();
-            if (value instanceof AbstractFeature) {
-                final FeatureType actual = ((AbstractFeature) value).getType();
+            if (value instanceof Feature) {
+                final FeatureType actual = ((Feature) value).getType();
                 if (base != actual && !DefaultFeatureType.maybeAssignableFrom(base, actual)) {
                     throw illegalPropertyType(role.getName(), actual.getName());
                 }
             } else if (value instanceof Collection<?>) {
                 verifyAssociationValues(role, (Collection<?>) value);
-                association.setValues((Collection<? extends AbstractFeature>) value);
+                association.setValues((Collection<? extends Feature>) value);
                 return; // Skip the setter at the end of this method.
             } else {
                 throw illegalValueClass(association.getName(), value);
             }
         }
-        association.setValue((AbstractFeature) value);
+        association.setValue((Feature) value);
     }
 
     /**
@@ -379,7 +379,7 @@ public abstract class AbstractFeature implements Serializable {
             if (value == null) {
                 return true;
             }
-            if (previous.getClass() == value.getClass() && !(value instanceof AbstractFeature)) {
+            if (previous.getClass() == value.getClass() && !(value instanceof Feature)) {
                 return true;
             }
         }
@@ -394,10 +394,10 @@ public abstract class AbstractFeature implements Serializable {
      */
     final void verifyPropertyType(final String name, final Property property) {
         final PropertyType pt, base = type.getProperty(name);
-        if (property instanceof AbstractAttribute<?>) {
-            pt = ((AbstractAttribute<?>) property).getType();
-        } else if (property instanceof AbstractAssociation) {
-            pt = ((AbstractAssociation) property).getRole();
+        if (property instanceof Attribute<?>) {
+            pt = ((Attribute<?>) property).getType();
+        } else if (property instanceof FeatureAssociation) {
+            pt = ((FeatureAssociation) property).getRole();
         } else {
             throw illegalPropertyType(base.getName(), property.getClass());
         }
@@ -460,21 +460,21 @@ public abstract class AbstractFeature implements Serializable {
      */
     private static Object verifyAssociationValue(final FeatureAssociationRole role, final Object value) {
         final boolean isSingleton = Field.isSingleton(role.getMaximumOccurs());
-        if (value instanceof AbstractFeature) {
+        if (value instanceof Feature) {
             /*
              * If the user gave us a single value, first verify its validity.
              * Then wrap it in a list of 1 element if this property is multi-valued.
              */
-            final FeatureType valueType = ((AbstractFeature) value).getType();
+            final FeatureType valueType = ((Feature) value).getType();
             final FeatureType base = role.getValueType();
             if (base != valueType && DefaultFeatureType.maybeAssignableFrom(base, valueType)) {
-                return isSingleton ? value : singletonList(AbstractFeature.class, role.getMinimumOccurs(), value);
+                return isSingleton ? value : singletonList(Feature.class, role.getMinimumOccurs(), value);
             } else {
                 throw illegalPropertyType(role.getName(), valueType.getName());
             }
         } else if (!isSingleton && value instanceof Collection<?>) {
             verifyAssociationValues(role, (Collection<?>) value);
-            return CheckedArrayList.castOrCopy((Collection<?>) value, AbstractFeature.class);
+            return CheckedArrayList.castOrCopy((Collection<?>) value, Feature.class);
         } else {
             throw illegalValueClass(role.getName(), value);
         }
@@ -488,10 +488,10 @@ public abstract class AbstractFeature implements Serializable {
         int index = 0;
         for (final Object value : values) {
             ArgumentChecks.ensureNonNullElement("values", index, value);
-            if (!(value instanceof AbstractFeature)) {
+            if (!(value instanceof Feature)) {
                 throw illegalValueClass(role.getName(), value);
             }
-            final FeatureType type = ((AbstractFeature) value).getType();
+            final FeatureType type = ((Feature) value).getType();
             if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
                 throw illegalPropertyType(role.getName(), type.getName());
             }
@@ -586,7 +586,7 @@ public abstract class AbstractFeature implements Serializable {
     public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.FEATURE);
         for (final PropertyType pt : type.getProperties(true)) {
-            final Property property = (Property) getProperty(pt.getName().toString());
+            final Property property = getProperty(pt.getName().toString());
             final DataQuality quality;
             if (property instanceof AbstractAttribute<?>) {
                 quality = ((AbstractAttribute<?>) property).quality();

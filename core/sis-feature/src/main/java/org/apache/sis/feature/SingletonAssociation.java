@@ -18,6 +18,7 @@ package org.apache.sis.feature;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociationRole;
 
 
@@ -49,7 +50,7 @@ final class SingletonAssociation extends AbstractAssociation implements Cloneabl
     /**
      * The associated feature.
      */
-    private AbstractFeature value;
+    private Feature value;
 
     /**
      * Creates a new association of the given role.
@@ -67,7 +68,7 @@ final class SingletonAssociation extends AbstractAssociation implements Cloneabl
      * @param role  Information about the association.
      * @param value The initial value (may be {@code null}).
      */
-    SingletonAssociation(final FeatureAssociationRole role, final AbstractFeature value) {
+    SingletonAssociation(final FeatureAssociationRole role, final Feature value) {
         super(role);
         assert isSingleton(role.getMaximumOccurs());
         this.value = value;
@@ -82,7 +83,7 @@ final class SingletonAssociation extends AbstractAssociation implements Cloneabl
      * @return The associated feature (may be {@code null}).
      */
     @Override
-    public AbstractFeature getValue() {
+    public Feature getValue() {
         return value;
     }
 
@@ -93,7 +94,7 @@ final class SingletonAssociation extends AbstractAssociation implements Cloneabl
      * @throws IllegalArgumentException If the given feature is not valid for this association.
      */
     @Override
-    public void setValue(final AbstractFeature value) {
+    public void setValue(final Feature value) {
         if (value != null) {
             ensureValid(role.getValueType(), value.getType());
         }

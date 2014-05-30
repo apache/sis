@@ -127,9 +127,6 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     /**
      * Returns the type of feature values.
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
-     * to {@code org.opengis.feature.FeatureType}. This change is pending GeoAPI revision.</div>
-     *
      * @return The type of feature values.
      */
     @Override

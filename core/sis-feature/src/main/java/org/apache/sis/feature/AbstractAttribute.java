@@ -26,6 +26,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 
 
@@ -58,7 +59,7 @@ import org.opengis.feature.AttributeType;
  *
  * @see DefaultAttributeType
  */
-public abstract class AbstractAttribute<V> extends Field<V> implements Serializable {
+public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -127,6 +128,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      *
      * @return Information about the attribute.
      */
+    @Override
     public AttributeType<V> getType() {
         return type;
     }
@@ -181,10 +183,11 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(Object)}.</p>
      *
-     * @param values The new values.
+     * @param  values The new values.
+     * @throws IllegalArgumentException if the given collection contains too many elements.
      */
     @Override
-    public void setValues(final Collection<? extends V> values) {
+    public void setValues(final Collection<? extends V> values) throws IllegalArgumentException {
         super.setValues(values);
     }
 

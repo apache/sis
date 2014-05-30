@@ -21,8 +21,6 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.feature.type.AttributeType;
-import org.opengis.feature.type.FeatureType;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.ExcludedSet;
@@ -96,10 +94,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The value, as one of the following types:
      *
      * <ul>
-     *   <li>{@code Set<AttributeType>} for the {@code attributes} property</li>
-     *   <li>{@code Set<FeatureType>}   for the {@code features} property</li>
-     *   <li>{@code Set<FeatureType>}   for the {@code featureInstances} property</li>
-     *   <li>{@code Set<AttributeType>} for the {@code attributeInstances} property</li>
+     *   <li>{@code Set<CharSequence>} for the {@code attributes} property</li>
+     *   <li>{@code Set<CharSequence>} for the {@code features} property</li>
+     *   <li>{@code Set<CharSequence>} for the {@code featureInstances} property</li>
+     *   <li>{@code Set<CharSequence>} for the {@code attributeInstances} property</li>
      *   <li>{@code String} for the {@code dataset} property</li>
      *   <li>{@code String} for the {@code other} property</li>
      * </ul>
@@ -132,31 +130,23 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
         super(object);
         if (object != null) {
             for (byte i=ATTRIBUTES; i<=OTHER; i++) {
-                Object candidate;
+                Collection<? extends CharSequence> props = null;
+                Object value = null;
                 switch (i) {
-                    case ATTRIBUTES:          candidate = object.getAttributes();         break;
-                    case FEATURES:            candidate = object.getFeatures();           break;
-                    case FEATURE_INSTANCES:   candidate = object.getFeatureInstances();   break;
-                    case ATTRIBUTE_INSTANCES: candidate = object.getAttributeInstances(); break;
-                    case DATASET:             candidate = object.getDataset();            break;
-                    case OTHER:               candidate = object.getOther();              break;
+                    case ATTRIBUTES:          props = object.getAttributes();         break;
+                    case FEATURES:            props = object.getFeatures();           break;
+                    case FEATURE_INSTANCES:   props = object.getFeatureInstances();   break;
+                    case ATTRIBUTE_INSTANCES: props = object.getAttributeInstances(); break;
+                    case DATASET:             value = object.getDataset();            break;
+                    case OTHER:               value = object.getOther();              break;
                     default: throw new AssertionError(i);
                 }
-                if (candidate != null) {
-                    switch (i) {
-                        case ATTRIBUTES:
-                        case ATTRIBUTE_INSTANCES: {
-                            candidate = copySet((Collection<AttributeType>) candidate, AttributeType.class);
-                            break;
-                        }
-                        case FEATURES:
-                        case FEATURE_INSTANCES: {
-                            candidate = copySet((Collection<FeatureType>) candidate, FeatureType.class);
-                            break;
-                        }
-                    }
-                    value = candidate;
-                    property = i;
+                if (props != null) {
+                    value = copySet(props, CharSequence.class);
+                }
+                if (value != null) {
+                    this.value = value;
+                    this.property = i;
                     break;
                 }
             }
@@ -189,32 +179,30 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     }
 
     /**
-     * Returns the given value casted to a {@code Set} of elements of the given type.
-     * It is caller responsibility to ensure that the cast is valid, as element type
-     * is verified only when assertions are enabled.
+     * Returns the given value casted to a {@code Set<CharSequence>}.
      */
     @SuppressWarnings("unchecked")
-    private static <E> Set<E> cast(final Object value, final Class<E> type) {
-        assert ((CheckedContainer<?>) value).getElementType() == type;
-        return (Set<E>) value;
+    private static Set<CharSequence> cast(final Object value) {
+        assert ((CheckedContainer<?>) value).getElementType() == CharSequence.class;
+        return (Set<CharSequence>) value;
     }
 
     /**
      * Returns the set of properties identified by the {@code code} argument,
      * or an unmodifiable empty set if another value is defined.
      */
-    private <E> Set<E> getProperty(final Class<E> type, final byte code) {
+    private Set<CharSequence> getProperty(final byte code) {
         final Object value = this.value;
         if (value != null) {
             if (property == code) {
-                return cast(value, type);
+                return cast(value);
             } else if (!(value instanceof Set) || !((Set<?>) value).isEmpty()) {
-                return isMarshalling() ? null : new ExcludedSet<E>(NAMES[code-1], NAMES[property-1]);
+                return isMarshalling() ? null : new ExcludedSet<CharSequence>(NAMES[code-1], NAMES[property-1]);
             }
         }
         // Unconditionally create a new set, because the
         // user may hold a reference to the previous one.
-        final Set<E> c = nonNullSet(null, type);
+        final Set<CharSequence> c = nonNullSet(null, CharSequence.class);
         property = code;
         this.value = c;
         return c;
@@ -227,17 +215,17 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @param caller The caller method, for logging purpose.
      * @param code   The property which is going to be set.
      */
-    private <E> void setProperty(final Set<? extends E> newValue, final Class<E> type, final byte code) {
-        Set<E> c = null;
+    private void setProperty(final Set<? extends CharSequence> newValue, final byte code) {
+        Set<CharSequence> c = null;
         if (property == code) {
-            c = cast(value, type);
+            c = cast(value);
         } else if (isNullOrEmpty(newValue)) {
             return;
         } else {
             warningOnOverwrite(code);
             property = code;
         }
-        value = writeSet(newValue, c, type);
+        value = writeSet(newValue, c, CharSequence.class);
     }
 
     /**
@@ -262,8 +250,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
-    public Set<AttributeType> getAttributes() {
-        return getProperty(AttributeType.class, ATTRIBUTES);
+    public Set<CharSequence> getAttributes() {
+        return getProperty(ATTRIBUTES);
     }
 
     /**
@@ -275,8 +263,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValues The new attributes.
      */
-    public void setAttributes(final Set<? extends AttributeType> newValues) {
-        setProperty(newValues, AttributeType.class, ATTRIBUTES);
+    public void setAttributes(final Set<? extends CharSequence> newValues) {
+        setProperty(newValues, ATTRIBUTES);
     }
 
     /**
@@ -289,8 +277,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
-    public Set<FeatureType> getFeatures() {
-        return getProperty(FeatureType.class, FEATURES);
+    public Set<CharSequence> getFeatures() {
+        return getProperty(FEATURES);
     }
 
     /**
@@ -302,8 +290,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValues The new features.
      */
-    public void setFeatures(final Set<? extends FeatureType> newValues) {
-        setProperty(newValues, FeatureType.class, FEATURES);
+    public void setFeatures(final Set<? extends CharSequence> newValues) {
+        setProperty(newValues, FEATURES);
     }
 
     /**
@@ -316,8 +304,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
-    public Set<FeatureType> getFeatureInstances() {
-        return getProperty(FeatureType.class, FEATURE_INSTANCES);
+    public Set<CharSequence> getFeatureInstances() {
+        return getProperty(FEATURE_INSTANCES);
     }
 
     /**
@@ -329,8 +317,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValues The new feature instances.
      */
-    public void setFeatureInstances(final Set<? extends FeatureType> newValues) {
-        setProperty(newValues, FeatureType.class, FEATURE_INSTANCES);
+    public void setFeatureInstances(final Set<? extends CharSequence> newValues) {
+        setProperty(newValues, FEATURE_INSTANCES);
     }
 
     /**
@@ -343,8 +331,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
-    public Set<AttributeType> getAttributeInstances() {
-        return getProperty(AttributeType.class, ATTRIBUTE_INSTANCES);
+    public Set<CharSequence> getAttributeInstances() {
+        return getProperty(ATTRIBUTE_INSTANCES);
     }
 
     /**
@@ -356,8 +344,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValues The new attribute instances.
      */
-    public void setAttributeInstances(final Set<? extends AttributeType> newValues) {
-        setProperty(newValues, AttributeType.class, ATTRIBUTE_INSTANCES);
+    public void setAttributeInstances(final Set<? extends CharSequence> newValues) {
+        setProperty(newValues, ATTRIBUTE_INSTANCES);
     }
 
     /**
