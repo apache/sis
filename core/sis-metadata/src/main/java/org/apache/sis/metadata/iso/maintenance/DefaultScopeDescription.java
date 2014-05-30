@@ -21,8 +21,6 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.feature.type.AttributeType;
-import org.opengis.feature.type.FeatureType;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.ExcludedSet;
@@ -32,6 +30,10 @@ import org.apache.sis.util.resources.Messages;
 
 import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+
+// Branch-dependent imports
+import org.opengis.feature.type.AttributeType;
+import org.opengis.feature.type.FeatureType;
 
 
 /**
@@ -255,6 +257,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the attributes to which the information applies.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @return Attributes to which the information applies.
      *
      * {@section Conditions}
@@ -273,6 +279,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @param newValues The new attributes.
      */
     public void setAttributes(final Set<? extends AttributeType> newValues) {
@@ -281,6 +291,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
 
     /**
      * Returns the features to which the information applies.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
      * @return Features to which the information applies.
      *
@@ -300,6 +314,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @param newValues The new features.
      */
     public void setFeatures(final Set<? extends FeatureType> newValues) {
@@ -308,6 +326,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
 
     /**
      * Returns the feature instances to which the information applies.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
      * @return Feature instances to which the information applies.
      *
@@ -327,6 +349,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @param newValues The new feature instances.
      */
     public void setFeatureInstances(final Set<? extends FeatureType> newValues) {
@@ -335,6 +361,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
 
     /**
      * Returns the attribute instances to which the information applies.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
      * @return Attribute instances to which the information applies.
      *
@@ -354,6 +384,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @param newValues The new attribute instances.
      */
     public void setAttributeInstances(final Set<? extends AttributeType> newValues) {
@@ -362,6 +396,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
 
     /**
      * Returns the dataset to which the information applies.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
      * @return Dataset to which the information applies, or {@code null}.
      */
@@ -377,6 +415,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * {@section Effect on other properties}
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
      *
      * @param newValue The new dataset.
      */

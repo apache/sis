@@ -29,10 +29,12 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Geometry;
 
-import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.storage.DataStoreException;
+
+// Branch-dependent imports
+import org.apache.sis.feature.AbstractFeature;
 
 
 /**
