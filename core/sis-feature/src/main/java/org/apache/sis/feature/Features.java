@@ -20,6 +20,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 
 
@@ -81,7 +82,7 @@ public final class Features extends Static {
      * @category verification
      */
     @SuppressWarnings("unchecked")
-    public static <V> AbstractAttribute<V> cast(final AbstractAttribute<?> attribute, final Class<V> valueClass)
+    public static <V> Attribute<V> cast(final Attribute<?> attribute, final Class<V> valueClass)
             throws ClassCastException
     {
         if (attribute != null) {
@@ -93,6 +94,6 @@ public final class Features extends Static {
                         attribute.getName(), valueClass, actual));
             }
         }
-        return (AbstractAttribute<V>) attribute;
+        return (Attribute<V>) attribute;
     }
 }

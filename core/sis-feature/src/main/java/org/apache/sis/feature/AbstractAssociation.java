@@ -26,7 +26,9 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.FeatureAssociationRole;
 
 
@@ -49,7 +51,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @see DefaultAssociationRole
  */
-public abstract class AbstractAssociation extends Field<AbstractFeature> implements Serializable {
+public abstract class AbstractAssociation extends Field<Feature> implements FeatureAssociation, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -94,7 +96,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     static AbstractAssociation create(final FeatureAssociationRole role, final Object value) {
         ArgumentChecks.ensureNonNull("role", role);
         return isSingleton(role.getMaximumOccurs())
-               ? new SingletonAssociation(role, (AbstractFeature) value)
+               ? new SingletonAssociation(role, (Feature) value)
                : new MultiValuedAssociation(role, value);
     }
 
@@ -114,6 +116,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      *
      * @return Information about the association.
      */
+    @Override
     public FeatureAssociationRole getRole() {
         return role;
     }
@@ -123,16 +126,13 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * the common case where the {@linkplain DefaultAssociationRole#getMaximumOccurs() maximum number} of
      * features is restricted to 1 or 0.
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
-     * to {@code org.opengis.feature.Feature}. This change is pending GeoAPI revision.</div>
-     *
      * @return The associated feature (may be {@code null}).
      * @throws IllegalStateException if this association contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
     @Override
-    public abstract AbstractFeature getValue();
+    public abstract Feature getValue();
 
     /**
      * Returns all features, or an empty collection if none.
@@ -145,15 +145,12 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * @return The features in a <cite>live</cite> collection.
      */
     @Override
-    public Collection<AbstractFeature> getValues() {
+    public Collection<Feature> getValues() {
         return super.getValues();
     }
 
     /**
      * Sets the associated feature.
-     *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the argument type may be changed
-     * to {@code org.opengis.feature.Feature}. This change is pending GeoAPI revision.</div>
      *
      * {@section Validation}
      * The amount of validation performed by this method is implementation dependent.
@@ -167,7 +164,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
     @Override
-    public abstract void setValue(final AbstractFeature value);
+    public abstract void setValue(final Feature value) throws IllegalArgumentException;
 
     /**
      * Sets the features. All previous values are replaced by the given collection.
@@ -175,10 +172,11 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(AbstractFeature)}.</p>
      *
-     * @param values The new values.
+     * @param  values The new values.
+     * @throws IllegalArgumentException if the given collection contains too many elements.
      */
     @Override
-    public void setValues(final Collection<? extends AbstractFeature> values) {
+    public void setValues(final Collection<? extends Feature> values) throws IllegalArgumentException {
         super.setValues(values);
     }
 
@@ -224,7 +222,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     @Override
     public String toString() {
         final String pt = DefaultAssociationRole.getTitleProperty(role);
-        final Iterator<AbstractFeature> it = getValues().iterator();
+        final Iterator<Feature> it = getValues().iterator();
         return FieldType.toString("FeatureAssociation", role, role.getValueType().getName(), new Iterator<Object>() {
             @Override public boolean hasNext() {
                 return it.hasNext();

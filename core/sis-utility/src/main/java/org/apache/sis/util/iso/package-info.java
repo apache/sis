@@ -48,14 +48,21 @@
  *
  * {@section Anatomy of a name}
  * Names may be {@linkplain org.apache.sis.util.iso.AbstractName#toFullyQualifiedName()
- * fully qualified} (like {@code "org.opengis.util.Record"}), or they may be relative to a
- * {@linkplain org.apache.sis.util.iso.AbstractName#scope() scope} (like {@code "util.Record"}
- * in the {@code "org.opengis"} scope). In the following illustration,
+ * fully qualified} (like {@code "org.apache.sis.util.iso"}), or they may be relative to a
+ * {@linkplain org.apache.sis.util.iso.AbstractName#scope() scope} (like {@code "util.iso"}
+ * in the {@code "org.apache.sis"} scope). In the following illustration,
  * each line is one possible construction for {@code "org.apache.sis.util.iso"}.
- * For each construction, the first columns shows the name in a yellow background. The second and third columns show the
- * (<span style="background:LightSkyBlue"><var>head</var></span>.<span style="background:Yellow"><var>tail</var></span>) and
- * (<span style="background:LightSkyBlue"><var>path</var></span>.<span style="background:Yellow"><var>tip</var></span>)
- * pairs of attributes, respectively:
+ * For each construction:
+ * <ul>
+ *   <li>The first columns shows the <span style="background:LawnGreen">name</span> in a green background.</li>
+ *   <li>The second and third columns show the
+ *       (<span style="background:LightSkyBlue"><var>head</var></span>.<span style="background:Yellow"><var>tail</var></span>) and
+ *       (<span style="background:LightSkyBlue"><var>path</var></span>.<span style="background:Yellow"><var>tip</var></span>)
+ *       components, respectively.</li>
+ *   <li>The parts without colored background do not appear in the
+ *       {@linkplain org.apache.sis.util.iso.AbstractName#toString() string representation} or in the
+ *       {@linkplain org.apache.sis.util.iso.AbstractName#getParsedNames() list of parsed names}.</li>
+ * </ul>
  *
  * <table class="compact" style="border-spacing:21pt 0; white-space: nowrap" summary="Anatomy of a name">
  *   <tr>
@@ -64,28 +71,28 @@
  *     <th>{@linkplain org.apache.sis.util.iso.DefaultScopedName#path() path}.{@linkplain org.apache.sis.util.iso.AbstractName#tip() tip}</th>
  *     <th>Type</th>
  *   </tr><tr>
- *     <td><code><span style="background:Yellow">org.apache.sis.util.iso</span></code></td>
+ *     <td><code><span style="background:LawnGreen">org.apache.sis.util.iso</span></code></td>
  *     <td><code><span style="background:LightSkyBlue">org.</span><span style="background:Yellow">apache.sis.util.iso</span></code></td>
  *     <td><code><span style="background:LightSkyBlue">org.apache.sis.util.</span><span style="background:Yellow">iso</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name} with
  *         {@linkplain org.apache.sis.util.iso.DefaultNameSpace#isGlobal() global namespace}</td>
  *   </tr><tr>
- *     <td><code><span style="background:LightSkyBlue">org</span>.<span style="background:Yellow">apache.sis.util.iso</span></code></td>
+ *     <td><code>org.<span style="background:LawnGreen">apache.sis.util.iso</span></code></td>
  *     <td><code>org.<span style="background:LightSkyBlue">apache.</span><span style="background:Yellow">sis.util.iso</span></code></td>
  *     <td><code>org.<span style="background:LightSkyBlue">apache.sis.util.</span><span style="background:Yellow">iso</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name}</td>
  *   </tr><tr>
- *     <td><code><span style="background:LightSkyBlue">org.apache</span>.<span style="background:Yellow">sis.util.iso</span></code></td>
+ *     <td><code>org.apache.<span style="background:LawnGreen">sis.util.iso</span></code></td>
  *     <td><code>org.apache.<span style="background:LightSkyBlue">sis.</span><span style="background:Yellow">util.iso</span></code></td>
  *     <td><code>org.apache.<span style="background:LightSkyBlue">sis.util.</span><span style="background:Yellow">iso</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name}</td>
  *   </tr><tr>
- *     <td><code><span style="background:LightSkyBlue">org.apache.sis</span>.<span style="background:Yellow">util.iso</span></code></td>
+ *     <td><code>org.apache.sis.<span style="background:LawnGreen">util.iso</span></code></td>
  *     <td><code>org.apache.sis.<span style="background:LightSkyBlue">util.</span><span style="background:Yellow">iso</span></code></td>
  *     <td><code>org.apache.sis.<span style="background:LightSkyBlue">util.</span><span style="background:Yellow">iso</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name}</td>
  *   </tr><tr>
- *     <td><code><span style="background:LightSkyBlue">org.apache.sis.util</span>.<span style="background:Yellow">iso</span></code></td>
+ *     <td><code>org.apache.sis.util.<span style="background:LawnGreen">iso</span></code></td>
  *     <td><code>org.apache.sis.util.<span style="background:LightSkyBlue">iso</span></code></td>
  *     <td><code>org.apache.sis.util.<span style="background:Yellow">iso</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultLocalName Local name}</td>
