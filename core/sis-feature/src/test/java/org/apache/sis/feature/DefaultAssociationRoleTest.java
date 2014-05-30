@@ -23,6 +23,9 @@ import org.junit.Test;
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.feature.FeatureType;
+
 
 /**
  * Tests {@link DefaultAssociationRole}.
@@ -41,6 +44,15 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
     static DefaultAssociationRole twinTown() {
         return new DefaultAssociationRole(singletonMap(DefaultAssociationRole.NAME_KEY, "twin town"),
                 DefaultFeatureTypeTest.city(), 0, 1);
+    }
+
+    /**
+     * Returns a City feature type which may have a twin town.
+     */
+    static DefaultFeatureType twinTownCity() {
+        final DefaultAssociationRole twinTown = twinTown();
+        return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "Twin town"), false,
+                new FeatureType[] {twinTown.getValueType()}, twinTown);
     }
 
     /**

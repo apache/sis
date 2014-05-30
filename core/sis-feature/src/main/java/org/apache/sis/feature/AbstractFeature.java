@@ -40,9 +40,9 @@ import org.opengis.feature.FeatureAssociationRole;
  * Each feature instance can provide values for the following properties:
  *
  * <ul>
- *   <li>{@linkplain AbstractAttribute  Attributes}</li>
- *   <li>{@link AbstractAssociation Associations to other features}</li>
- *   <li>{@linkplain DefaultOperation   Operations}</li>
+ *   <li>{@linkplain AbstractAttribute   Attributes}</li>
+ *   <li>{@linkplain AbstractAssociation Associations to other features}</li>
+ *   <li>{@linkplain DefaultOperation    Operations}</li>
  * </ul>
  *
  * {@code AbstractFeature} can be instantiated by calls to {@link DefaultFeatureType#newInstance()}.
@@ -105,9 +105,6 @@ public abstract class AbstractFeature implements Serializable {
 
     /**
      * Returns information about the feature (name, characteristics, <i>etc.</i>).
-     *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
-     * to {@code org.opengis.feature.FeatureType}. This change is pending GeoAPI revision.</div>
      *
      * @return Information about the feature.
      */
