@@ -47,11 +47,12 @@
  * </ul>
  *
  * {@section Anatomy of a name}
- * Names may be {@linkplain org.apache.sis.util.iso.AbstractName#toFullyQualifiedName()
- * fully qualified} (like {@code "org.apache.sis.util.iso"}), or they may be relative to a
- * {@linkplain org.apache.sis.util.iso.AbstractName#scope() scope} (like {@code "util.iso"}
- * in the {@code "org.apache.sis"} scope). In the following illustration,
- * each line is one possible construction for {@code "org.apache.sis.util.iso"}.
+ * Names may be {@linkplain org.apache.sis.util.iso.AbstractName#toFullyQualifiedName() fully qualified}
+ * (like {@code "urn:ogc:def:crs:EPSG::4326"}),
+ * or they may be relative to a {@linkplain org.apache.sis.util.iso.AbstractName#scope() scope}
+ * (like {@code "EPSG::4326"} in the {@code "urn:ogc:def:crs"} scope).
+ * In the following illustration, each line is one possible construction for {@code "urn:ogc:crs:epsg:4326"}
+ * (taken as an abridged form of above URN for this example only).
  * For each construction:
  * <ul>
  *   <li>The first columns shows the <span style="background:LawnGreen">name</span> in a green background.</li>
@@ -71,30 +72,30 @@
  *     <th>{@linkplain org.apache.sis.util.iso.DefaultScopedName#path() path}.{@linkplain org.apache.sis.util.iso.AbstractName#tip() tip}</th>
  *     <th>Type</th>
  *   </tr><tr>
- *     <td><code><span style="background:LawnGreen">org.apache.sis.util.iso</span></code></td>
- *     <td><code><span style="background:LightSkyBlue">org.</span><span style="background:Yellow">apache.sis.util.iso</span></code></td>
- *     <td><code><span style="background:LightSkyBlue">org.apache.sis.util.</span><span style="background:Yellow">iso</span></code></td>
+ *     <td><code><span style="background:LawnGreen">urn:ogc:crs:epsg:4326</span></code></td>
+ *     <td><code><span style="background:LightSkyBlue">urn:</span><span style="background:Yellow">ogc:crs:epsg:4326</span></code></td>
+ *     <td><code><span style="background:LightSkyBlue">urn:ogc:crs:epsg:</span><span style="background:Yellow">4326</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name} with
  *         {@linkplain org.apache.sis.util.iso.DefaultNameSpace#isGlobal() global namespace}</td>
  *   </tr><tr>
- *     <td><code>org.<span style="background:LawnGreen">apache.sis.util.iso</span></code></td>
- *     <td><code>org.<span style="background:LightSkyBlue">apache.</span><span style="background:Yellow">sis.util.iso</span></code></td>
- *     <td><code>org.<span style="background:LightSkyBlue">apache.sis.util.</span><span style="background:Yellow">iso</span></code></td>
+ *     <td><code>urn:<span style="background:LawnGreen">ogc:crs:epsg:4326</span></code></td>
+ *     <td><code>urn:<span style="background:LightSkyBlue">ogc:</span><span style="background:Yellow">crs:epsg:4326</span></code></td>
+ *     <td><code>urn:<span style="background:LightSkyBlue">ogc:crs:epsg:</span><span style="background:Yellow">4326</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name}</td>
  *   </tr><tr>
- *     <td><code>org.apache.<span style="background:LawnGreen">sis.util.iso</span></code></td>
- *     <td><code>org.apache.<span style="background:LightSkyBlue">sis.</span><span style="background:Yellow">util.iso</span></code></td>
- *     <td><code>org.apache.<span style="background:LightSkyBlue">sis.util.</span><span style="background:Yellow">iso</span></code></td>
+ *     <td><code>urn:ogc:<span style="background:LawnGreen">crs:epsg:4326</span></code></td>
+ *     <td><code>urn:ogc:<span style="background:LightSkyBlue">crs:</span><span style="background:Yellow">epsg:4326</span></code></td>
+ *     <td><code>urn:ogc:<span style="background:LightSkyBlue">crs:epsg:</span><span style="background:Yellow">4326</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name}</td>
  *   </tr><tr>
- *     <td><code>org.apache.sis.<span style="background:LawnGreen">util.iso</span></code></td>
- *     <td><code>org.apache.sis.<span style="background:LightSkyBlue">util.</span><span style="background:Yellow">iso</span></code></td>
- *     <td><code>org.apache.sis.<span style="background:LightSkyBlue">util.</span><span style="background:Yellow">iso</span></code></td>
+ *     <td><code>urn:ogc:crs:<span style="background:LawnGreen">epsg:4326</span></code></td>
+ *     <td><code>urn:ogc:crs:<span style="background:LightSkyBlue">epsg:</span><span style="background:Yellow">4326</span></code></td>
+ *     <td><code>urn:ogc:crs:<span style="background:LightSkyBlue">epsg:</span><span style="background:Yellow">4326</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name}</td>
  *   </tr><tr>
- *     <td><code>org.apache.sis.util.<span style="background:LawnGreen">iso</span></code></td>
- *     <td><code>org.apache.sis.util.<span style="background:LightSkyBlue">iso</span></code></td>
- *     <td><code>org.apache.sis.util.<span style="background:Yellow">iso</span></code></td>
+ *     <td><code>urn:ogc:crs:epsg:<span style="background:LawnGreen">4326</span></code></td>
+ *     <td><code>urn:ogc:crs:epsg:<span style="background:LightSkyBlue">4326</span></code></td>
+ *     <td><code>urn:ogc:crs:epsg:<span style="background:Yellow">4326</span></code></td>
  *     <td>{@linkplain org.apache.sis.util.iso.DefaultLocalName Local name}</td>
  *   </tr>
  * </table>
