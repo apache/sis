@@ -25,7 +25,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 
-// Related to JDK7.
+// Branch-dependent imports
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.NoSuchFileException;

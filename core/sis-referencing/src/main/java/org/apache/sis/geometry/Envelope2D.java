@@ -49,7 +49,7 @@ import static org.apache.sis.geometry.AbstractEnvelope.fixMedian;
 import static org.apache.sis.geometry.AbstractEnvelope.isWrapAround;
 import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

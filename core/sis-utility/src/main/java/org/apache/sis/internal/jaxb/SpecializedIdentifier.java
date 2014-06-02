@@ -32,7 +32,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.Citations;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

@@ -27,7 +27,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.nio.charset.StandardCharsets;
 
 

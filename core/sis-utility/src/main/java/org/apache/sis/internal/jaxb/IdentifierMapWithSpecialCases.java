@@ -25,7 +25,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.XLink;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 
