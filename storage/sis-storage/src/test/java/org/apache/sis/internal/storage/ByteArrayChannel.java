@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import org.apache.sis.util.ArgumentChecks;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.nio.channels.ByteChannel;
 
 

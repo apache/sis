@@ -36,7 +36,7 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
 
 import static org.apache.sis.internal.system.DelayedExecutor.executeDaemonTask;
 
-// Related to JDK8
+// Branch-dependent imports
 import org.apache.sis.internal.jdk8.Supplier;
 
 

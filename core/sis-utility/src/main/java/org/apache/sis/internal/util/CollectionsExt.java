@@ -26,7 +26,7 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
-// Related to JDK7 and JDK8
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 import org.apache.sis.internal.jdk8.Function;
 

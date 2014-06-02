@@ -119,11 +119,11 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     }
 
     /**
-     * Creates a namespace having the given name. Despite the "create" name, this method tries
-     * to returns an existing instance when possible.
+     * Returns a namespace having the given name. Despite the "create" name, this method tries to
+     * return an existing instance when possible. The namespace is characterized by the given name,
+     * and optionally by the following properties:
      *
-     * <p>This method can receive an optional map of properties. Recognized entries are:</p>
-     * <table class="sis">
+     * <blockquote><table class="sis">
      *   <caption>Recognized properties</caption>
      *   <tr>
      *     <th>Property name</th>
@@ -131,27 +131,31 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *   </tr>
      *   <tr>
      *     <td>{@code "separator"}</td>
-     *     <td>The separator to insert between
-     *     {@linkplain AbstractName#getParsedNames() parsed names} in that namespace.
-     *     For HTTP namespace, it is {@code "."}.
-     *     For URN namespace, it is typically {@code ":"}.</td>
+     *     <td>The separator to insert between {@linkplain AbstractName#getParsedNames() parsed names}
+     *         in that namespace.</td>
      *   </tr>
      *   <tr>
      *     <td>{@code "separator.head"}</td>
-     *     <td>The separator to insert between the namespace and the
-     *     {@linkplain AbstractName#head() head}. For HTTP namespace, it is {@code "://"}.
-     *     For URN namespace, it is typically {@code ":"}. If this entry is omitted, then
-     *     the default is the same value than the {@code "separator"} entry.</td>
+     *     <td>The separator to insert between the namespace and the {@linkplain AbstractName#head() head}.<br>
+     *         If omitted, then the default is the same value than {@code "separator"}.</td>
      *   </tr>
-     * </table>
+     * </table></blockquote>
+     *
+     * <div class="note"><b>Examples:</b>
+     * <ul>
+     *   <li>For URN namespace, {@code separator} = {@code ":"} is typically sufficient.</li>
+     *   <li>For HTTP namespace, {@code separator.head} = {@code "://"} and {@code separator} = {@code "."}.</li>
+     * </ul></div>
      *
      * @param name
      *          The name of the namespace to be returned. This argument can be created using
-     *          <code>{@linkplain #createGenericName(NameSpace, CharSequence[]) createGenericName}(null, parsedNames)</code>.
+     *          <code>{@linkplain #createGenericName(NameSpace, CharSequence[]) createGenericName}(null, namespace)</code>.
      * @param properties
      *          An optional map of properties to be assigned to the namespace, or {@code null} if none.
      *
      * @return A namespace having the given name and separator.
+     *
+     * @see Names#createLocalName(CharSequence, String, CharSequence)
      */
     @Override
     public NameSpace createNameSpace(final GenericName name, final Map<String,?> properties) {
@@ -212,6 +216,8 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @param  name The local name as a string or an international string.
      * @return The local name for the given character sequence.
      * @throws NullArgumentException If the {@code name} argument is null.
+     *
+     * @see Names#createLocalName(CharSequence, String, CharSequence)
      */
     @Override
     public LocalName createLocalName(final NameSpace scope, final CharSequence name) {
