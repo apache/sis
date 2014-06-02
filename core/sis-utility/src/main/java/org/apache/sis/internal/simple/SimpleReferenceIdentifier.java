@@ -27,7 +27,7 @@ import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

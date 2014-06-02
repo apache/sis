@@ -32,7 +32,7 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

@@ -28,7 +28,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

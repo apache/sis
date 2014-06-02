@@ -34,7 +34,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

@@ -30,7 +30,7 @@ import org.apache.sis.util.iso.Types;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

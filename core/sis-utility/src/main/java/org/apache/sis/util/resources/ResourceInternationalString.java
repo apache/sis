@@ -26,7 +26,7 @@ import java.util.MissingResourceException;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.AbstractInternationalString;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

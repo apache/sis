@@ -23,7 +23,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

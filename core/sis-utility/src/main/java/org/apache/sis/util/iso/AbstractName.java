@@ -30,7 +30,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

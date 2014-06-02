@@ -23,7 +23,7 @@ import java.lang.reflect.Array;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.CheckedContainer;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 
