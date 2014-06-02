@@ -41,7 +41,7 @@ import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

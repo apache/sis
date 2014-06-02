@@ -23,7 +23,7 @@ import javax.measure.unit.Unit;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.logging.WarningListeners;
 
-// Related to JDK7.
+// Branch-dependent imports
 import java.util.Objects;
 
 

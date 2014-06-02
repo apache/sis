@@ -30,7 +30,7 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

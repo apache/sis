@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Messages;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

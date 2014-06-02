@@ -41,7 +41,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

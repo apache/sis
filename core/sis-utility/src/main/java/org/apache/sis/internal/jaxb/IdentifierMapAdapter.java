@@ -34,7 +34,7 @@ import org.apache.sis.xml.IdentifierSpace;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

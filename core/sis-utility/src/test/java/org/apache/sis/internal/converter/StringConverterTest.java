@@ -40,7 +40,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;

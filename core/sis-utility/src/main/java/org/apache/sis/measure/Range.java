@@ -27,7 +27,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Numbers;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

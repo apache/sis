@@ -38,7 +38,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

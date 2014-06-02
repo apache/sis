@@ -37,7 +37,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

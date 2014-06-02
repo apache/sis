@@ -40,7 +40,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

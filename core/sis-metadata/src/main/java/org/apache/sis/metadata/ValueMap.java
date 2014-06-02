@@ -26,7 +26,7 @@ import org.apache.sis.util.Debug;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

@@ -32,7 +32,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 
@@ -679,6 +679,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @return {@code true} if the two objects are equal, ignoring the parent node.
          */
         @Override
+        @SuppressWarnings("null")
         public boolean equals(final Object other) {
             if (other == this) {
                 return true;

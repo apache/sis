@@ -21,7 +21,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Version;
 import org.apache.sis.internal.util.Utilities;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

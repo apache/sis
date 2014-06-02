@@ -24,7 +24,7 @@ import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 
