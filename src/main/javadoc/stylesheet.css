@@ -71,6 +71,12 @@ table.sis tr th.hsep {
   border-top-color: darkgray;
 }
 
+table.sis tr td.hsep {
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: darkgray;
+}
+
 table.sis tr th.sep {
   border-left-width: 1px;
   border-left-style: solid;

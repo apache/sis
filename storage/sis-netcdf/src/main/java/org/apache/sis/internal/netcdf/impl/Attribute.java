@@ -21,7 +21,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 
-// Related to JDK8
+// Branch-dependent imports
 import org.apache.sis.internal.jdk8.Function;
 
 

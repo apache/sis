@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

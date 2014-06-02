@@ -47,7 +47,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 import org.apache.sis.measure.Units;
 
-// Related to JDK8
+// Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.internal.jdk8.Function;
 

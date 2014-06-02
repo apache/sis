@@ -47,7 +47,7 @@ import static org.apache.sis.internal.util.Numerics.epsilonEqual;
 import static org.apache.sis.util.ArgumentChecks.ensureStrictlyPositive;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

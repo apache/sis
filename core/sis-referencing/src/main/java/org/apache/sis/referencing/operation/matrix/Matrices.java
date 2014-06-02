@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.referencing.AxisDirections;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.JDK7;
 import org.apache.sis.internal.jdk7.Objects;
 

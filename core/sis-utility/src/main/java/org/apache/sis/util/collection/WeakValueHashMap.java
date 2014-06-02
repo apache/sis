@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.WeakEntry.*;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

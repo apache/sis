@@ -33,7 +33,7 @@ import org.apache.sis.util.Debug;
 
 import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForName;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

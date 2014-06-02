@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.util;
 
-import org.apache.sis.internal.jdk7.Objects;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
@@ -29,6 +28,9 @@ import static org.apache.sis.util.CharSequences.equalsFiltered;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.CharSequences.isUnicodeIdentifier;
 import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
