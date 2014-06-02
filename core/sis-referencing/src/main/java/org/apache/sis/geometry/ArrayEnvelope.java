@@ -41,7 +41,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

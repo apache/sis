@@ -63,7 +63,7 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
 import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

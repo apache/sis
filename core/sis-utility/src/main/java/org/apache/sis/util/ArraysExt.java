@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.lang.reflect.Array;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

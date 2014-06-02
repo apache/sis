@@ -22,7 +22,7 @@ import javax.measure.converter.ConversionException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

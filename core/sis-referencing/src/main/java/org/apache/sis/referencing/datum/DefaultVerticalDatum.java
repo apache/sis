@@ -34,7 +34,7 @@ import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
