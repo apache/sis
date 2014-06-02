@@ -39,7 +39,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Files;
 import org.apache.sis.internal.jdk7.StandardCharsets;
 import org.apache.sis.internal.jdk7.StandardOpenOption;

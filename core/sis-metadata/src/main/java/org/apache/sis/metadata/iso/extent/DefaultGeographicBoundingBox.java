@@ -34,7 +34,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 
 import static java.lang.Double.doubleToLongBits;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

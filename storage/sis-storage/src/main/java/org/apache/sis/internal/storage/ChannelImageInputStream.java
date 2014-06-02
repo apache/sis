@@ -24,7 +24,7 @@ import java.nio.channels.ReadableByteChannel;
 import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.nio.channels.FileChannel;
 
 

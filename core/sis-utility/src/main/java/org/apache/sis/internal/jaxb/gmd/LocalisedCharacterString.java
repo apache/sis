@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.Debug;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

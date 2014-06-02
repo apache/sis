@@ -48,7 +48,7 @@ import static org.apache.sis.math.MathFunctions.epsilonEqual;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isPositive;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 

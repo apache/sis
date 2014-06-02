@@ -35,28 +35,36 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * {@section Relationship with Java Content Repository (JCR) names}
  * In the Java standard {@link javax.xml.namespace.QName} class and in the Java Content Repository (JCR) specification,
- * a name is an ordered pair of (<var>Name space</var>, <var>Local part</var>) strings. A JCR name can take two lexical
- * forms: <cite>expanded form</cite> and <cite>qualified form</cite>. Those names are mapped to generic names as below:
+ * a name is an ordered pair of ({@code namespace}, {@code localPart}) strings. A JCR name can take two lexical forms:
+ * <cite>expanded form</cite> and <cite>qualified form</cite>. Those names are mapped to generic names as below:
  *
- * <blockquote><table class="sis">
+ * <blockquote><table class="sis" style="white-space: nowrap">
  *   <caption>Equivalence between JCR name and {@code GenericName}</caption>
  *   <tr>
  *     <th>JCR name</th>
- *     <th>GeoAPI equivalence</th>
+ *     <th class="sep" colspan="2">GeoAPI equivalence</th>
  *   </tr><tr>
- *     <td><code>ExpandedName  ::= '{' Namespace '}' LocalName</code></td>
- *     <td>{@code GenericName} with its {@linkplain AbstractName#scope() scope} set to the JCR namespace.</td>
+ *     <td><code>ExpandedName ::= '{' Namespace '}' LocalPart</code></td>
+ *     <td class="sep"><code>GenericName.{@linkplain AbstractName#scope() scope()}.name().toString()</code></td>
+ *     <td>= JCR {@code Namespace}</td>
  *   </tr><tr>
- *     <td><code>QualifiedName ::= [Prefix ':'] LocalName</code></td>
- *     <td>{@code ScopedName} in the global namespace, with its {@linkplain DefaultScopedName#head() head} or
- *         {@linkplain DefaultScopedName#path() path} set to the JCR prefix.</td>
+ *     <td></td>
+ *     <td class="sep"><code>GenericName.{@linkplain AbstractName#toString() toString()}</code></td>
+ *     <td>= JCR {@code LocalPart}</td>
+ *   </tr><tr>
+ *     <td class="hsep"><code>QualifiedName ::= [Prefix ':'] LocalPart</code></td>
+ *     <td class="hsep sep"><code>ScopedName.{@linkplain AbstractName#scope() scope()}</code></td>
+ *     <td class="hsep">= {@linkplain DefaultNameSpace#isGlobal() global namespace}</td>
+ *   </tr><tr>
+ *     <td></td>
+ *     <td class="sep"><code>ScopedName.{@linkplain DefaultScopedName#head() head()}.toString()</code></td>
+ *     <td>= JCR {@code Prefix}</td>
+ *   </tr><tr>
+ *     <td></td>
+ *     <td class="sep"><code>ScopedName.{@linkplain DefaultScopedName#tail() tail()}.toString()</code></td>
+ *     <td>= JCR {@code LocalPart}</td>
  *   </tr>
  * </table></blockquote>
- *
- * <div class="note"><b>Note:</b>
- * this {@code Names} convenience class takes the above-cited {@code NameSpace} and {@code LocalName} strings
- * as a whole. However {@code GenericName} allows splitting those strings into smaller name components.
- * If such finer grain control is desired, {@link DefaultNameFactory} can be used instead of {@code Names}.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -91,30 +99,35 @@ public final class Names extends Static {
      * The character sequences can be either {@link String} or {@link InternationalString} instances.
      * Those character sequences are taken verbatim; they are <em>not</em> parsed into their components.
      *
-     * <table class="sis">
+     * <div class="note"><b>Note:</b> it is possible to split the {@code namespace} and {@code localPart}
+     * strings into smaller name components. If such finer grain control is desired, one can use
+     * {@link DefaultNameFactory} instead of this {@code Names} class.</div>
+     *
+     * <div class="note"><b>Performance note:</b> this method is okay for <em>casual</em> use. If many names need
+     * to be created in the same namespace, then {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}
+     * is more efficient since it allows to create the {@code NameSpace} object only once.</div>
+     *
+     * The following table shows where the strings given in argument will go:
+     *
+     * <blockquote><table class="sis">
      *   <caption>Mapping from arguments to name components</caption>
      *   <tr><th>Argument</th> <th>Mapped to</th></tr>
      *   <tr><td>{@code namespace}</td> <td><code>name.{@linkplain DefaultLocalName#scope() scope()}.name().toString()</code></td></tr>
      *   <tr><td>{@code localPart}</td> <td><code>name.{@linkplain DefaultLocalName#toString() toString()}</code></td></tr>
-     * </table>
+     * </table></blockquote>
      *
      * <div class="note"><b>Example:</b>
      * for a name created by {@code create("http://www.opengis.net/gml/srs/epsg.xml", "#", "4326")}:
      * <blockquote><table class="compact" summary="Examples of return values for a name built by this method.">
-     *   <tr><td>• <code>name.{@linkplain DefaultLocalName#scope() scope()}</code></td>
-     *       <td>returns the {@code "http://www.opengis.net/gml/srs/epsg.xml"} namespace.</td></tr>
      *   <tr><td>• <code>name.{@linkplain DefaultLocalName#toString() toString()}</code></td>
      *       <td>returns the {@code "4326"} string.</td></tr>
+     *   <tr><td>• <code>name.{@linkplain DefaultLocalName#scope() scope()}</code></td>
+     *       <td>returns the {@code "http://www.opengis.net/gml/srs/epsg.xml"} namespace.</td></tr>
      *   <tr><td>• <code>name.{@linkplain DefaultLocalName#toFullyQualifiedName() toFullyQualifiedName()}</code></td>
      *       <td>returns the {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"} name.
      *   <tr><td>• <code>{@linkplain #toExpandedString(GenericName) toExpandedString}(name)</code></td>
      *       <td>returns the {@code "{http://www.opengis.net/gml/srs/epsg.xml}4326"} string.</td></tr>
      * </table></blockquote></div>
-     *
-     * <b>Performance note:</b> this method is okay for <em>casual</em> use. If many names need to be created in the
-     * same namespace, a more efficient method is {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}
-     * for avoiding unnecessary creations of the same {@code NameSpace} object. The later can be obtained by creating
-     * a first name using this {@code createLocalName} method, then invoke {@link GenericName#scope()}.
      *
      * @param  namespace The namespace, or {@code null} for the global namespace.
      * @param  separator The separator between the namespace and the local part.
