@@ -19,7 +19,7 @@ package org.apache.sis.util;
 import java.util.Set;
 import org.apache.sis.math.FunctionProperty;
 
-// Related to JDK8
+// Branch-dependent imports
 import java.util.function.Function;
 
 

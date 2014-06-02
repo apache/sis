@@ -44,7 +44,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

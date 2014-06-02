@@ -26,7 +26,7 @@ import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToLongBits;
 
-// Related to JDK7 and JDK8
+// Branch-dependent imports
 import java.util.Objects;
 import java.util.function.LongConsumer;
 import java.util.function.DoubleConsumer;

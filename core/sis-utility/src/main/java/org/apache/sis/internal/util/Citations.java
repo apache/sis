@@ -29,7 +29,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.CharSequences.isUnicodeIdentifier;
 import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

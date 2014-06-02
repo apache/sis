@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.XLink;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

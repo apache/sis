@@ -33,7 +33,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 

@@ -32,7 +32,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
-// Related to JDK7
+// Branch-dependent imports
 import java.util.Objects;
 
 
