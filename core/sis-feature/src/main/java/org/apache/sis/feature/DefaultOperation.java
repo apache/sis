@@ -68,7 +68,7 @@ public class DefaultOperation extends AbstractIdentifiedType implements Operatio
 
     /**
      * Constructs an operation from the given properties. The identification map is given unchanged to
-     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
+     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map, Class) super-class constructor}.
      *
      * @param identification The name and other information to be given to this operation.
      * @param parameters     A description of the input parameters.
@@ -77,7 +77,7 @@ public class DefaultOperation extends AbstractIdentifiedType implements Operatio
     public DefaultOperation(final Map<String,?> identification,
             final ParameterDescriptorGroup parameters, final IdentifiedType result)
     {
-        super(identification);
+        super(identification, GenericName.class);
         ArgumentChecks.ensureNonNull("parameters", parameters);
         this.parameters = parameters;
         this.result     = result;

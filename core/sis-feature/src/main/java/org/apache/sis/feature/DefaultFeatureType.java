@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import org.opengis.util.TypeName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
@@ -129,7 +130,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * @see #isAssignableFrom(FeatureType)
      */
-    private transient Set<GenericName> assignableTo;
+    private transient Set<TypeName> assignableTo;
 
     /**
      * Any feature operation, any feature attribute type and any feature association role
@@ -166,7 +167,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
 
     /**
      * Constructs a feature type from the given properties. The identification map is given unchanged to
-     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
+     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map, Class) super-class constructor}.
      * The following table is a reminder of main (not all) recognized map entries:
      *
      * <table class="sis">
@@ -178,7 +179,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
-     *     <td>{@link GenericName} or {@link String}</td>
+     *     <td>{@link TypeName} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
@@ -207,7 +208,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     public DefaultFeatureType(final Map<String,?> identification, final boolean isAbstract,
             final FeatureType[] superTypes, final PropertyType... properties)
     {
-        super(identification);
+        super(identification, TypeName.class);
         ArgumentChecks.ensureNonNull("properties", properties);
         this.isAbstract = isAbstract;
         this.superTypes = (superTypes == null) ? Collections.<FeatureType>emptySet() :
@@ -329,7 +330,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             final PropertyType previous = byName.put(name, property);
             if (previous != null) {
                 if (!isAssignableIgnoreName(previous, property)) {
-                    final GenericName owner = ownerOf(this, previous);
+                    final TypeName owner = ownerOf(this, previous);
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyAlreadyExists_2,
                             (owner != null) ? owner : "?", name));
                 }
@@ -342,12 +343,12 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * This method is for information purpose when producing an error message - its implementation does
      * not need to be efficient.
      */
-    private static GenericName ownerOf(final FeatureType type, final PropertyType property) {
+    private static TypeName ownerOf(final FeatureType type, final PropertyType property) {
         if (type.getProperties(false).contains(property)) {
             return type.getName();
         }
         for (final FeatureType superType : type.getSuperTypes()) {
-            final GenericName owner = ownerOf(superType, property);
+            final TypeName owner = ownerOf(superType, property);
             if (owner != null) {
                 return owner;
             }
@@ -383,6 +384,16 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
 
     // -------- END OF CONSTRUCTORS ------------------------------------------------------------------------------
 
+
+    /**
+     * Returns the name of this feature type.
+     *
+     * @return The name of this feature type.
+     */
+    @Override
+    public TypeName getName() {
+        return (TypeName) super.getName();
+    }
 
     /**
      * Returns {@code true} if the feature type acts as an abstract super-type.
