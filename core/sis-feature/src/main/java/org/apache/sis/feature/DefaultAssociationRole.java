@@ -78,7 +78,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
 
     /**
      * Constructs an association role from the given properties. The properties map is given unchanged to
-     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map, Class) super-class constructor}.
+     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      * The following table is a reminder of main (not all) recognized map entries:
      *
      * <table class="sis">
