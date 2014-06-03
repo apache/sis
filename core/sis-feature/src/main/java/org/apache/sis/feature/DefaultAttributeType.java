@@ -93,7 +93,7 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
 
     /**
      * Constructs an attribute type from the given properties. The identification map is given unchanged to
-     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map, Class) super-class constructor}.
+     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      * The following table is a reminder of main (not all) recognized map entries:
      *
      * <table class="sis">

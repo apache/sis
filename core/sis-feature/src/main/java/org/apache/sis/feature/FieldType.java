@@ -58,7 +58,7 @@ abstract class FieldType extends AbstractIdentifiedType implements PropertyType 
 
     /**
      * Constructs a field type from the given properties. The identification map is given unchanged to
-     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map, Class) super-class constructor}.
+     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
      * @param identification The name and other information to be given to this field type.
      * @param minimumOccurs  The minimum number of occurrences of the property within its containing entity.
@@ -66,7 +66,7 @@ abstract class FieldType extends AbstractIdentifiedType implements PropertyType 
      *                       or {@link Integer#MAX_VALUE} if there is no restriction.
      */
     FieldType(final Map<String,?> identification, final int minimumOccurs, final int maximumOccurs) {
-        super(identification, GenericName.class);
+        super(identification);
         if (minimumOccurs < 0 || maximumOccurs < minimumOccurs) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));

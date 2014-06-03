@@ -19,8 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.Locale;
 import java.io.Serializable;
-import org.opengis.util.TypeName;
-import org.opengis.util.LocalName;
+import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -164,10 +163,9 @@ public class AbstractIdentifiedType implements IdentifiedType, Serializable {
      * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
      *
      * @param  identification The name and other information to be given to this identified type.
-     * @param  nameType The type of name, either {@code GenericName.class} or {@code TypeName.class}.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
-    protected AbstractIdentifiedType(final Map<String,?> identification, final Class<? extends GenericName> nameType)
+    protected AbstractIdentifiedType(final Map<String,?> identification)
             throws IllegalArgumentException
     {
         ensureNonNull("identification", identification);
@@ -176,12 +174,8 @@ public class AbstractIdentifiedType implements IdentifiedType, Serializable {
             throw new IllegalArgumentException(Errors.getResources(identification)
                     .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
         } else if (value instanceof String) {
-            if (nameType == TypeName.class) {
-                name = DefaultFactories.NAMES.createTypeName(null, (String) value);
-            } else {
-                name = DefaultFactories.NAMES.createLocalName(null, (String) value);
-            }
-        } else if (nameType.isInstance(value)) {
+            name = createName(DefaultFactories.NAMES, (String) value);
+        } else if (value instanceof GenericName) {
             name = (GenericName) value;
         } else {
             throw new IllegalArgumentException(Errors.getResources(identification).getString(
@@ -190,6 +184,14 @@ public class AbstractIdentifiedType implements IdentifiedType, Serializable {
         definition  = Types.toInternationalString(identification, DEFINITION_KEY );
         designation = Types.toInternationalString(identification, DESIGNATION_KEY);
         description = Types.toInternationalString(identification, DESCRIPTION_KEY);
+    }
+
+    /**
+     * Creates a name from the given string. This method is invoked at construction time,
+     * so it should not use any field in this {@code AbtractIdentifiedObject} instance.
+     */
+    GenericName createName(final NameFactory factory, final String value) {
+        return factory.createLocalName(null, value);
     }
 
     /**
