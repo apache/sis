@@ -40,6 +40,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class, // Expected to be last MatrixTestCase - see javadoc.
     org.apache.sis.referencing.operation.matrix.MatricesTest.class,
     org.apache.sis.referencing.operation.matrix.AffineTransforms2DTest.class,
+    org.apache.sis.referencing.operation.transform.IterationStrategyTest.class,
 
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
@@ -60,6 +61,7 @@ import org.junit.BeforeClass;
     org.apache.sis.parameter.ParameterFormatTest.class,
     org.apache.sis.parameter.TensorParametersTest.class,
     org.apache.sis.parameter.TensorValuesTest.class,
+
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
     org.apache.sis.referencing.datum.TimeDependentBWPTest.class,
     org.apache.sis.referencing.datum.DefaultEllipsoidTest.class,
