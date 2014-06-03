@@ -19,6 +19,8 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.Locale;
 import java.io.Serializable;
+import org.opengis.util.TypeName;
+import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -162,17 +164,24 @@ public class AbstractIdentifiedType implements IdentifiedType, Serializable {
      * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
      *
      * @param  identification The name and other information to be given to this identified type.
+     * @param  nameType The type of name, either {@code GenericName.class} or {@code TypeName.class}.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
-    protected AbstractIdentifiedType(final Map<String,?> identification) throws IllegalArgumentException {
+    protected AbstractIdentifiedType(final Map<String,?> identification, final Class<? extends GenericName> nameType)
+            throws IllegalArgumentException
+    {
         ensureNonNull("identification", identification);
         Object value = identification.get(NAME_KEY);
         if (value == null) {
             throw new IllegalArgumentException(Errors.getResources(identification)
                     .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
         } else if (value instanceof String) {
-            name = DefaultFactories.NAMES.createLocalName(null, (String) value);
-        } else if (value instanceof GenericName) {
+            if (nameType == TypeName.class) {
+                name = DefaultFactories.NAMES.createTypeName(null, (String) value);
+            } else {
+                name = DefaultFactories.NAMES.createLocalName(null, (String) value);
+            }
+        } else if (nameType.isInstance(value)) {
             name = (GenericName) value;
         } else {
             throw new IllegalArgumentException(Errors.getResources(identification).getString(
