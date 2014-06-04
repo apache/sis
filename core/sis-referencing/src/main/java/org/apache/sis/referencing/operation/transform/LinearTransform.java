@@ -38,7 +38,7 @@ import org.opengis.referencing.operation.MathTransform;
  * @version 0.4
  * @module
  *
- * @see org.apache.sis.referencing.operation.MathTransforms
+ * @see MathTransforms#getMatrix(MathTransform)
  */
 public interface LinearTransform extends MathTransform {
     /**
