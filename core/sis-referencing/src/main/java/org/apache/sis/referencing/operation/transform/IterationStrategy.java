@@ -19,45 +19,59 @@ package org.apache.sis.referencing.operation.transform;
 
 /**
  * Strategy for iterating over the point arrays given to
- * {@link AbstractMathTransform#transform(double[],int,double[],int,int) transform} methods.
+ * {@link AbstractMathTransform#transform(double[], int, double[], int, int)
+ * AbstractMathTransform.transform(…)} methods.
  * If the source and destination arrays are the same and the region of the array to be written
  * overlaps the region of the array to be read, it may be necessary to iterate over the points
  * in reverse order or to copy some points in a temporary array.
- * The {@link #suggest(int, int, int, int, int)  suggest} method in this class returns a strategy
+ * The {@link #suggest(int, int, int, int, int)  suggest(…)} method in this class returns a strategy
  * suitable to the {@code transform} arguments.
  *
- * <p>Implementation example:</p>
+ * {@section Usage}
+ * The following code gives a skeleton for a {@code AbstractMathTransform} implementation
+ * capable to transform an array of {@code double} coordinates:
  *
  * {@preformat java
- *     public void transform(double[] srcPts, int srcOff,
- *                           double[] dstPts, int dstOff, int numPts)
- *     {
- *         int srcInc = getSourceDimension();
- *         int dstInc = getTargetDimension();
- *         if (srcPts == dstPts) {
- *             switch (IterationStrategy.suggest(srcOff, srcInc, dstOff, dstInc, numPts)) {
- *                 case ASCENDING: {
- *                     break;
- *                 }
- *                 case DESCENDING: {
- *                     srcOff += (numPts-1) * srcInc; srcInc = -srcInc;
- *                     dstOff += (numPts-1) * dstInc; dstInc = -dstInc;
- *                     break;
- *                 }
- *                 default: {
- *                     srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcInc);
- *                     srcOff = 0;
- *                     break;
+ *     public class MyTransform extends AbstractMathTransform {
+ *         &#64;Override
+ *         public void transform(double[] srcPts, int srcOff,
+ *                               double[] dstPts, int dstOff, int numPts)
+ *         {
+ *             int srcInc = getSourceDimension();
+ *             int dstInc = getTargetDimension();
+ *             if (srcPts == dstPts) {
+ *                 switch (IterationStrategy.suggest(srcOff, srcInc, dstOff, dstInc, numPts)) {
+ *                     case ASCENDING: {
+ *                         break;
+ *                     }
+ *                     case DESCENDING: {
+ *                         srcOff += (numPts-1) * srcInc; srcInc = -srcInc;
+ *                         dstOff += (numPts-1) * dstInc; dstInc = -dstInc;
+ *                         break;
+ *                     }
+ *                     default: {
+ *                         srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcInc);
+ *                         srcOff = 0;
+ *                         break;
+ *                     }
  *                 }
  *             }
- *         }
- *         while (--numPts >= 0) {
- *             // TODO by the implementor here:
- *             //   1. Read the coordinate starting at srcPts[srcOff].
- *             //   2. Transform it.
- *             //   3. Store the result starting at dstPts[dstOff].
- *             srcOff += srcInc;
- *             dstOff += dstInc;
+ *             while (--numPts >= 0) {
+ *                 double x = srcPts[srcOff    ];
+ *                 double y = srcPts[srcOff + 1];
+ *                 double z = srcPts[srcOff + 2];
+ *                 // Repeat as many time as needed for dimension of input points.
+ *
+ *                 // Transform (x,y,z) here.
+ *
+ *                 dstPts[dstOff    ] = x;
+ *                 dstPts[dstOff + 1] = y;
+ *                 dstPts[dstOff + 2] = z;
+ *                 // Repeat as many time as needed for dimension of output points.
+ *
+ *                 srcOff += srcInc;
+ *                 dstOff += dstInc;
+ *             }
  *         }
  *     }
  * }
