@@ -91,7 +91,7 @@ final class ConcatenatedTransform2D extends ConcatenatedTransform implements Mat
      * {@link #transform1} and {@link #transform2} may not be instances of {@link MathTransform2D}.
      *
      * @param  point The coordinate point where to evaluate the derivative.
-     * @return The derivative at the specified point as a 2&times;2 matrix.
+     * @return The derivative at the specified point as a 2×2 matrix.
      * @throws TransformException if the derivative can't be evaluated at the specified point.
      */
     @Override

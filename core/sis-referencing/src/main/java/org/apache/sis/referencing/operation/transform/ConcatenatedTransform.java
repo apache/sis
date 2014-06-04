@@ -236,7 +236,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                  * Apache SIS performs matrix operations using double-double arithmetic in the hope to get exact
                  * results at the 'double' accuracy, which avoid the need for a tolerance threshold.
                  */
-                return ProjectiveTransform.create(matrix);
+                return MathTransforms.linear(matrix);
             }
             /*
              * If the second transform is a passthrough transform and all passthrough ordinates
@@ -247,7 +247,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 final Matrix sub = candidate.toSubMatrix(matrix1);
                 if (sub != null) {
                     return PassThroughTransform.create(candidate.firstAffectedOrdinate,
-                            create(ProjectiveTransform.create(sub), candidate.subTransform),
+                            create(MathTransforms.linear(sub), candidate.subTransform),
                             candidate.numTrailingOrdinates);
                 }
             }
@@ -259,7 +259,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (areInverse(tr1, tr2) || areInverse(tr2, tr1)) {
             assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
             assert tr1.getTargetDimensions() == tr2.getSourceDimensions();
-            return ProjectiveTransform.identity(tr1.getSourceDimensions());
+            return MathTransforms.identity(tr1.getSourceDimensions());
         }
         /*
          * Gives a chance to AbstractMathTransform to returns an optimized object.
