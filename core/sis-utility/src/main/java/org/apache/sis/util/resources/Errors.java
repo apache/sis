@@ -85,6 +85,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotComputeDerivative = 1;
 
         /**
+         * Can not concatenate transforms “{0}” and “{1}”.
+         */
+        public static final short CanNotConcatenateTransforms_2 = 160;
+
+        /**
          * Can not connect to “{0}”.
          */
         public static final short CanNotConnectTo_1 = 2;
