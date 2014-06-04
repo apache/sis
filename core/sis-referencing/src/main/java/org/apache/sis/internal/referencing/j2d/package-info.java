@@ -16,7 +16,9 @@
  */
 
 /**
- * A set of helper classes for the SIS implementation.
+ * A set of helper classes having a dependency to Java2D.
+ * We keep those classes in a separated package for making easier to identify
+ * which parts may need to be replaced in a JavaFX applications.
  *
  * <strong>Do not use!</strong>
  *
@@ -28,4 +30,4 @@
  * @version 0.3
  * @module
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.internal.referencing.j2d;
