@@ -567,7 +567,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <locale>${website.locale}</locale>                    <!-- Locale for navigation bar, help file contents, etc. -->
           <author>false</author>                                <!-- Excludes the authors text in the generated docs. -->
           <version>false</version>                              <!-- Excludes the version text in the generated docs. -->
-          <nosince>true</nosince>                               <!-- Omits the "Since" sections associated with the since tags. -->
           <noqualifier>all</noqualifier>                        <!-- Omit qualifying package name before class names in output. -->
           <quiet>true</quiet>                                   <!-- Shuts off non-error and non-warning messages. -->
           <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->

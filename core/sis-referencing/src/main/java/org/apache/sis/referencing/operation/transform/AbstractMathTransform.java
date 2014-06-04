@@ -59,7 +59,24 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *   <li>{@link #transform(double[], int, double[], int, boolean)}</li>
  * </ul>
  *
- * However more performance may be gained by overriding the other {@code transform} method as well.
+ * However more performance may be gained by overriding the other {@code transform} methods as well.
+ *
+ * {@section Immutability and thread safety}
+ * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
+ * conditions.
+ *
+ * {@section Immutability and thread safety}
+ * All Apache SIS implementations of {@code MathTransform} are immutable and thread-safe.
+ * It is highly recommended that third-party implementations be immutable and thread-safe too.
+ * This means that unless otherwise noted in the javadoc, {@code MathTransform} instances can
+ * be shared by many objects and passed between threads without synchronization.
+ *
+ * {@section Serialization}
+ * {@code MathTransform} may or may not be serializable, at implementation choices.
+ * Most Apache SIS implementations are serializable, but the serialized objects are not guaranteed to be compatible
+ * with future SIS versions. Serialization, if allowed by the subclass, should be used only for short term storage
+ * or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5 (derived from geotk-1.2)
@@ -269,7 +286,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *   the same. Computing those two information in a single step can help to reduce redundant calculation.</li>
      * </ul>
      *
-     * {@section Implementation note}
+     * {@section Note for implementors}
      * The source and destination may overlap. Consequently, implementors must read all source
      * ordinate values before to start writing the transformed ordinates in the destination array.
      *
@@ -295,16 +312,16 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Transforms a list of coordinate point ordinal values. This method is provided for efficiently
      * transforming many points. The supplied array of ordinal values will contain packed ordinal values.
      *
-     * <div class="note"><b>Example:</b> if the source dimension is 3, then the ordinates will be packed
-     * in this order:
-     * <blockquote>
+     * <div class="note"><b>Example:</b> if the source dimension is 3, then the ordinates will be packed in this order:
      * (<var>x<sub>0</sub></var>,<var>y<sub>0</sub></var>,<var>z<sub>0</sub></var>,
-     *  <var>x<sub>1</sub></var>,<var>y<sub>1</sub></var>,<var>z<sub>1</sub></var> ...).
-     * </blockquote></div>
+     *  <var>x<sub>1</sub></var>,<var>y<sub>1</sub></var>,<var>z<sub>1</sub></var> …).
+     * </div>
      *
      * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)} in a loop,
      * using an {@linkplain IterationStrategy iteration strategy} determined from the arguments for iterating
      * over the points.
+     *
+     * <div class="note"><b>Implementation note:</b> see {@link IterationStrategy} javadoc for a method skeleton.</div>
      *
      * @param  srcPts The array containing the source point coordinates.
      * @param  srcOff The offset to the first point to be transformed in the source array.
@@ -414,6 +431,8 @@ public abstract class AbstractMathTransform extends FormattableObject
     /**
      * Transforms a list of coordinate point ordinal values. The default implementation delegates
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles.
+     *
+     * <div class="note"><b>Implementation note:</b> see {@link IterationStrategy} javadoc for a method skeleton.</div>
      *
      * @param srcPts The array containing the source point coordinates.
      * @param srcOff The offset to the first point to be transformed in the source array.
@@ -710,6 +729,9 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Returns the inverse transform of this object. The default implementation returns
      * {@code this} if this transform is an {@linkplain #isIdentity() identity} transform,
      * or throws an exception otherwise. Subclasses should override this method.
+     *
+     * <div class="note"><b>Implementation note:</b> the {@link Inverse} inner class can be used as
+     * a base for inverse transform implementations.</div>
      */
     @Override
     public MathTransform inverse() throws NoninvertibleTransformException {
