@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.internal.referencing.ShapeUtilities;
+import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.util.resources.Errors;
 
 
