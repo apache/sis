@@ -26,6 +26,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.Static;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -58,6 +59,76 @@ public final class MathTransforms extends Static {
      * Do not allow instantiation of this class.
      */
     private MathTransforms() {
+    }
+
+    /**
+     * Returns an identity transform of the specified dimension.
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>If {@code dimension} == 1, then the returned transform implements {@link MathTransform1D}.</li>
+     *   <li>If {@code dimension} == 2, then the returned transform implements {@link MathTransform2D}.</li>
+     * </ul>
+     *
+     * @param dimension The dimension of the transform to be returned.
+     * @return An identity transform of the specified dimension.
+     */
+    public static LinearTransform identity(final int dimension) {
+        ensureStrictlyPositive("dimension", dimension);
+        return IdentityTransform.create(dimension);
+    }
+
+    /**
+     * Creates a one-dimensional affine transform for the given coefficients.
+     * Input values <var>x</var> will be converted into output values <var>y</var> using the following equation:
+     *
+     * <blockquote><var>y</var>  =  <var>x</var> × {@code scale} + {@code offset}</blockquote>
+     *
+     * @param  scale  The {@code scale}  term in the linear equation.
+     * @param  offset The {@code offset} term in the linear equation.
+     * @return The linear transform for the given scale and offset.
+     */
+    public static LinearTransform linear(final double scale, final double offset) {
+        return LinearTransform1D.create(scale, offset);
+    }
+
+    /**
+     * Creates an arbitrary linear transform from the specified matrix.
+     * If the transform input dimension is {@code M}, and output dimension is {@code N}, then the
+     * given matrix shall have size {@code [N+1][M+1]}. The +1 in the matrix dimensions allows the
+     * matrix to do a shift, as well as a rotation. The {@code [M][j]} element of the matrix will
+     * be the <var>j</var>'th ordinate of the moved origin.
+     *
+     * <p>The matrix is usually square and affine, but this is not mandatory.
+     * Non-affine transforms are allowed.</p>
+     *
+     * @param  matrix The matrix used to define the linear transform.
+     * @return The linear (usually affine) transform.
+     *
+     * @see org.opengis.referencing.operation.MathTransformFactory#createAffineTransform(Matrix)
+     */
+    public static LinearTransform linear(final Matrix matrix) {
+        ensureNonNull("matrix", matrix);
+        final int sourceDimension = matrix.getNumCol() - 1;
+        final int targetDimension = matrix.getNumRow() - 1;
+        if (sourceDimension == targetDimension) {
+            if (matrix.isIdentity()) {
+                return identity(sourceDimension);
+            }
+            if (Matrices.isAffine(matrix)) {
+                switch (sourceDimension) {
+                    case 1: return linear(matrix.getElement(0,0), matrix.getElement(0,1));
+//TODO              case 2: return linear(Matrices.toAffineTransform(matrix));
+                }
+            } else if (sourceDimension == 2) {
+//TODO          return new ProjectiveTransform2D(matrix);
+            }
+        }
+        final LinearTransform candidate = CopyTransform.create(matrix);
+        if (candidate != null) {
+            return candidate;
+        }
+        return new ProjectiveTransform(matrix);
     }
 
     /**
