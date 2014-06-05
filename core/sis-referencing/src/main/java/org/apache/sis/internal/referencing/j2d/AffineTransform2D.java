@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.operation.transform;
+package org.apache.sis.internal.referencing.j2d;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -30,9 +30,9 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.internal.referencing.j2d.ImmutableAffineTransform;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
@@ -53,8 +53,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @see ProjectiveTransform
  */
-final class AffineTransform2D extends ImmutableAffineTransform implements MathTransform2D, LinearTransform,
-        LenientComparable, Parameterized, Cloneable
+public class AffineTransform2D extends ImmutableAffineTransform implements MathTransform2D,
+        LinearTransform, LenientComparable, Parameterized, Cloneable
 {
     /**
      * Serial number for inter-operability with different versions.
@@ -69,21 +69,36 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
     /**
      * {@code true} if this transform is mutable. This field may be temporarily set
      * to {@code true} during construction, but <strong>must</strong> be reset to
-     * {@code false} before a reference to {@link AffineTransform2D} is made public.
+     * {@code false} before an {@link AffineTransform2D} instance is published.
+     *
+     * @see #freeze()
      */
-    transient boolean mutable;
+    private transient boolean mutable;
 
     /**
-     * Constructs an identity affine transform.  This constructor is reserved to code that
-     * temporarily set the {@linkplain #mutable} flag to {@code true} for initializing the
-     * affine transform.
+     * Constructs a <strong>temporarily mutable</strong> identity affine transform.
+     * Callers shall initializing the affine transform to the desired final values,
+     * then invoke {@link #freeze()}.
      */
-    AffineTransform2D() {
+    public AffineTransform2D() {
         super();
+        mutable = true;
     }
 
     /**
-     * Constructs a new affine transform with the same coefficient than the specified transform.
+     * Constructs a new affine transform with the same coefficients than the specified transform.
+     *
+     * @param transform The affine transform to copy.
+     * @param mutable {@code true} if this affine transform needs to be <strong>temporarily</strong> mutable.
+     *        If {@code true}, then caller shall invoke {@link #freeze()} after they completed initialization.
+     */
+    public AffineTransform2D(final AffineTransform transform, final boolean mutable) {
+        super(transform);
+        this.mutable = mutable;
+    }
+
+    /**
+     * Constructs a new affine transform with the same coefficients than the specified transform.
      *
      * @param transform The affine transform to copy.
      */
@@ -112,11 +127,14 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
     }
 
     /**
-     * Makes sure that the zero is positive. We do that in order to workaround a JDK 6 bug,
-     * where AffineTransform.hashCode() is inconsistent with AffineTransform.equals(Object)
+     * Makes sure that the zero is positive. We do that in order to workaround a JDK 6 to 8 bug, where
+     * {@link AffineTransform#hashCode()} is inconsistent with {@link AffineTransform#equals(Object)}
      * if there is zeros of opposite sign.
+     *
+     * <p>The inconsistency is in the use of {@link Double#doubleToLongBits(double)} for hash code and
+     * {@code ==} for testing equality. The former is sensitive to the sign of 0 while the later is not.</p>
      */
-    @Workaround(library="JDK", version="6")
+    @Workaround(library="JDK", version="8") // Last verified in 1.8.0_05.
     private static double pz(final double value) {
         return (value != 0) ? value : 0;
     }
@@ -124,10 +142,17 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
     /**
      * Ensures that this transform contains only positive zeros.
      */
-    final void forcePositiveZeros() {
+    public final void forcePositiveZeros() {
         super.setTransform(pz(super.getScaleX()),     pz(super.getShearY()),
                            pz(super.getShearX()),     pz(super.getScaleY()),
                            pz(super.getTranslateX()), pz(super.getTranslateY()));
+    }
+
+    /**
+     * Makes this {@code AffineTransform2D} immutable.
+     */
+    public final void freeze() {
+        mutable = false;
     }
 
     /**
@@ -181,7 +206,7 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
      * Transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.
      */
     @Override
-    public DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) {
+    public final DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) {
         ensureDimensionMatches("ptSrc", 2, ptSrc);
         /*
          * Try to write directly in the destination point if possible. Following
@@ -227,7 +252,7 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
      * @return Transformed shape, or {@code shape} if this transform is the identity transform.
      */
     @Override
-    public Shape createTransformedShape(final Shape shape) {
+    public final Shape createTransformedShape(final Shape shape) {
         return AffineTransforms2D.transform(this, shape, false);
     }
 
@@ -235,7 +260,7 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
      * Returns this transform as an affine transform matrix.
      */
     @Override
-    public Matrix getMatrix() {
+    public final Matrix getMatrix() {
         return AffineTransforms2D.toMatrix(this);
     }
 
@@ -244,7 +269,7 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
      * For an affine transform, the derivative is the same everywhere.
      */
     @Override
-    public Matrix derivative(final Point2D point) {
+    public final Matrix derivative(final Point2D point) {
         return new Matrix2(getScaleX(), getShearX(),
                            getShearY(), getScaleY());
     }
@@ -254,7 +279,7 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
      * For an affine transform, the derivative is the same everywhere.
      */
     @Override
-    public Matrix derivative(final DirectPosition point) {
+    public final Matrix derivative(final DirectPosition point) {
         return derivative((Point2D) null);
     }
 
@@ -264,7 +289,7 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
      * @throws NoninvertibleTransformException if this transform can not be inverted.
      */
     @Override
-    public MathTransform2D inverse() throws NoninvertibleTransformException {
+    public final MathTransform2D inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
             if (super.isIdentity()) {
                 inverse = this;
@@ -275,11 +300,10 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
                  * declared volatile (Joshua Bloch, "Effective Java" second edition).
                  */
                 if (inverse == null) try {
-                    final AffineTransform2D work = new AffineTransform2D(this);
-                    work.mutable = true;
+                    final AffineTransform2D work = new AffineTransform2D(this, true);
                     work.invert();
                     work.forcePositiveZeros();
-                    work.mutable = false;
+                    work.freeze();
                     work.inverse = this;
                     inverse = work; // Set only on success.
                 } catch (java.awt.geom.NoninvertibleTransformException exception) {
@@ -303,10 +327,17 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) { // Slight optimization
+            return true;
+        }
         if (mode == ComparisonMode.STRICT) {
             return equals(object);
         }
-        return (object == this) || AbstractMathTransform.equals(this, object, mode);
+        if (object instanceof LinearTransform) {
+            final Matrix m2 = ((LinearTransform) object).getMatrix();
+            return AffineTransforms2D.toMatrix(this).equals(m2, mode);
+        }
+        return false;
     }
 
     /**
@@ -365,6 +396,8 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
      * Returns a new affine transform which is a modifiable copy of this transform. This implementation always
      * returns an instance of {@link AffineTransform}, <strong>not</strong> {@code AffineTransform2D}, because
      * the later is unmodifiable and cloning it make little sense.
+     *
+     * @return A modifiable copy of this affine transform.
      */
     @Override
     public AffineTransform clone() {
