@@ -69,7 +69,7 @@ final class ConcatenatedTransformDirect2D extends ConcatenatedTransformDirect im
     }
 
     /**
-     * Transform the specified shape.
+     * Transforms the specified shape.
      *
      * @param  shape Shape to transform.
      * @return Transformed shape.

@@ -102,7 +102,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
     }
 
     /**
-     * Transform the specified shape. The default implementation computes quadratic curves
+     * Transforms the specified shape. The default implementation computes quadratic curves
      * using three points for each line segment in the shape. The returned object is often
      * a {@link Path2D}, but may also be a {@link Line2D} or a {@link QuadCurve2D} if such
      * simplification is possible.
