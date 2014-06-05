@@ -27,6 +27,7 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.provider.Affine;
@@ -157,7 +158,7 @@ final class AffineTransform2D extends ImmutableAffineTransform implements MathTr
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return ProjectiveTransform.getParameterValues(getMatrix());
+        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
     }
 
     /**

@@ -27,6 +27,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 
@@ -124,7 +125,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return ProjectiveTransform.getParameterValues(getMatrix());
+        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
     }
 
     /**
@@ -141,9 +142,15 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     @Override
     public MathTransform1D inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
-            if (isIdentity()) {
-                inverse = this;
-            } else if (scale != 0) {
+            /*
+             * Note: we do not perform the following optimization, because MathTransforms.linear(…)
+             *       should never instantiate this class in the identity case.
+             *
+             *       if (isIdentity()) {
+             *           inverse = this;
+             *       } else { ... }
+             */
+            if (scale != 0) {
                 final LinearTransform1D inverse;
                 inverse = create(1/scale, -offset/scale);
                 inverse.inverse = this;
@@ -157,6 +164,11 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
 
     /**
      * Tests whether this transform does not move any points.
+     *
+     * <span class="note"><b>Note:</b> this method should always returns {@code false}, since
+     * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
+     * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
+     * instead than using a factory method.</span>
      */
     @Override
     public boolean isIdentity() {

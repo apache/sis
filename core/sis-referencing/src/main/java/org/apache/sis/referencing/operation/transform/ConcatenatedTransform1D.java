@@ -73,7 +73,7 @@ final class ConcatenatedTransform1D extends ConcatenatedTransform implements Mat
     @Override
     public double derivative(final double value) throws TransformException {
         final DirectPosition1D p = new DirectPosition1D(value);
-        final Matrix m = derivative(p);
+        final Matrix m = super.derivative(p);
         assert (m.getNumRow() == 1) && (m.getNumCol() == 1);
         return m.getElement(0,0);
     }

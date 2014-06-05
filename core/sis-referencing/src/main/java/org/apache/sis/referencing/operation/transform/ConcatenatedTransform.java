@@ -839,10 +839,16 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
 
     /**
      * Tests whether this transform does not move any points.
-     * Default implementation check if the two transforms are identity.
+     * Implementation checks if the two transforms are identity.
+     *
+     * <span class="note"><b>Note:</b> this method should always returns {@code false}, since
+     * {@code create(…)} should have created specialized implementations for identity cases.
+     * Nevertheless we perform the full check as a safety, in case someone instantiated this
+     * class directly instead than using a factory method, or in case the given math transforms
+     * are mutable (they should not, be we can not control what the user gave to us).</span>
      */
     @Override
-    public final boolean isIdentity() {
+    public boolean isIdentity() {
         return transform1.isIdentity() && transform2.isIdentity();
     }
 
@@ -858,7 +864,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Compares the specified object with this math transform for equality.
      */
     @Override
-    public final boolean equals(final Object object, final ComparisonMode mode) {
+    public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) { // Slight optimization
             return true;
         }

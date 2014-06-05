@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -140,6 +141,11 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
 
     /**
      * Tests whether this transform does not move any points.
+     *
+     * <span class="note"><b>Note:</b> this method should always returns {@code false}, since
+     * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
+     * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
+     * instead than using a factory method.</span>
      */
     @Override
     public boolean isIdentity() {
@@ -312,7 +318,7 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return ProjectiveTransform.getParameterValues(getMatrix());
+        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
     }
 
     /**
@@ -351,46 +357,52 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
     @Override
     public synchronized MathTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
-            CopyTransform copyInverse = this;
-            if (!isIdentity()) {
-                final int srcDim = this.srcDim;
-                final int dstDim = indices.length;
-                final int[] reverse = new int[srcDim];
-                Arrays.fill(reverse, -1);
-                for (int i=dstDim; --i>=0;) {
-                    reverse[indices[i]] = i;
-                }
-                /*
-                 * Check if there is any unassigned dimension. In such case,
-                 * delegates to the generic ProjectiveTransform with a matrix
-                 * which set the missing values to NaN.
-                 */
-                for (int j=srcDim; --j>=0;) {
-                    if (reverse[j] < 0) {
-                        final MatrixSIS matrix = Matrices.createZero(srcDim + 1, dstDim + 1);
-                        for (j=0; j<srcDim; j++) { // NOSONAR: the outer loop will not continue.
-                            final int i = reverse[j];
-                            if (i >= 0) {
-                                matrix.setElement(j, i, 1);
-                            } else {
-                                matrix.setElement(j, dstDim, Double.NaN);
-                            }
+            /*
+             * Note: we do not perform the following optimization, because MathTransforms.linear(…)
+             *       should never instantiate this class in the identity case.
+             *
+             *       if (isIdentity()) {
+             *           inverse = this;
+             *       } else { ... }
+             */
+            final int srcDim = this.srcDim;
+            final int dstDim = indices.length;
+            final int[] reverse = new int[srcDim];
+            Arrays.fill(reverse, -1);
+            for (int i=dstDim; --i>=0;) {
+                reverse[indices[i]] = i;
+            }
+            /*
+             * Check if there is any unassigned dimension. In such case,
+             * delegates to the generic ProjectiveTransform with a matrix
+             * which set the missing values to NaN.
+             */
+            for (int j=srcDim; --j>=0;) {
+                if (reverse[j] < 0) {
+                    final MatrixSIS matrix = Matrices.createZero(srcDim + 1, dstDim + 1);
+                    for (j=0; j<srcDim; j++) { // NOSONAR: the outer loop will not continue.
+                        final int i = reverse[j];
+                        if (i >= 0) {
+                            matrix.setElement(j, i, 1);
+                        } else {
+                            matrix.setElement(j, dstDim, Double.NaN);
                         }
-                        matrix.setElement(srcDim, dstDim, 1);
-                        inverse = MathTransforms.linear(matrix);
-                        if (inverse instanceof ProjectiveTransform) {
-                            ((ProjectiveTransform) inverse).inverse = this;
-                        }
-                        return inverse;
                     }
+                    matrix.setElement(srcDim, dstDim, 1);
+                    inverse = MathTransforms.linear(matrix);
+                    if (inverse instanceof ProjectiveTransform) {
+                        ((ProjectiveTransform) inverse).inverse = this;
+                    }
+                    return inverse;
                 }
-                /*
-                 * At this point, we known that we can create the inverse transform.
-                 */
-                if (!Arrays.equals(reverse, indices)) {
-                    copyInverse = new CopyTransform(indices.length, reverse);
-                    copyInverse.inverse = this;
-                }
+            }
+            /*
+             * At this point, we known that we can create the inverse transform.
+             */
+            CopyTransform copyInverse = this;
+            if (!Arrays.equals(reverse, indices)) {
+                copyInverse = new CopyTransform(indices.length, reverse);
+                copyInverse.inverse = this;
             }
             inverse = copyInverse;
         }
