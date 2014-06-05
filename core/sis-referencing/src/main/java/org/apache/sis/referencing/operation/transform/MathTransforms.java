@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.List;
+import java.util.Collections;
 import java.awt.geom.AffineTransform;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
@@ -33,9 +35,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 
 /**
- * Utility methods related to {@link MathTransform}s. This class centralizes in one place some of the
- * most commonly used functions from the {@link org.apache.sis.referencing.operation.transform} package,
- * thus reducing the need to explore that low-level package.
+ * Utility methods creating or working on {@link MathTransform} instances.
+ * This class centralizes in one place some of the most commonly used functions this package.
  * The {@code MathTransforms} class provides the following services:
  *
  * <ul>
@@ -66,8 +67,8 @@ public final class MathTransforms extends Static {
      *
      * <p>Special cases:</p>
      * <ul>
-     *   <li>If {@code dimension} == 1, then the returned transform implements {@link MathTransform1D}.</li>
-     *   <li>If {@code dimension} == 2, then the returned transform implements {@link MathTransform2D}.</li>
+     *   <li>If {@code dimension == 1}, then the returned transform implements {@link MathTransform1D}.</li>
+     *   <li>If {@code dimension == 2}, then the returned transform implements {@link MathTransform2D}.</li>
      * </ul>
      *
      * @param dimension The dimension of the transform to be returned.
@@ -82,7 +83,7 @@ public final class MathTransforms extends Static {
      * Creates a one-dimensional affine transform for the given coefficients.
      * Input values <var>x</var> will be converted into output values <var>y</var> using the following equation:
      *
-     * <blockquote><var>y</var>  =  <var>x</var> × {@code scale} + {@code offset}</blockquote>
+     * <blockquote><var>y</var>  =  <var>x</var> ⋅ {@code scale} + {@code offset}</blockquote>
      *
      * @param  scale  The {@code scale}  term in the linear equation.
      * @param  offset The {@code offset} term in the linear equation.
@@ -93,14 +94,14 @@ public final class MathTransforms extends Static {
     }
 
     /**
-     * Creates an arbitrary linear transform from the specified matrix.
-     * If the transform input dimension is {@code M}, and output dimension is {@code N}, then the
-     * given matrix shall have size {@code [N+1][M+1]}. The +1 in the matrix dimensions allows the
-     * matrix to do a shift, as well as a rotation. The {@code [M][j]} element of the matrix will
-     * be the <var>j</var>'th ordinate of the moved origin.
+     * Creates an arbitrary linear transform from the specified matrix. Usually the matrix
+     * {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#isAffine() is affine},
+     * but this is not mandatory. Non-affine matrix will define a projective transform.
      *
-     * <p>The matrix is usually square and affine, but this is not mandatory.
-     * Non-affine transforms are allowed.</p>
+     * <p>If the transform input dimension is {@code M}, and output dimension is {@code N},
+     * then the given matrix shall have size {@code [N+1][M+1]}.
+     * The +1 in the matrix dimensions allows the matrix to do a shift, as well as a rotation.
+     * The {@code [M][j]} element of the matrix will be the <var>j</var>'th ordinate of the moved origin.</p>
      *
      * @param  matrix The matrix used to define the linear transform.
      * @return The linear (usually affine) transform.
@@ -243,18 +244,44 @@ public final class MathTransforms extends Static {
     }
 
     /**
+     * Returns all single components of the given (potentially concatenated) transform.
+     * This method makes the following choice:
+     *
+     * <ul>
+     *   <li>If {@code transform} is {@code null}, returns an empty list.</li>
+     *   <li>Otherwise if {@code transform} is the result of a call to a {@code concatenate(…)} method,
+     *       returns all components. All nested concatenated transforms (if any) will be expanded.</li>
+     *   <li>Otherwise returns the given transform in a list of size 1.</li>
+     * </ul>
+     *
+     * @param  transform The transform for which to get the components, or {@code null}.
+     * @return All single math transforms performed by this concatenated transform.
+     */
+    public static List<MathTransform> getSteps(final MathTransform transform) {
+        if (transform != null) {
+            if (transform instanceof ConcatenatedTransform) {
+                return ((ConcatenatedTransform) transform).getSteps();
+            } else {
+                return Collections.singletonList(transform);
+            }
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    /**
      * If the given transform is linear, returns its coefficients as a matrix.
      * More specifically:
      *
      * <ul>
-     *   <li>If the given transform is an instance of {@link LinearTransform}, returns
-     *       {@link LinearTransform#getMatrix()}.</li>
+     *   <li>If the given transform is an instance of {@link LinearTransform},
+     *       returns {@link LinearTransform#getMatrix()}.</li>
      *   <li>Otherwise if the given transform is an instance of {@link AffineTransform},
-     *       returns its coefficients in a {@link Matrix3} instance.</li>
+     *       returns its coefficients in a {@link org.apache.sis.referencing.operation.matrix.Matrix3} instance.</li>
      *   <li>Otherwise returns {@code null}.</li>
      * </ul>
      *
-     * @param  transform The transform, or {@code null}.
+     * @param  transform The transform for which to get the matrix, or {@code null}.
      * @return The matrix of the given transform, or {@code null} if none.
      */
     public static Matrix getMatrix(final MathTransform transform) {

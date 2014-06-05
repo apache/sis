@@ -24,7 +24,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.operation.provider.Affine;
@@ -33,37 +32,12 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
 
 /**
- * A usually affine, or otherwise a projective transform. A projective transform is capable of
- * mapping an arbitrary quadrilateral into another arbitrary quadrilateral, while preserving the
- * straightness of lines. In the special case where the transform is affine, the parallelism of
- * lines in the source is preserved in the output.
+ * A usually affine, or otherwise a projective transform for the generic cases.
+ * This implementation is used for cases other than identity, 1D, 2D or axis swapping.
  *
- * <p>Such a coordinate transformation can be represented by a square {@linkplain MatrixSIS matrix}
- * of arbitrary size. Point coordinates must have a dimension equal to the matrix size minus one.
- * For example a square matrix of size 4×4 is used for transforming three-dimensional coordinates.
- * The transformed points {@code (x',y',z')} are computed as below (note that this computation is
- * similar to {@code PerspectiveTransform} in <cite>Java Advanced Imaging</cite>):
- *
- * <table class="compact" summary="Projective transform matrix">
- * <tr><td nowrap>
- * {@preformat text
- *     x' = u/t
- *     y' = v/t
- *     y' = w/t
- * }
- * </td><td><blockquote>where {@code (u,v,w)} are obtained by:</blockquote></td><td nowrap>
- * {@preformat text
- *     ┌   ┐     ┌                    ┐ ┌   ┐
- *     │ u │     │ m00  m01  m02  m03 │ │ x │
- *     │ v │  =  │ m10  m11  m12  m13 │ │ y │
- *     │ w │     │ m20  m21  m22  m23 │ │ z │
- *     │ t │     │ m30  m31  m32  m33 │ │ 1 │
- *     └   ┘     └                    ┘ └   ┘
- * }
- * </td></tr></table>
- *
- * In the special case of an affine transform, the last row contains only zero values except in the last column,
- * which contains 1.
+ * <p>A projective transform is capable of mapping an arbitrary quadrilateral into another arbitrary quadrilateral,
+ * while preserving the straightness of lines. In the special case where the transform is affine, the parallelism of
+ * lines in the source is preserved in the output.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5 (derived from geotk-1.2)
@@ -71,9 +45,8 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * @module
  *
  * @see java.awt.geom.AffineTransform
- * @see <a href="http://mathworld.wolfram.com/AffineTransformation.html">Affine transformation on MathWorld</a>
  */
-public class ProjectiveTransform extends AbstractMathTransform implements LinearTransform, Serializable {
+class ProjectiveTransform extends AbstractMathTransform implements LinearTransform, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -123,7 +96,7 @@ public class ProjectiveTransform extends AbstractMathTransform implements Linear
      * Gets the dimension of input points.
      */
     @Override
-    public int getSourceDimensions() {
+    public final int getSourceDimensions() {
         return numCol - 1;
     }
 
@@ -131,7 +104,7 @@ public class ProjectiveTransform extends AbstractMathTransform implements Linear
      * Gets the dimension of output points.
      */
     @Override
-    public int getTargetDimensions() {
+    public final int getTargetDimensions() {
         return numRow - 1;
     }
 
