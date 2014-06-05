@@ -16,9 +16,9 @@
  */
 
 /**
- * {@code MathTransform} implementations for conversions or transformations of multi-dimensional coordinate points.
- * A {@code MathTransform} usually performs conversions or transformations from points given in a
- * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getSourceCRS()
+ * Conversions or transformations of multi-dimensional coordinate points.
+ * A {@link org.opengis.referencing.operation.MathTransform} usually performs conversions or transformations
+ * from points given in a {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getSourceCRS()
  * source coordinate reference system} to coordinate values for the same points in the
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getTargetCRS()
  * target coordinate reference system}. However the conversions are not necessarily between CRS;

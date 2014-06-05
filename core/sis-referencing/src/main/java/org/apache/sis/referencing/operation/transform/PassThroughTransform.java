@@ -38,9 +38,9 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Transform which passes through a subset of ordinates to another transform.
  * This allows transforms to operate on a subset of ordinates.
  *
- * <span class="note"><b>Example:</b> giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
+ * <div class="note"><b>Example:</b> giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
  * {@code PassThroughTransform} can convert the height values from feet to meters without affecting the latitude and
- * longitude values.</span>
+ * longitude values.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5 (derived from geotk-1.2)
