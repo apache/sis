@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
@@ -221,6 +222,15 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
             default: this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(properties, properties.length, AbstractIdentifiedType[].class)); break;
         }
         computeTransientFields();
+    }
+
+    /**
+     * Creates a name from the given string. This method is invoked at construction time,
+     * so it should not use any field in this {@code AbtractIdentifiedObject} instance.
+     */
+    @Override
+    GenericName createName(final NameFactory factory, final String value) {
+        return factory.createTypeName(null, value);
     }
 
     /**

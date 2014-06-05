@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Indicates the role played by the association between two features.
+ * An instance of an {@linkplain DefaultAssociationRole feature association role} containing the associated feature.
  *
  * {@section Limitations}
  * <ul>

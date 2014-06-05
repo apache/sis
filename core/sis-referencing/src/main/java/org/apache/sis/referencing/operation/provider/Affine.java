@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.referencing.operation.provider;
 
-/**
- * A set of helper classes for the SIS implementation.
- *
- * <strong>Do not use!</strong>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
- *
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
- * @module
- */
-package org.apache.sis.internal.referencing;
+import java.util.Map;
+import java.util.Collections;
+import org.opengis.parameter.ParameterDescriptorGroup;
+
+public abstract class Affine implements org.opengis.referencing.operation.OperationMethod {
+    public static Map<String,Object> IDENTIFICATION = Collections.<String,Object>singletonMap(NAME_KEY, "Affine");
+
+    public static ParameterDescriptorGroup PARAMETERS; // TODO
+}
