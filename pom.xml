@@ -435,6 +435,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <source>${maven.compile.source}</source>
           <target>${maven.compile.target}</target>
           <encoding>${project.build.sourceEncoding}</encoding>
+          <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://jira.codehaus.org/browse/MCOMPILER-209 -->
         </configuration>
       </plugin>
 
@@ -591,7 +592,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
           -->
 
           <additionalparam>
-              -link http://www.geoapi.org/snapshot/javadoc/
               -link http://www.geoapi.org/snapshot/pending/
           </additionalparam>
 
@@ -632,7 +632,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           </groups>
 
           <!-- Internal packages to hide from javadoc. -->
-          <excludePackageNames>org.apache.sis.internal:org.apache.sis.util.resources:com</excludePackageNames>
+          <excludePackageNames>org.apache.sis.internal:org.apache.sis.util.resources:org.apache.sis.referencing.operation.provider:com</excludePackageNames>
 
           <!-- Custom taglets, some of them implemented in Java. -->
           <tags>
