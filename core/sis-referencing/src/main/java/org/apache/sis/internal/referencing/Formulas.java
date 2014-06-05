@@ -95,8 +95,12 @@ public final class Formulas extends Static {
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */
     public static double getAuthalicRadius(final double a, final double b) {
-        final double f = 1 - b/a;
-        final double e = sqrt(2*f - f*f);
-        return sqrt(0.5 * (a*a + b*b*atanh(e)/e));
+        if (a != b) {
+            final double f = 1 - b/a;
+            final double e = sqrt(2*f - f*f);
+            return sqrt(0.5 * (a*a + b*b*atanh(e)/e));
+        } else {
+            return a;
+        }
     }
 }

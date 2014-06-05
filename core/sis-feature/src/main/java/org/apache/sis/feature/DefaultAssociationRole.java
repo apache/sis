@@ -77,8 +77,8 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     private volatile transient String titleProperty;
 
     /**
-     * Constructs an association role from the given properties. The properties map is given unchanged
-     * to the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
+     * Constructs an association role from the given properties. The properties map is given unchanged to
+     * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      * The following table is a reminder of main (not all) recognized map entries:
      *
      * <table class="sis">
