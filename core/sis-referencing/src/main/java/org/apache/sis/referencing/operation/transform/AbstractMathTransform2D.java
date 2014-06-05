@@ -39,6 +39,14 @@ import org.apache.sis.util.resources.Errors;
  * Two-dimensional math transforms are not required to extend this class,
  * however doing so may simplify their implementation.
  *
+ * <p>The simplest way to implement this abstract class is to provide an implementation for the following methods
+ * only:</p>
+ * <ul>
+ *   <li>{@link #transform(double[], int, double[], int, boolean)}</li>
+ * </ul>
+ *
+ * However more performance may be gained by overriding the other {@code transform} methods as well.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5 (derived from geotk-2.0)
  * @version 0.5
@@ -46,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
  */
 public abstract class AbstractMathTransform2D extends AbstractMathTransform implements MathTransform2D {
     /**
-     * Constructs a default math transform.
+     * Constructor for subclasses.
      */
     protected AbstractMathTransform2D() {
     }

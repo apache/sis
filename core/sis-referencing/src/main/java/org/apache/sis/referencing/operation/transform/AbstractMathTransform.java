@@ -62,11 +62,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * However more performance may be gained by overriding the other {@code transform} methods as well.
  *
  * {@section Immutability and thread safety}
- * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
- * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
- * conditions.
- *
- * {@section Immutability and thread safety}
  * All Apache SIS implementations of {@code MathTransform} are immutable and thread-safe.
  * It is highly recommended that third-party implementations be immutable and thread-safe too.
  * This means that unless otherwise noted in the javadoc, {@code MathTransform} instances can
@@ -75,8 +70,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * {@section Serialization}
  * {@code MathTransform} may or may not be serializable, at implementation choices.
  * Most Apache SIS implementations are serializable, but the serialized objects are not guaranteed to be compatible
- * with future SIS versions. Serialization, if allowed by the subclass, should be used only for short term storage
- * or RMI between applications running the same SIS version.
+ * with future SIS versions. Serialization should be used only for short term storage or RMI between applications
+ * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5 (derived from geotk-1.2)
@@ -122,7 +117,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     private transient int hashCode;
 
     /**
-     * Constructs a math transform.
+     * Constructor for subclasses.
      */
     protected AbstractMathTransform() {
     }
@@ -145,9 +140,12 @@ public abstract class AbstractMathTransform extends FormattableObject
 
     /**
      * Returns the parameter descriptors for this math transform, or {@code null} if unknown.
+     *
+     * <span class="note"><b>Relationship with ISO 19111:</b>
      * This method is similar to {@link OperationMethod#getParameters()}, except that typical
      * {@link MathTransform} implementations return parameters in standard units (usually
      * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
+     * </span>
      *
      * @return The parameter descriptors for this math transform, or {@code null}.
      *
@@ -160,13 +158,16 @@ public abstract class AbstractMathTransform extends FormattableObject
 
     /**
      * Returns a copy of the parameter values for this math transform, or {@code null} if unknown.
+     * Since this method returns a copy of the parameter values, any change to a value will have no
+     * effect on this math transform.
+     *
+     * <span class="note"><b>Relationship with ISO 19111:</b>
      * This method is similar to {@link SingleOperation#getParameterValues()}, except that typical
      * {@link MathTransform} implementations return parameters in standard units (usually
      * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
+     * </span>
      *
      * @return A copy of the parameter values for this math transform, or {@code null}.
-     *         Since this method returns a copy of the parameter values, any change to
-     *         a value will have no effect on this math transform.
      *
      * @see SingleOperation#getParameterValues()
      */

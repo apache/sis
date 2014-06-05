@@ -32,6 +32,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * One-dimensional math transforms are not required to extend this class,
  * however doing so may simplify their implementation.
  *
+ * <p>The simplest way to implement this abstract class is to provide an implementation for the following methods
+ * only:</p>
+ * <ul>
+ *   <li>{@link #transform(double)}</li>
+ *   <li>{@link #derivative(double)}</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5 (derived from geotk-3.17)
  * @version 0.5
@@ -39,7 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  */
 public abstract class AbstractMathTransform1D extends AbstractMathTransform implements MathTransform1D {
     /**
-     * Constructs a default math transform.
+     * Constructor for subclasses.
      */
     protected AbstractMathTransform1D() {
     }
@@ -61,6 +68,16 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
     }
 
     /**
+     * Transforms the specified value.
+     *
+     * @param  value The value to transform.
+     * @return the transformed value.
+     * @throws TransformException if the value can not be transformed.
+     */
+    @Override
+    public abstract double transform(double value) throws TransformException;
+
+    /**
      * Transforms a single point in the given array and opportunistically computes its derivative if requested.
      * The default implementation delegates to {@link #transform(double)} and potentially to {@link #derivative(double)}.
      * Subclasses may override this method for performance reason.
@@ -79,6 +96,17 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
         }
         return derivate ? new Matrix1(derivative(ordinate)) : null;
     }
+
+    /**
+     * Gets the derivative of this function at a value. The derivative is the 1×1 matrix
+     * of the non-translating portion of the approximate affine map at the value.
+     *
+     * @param  value The value where to evaluate the derivative.
+     * @return The derivative at the specified point.
+     * @throws TransformException if the derivative can not be evaluated at the specified point.
+     */
+    @Override
+    public abstract double derivative(double value) throws TransformException;
 
     /**
      * Gets the derivative of this transform at a point. The default implementation ensures that

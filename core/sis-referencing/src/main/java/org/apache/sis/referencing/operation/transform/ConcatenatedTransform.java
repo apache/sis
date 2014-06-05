@@ -394,6 +394,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * transforms, i.e. all nested concatenated transforms (if any) have been expanded.
      *
      * @return All single math transforms performed by this concatenated transform.
+     *
+     * @see MathTransforms#getSteps(MathTransform)
      */
     public final List<MathTransform> getSteps() {
         final List<MathTransform> transforms = new ArrayList<>(5);
