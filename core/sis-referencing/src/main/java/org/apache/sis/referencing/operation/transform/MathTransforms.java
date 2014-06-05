@@ -122,7 +122,7 @@ public final class MathTransforms extends Static {
 //TODO              case 2: return linear(Matrices.toAffineTransform(matrix));
                 }
             } else if (sourceDimension == 2) {
-//TODO          return new ProjectiveTransform2D(matrix);
+                return new ProjectiveTransform2D(matrix);
             }
         }
         final LinearTransform candidate = CopyTransform.create(matrix);

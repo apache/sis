@@ -16,8 +16,12 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
+import java.util.Map;
+import java.util.Collections;
 import org.opengis.parameter.ParameterDescriptorGroup;
 
-public class Affine {
+public abstract class Affine implements org.opengis.referencing.operation.OperationMethod {
+    public static Map<String,Object> IDENTIFICATION = Collections.singletonMap(NAME_KEY, "Affine");
+
     public static ParameterDescriptorGroup PARAMETERS; // TODO
 }

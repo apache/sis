@@ -84,10 +84,10 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
         numRow = matrix.getNumRow();
         numCol = matrix.getNumCol();
         elt = new double[numRow * numCol];
-        int index = 0;
+        int mix = 0;
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
-                elt[index++] = matrix.getElement(j,i);
+                elt[mix++] = matrix.getElement(j,i);
             }
         }
     }
@@ -110,16 +110,21 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
 
     /**
      * Tests whether this transform does not move any points.
+     *
+     * <span class="note"><b>Note:</b> this method should always returns {@code false}, since
+     * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
+     * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
+     * instead than using a factory method.</span>
      */
     @Override
     public boolean isIdentity() {
         if (numRow != numCol) {
             return false;
         }
-        int index = 0;
+        int mix = 0;
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
-                if (elt[index++] != (i == j ? 1 : 0)) {
+                if (elt[mix++] != (i == j ? 1 : 0)) {
                     return false;
                 }
             }
@@ -131,7 +136,7 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      * Returns a copy of the matrix given to the constructor.
      */
     @Override
-    public Matrix getMatrix() {
+    public final Matrix getMatrix() {
         return Matrices.create(numRow, numCol, elt);
     }
 
@@ -149,26 +154,11 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      * Returns the matrix elements as a group of parameters values. The number of parameters depends on the
      * matrix size. Only matrix elements different from their default value will be included in this group.
      *
-     * @param  matrix The matrix to returns as a group of parameters.
-     * @return A copy of the parameter values for this math transform.
-     */
-    static ParameterValueGroup getParameterValues(final Matrix matrix) {
-//      final MatrixParameters values;
-//      values = (MatrixParameters) Affine.PARAMETERS.createValue();
-//      values.setMatrix(matrix);
-//      return values;
-        return null; // TODO
-    }
-
-    /**
-     * Returns the matrix elements as a group of parameters values. The number of parameters depends on the
-     * matrix size. Only matrix elements different from their default value will be included in this group.
-     *
      * @return A copy of the parameter values for this math transform.
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return getParameterValues(getMatrix());
+        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
     }
 
     /**
@@ -213,8 +203,8 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
                     break;
                 }
                 case DESCENDING: {
-                    srcOff += (numPts-1) * srcDim;
-                    dstOff += (numPts-1) * dstDim;
+                    srcOff += (numPts - 1) * srcDim;
+                    dstOff += (numPts - 1) * dstDim;
                     srcInc = -srcInc;
                     dstInc = -dstInc;
                     break;
@@ -284,8 +274,8 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
                     break;
                 }
                 case DESCENDING: {
-                    srcOff += (numPts-1) * srcDim;
-                    dstOff += (numPts-1) * dstDim;
+                    srcOff += (numPts - 1) * srcDim;
+                    dstOff += (numPts - 1) * dstDim;
                     srcInc = -srcInc;
                     dstInc = -dstInc;
                     break;
@@ -366,8 +356,8 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public void transform(float[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
-        final int srcDim = numCol-1;
-        final int dstDim = numRow-1;
+        final int srcDim = numCol - 1;
+        final int dstDim = numRow - 1;
         final double[] buffer = new double[numRow];
         while (--numPts >= 0) {
             int mix = 0;
@@ -398,8 +388,16 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public Matrix derivative(final DirectPosition point) {
-        final MatrixSIS matrix = Matrices.create(numRow, numCol, elt);
-// TODO matrix.setSize(numRow-1, numCol-1);
+        final int srcDim = numCol - 1;
+        final int dstDim = numRow - 1;
+        final MatrixSIS matrix = Matrices.createZero(dstDim, srcDim);
+        int mix = 0;
+        for (int j=0; j<dstDim; j++) {
+            for (int i=0; i<srcDim; i++) {
+                matrix.setElement(j, i, elt[mix++]);
+            }
+            mix++; // Skip translation column.
+        }
         return matrix;
     }
 
@@ -409,15 +407,19 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
     @Override
     public synchronized MathTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
-            if (isIdentity()) {
-                inverse = this;
-            } else {
-                MatrixSIS matrix = Matrices.create(numRow, numCol, elt);
-                matrix = matrix.inverse();
-                ProjectiveTransform inv = createInverse(matrix);
-                inv.inverse = this;
-                inverse = inv;
-            }
+            /*
+             * Note: we do not perform the following optimization, because MathTransforms.linear(…)
+             *       should never instantiate this class in the identity case.
+             *
+             *       if (isIdentity()) {
+             *           inverse = this;
+             *       } else { ... }
+             */
+            MatrixSIS matrix = Matrices.create(numRow, numCol, elt);
+            matrix = matrix.inverse();
+            ProjectiveTransform inv = createInverse(matrix);
+            inv.inverse = this;
+            inverse = inv;
         }
         return inverse;
     }
