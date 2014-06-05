@@ -31,6 +31,7 @@ import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 
@@ -82,6 +83,21 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      */
     protected ISOMetadata(final Object object) {
         if (object instanceof IdentifiedObject) {
+            if (object instanceof ISOMetadata && Containers.isNullOrEmpty(((ISOMetadata) object).identifiers)) {
+                /*
+                 * If the other object is an ISOMetadata instance,  take a look at its 'identifiers' collection
+                 * before to invoke object.getIdentifiers() in order to avoid unnecessary initialization of its
+                 * backing collection. We do this optimization because the vast majority of metadata objects do
+                 * not have 'identifiers' collection.
+                 *
+                 * Actually this optimization is a little bit dangerous, since users could override getIdentifiers()
+                 * without invoking super.getIdentifiers(), in which case their identifiers will not be copied.
+                 * For safety, we will do this optimization only if the implementation is an Apache SIS one.
+                 */
+                if (object.getClass().getName().startsWith("org.apache.sis.")) {
+                    return;
+                }
+            }
             identifiers = copyCollection(((IdentifiedObject) object).getIdentifiers(), Identifier.class);
         }
     }

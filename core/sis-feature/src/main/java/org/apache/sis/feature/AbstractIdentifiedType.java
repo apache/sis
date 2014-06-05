@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.Locale;
 import java.io.Serializable;
+import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -168,14 +169,16 @@ public class AbstractIdentifiedType implements Serializable {
      * @param  identification The name and other information to be given to this identified type.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
-    protected AbstractIdentifiedType(final Map<String,?> identification) throws IllegalArgumentException {
+    protected AbstractIdentifiedType(final Map<String,?> identification)
+            throws IllegalArgumentException
+    {
         ensureNonNull("identification", identification);
         Object value = identification.get(NAME_KEY);
         if (value == null) {
             throw new IllegalArgumentException(Errors.getResources(identification)
                     .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
         } else if (value instanceof String) {
-            name = DefaultFactories.NAMES.createLocalName(null, (String) value);
+            name = createName(DefaultFactories.NAMES, (String) value);
         } else if (value instanceof GenericName) {
             name = (GenericName) value;
         } else {
@@ -185,6 +188,14 @@ public class AbstractIdentifiedType implements Serializable {
         definition  = Types.toInternationalString(identification, DEFINITION_KEY );
         designation = Types.toInternationalString(identification, DESIGNATION_KEY);
         description = Types.toInternationalString(identification, DESCRIPTION_KEY);
+    }
+
+    /**
+     * Creates a name from the given string. This method is invoked at construction time,
+     * so it should not use any field in this {@code AbtractIdentifiedObject} instance.
+     */
+    GenericName createName(final NameFactory factory, final String value) {
+        return factory.createLocalName(null, value);
     }
 
     /**
