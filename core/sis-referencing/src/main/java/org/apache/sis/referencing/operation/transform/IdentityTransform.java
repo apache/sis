@@ -28,6 +28,7 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 
 
 /**
@@ -91,9 +92,11 @@ final class IdentityTransform extends AbstractMathTransform implements LinearTra
                 }
             }
             switch (dimension) {
-                case 1:  candidate = IdentityTransform1D.INSTANCE;     break;
-                case 2:  candidate = new AffineTransform2D();          break;
                 default: candidate = new IdentityTransform(dimension); break;
+                case 1:  candidate = IdentityTransform1D.INSTANCE;     break;
+                case 2:  candidate = new AffineTransform2D();
+                         ((AffineTransform2D) candidate).freeze();
+                         break;
             }
             if (dimension < IDENTITIES.length) {
                 IDENTITIES[dimension] = candidate;

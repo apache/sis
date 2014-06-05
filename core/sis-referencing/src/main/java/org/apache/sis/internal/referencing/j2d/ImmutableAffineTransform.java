@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.5
  * @module
  */
-public class ImmutableAffineTransform extends AffineTransform {
+class ImmutableAffineTransform extends AffineTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
