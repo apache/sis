@@ -42,18 +42,19 @@ final class ProjectiveTransform2D extends ProjectiveTransform implements MathTra
     /**
      * Creates projective transform from a matrix.
      */
-    public ProjectiveTransform2D(final Matrix matrix) {
+    ProjectiveTransform2D(final Matrix matrix) {
         super(matrix);
     }
 
     /**
      * Transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.
-     * This method is a copy of {@link AbstractMathTransform2D#transform(Point2D, Point2D)}
+     * Implementation is similar but not identical to {@link AbstractMathTransform2D#transform(Point2D, Point2D)}.
+     * The difference is in the {@code transform(…)} method invoked.
      */
     @Override
     public Point2D transform(final Point2D ptSrc, final Point2D ptDst) {
         final double[] ord = new double[] {ptSrc.getX(), ptSrc.getY()};
-        transform(ord, 0, ord, 0, false);
+        transform(ord, 0, ord, 0, 1);
         if (ptDst != null) {
             ptDst.setLocation(ord[0], ord[1]);
             return ptDst;
@@ -63,7 +64,7 @@ final class ProjectiveTransform2D extends ProjectiveTransform implements MathTra
     }
 
     /**
-     * Transform the specified shape.
+     * Transforms the specified shape.
      */
     @Override
     public Shape createTransformedShape(final Shape shape) throws TransformException {

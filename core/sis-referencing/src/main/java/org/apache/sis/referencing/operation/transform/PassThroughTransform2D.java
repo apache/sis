@@ -19,53 +19,51 @@ package org.apache.sis.referencing.operation.transform;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
-import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.geometry.DirectPosition2D;
 
 
 /**
- * Concatenated transform in which the resulting transform is two-dimensional.
+ * A pass-through transform in the two-dimensional case.
  *
- * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5 (derived from geotk-1.2)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.5 (derived from geotk-3.00)
  * @version 0.5
  * @module
  */
-final class ConcatenatedTransform2D extends ConcatenatedTransform implements MathTransform2D {
+final class PassThroughTransform2D extends PassThroughTransform implements MathTransform2D {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7307709788564866500L;
+    private static final long serialVersionUID = -5637760772953973708L;
 
     /**
-     * Constructs a concatenated transform.
+     * Creates a pass through transform.
+     *
+     * @param firstAffectedOrdinate Index of the first affected ordinate.
+     * @param subTransform The sub transform.
+     * @param numTrailingOrdinates Number of trailing ordinates to pass through.
      */
-    ConcatenatedTransform2D(final MathTransform transform1,
-                            final MathTransform transform2)
+    PassThroughTransform2D(final int firstAffectedOrdinate,
+                           final MathTransform subTransform,
+                           final int numTrailingOrdinates)
     {
-        super(transform1, transform2);
-    }
-
-    /**
-     * Checks if transforms are compatibles with this implementation.
-     */
-    @Override
-    boolean isValid() {
-        return super.isValid() && (getSourceDimensions() == 2) && (getTargetDimensions() == 2);
+        super(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
     }
 
     /**
      * Transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.
-     * This method is a copy of {@link AbstractMathTransform2D#transform(Point2D, Point2D)}.
+     * Implementation is similar but not identical to {@link AbstractMathTransform2D#transform(Point2D, Point2D)}.
+     * The difference is in the {@code transform(…)} method invoked.
      */
     @Override
     public Point2D transform(final Point2D ptSrc, final Point2D ptDst) throws TransformException {
         final double[] ord = new double[] {ptSrc.getX(), ptSrc.getY()};
-        transform(ord, 0, ord, 0, false);
+        transform(ord, 0, ord, 0, 1);
         if (ptDst != null) {
             ptDst.setLocation(ord[0], ord[1]);
             return ptDst;
@@ -76,10 +74,6 @@ final class ConcatenatedTransform2D extends ConcatenatedTransform implements Mat
 
     /**
      * Transforms the specified shape.
-     *
-     * @param  shape Shape to transform.
-     * @return Transformed shape.
-     * @throws TransformException if a transform failed.
      */
     @Override
     public Shape createTransformedShape(final Shape shape) throws TransformException {
@@ -87,13 +81,10 @@ final class ConcatenatedTransform2D extends ConcatenatedTransform implements Mat
     }
 
     /**
-     * Gets the derivative of this transform at a point. This method delegates to the
-     * {@link #derivative(DirectPosition)} method because the transformation steps
-     * {@link #transform1} and {@link #transform2} may not be instances of {@link MathTransform2D}.
+     * Gets the derivative of this transform at a point.
      *
-     * @param  point The coordinate point where to evaluate the derivative.
-     * @return The derivative at the specified point as a 2×2 matrix.
-     * @throws TransformException if the derivative can't be evaluated at the specified point.
+     * @return {@inheritDoc}
+     * @throws TransformException If the {@linkplain #getSubTransform() sub-transform} failed.
      */
     @Override
     public Matrix derivative(final Point2D point) throws TransformException {
@@ -105,7 +96,12 @@ final class ConcatenatedTransform2D extends ConcatenatedTransform implements Mat
      * Creates the inverse transform of this object.
      */
     @Override
-    public MathTransform2D inverse() throws NoninvertibleTransformException {
-        return (MathTransform2D) super.inverse();
+    public synchronized MathTransform2D inverse() throws NoninvertibleTransformException {
+        if (inverse == null) {
+            inverse = new PassThroughTransform2D(
+                    firstAffectedOrdinate, subTransform.inverse(), numTrailingOrdinates);
+            inverse.inverse = this;
+        }
+        return (MathTransform2D) inverse;
     }
 }
