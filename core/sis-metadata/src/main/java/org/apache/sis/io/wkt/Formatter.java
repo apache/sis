@@ -84,7 +84,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.5 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */
@@ -1171,6 +1171,32 @@ public class Formatter implements Localized {
         else if (value instanceof Unit<?>)               append((Unit<?>)               value);
         else return false;
         return true;
+    }
+
+    /**
+     * Delegates the formatting to another {@link FormattableObject} implementation.
+     * Invoking this method is equivalent to first verifying the {@code other} class,
+     * then delegating as below:
+     *
+     * {@preformat
+     *     return other.formatTo(this);
+     * }
+     *
+     * This method is useful for {@code FormattableObject} which are wrapper around another object.
+     * It allows to delegate the WKT formatting to the wrapped object.
+     *
+     * @param  other The object to format with this formatter.
+     * @return The value returned by {@link FormattableObject#formatTo(Formatter)}.
+     *
+     * @since 0.5
+     */
+    public String delegateTo(final Object other) throws UnformattableObjectException {
+        ArgumentChecks.ensureNonNull("other", other);
+        if (other instanceof FormattableObject) {
+            return ((FormattableObject) other).formatTo(this);
+        }
+        throw new UnformattableObjectException(Errors.format(
+                Errors.Keys.IllegalClass_2, FormattableObject.class, other.getClass()));
     }
 
     /**

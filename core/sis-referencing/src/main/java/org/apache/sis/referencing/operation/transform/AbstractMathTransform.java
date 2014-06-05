@@ -59,7 +59,19 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *   <li>{@link #transform(double[], int, double[], int, boolean)}</li>
  * </ul>
  *
- * However more performance may be gained by overriding the other {@code transform} method as well.
+ * However more performance may be gained by overriding the other {@code transform} methods as well.
+ *
+ * {@section Immutability and thread safety}
+ * All Apache SIS implementations of {@code MathTransform} are immutable and thread-safe.
+ * It is highly recommended that third-party implementations be immutable and thread-safe too.
+ * This means that unless otherwise noted in the javadoc, {@code MathTransform} instances can
+ * be shared by many objects and passed between threads without synchronization.
+ *
+ * {@section Serialization}
+ * {@code MathTransform} may or may not be serializable, at implementation choices.
+ * Most Apache SIS implementations are serializable, but the serialized objects are not guaranteed to be compatible
+ * with future SIS versions. Serialization should be used only for short term storage or RMI between applications
+ * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5 (derived from geotk-1.2)
@@ -105,7 +117,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     private transient int hashCode;
 
     /**
-     * Constructs a math transform.
+     * Constructor for subclasses.
      */
     protected AbstractMathTransform() {
     }
@@ -128,9 +140,12 @@ public abstract class AbstractMathTransform extends FormattableObject
 
     /**
      * Returns the parameter descriptors for this math transform, or {@code null} if unknown.
+     *
+     * <span class="note"><b>Relationship with ISO 19111:</b>
      * This method is similar to {@link OperationMethod#getParameters()}, except that typical
      * {@link MathTransform} implementations return parameters in standard units (usually
      * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
+     * </span>
      *
      * @return The parameter descriptors for this math transform, or {@code null}.
      *
@@ -143,13 +158,16 @@ public abstract class AbstractMathTransform extends FormattableObject
 
     /**
      * Returns a copy of the parameter values for this math transform, or {@code null} if unknown.
+     * Since this method returns a copy of the parameter values, any change to a value will have no
+     * effect on this math transform.
+     *
+     * <span class="note"><b>Relationship with ISO 19111:</b>
      * This method is similar to {@link SingleOperation#getParameterValues()}, except that typical
      * {@link MathTransform} implementations return parameters in standard units (usually
      * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
+     * </span>
      *
      * @return A copy of the parameter values for this math transform, or {@code null}.
-     *         Since this method returns a copy of the parameter values, any change to
-     *         a value will have no effect on this math transform.
      *
      * @see SingleOperation#getParameterValues()
      */
@@ -269,7 +287,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *   the same. Computing those two information in a single step can help to reduce redundant calculation.</li>
      * </ul>
      *
-     * {@section Implementation note}
+     * {@section Note for implementors}
      * The source and destination may overlap. Consequently, implementors must read all source
      * ordinate values before to start writing the transformed ordinates in the destination array.
      *
@@ -286,7 +304,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @see #derivative(DirectPosition)
      * @see #transform(DirectPosition, DirectPosition)
-     * @see org.apache.sis.referencing.operation.MathTransforms#derivativeAndTransform(MathTransform, double[], int, double[], int)
+     * @see MathTransforms#derivativeAndTransform(MathTransform, double[], int, double[], int)
      */
     public abstract Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate)
             throws TransformException;
@@ -295,16 +313,16 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Transforms a list of coordinate point ordinal values. This method is provided for efficiently
      * transforming many points. The supplied array of ordinal values will contain packed ordinal values.
      *
-     * <div class="note"><b>Example:</b> if the source dimension is 3, then the ordinates will be packed
-     * in this order:
-     * <blockquote>
+     * <div class="note"><b>Example:</b> if the source dimension is 3, then the ordinates will be packed in this order:
      * (<var>x<sub>0</sub></var>,<var>y<sub>0</sub></var>,<var>z<sub>0</sub></var>,
-     *  <var>x<sub>1</sub></var>,<var>y<sub>1</sub></var>,<var>z<sub>1</sub></var> ...).
-     * </blockquote></div>
+     *  <var>x<sub>1</sub></var>,<var>y<sub>1</sub></var>,<var>z<sub>1</sub></var> …).
+     * </div>
      *
      * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)} in a loop,
      * using an {@linkplain IterationStrategy iteration strategy} determined from the arguments for iterating
      * over the points.
+     *
+     * <div class="note"><b>Implementation note:</b> see {@link IterationStrategy} javadoc for a method skeleton.</div>
      *
      * @param  srcPts The array containing the source point coordinates.
      * @param  srcOff The offset to the first point to be transformed in the source array.
@@ -414,6 +432,8 @@ public abstract class AbstractMathTransform extends FormattableObject
     /**
      * Transforms a list of coordinate point ordinal values. The default implementation delegates
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles.
+     *
+     * <div class="note"><b>Implementation note:</b> see {@link IterationStrategy} javadoc for a method skeleton.</div>
      *
      * @param srcPts The array containing the source point coordinates.
      * @param srcOff The offset to the first point to be transformed in the source array.
@@ -710,6 +730,9 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Returns the inverse transform of this object. The default implementation returns
      * {@code this} if this transform is an {@linkplain #isIdentity() identity} transform,
      * or throws an exception otherwise. Subclasses should override this method.
+     *
+     * <div class="note"><b>Implementation note:</b> the {@link Inverse} inner class can be used as
+     * a base for inverse transform implementations.</div>
      */
     @Override
     public MathTransform inverse() throws NoninvertibleTransformException {
@@ -886,8 +909,8 @@ public abstract class AbstractMathTransform extends FormattableObject
             final Matrix m1 = t1.getMatrix();
             if (m1 != null) {
                 final Matrix m2 = ((LinearTransform) t2).getMatrix();
-                if (m1 instanceof org.apache.sis.util.LenientComparable) {
-                    return ((org.apache.sis.util.LenientComparable) m1).equals(m2, mode);
+                if (m1 instanceof LenientComparable) {
+                    return ((LenientComparable) m1).equals(m2, mode);
                 }
                 return Matrices.equals(m1, m2, mode);
             }
@@ -901,7 +924,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * The parameter group name is used as the math transform name.
      *
      * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "PARAM_MT"} in the default implementation.
+     * @return The WKT element name, which is {@code "Param_MT"} in the default implementation.
      */
     @Override
     public String formatTo(final Formatter formatter) {
@@ -910,7 +933,7 @@ public abstract class AbstractMathTransform extends FormattableObject
             WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
             WKTUtilities.append(parameters, formatter);
         }
-        return "PARAM_MT";
+        return "Param_MT";
     }
 
     /**
@@ -928,14 +951,19 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @see AbstractMathTransform2D#beforeFormat(List, int, boolean)
      * @see ConcatenatedTransform#getPseudoSteps()
      */
-    int beforeFormat(List<Object> transforms, int index, boolean inverse) {
+    int beforeFormat(List<MathTransform> transforms, int index, boolean inverse) {
         return index;
     }
 
     /**
-     * Default implementation for inverse math transform. This inner class is the inverse of
-     * the enclosing {@link AbstractMathTransform}. It is serializable only if the enclosing
-     * math transform is also serializable.
+     * Base class for implementations of inverse math transforms.
+     * This inner class is the inverse of the enclosing {@link AbstractMathTransform}.
+     *
+     * {@section Serialization}
+     * Instances of this class are serializable only if the enclosing math transform is also serializable.
+     * Serialized math transforms are not guaranteed to be compatible with future SIS versions.
+     * Serialization, if allowed, should be used only for short term storage or RMI between applications
+     * running the same SIS version.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.5 (derived from geotk-2.0)
@@ -1002,13 +1030,10 @@ public abstract class AbstractMathTransform extends FormattableObject
         /**
          * Returns the inverse of this math transform, which is the enclosing math transform.
          *
-         * <div class="note"><b>API note:</b> this method is final because some implementations assume
-         * that the inverse of {@code this} is always {@code AbstractMathTransform.this}.</div>
-         *
          * @return The enclosing math transform.
          */
         @Override
-        public final MathTransform inverse() {
+        public MathTransform inverse() {
             return AbstractMathTransform.this;
         }
 
@@ -1047,8 +1072,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                 return true;
             }
             if (object != null && object.getClass() == getClass()) {
-                final Inverse that = (Inverse) object;
-                return AbstractMathTransform.this.equals(that.inverse(), mode);
+                return AbstractMathTransform.this.equals(((Inverse) object).inverse(), mode);
             } else {
                 return false;
             }
@@ -1058,11 +1082,11 @@ public abstract class AbstractMathTransform extends FormattableObject
          * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
          * If this inverse math transform has any parameter values, then this method format the
          * WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
-         * Otherwise this method formats the math transform as an {@code "INVERSE_MT"} entity.
+         * Otherwise this method formats the math transform as an {@code "Inverse_MT"} entity.
          *
          * @param  formatter The formatter to use.
-         * @return The WKT element name, which is {@code "PARAM_MT"} or
-         *         {@code "INVERSE_MT"} in the default implementation.
+         * @return The WKT element name, which is {@code "Param_MT"} or
+         *         {@code "Inverse_MT"} in the default implementation.
          */
         @Override
         public String formatTo(final Formatter formatter) {
@@ -1070,10 +1094,10 @@ public abstract class AbstractMathTransform extends FormattableObject
             if (parameters != null) {
                 WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
                 WKTUtilities.append(parameters, formatter);
-                return "PARAM_MT";
+                return "Param_MT";
             } else {
                 formatter.append((FormattableObject) AbstractMathTransform.this);
-                return "INVERSE_MT";
+                return "Inverse_MT";
             }
         }
     }
