@@ -42,6 +42,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.matrix.AffineTransforms2DTest.class,
     org.apache.sis.referencing.operation.transform.IterationStrategyTest.class,
     org.apache.sis.referencing.operation.transform.AbstractMathTransformTest.class,
+    org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
     org.apache.sis.referencing.operation.transform.CopyTransformTest.class,
 
     org.apache.sis.internal.referencing.FormulasTest.class,
