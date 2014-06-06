@@ -21,8 +21,6 @@ import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 
 /**
  * Tests the {@link CopyTransform} class.
@@ -32,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @module
  */
-//@DependsOn(ProjectiveTransformTest.class)
+@DependsOn(ProjectiveTransformTest.class)
 public final strictfp class CopyTransformTest extends MathTransformTestCase {
     /**
      * Generates random ordinates with approximatively 5% of NaN values in the array.
@@ -58,17 +56,14 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
         transform = new CopyTransform(3, 0, 1, 2);
         validate();
         verifyParameters(Affine.PARAMETERS, null);
-        assertTrue(((LinearTransform) transform).getMatrix().isIdentity());
-        assertTrue(transform.isIdentity());
+        verifyIsIdentity(true);
 
         final double[] source = generateRandomCoordinates();
         final double[] target = source.clone();
         verifyTransform(source, target);
-        stress(source);
 
         makeProjectiveTransform();
         verifyTransform(source, target);
-        stress(source);
     }
 
     /**
@@ -80,8 +75,7 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
     public void test3D() throws TransformException {
         transform = new CopyTransform(3, 2, 1, 0);
         validate();
-        assertFalse(transform.isIdentity());
-        assertFalse(((LinearTransform) transform).getMatrix().isIdentity());
+        verifyIsIdentity(false);
 
         final double[] source = generateRandomCoordinates();
         final double[] target = new double[source.length];
@@ -91,11 +85,9 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
             target[b + (2-r)] = source[i];
         }
         verifyTransform(source, target);
-        stress(source);
 
         makeProjectiveTransform();
         verifyTransform(source, target);
-        stress(source);
     }
 
     /**
@@ -108,8 +100,7 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
         transform = new CopyTransform(3, 0, 1);
         isInverseTransformSupported = false;
         validate();
-        assertFalse(transform.isIdentity());
-        assertFalse(((LinearTransform) transform).getMatrix().isIdentity());
+        verifyIsIdentity(false);
 
         final double[] source = generateRandomCoordinates();
         final double[] target = new double[source.length * 2/3];
@@ -119,10 +110,8 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
             // Skip one i (in the for loop).
         }
         verifyTransform(source, target);
-        stress(source);
 
         makeProjectiveTransform();
         verifyTransform(source, target);
-        stress(source);
     }
 }

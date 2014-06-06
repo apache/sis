@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Random;
 import java.io.IOException;
 import java.io.PrintStream;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -37,13 +38,13 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.util.Classes.*;
 import static org.apache.sis.test.ReferencingAssert.*;
 
 
@@ -232,13 +233,29 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
-     * Transforms the given coordinates and verifies that the result is equals (within a positive
-     * delta) to the expected ones. If the difference between an expected and actual ordinate value
-     * is greater than the {@linkplain #tolerance tolerance} threshold, then the assertion fails.
+     * Verifies if {@link MathTransform#isIdentity()} on the current {@linkplain #transform transform}.
+     * If the current transform is linear, then this method will also verifies {@link Matrix#isIdentity()}.
+     *
+     * @param expected The expected return value of {@code isIdentit()} methods.
+     */
+    protected final void verifyIsIdentity(final boolean expected) {
+        assertEquals(completeMessage("isIdentity()"), expected, transform.isIdentity());
+        if (transform instanceof LinearTransform) {
+            assertEquals(completeMessage("getMatrix().isIdentity()"), expected,
+                    ((LinearTransform) transform).getMatrix().isIdentity());
+        }
+    }
+
+    /**
+     * Transforms the given coordinates and verifies that the result is equals (within a positive delta)
+     * to the expected ones. If the difference between an expected and actual ordinate value is greater
+     * than the {@linkplain #tolerance tolerance} threshold, then the assertion fails.
      *
      * <p>If {@link #isInverseTransformSupported} is {@code true}, then this method will also transform
      * the expected coordinate points using the {@linkplain MathTransform#inverse() inverse transform} and
      * compare with the source coordinates.</p>
+     *
+     * <p>This method verifies also the consistency of {@code MathTransform.transform(…)} method variants.</p>
      *
      * @param  coordinates The coordinate points to transform.
      * @param  expected The expect result of the transformation, or
@@ -249,24 +266,35 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     protected final void verifyTransform(final double[] coordinates, final double[] expected) throws TransformException {
         super.verifyTransform(coordinates, expected);
         /*
-         * In addition to the GeoAPI "verifyTransform" check, check also for consistency.
-         * A previous version of Geotk had a bug with the Google projection which was
-         * unnoticed because of lack of this consistency check.
+         * In addition to the GeoAPI "verifyTransform" check, check also for consistency of various variant
+         * of MathTransform.transform(…) methods.  In GeoAPI, 'verifyTransform' and 'verifyConsistency' are
+         * two independent steps because not all developers may want to perform both verifications together.
+         * But in Apache SIS, we want to verify consistency for all math transform. A previous Geotk version
+         * had a bug with the Google projection which was unnoticed because of lack of this consistency check.
          */
-        final float[] copy = new float[coordinates.length];
-        for (int i=0; i<copy.length; i++) {
-            copy[i] = (float) coordinates[i];
+        final float[] asFloats = Numerics.copyAsFloats(coordinates);
+        final float[] result   = verifyConsistency(asFloats);
+        final String  message  = completeMessage("Detected change in source coordinates.");
+        for (int i=0; i<coordinates.length; i++) {
+            assertEquals(message, (float) coordinates[i], asFloats[i], 0f); // Paranoiac check.
         }
-        final float[] result = verifyConsistency(copy);
         /*
          * The comparison below needs a higher tolerance threshold, because we converted the source
          * ordinates to floating points which induce a lost of precision. The multiplication factor
          * used here has been determined empirically. The value is quite high, but this is only an
          * oportunist check anyway. The "real" test is the one performed by 'verifyConsistency'.
+         * We do not perform this check for non-linear transforms, because the difference in input
+         * have too unpredictable consequences on the output.
          */
-        final double tol = max(tolerance * 1000, 1);
-        for (int i=0; i<expected.length; i++) {
-            assertEquals(expected[i], result[i], tol);
+        if (transform instanceof LinearTransform) {
+            for (int i=0; i<expected.length; i++) {
+                final double e = expected[i];
+                double tol = 1E-6 * abs(e);
+                if (!(tol > tolerance)) {   // Use '!' for replacing NaN by 'tolerance'.
+                    tol = tolerance;
+                }
+                assertEquals(e, result[i], tol);
+            }
         }
     }
 
@@ -308,33 +336,6 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
             out.flush();
         }
         return coordinates;
-    }
-
-    /**
-     * Stress the current {@linkplain #transform transform} using the given coordinates.
-     * This method do not {@linkplain #validate() validate} the transform.
-     * This is caller's responsibility to do so if applicable.
-     *
-     * @param  source The input coordinates to use for testing.
-     * @throws TransformException If at transformation failed.
-     */
-    final void stress(final double[] source) throws TransformException {
-        final float[] asFloats = new float[source.length];
-        for (int i=0; i<source.length; i++) {
-            asFloats[i] = (float) source[i];
-        }
-        if (isInverseTransformSupported) {
-            verifyInverse(source);
-        }
-        for (int i=0; i<source.length; i++) {
-            assertEquals(completeMessage("Detected change in source coordinates."),
-                    asFloats[i], (float) source[i], 0f); // Paranoiac check.
-        }
-        verifyConsistency(asFloats);
-        for (int i=0; i<source.length; i++) {
-            assertEquals(completeMessage("Detected change in source coordinates."),
-                    (float) source[i], asFloats[i], 0f); // Paranoiac check.
-        }
     }
 
     /**
