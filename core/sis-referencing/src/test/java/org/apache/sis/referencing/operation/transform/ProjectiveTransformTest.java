@@ -25,14 +25,15 @@ import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.parameter.Parameterized;
 
 // Test imports
-import org.opengis.test.referencing.AffineTransformTest;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.After;
-
 import static org.opengis.test.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.test.referencing.AffineTransformTest;
 
 
 /**

@@ -19,11 +19,10 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Random;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import static java.lang.StrictMath.*;
 
 // Test imports
 import org.apache.sis.test.mock.GeodeticDatumMock;
-
-import static java.lang.StrictMath.*;
 
 
 /**
