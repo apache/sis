@@ -19,10 +19,12 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import java.util.Random;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
+
+// Test imports
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 
 import static org.junit.Assert.*;
 import static java.lang.StrictMath.*;
