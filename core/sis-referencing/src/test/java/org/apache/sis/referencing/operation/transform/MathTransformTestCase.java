@@ -37,17 +37,18 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.util.Numerics;
+import static java.lang.StrictMath.*;
 
 // Test imports
 import org.opengis.test.Validators;
-import org.opengis.test.CalculationType;
-import org.opengis.test.ToleranceModifier;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-
-import static java.lang.StrictMath.*;
 import static org.apache.sis.test.ReferencingAssert.*;
+
+// Branch-dependent imports
+import org.opengis.test.CalculationType;
+import org.opengis.test.ToleranceModifier;
 
 
 /**
@@ -315,7 +316,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
         final int numPts    = ORDINATE_COUNT / dimension;
         final Random random = TestUtilities.createRandomNumberGenerator();
         final double[] coordinates = domain.generateRandomInput(random, dimension, numPts);
-        for (int i = Math.round(coordinates.length * propNaN); --i >= 0;) {
+        for (int i = round(coordinates.length * propNaN); --i >= 0;) {
             coordinates[random.nextInt(coordinates.length)] = Double.NaN;
         }
         if (TestCase.verbose) {

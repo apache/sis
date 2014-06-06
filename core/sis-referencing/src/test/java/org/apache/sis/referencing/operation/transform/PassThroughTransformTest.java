@@ -27,12 +27,13 @@ import org.apache.sis.util.ArraysExt;
 
 // Test imports
 import org.junit.Test;
-import org.opengis.test.CalculationType;
-import org.opengis.test.ToleranceModifier;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
-
 import static org.junit.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.test.CalculationType;
+import org.opengis.test.ToleranceModifier;
 
 
 /**
