@@ -50,17 +50,21 @@ import org.opengis.referencing.operation.MathTransform;
  * A <cite>projective</cite> transform can be used as a generalization of affine transforms.
  * In such case the computation performed by SIS is similar to {@code PerspectiveTransform}
  * in <cite>Java Advanced Imaging</cite>.
+ * For example a square matrix of size 4×4 is used for transforming three-dimensional coordinates.
+ * The transformed points {@code (x',y',z')} are computed as below:
  *
- * <p>For example a square matrix of size 4×4 is used for transforming three-dimensional coordinates.
- * The transformed points {@code (x',y',z')} are computed as below:</p>
+ * <center><p>{@include formulas.html#ProjectiveTransform}</p></center>
  *
- * <blockquote>{@include formulas.html#ProjectiveTransform}</blockquote>
+ * {@section Instantiation}
+ * The easiest way to instantiate a {@code LinearTransform} is to use the {@link MathTransforms#linear(Matrix)}
+ * convenience method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  *
+ * @see java.awt.geom.AffineTransform
  * @see <a href="http://mathworld.wolfram.com/AffineTransformation.html">Affine transformation on MathWorld</a>
  */
 public interface LinearTransform extends MathTransform {
@@ -68,6 +72,7 @@ public interface LinearTransform extends MathTransform {
      * Returns the coefficients of this linear transform as a matrix.
      * Converting a coordinate with this {@code MathTransform} is equivalent to multiplying the
      * returned matrix by a vector containing the ordinate values with an additional 1 in the last row.
+     * See {@link LinearTransform} class Javadoc for more details.
      *
      * @return The coefficients of this linear transform as a matrix.
      *
