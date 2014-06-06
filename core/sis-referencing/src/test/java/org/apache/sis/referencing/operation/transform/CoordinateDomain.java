@@ -40,7 +40,8 @@ public strictfp enum CoordinateDomain {
      * Geocentric input coordinates. The input dimension must be 3.
      */
     GEOCENTRIC {
-        @Override double[] generateRandomInput(final Random random, final int dimension, final int numPts) {
+        @Override
+        public double[] generateRandomInput(final Random random, final int dimension, final int numPts) {
             if (dimension != 3) {
                 throw new IllegalArgumentException();
             }
@@ -64,7 +65,8 @@ public strictfp enum CoordinateDomain {
      * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
      */
     GEOGRAPHIC {
-        @Override double generate(final Random random, final int dimension) {
+        @Override
+        double generate(final Random random, final int dimension) {
             final double range;
             switch (dimension) {
                 case 0:  range = Longitude.MAX_VALUE; break; // Full longitude range.
@@ -81,7 +83,8 @@ public strictfp enum CoordinateDomain {
      * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
      */
     GEOGRAPHIC_SAFE {
-        @Override double generate(final Random random, final int dimension) {
+        @Override
+        double generate(final Random random, final int dimension) {
             final double range;
             switch (dimension) {
                 case 0:  range = Longitude.MAX_VALUE - 1; break; // Longitude, avoiding anti-meridian.
@@ -98,7 +101,8 @@ public strictfp enum CoordinateDomain {
      * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
      */
     GEOGRAPHIC_POLES {
-        @Override double generate(final Random random, final int dimension) {
+        @Override
+        double generate(final Random random, final int dimension) {
             final double range;
             switch (dimension) {
                 case 0:  range = Longitude.MAX_VALUE; break;
@@ -123,7 +127,8 @@ public strictfp enum CoordinateDomain {
      * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     GEOGRAPHIC_RADIANS {
-        @Override double generate(final Random random, final int dimension) {
+        @Override
+        double generate(final Random random, final int dimension) {
             final double range;
             switch (dimension) {
                 case 0:  range = PI;    break; // Longitude.
@@ -140,7 +145,8 @@ public strictfp enum CoordinateDomain {
      * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     GEOGRAPHIC_RADIANS_HALF {
-        @Override double generate(final Random random, final int dimension) {
+        @Override
+        double generate(final Random random, final int dimension) {
             final double range;
             switch (dimension) {
                 case 0:  range = PI/2;  break; // Longitude.
@@ -157,7 +163,8 @@ public strictfp enum CoordinateDomain {
      * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     GEOGRAPHIC_RADIANS_NORTH {
-        @Override double generate(final Random random, final int dimension) {
+        @Override
+        double generate(final Random random, final int dimension) {
             final double range;
             switch (dimension) {
                 case 0:  range = PI; break;
@@ -174,7 +181,8 @@ public strictfp enum CoordinateDomain {
      * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     GEOGRAPHIC_RADIANS_SOUTH {
-        @Override double generate(final Random random, final int dimension) {
+        @Override
+        double generate(final Random random, final int dimension) {
             final double range;
             switch (dimension) {
                 case 0:  range = PI; break;
@@ -191,7 +199,8 @@ public strictfp enum CoordinateDomain {
      * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     GEOGRAPHIC_RADIANS_EAST {
-        @Override double generate(final Random random, final int dimension) {
+        @Override
+        double generate(final Random random, final int dimension) {
             final double range;
             switch (dimension) {
                 case 0:  return +PI*random.nextDouble();
@@ -208,7 +217,8 @@ public strictfp enum CoordinateDomain {
      * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     GEOGRAPHIC_RADIANS_WEST {
-        @Override double generate(final Random random, final int dimension) {
+        @Override
+        double generate(final Random random, final int dimension) {
             final double range;
             switch (dimension) {
                 case 0:  return -PI*random.nextDouble();
@@ -225,7 +235,8 @@ public strictfp enum CoordinateDomain {
      * Ordinates are in (<var>easting</var>, <var>northing</var>, <var>height</var>) order.
      */
     PROJECTED {
-        @Override double generate(final Random random, final int dimension) {
+        @Override
+        double generate(final Random random, final int dimension) {
             final double range;
             switch (dimension) {
                 case 0:  range =  350000; break; // Easting.
@@ -251,7 +262,7 @@ public strictfp enum CoordinateDomain {
      * @param  numPts    The number of points to generate.
      * @return An array of length {@code numPts*dimension} filled with random input ordinate values.
      */
-    double[] generateRandomInput(final Random random, final int dimension, final int numPts) {
+    public double[] generateRandomInput(final Random random, final int dimension, final int numPts) {
         final double[] ordinates = new double[numPts * dimension];
         for (int i=0; i<ordinates.length; i++) {
             ordinates[i] = generate(random, i % dimension);
