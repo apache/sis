@@ -170,7 +170,7 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      * Sets the features. All previous values are replaced by the given collection.
      *
      * <p>The default implementation ensures that the given collection contains at most one element,
-     * then delegates to {@link #setValue(AbstractFeature)}.</p>
+     * then delegates to {@link #setValue(Feature)}.</p>
      *
      * @param  values The new values.
      * @throws IllegalArgumentException if the given collection contains too many elements.
