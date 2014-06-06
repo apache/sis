@@ -28,21 +28,23 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.Identifier;
-import org.opengis.test.Validators;
-import org.opengis.test.CalculationType;
-import org.opengis.test.ToleranceModifier;
-import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.math.Statistics;
+import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.math.Statistics;
-import org.apache.sis.math.StatisticsFormat;
-import org.apache.sis.test.TestUtilities;
+
+// Test imports
+import org.opengis.test.Validators;
+import org.opengis.test.CalculationType;
+import org.opengis.test.ToleranceModifier;
+import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 
 import static java.lang.StrictMath.*;
 import static org.apache.sis.test.ReferencingAssert.*;
@@ -191,7 +193,8 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     /**
      * Validates the current {@linkplain #transform transform}. This method verifies that
      * the transform implements {@link MathTransform1D} or {@link MathTransform2D} if the
-     * transform dimension suggests that it should.
+     * transform dimension suggests that it should. In addition, all Apache SIS transforms
+     * shall implement {@link Parameterized}.
      *
      * @see Validators#validate(MathTransform)
      */
@@ -206,6 +209,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
             assertFalse(completeMessage("MathTransform1D"), transform instanceof MathTransform1D);
             assertFalse(completeMessage("MathTransform2D"), transform instanceof MathTransform2D);
         }
+        assertInstanceOf(completeMessage("Parameterized"), Parameterized.class, transform);
     }
 
     /**
