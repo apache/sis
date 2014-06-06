@@ -17,12 +17,29 @@
 
 /**
  * Conversions or transformations of multi-dimensional coordinate points.
- * A {@link org.opengis.referencing.operation.MathTransform} usually performs conversions or transformations
- * from points given in a {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getSourceCRS()
+ * {@link org.opengis.referencing.operation.MathTransform} provides a single API for
+ * coordinate conversions or transformations, including map projections.
+ * Each {@code MathTransform} instances can:
+ *
+ * <ul>
+ *   <li>transform a single point,</li>
+ *   <li>transform efficiently an array of coordinates,</li>
+ *   <li>transform a Java2D {@link java.awt.Shape} ({@link org.opengis.referencing.operation.MathTransform2D} only),</li>
+ *   <li>compute the transform derivative at a location (for advanced users),</li>
+ *   <li>be concatenated in a conversion or transformation chain.</li>
+ * </ul>
+ *
+ * {@code MathTransform} are truly <var>n</var>-dimensional, but specialized implementations
+ * for 1D and 2D cases are provided for performance reasons or for inter-operability with Java2D.
+ * In the 2D case, Apache SIS provides instances of the standard {@link java.awt.geom.AffineTransform}
+ * class when possible.
+ *
+ * <p>{@code MathTransform} usually performs conversions or transformations from points given in a
+ * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getSourceCRS()
  * source coordinate reference system} to coordinate values for the same points in the
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getTargetCRS()
  * target coordinate reference system}. However the conversions are not necessarily between CRS;
- * a {@code MathTransform} can also be used for converting the sample values in a raster for example.
+ * a {@code MathTransform} can also be used for converting the sample values in a raster for example.</p>
  *
  * <p>This package does not include map projections, which are a special kind of transforms defined
  * in their own {@linkplain org.apache.sis.referencing.operation.projection projection} package.</p>
