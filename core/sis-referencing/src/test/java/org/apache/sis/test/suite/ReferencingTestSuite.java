@@ -45,6 +45,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
     org.apache.sis.referencing.operation.transform.LinearTransformTest.class,
     org.apache.sis.referencing.operation.transform.CopyTransformTest.class,
+    org.apache.sis.referencing.operation.transform.PassThroughTransformTest.class,
 
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
