@@ -18,8 +18,10 @@ package org.apache.sis.internal.referencing;
 
 import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.UnmodifiableGeometryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+// Branch-dependent imports
+import org.opengis.geometry.UnmodifiableGeometryException;
 
 
 /**
