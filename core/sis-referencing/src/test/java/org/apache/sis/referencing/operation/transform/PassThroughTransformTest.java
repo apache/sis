@@ -23,13 +23,14 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.ArraysExt;
 
 // Test imports
 import org.junit.Test;
 import org.opengis.test.CalculationType;
 import org.opengis.test.ToleranceModifier;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.util.ArraysExt;
+import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
 
@@ -37,14 +38,12 @@ import static org.junit.Assert.*;
 /**
  * Tests {@link PassThroughTransform}.
  *
- * <p>The {@link DimensionFilter} class is also tested in order to ensure that it
- * can gives back the original transform.</p>
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5 (derived from geotk-2.0)
  * @version 0.5
  * @module
  */
+@DependsOn(LinearTransformTest.class)
 public final strictfp class PassThroughTransformTest extends MathTransformTestCase {
     /**
      * The random number generator to be used in this test.
@@ -102,16 +101,15 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
     }
 
     /**
-     * Tests the general pass-through transform. This test needs a non-linear sub-transform
-     * for preventing the factory method to optimize.
+     * Tests the general pass-through transform.
+     * This test uses a non-linear sub-transform for preventing the factory method to optimize.
      *
      * @throws TransformException Should never happen.
      */
 //    TODO
 //    @Test
 //    public void testPassthrough() throws TransformException {
-//        final ParameterValueGroup param = mtFactory.getDefaultParameters("Exponential");
-//        runTest(mtFactory.createParameterizedTransform(param), PassThroughTransform.class);
+//        runTest(ExponentialTransform1D.create(10, -2), PassThroughTransform.class);
 //    }
 
     /**
@@ -126,20 +124,13 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
     {
         random = TestUtilities.createRandomNumberGenerator();
         /*
-         * Tests many combinations of "first affected ordinate" and "number of trailing ordinates"
-         * parameters. For each combination we create a passthrough transform, test it with the
-         * "verifyTransform" method, then try to split it back to the original transform using
-         * the DimensionFilter class.
+         * Test many combinations of "first affected ordinate" and "number of trailing ordinates" parameters.
+         * For each combination we create a passthrough transform, test it with the 'verifyTransform' method.
          */
-// TODO final DimensionFilter filter = new DimensionFilter(mtFactory);
         for (int firstAffectedOrdinate=0; firstAffectedOrdinate<=3; firstAffectedOrdinate++) {
-            final int firstTrailingOrdinate = firstAffectedOrdinate + subTransform.getSourceDimensions();
             for (int numTrailingOrdinates=0; numTrailingOrdinates<=3; numTrailingOrdinates++) {
                 final int numAdditionalOrdinates = firstAffectedOrdinate + numTrailingOrdinates;
                 transform = PassThroughTransform.create(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
-                /*
-                 * Test the PassthroughTransform.
-                 */
                 if (numAdditionalOrdinates == 0) {
                     assertSame("Failed to recognize that no passthrough was needed.", subTransform, transform);
                     continue;
@@ -151,28 +142,6 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
                 assertEquals ("Wrong number of target dimensions.",
                         subTransform.getTargetDimensions() + numAdditionalOrdinates, transform.getTargetDimensions());
                 verifyTransform(subTransform, firstAffectedOrdinate);
-                /*
-                 * Split the PassthroughTransform back to the original sub-transform.
-                 */
-//              if (firstAffectedOrdinate != 0) {
-//                  filter.addSourceDimensionRange(0, firstAffectedOrdinate);
-//                  assertTrue("Expected an identity transform.", filter.separate(transform).isIdentity());
-//                  filter.clear();
-//              }
-//              if (numTrailingOrdinates != 0) {
-//                  filter.addSourceDimensionRange(firstTrailingOrdinate, transform.getSourceDimensions());
-//                  assertTrue("Expected an identity transform.", filter.separate(transform).isIdentity());
-//                  filter.clear();
-//              }
-//              filter.addSourceDimensionRange(firstAffectedOrdinate, firstTrailingOrdinate);
-//              assertEquals("Expected the sub-transform.", subTransform, filter.separate(transform));
-//              final int[] expectedDimensions = new int[subTransform.getTargetDimensions()];
-//              for (int i=0; i<expectedDimensions.length; i++) {
-//                  expectedDimensions[i] = firstAffectedOrdinate + i;
-//              }
-//              assertTrue("Unexpected output dimensions",
-//                      Arrays.equals(expectedDimensions, filter.getTargetDimensions()));
-//              filter.clear();
             }
         }
     }
@@ -218,31 +187,37 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
                 Arrays.equals(passthroughData, expectedData));
         /*
          * Now process to the transform and compares the results with the expected ones.
-         * We perform a copy of the source data before to transform them in order to use
-         * the same values for running the GeoAPI tests as the next step.
          */
         tolerance         = 0; // Results should be strictly identical because we used the same inputs.
         toleranceModifier = null;
-        final float[] sourceAsFloat = Numerics.copyAsFloats(passthroughData);
-        transform.transform(passthroughData, 0, passthroughData, 0, numPts);
-        assertCoordinatesEqual("Expected a plain copy.", passthroughDim,
-                expectedData, 0, passthroughData, 0, numPts, CalculationType.IDENTITY);
-        /*
-         * Verify the consistency between different 'transform(…)' methods.
-         * We use a relatively high tolerance threshold because result are
-         * computed using inputs stored as float values.
-         */
-        tolerance         = 1E-4f;
-        toleranceModifier = ToleranceModifier.RELATIVE;
-        final float[] targetAsFloat = verifyConsistency(sourceAsFloat);
-        assertEquals("Unexpected length of transformed array.", expectedData.length, targetAsFloat.length);
-        assertCoordinatesEqual("A transformed value is wrong.", passthroughDim,
-                expectedData, 0, targetAsFloat, 0, numPts, CalculationType.DIRECT_TRANSFORM);
+        final double[] transformedData = new double[expectedData.length];
+        transform.transform(passthroughData, 0, transformedData, 0, numPts);
+        assertCoordinatesEqual("Direct transform.", passthroughDim,
+                expectedData, 0, transformedData, 0, numPts, CalculationType.DIRECT_TRANSFORM);
         /*
          * Test inverse transform.
          */
-        transform.inverse().transform(passthroughData, 0, passthroughData, 0, numPts);
-        assertCoordinatesEqual("A transformed value is wrong.", passthroughDim,
-                sourceAsFloat, 0, passthroughData, 0, numPts, CalculationType.DIRECT_TRANSFORM);
+        tolerance         = 1E-8;
+        toleranceModifier = ToleranceModifier.RELATIVE;
+        Arrays.fill(transformedData, Double.NaN);
+        transform.inverse().transform(expectedData, 0, transformedData, 0, numPts);
+        assertCoordinatesEqual("Inverse transform.", passthroughDim,
+                passthroughData, 0, transformedData, 0, numPts, CalculationType.INVERSE_TRANSFORM);
+        /*
+         * Verify the consistency between different 'transform(…)' methods.
+         */
+        final float[] sourceAsFloat = Numerics.copyAsFloats(passthroughData);
+        final float[] targetAsFloat = verifyConsistency(sourceAsFloat);
+        assertEquals("Unexpected length of transformed array.", expectedData.length, targetAsFloat.length);
+        /*
+         * We use a relatively high tolerance threshold because result are
+         * computed using inputs stored as float values.
+         */
+        if (transform instanceof LinearTransform) {
+            tolerance         = 1E-4;
+            toleranceModifier = ToleranceModifier.RELATIVE;
+            assertCoordinatesEqual("A transformed value is wrong.", passthroughDim,
+                    expectedData, 0, targetAsFloat, 0, numPts, CalculationType.DIRECT_TRANSFORM);
+        }
     }
 }
