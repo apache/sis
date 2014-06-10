@@ -31,6 +31,11 @@ import org.apache.sis.util.ComparisonMode;
  * <p>Before to make this class public (if we do), we need to revisit the class name, define
  * parameters and improve the {@link #concatenate(MathTransform, boolean)} method.</p>
  *
+ * {@section Serialization}
+ * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
+ * Serialization should be used only for short term storage or RMI between applications running the
+ * same SIS version.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5 (derived from geotk-3.17)
  * @version 0.5
@@ -192,7 +197,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization
+            return true;  // Optimization for a common case.
         }
         if (super.equals(object, mode)) {
             return Numerics.equals(power, ((PowerTransform1D) object).power);
