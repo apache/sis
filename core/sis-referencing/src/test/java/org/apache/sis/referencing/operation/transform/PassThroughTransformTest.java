@@ -44,7 +44,10 @@ import org.opengis.test.ToleranceModifier;
  * @version 0.5
  * @module
  */
-@DependsOn(LinearTransformTest.class)
+@DependsOn({
+    LinearTransformTest.class,
+    ExponentialTransform1DTest.class
+})
 public final strictfp class PassThroughTransformTest extends MathTransformTestCase {
     /**
      * The random number generator to be used in this test.
