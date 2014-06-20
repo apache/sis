@@ -16,13 +16,21 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.EnumSet;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.test.DependsOn;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
 import static java.lang.StrictMath.*;
+
+// Test imports
+import org.junit.Test;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
+import static org.opengis.test.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.test.CalculationType;
+import org.opengis.test.ToleranceModifier;
+import org.opengis.test.ToleranceModifiers;
 
 
 /**
@@ -35,36 +43,65 @@ import static java.lang.StrictMath.*;
  * @version 0.5
  * @module
  */
-@DependsOn(LinearTransformTest.class)
+@DependsOn({
+    CoordinateDomainTest.class,
+    LinearTransformTest.class
+})
 public final strictfp class ExponentialTransform1DTest extends MathTransformTestCase {
     /**
-     * Arbitrary coefficients used for this test.
+     * Arbitrary parameters of the exponential transform to be tested.
      */
-    private static final double BASE = 10, SCALE = 2, C0 = -3, C1 = 0.25;
+    private static final double BASE = 10, SCALE = 2;
 
     /**
-     * A simple (non-concatenated) test case.
+     * Arbitrary coefficients of a linear transform to be concatenated to the exponential transform.
+     */
+    private static final double C0 = -3, C1 = 0.25;
+
+    /**
+     * The random values to use as input, and the expected transformed values.
+     */
+    private double[] values, expected;
+
+    /**
+     * Generates random values for input coordinates, and allocates (but do not compute values)
+     * array for the expected transformed coordinates.
+     *
+     * @param mt The math transform which will be tested.
+     */
+    private void initialize(final MathTransform1D mt) {
+        transform         = mt; // Must be set before generateRandomCoordinates(…).
+        tolerance         = 1E-14;
+        toleranceModifier = ToleranceModifier.RELATIVE;
+        derivativeDeltas  = new double[] {0.001};
+        values            = generateRandomCoordinates(CoordinateDomain.RANGE_10, 0);
+        expected          = new double[values.length];
+    }
+
+    /**
+     * Tests the current transform using the {@link #values} as input points, and comparing with
+     * the {@link #expected} values.
+     */
+    private void run(final Class<? extends MathTransform1D> expectedType) throws TransformException {
+        assertInstanceOf("Expected the use of mathematical identities.", expectedType, transform);
+        assertFalse(transform.isIdentity());
+        validate();
+        verifyTransform(values, expected);
+        verifyDerivative(2.5); // Test at a hard-coded point.
+    }
+
+    /**
+     * A single (non-concatenated) test case.
      *
      * @throws TransformException should never happen.
      */
     @Test
-    public void testSimple() throws TransformException {
-        transform = ExponentialTransform1D.create(BASE, SCALE);
-        validate();
-        assertFalse(transform.isIdentity());
-        final double[] source = generateRandomCoordinates(CoordinateDomain.GAUSSIAN, 0);
-        final double[] target = new double[source.length];
-        for (int i=0; i<source.length; i++) {
-            target[i] = SCALE * pow(BASE, source[i]);
+    public void testSingle() throws TransformException {
+        initialize(ExponentialTransform1D.create(BASE, SCALE));
+        for (int i=0; i<values.length; i++) {
+            expected[i] = SCALE * pow(BASE, values[i]);
         }
-        tolerance = 1E-12;
-        verifyTransform(source, target);
-        /*
-         * Tests the derivative at a single point.
-         */
-        tolerance = 0.002;
-        derivativeDeltas = new double[] {0.001};
-        verifyDerivative(2.5);
+        run(ExponentialTransform1D.class);
     }
 
     /**
@@ -73,42 +110,28 @@ public final strictfp class ExponentialTransform1DTest extends MathTransformTest
      * @throws TransformException should never happen.
      */
     @Test
+    @DependsOnMethod("testSingle")
     public void testAffinePreConcatenation() throws TransformException {
-        transform = MathTransforms.concatenate(
-                LinearTransform1D.create(C1, C0),
-                ExponentialTransform1D.create(BASE, SCALE));
-        validate();
-        assertFalse(transform.isIdentity());
-        assertTrue("Expected mathematical identities.", transform instanceof ExponentialTransform1D);
-        final double[] source = generateRandomCoordinates(CoordinateDomain.GAUSSIAN, 0);
-        final double[] target = new double[source.length];
-        for (int i=0; i<source.length; i++) {
-            target[i] = SCALE * pow(BASE, C0 + C1 * source[i]);
+        initialize(MathTransforms.concatenate(
+                   LinearTransform1D.create(C1, C0),
+                   ExponentialTransform1D.create(BASE, SCALE)));
+        for (int i=0; i<values.length; i++) {
+            expected[i] = SCALE * pow(BASE, C0 + C1 * values[i]);
         }
-        tolerance = 1E-14;
-        verifyTransform(source, target);
+        run(ExponentialTransform1D.class);
         /*
-         * Tests the derivative at a single point.
-         */
-        tolerance = 1E-9;
-        derivativeDeltas = new double[] {0.001};
-        verifyDerivative(2.5);
-        /*
-         * Find back the original linear coefficients as documented in the ExpentionalTransform1D
-         * class javadoc. Then check that the transform results are the expected ones.
+         * Find back the original linear coefficients as documented in the ExponentialTransform1D class javadoc.
          */
         final double lnBase =  log(BASE);
         final double offset = -log(SCALE) / lnBase;
         final MathTransform1D log = LogarithmicTransform1D.create(BASE, offset);
+        for (int i=0; i<values.length; i++) {
+            expected[i] = log(expected[i]) / lnBase + offset;
+        }
         transform = (LinearTransform1D) MathTransforms.concatenate(transform, log);
-        assertTrue("Expected mathematical identities.", transform instanceof LinearTransform1D);
+        run(LinearTransform1D.class);
         assertEquals(C1, ((LinearTransform1D) transform).scale,  1E-12);
         assertEquals(C0, ((LinearTransform1D) transform).offset, 1E-12);
-        for (int i=0; i<source.length; i++) {
-            target[i] = log(target[i]) / lnBase + offset;
-        }
-        tolerance = 1E-14;
-        verifyTransform(source, target);
     }
 
     /**
@@ -117,25 +140,22 @@ public final strictfp class ExponentialTransform1DTest extends MathTransformTest
      * @throws TransformException should never happen.
      */
     @Test
+    @DependsOnMethod("testSingle")
     public void testAffinePostConcatenation() throws TransformException {
-        transform = MathTransforms.concatenate(
-                ExponentialTransform1D.create(BASE, SCALE),
-                LinearTransform1D.create(C1, C0));
-        validate();
-        assertFalse(transform.isIdentity());
-        final double[] source = generateRandomCoordinates(CoordinateDomain.GAUSSIAN, 0);
-        final double[] target = new double[source.length];
-        for (int i=0; i<source.length; i++) {
-            target[i] = C0 + C1 * (SCALE * pow(BASE, source[i]));
+        initialize(MathTransforms.concatenate(
+                   ExponentialTransform1D.create(BASE, SCALE),
+                   LinearTransform1D.create(C1, C0)));
+        for (int i=0; i<values.length; i++) {
+            expected[i] = C0 + C1 * (SCALE * pow(BASE, values[i]));
         }
-        tolerance = 1E-12;
-        verifyTransform(source, target);
         /*
-         * Tests the derivative at a single point.
+         * The inverse transforms in this test case have high rounding errors.
+         * Those errors are low for values close to zero, and increase fast for higher values.
+         * We scale the default tolerance (1E-14) by 1E+8, which give us a tolerance of 1E-6.
          */
-        tolerance = 0.01;
-        derivativeDeltas = new double[] {0.001};
-        verifyDerivative(2.5);
+        toleranceModifier = ToleranceModifiers.concatenate(toleranceModifier,
+                ToleranceModifiers.scale(EnumSet.of(CalculationType.INVERSE_TRANSFORM), 1E+8));
+        run(ConcatenatedTransformDirect1D.class);
     }
 
     /**
@@ -144,28 +164,17 @@ public final strictfp class ExponentialTransform1DTest extends MathTransformTest
      * @throws TransformException should never happen.
      */
     @Test
+    @DependsOnMethod("testSingle")
     public void testLogarithmicConcatenation() throws TransformException {
-        final double offset = -3;
-        final double base   = 8;
+        final double base   = 8; // Must be different than BASE.
         final double lnBase = log(base);
-        transform = MathTransforms.concatenate(
-                LogarithmicTransform1D.create(base, offset),
-                ExponentialTransform1D.create(BASE, SCALE));
-        validate();
-        assertFalse(transform.isIdentity());
-        final double[] source = generateRandomCoordinates(CoordinateDomain.GAUSSIAN, 0);
-        final double[] target = new double[source.length];
-        for (int i=0; i<source.length; i++) {
-            source[i] = abs(source[i]) + 0.001;
-            target[i] = SCALE * pow(BASE, log(source[i]) / lnBase + offset);
+        initialize(MathTransforms.concatenate(
+                   LogarithmicTransform1D.create(base, C0),
+                   ExponentialTransform1D.create(BASE, SCALE)));
+        for (int i=0; i<values.length; i++) {
+            values[i] = abs(values[i]) + 0.001;
+            expected[i] = SCALE * pow(BASE, log(values[i]) / lnBase + C0);
         }
-        tolerance = 1E-14;
-        verifyTransform(source, target);
-        /*
-         * Tests the derivative at a single point.
-         */
-        tolerance = 1E-10;
-        derivativeDeltas = new double[] {0.001};
-        verifyDerivative(2.5);
+        run(ConcatenatedTransformDirect1D.class);
     }
 }

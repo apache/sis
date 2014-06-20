@@ -32,7 +32,10 @@ import org.apache.sis.test.DependsOn;
  * @version 0.5
  * @module
  */
-@DependsOn(ProjectiveTransformTest.class)
+@DependsOn({
+    CoordinateDomainTest.class,
+    ProjectiveTransformTest.class
+})
 public final strictfp class CopyTransformTest extends MathTransformTestCase {
     /**
      * Generates random ordinates with approximatively 5% of NaN values in the array.

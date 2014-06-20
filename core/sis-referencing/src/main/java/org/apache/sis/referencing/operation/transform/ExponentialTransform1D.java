@@ -27,20 +27,18 @@ import org.apache.sis.util.ComparisonMode;
  * A one dimensional exponential transform.
  * Input values <var>x</var> are converted into output values <var>y</var> using the following equation:
  *
- * <blockquote><var>y</var>  =  {@linkplain #scale} ⋅ {@linkplain #base}<sup><var>x</var></sup></blockquote>
+ * <blockquote><var>y</var> = {@linkplain #scale}⋅{@linkplain #base}<sup><var>x</var></sup></blockquote>
  *
- * <div class="note"><b>Tip:</b> if a linear transform is applied before this exponential transform,
- * then the equation can be rewritten as:
- *
- * <blockquote><code>scale</code> ⋅ <code>base</code><sup><var>a</var> + <var>b</var>⋅<var>x</var></sup>
- *  =  <code>scale</code> ⋅ <code>base</code><sup><var>a</var></sup> ⋅
- * (<code>base</code><sup><var>b</var></sup>)<sup><var>x</var></sup></blockquote>
+ * <div class="note"><b>Tip:</b>
+ * if a linear transform is applied before this exponential transform, then the equation can be rewritten as:
+ * <var>scale</var>⋅<var>base</var><sup><var>a</var> + <var>b</var>⋅<var>x</var></sup> =
+ * <var>scale</var>⋅<var>base</var><sup><var>a</var></sup>⋅(<var>base</var><sup><var>b</var></sup>)<sup><var>x</var></sup>
  *
  * It is possible to find back the coefficients of the original linear transform by
  * pre-concatenating a logarithmic transform before the exponential one, as below:
  *
  * {@preformat java
- *   LinearTransform1D linear = (LinearTransform1D) ConcatenatedTransform.create(exponentialTransform,
+ *   LinearTransform1D linear = MathTransforms.create(exponentialTransform,
  *           LogarithmicTransform1D.create(base, -Math.log(scale) / Math.log(base)));
  * }
  * </div>
@@ -67,7 +65,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     protected final double base;
 
     /**
-     * Natural logarithm of {@link #base}.
+     * Natural logarithm of {@link #base}, used for {@link #derivative(double)} computation.
      */
     final double lnBase;
 
@@ -75,7 +73,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * The scale value to be multiplied.
      *
      * <div class="note">The scale could be handled by a concatenation with {@link LinearTransform1D} instead than
-     * an explicit field in this class. However the <var>scale</var> ⋅ <var>base</var><sup><var>x</var></sup> formula
+     * an explicit field in this class. However the <var>scale</var>⋅<var>base</var><sup><var>x</var></sup> formula
      * is extensively used as a <cite>transfer function</cite> in grid coverages. Consequently we keep this explicit
      * field for performance reasons.</div>
      */
@@ -88,14 +86,13 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     private MathTransform1D inverse;
 
     /**
-     * Constructs a new exponential transform which is the
-     * inverse of the supplied logarithmic transform.
+     * Constructs a new exponential transform which is the inverse of the supplied logarithmic transform.
      */
     ExponentialTransform1D(final LogarithmicTransform1D inverse) {
-        this.base     = inverse.base;
-        this.lnBase   = inverse.lnBase;
-        this.scale    = Math.pow(base, -inverse.offset);
-        this.inverse  = inverse;
+        this.base    = inverse.base;
+        this.lnBase  = inverse.lnBase;
+        this.scale   = Math.pow(base, -inverse.offset);
+        this.inverse = inverse;
     }
 
     /**
@@ -113,8 +110,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     }
 
     /**
-     * Constructs a new exponential transform which include the given scale factor applied
-     * after the exponentiation.
+     * Constructs a new exponential transform which include the given scale factor applied after the exponentiation.
      *
      * @param  base   The base to be raised to a power.
      * @param  scale  The scale value to be multiplied.
@@ -122,7 +118,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      */
     public static MathTransform1D create(final double base, final double scale) {
         if (base == 0 || scale == 0) {
-            return LinearTransform1D.create(0, 0);
+            return ConstantTransform1D.ZERO;
         }
         if (base == 1) {
             return LinearTransform1D.create(scale, 0);
@@ -131,7 +127,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     }
 
     /**
-     * Creates the inverse transform of this object.
+     * Returns the inverse of this transform.
      */
     @Override
     public synchronized MathTransform1D inverse() {
