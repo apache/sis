@@ -55,7 +55,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     protected final double base;
 
     /**
-     * Natural logarithm of {@link #base}.
+     * Natural logarithm of {@link #base}, used for {@link #derivative(double)} computation.
      */
     final double lnBase;
 
@@ -114,13 +114,12 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
         if (base == 10) {
             return new Base10(offset);
         }
-        if (base == 0) {
-            // offset + ln(x) / ln(0)   =   offset + ln(x) / -∞   =   offset + -0  for 0 < x < ∞
-            return LinearTransform1D.create(-0.0, offset);
-        }
-        if (base == Double.POSITIVE_INFINITY) {
-            // offset + ln(x) / ln(∞)   =   offset + ln(x) / +∞   =   offset + 0   for 0 < x < ∞
-            return LinearTransform1D.create(+0.0, offset);
+        if (base == 0 || base == Double.POSITIVE_INFINITY) {
+            /*
+             * offset + ln(x) / ln(0)   =   offset + ln(x) / -∞   =   offset + -0   for 0 < x < ∞
+             * offset + ln(x) / ln(∞)   =   offset + ln(x) / +∞   =   offset +  0   for 0 < x < ∞
+             */
+            return LinearTransform1D.create(0, offset);
         }
         return new LogarithmicTransform1D(base, offset);
     }
@@ -136,7 +135,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Creates the inverse transform of this object.
+     * Returns the inverse of this transform.
      */
     @Override
     public synchronized MathTransform1D inverse() {

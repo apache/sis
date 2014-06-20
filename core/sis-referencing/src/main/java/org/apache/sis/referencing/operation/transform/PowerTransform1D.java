@@ -78,7 +78,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
      */
     public static MathTransform1D create(final double power) {
         if (power == 1) return IdentityTransform1D.INSTANCE;
-        if (power == 0) return new ConstantTransform1D(1);
+        if (power == 0) return ConstantTransform1D.ONE;
         return new PowerTransform1D(power);
     }
 

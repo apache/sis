@@ -45,6 +45,7 @@ import org.opengis.test.ToleranceModifier;
  * @module
  */
 @DependsOn({
+    CoordinateDomainTest.class,
     LinearTransformTest.class,
     ExponentialTransform1DTest.class
 })

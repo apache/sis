@@ -37,6 +37,16 @@ final class ConstantTransform1D extends LinearTransform1D {
     private static final long serialVersionUID = -1583675681650985947L;
 
     /**
+     * A transform for the positive zero constant.
+     */
+    static final ConstantTransform1D ZERO = new ConstantTransform1D(0);
+
+    /**
+     * A transform for the one constant.
+     */
+    static final ConstantTransform1D ONE = new ConstantTransform1D(1);
+
+    /**
      * Constructs a new constant transform.
      *
      * @param offset The {@code offset} term in the linear equation.

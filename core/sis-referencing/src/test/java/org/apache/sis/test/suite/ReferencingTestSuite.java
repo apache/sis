@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @Suite.SuiteClasses({
@@ -40,6 +40,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class, // Expected to be last MatrixTestCase - see javadoc.
     org.apache.sis.referencing.operation.matrix.MatricesTest.class,
     org.apache.sis.referencing.operation.matrix.AffineTransforms2DTest.class,
+    org.apache.sis.referencing.operation.transform.CoordinateDomainTest.class,
     org.apache.sis.referencing.operation.transform.IterationStrategyTest.class,
     org.apache.sis.referencing.operation.transform.AbstractMathTransformTest.class,
     org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
