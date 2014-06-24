@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.apache.sis.test.DependsOn;
-
 import static org.opengis.test.Assert.*;
 
 

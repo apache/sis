@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Random;
 import java.io.IOException;
-import java.io.PrintStream;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -31,23 +30,21 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
-import org.apache.sis.math.Statistics;
-import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.util.Numerics;
+import static java.lang.StrictMath.*;
 
 // Test imports
 import org.opengis.test.Validators;
+import org.opengis.test.referencing.TransformTestCase;
+import org.apache.sis.test.TestUtilities;
+import static org.apache.sis.test.ReferencingAssert.*;
+
+// Branch-dependent imports
 import org.opengis.test.CalculationType;
 import org.opengis.test.ToleranceModifier;
-import org.opengis.test.referencing.TransformTestCase;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
-
-import static java.lang.StrictMath.*;
-import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -315,29 +312,8 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
         final int numPts    = ORDINATE_COUNT / dimension;
         final Random random = TestUtilities.createRandomNumberGenerator();
         final double[] coordinates = domain.generateRandomInput(random, dimension, numPts);
-        for (int i = Math.round(coordinates.length * propNaN); --i >= 0;) {
+        for (int i = round(coordinates.length * propNaN); --i >= 0;) {
             coordinates[random.nextInt(coordinates.length)] = Double.NaN;
-        }
-        if (TestCase.verbose) {
-            final PrintStream out = out();
-            out.print("Random input coordinates for ");
-            out.print(domain); out.println(" domain:");
-            final Statistics[] stats = new Statistics[dimension];
-            for (int i=0; i<stats.length; i++) {
-                stats[i] = new Statistics(null);
-            }
-            for (int i=0; i<coordinates.length; i++) {
-                stats[i % dimension].accept(coordinates[i]);
-            }
-            final StatisticsFormat format = StatisticsFormat.getInstance();
-            format.setBorderWidth(1);
-            try {
-                format.format(stats, out);
-            } catch (IOException e) {
-                throw new AssertionError(e);
-            }
-            out.println();
-            out.flush();
         }
         return coordinates;
     }
@@ -363,7 +339,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      */
     @Debug
     protected final void printInternalWKT() {
-        final TableAppender table = new TableAppender(out());
+        final TableAppender table = new TableAppender(System.out);
         table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();
         table.append("WKT of “").append(getName()).append('”').nextColumn();
@@ -386,13 +362,5 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
         } catch (IOException e) {
             throw new AssertionError(e);
         }
-    }
-
-    /**
-     * Where to write debugging information.
-     */
-    @Debug
-    private static PrintStream out() {
-        return System.out;
     }
 }
