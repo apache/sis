@@ -30,7 +30,6 @@ import org.apache.sis.test.DependsOn;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.After;
-
 import static org.opengis.test.Assert.*;
 
 // Branch-dependent imports
