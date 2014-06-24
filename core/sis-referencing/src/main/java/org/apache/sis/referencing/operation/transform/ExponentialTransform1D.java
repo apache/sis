@@ -62,7 +62,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     /**
      * The base to be raised to a power.
      */
-    protected final double base;
+    final double base;
 
     /**
      * Natural logarithm of {@link #base}, used for {@link #derivative(double)} computation.
@@ -77,7 +77,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * is extensively used as a <cite>transfer function</cite> in grid coverages. Consequently we keep this explicit
      * field for performance reasons.</div>
      */
-    protected final double scale;
+    final double scale;
 
     /**
      * The inverse of this transform. Created only when first needed. Serialized in order to avoid
@@ -89,9 +89,9 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * Constructs a new exponential transform which is the inverse of the supplied logarithmic transform.
      */
     ExponentialTransform1D(final LogarithmicTransform1D inverse) {
-        this.base    = inverse.base;
-        this.lnBase  = inverse.lnBase;
-        this.scale   = Math.pow(base, -inverse.offset);
+        this.base    = inverse.getBase();
+        this.lnBase  = inverse.getLogBase();
+        this.scale   = Math.pow(base, -inverse.getOffset());
         this.inverse = inverse;
     }
 
@@ -257,17 +257,17 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     final MathTransform concatenateLog(final LogarithmicTransform1D other, final boolean applyOtherFirst) {
         if (applyOtherFirst) {
             return MathTransforms.concatenate(
-                    PowerTransform1D.create(lnBase / other.lnBase),
-                    LinearTransform1D.create(scale * Math.pow(base, other.offset), 0));
+                    PowerTransform1D.create(lnBase / other.getLogBase()),
+                    LinearTransform1D.create(scale * Math.pow(base, other.getOffset()), 0));
         } else {
-            final double newScale = lnBase / other.lnBase;
+            final double newScale = lnBase / other.getLogBase();
             final double newOffset;
             if (scale > 0) {
-                newOffset = other.log(scale) + other.offset;
+                newOffset = other.log(scale) + other.getOffset();
             } else {
                 // Maybe the Math.log(...) argument will become
                 // positive if we rewrite the equation that way...
-                newOffset = other.log(scale * other.offset * other.lnBase);
+                newOffset = other.log(scale * other.getOffset() * other.getLogBase());
             }
             if (!Double.isNaN(newOffset)) {
                 return LinearTransform1D.create(newScale, newOffset);

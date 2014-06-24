@@ -26,12 +26,13 @@ import org.apache.sis.util.ComparisonMode;
 
 /**
  * A one dimensional, logarithmic transform. This transform is the inverse of {@link ExponentialTransform1D}.
- * Input values <var>x</var> are converted into output values <var>y</var> using the following equation:
+ * The default implementation computes the natural logarithm of input values using {@link Math#log(double)}.
+ * Subclasses compute alternate logarithms, for example in base 10 computed by {@link Math#log10(double)}.
  *
- * <blockquote><table class="compact" summary="y = offset + log(x)">
- *   <tr><td><var>y</var></td><td> = </td><td>{@linkplain #offset} + log<sub>{@linkplain #base}</sub>(<var>x</var>)</td></tr>
- *   <tr><td>            </td><td> = </td><td>{@linkplain #offset} + ln(<var>x</var>) / ln({@linkplain #base})</td></tr>
- * </table></blockquote>
+ * <p>Logarithms in bases other than <var>e</var> or 10 are computed by concatenating a linear transform,
+ * using the following mathematical identity:</p>
+ *
+ * <blockquote>    log<sub>base</sub>(<var>x</var>) = ln(<var>x</var>) / ln(base)    </blockquote>
  *
  * {@section Serialization}
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
@@ -50,24 +51,9 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     private static final long serialVersionUID = 1535101265352133948L;
 
     /**
-     * The logarithm base.
+     * The unique instance of the natural logarithmic transform.
      */
-    protected final double base;
-
-    /**
-     * Natural logarithm of {@link #base}, used for {@link #derivative(double)} computation.
-     */
-    final double lnBase;
-
-    /**
-     * The offset to add to the logarithm.
-     *
-     * <span class="note"><b>Note:</b> the offset could be handled by a concatenation with {@link LinearTransform1D}.
-     * instead than an explicit field in this class. However the <var>offset</var> + log<sub>base</sub>(<var>x</var>)
-     * formula is extensively used as a <cite>transfer function</cite> in grid coverages. Consequently we keep this
-     * explicit field for performance reasons.</span>
-     */
-    protected final double offset;
+    private static final LogarithmicTransform1D NATURAL = new LogarithmicTransform1D();
 
     /**
      * The inverse of this transform. Created only when first needed. Serialized in order to avoid
@@ -76,62 +62,78 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     private MathTransform1D inverse;
 
     /**
-     * Constructs a new logarithmic transform which is the
-     * inverse of the supplied exponential transform.
+     * Constructs a new logarithmic transform.
      *
-     * @see #create(ExponentialTransform1D)
+     * @see #create(double, double)
      */
-    private LogarithmicTransform1D(final ExponentialTransform1D inverse) {
-        this.base    = inverse.base;
-        this.lnBase  = inverse.lnBase;
-        this.offset  = -Math.log(inverse.scale) / lnBase;
-        this.inverse = inverse;
+    LogarithmicTransform1D() {
     }
 
     /**
-     * Constructs a new logarithmic transform. This constructor is provided for subclasses only.
-     * Instances should be created using the {@linkplain #create(double, double) factory method},
-     * which may return optimized implementations for some particular argument values.
-     *
-     * @param base    The base of the logarithm (typically 10).
-     * @param offset  The offset to add to the logarithm.
-     */
-    protected LogarithmicTransform1D(final double base, final double offset) {
-        ArgumentChecks.ensureStrictlyPositive("base", base);
-        this.base    = base;
-        this.offset  = offset;
-        this.lnBase  = Math.log(base);
-    }
-
-    /**
-     * Constructs a new logarithmic transform which include the given offset after the logarithm.
+     * Constructs a new logarithmic transform which add the given offset after the logarithm.
      *
      * @param  base    The base of the logarithm (typically 10).
      * @param  offset  The offset to add to the logarithm.
      * @return The math transform.
      */
     public static MathTransform1D create(final double base, final double offset) {
+        ArgumentChecks.ensureStrictlyPositive("base", base);
         if (base == 10) {
-            return (offset == 0) ? Base10.INSTANCE : new Base10(offset);
+            return Base10.create(offset);
         }
-        if (base == 0 || base == Double.POSITIVE_INFINITY) {
-            /*
-             * offset + ln(x) / ln(0)   =   offset + ln(x) / -∞   =   offset + -0   for 0 < x < ∞
-             * offset + ln(x) / ln(∞)   =   offset + ln(x) / +∞   =   offset +  0   for 0 < x < ∞
-             */
-            return LinearTransform1D.create(0, offset);
-        }
-        return new LogarithmicTransform1D(base, offset);
+        return NATURAL.concatenate(1 / Math.log(base), offset);
     }
 
     /**
      * Constructs a new logarithmic transform which is the inverse of the supplied exponential transform.
      */
-    static LogarithmicTransform1D create(final ExponentialTransform1D inverse) {
+    static MathTransform1D create(final ExponentialTransform1D inverse) {
         if (inverse.base == 10) {
-            return new Base10(inverse);
+            return Base10.create(-Math.log10(inverse.scale));
+        } else {
+            return NATURAL.concatenate(1 / inverse.lnBase, -Math.log(inverse.scale) / inverse.lnBase);
         }
-        return new LogarithmicTransform1D(inverse);
+    }
+
+    /**
+     * Returns the concatenation of this transform by the given scale and offset.
+     * This method does not check if a simplification is possible.
+     */
+    private MathTransform1D concatenate(final double scale, final double offset) {
+        final LinearTransform1D t = LinearTransform1D.create(scale, offset);
+        return t.isIdentity() ? this : new ConcatenatedTransformDirect1D(this, t);
+    }
+
+    /**
+     * Concatenates in an optimized way a {@link MathTransform} {@code other} to this
+     * {@code MathTransform}. This implementation can optimize some concatenation with
+     * {@link LinearTransform1D} and {@link ExponentialTransform1D}.
+     *
+     * @param  other The math transform to apply.
+     * @param  applyOtherFirst {@code true} if the transformation order is {@code other}
+     *         followed by {@code this}, or {@code false} if the transformation order is
+     *         {@code this} followed by {@code other}.
+     * @return The combined math transform, or {@code null} if no optimized combined
+     *         transform is available.
+     */
+    @Override
+    final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst) {
+        if (other instanceof LinearTransform1D) {
+            final LinearTransform1D linear = (LinearTransform1D) other;
+            if (applyOtherFirst) {
+                if (linear.offset == 0 && linear.scale > 0) {
+                    return create(getBase(), Math.log(linear.scale) / getLogBase() + getOffset());
+                }
+            } else {
+                final double newBase = Math.pow(getBase(), 1 / linear.scale);
+                if (!Double.isNaN(newBase)) {
+                    return create(newBase, linear.scale * getOffset() + linear.offset);
+                }
+            }
+        } else if (other instanceof ExponentialTransform1D) {
+            return ((ExponentialTransform1D) other).concatenateLog(this, !applyOtherFirst);
+        }
+        return super.concatenate(other, applyOtherFirst);
     }
 
     /**
@@ -147,11 +149,33 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
+     * Returns the base of this logarithmic function.
+     */
+    double getBase() {
+        return Math.E;
+    }
+
+    /**
+     * Returns the natural logarithm of the base of this logarithmic function.
+     * More specifically, returns <code>{@linkplain Math#log(double) Math.log}({@linkplain #getBase()})</code>.
+     */
+    double getLogBase() {
+        return 1;
+    }
+
+    /**
+     * Returns the offset applied after this logarithmic function.
+     */
+    double getOffset() {
+        return 0;
+    }
+
+    /**
      * Gets the derivative of this function at a value.
      */
     @Override
     public double derivative(final double value) {
-        return 1 / (lnBase * value);
+        return 1 / value;
     }
 
     /**
@@ -162,7 +186,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
      * @return The log of the given value in the base used by this transform.
      */
     double log(final double value) {
-        return Math.log(value) / lnBase;
+        return Math.log(value);
     }
 
     /**
@@ -170,7 +194,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
      */
     @Override
     public double transform(final double value) {
-        return Math.log(value) / lnBase + offset;
+        return Math.log(value);
     }
 
     /**
@@ -180,13 +204,13 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     public void transform(final double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
         if (srcPts != dstPts || srcOff >= dstOff) {
             while (--numPts >= 0) {
-                dstPts[dstOff++] = Math.log(srcPts[srcOff++]) / lnBase + offset;
+                dstPts[dstOff++] = Math.log(srcPts[srcOff++]);
             }
         } else {
             srcOff += numPts;
             dstOff += numPts;
             while (--numPts >= 0) {
-                dstPts[--dstOff] = Math.log(srcPts[--srcOff]) / lnBase + offset;
+                dstPts[--dstOff] = Math.log(srcPts[--srcOff]);
             }
         }
     }
@@ -198,13 +222,13 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     public void transform(final float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
         if (srcPts != dstPts || srcOff >= dstOff) {
             while (--numPts >= 0) {
-                dstPts[dstOff++] = (float) (Math.log(srcPts[srcOff++]) / lnBase + offset);
+                dstPts[dstOff++] = (float) Math.log(srcPts[srcOff++]);
             }
         } else {
             srcOff += numPts;
             dstOff += numPts;
             while (--numPts >= 0) {
-                dstPts[--dstOff] = (float) (Math.log(srcPts[--srcOff]) / lnBase + offset);
+                dstPts[--dstOff] = (float) Math.log(srcPts[--srcOff]);
             }
         }
     }
@@ -215,7 +239,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     @Override
     public void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
         while (--numPts >= 0) {
-            dstPts[dstOff++] = (float) (Math.log(srcPts[srcOff++]) / lnBase + offset);
+            dstPts[dstOff++] = (float) Math.log(srcPts[srcOff++]);
         }
     }
 
@@ -225,28 +249,77 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     @Override
     public void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
         while (--numPts >= 0) {
-            dstPts[dstOff++] = Math.log(srcPts[srcOff++]) / lnBase + offset;
+            dstPts[dstOff++] = Math.log(srcPts[srcOff++]);
         }
     }
 
     /**
      * Special case for base 10 taking advantage of extra precision provided by {@link Math#log10(double)}.
      */
-    private static final class Base10 extends LogarithmicTransform1D {
-        /** For cross-version compatibility. */
+    static final class Base10 extends LogarithmicTransform1D {
+        /**
+         * For cross-version compatibility.
+         */
         private static final long serialVersionUID = -5435804027536647558L;
 
-        /** Commonly used instance. */
-        static LogarithmicTransform1D INSTANCE = new Base10(0);
+        /**
+         * The natural logarithm of 10.
+         */
+        private static final double LOG_10 = 2.302585092994045684;
 
-        /** Constructs the inverse of the supplied exponential transform. */
-        Base10(final ExponentialTransform1D inverse) {
-            super(inverse);
+        /**
+         * Commonly used instance with no offset.
+         */
+        static final Base10 INSTANCE = new Base10(0);
+
+        /**
+         * The offset to add to the logarithm.
+         *
+         * <span class="note"><b>Note:</b> the offset could be handled by a concatenation with {@link LinearTransform1D}.
+         * instead than an explicit field in this class. However the <var>offset</var> + log<sub>base</sub>(<var>x</var>)
+         * formula is extensively used as a <cite>transfer function</cite> in grid coverages. Consequently we keep this
+         * explicit field for performance reasons.</span>
+         */
+        private final double offset;
+
+        /**
+         * Creates a new instance with the given offset.
+         *
+         * @see #create(double)
+         */
+        private Base10(final double offset) {
+            this.offset = offset;
         }
 
-        /** Creates a new instance with the given offset. */
-        protected Base10(final double offset) {
-            super(10, offset);
+        /**
+         * Creates a new instance with the given offset.
+         */
+        public static Base10 create(final double offset) {
+            return (offset == 0) ? INSTANCE : new Base10(offset);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double getBase() {
+            return 10;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double getLogBase() {
+            return LOG_10;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double getOffset() {
+            return offset;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double derivative(final double value) {
+            return (1 / LOG_10) / value;
         }
 
         /** {@inheritDoc} */
@@ -308,62 +381,23 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
                 dstPts[dstOff++] = Math.log10(srcPts[srcOff++]) + offset;
             }
         }
-    }
 
-    /**
-     * Concatenates in an optimized way a {@link MathTransform} {@code other} to this
-     * {@code MathTransform}. This implementation can optimize some concatenation with
-     * {@link LinearTransform1D} and {@link ExponentialTransform1D}.
-     *
-     * @param  other The math transform to apply.
-     * @param  applyOtherFirst {@code true} if the transformation order is {@code other}
-     *         followed by {@code this}, or {@code false} if the transformation order is
-     *         {@code this} followed by {@code other}.
-     * @return The combined math transform, or {@code null} if no optimized combined
-     *         transform is available.
-     */
-    @Override
-    final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst) {
-        if (other instanceof LinearTransform) {
-            final LinearTransform1D linear = (LinearTransform1D) other;
-            if (applyOtherFirst) {
-                if (linear.offset == 0 && linear.scale > 0) {
-                    return create(base, Math.log(linear.scale) / lnBase + offset);
-                }
-            } else {
-                final double newBase = Math.pow(base, 1 / linear.scale);
-                if (!Double.isNaN(newBase)) {
-                    return create(newBase, linear.scale * offset + linear.offset);
-                }
+        /** {@inheritDoc} */
+        @Override
+        protected int computeHashCode() {
+            return Numerics.hashCode(Double.doubleToLongBits(offset)) ^ super.computeHashCode();
+        }
+
+        /** Compares the specified object with this math transform for equality. */
+        @Override
+        public boolean equals(final Object object, final ComparisonMode mode) {
+            if (object == this) {
+                return true;  // Optimization for a common case.
             }
-        } else if (other instanceof ExponentialTransform1D) {
-            return ((ExponentialTransform1D) other).concatenateLog(this, !applyOtherFirst);
+            if (super.equals(object, mode)) {
+                return Numerics.equals(offset, ((Base10) object).offset);
+            }
+            return false;
         }
-        return super.concatenate(other, applyOtherFirst);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected int computeHashCode() {
-        return Numerics.hashCode(Double.doubleToLongBits(base) +
-                            31 * Double.doubleToLongBits(offset)) ^ super.computeHashCode();
-    }
-
-    /**
-     * Compares the specified object with this math transform for equality.
-     */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true;  // Optimization for a common case.
-        }
-        if (super.equals(object, mode)) {
-            final LogarithmicTransform1D that = (LogarithmicTransform1D) object;
-            return Numerics.equals(this.base,   that.base) &&
-                   Numerics.equals(this.offset, that.offset);
-        }
-        return false;
     }
 }

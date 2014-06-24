@@ -56,7 +56,7 @@ public final class TransferFunctionTest extends TestCase {
 
         f.setScale(0.15);
         f.setOffset(-2);
-        assertEquals("toString", "y = 0.15∙x − 2", f.toString());
+        assertEquals("toString", "y = 0.15⋅x − 2", f.toString());
         final MathTransform1D transform = f.getTransform();
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertMatrixEquals("transform.matrix", new Matrix2(0.15, -2, 0, 1),
@@ -106,7 +106,7 @@ public final class TransferFunctionTest extends TestCase {
         f.setType(TransferFunctionType.EXPONENTIAL);
         f.setScale(0.15);
         assertEquals("base", 10, f.getBase(), STRICT);
-        assertEquals("toString", "y = 0.15∙10ˣ", f.toString());
+        assertEquals("toString", "y = 0.15⋅10ˣ", f.toString());
         final MathTransform1D transform = f.getTransform();
         assertInstanceOf("transform", ExponentialTransform1D.class, transform);
         /*
@@ -118,5 +118,29 @@ public final class TransferFunctionTest extends TestCase {
         assertEquals("base",   10,    b.getBase(),   STRICT);
         assertEquals("scale",   0.15, b.getScale(),  STRICT);
         assertEquals("offset",  0,    b.getOffset(), STRICT);
+    }
+
+    /**
+     * Tests the creation of a concatenated transfer function.
+     */
+    @Test
+    @DependsOnMethod("testLogarithmic")
+    public void testConcatenated() {
+        final TransferFunction f = new TransferFunction();
+        f.setType(TransferFunctionType.LOGARITHMIC);
+        f.setScale(0.15);
+        f.setOffset(-2);
+        assertEquals("toString", "y = 0.15⋅㏒⒳ − 2", f.toString());
+        final MathTransform1D transform = f.getTransform();
+        assertInstanceOf("transform", ConcatenatedTransformDirect1D.class, transform);
+        /*
+         * Get back the coefficients.
+         */
+        final TransferFunction b = new TransferFunction();
+        b.setTransform(transform);
+        assertEquals("type", TransferFunctionType.LOGARITHMIC, b.getType());
+        assertEquals("base",   10,    b.getBase(),   STRICT);
+        assertEquals("scale",   0.15, b.getScale(),  1E-16);
+        assertEquals("offset", -2,    b.getOffset(), 1E-16);
     }
 }
