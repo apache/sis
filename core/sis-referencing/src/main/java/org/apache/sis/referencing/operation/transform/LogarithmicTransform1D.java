@@ -112,7 +112,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
      */
     public static MathTransform1D create(final double base, final double offset) {
         if (base == 10) {
-            return new Base10(offset);
+            return (offset == 0) ? Base10.INSTANCE : new Base10(offset);
         }
         if (base == 0 || base == Double.POSITIVE_INFINITY) {
             /*
@@ -235,6 +235,9 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     private static final class Base10 extends LogarithmicTransform1D {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -5435804027536647558L;
+
+        /** Commonly used instance. */
+        static LogarithmicTransform1D INSTANCE = new Base10(0);
 
         /** Constructs the inverse of the supplied exponential transform. */
         Base10(final ExponentialTransform1D inverse) {

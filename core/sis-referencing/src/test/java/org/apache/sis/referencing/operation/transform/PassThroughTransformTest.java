@@ -111,11 +111,10 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
      *
      * @throws TransformException Should never happen.
      */
-//    TODO
-//    @Test
-//    public void testPassthrough() throws TransformException {
-//        runTest(ExponentialTransform1D.create(10, -2), PassThroughTransform.class);
-//    }
+    @Test
+    public void testPassthrough() throws TransformException {
+        runTest(ExponentialTransform1D.create(10, 2), PassThroughTransform.class);
+    }
 
     /**
      * Tests a pass-through transform built using the given sub-transform.
@@ -168,10 +167,10 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
          *   - passthrough data, to be given to the transform to be tested.
          *   - sub-transform data, which we will use internally for verifying the pass-through work.
          */
-        final int passthroughDim  = transform.getSourceDimensions();
-        final int subTransformDim = subTransform.getSourceDimensions();
-        final int numPts          = ORDINATE_COUNT / passthroughDim;
-        final double[] passthroughData  = CoordinateDomain.GEOGRAPHIC.generateRandomInput(random, passthroughDim, numPts);
+        final int      passthroughDim   = transform.getSourceDimensions();
+        final int      subTransformDim  = subTransform.getSourceDimensions();
+        final int      numPts           = ORDINATE_COUNT / passthroughDim;
+        final double[] passthroughData  = CoordinateDomain.RANGE_10.generateRandomInput(random, passthroughDim, numPts);
         final double[] subTransformData = new double[numPts * subTransformDim];
         Arrays.fill(subTransformData, Double.NaN);
         for (int i=0; i<numPts; i++) {
