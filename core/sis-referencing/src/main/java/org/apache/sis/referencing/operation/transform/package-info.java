@@ -34,15 +34,18 @@
  * In the 2D case, Apache SIS provides instances of the standard {@link java.awt.geom.AffineTransform}
  * class when possible.
  *
- * <p>{@code MathTransform} usually performs conversions or transformations from points given in a
+ * <p>This package does not include map projections, which are a special kind of transforms defined
+ * in their own {@linkplain org.apache.sis.referencing.operation.projection projection} package.</p>
+ *
+ * {@section Non-spatial coordinates}
+ * {@code MathTransform} usually performs conversions or transformations from points given in a
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getSourceCRS()
  * source coordinate reference system} to coordinate values for the same points in the
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getTargetCRS()
  * target coordinate reference system}. However the conversions are not necessarily between CRS;
- * a {@code MathTransform} can also be used for converting the sample values in a raster for example.</p>
- *
- * <p>This package does not include map projections, which are a special kind of transforms defined
- * in their own {@linkplain org.apache.sis.referencing.operation.projection projection} package.</p>
+ * a {@code MathTransform} can also be used for converting the sample values in a raster for example.
+ * Such kind of transforms are named {@linkplain org.apache.sis.referencing.operation.transform.TransferFunction
+ * transfer functions}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5 (derived from geotk-1.2)
