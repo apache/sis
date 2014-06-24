@@ -103,6 +103,8 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
             return IdentityTransform1D.INSTANCE;
         }
         if (scale == 0) {
+            if (offset == 0) return ConstantTransform1D.ZERO;
+            if (offset == 1) return ConstantTransform1D.ONE;
             return new ConstantTransform1D(offset);
         }
         return new LinearTransform1D(scale, offset);

@@ -19,11 +19,10 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Random;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import static java.lang.StrictMath.*;
 
 // Test imports
 import org.apache.sis.test.mock.GeodeticDatumMock;
-
-import static java.lang.StrictMath.*;
 
 
 /**
@@ -144,7 +143,7 @@ public strictfp enum CoordinateDomain {
      * Geographic input coordinates with angles in radians and only half of the longitude range.
      * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
-    GEOGRAPHIC_RADIANS_HALF {
+    GEOGRAPHIC_RADIANS_HALF_λ {
         @Override
         double generate(final Random random, final int dimension) {
             final double range;
@@ -249,7 +248,17 @@ public strictfp enum CoordinateDomain {
     },
 
     /**
-     * Gaussian numbers: can be positives or negatives, mostly close to zero but some
+     * Values in the -10 to 10 range.
+     */
+    RANGE_10 {
+        @Override
+        double generate(final Random random, final int dimension) {
+            return random.nextDouble() * 20 - 10;
+        }
+    },
+
+    /**
+     * Gaussian distribution. Numbers can be positives or negatives, mostly close to zero but some
      * numbers can be arbitrarily large.
      */
     GAUSSIAN;

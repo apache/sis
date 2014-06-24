@@ -69,11 +69,15 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
 
     /**
      * Index of the first affected ordinate.
+     *
+     * @see #getModifiedCoordinates()
      */
     final int firstAffectedOrdinate;
 
     /**
      * Number of unaffected ordinates after the affected ones.
+     *
+     * @see #getModifiedCoordinates()
      */
     final int numTrailingOrdinates;
 
@@ -253,9 +257,16 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * Returns the ordered sequence of positive integers defining the positions in a source
      * coordinate tuple of the coordinates affected by this pass-through operation.
      *
+     * <div class="note"><b>API note:</b> this method is final for now because most of Apache SIS code do
+     * not use the {@code modifiedCoordinates} array. Instead, SIS uses the {@code firstAffectedOrdinate}
+     * and {@code numTrailingOrdinates} information provided to the constructor. Consequently overriding
+     * this method may be misleading since it would be ignored by SIS. We do not want to make the "really
+     * used" fields public in order to keep the flexibility to replace them by a {@code modifiedCoordinates}
+     * array in a future SIS version.</div>
+     *
      * @return Indices of the modified source coordinates.
      */
-    public int[] getModifiedCoordinates() {
+    public final int[] getModifiedCoordinates() {
         final int[] index = new int[subTransform.getSourceDimensions()];
         for (int i=0; i<index.length; i++) {
             index[i] = i + firstAffectedOrdinate;
