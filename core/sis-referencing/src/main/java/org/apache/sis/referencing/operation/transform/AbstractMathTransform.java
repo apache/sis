@@ -811,7 +811,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     public final boolean equals(final Object object) {
         final boolean eq = equals(object, ComparisonMode.STRICT);
         // If objects are equal, then they must have the same hash code value.
-        assert !eq || hashCode() == object.hashCode() : this;
+        assert !eq || computeHashCode() == ((AbstractMathTransform) object).computeHashCode() : this;
         return eq;
     }
 
