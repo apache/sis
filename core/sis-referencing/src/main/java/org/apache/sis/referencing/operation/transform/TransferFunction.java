@@ -19,16 +19,21 @@ package org.apache.sis.referencing.operation.transform;
 import java.io.Serializable;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.StringBuilders;
+import org.apache.sis.util.Characters;
+import org.apache.sis.util.Debug;
 
 
 /**
- * The function converting <cite>sample values</cite> in a raster to <cite>geophysics values</cite>.
+ * The function converting raster <cite>sample values</cite> to <cite>geophysics values</cite>.
  * The function is usually linear, but can sometime be logarithmic or exponential. The later occur
  * most often when measuring concentration of something.
  *
  * <table class="sis">
- *   <caption>Supported transfer functions</caption>
+ *   <caption>Supported transfer function types</caption>
  *   <tr><th>Type</th><th>Equation</th></tr>
  *   <tr><td>{@link TransferFunctionType#LINEAR LINEAR}</td>
  *       <td><var>y</var> = scale⋅<var>x</var> + offset</td></tr>
@@ -55,6 +60,11 @@ import org.apache.sis.util.resources.Errors;
  * @module
  */
 public class TransferFunction implements Cloneable, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 185931909755748004L;
+
     /**
      * Whether the function is linear, logarithmic or exponential.
      */
@@ -109,6 +119,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * @param type The transfer function type.
      */
     public void setType(final TransferFunctionType type) {
+        ArgumentChecks.ensureNonNull("type", type);
         this.type = type;
         transform = null;
     }
@@ -116,7 +127,7 @@ public class TransferFunction implements Cloneable, Serializable {
     /**
      * Returns the logarithm or exponent base in the transfer function.
      * This value is always 1 for {@link TransferFunctionType#LINEAR},
-     * and usually (but not necessarily) 10 for the other types.
+     * and usually (but not necessarily) 10 for the logarithmic and exponential types.
      *
      * @return The logarithmic or exponent base.
      */
@@ -132,6 +143,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * @param base The new logarithm or exponent base.
      */
     public void setBase(final double base) {
+        ArgumentChecks.ensureStrictlyPositive("base", base);
         this.base = base;
         transform = null;
     }
@@ -210,5 +222,104 @@ public class TransferFunction implements Cloneable, Serializable {
             }
         }
         return transform;
+    }
+
+    /**
+     * Sets the transform from sample values to geophysics values.
+     * This method infers the {@linkplain #getBase() base}, {@linkplain #getScale() scale} and
+     * {@linkplain #getOffset() offset} values from the given transform.
+     *
+     * @param  function The transform to set.
+     * @throws IllegalArgumentException if this method does not recognize the given transform.
+     */
+    public void setTransform(final MathTransform1D function) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("function", function);
+        if (function instanceof LinearTransform) {
+            setLinearTerms((LinearTransform) function);
+            type = TransferFunctionType.LINEAR;
+        } else if (function instanceof ExponentialTransform1D) {
+            final ExponentialTransform1D f = (ExponentialTransform1D) function;
+            type   = TransferFunctionType.EXPONENTIAL;
+            base   = f.base;
+            scale  = f.scale;
+            offset = 0;
+        } else if (function instanceof LogarithmicTransform1D) {
+            final LogarithmicTransform1D f = (LogarithmicTransform1D) function;
+            type   = TransferFunctionType.LOGARITHMIC;
+            base   = f.base;
+            offset = f.offset;
+            scale  = 1;
+        } else {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, function.getClass()));
+        }
+        transform = function;
+    }
+
+    /**
+     * Sets the {@link #scale} and {@link #offset} terms from the given function.
+     *
+     * @param  function The transform to set.
+     * @throws IllegalArgumentException if this method does not recognize the given transform.
+     */
+    private void setLinearTerms(final LinearTransform function) throws IllegalArgumentException {
+        final Matrix m = function.getMatrix();
+        final int numRow = m.getNumRow();
+        final int numCol = m.getNumCol();
+        if (numRow != 2 || numCol != 2) {
+            final Integer two = 2;
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedMatrixSize_4, two, two, numRow, numCol));
+        }
+        scale  = m.getElement(0, 0);
+        offset = m.getElement(0, 1);
+    }
+
+    /**
+     * Returns a string representation of this transfer function for debugging purpose.
+     * The string returned by this method may change in any future SIS version.
+     *
+     * @return A string representation of this transfer function.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final StringBuilder b = new StringBuilder("y = ");
+        if (scale != 1) {
+            if (scale == -1) {
+                b.append('−');
+            } else {
+                StringBuilders.trimFractionalPart(b.append(scale).append('∙'));
+            }
+        }
+        if (TransferFunctionType.LINEAR.equals(type)) {
+            b.append('x');
+        } else if (TransferFunctionType.EXPONENTIAL.equals(type)) {
+            if (base == Math.E) {
+                b.append('e');
+            } else {
+                StringBuilders.trimFractionalPart(b.append(base));
+            }
+            b.append('ˣ');
+        } else if (TransferFunctionType.LOGARITHMIC.equals(type)) {
+            if (base == Math.E) {
+                b.append("ln");
+            } else {
+                b.append('㏒');
+                if (base != 10) {
+                    final int c = (int) base;
+                    if (c == base && c >= 0 && c <= 9) {
+                        b.append(Characters.toSubScript((char) (c - '0')));
+                    } else {
+                        StringBuilders.trimFractionalPart(b.append(base));
+                    }
+                }
+            }
+            b.append('⒳');
+        } else {
+            b.append('?');
+        }
+        if (offset != 0) {
+            StringBuilders.trimFractionalPart(b.append(' ').append(offset < 0 ? '−' : '+').append(' ').append(Math.abs(offset)));
+        }
+        return b.toString();
     }
 }
