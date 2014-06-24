@@ -246,11 +246,31 @@ public class TransferFunction implements Cloneable, Serializable {
         } else if (function instanceof LogarithmicTransform1D) {
             final LogarithmicTransform1D f = (LogarithmicTransform1D) function;
             type   = TransferFunctionType.LOGARITHMIC;
-            base   = f.base;
-            offset = f.offset;
+            base   = f.getBase();
+            offset = f.getOffset();
             scale  = 1;
         } else {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, function.getClass()));
+            /*
+             * If we did not recognized one of the known types, maybe the given function
+             * is the result of some concatenation. Try to concatenate a logarithmic or
+             * exponential transform and see if the result is linear.
+             */
+            final LogarithmicTransform1D log = LogarithmicTransform1D.Base10.INSTANCE;
+            MathTransform1D f = MathTransforms.concatenate(function, log);
+            if (f instanceof LinearTransform) {
+                setLinearTerms((LinearTransform) f);
+                type = TransferFunctionType.EXPONENTIAL;
+                base = 10;
+            } else {
+                f = MathTransforms.concatenate(log.inverse(), function);
+                if (f instanceof LinearTransform) {
+                    setLinearTerms((LinearTransform) f);
+                    type = TransferFunctionType.LOGARITHMIC;
+                    base = 10;
+                } else {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, function.getClass()));
+                }
+            }
         }
         transform = function;
     }
@@ -287,7 +307,7 @@ public class TransferFunction implements Cloneable, Serializable {
             if (scale == -1) {
                 b.append('−');
             } else {
-                StringBuilders.trimFractionalPart(b.append(scale).append('∙'));
+                StringBuilders.trimFractionalPart(b.append(scale).append('⋅'));
             }
         }
         if (TransferFunctionType.LINEAR.equals(type)) {
