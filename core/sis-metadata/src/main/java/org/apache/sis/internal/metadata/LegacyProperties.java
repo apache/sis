@@ -67,7 +67,17 @@ public abstract class LegacyProperties<L,N> extends AbstractCollection<L> {
     protected abstract L unwrap(final N value);
 
     /**
-     * Count the number of non-null elements.
+     * Returns {@code true} if this collection is empty.
+     *
+     * @return {@code true} if this collection is empty.
+     */
+    @Override
+    public final boolean isEmpty() {
+        return !iterator().hasNext();
+    }
+
+    /**
+     * Counts the number of non-null elements.
      *
      * @return Number of non-null elements.
      */
@@ -89,7 +99,7 @@ public abstract class LegacyProperties<L,N> extends AbstractCollection<L> {
      * @return {@code true} if the element has been added.
      */
     @Override
-    public boolean add(final L element) {
+    public final boolean add(final L element) {
         ArgumentChecks.ensureNonNull("element", element);
         return elements.add(wrap(element));
     }
@@ -100,7 +110,7 @@ public abstract class LegacyProperties<L,N> extends AbstractCollection<L> {
      * @return Iterator over the legacy elements.
      */
     @Override
-    public Iterator<L> iterator() {
+    public final Iterator<L> iterator() {
         final Iterator<N> it = elements.iterator();
         return new Iterator<L>() {
             /** The next value to return, or {@code null} if not yet verified. */
@@ -108,7 +118,7 @@ public abstract class LegacyProperties<L,N> extends AbstractCollection<L> {
 
             /** Returns {@code true} if there is more elements to iterator. */
             @Override
-            public boolean hasNext() {
+            public final boolean hasNext() {
                 if (next != null) {
                     return true;
                 }
@@ -123,7 +133,7 @@ public abstract class LegacyProperties<L,N> extends AbstractCollection<L> {
 
             /** Returns the next element. */
             @Override
-            public L next() {
+            public final L next() {
                 L n = next;
                 if (n == null) {
                     if (!hasNext()) {
@@ -137,7 +147,7 @@ public abstract class LegacyProperties<L,N> extends AbstractCollection<L> {
 
             /** Removes the last element returned by {@link #next()}. */
             @Override
-            public void remove() {
+            public final void remove() {
                 it.remove();
             }
         };
