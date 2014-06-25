@@ -23,20 +23,23 @@ import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
-import org.apache.sis.metadata.iso.ISOMetadata;
 
 
 /**
  * Identification of, and means of communication with, person(s) and
  * organizations associated with the dataset.
  *
+ * @deprecated As of ISO 19115:2014, the {@code ResponsibleParty} type has been replaced by {@code Responsibility}
+ *             to allow more flexible associations of individuals, organisations, and roles.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
+@Deprecated
 @XmlType(name = "CI_ResponsibleParty_Type", propOrder = {
     "individualName",
     "organisationName",
@@ -45,11 +48,11 @@ import org.apache.sis.metadata.iso.ISOMetadata;
     "role"
 })
 @XmlRootElement(name = "CI_ResponsibleParty")
-public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleParty {
+public class DefaultResponsibleParty extends DefaultResponsibility implements ResponsibleParty {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3429257224445006902L;
+    private static final long serialVersionUID = 6460730475638081367L;
 
     /**
      * Name of the responsible person- surname, given name, title separated by a delimiter.
@@ -72,11 +75,6 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
     private Contact contactInfo;
 
     /**
-     * Function performed by the responsible party.
-     */
-    private Role role;
-
-    /**
      * Constructs an initially empty responsible party.
      */
     public DefaultResponsibleParty() {
@@ -88,7 +86,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      * @param role The function performed by the responsible party, or {@code null}.
      */
     public DefaultResponsibleParty(final Role role) {
-        this.role = role;
+        super(role, null, null);
     }
 
     /**
@@ -107,7 +105,6 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
             organisationName = object.getOrganisationName();
             positionName     = object.getPositionName();
             contactInfo      = object.getContactInfo();
-            role             = object.getRole();
         }
     }
 
@@ -235,21 +232,21 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
     /**
      * Returns the function performed by the responsible party.
      *
-     * @return Function performed by the responsible party, or {@code null}.
+     * @return Function performed by the responsible party.
      */
     @Override
     @XmlElement(name = "role", required = true)
     public Role getRole() {
-        return role;
+        return super.getRole();
     }
 
     /**
      * Sets the function performed by the responsible party.
      *
-     * @param newValue The new role, or {@code null} if none.
+     * @param newValue The new role.
      */
+    @Override
     public void setRole(final Role newValue) {
-        checkWritePermission();
-        role = newValue;
+        super.setRole(newValue);
     }
 }

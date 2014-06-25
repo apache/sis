@@ -29,7 +29,7 @@ import org.apache.sis.util.ArgumentChecks;
 /**
  * Information about the occurring feature type.
  *
- * @author  Remi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5

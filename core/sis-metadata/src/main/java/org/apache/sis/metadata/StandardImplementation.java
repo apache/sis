@@ -140,10 +140,8 @@ final class StandardImplementation extends MetadataStandard {
                     name = buffer.toString();
                     try {
                         candidate = Class.forName(name);
-                        if (!candidate.isAnnotationPresent(Deprecated.class)) {
-                            implementations.put(type, candidate);
-                            return candidate;
-                        }
+                        implementations.put(type, candidate);
+                        return candidate;
                     } catch (ClassNotFoundException e) {
                         Logging.recoverableException(MetadataStandard.class, "getImplementation", e);
                     }
