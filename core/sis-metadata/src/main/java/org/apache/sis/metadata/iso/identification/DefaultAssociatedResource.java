@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.opengis.metadata.citation.Citation;
-///import org.opengis.metadata.identification.AssociatedResource;
+import org.opengis.metadata.identification.AssociatedResource;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
 
@@ -42,10 +42,11 @@ import org.opengis.metadata.identification.InitiativeType;
 /// "metadataReference"
 })
 @XmlRootElement(name = "MD_AssociatedResource")
-public class DefaultAssociatedResource extends ISOMetadata /*implements AssociatedResource*/ {
+public class DefaultAssociatedResource extends ISOMetadata implements AssociatedResource {
     /**
      * Serial number for compatibility with different versions.
      */
+    private static final long serialVersionUID = -803259032236939135L;
 
     /**
      * Citation information about the associated resource.
@@ -93,7 +94,7 @@ public class DefaultAssociatedResource extends ISOMetadata /*implements Associat
      *
      * @see #castOrCopy(AssociatedResource)
      */
-    public DefaultAssociatedResource(final DefaultAssociatedResource object) {
+    public DefaultAssociatedResource(final AssociatedResource object) {
         if (object != null) {
             this.name              = object.getName();
             this.associationType   = object.getAssociationType();
@@ -120,7 +121,7 @@ public class DefaultAssociatedResource extends ISOMetadata /*implements Associat
      * @return A SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultAssociatedResource castOrCopy(final DefaultAssociatedResource object) {
+    public static DefaultAssociatedResource castOrCopy(final AssociatedResource object) {
         if (object == null || object instanceof DefaultAssociatedResource) {
             return (DefaultAssociatedResource) object;
         }
@@ -132,7 +133,7 @@ public class DefaultAssociatedResource extends ISOMetadata /*implements Associat
      *
      * @return Citation information about the associated resource, or {@code null} if none.
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "name")
     public Citation getName() {
         return name;
@@ -153,7 +154,7 @@ public class DefaultAssociatedResource extends ISOMetadata /*implements Associat
      *
      * @return Type of relation between the resources.
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "associationType", required = true)
     public AssociationType getAssociationType() {
         return associationType;
@@ -174,7 +175,7 @@ public class DefaultAssociatedResource extends ISOMetadata /*implements Associat
      *
      * @return The type of initiative under which the associated resource was produced, or {@code null} if none.
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "initiativeType")
     public InitiativeType getInitiativeType() {
         return initiativeType;
@@ -195,7 +196,7 @@ public class DefaultAssociatedResource extends ISOMetadata /*implements Associat
      *
      * @return Reference to the metadata of the associated resource, or {@code null} if none.
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "metadataReference")
     public Citation getMetadataReference() {
         return metadataReference;
