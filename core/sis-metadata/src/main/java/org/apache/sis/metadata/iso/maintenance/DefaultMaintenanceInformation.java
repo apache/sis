@@ -37,6 +37,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.quality.DefaultScope;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.LegacyProperties;
+import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -244,6 +246,14 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     public void setDateOfNextUpdate(final Date newValue) {
         if (newValue != null) {
+            if (maintenanceDates != null) {
+                for (final CitationDate date : maintenanceDates) {
+                    if (date instanceof DefaultCitationDate && DateType.NEXT_UPDATE.equals(date.getDateType())) {
+                        ((DefaultCitationDate) date).setDate(newValue);
+                        return;
+                    }
+                }
+            }
             getMaintenanceDates().add(new DefaultCitationDate(newValue, DateType.NEXT_UPDATE));
         }
     }
@@ -310,6 +320,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
             @Override protected Scope wrap(final ScopeCode code) {
                 return new DefaultScope(code);
             }
+
             @Override protected ScopeCode unwrap(final Scope scope) {
                 return scope.getLevel();
             }
@@ -358,14 +369,26 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @XmlElement(name = "updateScopeDescription")
     public Collection<ScopeDescription> getUpdateScopeDescriptions() {
         return new LegacyProperties<ScopeDescription,Scope>(getMaintenanceScopes()) {
+            private boolean warningOccurred;
+
             @Override protected Scope wrap(final ScopeDescription code) {
                 final DefaultScope scope = new DefaultScope();
                 scope.setLevelDescription(Collections.singleton(code));
                 return scope;
             }
+
             @Override protected ScopeDescription unwrap(final Scope scope) {
-                final Iterator<? extends ScopeDescription> i = scope.getLevelDescription().iterator();
-                return (i.hasNext()) ? i.next() : null;
+                final Iterator<? extends ScopeDescription> it = scope.getLevelDescription().iterator();
+                if (!it.hasNext()) {
+                    return null;
+                }
+                final ScopeDescription description = it.next();
+                if (!warningOccurred && it.hasNext()) {
+                    warningOccurred = true;
+                    MetadataUtilities.warning(DefaultMaintenanceInformation.class, "getUpdateScopeDescriptions",
+                            Messages.Keys.IgnoredPropertiesAfterFirst_1, ScopeDescription.class);
+                }
+                return description;
             }
         };
     }
