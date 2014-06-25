@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.opengis.metadata.citation.Contact;
-///import org.opengis.metadata.citation.Party;
+import org.opengis.metadata.citation.Party;
 import org.opengis.util.InternationalString;
 
 
@@ -40,7 +40,7 @@ import org.opengis.util.InternationalString;
 /// "contactInfo"
 })
 @XmlRootElement(name = "CI_Party")
-public class AbstractParty extends ISOMetadata /*implements Party*/ {
+public class AbstractParty extends ISOMetadata implements Party {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -82,7 +82,7 @@ public class AbstractParty extends ISOMetadata /*implements Party*/ {
      *
      * @see #castOrCopy(Party)
      */
-    public AbstractParty(final AbstractParty object) {
+    public AbstractParty(final Party object) {
         super(object);
         if (object != null) {
             name        = object.getName();
@@ -108,7 +108,7 @@ public class AbstractParty extends ISOMetadata /*implements Party*/ {
      * @return A SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static AbstractParty castOrCopy(final AbstractParty object) {
+    public static AbstractParty castOrCopy(final Party object) {
         if (object == null || object instanceof AbstractParty) {
             return (AbstractParty) object;
         }
@@ -120,7 +120,7 @@ public class AbstractParty extends ISOMetadata /*implements Party*/ {
      *
      * @return Name of the party.
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "name")
     public InternationalString getName() {
         return name;
@@ -141,7 +141,7 @@ public class AbstractParty extends ISOMetadata /*implements Party*/ {
      *
      * @return Contact information for the party, or {@code null} if none.
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "contactInfo")
     public Collection<Contact> getContactInfo() {
         return contactInfo = nonNullCollection(contactInfo, Contact.class);
