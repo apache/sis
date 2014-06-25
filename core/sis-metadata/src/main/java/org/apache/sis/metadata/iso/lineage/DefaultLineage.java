@@ -21,6 +21,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.lineage.ProcessStep;
@@ -39,12 +41,15 @@ import org.apache.sis.metadata.iso.quality.DefaultScope;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "LI_Lineage_Type", propOrder = {
     "statement",
+/// "scope",
+/// "additionalResource",
     "processSteps",
     "sources"
 })
@@ -61,6 +66,17 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * {@linkplain ScopeCode#DATASET dataset} or {@linkplain ScopeCode#SERIES series}.
      */
     private InternationalString statement;
+
+    /**
+     * Type of resource and / or extent to which the lineage information applies.
+     */
+    private Collection<Scope> scopes;
+
+    /**
+     * A resources (for example publication) that describes the whole
+     * process to generate this resource (for example a dataset).
+     */
+    private Collection<Citation> additionalDocumentation;
 
     /**
      * Information about an event in the creation process for the data specified by the scope.
@@ -90,9 +106,11 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     public DefaultLineage(final Lineage object) {
         super(object);
         if (object != null) {
-            statement    = object.getStatement();
-            processSteps = copyCollection(object.getProcessSteps(), ProcessStep.class);
-            sources      = copyCollection(object.getSources(), Source.class);
+            statement               = object.getStatement();
+///         scopes                  = copyCollection(object.getScopes(), Scope.class);
+///         additionalDocumentation = copyCollection(object.getAdditionalDocumentation(), Citation.class);
+            processSteps            = copyCollection(object.getProcessSteps(), ProcessStep.class);
+            sources                 = copyCollection(object.getSources(), Source.class);
         }
     }
 
@@ -142,6 +160,55 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     public void setStatement(final InternationalString newValue) {
         checkWritePermission();
         statement = newValue;
+    }
+
+    /**
+     * Returns the types of resource and / or extents to which the lineage information applies.
+     *
+     * @return Types of resource and / or extents to which the lineage information applies.
+     *
+     * @since 0.5
+     */
+/// @Override
+/// @XmlElement(name = "scope")
+    public Collection<Scope> getScopes() {
+        return scopes = nonNullCollection(scopes, Scope.class);
+    }
+
+    /**
+     * Sets the types of resource and / or extents to which the lineage information applies.
+     *
+     * @param newValues The new types of resource.
+     *
+     * @since 0.5
+     */
+    public void setScopes(final Collection<? extends Scope> newValues)  {
+        scopes = writeCollection(newValues, scopes, Scope.class);
+    }
+
+    /**
+     * Returns information about resources (for example publication) that describes the whole
+     * process to generate this resource (for example a dataset).
+     *
+     * @return Resources that describes the whole process to generate this resource.
+     *
+     * @since 0.5
+     */
+/// @Override
+/// @XmlElement(name = "additionalDocumentation")
+    public Collection<Citation> getAdditionalDocumentation() {
+        return additionalDocumentation = nonNullCollection(additionalDocumentation, Citation.class);
+    }
+
+    /**
+     * Sets information about resources that describes the whole process to generate this resource.
+     *
+     * @param newValues The new information about resource.
+     *
+     * @since 0.5
+     */
+    public void setAdditionalDocumentation(final Collection<? extends Citation> newValues)  {
+        additionalDocumentation = writeCollection(newValues, additionalDocumentation , Citation.class);
     }
 
     /**
