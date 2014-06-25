@@ -19,11 +19,11 @@ package org.apache.sis.metadata.iso.identification;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AssociatedResource;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
+import org.apache.sis.metadata.iso.ISOMetadata;
 
 
 /**
@@ -35,7 +35,7 @@ import org.opengis.metadata.identification.InitiativeType;
  * @version 0.5
  * @module
  */
-@XmlType(name = "MD_AssociatedResource", propOrder = {
+@XmlType(name = "MD_AssociatedResource_Type", propOrder = {
 /// "name",
 /// "associationType",
 /// "initiativeType",
