@@ -18,20 +18,25 @@ package org.apache.sis.metadata.iso.maintenance;
 
 import java.util.Date;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.maintenance.MaintenanceFrequency;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
+import org.opengis.metadata.quality.Scope;
 import org.opengis.temporal.PeriodDuration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
-
-import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
-import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+import org.apache.sis.metadata.iso.quality.DefaultScope;
+import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
+import org.apache.sis.internal.metadata.LegacyProperties;
 
 
 /**
@@ -41,8 +46,9 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {
@@ -59,7 +65,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5134544727860361898L;
+    private static final long serialVersionUID = -8736825706141936429L;
 
     /**
      * Frequency with which changes and additions are made to the resource after the
@@ -68,11 +74,9 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     private MaintenanceFrequency maintenanceAndUpdateFrequency;
 
     /**
-     * Scheduled revision date for resource, in milliseconds elapsed
-     * since January 1st, 1970. If there is no such date, then this field
-     * is set to the special value {@link Long#MIN_VALUE}.
+     * Date information associated with maintenance of resource.
      */
-    private long dateOfNextUpdate = Long.MIN_VALUE;
+    private Collection<CitationDate> maintenanceDates;
 
     /**
      * Maintenance period other than those defined, in milliseconds.
@@ -80,14 +84,9 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     private PeriodDuration userDefinedMaintenanceFrequency;
 
     /**
-     * Scope of data to which maintenance is applied.
+     * Type of resource and / or extent to which the maintenance information applies.
      */
-    private Collection<ScopeCode> updateScopes;
-
-    /**
-     * Additional information about the range or extent of the resource.
-     */
-    private Collection<ScopeDescription> updateScopeDescriptions;
+    private Collection<Scope> maintenanceScopes;
 
     /**
      * Information regarding specific requirements for maintaining the resource.
@@ -95,8 +94,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     private Collection<InternationalString> maintenanceNotes;
 
     /**
-     * Identification of, and means of communicating with,
-     * person(s) and organization(s) with responsibility for maintaining the metadata
+     * Identification of, and means of communicating with, person(s) and organization(s)
+     * with responsibility for maintaining the resource.
      */
     private Collection<ResponsibleParty> contacts;
 
@@ -128,11 +127,15 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     public DefaultMaintenanceInformation(final MaintenanceInformation object) {
         super(object);
         if (object != null) {
+            setDateOfNextUpdate        (object.getDateOfNextUpdate());
+            setDateOfNextUpdate        (object.getDateOfNextUpdate());
+            setUpdateScopes            (object.getUpdateScopes());
+            setUpdateScopeDescriptions (object.getUpdateScopeDescriptions());
+
             maintenanceAndUpdateFrequency   = object.getMaintenanceAndUpdateFrequency();
-            dateOfNextUpdate                = toMilliseconds(object.getDateOfNextUpdate());
+///         maintenanceDates                = copyCollection(object.getMaintenanceDate(), CitationDate.class);
             userDefinedMaintenanceFrequency = object.getUserDefinedMaintenanceFrequency();
-            updateScopes                    = copyCollection(object.getUpdateScopes(), ScopeCode.class);
-            updateScopeDescriptions         = copyCollection(object.getUpdateScopeDescriptions(), ScopeDescription.class);
+///         maintenanceScope                = copyCollection(object.getMaintenanceScope(), Scope.class);
             maintenanceNotes                = copyCollection(object.getMaintenanceNotes(), InternationalString.class);
             contacts                        = copyCollection(object.getContacts(), ResponsibleParty.class);
         }
@@ -187,14 +190,50 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     }
 
     /**
+     * Return the date information associated with maintenance of resource.
+     *
+     * @return date information associated with maintenance of resource.
+     *
+     * @since 0.5
+     */
+/// @Override
+/// @XmlElement(name = "maintenanceDate", required = true)
+    public Collection<CitationDate> getMaintenanceDates() {
+        return maintenanceDates = nonNullCollection(maintenanceDates, CitationDate.class);
+    }
+
+    /**
+     * Sets the date information associated with maintenance of resource.
+     *
+     * @param newValues The new date information associated with maintenance of resource.
+     *
+     * @since 0.5
+     */
+    public void setMaintenanceDates(final Collection<? extends CitationDate> newValues) {
+        maintenanceDates = writeCollection(newValues, maintenanceDates, CitationDate.class);
+    }
+
+    /**
      * Returns the scheduled revision date for resource.
      *
      * @return Scheduled revision date, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getMaintenanceDates()} in order to enable inclusion
+     *             of a {@link DateType} to describe the type of the date. Note that {@link DateType#NEXT_UPDATE}
+     *             was added to that code list.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "dateOfNextUpdate")
     public Date getDateOfNextUpdate() {
-        return toDate(dateOfNextUpdate);
+        if (maintenanceDates != null) {
+            for (final CitationDate date : maintenanceDates) {
+                if (DateType.NEXT_UPDATE.equals(date.getDateType())) {
+                    return date.getDate();
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -202,15 +241,17 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param newValue The new date of next update.
      */
+    @Deprecated
     public void setDateOfNextUpdate(final Date newValue) {
-        checkWritePermission();
-        dateOfNextUpdate = toMilliseconds(newValue);
+        if (newValue != null) {
+            getMaintenanceDates().add(new DefaultCitationDate(newValue, DateType.NEXT_UPDATE));
+        }
     }
 
     /**
      * Returns the maintenance period other than those defined.
      *
-     * @return The Maintenance period, or {@code null}.
+     * @return The maintenance period, or {@code null}.
      */
     @Override
     @XmlElement(name = "userDefinedMaintenanceFrequency")
@@ -229,14 +270,50 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     }
 
     /**
+     * Return the types of resource and / or extents to which the maintenance information applies.
+     *
+     * @return type of resource and / or extent to which the maintenance information applies.
+     *
+     * @since 0.5
+     */
+/// @Override
+/// @XmlElement(name = "maintenanceScope")
+    public Collection<Scope> getMaintenanceScopes() {
+        return maintenanceScopes = nonNullCollection(maintenanceScopes, Scope.class);
+    }
+
+    /**
+     * Sets the types of resource and / or extents to which the maintenance information applies.
+     *
+     * @param newValues The types of resource and / or extents to which the maintenance information applies.
+     *
+     * @since 0.5
+     */
+    public void setMaintenanceScopes(final Collection<? extends Scope> newValues) {
+        maintenanceScopes = writeCollection(newValues, maintenanceScopes, Scope.class);
+    }
+
+    /**
      * Returns the scope of data to which maintenance is applied.
      *
      * @return Scope of data to which maintenance is applied.
+     *
+     * @deprecated As of ISO 19115:2014, {@code getUpdateScopes()} and {@link #getUpdateScopeDescriptions()}
+     *             were combined into {@link #getMaintenanceScopes()} in order to allow specifying a scope
+     *             that includes a spatial and temporal extent.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "updateScope")
     public Collection<ScopeCode> getUpdateScopes() {
-        return updateScopes = nonNullCollection(updateScopes, ScopeCode.class);
+        return new LegacyProperties<ScopeCode,Scope>(getMaintenanceScopes()) {
+            @Override protected Scope wrap(final ScopeCode code) {
+                return new DefaultScope(code);
+            }
+            @Override protected ScopeCode unwrap(final Scope scope) {
+                return scope.getLevel();
+            }
+        };
     }
 
     /**
@@ -244,19 +321,53 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param newValues The new update scopes.
      */
-    public void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
-        updateScopes = writeCollection(newValues, updateScopes, ScopeCode.class);
+    @Deprecated
+    public void setUpdateScopes(Collection<? extends ScopeCode> newValues) {
+        if (newValues == null) {
+            newValues = Collections.emptySet();
+        }
+        final Iterator<? extends ScopeCode> it = newValues.iterator();
+        final Collection<Scope> scopes = getMaintenanceScopes();
+        final Iterator<Scope> im = scopes.iterator();
+        while (im.hasNext()) {
+            final Scope scope = im.next();
+            if (scope instanceof DefaultScope) {
+                final DefaultScope df = (DefaultScope) scope;
+                df.setLevel(it.hasNext() ? it.next() : null);
+                if (df.isEmpty()) {
+                    im.remove();
+                }
+            }
+        }
+        while (it.hasNext()) {
+            scopes.add(new DefaultScope(it.next()));
+        }
     }
 
     /**
      * Returns additional information about the range or extent of the resource.
      *
      * @return Additional information about the range or extent of the resource.
+     *
+     * @deprecated As of ISO 19115:2014, {@link #getUpdateScopes()} and {@code getUpdateScopeDescriptions()}
+     *             were combined into {@link #getMaintenanceScopes()} in order to allow specifying a scope
+     *             that includes a spatial and temporal extent.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "updateScopeDescription")
     public Collection<ScopeDescription> getUpdateScopeDescriptions() {
-        return updateScopeDescriptions = nonNullCollection(updateScopeDescriptions, ScopeDescription.class);
+        return new LegacyProperties<ScopeDescription,Scope>(getMaintenanceScopes()) {
+            @Override protected Scope wrap(final ScopeDescription code) {
+                final DefaultScope scope = new DefaultScope();
+                scope.setLevelDescription(Collections.singleton(code));
+                return scope;
+            }
+            @Override protected ScopeDescription unwrap(final Scope scope) {
+                final Iterator<? extends ScopeDescription> i = scope.getLevelDescription().iterator();
+                return (i.hasNext()) ? i.next() : null;
+            }
+        };
     }
 
     /**
@@ -264,8 +375,29 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param newValues The new update scope descriptions.
      */
-    public void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
-        updateScopeDescriptions = writeCollection(newValues, updateScopeDescriptions, ScopeDescription.class);
+    @Deprecated
+    public void setUpdateScopeDescriptions(Collection<? extends ScopeDescription> newValues) {
+        if (newValues == null) {
+            newValues = Collections.emptySet();
+        }
+        final Iterator<? extends ScopeDescription> it = newValues.iterator();
+        final Collection<Scope> scopes = getMaintenanceScopes();
+        final Iterator<Scope> im = scopes.iterator();
+        while (im.hasNext()) {
+            final Scope scope = im.next();
+            if (scope instanceof DefaultScope) {
+                final DefaultScope df = (DefaultScope) scope;
+                df.setLevelDescription(it.hasNext() ? Collections.singleton(it.next()) : null);
+                if (df.isEmpty()) {
+                    im.remove();
+                }
+            }
+        }
+        while (it.hasNext()) {
+            final DefaultScope scope = new DefaultScope();
+            scope.setLevelDescription(Collections.singleton(it.next()));
+            scopes.add(scope);
+        }
     }
 
     /**
@@ -290,10 +422,10 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns identification of, and means of communicating with,
-     * person(s) and organization(s) with responsibility for maintaining the metadata.
+     * person(s) and organization(s) with responsibility for maintaining the resource.
      *
      * @return Means of communicating with person(s) and organization(s) with responsibility
-     *         for maintaining the metadata.
+     *         for maintaining the resource.
      */
     @Override
     @XmlElement(name = "contact")
@@ -303,9 +435,10 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets identification of, and means of communicating with,
-     * person(s) and organization(s) with responsibility for maintaining the metadata.
+     * person(s) and organization(s) with responsibility for maintaining the resource.
      *
-     * @param newValues The new contacts
+     * @param newValues The new identification of person(s) and organization(s)
+     *                  with responsibility for maintaining the resource.
      */
     public void setContacts(final Collection<? extends ResponsibleParty> newValues) {
         contacts = writeCollection(newValues, contacts, ResponsibleParty.class);
