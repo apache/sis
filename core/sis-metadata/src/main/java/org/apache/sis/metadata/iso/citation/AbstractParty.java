@@ -20,10 +20,11 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.apache.sis.metadata.iso.ISOMetadata;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Party;
-import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -35,7 +36,7 @@ import org.opengis.util.InternationalString;
  * @version 0.5
  * @module
  */
-@XmlType(name = "CI_Party_Type", propOrder = {
+@XmlType(name = "AbstractCI_Party_Type", propOrder = {
 /// "name",
 /// "contactInfo"
 })
@@ -68,8 +69,8 @@ public class AbstractParty extends ISOMetadata implements Party {
      * @param name        Name of the party, or {@code null} if none.
      * @param contactInfo Contact information for the party, or {@code null} if none.
      */
-    public AbstractParty(final InternationalString name, final Contact contactInfo) {
-        this.name        = name;
+    public AbstractParty(final CharSequence name, final Contact contactInfo) {
+        this.name        = Types.toInternationalString(name);
         this.contactInfo = singleton(contactInfo, Contact.class);
     }
 
@@ -137,9 +138,9 @@ public class AbstractParty extends ISOMetadata implements Party {
     }
 
     /**
-     * Returns the contact information for the party, or {@code null} if none.
+     * Returns the contact information for the party.
      *
-     * @return Contact information for the party, or {@code null} if none.
+     * @return Contact information for the party.
      */
     @Override
 /// @XmlElement(name = "contactInfo")
@@ -152,7 +153,7 @@ public class AbstractParty extends ISOMetadata implements Party {
      *
      * @param newValues The new contact information for the party.
      */
-    public void setContactInfo(final Collection< ? extends Contact> newValues) {
+    public void setContactInfo(final Collection<? extends Contact> newValues) {
         contactInfo = writeCollection(newValues, contactInfo, Contact.class);
     }
 }
