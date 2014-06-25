@@ -71,6 +71,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short DiscardedExclusiveProperty_2 = 2;
 
         /**
+         * Ignored properties after the first occurrence of ‘{0}’.
+         */
+        public static final short IgnoredPropertiesAfterFirst_1 = 6;
+
+        /**
          * Text were discarded for some locales.
          */
         public static final short LocalesDiscarded = 3;
@@ -81,7 +86,7 @@ public final class Messages extends IndexedResourceBundle {
         public static final short PropertyHiddenBy_2 = 4;
 
         /**
-         * Can not parse “{1}” as an instance of {0}. The value is stored as plain text instead, but
+         * Can not parse “{1}” as an instance of ‘{0}’. The value is stored as plain text instead, but
          * will be ignored by some processing.
          */
         public static final short UnparsableValueStoredAsText_2 = 5;
