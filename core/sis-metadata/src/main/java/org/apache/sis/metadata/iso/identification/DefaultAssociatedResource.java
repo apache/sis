@@ -29,7 +29,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Associated resource information.
  *
- * @author  Remi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5

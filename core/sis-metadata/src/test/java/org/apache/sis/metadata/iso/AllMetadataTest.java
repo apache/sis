@@ -90,6 +90,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.citation.OnlineResource.class,
             org.opengis.metadata.citation.Party.class,
             org.opengis.metadata.citation.PresentationForm.class,
+            org.opengis.metadata.citation.Responsibility.class,
             org.opengis.metadata.citation.ResponsibleParty.class,
             org.opengis.metadata.citation.Role.class,
             org.opengis.metadata.citation.Series.class,
