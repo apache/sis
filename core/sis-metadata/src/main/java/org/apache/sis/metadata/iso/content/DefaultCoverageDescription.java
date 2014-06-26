@@ -31,7 +31,7 @@ import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.internal.metadata.LegacyProperties;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 
 
@@ -249,7 +249,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Deprecated
     public void setContentType(final CoverageContentType newValue) {
         checkWritePermission();
-        final Collection<CoverageContentType> newValues = LegacyProperties.asCollection(newValue);
+        final Collection<CoverageContentType> newValues = LegacyPropertyAdapter.asCollection(newValue);
         final Collection<AttributeGroup> groups = getAttributeGroups();
         for (final AttributeGroup group : groups) {
             if (group instanceof DefaultAttributeGroup) {
@@ -273,7 +273,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Deprecated
     @XmlElement(name = "dimension")
     public final Collection<RangeDimension> getDimensions() {
-        return new LegacyProperties<RangeDimension,AttributeGroup>(getAttributeGroups()) {
+        return new LegacyPropertyAdapter<RangeDimension,AttributeGroup>(getAttributeGroups()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected AttributeGroup wrap(final RangeDimension value) {
                 final DefaultAttributeGroup container = new DefaultAttributeGroup();
@@ -308,7 +308,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Deprecated
     public void setDimensions(final Collection<? extends RangeDimension> newValues) {
         checkWritePermission();
-        ((LegacyProperties<RangeDimension,?>) getDimensions()).setValues(newValues);
+        ((LegacyPropertyAdapter<RangeDimension,?>) getDimensions()).setValues(newValues);
     }
 
     /**

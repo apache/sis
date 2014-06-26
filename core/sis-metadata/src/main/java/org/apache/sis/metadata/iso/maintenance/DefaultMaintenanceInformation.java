@@ -34,7 +34,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.quality.DefaultScope;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.internal.metadata.LegacyProperties;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
 /**
@@ -313,7 +313,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     @XmlElement(name = "updateScope")
     public final Collection<ScopeCode> getUpdateScopes() {
-        return new LegacyProperties<ScopeCode,Scope>(getMaintenanceScopes()) {
+        return new LegacyPropertyAdapter<ScopeCode,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected Scope wrap(final ScopeCode value) {
                 return new DefaultScope(value);
@@ -345,7 +345,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     public void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
         checkWritePermission();
-        ((LegacyProperties<ScopeCode,?>) getUpdateScopes()).setValues(newValues);
+        ((LegacyPropertyAdapter<ScopeCode,?>) getUpdateScopes()).setValues(newValues);
     }
 
     /**
@@ -361,7 +361,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     @XmlElement(name = "updateScopeDescription")
     public final Collection<ScopeDescription> getUpdateScopeDescriptions() {
-        return new LegacyProperties<ScopeDescription,Scope>(getMaintenanceScopes()) {
+        return new LegacyPropertyAdapter<ScopeDescription,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected Scope wrap(final ScopeDescription value) {
                 final DefaultScope container = new DefaultScope();
@@ -396,7 +396,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     public void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
         checkWritePermission();
-        ((LegacyProperties<ScopeDescription,?>) getUpdateScopeDescriptions()).setValues(newValues);
+        ((LegacyPropertyAdapter<ScopeDescription,?>) getUpdateScopeDescriptions()).setValues(newValues);
     }
 
     /**
