@@ -73,7 +73,7 @@ public class AbstractThematicAccuracy extends AbstractElement implements Themati
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link QuantitativeAttributeAccuracy},
+     *   <li>Otherwise if the given object is an instance of {@link QuantitativeAttributeAccuracy},
      *       {@link NonQuantitativeAttributeAccuracy} or {@link ThematicClassificationCorrectness},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding
      *       SIS subclass. Note that if the given object implements more than one of the above-cited

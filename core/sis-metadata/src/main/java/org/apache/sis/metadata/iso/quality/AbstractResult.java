@@ -73,7 +73,7 @@ public class AbstractResult extends ISOMetadata implements Result {
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link ConformanceResult},
+     *   <li>Otherwise if the given object is an instance of {@link ConformanceResult},
      *       {@link QuantitativeResult}or {@link CoverageResult}, then this method delegates to
      *       the {@code castOrCopy(…)} method of the corresponding SIS subclass.
      *       Note that if the given object implements more than one of the above-cited interfaces,
