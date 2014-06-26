@@ -224,7 +224,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of
+     *   <li>Otherwise if the given object is an instance of
      *       {@link org.opengis.referencing.datum.GeodeticDatum},
      *       {@link org.opengis.referencing.datum.VerticalDatum},
      *       {@link org.opengis.referencing.datum.TemporalDatum},

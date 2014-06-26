@@ -113,7 +113,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link ImageDescription}, then this
+     *   <li>Otherwise if the given object is an instance of {@link ImageDescription}, then this
      *       method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.</li>
      *   <li>Otherwise if the given object is already an instance of
      *       {@code DefaultCoverageDescription}, then it is returned unchanged.</li>
