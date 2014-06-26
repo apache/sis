@@ -195,7 +195,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of
+     *   <li>Otherwise if the given object is an instance of
      *       {@link org.opengis.referencing.crs.GeodeticCRS} (including the
      *       {@link org.opengis.referencing.crs.GeographicCRS} and
      *       {@link org.opengis.referencing.crs.GeocentricCRS} subtypes),

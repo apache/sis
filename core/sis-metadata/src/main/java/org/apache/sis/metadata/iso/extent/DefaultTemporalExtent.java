@@ -93,7 +93,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link SpatialTemporalExtent},
+     *   <li>Otherwise if the given object is an instance of {@link SpatialTemporalExtent},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding
      *       SIS subclass.</li>
      *   <li>Otherwise if the given object is already an instance of
