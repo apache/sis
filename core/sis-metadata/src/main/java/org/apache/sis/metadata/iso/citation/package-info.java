@@ -99,11 +99,14 @@
     @XmlJavaTypeAdapter(CI_DateTypeCode.class),
     @XmlJavaTypeAdapter(CI_OnLineFunctionCode.class),
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
+    @XmlJavaTypeAdapter(CI_Party.class),
     @XmlJavaTypeAdapter(CI_PresentationFormCode.class),
+    @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(CI_RoleCode.class),
     @XmlJavaTypeAdapter(CI_Series.class),
     @XmlJavaTypeAdapter(CI_Telephone.class),
+    @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
 
     // Java types, primitive types and basic OGC types handling

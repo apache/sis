@@ -183,7 +183,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link DataIdentification} or
+     *   <li>Otherwise if the given object is an instance of {@link DataIdentification} or
      *       {@link ServiceIdentification}, then this method delegates to the {@code castOrCopy(…)}
      *       method of the corresponding SIS subclass. Note that if the given object implements
      *       more than one of the above-cited interfaces, then the {@code castOrCopy(…)} method

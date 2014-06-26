@@ -34,7 +34,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.quality.DefaultScope;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.internal.metadata.LegacyProperties;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
 /**
@@ -213,6 +213,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the scheduled revision date for resource.
+     * The default implementation fetches the value from the {@linkplain #getMaintenanceDates() maintenance dates}.
      *
      * @return Scheduled revision date, or {@code null}.
      *
@@ -236,6 +237,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets the scheduled revision date for resource.
+     * The default implementation stores the value in the {@linkplain #getMaintenanceDates() maintenance dates}.
      *
      * @param newValue The new date of next update.
      */
@@ -302,6 +304,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the scope of data to which maintenance is applied.
+     * The default implementation fetches the values from the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @return Scope of data to which maintenance is applied.
      *
@@ -313,7 +316,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     @XmlElement(name = "updateScope")
     public final Collection<ScopeCode> getUpdateScopes() {
-        return new LegacyProperties<ScopeCode,Scope>(getMaintenanceScopes()) {
+        return new LegacyPropertyAdapter<ScopeCode,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected Scope wrap(final ScopeCode value) {
                 return new DefaultScope(value);
@@ -337,6 +340,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets the scope of data to which maintenance is applied.
+     * The default implementation stores the values in the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @param newValues The new update scopes.
      *
@@ -345,11 +349,12 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     public void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
         checkWritePermission();
-        ((LegacyProperties<ScopeCode,?>) getUpdateScopes()).setValues(newValues);
+        ((LegacyPropertyAdapter<ScopeCode,?>) getUpdateScopes()).setValues(newValues);
     }
 
     /**
      * Returns additional information about the range or extent of the resource.
+     * The default implementation fetches the values from the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @return Additional information about the range or extent of the resource.
      *
@@ -361,7 +366,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     @XmlElement(name = "updateScopeDescription")
     public final Collection<ScopeDescription> getUpdateScopeDescriptions() {
-        return new LegacyProperties<ScopeDescription,Scope>(getMaintenanceScopes()) {
+        return new LegacyPropertyAdapter<ScopeDescription,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected Scope wrap(final ScopeDescription value) {
                 final DefaultScope container = new DefaultScope();
@@ -388,6 +393,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets additional information about the range or extent of the resource.
+     * The default implementation stores the values in the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @param newValues The new update scope descriptions.
      *
@@ -396,7 +402,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     public void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
         checkWritePermission();
-        ((LegacyProperties<ScopeDescription,?>) getUpdateScopeDescriptions()).setValues(newValues);
+        ((LegacyPropertyAdapter<ScopeDescription,?>) getUpdateScopeDescriptions()).setValues(newValues);
     }
 
     /**
