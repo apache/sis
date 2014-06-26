@@ -155,6 +155,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.lineage.Source.class,
             org.opengis.metadata.maintenance.MaintenanceFrequency.class,
             org.opengis.metadata.maintenance.MaintenanceInformation.class,
+            org.opengis.metadata.maintenance.MetadataScope.class,
             org.opengis.metadata.maintenance.ScopeCode.class,
 //          org.opengis.metadata.maintenance.ScopeDescription.class,  // Excluded because this is an union.
             org.opengis.metadata.quality.AbsoluteExternalPositionalAccuracy.class,
