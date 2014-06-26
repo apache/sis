@@ -37,8 +37,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @module
  */
 @XmlType(name = "MD_AttributeGroup_Type", propOrder = {
-/// "contentType",
-/// "groupAttribute"
+    "contentType",
+    "groupAttribute"
 })
 @XmlRootElement(name = "MD_AttributeGroup")
 public class DefaultAttributeGroup extends ISOMetadata implements AttributeGroup {
@@ -111,7 +111,7 @@ public class DefaultAttributeGroup extends ISOMetadata implements AttributeGroup
      * @return The types of information represented by the value(s).
      */
     @Override
-/// @XmlElement(name = "contentType", required = true)
+    @XmlElement(name = "contentType", required = true)
     public Collection<CoverageContentType> getContentTypes() {
         return contentTypes = nonNullCollection(contentTypes, CoverageContentType.class);
     }
@@ -131,7 +131,7 @@ public class DefaultAttributeGroup extends ISOMetadata implements AttributeGroup
      * @return The content types for attributes groups for a {@code RangeDimension}, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "groupAttribute")
+    @XmlElement(name = "groupAttribute")
     public Collection<RangeDimension> getGroupAttributes() {
         return groupAttributes = nonNullCollection(groupAttributes, RangeDimension.class);
     }

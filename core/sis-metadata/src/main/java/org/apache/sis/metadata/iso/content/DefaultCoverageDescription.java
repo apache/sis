@@ -31,7 +31,7 @@ import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.internal.metadata.LegacyProperties;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 
 
@@ -113,7 +113,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link ImageDescription}, then this
+     *   <li>Otherwise if the given object is an instance of {@link ImageDescription}, then this
      *       method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.</li>
      *   <li>Otherwise if the given object is already an instance of
      *       {@code DefaultCoverageDescription}, then it is returned unchanged.</li>
@@ -210,6 +210,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the type of information represented by the cell value.
+     * The default implementation fetches the value from the {@linkplain #getAttributeGroups() attribute groups}.
      *
      * @return Type of information represented by the cell value, or {@code null}.
      *
@@ -241,6 +242,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Sets the type of information represented by the cell value.
+     * The default implementation stores the value in the {@linkplain #getAttributeGroups() attribute groups}.
      *
      * @param newValue The new content type.
      *
@@ -249,7 +251,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Deprecated
     public void setContentType(final CoverageContentType newValue) {
         checkWritePermission();
-        final Collection<CoverageContentType> newValues = LegacyProperties.asCollection(newValue);
+        final Collection<CoverageContentType> newValues = LegacyPropertyAdapter.asCollection(newValue);
         final Collection<AttributeGroup> groups = getAttributeGroups();
         for (final AttributeGroup group : groups) {
             if (group instanceof DefaultAttributeGroup) {
@@ -264,6 +266,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the information on the dimensions of the cell measurement value.
+     * The default implementation fetches the values from the {@linkplain #getAttributeGroups() attribute groups}.
      *
      * @return Dimensions of the cell measurement value.
      *
@@ -273,7 +276,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Deprecated
     @XmlElement(name = "dimension")
     public final Collection<RangeDimension> getDimensions() {
-        return new LegacyProperties<RangeDimension,AttributeGroup>(getAttributeGroups()) {
+        return new LegacyPropertyAdapter<RangeDimension,AttributeGroup>(getAttributeGroups()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected AttributeGroup wrap(final RangeDimension value) {
                 final DefaultAttributeGroup container = new DefaultAttributeGroup();
@@ -300,6 +303,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Sets the information on the dimensions of the cell measurement value.
+     * The default implementation stores the values in the {@linkplain #getAttributeGroups() attribute groups}.
      *
      * @param newValues The new dimensions.
      *
@@ -308,7 +312,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Deprecated
     public void setDimensions(final Collection<? extends RangeDimension> newValues) {
         checkWritePermission();
-        ((LegacyProperties<RangeDimension,?>) getDimensions()).setValues(newValues);
+        ((LegacyPropertyAdapter<RangeDimension,?>) getDimensions()).setValues(newValues);
     }
 
     /**

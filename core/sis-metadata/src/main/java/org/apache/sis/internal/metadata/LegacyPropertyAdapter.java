@@ -39,7 +39,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @version 0.5
  * @module
  */
-public abstract class LegacyProperties<L,N> extends AbstractCollection<L> {
+public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * The collection where to store the elements.
      */
@@ -55,7 +55,7 @@ public abstract class LegacyProperties<L,N> extends AbstractCollection<L> {
      *
      * @param elements The collection where to store the elements (may be {@code null}).
      */
-    protected LegacyProperties(final Collection<N> elements) {
+    protected LegacyPropertyAdapter(final Collection<N> elements) {
         this.elements = elements;
     }
 
@@ -98,7 +98,7 @@ public abstract class LegacyProperties<L,N> extends AbstractCollection<L> {
      *
      * @return {@code this} or {@code null}.
      */
-    public final LegacyProperties<L,N> validOrNull() {
+    public final LegacyPropertyAdapter<L,N> validOrNull() {
         return (elements != null) ? this : null;
     }
 

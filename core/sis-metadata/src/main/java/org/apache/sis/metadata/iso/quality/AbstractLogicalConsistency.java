@@ -75,7 +75,7 @@ public class AbstractLogicalConsistency extends AbstractElement implements Logic
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link ConceptualConsistency},
+     *   <li>Otherwise if the given object is an instance of {@link ConceptualConsistency},
      *       {@link DomainConsistency}, {@link FormatConsistency} or {@link TopologicalConsistency},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
      *       Note that if the given object implements more than one of the above-cited interfaces,

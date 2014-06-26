@@ -79,7 +79,7 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link GCPCollection}, then this method
+     *   <li>Otherwise if the given object is an instance of {@link GCPCollection}, then this method
      *       delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.</li>
      *   <li>Otherwise if the given object is already an instance of
      *       {@code AbstractGeolocationInformation}, then it is returned unchanged.</li>

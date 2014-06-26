@@ -329,7 +329,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link PositionalAccuracy},
+     *   <li>Otherwise if the given object is an instance of {@link PositionalAccuracy},
      *       {@link TemporalAccuracy}, {@link ThematicAccuracy}, {@link LogicalConsistency},
      *       {@link Completeness} or {@link Usability}, then this method delegates to the
      *       {@code castOrCopy(…)} method of the corresponding SIS subclass.
