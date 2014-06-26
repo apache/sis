@@ -36,8 +36,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @module
  */
 @XmlType(name = "MD_FeatureTypeInfo", propOrder = {
-/// "featureTypeName",
-/// "featureInstanceCount"
+    "featureTypeName",
+    "featureInstanceCount"
 })
 @XmlRootElement(name = "MD_FeatureTypeInfo")
 public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeInfo {
@@ -124,7 +124,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
      * @return Name of the feature type.
      */
     @Override
-/// @XmlElement(name = "featureTypeName", required = true)
+    @XmlElement(name = "featureTypeName", required = true)
     public GenericName getFeatureTypeName() {
         return featureTypeName;
     }
@@ -146,7 +146,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
      */
     @Override
     @ValueRange(minimum = 1)
-/// @XmlElement(name = "featureInstanceCount")
+    @XmlElement(name = "featureInstanceCount")
     public Integer getFeatureInstanceCount() {
         return featureInstanceCount;
     }

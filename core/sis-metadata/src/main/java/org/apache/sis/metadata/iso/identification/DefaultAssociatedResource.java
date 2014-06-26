@@ -36,10 +36,10 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @module
  */
 @XmlType(name = "MD_AssociatedResource_Type", propOrder = {
-/// "name",
-/// "associationType",
-/// "initiativeType",
-/// "metadataReference"
+    "name",
+    "associationType",
+    "initiativeType",
+    "metadataReference"
 })
 @XmlRootElement(name = "MD_AssociatedResource")
 public class DefaultAssociatedResource extends ISOMetadata implements AssociatedResource {
@@ -134,7 +134,7 @@ public class DefaultAssociatedResource extends ISOMetadata implements Associated
      * @return Citation information about the associated resource, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "name")
+    @XmlElement(name = "name")
     public Citation getName() {
         return name;
     }
@@ -155,7 +155,7 @@ public class DefaultAssociatedResource extends ISOMetadata implements Associated
      * @return Type of relation between the resources.
      */
     @Override
-/// @XmlElement(name = "associationType", required = true)
+    @XmlElement(name = "associationType", required = true)
     public AssociationType getAssociationType() {
         return associationType;
     }
@@ -176,7 +176,7 @@ public class DefaultAssociatedResource extends ISOMetadata implements Associated
      * @return The type of initiative under which the associated resource was produced, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "initiativeType")
+    @XmlElement(name = "initiativeType")
     public InitiativeType getInitiativeType() {
         return initiativeType;
     }
@@ -197,7 +197,7 @@ public class DefaultAssociatedResource extends ISOMetadata implements Associated
      * @return Reference to the metadata of the associated resource, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "metadataReference")
+    @XmlElement(name = "metadataReference")
     public Citation getMetadataReference() {
         return metadataReference;
     }
