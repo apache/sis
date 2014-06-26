@@ -56,7 +56,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1756867502303578675L;
+    private static final long serialVersionUID = -239683653229623567L;
 
     /**
      * Illumination elevation measured in degrees clockwise from the target plane
@@ -85,12 +85,6 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * Area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
      */
     private Double cloudCoverPercentage;
-
-    /**
-     * Image distributor's code that identifies the level of radiometric and geometric
-     * processing that has been applied.
-     */
-    private Identifier processingLevelCode;
 
     /**
      * Count of the number of lossy compression cycles performed on the image.
@@ -150,7 +144,6 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
             imagingCondition                      = object.getImagingCondition();
             imageQualityCode                      = object.getImageQualityCode();
             cloudCoverPercentage                  = object.getCloudCoverPercentage();
-            processingLevelCode                   = object.getProcessingLevelCode();
             compressionGenerationQuantity         = object.getCompressionGenerationQuantity();
             triangulationIndicator                = object.getTriangulationIndicator();
             radiometricCalibrationDataAvailable   = object.isRadiometricCalibrationDataAvailable();
@@ -311,7 +304,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @XmlElement(name = "processingLevelCode")
     public Identifier getProcessingLevelCode() {
-        return processingLevelCode;
+        return super.getProcessingLevelCode();
     }
 
     /**
@@ -320,9 +313,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue The new processing level code.
      */
+    @Override
     public void setProcessingLevelCode(final Identifier newValue) {
-        checkWritePermission();
-        processingLevelCode = newValue;
+        super.setProcessingLevelCode(newValue);
     }
 
     /**

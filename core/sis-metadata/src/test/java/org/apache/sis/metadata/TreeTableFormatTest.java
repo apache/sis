@@ -162,14 +162,16 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final String text = format.format(image.asTreeTable());
         assertMultilinesEquals(
             "Image description\n" +
-            "  ├─Dimension (1 of 2)\n" +
-            "  │   ├─Max value…………… 0.26\n" +
-            "  │   ├─Min value…………… 0.25\n" +
-            "  │   └─Units……………………… cm\n" +
-            "  └─Dimension (2 of 2)\n" +
-            "      ├─Max value…………… 0.29\n" +
-            "      ├─Min value…………… 0.28\n" +
-            "      └─Units……………………… cm\n", text);
+            "  ├─Attribute group (1 of 2)\n" +
+            "  │   └─Group attribute\n" +
+            "  │       ├─Max value………………… 0.26\n" +
+            "  │       ├─Min value………………… 0.25\n" +
+            "  │       └─Units…………………………… cm\n" +
+            "  └─Attribute group (2 of 2)\n" +
+            "      └─Group attribute\n" +
+            "          ├─Max value………………… 0.29\n" +
+            "          ├─Min value………………… 0.28\n" +
+            "          └─Units…………………………… cm\n", text);
     }
 
     /**

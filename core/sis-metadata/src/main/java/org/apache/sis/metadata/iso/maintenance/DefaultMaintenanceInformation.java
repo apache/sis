@@ -18,8 +18,6 @@ package org.apache.sis.metadata.iso.maintenance;
 
 import java.util.Date;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -37,8 +35,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.quality.DefaultScope;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.LegacyProperties;
-import org.apache.sis.internal.metadata.MetadataUtilities;
-import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -245,6 +241,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Deprecated
     public void setDateOfNextUpdate(final Date newValue) {
+        checkWritePermission();
         if (newValue != null) {
             if (maintenanceDates != null) {
                 for (final CitationDate date : maintenanceDates) {
@@ -315,48 +312,40 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "updateScope")
-    public Collection<ScopeCode> getUpdateScopes() {
-        final Collection<Scope> scopes = getMaintenanceScopes();
-        if (scopes == null) {
-            return null; // May happen at marshalling time.
-        }
-        return new LegacyProperties<ScopeCode,Scope>(scopes) {
-            @Override protected Scope wrap(final ScopeCode code) {
-                return new DefaultScope(code);
+    public final Collection<ScopeCode> getUpdateScopes() {
+        return new LegacyProperties<ScopeCode,Scope>(getMaintenanceScopes()) {
+            /** Stores a legacy value into the new kind of value. */
+            @Override protected Scope wrap(final ScopeCode value) {
+                return new DefaultScope(value);
             }
 
-            @Override protected ScopeCode unwrap(final Scope scope) {
-                return scope.getLevel();
+            /** Extracts the legacy value from the new kind of value. */
+            @Override protected ScopeCode unwrap(final Scope container) {
+                return container.getLevel();
             }
-        };
+
+            /** Updates the legacy value in an existing new kind of value. */
+            @Override protected boolean update(final Scope container, final ScopeCode value) {
+                if (container instanceof DefaultScope) {
+                    ((DefaultScope) container).setLevel(value);
+                    return true;
+                }
+                return false;
+            }
+        }.validOrNull();
     }
 
     /**
      * Sets the scope of data to which maintenance is applied.
      *
      * @param newValues The new update scopes.
+     *
+     * @deprecated Replaced by {@link #setMaintenanceScopes(Collection)}.
      */
     @Deprecated
-    public void setUpdateScopes(Collection<? extends ScopeCode> newValues) {
-        if (newValues == null) {
-            newValues = Collections.emptySet();
-        }
-        final Iterator<? extends ScopeCode> it = newValues.iterator();
-        final Collection<Scope> scopes = getMaintenanceScopes();
-        final Iterator<Scope> im = scopes.iterator();
-        while (im.hasNext()) {
-            final Scope scope = im.next();
-            if (scope instanceof DefaultScope) {
-                final DefaultScope df = (DefaultScope) scope;
-                df.setLevel(it.hasNext() ? it.next() : null);
-                if (df.isEmpty()) {
-                    im.remove();
-                }
-            }
-        }
-        while (it.hasNext()) {
-            scopes.add(new DefaultScope(it.next()));
-        }
+    public void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
+        checkWritePermission();
+        ((LegacyProperties<ScopeCode,?>) getUpdateScopes()).setValues(newValues);
     }
 
     /**
@@ -371,64 +360,43 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "updateScopeDescription")
-    public Collection<ScopeDescription> getUpdateScopeDescriptions() {
-        final Collection<Scope> scopes = getMaintenanceScopes();
-        if (scopes == null) {
-            return null; // May happen at marshalling time.
-        }
-        return new LegacyProperties<ScopeDescription,Scope>(scopes) {
-            private boolean warningOccurred;
-
-            @Override protected Scope wrap(final ScopeDescription code) {
-                final DefaultScope scope = new DefaultScope();
-                scope.setLevelDescription(Collections.singleton(code));
-                return scope;
+    public final Collection<ScopeDescription> getUpdateScopeDescriptions() {
+        return new LegacyProperties<ScopeDescription,Scope>(getMaintenanceScopes()) {
+            /** Stores a legacy value into the new kind of value. */
+            @Override protected Scope wrap(final ScopeDescription value) {
+                final DefaultScope container = new DefaultScope();
+                container.setLevelDescription(asCollection(value));
+                return container;
             }
 
-            @Override protected ScopeDescription unwrap(final Scope scope) {
-                final Iterator<? extends ScopeDescription> it = scope.getLevelDescription().iterator();
-                if (!it.hasNext()) {
-                    return null;
-                }
-                final ScopeDescription description = it.next();
-                if (!warningOccurred && it.hasNext()) {
-                    warningOccurred = true;
-                    MetadataUtilities.warning(DefaultMaintenanceInformation.class, "getUpdateScopeDescriptions",
-                            Messages.Keys.IgnoredPropertiesAfterFirst_1, ScopeDescription.class);
-                }
-                return description;
+            /** Extracts the legacy value from the new kind of value. */
+            @Override protected ScopeDescription unwrap(final Scope container) {
+                return singleton(container.getLevelDescription(), ScopeDescription.class,
+                        DefaultMaintenanceInformation.class, "getUpdateScopeDescriptions");
             }
-        };
+
+            /** Updates the legacy value in an existing new kind of value. */
+            @Override protected boolean update(final Scope container, final ScopeDescription value) {
+                if (container instanceof DefaultScope) {
+                    ((DefaultScope) container).setLevelDescription(asCollection(value));
+                    return true;
+                }
+                return false;
+            }
+        }.validOrNull();
     }
 
     /**
      * Sets additional information about the range or extent of the resource.
      *
      * @param newValues The new update scope descriptions.
+     *
+     * @deprecated Replaced by {@link #setMaintenanceScopes(Collection)}.
      */
     @Deprecated
-    public void setUpdateScopeDescriptions(Collection<? extends ScopeDescription> newValues) {
-        if (newValues == null) {
-            newValues = Collections.emptySet();
-        }
-        final Iterator<? extends ScopeDescription> it = newValues.iterator();
-        final Collection<Scope> scopes = getMaintenanceScopes();
-        final Iterator<Scope> im = scopes.iterator();
-        while (im.hasNext()) {
-            final Scope scope = im.next();
-            if (scope instanceof DefaultScope) {
-                final DefaultScope df = (DefaultScope) scope;
-                df.setLevelDescription(it.hasNext() ? Collections.singleton(it.next()) : null);
-                if (df.isEmpty()) {
-                    im.remove();
-                }
-            }
-        }
-        while (it.hasNext()) {
-            final DefaultScope scope = new DefaultScope();
-            scope.setLevelDescription(Collections.singleton(it.next()));
-            scopes.add(scope);
-        }
+    public void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
+        checkWritePermission();
+        ((LegacyProperties<ScopeDescription,?>) getUpdateScopeDescriptions()).setValues(newValues);
     }
 
     /**
