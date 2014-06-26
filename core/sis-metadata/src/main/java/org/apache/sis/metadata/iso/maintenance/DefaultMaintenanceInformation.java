@@ -213,6 +213,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the scheduled revision date for resource.
+     * The default implementation fetches the value from the {@linkplain #getMaintenanceDates() maintenance dates}.
      *
      * @return Scheduled revision date, or {@code null}.
      *
@@ -236,6 +237,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets the scheduled revision date for resource.
+     * The default implementation stores the value in the {@linkplain #getMaintenanceDates() maintenance dates}.
      *
      * @param newValue The new date of next update.
      */
@@ -302,6 +304,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the scope of data to which maintenance is applied.
+     * The default implementation fetches the values from the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @return Scope of data to which maintenance is applied.
      *
@@ -337,6 +340,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets the scope of data to which maintenance is applied.
+     * The default implementation stores the values in the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @param newValues The new update scopes.
      *
@@ -350,6 +354,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns additional information about the range or extent of the resource.
+     * The default implementation fetches the values from the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @return Additional information about the range or extent of the resource.
      *
@@ -388,6 +393,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets additional information about the range or extent of the resource.
+     * The default implementation stores the values in the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @param newValues The new update scope descriptions.
      *
