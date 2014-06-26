@@ -37,8 +37,8 @@ import org.apache.sis.util.iso.Types;
  * @module
  */
 @XmlType(name = "AbstractCI_Party_Type", propOrder = {
-/// "name",
-/// "contactInfo"
+    "name",
+    "contactInfo"
 })
 @XmlRootElement(name = "CI_Party")
 public class AbstractParty extends ISOMetadata implements Party {
@@ -122,7 +122,7 @@ public class AbstractParty extends ISOMetadata implements Party {
      * @return Name of the party.
      */
     @Override
-/// @XmlElement(name = "name")
+    @XmlElement(name = "name")
     public InternationalString getName() {
         return name;
     }
@@ -143,7 +143,7 @@ public class AbstractParty extends ISOMetadata implements Party {
      * @return Contact information for the party.
      */
     @Override
-/// @XmlElement(name = "contactInfo")
+    @XmlElement(name = "contactInfo")
     public Collection<Contact> getContactInfo() {
         return contactInfo = nonNullCollection(contactInfo, Contact.class);
     }
