@@ -21,6 +21,8 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.content.AttributeGroup;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.content.ImageDescription;
@@ -28,6 +30,9 @@ import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.util.resources.Messages;
+import org.apache.sis.internal.metadata.LegacyProperties;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 
 
 /**
@@ -37,7 +42,7 @@ import org.apache.sis.xml.Namespaces;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_CoverageDescription_Type", propOrder = {
@@ -55,7 +60,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3314118785767660332L;
+    private static final long serialVersionUID = 2161065580202989466L;
 
     /**
      * Description of the attribute described by the measurement value.
@@ -63,14 +68,14 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     private RecordType attributeDescription;
 
     /**
-     * Type of information represented by the cell value.
+     * Identifier for the level of processing that has been applied to the resource.
      */
-    private CoverageContentType contentType;
+    private Identifier processingLevelCode;
 
     /**
-     * Information on the dimensions of the cell measurement value.
+     * Information on attribute groups of the resource.
      */
-    private Collection<RangeDimension> dimensions;
+    private Collection<AttributeGroup> attributeGroups;
 
     /**
      * Provides the description of the specific range elements of a coverage.
@@ -96,8 +101,8 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
         super(object);
         if (object != null) {
             attributeDescription     = object.getAttributeDescription();
-            contentType              = object.getContentType();
-            dimensions               = copyCollection(object.getDimensions(), RangeDimension.class);
+            processingLevelCode      = object.getProcessingLevelCode();
+            attributeGroups          = copyCollection(object.getAttributeGroups(), AttributeGroup.class);
             rangeElementDescriptions = copyCollection(object.getRangeElementDescriptions(), RangeElementDescription.class);
         }
     }
@@ -136,7 +141,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     /**
      * Returns the description of the attribute described by the measurement value.
      *
-     * @return Description of the attribute, or {@code null}.
+     * @return Description of the attribute.
      */
     @Override
     @XmlElement(name = "attributeDescription", required = true)
@@ -155,44 +160,155 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     }
 
     /**
+     * Returns an identifier for the level of processing that has been applied to the resource, or {@code null} if none.
+     *
+     * @return Identifier for the level of processing that has been applied to the resource, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+/// @XmlElement(name = "processingLevelCode")
+    public Identifier getProcessingLevelCode() {
+        return processingLevelCode;
+    }
+
+    /**
+     * Sets the identifier for the level of processing that has been applied to the resource.
+     *
+     * @param newValue The new identifier for the level of processing.
+     *
+     * @since 0.5
+     */
+    public void setProcessingLevelCode(final Identifier newValue) {
+        checkWritePermission();
+        processingLevelCode = newValue;
+    }
+
+    /**
+     * Returns information on attribute groups of the resource.
+     *
+     * @return Information on attribute groups of the resource.
+     *
+     * @since 0.5
+     */
+    @Override
+/// @XmlElement(name = "attributeGroup")
+    public Collection<AttributeGroup> getAttributeGroups() {
+        return attributeGroups = nonNullCollection(attributeGroups, AttributeGroup.class);
+    }
+
+    /**
+     * Sets information on attribute groups of the resource.
+     *
+     * @param newValues The new information on attribute groups of the resource.
+     *
+     * @since 0.5
+     */
+    public void setAttributeGroups(final Collection<? extends AttributeGroup> newValues) {
+        attributeGroups = writeCollection(newValues, attributeGroups, AttributeGroup.class);
+    }
+
+    /**
      * Returns the type of information represented by the cell value.
      *
      * @return Type of information represented by the cell value, or {@code null}.
+     *
+     * @deprecated Moved to {@link DefaultAttributeGroup#getContentTypes()} as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "contentType", required = true)
     public CoverageContentType getContentType() {
-        return contentType;
+        CoverageContentType type = null;
+        if (attributeGroups != null) {
+            for (final AttributeGroup g : attributeGroups) {
+                final Collection<? extends CoverageContentType> contentTypes = g.getContentTypes();
+                if (contentTypes != null) { // May be null on marshalling.
+                    for (final CoverageContentType t : contentTypes) {
+                        if (type == null) {
+                            type = t;
+                        } else {
+                            MetadataUtilities.warning(DefaultCoverageDescription.class, "getContentType",
+                                    Messages.Keys.IgnoredPropertiesAfterFirst_1, CoverageContentType.class);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return type;
     }
 
     /**
      * Sets the type of information represented by the cell value.
      *
      * @param newValue The new content type.
+     *
+     * @deprecated Moved to {@link DefaultAttributeGroup#setContentTypes(Collection)}.
      */
+    @Deprecated
     public void setContentType(final CoverageContentType newValue) {
         checkWritePermission();
-        contentType = newValue;
+        final Collection<CoverageContentType> newValues = LegacyProperties.asCollection(newValue);
+        final Collection<AttributeGroup> groups = getAttributeGroups();
+        for (final AttributeGroup group : groups) {
+            if (group instanceof DefaultAttributeGroup) {
+                ((DefaultAttributeGroup) group).setContentTypes(newValues);
+                return;
+            }
+        }
+        final DefaultAttributeGroup group = new DefaultAttributeGroup();
+        group.setContentTypes(newValues);
+        groups.add(group);
     }
 
     /**
      * Returns the information on the dimensions of the cell measurement value.
      *
      * @return Dimensions of the cell measurement value.
+     *
+     * @deprecated Moved to {@link DefaultAttributeGroup#getGroupAttributes()} as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "dimension")
-    public Collection<RangeDimension> getDimensions() {
-        return dimensions = nonNullCollection(dimensions, RangeDimension.class);
+    public final Collection<RangeDimension> getDimensions() {
+        return new LegacyProperties<RangeDimension,AttributeGroup>(getAttributeGroups()) {
+            /** Stores a legacy value into the new kind of value. */
+            @Override protected AttributeGroup wrap(final RangeDimension value) {
+                final DefaultAttributeGroup container = new DefaultAttributeGroup();
+                container.setGroupAttributes(asCollection(value));
+                return container;
+            }
+
+            /** Extracts the legacy value from the new kind of value. */
+            @Override protected RangeDimension unwrap(final AttributeGroup container) {
+                return singleton(container.getGroupAttributes(), RangeDimension.class,
+                        DefaultCoverageDescription.class, "getDimensions");
+            }
+
+            /** Updates the legacy value in an existing new kind of value. */
+            @Override protected boolean update(final AttributeGroup container, final RangeDimension value) {
+                if (container instanceof DefaultAttributeGroup) {
+                    ((DefaultAttributeGroup) container).setGroupAttributes(asCollection(value));
+                    return true;
+                }
+                return false;
+            }
+        }.validOrNull();
     }
 
     /**
      * Sets the information on the dimensions of the cell measurement value.
      *
      * @param newValues The new dimensions.
+     *
+     * @deprecated Moved to {@link DefaultAttributeGroup#setGroupAttributes(Collection)}.
      */
+    @Deprecated
     public void setDimensions(final Collection<? extends RangeDimension> newValues) {
-        dimensions = writeCollection(newValues, dimensions, RangeDimension.class);
+        checkWritePermission();
+        ((LegacyProperties<RangeDimension,?>) getDimensions()).setValues(newValues);
     }
 
     /**
