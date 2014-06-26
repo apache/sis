@@ -38,8 +38,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  */
 @XmlType(name = "CI_Responsibility_Type", propOrder = {
 /// "role",
-/// "extent",
-/// "party"
+/// "extents",
+/// "parties"
 })
 @XmlRootElement(name = "CI_Responsibility")
 public class DefaultResponsibility extends ISOMetadata implements Responsibility {
