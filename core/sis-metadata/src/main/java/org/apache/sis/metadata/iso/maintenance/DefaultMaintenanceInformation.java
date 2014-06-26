@@ -316,7 +316,11 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     @XmlElement(name = "updateScope")
     public Collection<ScopeCode> getUpdateScopes() {
-        return new LegacyProperties<ScopeCode,Scope>(getMaintenanceScopes()) {
+        final Collection<Scope> scopes = getMaintenanceScopes();
+        if (scopes == null) {
+            return null; // May happen at marshalling time.
+        }
+        return new LegacyProperties<ScopeCode,Scope>(scopes) {
             @Override protected Scope wrap(final ScopeCode code) {
                 return new DefaultScope(code);
             }
@@ -368,7 +372,11 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Deprecated
     @XmlElement(name = "updateScopeDescription")
     public Collection<ScopeDescription> getUpdateScopeDescriptions() {
-        return new LegacyProperties<ScopeDescription,Scope>(getMaintenanceScopes()) {
+        final Collection<Scope> scopes = getMaintenanceScopes();
+        if (scopes == null) {
+            return null; // May happen at marshalling time.
+        }
+        return new LegacyProperties<ScopeDescription,Scope>(scopes) {
             private boolean warningOccurred;
 
             @Override protected Scope wrap(final ScopeDescription code) {
