@@ -213,7 +213,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the scheduled revision date for resource.
-     * The default implementation fetches the value from the {@linkplain #getMaintenanceDates() maintenance dates}.
+     * This method fetches the value from the {@linkplain #getMaintenanceDates() maintenance dates}.
      *
      * @return Scheduled revision date, or {@code null}.
      *
@@ -224,7 +224,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "dateOfNextUpdate")
-    public Date getDateOfNextUpdate() {
+    public final Date getDateOfNextUpdate() {
         if (maintenanceDates != null) {
             for (final CitationDate date : maintenanceDates) {
                 if (DateType.NEXT_UPDATE.equals(date.getDateType())) {
@@ -237,12 +237,12 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets the scheduled revision date for resource.
-     * The default implementation stores the value in the {@linkplain #getMaintenanceDates() maintenance dates}.
+     * This method stores the value in the {@linkplain #getMaintenanceDates() maintenance dates}.
      *
      * @param newValue The new date of next update.
      */
     @Deprecated
-    public void setDateOfNextUpdate(final Date newValue) {
+    public final void setDateOfNextUpdate(final Date newValue) {
         checkWritePermission();
         if (newValue != null) {
             if (maintenanceDates != null) {
@@ -304,7 +304,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the scope of data to which maintenance is applied.
-     * The default implementation fetches the values from the {@linkplain #getMaintenanceScopes() maintenance scopes}.
+     * This method fetches the values from the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @return Scope of data to which maintenance is applied.
      *
@@ -340,21 +340,21 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets the scope of data to which maintenance is applied.
-     * The default implementation stores the values in the {@linkplain #getMaintenanceScopes() maintenance scopes}.
+     * This method stores the values in the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @param newValues The new update scopes.
      *
      * @deprecated Replaced by {@link #setMaintenanceScopes(Collection)}.
      */
     @Deprecated
-    public void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
+    public final void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
         checkWritePermission();
         ((LegacyPropertyAdapter<ScopeCode,?>) getUpdateScopes()).setValues(newValues);
     }
 
     /**
      * Returns additional information about the range or extent of the resource.
-     * The default implementation fetches the values from the {@linkplain #getMaintenanceScopes() maintenance scopes}.
+     * This method fetches the values from the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @return Additional information about the range or extent of the resource.
      *
@@ -393,14 +393,14 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets additional information about the range or extent of the resource.
-     * The default implementation stores the values in the {@linkplain #getMaintenanceScopes() maintenance scopes}.
+     * This method stores the values in the {@linkplain #getMaintenanceScopes() maintenance scopes}.
      *
      * @param newValues The new update scope descriptions.
      *
      * @deprecated Replaced by {@link #setMaintenanceScopes(Collection)}.
      */
     @Deprecated
-    public void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
+    public final void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
         checkWritePermission();
         ((LegacyPropertyAdapter<ScopeDescription,?>) getUpdateScopeDescriptions()).setValues(newValues);
     }
