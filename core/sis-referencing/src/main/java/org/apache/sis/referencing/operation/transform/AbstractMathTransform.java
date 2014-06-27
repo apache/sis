@@ -951,7 +951,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @see AbstractMathTransform2D#beforeFormat(List, int, boolean)
      * @see ConcatenatedTransform#getPseudoSteps()
      */
-    int beforeFormat(List<MathTransform> transforms, int index, boolean inverse) {
+    int beforeFormat(List<Object> transforms, int index, boolean inverse) {
         return index;
     }
 
