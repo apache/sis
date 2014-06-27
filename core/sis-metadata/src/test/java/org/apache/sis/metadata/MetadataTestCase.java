@@ -128,7 +128,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             return new Date(random.nextInt() * 1000L);
         }
         if (CodeList.class.isAssignableFrom(type)) try {
-            final CodeList[] codes = (CodeList[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
+            final CodeList<?>[] codes = (CodeList<?>[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
             return codes[random.nextInt(codes.length)];
         } catch (ReflectiveOperationException e) {
             fail(e.toString());
@@ -253,6 +253,9 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
              * Try to write a value.
              */
             final boolean isWritable = isWritable(accessor.implementation, property);
+            if (isWritable != accessor.isWritable(i)) {
+                System.out.println(accessor);
+            }
             assertEquals("isWritable", isWritable, accessor.isWritable(i));
             if (isWritable) {
                 final Object newValue = valueFor(property, elementType);

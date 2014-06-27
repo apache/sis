@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.lineage.Processing;
@@ -66,7 +66,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Serial number for inter-operability with different versions.
      */
-//    private static final long serialVersionUID = -3511714360929580873L;
+    private static final long serialVersionUID = -535020568951006598L;
 
     /**
      * Description of the event, including related parameters or tolerances.
@@ -89,7 +89,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * Identification of, and means of communication with, person(s) and
      * organization(s) associated with the process step.
      */
-    private Collection<ResponsibleParty> processors;
+    private Collection<Responsibility> processors;
 
     /**
      * Process step documentation.
@@ -153,10 +153,10 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
             description           = object.getDescription();
             rationale             = object.getRationale();
             date                  = toMilliseconds(object.getDate());
-            processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
-///         references            = copyCollection(object.getReferences(), Citation.class);
+            processors            = copyCollection(object.getProcessors(), Responsibility.class);
+            references            = copyCollection(object.getReferences(), Citation.class);
             sources               = copyCollection(object.getSources(), Source.class);
-///         scope                 = object.getScope();
+            scope                 = object.getScope();
             outputs               = copyCollection(object.getOutputs(), Source.class);
             processingInformation = object.getProcessingInformation();
             reports               = copyCollection(object.getReports(), ProcessStepReport.class);
@@ -259,8 +259,8 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Override
     @XmlElement(name = "processor")
-    public Collection<ResponsibleParty> getProcessors() {
-        return processors = nonNullCollection(processors, ResponsibleParty.class);
+    public Collection<Responsibility> getProcessors() {
+        return processors = nonNullCollection(processors, Responsibility.class);
     }
 
     /**
@@ -269,8 +269,8 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param newValues The new processors.
      */
-    public void setProcessors(final Collection<? extends ResponsibleParty> newValues) {
-        processors = writeCollection(newValues, processors, ResponsibleParty.class);
+    public void setProcessors(final Collection<? extends Responsibility> newValues) {
+        processors = writeCollection(newValues, processors, Responsibility.class);
     }
 
     /**
@@ -280,7 +280,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "reference")
     public Collection<Citation> getReferences() {
         return references = nonNullCollection(references, Citation.class);
@@ -304,7 +304,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "scope")
     public Scope getScope() {
         return scope;

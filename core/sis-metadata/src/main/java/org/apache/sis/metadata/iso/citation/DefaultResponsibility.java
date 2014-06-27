@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -118,6 +119,10 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultResponsibility castOrCopy(final Responsibility object) {
+        if (object instanceof ResponsibleParty) {
+            return DefaultResponsibleParty.castOrCopy((ResponsibleParty) object);
+        }
+        //-- Intentionally tested after the sub-interfaces.
         if (object == null || object instanceof DefaultResponsibility) {
             return (DefaultResponsibility) object;
         }
