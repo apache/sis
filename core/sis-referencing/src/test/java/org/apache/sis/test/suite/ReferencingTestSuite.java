@@ -48,6 +48,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.ExponentialTransform1DTest.class,
     org.apache.sis.referencing.operation.transform.CopyTransformTest.class,
     org.apache.sis.referencing.operation.transform.PassThroughTransformTest.class,
+    org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
 
     org.apache.sis.internal.referencing.FormulasTest.class,
