@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.identification.Usage;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
@@ -33,7 +33,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 
 /**
- * Brief description of ways in which the resource(s) is/are currently used.
+ * Brief description of ways in which the resource(s) is/are currently or has been used.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -78,7 +78,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * Identification of and means of communicating with person(s) and organization(s)
      * using the resource(s).
      */
-    private Collection<ResponsibleParty> userContactInfo;
+    private Collection<Responsibility> userContactInfo;
 
     /**
      * Responses to the user-determined limitations.
@@ -109,10 +109,10 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param userContactInfo Means of communicating with person(s) and organization(s), or {@code null} if none.
      */
     public DefaultUsage(final CharSequence specificUsage,
-                        final ResponsibleParty userContactInfo)
+                        final Responsibility userContactInfo)
     {
         this.specificUsage   = Types.toInternationalString(specificUsage);
-        this.userContactInfo = singleton(userContactInfo, ResponsibleParty.class);
+        this.userContactInfo = singleton(userContactInfo, Responsibility.class);
     }
 
     /**
@@ -130,10 +130,10 @@ public class DefaultUsage extends ISOMetadata implements Usage {
             specificUsage             = object.getSpecificUsage();
             usageDate                 = toMilliseconds(object.getUsageDate());
             userDeterminedLimitations = object.getUserDeterminedLimitations();
-            userContactInfo           = copyCollection(object.getUserContactInfo(), ResponsibleParty.class);
-///         responses                 = copyCollection(object.getResponse(), InternationalString.class);
-///         additionalDocumentation   = copyCollection(object.getAdditionalDocumentation(), Citation.class);
-///         identifiedIssues          = copyCollection(object.getIdentifiedIssues(), Citation.class);
+            userContactInfo           = copyCollection(object.getUserContactInfo(), Responsibility.class);
+            responses                 = copyCollection(object.getResponses(), InternationalString.class);
+            additionalDocumentation   = copyCollection(object.getAdditionalDocumentation(), Citation.class);
+            identifiedIssues          = copyCollection(object.getIdentifiedIssues(), Citation.class);
         }
     }
 
@@ -184,8 +184,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     }
 
     /**
-     * Returns the date and time of the first use or range of uses
-     * of the resource and/or resource series.
+     * Returns the date and time of the first use or range of uses of the resource and/or resource series.
      *
      * @return Date of the first use of the resource, or {@code null}.
      */
@@ -233,8 +232,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      */
     @Override
     @XmlElement(name = "userContactInfo", required = true)
-    public Collection<ResponsibleParty> getUserContactInfo() {
-        return userContactInfo = nonNullCollection(userContactInfo, ResponsibleParty.class);
+    public Collection<Responsibility> getUserContactInfo() {
+        return userContactInfo = nonNullCollection(userContactInfo, Responsibility.class);
     }
 
     /**
@@ -242,8 +241,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @param newValues The new user contact info.
      */
-    public void setUserContactInfo(final Collection<? extends ResponsibleParty> newValues) {
-        userContactInfo = writeCollection(newValues, userContactInfo, ResponsibleParty.class);
+    public void setUserContactInfo(final Collection<? extends Responsibility> newValues) {
+        userContactInfo = writeCollection(newValues, userContactInfo, Responsibility.class);
     }
 
     /**
@@ -253,9 +252,9 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "response")
-    public Collection<? extends InternationalString> getResponse() {
+    public Collection<? extends InternationalString> getResponses() {
         return responses = nonNullCollection(responses, InternationalString.class);
     }
 
@@ -266,7 +265,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @since 0.5
      */
-    public void setResponse(final Collection<? extends InternationalString> newValues) {
+    public void setResponses(final Collection<? extends InternationalString> newValues) {
         responses = writeCollection(newValues, responses, InternationalString.class);
     }
 
@@ -277,7 +276,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "additionalDocumentation")
     public Collection<Citation> getAdditionalDocumentation() {
         return additionalDocumentation = nonNullCollection(additionalDocumentation, Citation.class);
@@ -302,7 +301,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "identifiedIssues")
     public Collection<? extends Citation> getIdentifiedIssues() {
         return identifiedIssues = nonNullCollection(identifiedIssues, Citation.class);

@@ -82,7 +82,6 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
 
     /**
      * Citation for the limitation of constraint.
-     * Example: "copyright statement, license agreement, etc."
      */
     private Collection<Citation> references;
 
@@ -124,11 +123,11 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
         super(object);
         if (object != null) {
             useLimitations              = copyCollection(object.getUseLimitations(), InternationalString.class);
-///         constraintApplicationScopes = copyCollection(object.getConstraintApplicationScope(), Scope.class);
-///         graphics                    = copyCollection(object.getGraphic(), BrowseGraphic.class);
-///         references                  = copyCollection(object.getReference(), Citation.class);
-///         releasability               = object.getReleasability();
-///         responsibleParties          = copyCollection(object.getResponsibleParty(), Responsibility.class);
+            constraintApplicationScopes = copyCollection(object.getConstraintApplicationScopes(), Scope.class);
+            graphics                    = copyCollection(object.getGraphics(), BrowseGraphic.class);
+            references                  = copyCollection(object.getReferences(), Citation.class);
+            releasability               = object.getReleasability();
+            responsibleParties          = copyCollection(object.getResponsibleParties(), Responsibility.class);
         }
     }
 
@@ -199,7 +198,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "constraintApplicationScope")
     public Collection<Scope> getConstraintApplicationScopes() {
         return constraintApplicationScopes = nonNullCollection(constraintApplicationScopes, Scope.class);
@@ -223,7 +222,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "graphic")
     public Collection<BrowseGraphic> getGraphics() {
         return graphics = nonNullCollection(graphics, BrowseGraphic.class);
@@ -236,7 +235,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-    public void setGraphic(final Collection<? extends BrowseGraphic> newValues) {
+    public void setGraphics(final Collection<? extends BrowseGraphic> newValues) {
         graphics = writeCollection(newValues, graphics, BrowseGraphic.class);
     }
 
@@ -248,9 +247,9 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "reference")
-    public Collection<Citation> getReference() {
+    public Collection<Citation> getReferences() {
         return references = nonNullCollection(references, Citation.class);
     }
 
@@ -261,18 +260,18 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-    public void setReference(Collection<? extends Citation> newValues) {
+    public void setReferences(Collection<? extends Citation> newValues) {
         references = writeCollection(newValues, references, Citation.class);
     }
 
     /**
-     * Returns information concerning the parties to whom the resource can or cannot be released, or {@code null} if none.
+     * Returns information concerning the parties to whom the resource can or cannot be released.
      *
      * @return Information concerning the parties to whom the resource, or {@code null} if none.
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "releasability")
     public Releasability getReleasability() {
         return releasability;
@@ -297,7 +296,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "responsibleParty")
     public Collection<Responsibility> getResponsibleParties() {
         return responsibleParties = nonNullCollection(responsibleParties, Responsibility.class);
