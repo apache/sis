@@ -22,12 +22,14 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.lineage.ProcessStepReport;
-import org.opengis.metadata.lineage.Processing;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.lineage.Source;
-import org.opengis.metadata.lineage.ProcessStep;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.quality.Scope;
+import org.opengis.metadata.lineage.Source;
+import org.opengis.metadata.lineage.Processing;
+import org.opengis.metadata.lineage.ProcessStep;
+import org.opengis.metadata.lineage.ProcessStepReport;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
@@ -37,13 +39,15 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 
 /**
- * Description of the event, including related parameters or tolerances.
+ * Information about an event or transformation in the life of a resource.
+ * Includes the process used to maintain the resource.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
@@ -62,7 +66,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3511714360929580873L;
+//    private static final long serialVersionUID = -3511714360929580873L;
 
     /**
      * Description of the event, including related parameters or tolerances.
@@ -86,6 +90,16 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * organization(s) associated with the process step.
      */
     private Collection<ResponsibleParty> processors;
+
+    /**
+     * Process step documentation.
+     */
+    private Collection<Citation> references;
+
+    /**
+     * Type of resource and / or extent to which the process step applies.
+     */
+    private Scope scope;
 
     /**
      * Information about the source data used in creating the data specified by the scope.
@@ -140,7 +154,9 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
             rationale             = object.getRationale();
             date                  = toMilliseconds(object.getDate());
             processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
+///         references            = copyCollection(object.getReferences(), Citation.class);
             sources               = copyCollection(object.getSources(), Source.class);
+///         scope                 = object.getScope();
             outputs               = copyCollection(object.getOutputs(), Source.class);
             processingInformation = object.getProcessingInformation();
             reports               = copyCollection(object.getReports(), ProcessStepReport.class);
@@ -255,6 +271,55 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     public void setProcessors(final Collection<? extends ResponsibleParty> newValues) {
         processors = writeCollection(newValues, processors, ResponsibleParty.class);
+    }
+
+    /**
+     * Returns the process step documentation.
+     *
+     * @return Process step documentation.
+     *
+     * @since 0.5
+     */
+/// @Override
+/// @XmlElement(name = "reference")
+    public Collection<Citation> getReferences() {
+        return references = nonNullCollection(references, Citation.class);
+    }
+
+    /**
+     * Sets the process step documentation.
+     *
+     * @param newValues The new documentation.
+     *
+     * @since 0.5
+     */
+    public void setReferences(final Collection<? extends Citation> newValues){
+        references = writeCollection(newValues, references, Citation.class);
+    }
+
+    /**
+     * Returns the type of resource and / or extent to which the process step applies.
+     *
+     * @return Type of resource, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+/// @Override
+/// @XmlElement(name = "scope")
+    public Scope getScope() {
+        return scope;
+    }
+
+    /**
+     * Sets the type of resource and / or extent to which the process step applies.
+     *
+     * @param newValue The new type of resource.
+     *
+     * @since 0.5
+     */
+    public void setScope(final Scope newValue) {
+        checkWritePermission();
+        scope = newValue;
     }
 
     /**
