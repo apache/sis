@@ -85,7 +85,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * The sub-transform to apply on the {@linkplain #getModifiedCoordinates() modified coordinates}.
      * This is often the sub-transform specified at construction time, but not necessarily.
      */
-    protected final MathTransform subTransform;
+    final MathTransform subTransform;
 
     /**
      * The inverse transform. This field will be computed only when needed,
@@ -272,6 +272,16 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             index[i] = i + firstAffectedOrdinate;
         }
         return index;
+    }
+
+    /**
+     * Returns the sub-transform to apply on the {@linkplain #getModifiedCoordinates() modified coordinates}.
+     * This is often the sub-transform specified at construction time, but not necessarily.
+     *
+     * @return The sub-transform.
+     */
+    public final MathTransform getSubTransform() {
+        return subTransform;
     }
 
     /**

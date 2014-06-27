@@ -38,6 +38,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -409,11 +410,11 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * (<var>normalize</var>, <var>unitary projection</var>, <var>denormalize</var>) tuples are replaced by single
      * (<var>projection</var>) elements, which does not need to be instances of {@link MathTransform}.
      */
-    private List<MathTransform> getPseudoSteps() {
-        final List<MathTransform> transforms = new ArrayList<>();
+    private List<Object> getPseudoSteps() {
+        final List<Object> transforms = new ArrayList<>();
         getSteps(transforms);
         /*
-         * Pre-process the transforms before to format. Some steps may be* merged, or new
+         * Pre-process the transforms before to format. Some steps may be merged, or new
          * steps may be created. Do not move size() out of the loop, because it may change.
          */
         for (int i=0; i<transforms.size(); i++) {
@@ -430,7 +431,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      *
      * @param transforms The list where to add concatenated transforms.
      */
-    private void getSteps(final List<MathTransform> transforms) {
+    private void getSteps(final List<? super MathTransform> transforms) {
         if (transform1 instanceof ConcatenatedTransform) {
             ((ConcatenatedTransform) transform1).getSteps(transforms);
         } else {
@@ -468,7 +469,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      */
     private Parameterized getParameterised() {
         Parameterized param = null;
-        final List<MathTransform> transforms = getPseudoSteps();
+        final List<Object> transforms = getPseudoSteps();
         if (transforms.size() == 1 || Semaphores.query(Semaphores.PROJCS)) {
             for (final Object candidate : transforms) {
                 if (!(candidate instanceof Parameterized)) {
@@ -888,7 +889,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      */
     @Override
     public String formatTo(final Formatter formatter) {
-        final List<MathTransform> transforms;
+        final List<? super MathTransform> transforms;
         if (formatter.getConvention() == Convention.INTERNAL) {
             transforms = getSteps();
         } else {
@@ -902,9 +903,13 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (transforms.size() == 1) {
             return formatter.delegateTo(transforms.get(0));
         }
-        for (final MathTransform step : transforms) {
+        for (final Object step : transforms) {
             formatter.newLine();
-            formatter.append(step);
+            if (step instanceof FormattableObject) {
+                formatter.append((FormattableObject) step); // May not implement MathTransform.
+            } else {
+                formatter.append((MathTransform) step);
+            }
         }
         return "Concat_MT";
     }
