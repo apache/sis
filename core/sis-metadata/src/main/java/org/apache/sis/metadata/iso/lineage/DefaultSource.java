@@ -144,15 +144,12 @@ public class DefaultSource extends ISOMetadata implements Source {
     public DefaultSource(final Source object) {
         super(object);
         if (object != null) {
-            setScaleDenominator(object.getScaleDenominator());
-            setSourceExtents   (object.getSourceExtents());
-
             description             = object.getDescription();
-///         sourceSpatialResolution = object.getSourceSpatialResolution();
+            sourceSpatialResolution = object.getSourceSpatialResolution();
             sourceReferenceSystem   = object.getSourceReferenceSystem();
             sourceCitation          = object.getSourceCitation();
-///         sourceMetadata          = copyCollection(object.getSourceMetadata(), Citation.class);
-///         scope                   = object.getScope();
+            sourceMetadata          = copyCollection(object.getSourceMetadata(), Citation.class);
+            scope                   = object.getScope();
             sourceSteps             = copyCollection(object.getSourceSteps(), ProcessStep.class);
             processedLevel          = object.getProcessedLevel();
             resolution              = object.getResolution();
@@ -212,7 +209,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "sourceSpatialResolution")
     public Resolution getSourceSpatialResolution() {
         return sourceSpatialResolution;
@@ -318,7 +315,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "sourceMetadata")
     public Collection<Citation> getSourceMetadata() {
         return sourceMetadata = nonNullCollection(sourceMetadata, Citation.class);
@@ -344,7 +341,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "scope")
     public Scope getScope() {
         return scope;

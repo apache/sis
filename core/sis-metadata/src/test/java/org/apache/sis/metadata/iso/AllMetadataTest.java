@@ -112,6 +112,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.content.PolarizationOrientation.class,
             org.opengis.metadata.content.RangeDimension.class,
             org.opengis.metadata.content.RangeElementDescription.class,
+            org.opengis.metadata.content.SampleDimension.class,
             org.opengis.metadata.content.TransferFunctionType.class,
             org.opengis.metadata.distribution.DataFile.class,
             org.opengis.metadata.distribution.DigitalTransferOptions.class,

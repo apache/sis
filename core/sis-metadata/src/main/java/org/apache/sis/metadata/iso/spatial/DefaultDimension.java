@@ -112,8 +112,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
             dimensionName        = object.getDimensionName();
             dimensionSize        = object.getDimensionSize();
             resolution           = object.getResolution();
-///         dimensionTitle       = object.getDimensionTitle();
-///         dimensionDescription = object.getDimensionDescription();
+            dimensionTitle       = object.getDimensionTitle();
+            dimensionDescription = object.getDimensionDescription();
         }
     }
 
@@ -218,7 +218,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "dimensionTitle")
     public InternationalString getDimensionTitle() {
         return dimensionTitle;
@@ -243,7 +243,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "dimensionDescription")
     public InternationalString getDimensionDescription() {
         return dimensionDescription;
