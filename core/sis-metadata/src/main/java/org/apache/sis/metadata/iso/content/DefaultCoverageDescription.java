@@ -210,7 +210,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the type of information represented by the cell value.
-     * The default implementation fetches the value from the {@linkplain #getAttributeGroups() attribute groups}.
+     * This method fetches the value from the {@linkplain #getAttributeGroups() attribute groups}.
      *
      * @return Type of information represented by the cell value, or {@code null}.
      *
@@ -219,7 +219,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Override
     @Deprecated
     @XmlElement(name = "contentType", required = true)
-    public CoverageContentType getContentType() {
+    public final CoverageContentType getContentType() {
         CoverageContentType type = null;
         if (attributeGroups != null) {
             for (final AttributeGroup g : attributeGroups) {
@@ -242,14 +242,14 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Sets the type of information represented by the cell value.
-     * The default implementation stores the value in the {@linkplain #getAttributeGroups() attribute groups}.
+     * This method stores the value in the {@linkplain #getAttributeGroups() attribute groups}.
      *
      * @param newValue The new content type.
      *
      * @deprecated Moved to {@link DefaultAttributeGroup#setContentTypes(Collection)}.
      */
     @Deprecated
-    public void setContentType(final CoverageContentType newValue) {
+    public final void setContentType(final CoverageContentType newValue) {
         checkWritePermission();
         final Collection<CoverageContentType> newValues = LegacyPropertyAdapter.asCollection(newValue);
         final Collection<AttributeGroup> groups = getAttributeGroups();
@@ -266,7 +266,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the information on the dimensions of the cell measurement value.
-     * The default implementation fetches the values from the {@linkplain #getAttributeGroups() attribute groups}.
+     * This method fetches the values from the {@linkplain #getAttributeGroups() attribute groups}.
      *
      * @return Dimensions of the cell measurement value.
      *
@@ -303,14 +303,14 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Sets the information on the dimensions of the cell measurement value.
-     * The default implementation stores the values in the {@linkplain #getAttributeGroups() attribute groups}.
+     * This method stores the values in the {@linkplain #getAttributeGroups() attribute groups}.
      *
      * @param newValues The new dimensions.
      *
      * @deprecated Moved to {@link DefaultAttributeGroup#setGroupAttributes(Collection)}.
      */
     @Deprecated
-    public void setDimensions(final Collection<? extends RangeDimension> newValues) {
+    public final void setDimensions(final Collection<? extends RangeDimension> newValues) {
         checkWritePermission();
         ((LegacyPropertyAdapter<RangeDimension,?>) getDimensions()).setValues(newValues);
     }
