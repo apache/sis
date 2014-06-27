@@ -26,7 +26,6 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.IllegalPathStateException;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -340,11 +339,52 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
         }
 
         /**
+         * Transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.
+         * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)}
+         * using a temporary array of doubles.
+         *
+         * @param  ptSrc The coordinate point to be transformed.
+         * @param  ptDst The coordinate point that stores the result of transforming {@code ptSrc},
+         *               or {@code null} if a new point shall be created.
+         * @return The coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},
+         *         or in a new point if {@code ptDst} was null.
+         * @throws TransformException If the point can not be transformed.
+         *
+         * @see MathTransform2D#transform(Point2D, Point2D)
+         */
+        @Override
+        public Point2D transform(final Point2D ptSrc, final Point2D ptDst) throws TransformException {
+            final double[] ord = new double[] {ptSrc.getX(), ptSrc.getY()};
+            transform(ord, 0, ord, 0, false);
+            if (ptDst != null) {
+                ptDst.setLocation(ord[0], ord[1]);
+                return ptDst;
+            } else {
+                return new Point2D.Double(ord[0], ord[1]);
+            }
+        }
+
+        /**
+         * Transforms the specified shape. The default implementation computes quadratic curves
+         * using three points for each line segment in the shape. The returned object is often
+         * a {@link Path2D}, but may also be a {@link Line2D} or a {@link QuadCurve2D} if such
+         * simplification is possible.
+         *
+         * @param  shape Shape to transform.
+         * @return Transformed shape, or {@code shape} if this transform is the identity transform.
+         * @throws TransformException if a transform failed.
+         */
+        @Override
+        public Shape createTransformedShape(final Shape shape) throws TransformException {
+            return isIdentity() ? shape : AbstractMathTransform2D.createTransformedShape(this, shape, null, null, false);
+        }
+
+        /**
          * Same work than {@link AbstractMathTransform2D#beforeFormat(List, int, boolean)}
          * but with the knowledge that this transform is an inverse transform.
          */
         @Override
-        final int beforeFormat(final List<MathTransform> transforms, final int index, final boolean inverse) {
+        final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
             return AbstractMathTransform2D.this.beforeFormat(transforms, index, !inverse);
         }
     }
