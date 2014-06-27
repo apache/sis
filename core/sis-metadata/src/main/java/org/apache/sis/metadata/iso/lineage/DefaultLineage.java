@@ -107,8 +107,8 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
         super(object);
         if (object != null) {
             statement               = object.getStatement();
-///         scopes                  = copyCollection(object.getScopes(), Scope.class);
-///         additionalDocumentation = copyCollection(object.getAdditionalDocumentation(), Citation.class);
+            scopes                  = copyCollection(object.getScopes(), Scope.class);
+            additionalDocumentation = copyCollection(object.getAdditionalDocumentation(), Citation.class);
             processSteps            = copyCollection(object.getProcessSteps(), ProcessStep.class);
             sources                 = copyCollection(object.getSources(), Source.class);
         }
@@ -169,7 +169,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "scope")
     public Collection<Scope> getScopes() {
         return scopes = nonNullCollection(scopes, Scope.class);
@@ -194,7 +194,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "additionalDocumentation")
     public Collection<Citation> getAdditionalDocumentation() {
         return additionalDocumentation = nonNullCollection(additionalDocumentation, Citation.class);

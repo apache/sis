@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.maintenance.MaintenanceFrequency;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -95,7 +95,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Identification of, and means of communicating with, person(s) and organization(s)
      * with responsibility for maintaining the resource.
      */
-    private Collection<ResponsibleParty> contacts;
+    private Collection<Responsibility> contacts;
 
     /**
      * Creates a an initially empty maintenance information.
@@ -125,17 +125,12 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     public DefaultMaintenanceInformation(final MaintenanceInformation object) {
         super(object);
         if (object != null) {
-            setDateOfNextUpdate        (object.getDateOfNextUpdate());
-            setDateOfNextUpdate        (object.getDateOfNextUpdate());
-            setUpdateScopes            (object.getUpdateScopes());
-            setUpdateScopeDescriptions (object.getUpdateScopeDescriptions());
-
             maintenanceAndUpdateFrequency   = object.getMaintenanceAndUpdateFrequency();
-///         maintenanceDates                = copyCollection(object.getMaintenanceDate(), CitationDate.class);
+            maintenanceDates                = copyCollection(object.getMaintenanceDates(), CitationDate.class);
             userDefinedMaintenanceFrequency = object.getUserDefinedMaintenanceFrequency();
-///         maintenanceScope                = copyCollection(object.getMaintenanceScope(), Scope.class);
+            maintenanceScopes               = copyCollection(object.getMaintenanceScopes(), Scope.class);
             maintenanceNotes                = copyCollection(object.getMaintenanceNotes(), InternationalString.class);
-            contacts                        = copyCollection(object.getContacts(), ResponsibleParty.class);
+            contacts                        = copyCollection(object.getContacts(), Responsibility.class);
         }
     }
 
@@ -190,11 +185,11 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Return the date information associated with maintenance of resource.
      *
-     * @return date information associated with maintenance of resource.
+     * @return Date information associated with maintenance of resource.
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "maintenanceDate", required = true)
     public Collection<CitationDate> getMaintenanceDates() {
         return maintenanceDates = nonNullCollection(maintenanceDates, CitationDate.class);
@@ -285,7 +280,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "maintenanceScope")
     public Collection<Scope> getMaintenanceScopes() {
         return maintenanceScopes = nonNullCollection(maintenanceScopes, Scope.class);
@@ -434,8 +429,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @XmlElement(name = "contact")
-    public Collection<ResponsibleParty> getContacts() {
-        return contacts = nonNullCollection(contacts, ResponsibleParty.class);
+    public Collection<Responsibility> getContacts() {
+        return contacts = nonNullCollection(contacts, Responsibility.class);
     }
 
     /**
@@ -445,7 +440,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @param newValues The new identification of person(s) and organization(s)
      *                  with responsibility for maintaining the resource.
      */
-    public void setContacts(final Collection<? extends ResponsibleParty> newValues) {
-        contacts = writeCollection(newValues, contacts, ResponsibleParty.class);
+    public void setContacts(final Collection<? extends Responsibility> newValues) {
+        contacts = writeCollection(newValues, contacts, Responsibility.class);
     }
 }
