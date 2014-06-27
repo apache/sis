@@ -380,6 +380,32 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
         }
 
         /**
+         * Gets the derivative of this transform at a point.
+         * The default implementation performs the following steps:
+         *
+         * <ul>
+         *   <li>Copy the coordinate in a temporary array and pass that array to the
+         *       {@link #transform(double[], int, double[], int, boolean)} method,
+         *       with the {@code derivate} boolean argument set to {@code true}.</li>
+         *   <li>If the later method returned a non-null matrix, returns that matrix.
+         *       Otherwise throws {@link TransformException}.</li>
+         * </ul>
+         *
+         * @param  point The coordinate point where to evaluate the derivative.
+         * @return The derivative at the specified point as a 2×2 matrix.
+         * @throws TransformException if the derivative can not be evaluated at the specified point.
+         */
+        @Override
+        public Matrix derivative(final Point2D point) throws TransformException {
+            final double[] coordinate = new double[] {point.getX(), point.getY()};
+            final Matrix derivative = transform(coordinate, 0, null, 0, true);
+            if (derivative == null) {
+                throw new TransformException(Errors.format(Errors.Keys.CanNotComputeDerivative));
+            }
+            return derivative;
+        }
+
+        /**
          * Same work than {@link AbstractMathTransform2D#beforeFormat(List, int, boolean)}
          * but with the knowledge that this transform is an inverse transform.
          */
