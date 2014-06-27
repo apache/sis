@@ -109,8 +109,8 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
             fileName         = object.getFileName();
             fileDescription  = object.getFileDescription();
             fileType         = object.getFileType();
-///         imageConstraints = object.getImageConstraints();
-///         linkage          = object.getLinkage();
+            imageConstraints = object.getImageConstraints();
+            linkages         = object.getLinkages();
         }
     }
 
@@ -211,7 +211,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "imageConstraints")
     public Collection<Constraints> getImageConstraints() {
         return imageConstraints = nonNullCollection(imageConstraints, Constraints.class);
@@ -235,7 +235,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "linkage")
     public Collection<OnlineResource> getLinkages() {
         return linkages = nonNullCollection(linkages, OnlineResource.class);

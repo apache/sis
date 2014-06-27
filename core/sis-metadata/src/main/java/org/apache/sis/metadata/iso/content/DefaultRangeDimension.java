@@ -24,8 +24,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.MemberName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.RangeDimension;
+import org.opengis.metadata.content.SampleDimension;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 
@@ -88,8 +88,8 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
         super(object);
         if (object != null) {
             sequenceIdentifier = object.getSequenceIdentifier();
-            description        = object.getDescriptor();
-///         names              = copyCollection(object.getNames(), Identifier.class);
+            description        = object.getDescription();
+            names              = copyCollection(object.getNames(), Identifier.class);
         }
     }
 
@@ -99,7 +99,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is an instance of {@link Band}, then this method
+     *   <li>Otherwise if the given object is an instance of {@link SampleDimension}, then this method
      *       delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.</li>
      *   <li>Otherwise if the given object is already an instance of
      *       {@code DefaultRangeDimension}, then it is returned unchanged.</li>
@@ -114,8 +114,8 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultRangeDimension castOrCopy(final RangeDimension object) {
-        if (object instanceof Band) {
-            return DefaultBand.castOrCopy((Band) object);
+        if (object instanceof SampleDimension) {
+            return DefaultSampleDimension.castOrCopy((SampleDimension) object);
         }
         // Intentionally tested after the sub-interfaces.
         if (object == null || object instanceof DefaultRangeDimension) {
@@ -152,7 +152,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "description")
     public InternationalString getDescription() {
         return description;
@@ -206,7 +206,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * @since 0.5
      */
-/// @Override
+    @Override
 /// @XmlElement(name = "name")
     public Collection<Identifier> getNames() {
         return names = nonNullCollection(names, Identifier.class);
