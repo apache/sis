@@ -22,6 +22,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 
 
 /**
@@ -35,12 +36,12 @@ import org.apache.sis.internal.util.DoubleDouble;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see Matrices#createDiagonal(int, int)
  */
-class GeneralMatrix extends MatrixSIS {
+class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -132,8 +133,13 @@ class GeneralMatrix extends MatrixSIS {
         ensureValidSize(numRow, numCol);
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
-        elements = new double[numRow * numCol];
-        getElements(matrix, numRow, numCol, elements);
+        if (matrix instanceof ExtendedPrecisionMatrix) {
+            elements = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
+            assert (elements.length % (numRow * numCol)) == 0;
+        } else {
+            elements = new double[numRow * numCol];
+            getElements(matrix, numRow, numCol, elements);
+        }
     }
 
     /**
@@ -317,6 +323,15 @@ class GeneralMatrix extends MatrixSIS {
         }
         inferErrors(elements);
         return elements;
+    }
+
+    /**
+     * Returns a copy of all matrix elements, potentially followed by the error terms for extended-precision arithmetic.
+     * Matrix elements are returned in a flat, row-major (column indices vary fastest) array.
+     */
+    @Override
+    public final double[] getExtendedElements() {
+        return elements.clone();
     }
 
     /**

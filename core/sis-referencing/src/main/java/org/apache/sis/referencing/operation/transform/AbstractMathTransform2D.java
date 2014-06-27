@@ -102,8 +102,15 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      */
     @Override
     public Point2D transform(final Point2D ptSrc, final Point2D ptDst) throws TransformException {
+        return transform(this, ptSrc, ptDst);
+    }
+
+    /**
+     * Implementation of {@link #transform(DirectPosition, DirectPosition)} shared by the inverse transform.
+     */
+    static Point2D transform(final AbstractMathTransform tr, final Point2D ptSrc, final Point2D ptDst) throws TransformException {
         final double[] ord = new double[] {ptSrc.getX(), ptSrc.getY()};
-        transform(ord, 0, ord, 0, false);
+        tr.transform(ord, 0, ord, 0, false);
         if (ptDst != null) {
             ptDst.setLocation(ord[0], ord[1]);
             return ptDst;
@@ -284,8 +291,15 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      */
     @Override
     public Matrix derivative(final Point2D point) throws TransformException {
+        return derivative(this, point);
+    }
+
+    /**
+     * Implementation of {@link #derivative(DirectPosition)} shared by the inverse transform.
+     */
+    static Matrix derivative(final AbstractMathTransform tr, final Point2D point) throws TransformException {
         final double[] coordinate = new double[] {point.getX(), point.getY()};
-        final Matrix derivative = transform(coordinate, 0, null, 0, true);
+        final Matrix derivative = tr.transform(coordinate, 0, null, 0, true);
         if (derivative == null) {
             throw new TransformException(Errors.format(Errors.Keys.CanNotComputeDerivative));
         }
@@ -354,14 +368,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
          */
         @Override
         public Point2D transform(final Point2D ptSrc, final Point2D ptDst) throws TransformException {
-            final double[] ord = new double[] {ptSrc.getX(), ptSrc.getY()};
-            transform(ord, 0, ord, 0, false);
-            if (ptDst != null) {
-                ptDst.setLocation(ord[0], ord[1]);
-                return ptDst;
-            } else {
-                return new Point2D.Double(ord[0], ord[1]);
-            }
+            return AbstractMathTransform2D.transform(this, ptSrc, ptDst);
         }
 
         /**
@@ -397,12 +404,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
          */
         @Override
         public Matrix derivative(final Point2D point) throws TransformException {
-            final double[] coordinate = new double[] {point.getX(), point.getY()};
-            final Matrix derivative = transform(coordinate, 0, null, 0, true);
-            if (derivative == null) {
-                throw new TransformException(Errors.format(Errors.Keys.CanNotComputeDerivative));
-            }
-            return derivative;
+            return AbstractMathTransform2D.derivative(this, point);
         }
 
         /**
