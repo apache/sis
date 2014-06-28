@@ -33,7 +33,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -869,48 +868,6 @@ public abstract class AbstractMathTransform extends FormattableObject
             }
             return Utilities.deepEquals(this.getParameterDescriptors(),
                                         that.getParameterDescriptors(), mode);
-        }
-        return false;
-    }
-
-    /**
-     * Helper method for implementation of {@link #equals(Object, ComparisonMode)} methods in
-     * {@link LinearTransform} implementations. Those implementations shall replace completely the
-     * {@link #equals(Object, ComparisonMode)} default implementation, <strong>except</strong> for
-     * {@link ComparisonMode#STRICT} which should continue to rely on the default implementation.
-     * The pattern is:
-     *
-     * {@preformat java
-     *     public boolean equals(Object object, ComparisonMode mode) {
-     *         if (object == this) { // Slight optimization
-     *             return true;
-     *         }
-     *         if (mode != ComparisonMode.STRICT) {
-     *             return equals(this, object, mode);
-     *         }
-     *         if (super.equals(object, mode)) {
-     *             // Compare the internal fields here.
-     *         }
-     *         return false;
-     *     }
-     * }
-     *
-     * Note that this pattern considers {@link ComparisonMode#BY_CONTRACT} as synonymous to
-     * {@code IGNORE_METADATA} rather than {@code STRICT}. This is valid if we consider that
-     * the behavior of the math transform is completely specified by its matrix.
-     *
-     * @param  t1  The first transform to compare.
-     * @param  t2  The second transform to compare, or {@code null} if none.
-     * @param  mode The strictness level of the comparison.
-     * @return {@code true} if both transforms are equal.
-     */
-    static boolean equals(final LinearTransform t1, final Object t2, final ComparisonMode mode) {
-        if (t2 instanceof LinearTransform) {
-            /*
-             * Note: do not delegate to ((LenientComparable) m1).equals(m2, mode)
-             * since it may cause a never-ending loop with ProjectiveTransform.
-             */
-            return Matrices.equals(t1.getMatrix(), ((LinearTransform) t2).getMatrix(), mode);
         }
         return false;
     }
