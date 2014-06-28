@@ -516,9 +516,10 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
             return true;
         }
         if (mode != ComparisonMode.STRICT) {
-            return equals(this, object, mode);
-        }
-        if (super.equals(object, mode)) {
+            if (object instanceof LinearTransform) {
+                return Matrices.equals(this, ((LinearTransform) object).getMatrix(), mode);
+            }
+        } else if (super.equals(object, mode)) {
             final ProjectiveTransform that = (ProjectiveTransform) object;
             return this.numRow == that.numRow &&
                    this.numCol == that.numCol &&
