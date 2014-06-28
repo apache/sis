@@ -906,14 +906,11 @@ public abstract class AbstractMathTransform extends FormattableObject
      */
     static boolean equals(final LinearTransform t1, final Object t2, final ComparisonMode mode) {
         if (t2 instanceof LinearTransform) {
-            final Matrix m1 = t1.getMatrix();
-            if (m1 != null) {
-                final Matrix m2 = ((LinearTransform) t2).getMatrix();
-                if (m1 instanceof LenientComparable) {
-                    return ((LenientComparable) m1).equals(m2, mode);
-                }
-                return Matrices.equals(m1, m2, mode);
-            }
+            /*
+             * Note: do not delegate to ((LenientComparable) m1).equals(m2, mode)
+             * since it may cause a never-ending loop with ProjectiveTransform.
+             */
+            return Matrices.equals(t1.getMatrix(), ((LinearTransform) t2).getMatrix(), mode);
         }
         return false;
     }
