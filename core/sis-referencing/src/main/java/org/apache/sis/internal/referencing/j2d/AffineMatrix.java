@@ -42,6 +42,27 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
     private static final long serialVersionUID = 1605578645060388327L;
 
     /**
+     * The number of rows and columns of this matrix.
+     */
+    private static final int SIZE = 3;
+
+    /**
+     * The length of an array containing all matrix elements.
+     */
+    private static final int LENGTH = SIZE * SIZE;
+
+    /**
+     * The length of an array containing only the matrix elements to be stored.
+     * The last row is omitted because it is assumed to contain (0 0 1).
+     */
+    private static final int LENGTH_STORED = (SIZE - 1) * SIZE;
+
+    /**
+     * The length of an array containing all matrix elements together with error terms.
+     */
+    private static final int LENGTH_EXTENDED = 2 * LENGTH;
+
+    /**
      * The transform from which to get the matrix terms.
      */
     private final AffineTransform transform;
@@ -60,12 +81,22 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      */
     AffineMatrix(final AffineTransform transform, final double[] elements) {
         this.transform = transform;
-        if (elements != null && elements.length >= 15) {
-            errors = Arrays.copyOfRange(elements, 9, 15);
-        } else {
-            errors = null;
+        if (elements != null) {
+            assert elements.length == LENGTH || elements.length == LENGTH_EXTENDED;
+            if (elements.length == LENGTH_EXTENDED) {
+                errors = Arrays.copyOfRange(elements, LENGTH, LENGTH + LENGTH_STORED);
+                /*
+                 * At this point we could check:
+                 *
+                 *   assert Arrays.equals(elements, getExtendedElements());
+                 *
+                 * but we do not, because the terms in the last row may not be exactly 0 or 1
+                 * because of rounding errors.
+                 */
+                return;
+            }
         }
-        assert (elements == null) || Arrays.equals(elements, getExtendedElements());
+        errors = null;
     }
 
     /**
@@ -73,7 +104,7 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      */
     @Override
     public int getNumRow() {
-        return 3;
+        return SIZE;
     }
 
     /**
@@ -81,7 +112,7 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      */
     @Override
     public int getNumCol() {
-        return 3;
+        return SIZE;
     }
 
     /**
@@ -97,9 +128,9 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      */
     @Override
     public double[] getExtendedElements() {
-        final double[] elements = new double[errors != null ? 18 : 9];
+        final double[] elements = new double[errors != null ? LENGTH_EXTENDED : LENGTH];
         if (errors != null) {
-            System.arraycopy(errors, 0, elements, 9, 6);
+            System.arraycopy(errors, 0, elements, LENGTH, LENGTH_STORED);
         }
         elements[0] = transform.getScaleX();
         elements[1] = transform.getShearX();
@@ -116,9 +147,9 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      */
     @Override
     public final double getElement(final int row, final int column) {
-        ArgumentChecks.ensureBetween("row",    0, 3, row);
-        ArgumentChecks.ensureBetween("column", 0, 3, column);
-        switch (row * 3 + column) {
+        ArgumentChecks.ensureBetween("row",    0, SIZE, row);
+        ArgumentChecks.ensureBetween("column", 0, SIZE, column);
+        switch (row * SIZE + column) {
             case 0: return transform.getScaleX();
             case 1: return transform.getShearX();
             case 2: return transform.getTranslateX();
