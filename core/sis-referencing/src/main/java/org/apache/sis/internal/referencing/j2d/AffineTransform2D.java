@@ -123,8 +123,6 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
               pz(elements[1]), pz(elements[4]),
               pz(elements[2]), pz(elements[5]));
         matrix = new AffineMatrix(this, elements);
-        assert elements.length == 9 || elements.length == 18;
-        assert elements[6] == 0 && elements[7] == 0 && elements[8] == 1;
     }
 
     /**
