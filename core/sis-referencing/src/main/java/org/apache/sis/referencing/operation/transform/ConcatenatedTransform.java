@@ -242,7 +242,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             if (matrix2 != null) {
                 final Matrix matrix = MatrixSIS.castOrCopy(matrix2).multiply(matrix1);
                 if (Matrices.isIdentity(matrix, IDENTITY_TOLERANCE)) {
-                    return MathTransforms.identity(matrix.getNumRow());
+                    return MathTransforms.identity(matrix.getNumRow() - 1);
                 }
                 /*
                  * NOTE: It is quite tempting to "fix rounding errors" in the matrix before to create the transform.
