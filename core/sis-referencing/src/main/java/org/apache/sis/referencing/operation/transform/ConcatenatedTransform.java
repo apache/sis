@@ -30,6 +30,7 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.Semaphores;
 import org.apache.sis.util.Classes;
@@ -62,6 +63,16 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 5772066656987558634L;
+
+    /**
+     * Tolerance threshold for considering a matrix as identity. Since the value used here is smaller
+     * than 1 ULP (about 2.22E-16), it applies only the the zero terms in the matrix. The terms on the
+     * diagonal are still expected to be exactly 1.
+     *
+     * @todo Try to remove completely this tolerance threshold after we applied double-double arithmetic
+     *       to all matrices.
+     */
+    private static final double IDENTITY_TOLERANCE = 1E-16;
 
     /**
      * The first math transform.
@@ -230,6 +241,9 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             final Matrix matrix2 = MathTransforms.getMatrix(tr2);
             if (matrix2 != null) {
                 final Matrix matrix = MatrixSIS.castOrCopy(matrix2).multiply(matrix1);
+                if (Matrices.isIdentity(matrix, IDENTITY_TOLERANCE)) {
+                    return MathTransforms.identity(matrix.getNumRow());
+                }
                 /*
                  * NOTE: It is quite tempting to "fix rounding errors" in the matrix before to create the transform.
                  * But this is often wrong for datum shift transformations (Molodensky and the like) since the datum

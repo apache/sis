@@ -189,7 +189,9 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public final void setElement(final int row, final int column, final double value) {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableAffineTransform));
+        throw new UnsupportedOperationException(Matrices.isAffine(this)
+                ? Errors.format(Errors.Keys.UnmodifiableAffineTransform)
+                : Errors.format(Errors.Keys.UnmodifiableObject_1, ProjectiveTransform.class));
     }
 
     /**
@@ -516,9 +518,10 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
             return true;
         }
         if (mode != ComparisonMode.STRICT) {
-            return equals(this, object, mode);
-        }
-        if (super.equals(object, mode)) {
+            if (object instanceof LinearTransform) {
+                return Matrices.equals(this, ((LinearTransform) object).getMatrix(), mode);
+            }
+        } else if (super.equals(object, mode)) {
             final ProjectiveTransform that = (ProjectiveTransform) object;
             return this.numRow == that.numRow &&
                    this.numCol == that.numCol &&
