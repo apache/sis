@@ -426,9 +426,10 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
             return true;
         }
         if (mode != ComparisonMode.STRICT) {
-            return equals(this, object, mode);
-        }
-        if (super.equals(object, mode)) {
+            if (object instanceof LinearTransform) {
+                return Matrices.equals(getMatrix(), ((LinearTransform) object).getMatrix(), mode);
+            }
+        } else if (super.equals(object, mode)) {
             final CopyTransform that = (CopyTransform) object;
             return srcDim == that.srcDim && Arrays.equals(indices, that.indices);
         }
