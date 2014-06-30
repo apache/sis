@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.5
  * @module
  */
-class ImmutableAffineTransform extends AffineTransform {
+public class ImmutableAffineTransform extends AffineTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -295,6 +295,8 @@ class ImmutableAffineTransform extends AffineTransform {
 
     /**
      * Checks for {@linkplain #checkPermission() permission} before inverting this transform.
+     *
+     * @throws java.awt.geom.NoninvertibleTransformException If the matrix can not be inverted.
      */
     @Override
     public final void invert() throws NoninvertibleTransformException {
