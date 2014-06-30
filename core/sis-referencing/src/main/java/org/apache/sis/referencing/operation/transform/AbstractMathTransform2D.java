@@ -26,7 +26,6 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.IllegalPathStateException;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -103,8 +102,15 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      */
     @Override
     public Point2D transform(final Point2D ptSrc, final Point2D ptDst) throws TransformException {
+        return transform(this, ptSrc, ptDst);
+    }
+
+    /**
+     * Implementation of {@link #transform(DirectPosition, DirectPosition)} shared by the inverse transform.
+     */
+    static Point2D transform(final AbstractMathTransform tr, final Point2D ptSrc, final Point2D ptDst) throws TransformException {
         final double[] ord = new double[] {ptSrc.getX(), ptSrc.getY()};
-        transform(ord, 0, ord, 0, false);
+        tr.transform(ord, 0, ord, 0, false);
         if (ptDst != null) {
             ptDst.setLocation(ord[0], ord[1]);
             return ptDst;
@@ -285,8 +291,15 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      */
     @Override
     public Matrix derivative(final Point2D point) throws TransformException {
+        return derivative(this, point);
+    }
+
+    /**
+     * Implementation of {@link #derivative(DirectPosition)} shared by the inverse transform.
+     */
+    static Matrix derivative(final AbstractMathTransform tr, final Point2D point) throws TransformException {
         final double[] coordinate = new double[] {point.getX(), point.getY()};
-        final Matrix derivative = transform(coordinate, 0, null, 0, true);
+        final Matrix derivative = tr.transform(coordinate, 0, null, 0, true);
         if (derivative == null) {
             throw new TransformException(Errors.format(Errors.Keys.CanNotComputeDerivative));
         }
@@ -340,11 +353,66 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
         }
 
         /**
+         * Transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.
+         * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)}
+         * using a temporary array of doubles.
+         *
+         * @param  ptSrc The coordinate point to be transformed.
+         * @param  ptDst The coordinate point that stores the result of transforming {@code ptSrc},
+         *               or {@code null} if a new point shall be created.
+         * @return The coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},
+         *         or in a new point if {@code ptDst} was null.
+         * @throws TransformException If the point can not be transformed.
+         *
+         * @see MathTransform2D#transform(Point2D, Point2D)
+         */
+        @Override
+        public Point2D transform(final Point2D ptSrc, final Point2D ptDst) throws TransformException {
+            return AbstractMathTransform2D.transform(this, ptSrc, ptDst);
+        }
+
+        /**
+         * Transforms the specified shape. The default implementation computes quadratic curves
+         * using three points for each line segment in the shape. The returned object is often
+         * a {@link Path2D}, but may also be a {@link Line2D} or a {@link QuadCurve2D} if such
+         * simplification is possible.
+         *
+         * @param  shape Shape to transform.
+         * @return Transformed shape, or {@code shape} if this transform is the identity transform.
+         * @throws TransformException if a transform failed.
+         */
+        @Override
+        public Shape createTransformedShape(final Shape shape) throws TransformException {
+            return isIdentity() ? shape : AbstractMathTransform2D.createTransformedShape(this, shape, null, null, false);
+        }
+
+        /**
+         * Gets the derivative of this transform at a point.
+         * The default implementation performs the following steps:
+         *
+         * <ul>
+         *   <li>Copy the coordinate in a temporary array and pass that array to the
+         *       {@link #transform(double[], int, double[], int, boolean)} method,
+         *       with the {@code derivate} boolean argument set to {@code true}.</li>
+         *   <li>If the later method returned a non-null matrix, returns that matrix.
+         *       Otherwise throws {@link TransformException}.</li>
+         * </ul>
+         *
+         * @param  point The coordinate point where to evaluate the derivative.
+         * @return The derivative at the specified point as a 2×2 matrix.
+         * @throws TransformException if the derivative can not be evaluated at the specified point.
+         */
+        @Override
+        public Matrix derivative(final Point2D point) throws TransformException {
+            return AbstractMathTransform2D.derivative(this, point);
+        }
+
+        /**
          * Same work than {@link AbstractMathTransform2D#beforeFormat(List, int, boolean)}
          * but with the knowledge that this transform is an inverse transform.
          */
         @Override
-        final int beforeFormat(final List<MathTransform> transforms, final int index, final boolean inverse) {
+        final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
             return AbstractMathTransform2D.this.beforeFormat(transforms, index, !inverse);
         }
     }

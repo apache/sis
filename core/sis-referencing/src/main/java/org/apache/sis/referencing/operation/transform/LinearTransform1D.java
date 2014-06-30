@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.provider.Affine;
@@ -310,9 +311,10 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
             return true;
         }
         if (mode != ComparisonMode.STRICT) {
-            return equals(this, object, mode);
-        }
-        if (super.equals(object, mode)) {
+            if (object instanceof LinearTransform) {
+                return Matrices.equals(getMatrix(), ((LinearTransform) object).getMatrix(), mode);
+            }
+        } else if (super.equals(object, mode)) {
             final LinearTransform1D that = (LinearTransform1D) object;
             return doubleToRawLongBits(this.scale)  == doubleToRawLongBits(that.scale) &&
                    doubleToRawLongBits(this.offset) == doubleToRawLongBits(that.offset);
