@@ -137,21 +137,28 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
      * Returns the singleton value of the given collection, or {@code null} if the given collection is null or empty.
      * If the given collection contains more than one element, then a warning is emitted.
      *
+     * @param  <L>           The kind of legacy values to be returned.
      * @param  values        The collection from which to get the value.
      * @param  valueClass    The value class, used in case of warning only.
+     * @param  caller        Either {@code this} or {@code null}.
      * @param  callerClass   The caller class, used in case of warning only.
      * @param  callerMethod  The caller method, used in case of warning only.
      * @return The first value, or {@code null} if none.
      */
-    protected final L singleton(final Collection<? extends L> values, final Class<L> valueClass,
-            final Class<?> callerClass, final String callerMethod)
+    public static <L> L getSingleton(final Collection<? extends L> values, final Class<L> valueClass,
+            final LegacyPropertyAdapter<L,?> caller, final Class<?> callerClass, final String callerMethod)
     {
         if (values != null) {
             final Iterator<? extends L> it = values.iterator();
             if (it.hasNext()) {
                 final L value = it.next();
-                if (!warningOccurred && it.hasNext()) {
-                    warningOccurred = true;
+                if (it.hasNext()) {
+                    if (caller != null) {
+                        if (caller.warningOccurred) {
+                            return value; // Skip the warning.
+                        }
+                        caller.warningOccurred = true;
+                    }
                     MetadataUtilities.warning(callerClass, callerMethod,
                             Messages.Keys.IgnoredPropertiesAfterFirst_1, valueClass);
                 }
