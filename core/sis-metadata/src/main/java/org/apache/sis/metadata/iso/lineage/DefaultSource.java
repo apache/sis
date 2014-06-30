@@ -35,7 +35,6 @@ import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.quality.DefaultScope;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
-import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
@@ -371,8 +370,12 @@ public class DefaultSource extends ISOMetadata implements Source {
     @Deprecated
     @XmlElement(name = "sourceExtent")
     public final Collection<Extent> getSourceExtents() {
-        final Scope scope = getScope();
-        return LegacyPropertyAdapter.asCollection(scope != null ? scope.getExtent() : null);
+        Scope scope = getScope();
+        if (!(scope instanceof DefaultScope)) {
+            scope = new DefaultScope(scope);
+            setScope(scope);
+        }
+        return ((DefaultScope) scope).getExtents();
     }
 
     /**
@@ -385,15 +388,12 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Deprecated
     public final void setSourceExtents(final Collection<? extends Extent> newValues) {
-        final Extent newValue = (newValues != null && !newValues.isEmpty()) ? newValues.iterator().next() : null;
-        final Scope scope = getScope();
-        if (scope instanceof DefaultScope) {
-            ((DefaultScope) scope).setExtent(newValue);
-        } else {
-            final DefaultScope s = new DefaultScope();
-            s.setExtent(newValue);
-            setScope(s);
+        Scope scope = getScope();
+        if (!(scope instanceof DefaultScope)) {
+            scope = new DefaultScope(scope);
+            setScope(scope);
         }
+        ((DefaultScope) scope).setExtents(newValues);
     }
 
     /**

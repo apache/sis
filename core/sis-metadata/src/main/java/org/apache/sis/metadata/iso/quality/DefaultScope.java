@@ -24,6 +24,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 
@@ -33,7 +34,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "DQ_Scope_Type", propOrder = {
@@ -46,7 +47,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -1152756005841712646L;
+    private static final long serialVersionUID = 8357871602883209505L;
 
     /**
      * Hierarchical level of the data specified by the scope.
@@ -54,9 +55,9 @@ public class DefaultScope extends ISOMetadata implements Scope {
     private ScopeCode level;
 
     /**
-     * Information about the spatial, vertical and temporal extent of the data specified by the scope.
+     * Information about the spatial, vertical and temporal extent of the resource specified by the scope.
      */
-    private Extent extent;
+    private Collection<Extent> extents;
 
     /**
      * Detailed description about the level of the data specified by the scope.
@@ -91,7 +92,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
         super(object);
         if (object != null) {
             level            = object.getLevel();
-            extent           = object.getExtent();
+            extents          = copyCollection(object.getExtents(), Extent.class);
             levelDescription = copyCollection(object.getLevelDescription(), ScopeDescription.class);
         }
     }
@@ -143,6 +144,29 @@ public class DefaultScope extends ISOMetadata implements Scope {
     }
 
     /**
+     * Returns information about the spatial, vertical and temporal extents of the resource specified by the scope.
+     *
+     * @return Information about the extent of the resource.
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<Extent> getExtents() {
+        return extents = nonNullCollection(extents, Extent.class);
+    }
+
+    /**
+     * Sets information about the spatial, vertical and temporal extents of the resource specified by the scope.
+     *
+     * @param newValues New information about the extent of the resource.
+     *
+     * @since 0.5
+     */
+    public void setExtents(final Collection<? extends Extent> newValues) {
+        extents = writeCollection(newValues, extents, Extent.class);
+    }
+
+    /**
      * Returns detailed descriptions about the level of the data specified by the scope.
      *
      * @return Detailed description about the level of the data.
@@ -164,23 +188,29 @@ public class DefaultScope extends ISOMetadata implements Scope {
 
     /**
      * Information about the spatial, vertical and temporal extent of the data specified by the scope.
+     * This method fetches the value from the {@linkplain #getExtents() extents} collection.
      *
      * @return Information about the extent of the data, or {@code null}.
+     *
+     * @deprecated Replaced by {@link #getExtents()} as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "extent")
-    public Extent getExtent() {
-        return extent;
+    public final Extent getExtent() {
+        return LegacyPropertyAdapter.getSingleton(extents, Extent.class, null, DefaultScope.class, "getExtent");
     }
 
     /**
-     * Sets information about the spatial, vertical and temporal extent of the data specified
-     * by the scope.
+     * Sets information about the spatial, vertical and temporal extent of the data specified by the scope.
+     * This method stores the value in the {@linkplain #setExtents(Collection) extents} collection.
      *
      * @param newValue The new extent.
+     *
+     * @deprecated Replaced by {@link #setExtents(Collection)} as of ISO 19115:2014.
      */
-    public void setExtent(final Extent newValue) {
-        checkWritePermission();
-        extent = newValue;
+    @Deprecated
+    public final void setExtent(final Extent newValue) {
+        setExtents(LegacyPropertyAdapter.asCollection(newValue));
     }
 }
