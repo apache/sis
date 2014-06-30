@@ -259,11 +259,11 @@ final class IdentityTransform extends AbstractMathTransform implements LinearTra
             return true;
         }
         if (mode != ComparisonMode.STRICT) {
-            return equals(this, object, mode);
-        }
-        if (super.equals(object, mode)) {
-            final IdentityTransform that = (IdentityTransform) object;
-            return this.dimension == that.dimension;
+            if (object instanceof LinearTransform) {
+                return Matrices.equals(getMatrix(), ((LinearTransform) object).getMatrix(), mode);
+            }
+        } else if (super.equals(object, mode)) {
+            return ((IdentityTransform) object).dimension == dimension;
         }
         return false;
     }

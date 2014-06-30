@@ -30,6 +30,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.JDK7;
@@ -64,7 +65,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class Matrices extends Static {
@@ -678,11 +679,13 @@ public final class Matrices extends Static {
         if (size != matrix.getNumCol()) {
             return new NonSquareMatrix(matrix);
         }
-        switch (size) {
-            case 1: return new Matrix1(matrix);
-            case 2: return new Matrix2(matrix);
-            case 3: return new Matrix3(matrix);
-            case 4: return new Matrix4(matrix);
+        if (!(matrix instanceof ExtendedPrecisionMatrix)) {
+            switch (size) {
+                case 1: return new Matrix1(matrix);
+                case 2: return new Matrix2(matrix);
+                case 3: return new Matrix3(matrix);
+                case 4: return new Matrix4(matrix);
+            }
         }
         return new GeneralMatrix(matrix);
     }
