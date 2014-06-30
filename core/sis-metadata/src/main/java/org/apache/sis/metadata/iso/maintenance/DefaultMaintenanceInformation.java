@@ -371,8 +371,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
             /** Extracts the legacy value from the new kind of value. */
             @Override protected ScopeDescription unwrap(final Scope container) {
-                return singleton(container.getLevelDescription(), ScopeDescription.class,
-                        DefaultMaintenanceInformation.class, "getUpdateScopeDescriptions");
+                return getSingleton(container.getLevelDescription(), ScopeDescription.class,
+                        this, DefaultMaintenanceInformation.class, "getUpdateScopeDescriptions");
             }
 
             /** Updates the legacy value in an existing new kind of value. */

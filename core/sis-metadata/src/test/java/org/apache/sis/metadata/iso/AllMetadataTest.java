@@ -153,7 +153,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.lineage.Processing.class,
             org.opengis.metadata.lineage.ProcessStep.class,
             org.opengis.metadata.lineage.ProcessStepReport.class,
-// TODO     org.opengis.metadata.lineage.Source.class,
+            org.opengis.metadata.lineage.Source.class,
             org.opengis.metadata.maintenance.MaintenanceFrequency.class,
             org.opengis.metadata.maintenance.MaintenanceInformation.class,
             org.opengis.metadata.maintenance.MetadataScope.class,
