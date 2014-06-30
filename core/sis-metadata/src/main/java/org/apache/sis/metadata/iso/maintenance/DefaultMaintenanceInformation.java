@@ -375,7 +375,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
                         this, DefaultMaintenanceInformation.class, "getUpdateScopeDescriptions");
             }
 
-            /** Updates the legacy value in an existing new kind of value. */
+            /** Updates the legacy value in an existing instance of the new kind of value. */
             @Override protected boolean update(final Scope container, final ScopeDescription value) {
                 if (container instanceof DefaultScope) {
                     ((DefaultScope) container).setLevelDescription(asCollection(value));
