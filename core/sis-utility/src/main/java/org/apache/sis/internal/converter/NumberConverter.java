@@ -109,12 +109,27 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
      */
     @Override
     public T apply(final S source) {
-        final T target = Numbers.cast(source, targetClass);
-        if (target.longValue() != source.longValue() ||
-                Double.doubleToLongBits(target.doubleValue()) !=
-                Double.doubleToLongBits(source.doubleValue()))
-        {
-            throw new UnconvertibleObjectException(formatErrorMessage(source));
+        final double sourceValue = source.doubleValue();
+        T target = Numbers.cast(source, targetClass);
+        final double targetValue = target.doubleValue();
+        if (Double.doubleToLongBits(targetValue) != Double.doubleToLongBits(sourceValue)) {
+            /*
+             * Casted value is not equal to the source value. Maybe we just lost the fraction digits
+             * in a (double → long) cast, in which case the difference should be smaller than 1.
+             */
+            final double delta = Math.abs(targetValue - sourceValue);
+            if (!(delta < 0.5)) { // Use '!' for catching NaN.
+                if (delta < 1) {
+                    target = Numbers.cast(Math.round(sourceValue), targetClass);
+                } else {
+                    /*
+                     * The delta may be greater than 1 in a (BigInteger/BigDecimal → long) cast if the
+                     * BigInteger/BigDecimal has more significant digits than what the double type can
+                     * hold.
+                     */
+                    throw new UnconvertibleObjectException(formatErrorMessage(source));
+                }
+            }
         }
         return target;
     }

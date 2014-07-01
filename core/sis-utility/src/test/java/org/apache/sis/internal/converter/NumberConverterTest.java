@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(SystemRegistryTest.class)
@@ -51,6 +51,19 @@ public final strictfp class NumberConverterTest extends TestCase {
         assertInstanceOf("ConverterRegistry.find(" + sourceClass.getSimpleName() + ", " + targetClass.getSimpleName() + ')',
                 (targetClass == Comparable.class) ? NumberConverter.Comparable.class : NumberConverter.class, converter);
         return converter;
+    }
+
+    /**
+     * Asserts that conversion of the given {@code source} value produces the given {@code target} value.
+     * The conversion is not expected to be invertible. This method is used for testing rounding behavior.
+     */
+    private static <S extends Number, T extends Number> void runConversion(
+            final ObjectConverter<S,T> c, final S source, final T target, final S inverse)
+            throws UnconvertibleObjectException
+    {
+        assertFalse(source.equals(inverse));
+        assertEquals("Forward conversion.", target,  c.apply(source));
+        assertEquals("Inverse conversion.", inverse, c.inverse().apply(target));
     }
 
     /**
@@ -115,7 +128,9 @@ public final strictfp class NumberConverterTest extends TestCase {
     @Test
     public void testInteger() {
         final ObjectConverter<Float, Integer> c = create(Float.class, Integer.class);
-        runInvertibleConversion(c, Float.valueOf(-8), Integer.valueOf(-8));
+        runInvertibleConversion(c, Float.valueOf(-8),    Integer.valueOf(-8));
+        runConversion          (c, Float.valueOf(2.25f), Integer.valueOf(2), Float.valueOf(2f));
+        runConversion          (c, Float.valueOf(2.75f), Integer.valueOf(3), Float.valueOf(3f));
         // Can not easily tests the values around Integer.MIN/MAX_VALUE because of rounding errors in float.
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
@@ -137,6 +152,7 @@ public final strictfp class NumberConverterTest extends TestCase {
     public void testFloat() {
         final ObjectConverter<Double, Float> c = create(Double.class, Float.class);
         runInvertibleConversion(c, Double.valueOf(2.5), Float.valueOf(2.5f));
+        runConversion          (c, Double.valueOf(0.1), Float.valueOf(0.1f), Double.valueOf(0.1f));
         tryUnconvertibleValue  (c, Double.valueOf(1E+40));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
@@ -169,6 +185,23 @@ public final strictfp class NumberConverterTest extends TestCase {
         final ObjectConverter<Double, BigDecimal> c = create(Double.class, BigDecimal.class);
         runInvertibleConversion(c, Double.valueOf(2.5), BigDecimal.valueOf(2.5));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+    }
+
+    /**
+     * Tests conversion of a value having more digits than what the {@code double} type can hold.
+     */
+    @Test
+    public void testLargeValue() {
+        final long longValue = 1000000000000000010L;
+        final double doubleValue = longValue;
+        assertTrue(Math.ulp(doubleValue) > 10); // Need to have more digits than 'double' capacity.
+        runConversion(create(BigDecimal.class, Double.class),
+                BigDecimal.valueOf(longValue), Double.valueOf(doubleValue), BigDecimal.valueOf(doubleValue));
+
+        final ObjectConverter<BigDecimal, Long> c = create(BigDecimal.class, Long.class);
+        final BigDecimal value = BigDecimal.valueOf(longValue);
+        runInvertibleConversion(c, value, Long.valueOf(longValue));
+        tryUnconvertibleValue(c, value.multiply(BigDecimal.valueOf(10)));
     }
 
     /**
