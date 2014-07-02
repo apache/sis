@@ -24,6 +24,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.KeywordType;
+import org.opengis.metadata.identification.KeywordClass;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
@@ -35,7 +36,7 @@ import org.apache.sis.util.iso.Types;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Keywords_Type", propOrder = {
@@ -64,6 +65,12 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * Name of the formally registered thesaurus or a similar authoritative source of keywords.
      */
     private Citation thesaurusName;
+
+    /**
+     * User-defined categorization of groups of keywords that extend or are orthogonal
+     * to the standardized {@linkplain #getType() keyword type} codes.
+     */
+    private KeywordClass keywordClass;
 
     /**
      * Constructs an initially empty keywords.
@@ -194,5 +201,30 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     public void setThesaurusName(final Citation newValue) {
         checkWritePermission();
         thesaurusName = newValue;
+    }
+
+    /**
+     * Returns the user-defined categorization of groups of keywords that extend or
+     * are orthogonal to the standardized {@linkplain #getType() keyword type} codes.
+     *
+     * @return User-defined categorization of groups of keywords, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public KeywordClass getKeywordClass() {
+        return keywordClass;
+    }
+
+    /**
+     * Sets the user-defined categorization of groups of keywords.
+     *
+     * @param newValue New user-defined categorization of groups of keywords.
+     *
+     * @since 0.5
+     */
+    public void setKeywordClass(final KeywordClass newValue) {
+        checkWritePermission();
+        keywordClass = newValue;
     }
 }
