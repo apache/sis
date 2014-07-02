@@ -188,6 +188,10 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.quality.ThematicClassificationCorrectness.class,
             org.opengis.metadata.quality.TopologicalConsistency.class,
             org.opengis.metadata.quality.Usability.class,
+            org.opengis.metadata.service.CoupledResource.class,
+            org.opengis.metadata.service.OperationChainMetadata.class,
+            org.opengis.metadata.service.OperationMetadata.class,
+            org.opengis.metadata.service.Parameter.class,
             org.opengis.metadata.spatial.CellGeometry.class,
             org.opengis.metadata.spatial.Dimension.class,
             org.opengis.metadata.spatial.DimensionNameType.class,
@@ -225,6 +229,10 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      */
     @Override
     protected String getExpectedNamespace(final Class<?> impl, final Specification specification) {
+        if (impl.getPackage().getName().equals("org.apache.sis.metadata.iso.service")) {
+            assertEquals(Specification.ISO_19115, specification);
+            return Namespaces.SRV;
+        }
         if (impl == org.apache.sis.metadata.iso.identification.DefaultServiceIdentification.class) {
             return Namespaces.SRV;
         }
@@ -263,6 +271,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * or {@code null} if no adapter is expected for the given type.
      *
      * @return {@inheritDoc}
+     * @throws ClassNotFoundException {@inheritDoc}
      */
     @Override
     protected Class<?> getWrapperFor(final Class<?> type) throws ClassNotFoundException {

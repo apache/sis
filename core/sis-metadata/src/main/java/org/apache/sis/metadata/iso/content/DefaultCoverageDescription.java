@@ -290,7 +290,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
                         this, DefaultCoverageDescription.class, "getDimensions");
             }
 
-            /** Updates the legacy value in an existing new kind of value. */
+            /** Updates the legacy value in an existing instance of the new kind of value. */
             @Override protected boolean update(final AttributeGroup container, final RangeDimension value) {
                 if (container instanceof DefaultAttributeGroup) {
                     ((DefaultAttributeGroup) container).setGroupAttributes(asCollection(value));
