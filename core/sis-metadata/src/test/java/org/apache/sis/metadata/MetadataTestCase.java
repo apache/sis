@@ -254,9 +254,8 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
              */
             final boolean isWritable = isWritable(accessor.implementation, property);
             if (isWritable != accessor.isWritable(i)) {
-                System.out.println(accessor);
+                fail("Non writable property: " + accessor + '.' + property);
             }
-            assertEquals("isWritable", isWritable, accessor.isWritable(i));
             if (isWritable) {
                 final Object newValue = valueFor(property, elementType);
                 final Object oldValue = accessor.set(i, instance, newValue, PropertyAccessor.RETURN_PREVIOUS);
