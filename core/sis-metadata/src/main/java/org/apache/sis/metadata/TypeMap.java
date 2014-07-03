@@ -69,12 +69,11 @@ final class TypeMap extends PropertyMap<Class<?>> {
         return new Iter() {
             @Override
             public Map.Entry<String,Class<?>> next() {
-                final Class<?> value = accessor.type(index, valuePolicy);
-                if (value == null) {
-                    // PropertyAccessor.type(int) never return null if the index is valid.
+                if (index >= accessor.count()) {
                     throw new NoSuchElementException();
                 }
-                return new SimpleImmutableEntry<String,Class<?>>(accessor.name(index++, keyPolicy), value);
+                final Class<?> value = accessor.type(index, valuePolicy);
+                return new SimpleImmutableEntry<>(accessor.name(index++, keyPolicy), value);
             }
         };
     }
