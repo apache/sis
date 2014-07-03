@@ -33,6 +33,7 @@ import org.opengis.annotation.Obligation;
  *
  * <p>This comparator uses the following criterion, in priority order:</p>
  * <ol>
+ *   <li>Deprecated properties are last.</li>
  *   <li>If the property order is specified by a {@link XmlType} annotation,
  *       then this comparator complies to that order.</li>
  *   <li>Otherwise this comparator sorts mandatory methods first, followed by
@@ -43,7 +44,7 @@ import org.opengis.annotation.Obligation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 final class PropertyComparator implements Comparator<Method> {
@@ -115,6 +116,10 @@ final class PropertyComparator implements Comparator<Method> {
      */
     @Override
     public int compare(final Method m1, final Method m2) {
+        final boolean deprecated = m1.isAnnotationPresent(Deprecated.class);
+        if (deprecated != m2.isAnnotationPresent(Deprecated.class)) {
+            return deprecated ? +1 : -1;
+        }
         int c = indexOf(m2) - indexOf(m1); // indexOf(…) are sorted in descending order.
         if (c == 0) {
             final UML a1 = m1.getAnnotation(UML.class);
