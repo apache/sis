@@ -51,7 +51,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public final class Classes extends Static {
@@ -696,7 +696,6 @@ cmp:    for (final Class<?> c : c1) {
      *       {@link Object#hashCode() hashCode}, {@link Object#toString() toString} or
      *       {@link org.opengis.referencing.IdentifiedObject#toWKT() toWKT}.</li>
      *   <li>The method is not {@linkplain Method#isSynthetic() synthetic}.</li>
-     *   <li>The method is not {@linkplain Deprecated deprecated}.</li>
      * </ul>
      *
      * <p>Those conditions may be updated in any future SIS version.</p>
@@ -708,7 +707,6 @@ cmp:    for (final Class<?> c : c1) {
         return method.getReturnType() != Void.TYPE &&
                method.getParameterTypes().length == 0 &&
               !method.isSynthetic() &&
-              !method.isAnnotationPresent(Deprecated.class) &&
               !ArraysExt.contains(EXCLUDES, method.getName());
     }
 }
