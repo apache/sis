@@ -276,8 +276,10 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
         } else {
             namespace = schemaNamespace;
         }
-        assertEquals("Wrong namespace for the ISO specification.",
-                getExpectedNamespace(impl, (uml != null) ? uml.specification() : null), namespace);
+        if (uml != null) {
+            assertEquals("Wrong namespace for the ISO specification.",
+                    getExpectedNamespace(impl, uml.specification()), namespace);
+        }
         return namespace;
     }
 
@@ -350,18 +352,11 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
 
     /**
      * Returns {@code true} if the given method should be ignored.
-     * This method returns {@code true} of deprecated methods and
-     * some standard methods from the JDK.
+     * This method returns {@code true} for some standard methods from the JDK.
      */
     private static boolean isIgnored(final Method method) {
-        if (method.isAnnotationPresent(Deprecated.class)) {
-            return true;
-        }
         final String name = method.getName();
-        if (name.equals("equals") || name.equals("hashCode") || name.equals("doubleValue")) {
-            return true;
-        }
-        return false;
+        return name.equals("equals") || name.equals("hashCode") || name.equals("doubleValue");
     }
 
     /**
@@ -387,7 +382,9 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                     testingMethod = method.getName();
                     if (!isIgnored(method)) {
                         uml = method.getAnnotation(UML.class);
-                        assertNotNull("Missing @UML annotation.", uml);
+                        if (!method.isAnnotationPresent(Deprecated.class)) {
+                            assertNotNull("Missing @UML annotation.", uml);
+                        }
                     }
                 }
             }

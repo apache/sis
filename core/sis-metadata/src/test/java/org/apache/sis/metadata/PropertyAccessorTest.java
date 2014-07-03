@@ -33,6 +33,9 @@ import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.constraint.Constraints;
+import org.opengis.metadata.content.AttributeGroup;
+import org.opengis.metadata.content.CoverageContentType;
+import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.identification.*; // Really using almost everything.
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
@@ -50,6 +53,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -76,7 +80,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn(PropertyInformationTest.class)
@@ -343,6 +347,40 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         instance.setTitle(title);
         assertSame("title", title, accessor.set(index, instance, null, RETURN_PREVIOUS));
         assertNull("title", instance.getTitle());
+    }
+
+    /**
+     * Tests setting a deprecated properties. This properties should not be visible in the map,
+     * but still be accepted by the map views.
+     */
+    @Test
+    @DependsOnMethod("testSet")
+    public void testSetDeprecated() {
+        final PropertyAccessor accessor = new PropertyAccessor(HardCodedCitations.ISO_19115,
+                CoverageDescription.class, DefaultCoverageDescription.class);
+        final int indexOfDeprecated  = accessor.indexOf("contentType", true);
+        final int indexOfReplacement = accessor.indexOf("attributeGroup", true);
+        assertTrue("Deprecated elements shall be sorted after non-deprecated ones.",
+                indexOfDeprecated > indexOfReplacement);
+        /*
+         * Writes a value using the deprecated property.
+         */
+        final DefaultCoverageDescription instance = new DefaultCoverageDescription();
+        assertNull("Shall be initially empty.", accessor.set(indexOfDeprecated, instance,
+                CoverageContentType.IMAGE, PropertyAccessor.RETURN_PREVIOUS));
+        assertEquals(CoverageContentType.IMAGE, accessor.get(indexOfDeprecated, instance));
+        /*
+         * Compares with the non-deprecated property.
+         */
+        final Collection<AttributeGroup> groups = instance.getAttributeGroups();
+        assertSame(groups, accessor.get(indexOfReplacement, instance));
+        assertEquals(CoverageContentType.IMAGE, getSingleton(getSingleton(groups).getContentTypes()));
+        /*
+         * While we can read/write the value through two properties,
+         * only one should be visible.
+         */
+        assertEquals("Deprecated property shall not be visible.", 1, accessor.count(
+                instance, ValueExistencePolicy.NON_EMPTY, PropertyAccessor.COUNT_SHALLOW));
     }
 
     /**
