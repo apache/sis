@@ -24,13 +24,17 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.Type;
 import org.opengis.util.TypeName;
+import org.opengis.util.LocalName;
 import org.opengis.util.MemberName;
+import org.opengis.util.NameSpace;
+import org.opengis.util.NameFactory;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.RecordSchema;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.CollectionsExt;
 
 // Branch-dependent imports
@@ -55,7 +59,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "RecordType")
@@ -109,22 +113,60 @@ public class DefaultRecordType implements RecordType, Serializable {
 
     /**
      * Creates a new record.
+     * It is caller responsibility to add the new {@code RecordType} in the container
+     * {@linkplain RecordSchema#getDescription() description} map, if desired.
+     *
+     * @param typeName  The name that identifies this record type.
+     * @param container The schema that contains this record type.
+     * @param members   The name of the members to be included in this record type.
+     *
+     * @see Records#createType(TypeName, Map)
+     */
+    public DefaultRecordType(final TypeName typeName, final RecordSchema container, Map<MemberName,Type> members) {
+        ArgumentChecks.ensureNonNull("typeName",  typeName);
+        ArgumentChecks.ensureNonNull("container", container);
+        ArgumentChecks.ensureNonNull("members",   members);
+        final LocalName schemaName = container.getSchemaName();
+        if (schemaName.compareTo(typeName.scope().name().tip()) != 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentNamespace_2, schemaName, typeName));
+        }
+        members = new LinkedHashMap<>(members);
+        members.remove(null);
+        for (final Map.Entry<MemberName,Type> entry : members.entrySet()) {
+            final MemberName name = entry.getKey();
+            final Type type = entry.getValue();
+            if (type == null || name.getAttributeType().compareTo(type.getTypeName()) != 0) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMemberType_2, name, type));
+            }
+            if (typeName.compareTo(name.scope().name()) != 0) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentNamespace_2, typeName, name));
+            }
+        }
+        this.typeName    = typeName;
+        this.container   = container;
+        this.memberTypes = CollectionsExt.unmodifiableOrCopy(members);
+    }
+
+    /**
+     * Creates a new record from member names specified as character sequence.
+     * This constructor builds the {@link MemberName} instance itself.
      *
      * @param typeName    The name that identifies this record type.
      * @param container   The schema that contains this record type.
-     * @param memberTypes The name of the members to be included in this record type.
+     * @param members     The name of the members to be included in this record type.
+     * @param nameFactory The factory to use for instantiating {@link MemberName}.
      */
-    public DefaultRecordType(final TypeName typeName, final RecordSchema container, Map<MemberName,Type> memberTypes) {
-        ArgumentChecks.ensureNonNull("typeName",    typeName);
-        ArgumentChecks.ensureNonNull("container",   container);
-        ArgumentChecks.ensureNonNull("memberTypes", memberTypes);
-        memberTypes = new LinkedHashMap<>(memberTypes);
-        memberTypes.remove(null);
-        for (final Map.Entry<MemberName,Type> entry : memberTypes.entrySet()) {
-            final MemberName name = entry.getKey();
-            final Type type = entry.getValue();
-            if (type == null || !name.getAttributeType().equals(type.getTypeName())) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMemberType_2, name, type));
+    DefaultRecordType(final TypeName typeName, final RecordSchema container,
+            final Map<CharSequence,Type> members, final NameFactory nameFactory)
+    {
+        final NameSpace namespace = nameFactory.createNameSpace(typeName, null);
+        final Map<MemberName,Type> memberTypes = new LinkedHashMap<>(Containers.hashMapCapacity(members.size()));
+        for (final Map.Entry<CharSequence,Type> entry : members.entrySet()) {
+            final Type         type   = entry.getValue();
+            final CharSequence name   = entry.getKey();
+            final MemberName   member = nameFactory.createMemberName(namespace, name, type.getTypeName());
+            if (memberTypes.put(member, type) != null) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedElement_1, member));
             }
         }
         this.typeName    = typeName;
