@@ -373,6 +373,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InconsistentAttribute_2 = 47;
 
         /**
+         * Expected “{0}” namespace for “{1}”.
+         */
+        public static final short InconsistentNamespace_2 = 162;
+
+        /**
          * Inconsistent table columns.
          */
         public static final short InconsistentTableColumns = 48;
@@ -451,6 +456,11 @@ public final class Errors extends IndexedResourceBundle {
          * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.
          */
         public static final short MissingAuthority_1 = 135;
+
+        /**
+         * “{0}” has no namespace.
+         */
+        public static final short MissingNamespace_1 = 163;
 
         /**
          * This operation requires the “{0}” module.
@@ -666,6 +676,11 @@ public final class Errors extends IndexedResourceBundle {
          * No property named “{1}” has been found in “{0}”.
          */
         public static final short PropertyNotFound_2 = 71;
+
+        /**
+         * Record “{1}” is already defined in schema “{0}”.
+         */
+        public static final short RecordAlreadyDefined_2 = 161;
 
         /**
          * Recursive call while creating an object for the “{0}” key.
