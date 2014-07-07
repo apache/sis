@@ -26,6 +26,7 @@ import org.opengis.util.Type;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.MemberName;
+import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.Record;
@@ -47,13 +48,32 @@ import java.util.Objects;
  * arbitrary amount of {@linkplain #getMembers() members} as (<var>name</var>, <var>type</var>) pairs.
  * A {@code RecordType} may therefore contain another {@code RecordType} as a member.
  *
- * {@section Comparison with Java reflection}
+ * <div class="note"><b>Comparison with Java reflection:</b>
  * {@code RecordType} instances can be though as equivalent to instances of the Java {@link Class} class.
  * The set of members in a {@code RecordType} can be though as equivalent to the set of fields in a class.
+ * </div>
+ *
+ * {@section Instantiation}
+ * The easiest way to create {@code DefaultRecordType} instances is to use the
+ * {@link DefaultRecordSchema#createRecordType(CharSequence, Map)} method.
+ *
+ * <div class="note"><b>Example:</b>
+ * {@preformat java
+ *     DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "MySchema");
+ *     // We recommand to reuse the same DefaultRecordSchema instance for all records to create in that schema.
+ *
+ *     Map<CharSequence,Class<?>> members = new LinkedHashMap<>();
+ *     members.put("city",        String .class);
+ *     members.put("latitude",    Double .class);
+ *     members.put("longitude",   Double .class);
+ *     members.put("population",  Integer.class);
+ *     RecordType record = schema.createRecordType("MyRecordType", members);
+ * }
+ * </div>
  *
  * {@section Immutability and thread safety}
- * This class is immutable and thus inherently thread-safe if the {@link TypeName} and {@link RecordSchema} arguments,
- * as well as all ({@link MemberName}, {@link Type}) entries in the map given to the constructor, are also immutable.
+ * This class is immutable and thus inherently thread-safe if the {@link TypeName}, the {@link RecordSchema}
+ * and all ({@link MemberName}, {@link Type}) entries in the map given to the constructor are also immutable.
  * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads and do not change
  * any public {@code RecordType} state.
  *
@@ -112,25 +132,37 @@ public class DefaultRecordType implements RecordType, Serializable {
     }
 
     /**
-     * Creates a new record.
+     * Creates a new record in the given schema.
      * It is caller responsibility to add the new {@code RecordType} in the container
      * {@linkplain RecordSchema#getDescription() description} map, if desired.
      *
-     * @param typeName  The name that identifies this record type.
-     * @param container The schema that contains this record type.
-     * @param members   The name of the members to be included in this record type.
+     * <p>This constructor is provided mostly for developers who want to create {@code DefaultRecordType}
+     * instances in their own {@code RecordSchema} implementation. Otherwise if the default record schema
+     * implementation is sufficient, the {@link DefaultRecordSchema#createRecordType(CharSequence, Map)}
+     * method provides an easier alternative.</p>
      *
-     * @see Records#createType(TypeName, Map)
+     * @param typeName    The name that identifies this record type.
+     * @param container   The schema that contains this record type.
+     * @param memberTypes The name and type of the members to be included in this record type.
+     *
+     * @see DefaultRecordSchema#createRecordType(CharSequence, Map)
      */
-    public DefaultRecordType(final TypeName typeName, final RecordSchema container, Map<MemberName,Type> members) {
-        ArgumentChecks.ensureNonNull("typeName",  typeName);
-        ArgumentChecks.ensureNonNull("container", container);
-        ArgumentChecks.ensureNonNull("members",   members);
-        final LocalName schemaName = container.getSchemaName();
+    public DefaultRecordType(final TypeName typeName, final RecordSchema container,
+            final Map<? extends MemberName, ? extends Type> memberTypes)
+    {
+        ArgumentChecks.ensureNonNull("typeName",    typeName);
+        ArgumentChecks.ensureNonNull("container",   container);
+        ArgumentChecks.ensureNonNull("memberTypes", memberTypes);
+        /*
+         * Ensure that the record namespace is equals to the schema name. For example if the schema
+         * name is "MyNameSpace", then the record type name can be "MyNameSpace:MyRecordType".
+         */
+        final LocalName   schemaName   = container.getSchemaName();
+        final GenericName fullTypeName = typeName.toFullyQualifiedName();
         if (schemaName.compareTo(typeName.scope().name().tip()) != 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentNamespace_2, schemaName, typeName));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentNamespace_2, schemaName, fullTypeName));
         }
-        members = new LinkedHashMap<>(members);
+        final Map<MemberName,Type> members = new LinkedHashMap<>(memberTypes);
         members.remove(null);
         for (final Map.Entry<MemberName,Type> entry : members.entrySet()) {
             final MemberName name = entry.getKey();
@@ -138,8 +170,9 @@ public class DefaultRecordType implements RecordType, Serializable {
             if (type == null || name.getAttributeType().compareTo(type.getTypeName()) != 0) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMemberType_2, name, type));
             }
-            if (typeName.compareTo(name.scope().name()) != 0) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentNamespace_2, typeName, name));
+            if (fullTypeName.compareTo(name.scope().name()) != 0) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentNamespace_2,
+                        fullTypeName, name.toFullyQualifiedName()));
             }
         }
         this.typeName    = typeName;
@@ -157,11 +190,11 @@ public class DefaultRecordType implements RecordType, Serializable {
      * @param nameFactory The factory to use for instantiating {@link MemberName}.
      */
     DefaultRecordType(final TypeName typeName, final RecordSchema container,
-            final Map<CharSequence,Type> members, final NameFactory nameFactory)
+            final Map<? extends CharSequence, ? extends Type> members, final NameFactory nameFactory)
     {
         final NameSpace namespace = nameFactory.createNameSpace(typeName, null);
         final Map<MemberName,Type> memberTypes = new LinkedHashMap<>(Containers.hashMapCapacity(members.size()));
-        for (final Map.Entry<CharSequence,Type> entry : members.entrySet()) {
+        for (final Map.Entry<? extends CharSequence, ? extends Type> entry : members.entrySet()) {
             final Type         type   = entry.getValue();
             final CharSequence name   = entry.getKey();
             final MemberName   member = nameFactory.createMemberName(namespace, name, type.getTypeName());

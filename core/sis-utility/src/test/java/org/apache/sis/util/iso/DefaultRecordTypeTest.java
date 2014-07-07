@@ -16,10 +16,20 @@
  */
 package org.apache.sis.util.iso;
 
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
+import java.util.Collections;
+import org.opengis.util.Type;
+import org.opengis.util.MemberName;
+import org.opengis.util.NameSpace;
+import org.apache.sis.internal.simple.SimpleAttributeType;
 
-import static org.apache.sis.test.Assert.*;
+// Test imports
+import org.junit.Test;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
+
+import static org.junit.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -30,11 +40,105 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.5
  * @module
  */
+@DependsOn(AbstractNameTest.class)
 public final strictfp class DefaultRecordTypeTest extends TestCase {
+    /** Value of {@link DefaultRecordType#getContainer()}.   */ private DefaultRecordSchema container;
+    /** Value of {@link DefaultRecordType#getTypeName()}.    */ private DefaultTypeName     recordTypeName;
+    /** Value of {@link DefaultRecordType#getMembers()}.     */ private DefaultMemberName   memberName;
+    /** Value of {@link DefaultRecordType#getMemberTypes()}. */ private DefaultTypeName     memberTypeName;
+
     /**
-     * TODO
+     * Initializes the private fields.
+     * This method shall be invoked only once per test.
+     */
+    private void init() {
+        final DefaultNameSpace recordNamespace;
+        final DefaultNameSpace memberNamespace;
+
+        recordNamespace = new DefaultNameSpace (null, "MyNameSpace", ":", ":");
+        recordTypeName  = new DefaultTypeName  (recordNamespace, "MyRecordType");
+        memberNamespace = new DefaultNameSpace (recordNamespace, "MyRecordType", ":", ":");
+        memberTypeName  = new DefaultTypeName  (new DefaultNameSpace(null, "gco", ":", ":"), "Integer");
+        memberName      = new DefaultMemberName(memberNamespace, "aMember", memberTypeName);
+        container       = new DefaultRecordSchema(null, null, "MyNameSpace");
+        assertEquals("MyNameSpace:MyRecordType:aMember", memberName.toFullyQualifiedName().toString());
+    }
+
+    /**
+     * Creates a new record type from the current values of private fields.
+     */
+    private DefaultRecordType create() throws IllegalArgumentException {
+        final Type memberType = new SimpleAttributeType<>(memberTypeName, Integer.class);
+        return new DefaultRecordType(recordTypeName, container, Collections.singletonMap(memberName, memberType));
+    }
+
+    /**
+     * Tests the construction of {@link DefaultRecordType}, and opportunistically tests
+     * {@link DefaultRecordType#locate(MemberName)}.
      */
     @Test
-    public void test() {
+    public void testConstructor() {
+        init();
+        final DefaultRecordType type = create();
+        assertSame("container",   container,      type.getContainer());
+        assertSame("typeName",    recordTypeName, type.getTypeName());
+        assertSame("members",     memberName,     getSingleton(type.getMembers()));
+        assertSame("memberTypes", memberName,     getSingleton(type.getMemberTypes().keySet()));
+        assertSame("memberTypes", memberTypeName, getSingleton(type.getMemberTypes().values()).getTypeName());
+        assertSame("locate",      memberTypeName, type.locate(memberName));
+        assertNull("locate",                      type.locate(new DefaultMemberName(null, "otherMember", memberTypeName)));
+    }
+
+    /**
+     * Ensures that constructions of {@link DefaultRecordType} with
+     * inconsistent arguments throw an exception.
+     */
+    @Test
+    @DependsOnMethod("testConstructor")
+    public void testArgumentChecks() {
+        init();
+        final DefaultTypeName  correctRecordName      = recordTypeName;
+        final NameSpace        correctMemberNamespace = memberName.scope();
+        final DefaultNameSpace wrongNamespace         = new DefaultNameSpace(null, "WrongNameSpace", ":", ":");
+        /*
+         * RecordType namespace validation.
+         * Constructor shall require "MyNameSpace:MyRecordType".
+         */
+        recordTypeName = new DefaultTypeName(wrongNamespace, "MyRecordType");
+        try {
+            create();
+            fail("Should have detected namespace mismatch.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("MyNameSpace"));                 // Expected name.
+            assertTrue(message, message.contains("WrongNameSpace:MyRecordType")); // Actual namespace.
+        }
+        /*
+         * MemberName namespace validation.
+         * Constructor shall require "MyNameSpace:MyRecordType:aMember".
+         */
+        recordTypeName = correctRecordName;
+        memberName = new DefaultMemberName(wrongNamespace, "aMember", memberTypeName);
+        try {
+            create();
+            fail("Should have detected namespace mismatch.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("MyNameSpace:MyRecordType"));  // Expected name.
+            assertTrue(message, message.contains("WrongNameSpace:aMember"));    // Actual namespace.
+        }
+        /*
+         * MemberName type validation.
+         */
+        final DefaultTypeName otherType = new DefaultTypeName(memberTypeName.scope(), "Real");
+        memberName = new DefaultMemberName(correctMemberNamespace, "aMember", otherType);
+        try {
+            create();
+            fail("Should have detected type mismatch.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("aMember"));
+            assertTrue(message, message.contains("gco:Integer"));
+        }
     }
 }
