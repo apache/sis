@@ -180,4 +180,14 @@ public final class SimpleAttributeType<V> implements AttributeType<V>, Type, Ser
         }
         return false;
     }
+
+    /**
+     * Returns the type name.
+     *
+     * @return The type name.
+     */
+    @Override
+    public String toString() {
+        return name.toFullyQualifiedName().toString();
+    }
 }
