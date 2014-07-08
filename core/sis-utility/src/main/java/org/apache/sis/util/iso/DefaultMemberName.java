@@ -24,6 +24,9 @@ import org.opengis.util.TypeName;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
+// Branch-dependent imports
+import java.util.Objects;
+
 
 /**
  * The name to identify a member of a {@linkplain org.opengis.util.Record record}.
@@ -41,7 +44,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-3.17)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlRootElement(name = "MemberName")
@@ -86,5 +89,24 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
     @Override
     public TypeName getAttributeType() {
         return attributeType;
+    }
+
+    /**
+     * Compares this member name with the specified object for equality.
+     *
+     * @param object The object to compare with this name for equality.
+     * @return {@code true} if the given object is equal to this name.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        return super.equals(object) && Objects.equals(attributeType, ((DefaultMemberName) object).attributeType);
+    }
+
+    /**
+     * Invoked by {@link #hashCode()} for computing the hash code value when first needed.
+     */
+    @Override
+    final int computeHashCode() {
+        return super.computeHashCode() + Objects.hashCode(attributeType);
     }
 }

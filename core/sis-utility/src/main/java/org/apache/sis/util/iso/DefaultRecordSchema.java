@@ -62,6 +62,14 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  * on the part of the caller if the {@link NameFactory} given to the constructor is also thread-safe.
  * Subclasses should make sure that any overridden methods remain safe to call from multiple threads.
  *
+ * {@section Limitations}
+ * This class is currently not serializable because {@code RecordSchema} contain an arbitrary amount of record
+ * types in its {@linkplain #getDescription() description} map. Since each {@code RecordType} has a reference
+ * to its schema, serializing a single {@code RecordType} could imply serializing all of them.
+ * In order to reduce the risk of unexpected behavior, serialization is currently left to subclasses.
+ * For example a subclass may define a {@code Object readResolve()} method (as documented in the
+ * {@link java.io.Serializable} interface) returning a system-wide static constant for their schema.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5
@@ -73,11 +81,6 @@ public class DefaultRecordSchema implements RecordSchema {
      * This is the factory given at construction time.
      */
     protected final NameFactory nameFactory;
-
-    /**
-     * The {@linkplain #getSchemaName() schema name}.
-     */
-    private final LocalName schemaName;
 
     /**
      * The namespace of {@link RecordType} to be created by this class.
@@ -120,8 +123,7 @@ public class DefaultRecordSchema implements RecordSchema {
             nameFactory = DefaultFactories.NAMES;
         }
         this.nameFactory    = nameFactory;
-        this.schemaName     = nameFactory.createLocalName(parent, schemaName);
-        this.namespace      = nameFactory.createNameSpace(this.schemaName, null);
+        this.namespace      = nameFactory.createNameSpace(nameFactory.createLocalName(parent, schemaName), null);
         this.description    = new WeakValueHashMap<>(TypeName.class);
         this.attributeTypes = new HashMap<>();
     }
@@ -133,7 +135,7 @@ public class DefaultRecordSchema implements RecordSchema {
      */
     @Override
     public LocalName getSchemaName() {
-        return schemaName;
+        return namespace.name().tip();
     }
 
     /**
@@ -180,7 +182,7 @@ public class DefaultRecordSchema implements RecordSchema {
                 break; // Value classes differ.
             }
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.RecordAlreadyDefined_2, schemaName, typeName));
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.RecordAlreadyDefined_2, getSchemaName(), typeName));
     }
 
     /**
@@ -284,6 +286,6 @@ public class DefaultRecordSchema implements RecordSchema {
     @Debug
     @Override
     public String toString() {
-        return "RecordSchema[“" + schemaName + "”]";
+        return "RecordSchema[“" + getSchemaName() + "”]";
     }
 }

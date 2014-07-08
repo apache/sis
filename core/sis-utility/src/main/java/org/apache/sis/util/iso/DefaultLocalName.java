@@ -309,7 +309,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * Invoked by {@link #hashCode()} for computing the hash code value when first needed.
      */
     @Override
-    final int computeHashCode() {
+    int computeHashCode() {
         return Objects.hash(scope, name) ^ (int) serialVersionUID;
     }
 

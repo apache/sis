@@ -18,8 +18,10 @@ package org.apache.sis.util.iso;
 
 import java.util.Collections;
 import org.opengis.util.Type;
+import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.util.NameSpace;
+import org.opengis.util.RecordSchema;
 import org.apache.sis.internal.simple.SimpleAttributeType;
 
 // Test imports
@@ -28,7 +30,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -42,10 +44,10 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  */
 @DependsOn(AbstractNameTest.class)
 public final strictfp class DefaultRecordTypeTest extends TestCase {
-    /** Value of {@link DefaultRecordType#getContainer()}.   */ private DefaultRecordSchema container;
-    /** Value of {@link DefaultRecordType#getTypeName()}.    */ private DefaultTypeName     recordTypeName;
-    /** Value of {@link DefaultRecordType#getMembers()}.     */ private DefaultMemberName   memberName;
-    /** Value of {@link DefaultRecordType#getMemberTypes()}. */ private DefaultTypeName     memberTypeName;
+    /** Value of {@link DefaultRecordType#getContainer()}.   */ private RecordSchema container;
+    /** Value of {@link DefaultRecordType#getTypeName()}.    */ private TypeName     recordTypeName;
+    /** Value of {@link DefaultRecordType#getMembers()}.     */ private MemberName   memberName;
+    /** Value of {@link DefaultRecordType#getMemberTypes()}. */ private TypeName     memberTypeName;
 
     /**
      * Initializes the private fields.
@@ -60,7 +62,7 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
         memberNamespace = new DefaultNameSpace (recordNamespace, "MyRecordType", ":", ":");
         memberTypeName  = new DefaultTypeName  (new DefaultNameSpace(null, "gco", ":", ":"), "Integer");
         memberName      = new DefaultMemberName(memberNamespace, "aMember", memberTypeName);
-        container       = new DefaultRecordSchema(null, null, "MyNameSpace");
+        container       = new SerializableRecordSchema("MyNameSpace");
         assertEquals("MyNameSpace:MyRecordType:aMember", memberName.toFullyQualifiedName().toString());
     }
 
@@ -97,7 +99,7 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
     @DependsOnMethod("testConstructor")
     public void testArgumentChecks() {
         init();
-        final DefaultTypeName  correctRecordName      = recordTypeName;
+        final TypeName         correctRecordName      = recordTypeName;
         final NameSpace        correctMemberNamespace = memberName.scope();
         final DefaultNameSpace wrongNamespace         = new DefaultNameSpace(null, "WrongNameSpace", ":", ":");
         /*
@@ -139,6 +141,23 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains("aMember"));
             assertTrue(message, message.contains("gco:Integer"));
+        }
+    }
+
+    /**
+     * Tests serialization of a {@code RecordType}.
+     */
+    @Test
+    @DependsOnMethod("testConstructor")
+    public void testSerialization() {
+        init();
+        synchronized (SerializableRecordSchema.class) {
+            try {
+                SerializableRecordSchema.INSTANCE = container;
+                assertSerializedEquals(create());
+            } finally {
+                SerializableRecordSchema.INSTANCE = null;
+            }
         }
     }
 }
