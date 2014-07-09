@@ -71,6 +71,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultNameFactory
+ * @see DefaultNameSpace
+ * @see DefaultScopedName
+ * @see DefaultLocalName
+ * @see DefaultTypeName
+ * @see DefaultMemberName
  */
 public final class Names extends Static {
     /**

@@ -60,6 +60,9 @@ import java.util.Objects;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
+ *
+ * @see DefaultNameSpace
+ * @see DefaultScopedName
  */
 @XmlType(name = "LocalName") // Actually 'gml:CodeType', but the later is used elsewhere.
 @XmlRootElement(name = "LocalName")

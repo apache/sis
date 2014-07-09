@@ -91,6 +91,10 @@ import java.util.Objects;
  * @since   0.3
  * @version 0.5
  * @module
+ *
+ * @see DefaultRecord
+ * @see DefaultRecordSchema
+ * @see DefaultMemberName
  */
 @XmlType(name = "RecordType")
 public class DefaultRecordType extends RecordDefinition implements RecordType, Serializable {

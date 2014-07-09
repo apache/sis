@@ -89,6 +89,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.simple.SimpleReferenceIdentifierTest.class,
     org.apache.sis.util.iso.DefaultRecordTypeTest.class,
     org.apache.sis.util.iso.DefaultRecordSchemaTest.class,
+    org.apache.sis.util.iso.DefaultRecordTest.class,
 
     // Measurements and formatting.
     org.apache.sis.measure.SexagesimalConverterTest.class,
