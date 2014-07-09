@@ -22,10 +22,12 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.util.MemberName;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -47,6 +49,9 @@ import org.apache.sis.util.resources.Errors;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultRecordType
+ * @see DefaultRecordSchema
  */
 public class DefaultRecord implements Record, Serializable {
     /**
@@ -166,7 +171,7 @@ public class DefaultRecord implements Record, Serializable {
         @Override
         public Map.Entry<MemberName, Object> next() {
             if (hasNext()) {
-                return new Entry(index);
+                return new Entry(index++);
             }
             throw new NoSuchElementException();
         }
@@ -243,5 +248,72 @@ public class DefaultRecord implements Record, Serializable {
             }
         }
         values[index] = value;
+    }
+
+    /**
+     * Sets all attribute values in this record, in attribute order.
+     *
+     * @param  newValues The attribute values.
+     * @throws IllegalArgumentException if the given number of values does not match the expected number.
+     * @throws ClassCastException if a value is not an instance of the expected type for this record.
+     */
+    public void setValues(final Object... newValues) {
+        ArgumentChecks.ensureNonNull("values", newValues);
+        if (newValues.length != values.length) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.UnexpectedArrayLength_2, values.length, newValues.length));
+        }
+        for (int i=0; i<newValues.length; i++) {
+            final Object value = newValues[i];
+            if (value != null) {
+                final Class<?> valueClass = definition.getValueClass(i);
+                if (valueClass != null && !valueClass.isInstance(value)) {
+                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                            definition.getName(i), value.getClass()));
+                }
+            }
+            values[i] = value;
+        }
+    }
+
+    /**
+     * Compares this record with the given object for equality.
+     *
+     * @param  object The object to compare with this record for equality.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object == this) {
+            return true; // Slight optimization for a common case.
+        }
+        if (object != null && object.getClass() == getClass()) {
+            final DefaultRecord that = (DefaultRecord) object;
+            return definition.getRecordType().equals(that.definition.getRecordType()) &&
+                   Arrays.equals(values, that.values);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this record.
+     *
+     * @return A hash code value for this record.
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(values) ^ definition.getRecordType().hashCode();
+    }
+
+    /**
+     * Returns a string representation of this record.
+     * The string representation is for debugging purpose and may change in any future SIS version.
+     *
+     * @return A string representation of this record.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        return definition.toString("Record", values);
     }
 }

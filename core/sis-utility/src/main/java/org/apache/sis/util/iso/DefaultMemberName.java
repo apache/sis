@@ -46,6 +46,10 @@ import java.util.Objects;
  * @since   0.3 (derived from geotk-3.17)
  * @version 0.5
  * @module
+ *
+ * @see DefaultTypeName
+ * @see DefaultNameFactory
+ * @see DefaultRecordType
  */
 @XmlRootElement(name = "MemberName")
 public class DefaultMemberName extends DefaultLocalName implements MemberName {

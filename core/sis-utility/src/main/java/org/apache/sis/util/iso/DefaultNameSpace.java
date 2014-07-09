@@ -55,6 +55,12 @@ import java.util.Objects;
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
+ *
+ * @see DefaultScopedName
+ * @see DefaultLocalName
+ * @see DefaultTypeName
+ * @see DefaultMemberName
+ * @see DefaultNameFactory
  */
 public class DefaultNameSpace implements NameSpace, Serializable {
     /**

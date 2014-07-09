@@ -74,6 +74,9 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultRecordType
+ * @see DefaultRecord
  */
 public class DefaultRecordSchema implements RecordSchema {
     /**

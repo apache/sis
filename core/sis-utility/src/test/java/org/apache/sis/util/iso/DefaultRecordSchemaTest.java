@@ -21,9 +21,9 @@ import java.util.LinkedHashMap;
 import org.opengis.util.Type;
 import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
+import org.apache.sis.internal.simple.SimpleAttributeType;
 
 // Test imports
-import org.apache.sis.internal.simple.SimpleAttributeType;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -62,10 +62,10 @@ public final strictfp class DefaultRecordSchemaTest extends TestCase {
         assertSame("container", schema, recordType.getContainer());
         assertEquals("typeName", Names.createTypeName("MySchema", ":", "MyRecordType"), recordType.getTypeName());
         int count = 0;
-        for (final Map.Entry<MemberName, Type> entry : recordType.getMemberTypes().entrySet()) {
-            final String     expectedName;
-            final String     expectedType;
-            final Class<?>   expectedClass;
+        for (final Map.Entry<MemberName,Type> entry : recordType.getMemberTypes().entrySet()) {
+            final String   expectedName;
+            final String   expectedType;
+            final Class<?> expectedClass;
             switch (count) {
                 case 0: {
                     expectedName  = "city";

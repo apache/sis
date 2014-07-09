@@ -38,6 +38,13 @@
  *       <li>{@link org.apache.sis.util.iso.DefaultScopedName} for a composite of a <cite>head</cite> name and a <cite>tail</cite> name.</li>
  *     </ul>
  *   </li>
+ *   <li>Implementations of {@link org.opengis.util.Record} and related classes:
+ *     <ul>
+ *       <li>{@link org.apache.sis.util.iso.DefaultRecord}       for a list of logically related elements as (<var>name</var>, <var>value</var>) pairs.</li>
+ *       <li>{@link org.apache.sis.util.iso.DefaultRecordType}   for definition of the type of a {@code Record}.</li>
+ *       <li>{@link org.apache.sis.util.iso.DefaultRecordSchema} for a collection of {@code RecordType}s in a given namespace.</li>
+ *     </ul>
+ *   </li>
  *   <li>Static utility methods:
  *     <ul>
  *       <li>{@link org.apache.sis.util.iso.Types} for working with UML identifiers and description of GeoAPI types.</li>

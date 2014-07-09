@@ -52,6 +52,9 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
+ *
+ * @see DefaultNameSpace
+ * @see DefaultLocalName
  */
 @XmlType(name = "ScopedName") // Actually 'gml:CodeType', but the later is used elsewhere.
 @XmlRootElement(name = "ScopedName")

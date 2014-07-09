@@ -198,22 +198,39 @@ abstract class RecordDefinition { // Intentionally not Serializable.
     /**
      * Returns a string representation of this object.
      * The string representation is for debugging purpose and may change in any future SIS version.
+     *
+     * @return A string representation of this record type.
      */
     @Debug
     @Override
     public String toString() {
+        return toString("RecordType", null);
+    }
+
+    /**
+     * Returns a string representation of a {@code Record} or {@code RecordType}.
+     *
+     * @param  head   Either {@code "Record"} or {@code "RecordType"}.
+     * @param  values The values, or {@code null} for writing the types instead.
+     * @return The string representation.
+     */
+    final String toString(final String head, final Object[] values) {
         final StringBuilder buffer = new StringBuilder(250);
         final String lineSeparator = System.lineSeparator();
         final String[] names = new String[members.length];
         int width = 0;
-        buffer.append("RecordType[“").append(getRecordType().getTypeName()).append("”] {").append(lineSeparator);
+        buffer.append(head).append("[“").append(getRecordType().getTypeName()).append("”] {").append(lineSeparator);
         for (int i=0; i<names.length; i++) {
             width = Math.max(width, (names[i] = members[i].toString()).length());
         }
         for (int i=0; i<names.length; i++) {
             final String name = names[i];
-            buffer.append("    ").append(name).append(CharSequences.spaces(width - name.length()))
-                  .append(" : ").append(members[i].getAttributeType()).append(lineSeparator);
+            buffer.append("    ").append(name);
+            final Object value = (values != null) ? values[i] : members[i].getAttributeType();
+            if (value != null) {
+                buffer.append(CharSequences.spaces(width - name.length())).append(" : ").append(value);
+            }
+            buffer.append(lineSeparator);
         }
         return buffer.append('}').append(lineSeparator).toString();
     }
