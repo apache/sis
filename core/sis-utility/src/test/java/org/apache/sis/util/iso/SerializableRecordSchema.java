@@ -18,7 +18,6 @@ package org.apache.sis.util.iso;
 
 import java.io.Serializable;
 import java.io.ObjectStreamException;
-import org.opengis.util.RecordSchema;
 
 
 /**
@@ -35,7 +34,7 @@ final class SerializableRecordSchema extends DefaultRecordSchema implements Seri
     /**
      * The unique instance for the shema.
      */
-    static RecordSchema INSTANCE;
+    static DefaultRecordSchema INSTANCE;
 
     /**
      * Construct a new record schema.

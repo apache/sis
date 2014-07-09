@@ -18,10 +18,8 @@ package org.apache.sis.util.iso;
 
 import java.util.Collections;
 import org.opengis.util.Type;
-import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.util.NameSpace;
-import org.opengis.util.RecordSchema;
 import org.apache.sis.internal.simple.SimpleAttributeType;
 
 // Test imports
@@ -44,10 +42,10 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  */
 @DependsOn(AbstractNameTest.class)
 public final strictfp class DefaultRecordTypeTest extends TestCase {
-    /** Value of {@link DefaultRecordType#getContainer()}.   */ private RecordSchema container;
-    /** Value of {@link DefaultRecordType#getTypeName()}.    */ private TypeName     recordTypeName;
-    /** Value of {@link DefaultRecordType#getMembers()}.     */ private MemberName   memberName;
-    /** Value of {@link DefaultRecordType#getMemberTypes()}. */ private TypeName     memberTypeName;
+    /** Value of {@link DefaultRecordType#getContainer()}.   */ private DefaultRecordSchema container;
+    /** Value of {@link DefaultRecordType#getTypeName()}.    */ private DefaultTypeName     recordTypeName;
+    /** Value of {@link DefaultRecordType#getMembers()}.     */ private DefaultMemberName   memberName;
+    /** Value of {@link DefaultRecordType#getMemberTypes()}. */ private DefaultTypeName     memberTypeName;
 
     /**
      * Initializes the private fields.
@@ -82,6 +80,10 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
     public void testConstructor() {
         init();
         final DefaultRecordType type = create();
+        assertEquals("size", 1, type.size());
+        assertEquals("baseValueClass", Integer.TYPE, type.baseValueClass());
+
+        // Public properties
         assertSame("container",   container,      type.getContainer());
         assertSame("typeName",    recordTypeName, type.getTypeName());
         assertSame("members",     memberName,     getSingleton(type.getMembers()));
@@ -99,7 +101,7 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
     @DependsOnMethod("testConstructor")
     public void testArgumentChecks() {
         init();
-        final TypeName         correctRecordName      = recordTypeName;
+        final DefaultTypeName  correctRecordName      = recordTypeName;
         final NameSpace        correctMemberNamespace = memberName.scope();
         final DefaultNameSpace wrongNamespace         = new DefaultNameSpace(null, "WrongNameSpace", ":", ":");
         /*

@@ -22,18 +22,26 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Arrays;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import org.opengis.util.MemberName;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+
+// Branch-dependent imports
+import java.util.Objects;
 
 
 /**
  * A list of logically related elements as (<var>name</var>, <var>value</var>) pairs in a dictionary.
+ * By definition, all record members have a [1 … 1] cardinality
+ * (for a more flexible construct, see {@linkplain org.apache.sis.feature features}).
+ * Since all members are expected to be assigned a value, the initial values on {@code DefaultRecord}
+ * instantiation are undetermined. Some may be null, or some may be zero.
  *
  * {@section Limitations}
  * <ul>
@@ -65,12 +73,15 @@ public class DefaultRecord implements Record, Serializable {
     final RecordDefinition definition;
 
     /**
-     * The record values.
+     * The record values in an array. May be an array of primitive type for compactness,
+     * which is why the type is not {@code Object[]}.
      */
-    private final Object[] values;
+    private final Object values;
 
     /**
      * Creates a new record for the given record type.
+     * The initial values are undetermined - they may be null or zero.
+     * Callers can assign values by a call to {@link #setAll(Object[])}.
      *
      * @param type The type definition of the new record.
      */
@@ -81,7 +92,7 @@ public class DefaultRecord implements Record, Serializable {
         } else {
             definition = new RecordDefinition.Adapter(type);
         }
-        values = new Object[definition.size()];
+        values = Array.newInstance(definition.baseValueClass(), definition.size());
     }
 
     /**
@@ -222,7 +233,7 @@ public class DefaultRecord implements Record, Serializable {
     @Override
     public Object locate(final MemberName name) {
         final Integer index = definition.indexOf(name);
-        return (index != null) ? values[index] : null;
+        return (index != null) ? Array.get(values, index) : null;
     }
 
     /**
@@ -247,7 +258,7 @@ public class DefaultRecord implements Record, Serializable {
                         name, value.getClass()));
             }
         }
-        values[index] = value;
+        Array.set(values, index, value);
     }
 
     /**
@@ -257,11 +268,12 @@ public class DefaultRecord implements Record, Serializable {
      * @throws IllegalArgumentException if the given number of values does not match the expected number.
      * @throws ClassCastException if a value is not an instance of the expected type for this record.
      */
-    public void setValues(final Object... newValues) {
+    public void setAll(final Object... newValues) {
         ArgumentChecks.ensureNonNull("values", newValues);
-        if (newValues.length != values.length) {
+        final int length = Array.getLength(values);
+        if (newValues.length != length) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.UnexpectedArrayLength_2, values.length, newValues.length));
+                    Errors.Keys.UnexpectedArrayLength_2, length, newValues.length));
         }
         for (int i=0; i<newValues.length; i++) {
             final Object value = newValues[i];
@@ -272,7 +284,7 @@ public class DefaultRecord implements Record, Serializable {
                             definition.getName(i), value.getClass()));
                 }
             }
-            values[i] = value;
+            Array.set(values, i, value);
         }
     }
 
@@ -290,7 +302,7 @@ public class DefaultRecord implements Record, Serializable {
         if (object != null && object.getClass() == getClass()) {
             final DefaultRecord that = (DefaultRecord) object;
             return definition.getRecordType().equals(that.definition.getRecordType()) &&
-                   Arrays.equals(values, that.values);
+                   Objects.deepEquals(values, that.values);
         }
         return false;
     }
@@ -302,7 +314,7 @@ public class DefaultRecord implements Record, Serializable {
      */
     @Override
     public int hashCode() {
-        return Arrays.hashCode(values) ^ definition.getRecordType().hashCode();
+        return Utilities.deepHashCode(values) ^ definition.getRecordType().hashCode();
     }
 
     /**
