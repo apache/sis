@@ -16,9 +16,8 @@
  */
 package org.apache.sis.util.iso;
 
-
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import org.opengis.util.MemberName;
 import org.opengis.util.RecordType;
 
@@ -73,28 +72,35 @@ public final strictfp class DefaultRecordTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultRecord#setValues(Object[])}.
+     * Sets all values in the given record using the {@link DefaultRecord#setAll(Object[])} method,
+     * then checks that the values were correctly stored.
+     */
+    private static void setAllAndCompare(final DefaultRecord record, final Object... values) {
+        record.setAll(values);
+        assertArrayEquals("attributes.values", values, record.getAttributes().values().toArray());
+    }
+
+    /**
+     * Tests {@link DefaultRecord#setAll(Object[])}.
      */
     @Test
-    public void testSetValues() {
+    public void testSetAll() {
         final DefaultRecord record = new DefaultRecord(recordType);
         try {
-            record.setValues("Machu Picchu", -13.1639, -72.5468);
+            record.setAll("Machu Picchu", -13.1639, -72.5468);
             fail("Shall not accept array of illegal length.");
         } catch (IllegalArgumentException e) {
             assertNotNull(e.getMessage());
         }
         try {
-            record.setValues("Machu Picchu", -13.1639, -72.5468, "Unknown");
+            record.setAll("Machu Picchu", -13.1639, -72.5468, "Unknown");
             fail("Shall not accept 'population' value of class String.");
         } catch (ClassCastException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("population"));
             assertTrue(message, message.contains("String"));
         }
-        final Object[] values = {"Machu Picchu", -13.1639, -72.5468, null};
-        record.setValues(values);
-        assertArrayEquals(values, record.getAttributes().values().toArray());
+        setAllAndCompare(record, "Machu Picchu", -13.1639, -72.5468, null);
     }
 
     /**
@@ -128,10 +134,10 @@ public final strictfp class DefaultRecordTest extends TestCase {
      * Tests {@link DefaultRecord#toString()}.
      */
     @Test
-    @DependsOnMethod("testSetValues")
+    @DependsOnMethod("testSetAll")
     public void testToString() {
         final DefaultRecord record = new DefaultRecord(recordType);
-        record.setValues("Machu Picchu", -13.1639, -72.5468, null);
+        record.setAll("Machu Picchu", -13.1639, -72.5468, null);
         assertMultilinesEquals(
                 "Record[“MyRecordType”] {\n" +
                 "    city       : Machu Picchu\n" +
@@ -158,10 +164,43 @@ public final strictfp class DefaultRecordTest extends TestCase {
      * Tests serialization of a {@link DefaultRecord}.
      */
     @Test
-    @DependsOnMethod("testSetValues")
+    @DependsOnMethod("testSetAll")
     public void testSerialization() {
         final DefaultRecord record = new DefaultRecord(recordType);
-        record.setValues("Machu Picchu", -13.1639, -72.5468, null);
+        record.setAll("Machu Picchu", -13.1639, -72.5468, null);
+        assertNotSame(record, assertSerializedEquals(record));
+    }
+
+    /**
+     * Tests a record where all members are the same primitive type. This method performs tests
+     * similar to {@link #testSetAll()}, {@link #testToString()} and {@link #testSerialization()}.
+     */
+    @Test
+    @DependsOnMethod({"testSetAll", "testToString", "testSerialization"})
+    public void testPrimitiveType() {
+        final Map<CharSequence,Class<?>> members = new LinkedHashMap<>(8);
+        assertNull(members.put("latitude",  Double.class));
+        assertNull(members.put("longitude", Double.class));
+        final DefaultRecord record = new DefaultRecord(
+                SerializableRecordSchema.INSTANCE.createRecordType("MyRecordType", members));
+        /*
+         * As a side effect of the fact that DefaultRecord uses an array of primitive type,
+         * initial values should be zero instead than null. We use this trick as a way to
+         * detect that we really got an array of primitive type.
+         */
+        assertEquals("baseValueClass", Double.TYPE, record.definition.baseValueClass());
+        assertArrayEquals("attributes.values", new Double[] {0.0, 0.0},
+                record.getAttributes().values().toArray());
+        /*
+         * Combines tests similar to 3 other test methods in this class.
+         */
+        setAllAndCompare(record, -13.1639, -72.5468);
+        assertMultilinesEquals(
+                "Record[“MyRecordType”] {\n" +
+                "    latitude  : -13.1639\n" +
+                "    longitude : -72.5468\n" +
+                "}\n",
+                record.toString());
         assertNotSame(record, assertSerializedEquals(record));
     }
 }

@@ -21,12 +21,15 @@ import java.util.LinkedHashMap;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.lang.reflect.Array;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.Type;
 import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
 import org.opengis.feature.AttributeType;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -116,6 +119,11 @@ abstract class RecordDefinition { // Intentionally not Serializable.
     private transient Class<?>[] valueClasses;
 
     /**
+     * The common parent of all value classes. May be a primitive type.
+     */
+    private transient Class<?> baseValueClass;
+
+    /**
      * Creates a new instance. Subclasses shall invoke {@link #computeTransientFields(Map)} in their constructor.
      */
     RecordDefinition() {
@@ -148,6 +156,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
                         valueClasses = new Class<?>[size];
                     }
                     valueClasses[i] = c;
+                    baseValueClass = Classes.findCommonClass(baseValueClass, c);
                 }
             }
             final MemberName name = entry.getKey();
@@ -157,7 +166,15 @@ abstract class RecordDefinition { // Intentionally not Serializable.
             i++;
         }
         memberIndices = CollectionsExt.unmodifiableOrCopy(memberIndices);
+        baseValueClass = (baseValueClass != null) ? Numbers.wrapperToPrimitive(baseValueClass) : Object.class;
         return types;
+    }
+
+    /**
+     * Returns the common parent of all value classes. May be a primitive type.
+     */
+    final Class<?> baseValueClass() {
+        return baseValueClass;
     }
 
     /**
@@ -211,10 +228,10 @@ abstract class RecordDefinition { // Intentionally not Serializable.
      * Returns a string representation of a {@code Record} or {@code RecordType}.
      *
      * @param  head   Either {@code "Record"} or {@code "RecordType"}.
-     * @param  values The values, or {@code null} for writing the types instead.
+     * @param  values The values as an array, or {@code null} for writing the types instead.
      * @return The string representation.
      */
-    final String toString(final String head, final Object[] values) {
+    final String toString(final String head, final Object values) {
         final StringBuilder buffer = new StringBuilder(250);
         final String lineSeparator = System.lineSeparator();
         final String[] names = new String[members.length];
@@ -226,7 +243,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
         for (int i=0; i<names.length; i++) {
             final String name = names[i];
             buffer.append("    ").append(name);
-            final Object value = (values != null) ? values[i] : members[i].getAttributeType();
+            final Object value = (values != null) ? Array.get(values, i) : members[i].getAttributeType();
             if (value != null) {
                 buffer.append(CharSequences.spaces(width - name.length())).append(" : ").append(value);
             }
