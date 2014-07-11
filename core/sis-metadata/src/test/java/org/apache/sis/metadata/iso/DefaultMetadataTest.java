@@ -57,7 +57,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
     private Object[] parameters;
 
     /**
-     * For internal {@code DefaultLegalConstraints} usage.
+     * For internal {@code DefaultMetadata} usage.
      *
      * @return {@code Object.class}.
      */

@@ -1,4 +1,4 @@
-/*
+ /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,22 +16,42 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 import org.opengis.metadata.citation.Telephone;
+import org.opengis.metadata.citation.TelephoneType;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 
 /**
  * Telephone numbers for contacting the responsible individual or organization.
  *
+ * {@section Differences between versions 2003 and 2014 of ISO 19115}
+ * For any contact having more than one telephone number, the way to organize the information
+ * changed significantly between the two versions of ISO standard:
+ *
+ * <ul>
+ *   <li>In ISO 19115:2003, each {@code Contact} had only one {@code Telephone} instance, but that instance
+ *       could have an arbitrary amount of "voice" and "facsimile" numbers. The methods (now deprecated) were
+ *       {@link DefaultContact#getPhone()}, {@link #getVoices()} and {@link #getFacsimiles()}.</li>
+ *   <li>In ISO 19115:2014, each {@code Contact} has an arbitrary amount of {@code Telephone} instances, and
+ *       each telephone has exactly one number. The new methods are {@link DefaultContact#getPhones()},
+ *       {@link #getNumber()} and {@link #getNumberType()}.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @author  Rémi Maréchal (Geomatys)
+ * @since   0.5 (derived from geotk-2.1)
+ * @version 0.5
  * @module
+ *
+ * @see DefaultContact#getPhones()
  */
 @XmlType(name = "CI_Telephone_Type", propOrder = {
     "voices",
@@ -42,22 +62,35 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -1920621361930970869L;
+    private static final long serialVersionUID = 5156405432420742237L;
 
     /**
-     * Telephone numbers by which individuals can speak to the responsible organization or individual.
+     * Telephone number by which individuals can contact responsible organization or individual.
      */
-    private Collection<String> voices;
+    private String number;
 
     /**
-     * Telephone numbers of a facsimile machine for the responsible organization or individual.
+     * Type of telephone number.
      */
-    private Collection<String> facsimiles;
+    private TelephoneType numberType;
 
     /**
      * Constructs a default telephone.
      */
     public DefaultTelephone() {
+    }
+
+    /**
+     * Constructs a telephone with the given number and type.
+     *
+     * @param number     The telephone number, or {@code null}.
+     * @param numberType The type of telephone number, or {@code null}.
+     *
+     * @since 0.5
+     */
+    public DefaultTelephone(final String number, final TelephoneType numberType) {
+        this.number     = number;
+        this.numberType = numberType;
     }
 
     /**
@@ -72,8 +105,8 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     public DefaultTelephone(final Telephone object) {
         super(object);
         if (object != null) {
-            voices     = copyCollection(object.getVoices(), String.class);
-            facsimiles = copyCollection(object.getFacsimiles(), String.class);
+            number     = object.getNumber();
+            numberType = object.getNumberType();
         }
     }
 
@@ -103,42 +136,171 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Returns the telephone numbers by which individuals can speak to the responsible organization or individual.
+     * Returns the telephone number by which individuals can contact responsible organization or individual.
      *
-     * @return Telephone numbers by which individuals can speak to the responsible organization or individual.
+     * @return Telephone number by which individuals can contact responsible organization or individual.
+     *
+     * @since 0.5
      */
     @Override
+/// @XmlElement(name = "number", required = true)
+    public String getNumber() {
+        return number;
+    }
+
+    /**
+     * Sets the telephone number by which individuals can contact responsible organization or individual.
+     *
+     * @param newValue The new telephone number by which individuals can contact responsible organization or individual.
+     *
+     * @since 0.5
+     */
+    public void setNumber(final String newValue) {
+        checkWritePermission();
+        number = newValue;
+    }
+
+    /**
+     * Returns the type of telephone number, or {@code null} if none.
+     *
+     * @return Type of telephone number, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+/// @XmlElement(name = "numberType")
+    public TelephoneType getNumberType() {
+        return numberType;
+    }
+
+    /**
+     * Set the type of telephone number.
+     *
+     * @param newValue The new type of telephone number.
+     *
+     * @since 0.5
+     */
+    public void setNumberType(final TelephoneType newValue) {
+        checkWritePermission();
+        numberType = newValue;
+    }
+
+    /**
+     * For implementation of {@link #getVoices()} and {@link #getFacsimiles()} deprecated methods.
+     * Shall be the telephones list of the enclosing {@link DefaultContact} object.
+     *
+     * <p>This field references the same collection than {@link DefaultContact#phones} when possible.
+     * Note that the link between this collection and {@code DefaultContact.phones} is broken when
+     * {@link DefaultContact#freeze()} is invoked, since the {@code Cloner.clone(Object)} method
+     * creates a new (unmodifiable) collection.</p>
+     *
+     * @deprecated This field will be removed after we removed the deprecated public methods.
+     */
+    @Deprecated
+    private Collection<Telephone> owner;
+
+    /**
+     * Specifies the collection which contains this telephone number.
+     * This method is invoked by {@link DefaultContact#setPhones(Collection)}
+     * when the contact "takes possession" of a {@code DefaultTelephone}.
+     *
+     * <p>This method will be removed after we removed the deprecated public methods.</p>
+     *
+     * @param  phones The collection which should contains this telephone number.
+     * @return {@code this}, or a copy of this instance if we conservatively choose to not modify this instance.
+     */
+    final DefaultTelephone setOwner(final Collection<Telephone> phones) {
+        if (owner != phones) {
+            if (owner != null && !CollectionsExt.identityEquals(owner.iterator(), phones.iterator())) {
+                final DefaultTelephone copy = new DefaultTelephone(this);
+                copy.owner = phones;
+                return copy;
+            }
+            owner = phones;
+        }
+        return this;
+    }
+
+    /**
+     * Returns the collection that own this telephone number, or create a new collection.
+     * Creating a new collection is needed when this phone number has not yet been given
+     * to a {@link DefaultContact}.
+     *
+     * <p>This method will be removed after we removed the deprecated public methods.</p>
+     */
+    final Collection<Telephone> getOwner() {
+       if (owner == null) {
+           if (isModifiable()) {
+               owner = new ArrayList<>(4);
+               owner.add(this);
+           } else {
+               owner = Collections.singletonList(this);
+           }
+       }
+       return owner;
+    }
+
+    /**
+     * Returns the telephone numbers by which individuals can speak to the responsible organization or individual.
+     * This method searches in the {@linkplain DefaultContact#getPhones() contact phones}, if the contact that own
+     * this phone is known.
+     *
+     * @return Telephone numbers by which individuals can speak to the responsible organization or individual.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #getNumber() number}
+     *             with {@link TelephoneType#VOICE}.
+     */
+    @Override
+    @Deprecated
     @XmlElement(name = "voice")
-    public Collection<String> getVoices() {
-        return voices = nonNullCollection(voices, String.class);
+    public final Collection<String> getVoices() {
+        return new LegacyTelephones(getOwner(), TelephoneType.VOICE);
     }
 
     /**
      * Sets the telephone numbers by which individuals can speak to the responsible organization or individual.
+     * This method writes in the {@linkplain DefaultContact#getPhones() contact phones}, if the contact that own
+     * this phone is known.
      *
      * @param newValues The new telephone numbers, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #setNumber(String) number}
+     *             with {@link TelephoneType#VOICE}.
      */
-    public void setVoices(final Collection<? extends String> newValues) {
-        voices = writeCollection(newValues, voices, String.class);
+    @Deprecated
+    public final void setVoices(final Collection<? extends String> newValues) {
+        ((LegacyTelephones) getVoices()).setValues(newValues);
     }
 
     /**
      * Returns the telephone numbers of a facsimile machine for the responsible organization or individual.
+     * This method searches in the {@linkplain DefaultContact#getPhones() contact phones}, if the contact
+     * that own this phone is known.
      *
      * @return Telephone numbers of a facsimile machine for the responsible organization or individual.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #getNumber() number}
+     *             with {@link TelephoneType#FACSIMILE}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "facsimile")
-    public Collection<String> getFacsimiles() {
-        return facsimiles = nonNullCollection(facsimiles, String.class);
+    public final Collection<String> getFacsimiles() {
+        return new LegacyTelephones(getOwner(), TelephoneType.FACSIMILE);
     }
 
     /**
      * Sets the telephone number of a facsimile machine for the responsible organization or individual.
+     * This method writes in the {@linkplain DefaultContact#getPhones() contact phones}, if the contact
+     * that own this phone is known.
      *
      * @param newValues The new telephone number, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #setNumber(String) number}
+     *             with {@link TelephoneType#FACSIMILE}.
      */
-    public void setFacsimiles(final Collection<? extends String> newValues) {
-        facsimiles = writeCollection(newValues, facsimiles, String.class);
+    @Deprecated
+    public final void setFacsimiles(final Collection<? extends String> newValues) {
+        ((LegacyTelephones) getFacsimiles()).setValues(newValues);
     }
 }

@@ -86,7 +86,7 @@ public final strictfp class TreeNodeTest extends TestCase {
         final DefaultContact contact = new DefaultContact();
         final DefaultAddress address = new DefaultAddress();
         address.getElectronicMailAddresses().add("Some email");
-        contact.setAddress(address);
+        contact.getAddresses().add(address);
         party.setContactInfo(contact);
         citation.getCitedResponsibleParties().add(party);
         return citation;
@@ -236,7 +236,7 @@ public final strictfp class TreeNodeTest extends TestCase {
               ONE,          // citedResponsibleParty
                 null,       // individualName
                 null,       // contactInfo
-                  null,     // address
+                  ZERO,     // address
                     ZERO,   // electronicMailAddress
                 null,       // role
               ZERO,         // presentationForm

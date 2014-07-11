@@ -76,6 +76,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short IgnoredPropertiesAfterFirst_1 = 6;
 
         /**
+         * Ignored property associated to ‘{0}’.
+         */
+        public static final short IgnoredPropertyAssociatedTo_1 = 7;
+
+        /**
          * Text were discarded for some locales.
          */
         public static final short LocalesDiscarded = 3;
