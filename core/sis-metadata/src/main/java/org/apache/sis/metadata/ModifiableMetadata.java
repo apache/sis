@@ -385,7 +385,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             if (unmodifiable == FREEZING) {
                 /*
                  * freeze() method is under progress. The source collection is already
-                 * an unmodifiable instance created by unmodifiable(Object).
+                 * an unmodifiable instance created by Cloner.clone(Object).
                  */
                 assert collectionType(elementType).isInstance(source);
                 return (Collection<E>) source;

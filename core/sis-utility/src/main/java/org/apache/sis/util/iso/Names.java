@@ -17,6 +17,7 @@
 package org.apache.sis.util.iso;
 
 import java.util.Collections;
+import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
@@ -70,6 +71,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultNameFactory
+ * @see DefaultNameSpace
+ * @see DefaultScopedName
+ * @see DefaultLocalName
+ * @see DefaultTypeName
+ * @see DefaultMemberName
  */
 public final class Names extends Static {
     /**
@@ -100,12 +108,8 @@ public final class Names extends Static {
      * Those character sequences are taken verbatim; they are <em>not</em> parsed into their components.
      *
      * <div class="note"><b>Note:</b> it is possible to split the {@code namespace} and {@code localPart}
-     * strings into smaller name components. If such finer grain control is desired, one can use
-     * {@link DefaultNameFactory} instead of this {@code Names} class.</div>
-     *
-     * <div class="note"><b>Performance note:</b> this method is okay for <em>casual</em> use. If many names need
-     * to be created in the same namespace, then {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}
-     * is more efficient since it allows to create the {@code NameSpace} object only once.</div>
+     * strings into smaller name components (e.g. namespaces contained in other namespaces). If such finer
+     * grain control is desired, one can use {@link DefaultNameFactory} instead of this {@code Names} class.</div>
      *
      * The following table shows where the strings given in argument will go:
      *
@@ -117,7 +121,7 @@ public final class Names extends Static {
      * </table></blockquote>
      *
      * <div class="note"><b>Example:</b>
-     * for a name created by {@code create("http://www.opengis.net/gml/srs/epsg.xml", "#", "4326")}:
+     * for a name created by {@code createLocalName("http://www.opengis.net/gml/srs/epsg.xml", "#", "4326")}:
      * <blockquote><table class="compact" summary="Examples of return values for a name built by this method.">
      *   <tr><td>• <code>name.{@linkplain DefaultLocalName#toString() toString()}</code></td>
      *       <td>returns the {@code "4326"} string.</td></tr>
@@ -129,6 +133,10 @@ public final class Names extends Static {
      *       <td>returns the {@code "{http://www.opengis.net/gml/srs/epsg.xml}4326"} string.</td></tr>
      * </table></blockquote></div>
      *
+     * <div class="note"><b>Performance note:</b> this method is okay for <em>casual</em> use. If many names need
+     * to be created in the same namespace, then {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}
+     * is more efficient since it allows to create the {@code NameSpace} object only once.</div>
+     *
      * @param  namespace The namespace, or {@code null} for the global namespace.
      * @param  separator The separator between the namespace and the local part.
      * @param  localPart The name which is locale in the given namespace.
@@ -138,6 +146,29 @@ public final class Names extends Static {
         ensureNonNull("localPart", localPart);
         ensureNonNull("separator", separator);
         return DefaultFactories.NAMES.createLocalName(createNameSpace(namespace, separator), localPart);
+    }
+
+    /**
+     * Creates a type name which is local in the given namespace.
+     * The character sequences can be either {@link String} or {@link InternationalString} instances.
+     * Those character sequences are taken verbatim; they are <em>not</em> parsed into their components.
+     *
+     * <div class="note"><b>Example:</b> {@code createTypeName("gco", ":", "Integer")} returns a name
+     * which can be used for representing the type of {@code <gco:Integer>} elements in XML files.</div>
+     *
+     * <div class="note"><b>Performance note:</b> this method is okay for <em>casual</em> use. If many names need
+     * to be created in the same namespace, then {@link DefaultNameFactory#createTypeName(NameSpace, CharSequence)}
+     * is more efficient since it allows to create the {@code NameSpace} object only once.</div>
+     *
+     * @param  namespace The namespace, or {@code null} for the global namespace.
+     * @param  separator The separator between the namespace and the local part.
+     * @param  localPart The name which is locale in the given namespace.
+     * @return A local name in the given namespace.
+     */
+    public static TypeName createTypeName(final CharSequence namespace, final String separator, final CharSequence localPart) {
+        ensureNonNull("localPart", localPart);
+        ensureNonNull("separator", separator);
+        return DefaultFactories.NAMES.createTypeName(createNameSpace(namespace, separator), localPart);
     }
 
     /**

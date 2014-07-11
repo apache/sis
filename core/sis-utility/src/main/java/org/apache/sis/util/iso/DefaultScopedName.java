@@ -52,6 +52,9 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
+ *
+ * @see DefaultNameSpace
+ * @see DefaultLocalName
  */
 @XmlType(name = "ScopedName") // Actually 'gml:CodeType', but the later is used elsewhere.
 @XmlRootElement(name = "ScopedName")
@@ -183,7 +186,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         final LocalName lastName  = locals[index-1];
         final NameSpace lastScope = lastName.scope();
         final NameSpace tailScope = name.scope();
-        if (tailScope instanceof DefaultNameSpace && ((DefaultNameSpace) tailScope).parent == lastScope) {
+        if (tailScope instanceof DefaultNameSpace && ((DefaultNameSpace) tailScope).parent() == lastScope) {
             /*
              * If the tail is actually the tip (a LocalName), remember the tail so we
              * don't need to create it again later. Then copy the tail after the path.

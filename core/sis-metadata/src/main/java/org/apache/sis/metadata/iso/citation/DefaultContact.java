@@ -16,6 +16,9 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -24,7 +27,11 @@ import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Telephone;
 import org.opengis.metadata.citation.OnlineResource;
+import org.opengis.metadata.citation.TelephoneType;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.util.resources.Messages;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
 /**
@@ -33,8 +40,9 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "CI_Contact_Type", propOrder = {
@@ -49,22 +57,22 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3844283689911660546L;
+    private static final long serialVersionUID = -969735574940462381L;
 
     /**
      * Telephone numbers at which the organization or individual may be contacted.
      */
-    private Telephone phone;
+    private Collection<Telephone> phones;
 
     /**
-     * Physical and email address at which the organization or individual may be contacted.
+     * Physical and email addresses at which the organization or individual may be contacted.
      */
-    private Address address;
+    private Collection<Address> addresses;
 
     /**
      * On-line information that can be used to contact the individual or organization.
      */
-    private OnlineResource onlineResource;
+    private Collection<OnlineResource> onlineResources;
 
     /**
      * Time period (including time zone) when individuals can contact the organization or individual.
@@ -75,6 +83,11 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * Supplemental instructions on how or when to contact the individual or organization.
      */
     private InternationalString contactInstructions;
+
+    /**
+     * Type of the contact.
+     */
+    private InternationalString contactType;
 
     /**
      * Constructs an initially empty contact.
@@ -89,7 +102,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *        organization, or {@code null} if none.
      */
     public DefaultContact(final OnlineResource resource) {
-        this.onlineResource = resource;
+        this.onlineResources = singleton(resource, OnlineResource.class);
     }
 
     /**
@@ -104,11 +117,12 @@ public class DefaultContact extends ISOMetadata implements Contact {
     public DefaultContact(final Contact object) {
         super(object);
         if (object != null) {
-            phone               = object.getPhone();
-            address             = object.getAddress();
-            onlineResource      = object.getOnlineResource();
+            phones              = copyCollection(object.getPhones(), Telephone.class);
+            addresses           = copyCollection(object.getAddresses(), Address.class);
+            onlineResources     = copyCollection(object.getOnlineResources(), OnlineResource.class);
             hoursOfService      = object.getHoursOfService();
             contactInstructions = object.getContactInstructions();
+            contactType         = object.getContactType();
         }
     }
 
@@ -140,64 +154,208 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Returns telephone numbers at which the organization or individual may be contacted.
      *
-     * @return Telephone numbers at which the organization or individual may be contacted, or {@code null}.
+     * @return Telephone numbers at which the organization or individual may be contacted.
+     *
+     * @since 0.5
      */
     @Override
-    @XmlElement(name = "phone")
-    public Telephone getPhone() {
-        return phone;
+    public Collection<Telephone> getPhones() {
+        return phones = nonNullCollection(phones, Telephone.class);
     }
 
     /**
      * Sets telephone numbers at which the organization or individual may be contacted.
      *
-     * @param newValue The new telephone, or {@code null} if none.
+     * @param newValues The new telephones.
+     *
+     * @since 0.5
      */
-    public void setPhone(final Telephone newValue) {
-        checkWritePermission();
-        phone = newValue;
+    public void setPhones(Collection<? extends Telephone> newValues) {
+        phones = writeCollection(newValues, phones, Telephone.class);
+        /*
+         * Code below this point will be deleted after we removed the deprecated methods in DefaultTelephone.
+         * This code notifies all DefaultTelephone instances about the the list of phones in order to allow
+         * the deprecated Telephone.getVoices() and Telephone.getFacsimiles() methods to fetches information
+         * from the phones list.
+         */
+        if (phones != null) {
+            boolean modified = false;
+            final Telephone[] p = phones.toArray(new Telephone[newValues.size()]);
+            for (int i=0; i<p.length; i++) {
+                final Telephone phone = p[i];
+                if (phone instanceof DefaultTelephone) {
+                    p[i] = ((DefaultTelephone) phone).setOwner(phones);
+                    modified |= (p[i] != phone);
+                }
+            }
+            if (modified) {
+                phones.clear();
+                phones.addAll(Arrays.asList(p));
+            }
+        }
+    }
+
+    /**
+     * Returns telephone numbers at which the organization or individual may be contacted.
+     * This method returns the first telephone number associated to {@link TelephoneType#VOICE}
+     * or {@link TelephoneType#FACSIMILE FACSIMILE}.
+     *
+     * @return Telephone numbers at which the organization or individual may be contacted, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getPhones()}.
+     */
+    @Override
+    @Deprecated
+    @XmlElement(name = "phone")
+    public final Telephone getPhone() {
+        Telephone phone = null;
+        if (phones != null) {
+            TelephoneType ignored = null;
+            for (final Telephone c : phones) {
+                final TelephoneType type = c.getNumberType();
+                if (TelephoneType.VOICE.equals(type) || TelephoneType.FACSIMILE.equals(type)) {
+                    if (phone == null) {
+                        phone = c;
+                    }
+                } else if (ignored == null) {
+                    ignored = type;
+                }
+            }
+            if (ignored != null) {
+                Context.warningOccured(Context.current(), DefaultContact.class, "getPhone",
+                        Messages.class, Messages.Keys.IgnoredPropertyAssociatedTo_1, ignored.toString());
+            }
+        }
+        return phone;
+    }
+
+    /**
+     * Sets telephone numbers at which the organization or individual may be contacted.
+     * This method delegates to {@link #setPhones(Collection)}.
+     *
+     * @param newValue The new telephone, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setPhones(Collection)}.
+     */
+    @Deprecated
+    public final void setPhone(Telephone newValue) {
+        Collection<Telephone> newValues = null;
+        if (newValue != null) {
+            if (newValue instanceof DefaultTelephone) {
+                newValues = ((DefaultTelephone) newValue).getOwner();
+            } else {
+                newValues = new ArrayList<Telephone>(4);
+                for (String number : newValue.getVoices()) {
+                    newValues.add(new DefaultTelephone(number, TelephoneType.VOICE));
+                }
+                for (String number : newValue.getFacsimiles()) {
+                    newValues.add(new DefaultTelephone(number, TelephoneType.FACSIMILE));
+                }
+            }
+        }
+        setPhones(newValues);
+    }
+
+    /**
+     * Returns the physical and email addresses at which the organization or individual may be contacted.
+     *
+     * @return Physical and email addresses at which the organization or individual may be contacted, or {@code null}.
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<Address> getAddresses() {
+        return addresses = nonNullCollection(addresses, Address.class);
+    }
+
+    /**
+     * Sets the physical and email addresses at which the organization or individual may be contacted.
+     *
+     * @param newValues The new addresses.
+     *
+     * @since 0.5
+     */
+    public void setAddresses(final Collection<? extends Address> newValues) {
+        addresses = writeCollection(newValues, addresses, Address.class);
     }
 
     /**
      * Returns the physical and email address at which the organization or individual may be contacted.
+     * This method returns the first {@link #getAddresses() adress} element, or null if none.
      *
      * @return Physical and email address at which the organization or individual may be contacted, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getAddresses()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "address")
-    public Address getAddress() {
-        return address;
+    public final Address getAddress() {
+        return LegacyPropertyAdapter.getSingleton(addresses, Address.class, null, DefaultContact.class, "getAddress");
     }
 
     /**
      * Sets the physical and email address at which the organization or individual may be contacted.
+     * This method delegates to {@link #setAddresses(Collection)}.
      *
      * @param newValue The new address, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setAddresses(Collectio)}.
      */
-    public void setAddress(final Address newValue) {
-        checkWritePermission();
-        address = newValue;
+    @Deprecated
+    public final void setAddress(final Address newValue) {
+        setAddresses(LegacyPropertyAdapter.asCollection(newValue));
     }
 
     /**
-     * Return on-line information that can be used to contact the individual or organization.
+     * Returns on-line information that can be used to contact the individual or organization.
      *
-     * @return On-line information that can be used to contact the individual or organization, or {@code null}.
+     * @return On-line information that can be used to contact the individual or organization.
+     *
+     * @since 0.5
      */
     @Override
-    @XmlElement(name = "onlineResource")
-    public OnlineResource getOnlineResource() {
-        return onlineResource;
+    public Collection<OnlineResource> getOnlineResources() {
+        return onlineResources = nonNullCollection(onlineResources, OnlineResource.class);
     }
 
     /**
      * Sets on-line information that can be used to contact the individual or organization.
      *
-     * @param newValue The new online resource, or {@code null} if none.
+     * @param newValues The new online resources.
+     *
+     * @since 0.5
      */
+    public void setOnlineResources(final Collection<? extends OnlineResource> newValues) {
+        onlineResources = writeCollection(newValues, onlineResources, OnlineResource.class);
+    }
+
+    /**
+     * Returns on-line information that can be used to contact the individual or organization.
+     * This method returns the first {@link #getOnlineResources() online resource} element, or null if none.
+     *
+     * @return On-line information that can be used to contact the individual or organization, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getOnlineResources()}.
+     */
+    @Override
+    @Deprecated
+    @XmlElement(name = "onlineResource")
+    public OnlineResource getOnlineResource() {
+        return LegacyPropertyAdapter.getSingleton(onlineResources, OnlineResource.class, null, DefaultContact.class, "getOnlineResource");
+    }
+
+    /**
+     * Sets on-line information that can be used to contact the individual or organization.
+     * This method delegates to {@link #setOnlineResources(Collection)}.
+     *
+     * @param newValue The new online resource, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setOnlineResources(Collection)}.
+     */
+    @Deprecated
     public void setOnlineResource(final OnlineResource newValue) {
-        checkWritePermission();
-        onlineResource = newValue;
+        setOnlineResources(LegacyPropertyAdapter.asCollection(newValue));
     }
 
     /**
@@ -240,5 +398,31 @@ public class DefaultContact extends ISOMetadata implements Contact {
     public void setContactInstructions(final InternationalString newValue) {
         checkWritePermission();
         contactInstructions = newValue;
+    }
+
+    /**
+     * Type of the contact.
+     * Returns {@code null} if none.
+     *
+     * @return Type of the contact, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+/// @XmlElement(name = "contactType")
+    public InternationalString getContactType() {
+        return contactType;
+    }
+
+    /**
+     * Sets new type of the contact.
+     *
+     * @param newValue The new type of the contact.
+     *
+     * @since 0.5
+     */
+    public void setContactType(final InternationalString newValue) {
+        checkWritePermission();
+        contactType = newValue;
     }
 }

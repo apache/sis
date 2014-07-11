@@ -52,7 +52,7 @@ import org.apache.sis.internal.jdk8.Function;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class CollectionsExt extends Static {
@@ -633,5 +633,22 @@ public final class CollectionsExt extends Static {
             }
         }
         return map;
+    }
+
+    /**
+     * Returns {@code true} if the next elements returned by the given iterators are the same.
+     * This method compares using the identity operation ({@code ==}), not {@code equals(Object)}.
+     *
+     * @param  it1 The first iterator.
+     * @param  it2 The second iterator.
+     * @return If both iterators return the same objects.
+     */
+    public static boolean identityEquals(final Iterator<?> it1, final Iterator<?> it2) {
+        while (it1.hasNext()) {
+            if (!it2.hasNext() || it1.next() != it2.next()) {
+                return false;
+            }
+        }
+        return !it2.hasNext();
     }
 }
