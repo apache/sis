@@ -26,6 +26,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Locale;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.ObjectConverters;
@@ -43,7 +44,7 @@ import java.util.function.Function;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class CollectionsExtTest extends TestCase {
@@ -139,5 +140,17 @@ public final strictfp class CollectionsExtTest extends TestCase {
             Collections.shuffle(elements);
             assertMapEquals(expected, CollectionsExt.toCaseInsensitiveNameMap(elements, nameFunction, Locale.ROOT));
         }
+    }
+
+    /**
+     * Tests {@link CollectionsExt#identityEquals(Iterator, Iterator)}.
+     */
+    @Test
+    public void testIdentityEquals() {
+        final List<String> c1 = Arrays.asList("A", "B", "C");
+        final List<String> c2 = Arrays.asList("A", "B");
+        assertFalse(CollectionsExt.identityEquals(c1.iterator(), c2.iterator()));
+        assertFalse(CollectionsExt.identityEquals(c2.iterator(), c1.iterator()));
+        assertTrue(CollectionsExt.identityEquals(c1.iterator(), Arrays.asList("A", "B", "C").iterator()));
     }
 }

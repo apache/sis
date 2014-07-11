@@ -1100,9 +1100,7 @@ class PropertyAccessor {
     {
         assert type.isInstance(metadata1) : metadata1;
         assert type.isInstance(metadata2) : metadata2;
-        final int count = (mode == ComparisonMode.STRICT &&
-                EXTRA_GETTER.getDeclaringClass().isInstance(metadata2)) ? allCount : standardCount;
-        for (int i=0; i<count; i++) {
+        for (int i=0; i<standardCount; i++) {
             final Method method = getters[i];
             final Object value1 = get(method, metadata1);
             final Object value2 = get(method, metadata2);
@@ -1116,6 +1114,16 @@ class PropertyAccessor {
                     continue; // Accept this slight difference.
                 }
                 return false;
+            }
+        }
+        /*
+         * One final check for the IdentifiedObjects.getIdentifiers() collection.
+         */
+        if (mode == ComparisonMode.STRICT && EXTRA_GETTER.getDeclaringClass().isInstance(metadata2)) {
+            final Object value1 = get(EXTRA_GETTER, metadata1);
+            final Object value2 = get(EXTRA_GETTER, metadata2);
+            if (!isNullOrEmpty(value1) || !isNullOrEmpty(value2)) {
+                return Utilities.deepEquals(value1, value2, mode);
             }
         }
         return true;
