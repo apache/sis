@@ -39,6 +39,9 @@ import org.opengis.util.NameSpace;
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
+ *
+ * @see DefaultMemberName
+ * @see DefaultNameFactory
  */
 @XmlRootElement(name = "TypeName")
 public class DefaultTypeName extends DefaultLocalName implements TypeName {

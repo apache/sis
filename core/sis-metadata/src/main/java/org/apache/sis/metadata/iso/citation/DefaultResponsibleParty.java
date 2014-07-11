@@ -30,7 +30,7 @@ import org.opengis.util.InternationalString;
  * organizations associated with the dataset.
  *
  * @deprecated As of ISO 19115:2014, the {@code ResponsibleParty} type has been replaced by {@code Responsibility}
- *             to allow more flexible associations of individuals, organisations, and roles.
+ *             to allow more flexible associations of individuals, organizations, and roles.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)

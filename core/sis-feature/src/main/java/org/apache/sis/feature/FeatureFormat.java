@@ -182,7 +182,14 @@ header: for (int i=0; ; i++) {
             if (feature != null) {
                 value = feature.getPropertyValue(propertyType.getName().toString());
                 if (value == null) {
-                    if (propertyType instanceof FieldType && ((FieldType) propertyType).getMinimumOccurs() == 0) {
+                    if (propertyType instanceof AttributeType &&
+                            ((AttributeType) propertyType).getMinimumOccurs() == 0)
+                    {
+                        continue; // If no value, skip the full row.
+                    }
+                    if (propertyType instanceof FeatureAssociationRole &&
+                            ((FeatureAssociationRole) propertyType).getMinimumOccurs() == 0)
+                    {
                         continue; // If no value, skip the full row.
                     }
                 }
