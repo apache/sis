@@ -174,7 +174,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Constructs a citation with the specified responsible party.
      * This convenience constructor initializes the citation title
      * to the first non-null of the following properties:
-     * {@linkplain DefaultResponsibleParty#getOrganisationName() organisation name},
+     * {@linkplain DefaultResponsibleParty#getOrganisationName() organization name},
      * {@linkplain DefaultResponsibleParty#getPositionName() position name} or
      * {@linkplain DefaultResponsibleParty#getIndividualName() individual name}.
      *

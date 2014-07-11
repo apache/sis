@@ -28,7 +28,7 @@ import org.apache.sis.util.iso.Types;
 
 
 /**
- * Information about the individual and / or organisation of the party.
+ * Information about the individual and / or organization of the party.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

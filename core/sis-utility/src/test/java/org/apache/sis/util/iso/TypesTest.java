@@ -16,10 +16,8 @@
  */
 package org.apache.sis.util.iso;
 
-import java.util.Set;
 import java.util.Map;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Locale;
@@ -211,10 +209,9 @@ public final strictfp class TypesTest extends TestCase {
      */
     @Test
     public void testGetCodeValues() {
-        final Set<OnLineFunction> expected = new HashSet<>(Arrays.asList(
-                OnLineFunction.INFORMATION, OnLineFunction.SEARCH, OnLineFunction.ORDER,
-                OnLineFunction.DOWNLOAD, OnLineFunction.OFFLINE_ACCESS));
         final OnLineFunction[] actual = Types.getCodeValues(OnLineFunction.class);
-        assertTrue(expected.containsAll(Arrays.asList(actual)));
+        assertTrue(Arrays.asList(actual).containsAll(Arrays.asList(
+                OnLineFunction.INFORMATION, OnLineFunction.SEARCH, OnLineFunction.ORDER,
+                OnLineFunction.DOWNLOAD, OnLineFunction.OFFLINE_ACCESS)));
     }
 }

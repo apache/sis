@@ -276,9 +276,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 minimumOccurs = ((AttributeType<?>) property).getMinimumOccurs();
                 maximumOccurs = ((AttributeType<?>) property).getMaximumOccurs();
                 isSimple &= (minimumOccurs == maximumOccurs);
-            } else if (property instanceof FieldType) { // TODO: check for AssociationRole instead (after GeoAPI upgrade).
-                minimumOccurs = ((FieldType) property).getMinimumOccurs();
-                maximumOccurs = ((FieldType) property).getMaximumOccurs();
+            } else if (property instanceof FeatureAssociationRole) {
+                minimumOccurs = ((FeatureAssociationRole) property).getMinimumOccurs();
+                maximumOccurs = ((FeatureAssociationRole) property).getMaximumOccurs();
                 isSimple = false;
             } else {
                 continue; // For feature operations, maximumOccurs is implicitly 0.
