@@ -18,20 +18,29 @@ package org.apache.sis.util.iso;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Arrays;
 import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.InvalidObjectException;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.Type;
 import org.opengis.util.TypeName;
+import org.opengis.util.LocalName;
 import org.opengis.util.MemberName;
+import org.opengis.util.GenericName;
+import org.opengis.util.NameSpace;
+import org.opengis.util.NameFactory;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.RecordSchema;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.internal.converter.SurjectiveConverter;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -43,23 +52,52 @@ import java.util.Objects;
  * arbitrary amount of {@linkplain #getMembers() members} as (<var>name</var>, <var>type</var>) pairs.
  * A {@code RecordType} may therefore contain another {@code RecordType} as a member.
  *
- * {@section Comparison with Java reflection}
+ * <div class="note"><b>Comparison with Java reflection:</b>
  * {@code RecordType} instances can be though as equivalent to instances of the Java {@link Class} class.
  * The set of members in a {@code RecordType} can be though as equivalent to the set of fields in a class.
+ * </div>
+ *
+ * {@section Instantiation}
+ * The easiest way to create {@code DefaultRecordType} instances is to use the
+ * {@link DefaultRecordSchema#createRecordType(CharSequence, Map)} method.
+ * Example:
+ *
+ * <div class="note">
+ * {@preformat java
+ *     DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "MySchema");
+ *     // The same instance can be reused for all records to create in that schema.
+ *
+ *     Map<CharSequence,Class<?>> members = new LinkedHashMap<>();
+ *     members.put("city",        String .class);
+ *     members.put("latitude",    Double .class);
+ *     members.put("longitude",   Double .class);
+ *     members.put("population",  Integer.class);
+ *     RecordType record = schema.createRecordType("MyRecordType", members);
+ * }
+ * </div>
  *
  * {@section Immutability and thread safety}
- * This class is immutable and thus inherently thread-safe if the {@link TypeName} and {@link RecordSchema} arguments,
- * as well as all ({@link MemberName}, {@link Type}) entries in the map given to the constructor, are also immutable.
+ * This class is immutable and thus inherently thread-safe if the {@link TypeName}, the {@link RecordSchema}
+ * and all ({@link MemberName}, {@link Type}) entries in the map given to the constructor are also immutable.
  * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads and do not change
  * any public {@code RecordType} state.
  *
+ * {@section Serialization}
+ * This class is serializable if all elements given to the constructor are also serializable.
+ * Note in particular that {@link DefaultRecordSchema} is currently <strong>not</strong> serializable,
+ * so users wanting serialization may need to provide their own schema.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
+ *
+ * @see DefaultRecord
+ * @see DefaultRecordSchema
+ * @see DefaultMemberName
  */
 @XmlType(name = "RecordType")
-public class DefaultRecordType implements RecordType, Serializable {
+public class DefaultRecordType extends RecordDefinition implements RecordType, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -80,20 +118,18 @@ public class DefaultRecordType implements RecordType, Serializable {
     private final RecordSchema container;
 
     /**
-     * The dictionary of (<var>name</var>, <var>type</var>) pairs.
+     * The type of each members.
      *
-     * @see #getMembers()
      * @see #getMemberTypes()
      */
-    private final Map<MemberName,Type> memberTypes;
+    private transient Type[] memberTypes;
 
     /**
      * Empty constructor only used by JAXB.
      */
     private DefaultRecordType() {
-        typeName    = null;
-        container   = null;
-        memberTypes = Collections.emptyMap();
+        typeName  = null;
+        container = null;
     }
 
     /**
@@ -104,32 +140,116 @@ public class DefaultRecordType implements RecordType, Serializable {
     public DefaultRecordType(final RecordType other) {
         typeName    = other.getTypeName();
         container   = other.getContainer();
-        memberTypes = other.getMemberTypes();
+        memberTypes = computeTransientFields(other.getMemberTypes());
     }
 
     /**
-     * Creates a new record.
+     * Creates a new record in the given schema.
+     * It is caller responsibility to add the new {@code RecordType} in the container
+     * {@linkplain RecordSchema#getDescription() description} map, if desired.
+     *
+     * <p>This constructor is provided mostly for developers who want to create {@code DefaultRecordType}
+     * instances in their own {@code RecordSchema} implementation. Otherwise if the default record schema
+     * implementation is sufficient, the {@link DefaultRecordSchema#createRecordType(CharSequence, Map)}
+     * method provides an easier alternative.</p>
+     *
+     * @param typeName  The name that identifies this record type.
+     * @param container The schema that contains this record type.
+     * @param members   The name and type of the members to be included in this record type.
+     *
+     * @see DefaultRecordSchema#createRecordType(CharSequence, Map)
+     */
+    public DefaultRecordType(final TypeName typeName, final RecordSchema container,
+            final Map<? extends MemberName, ? extends Type> members)
+    {
+        ArgumentChecks.ensureNonNull("typeName",  typeName);
+        ArgumentChecks.ensureNonNull("container", container);
+        ArgumentChecks.ensureNonNull("members",   members);
+        this.typeName    = typeName;
+        this.container   = container;
+        this.memberTypes = computeTransientFields(members);
+        /*
+         * Ensure that the record namespace is equals to the schema name. For example if the schema
+         * name is "MyNameSpace", then the record type name can be "MyNameSpace:MyRecordType".
+         */
+        final LocalName   schemaName   = container.getSchemaName();
+        final GenericName fullTypeName = typeName.toFullyQualifiedName();
+        if (schemaName.compareTo(typeName.scope().name().tip()) != 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentNamespace_2, schemaName, fullTypeName));
+        }
+        final int size = size();
+        for (int i=0; i<size; i++) {
+            final MemberName name = getName(i);
+            final Type type = this.memberTypes[i];
+            if (type == null || name.getAttributeType().compareTo(type.getTypeName()) != 0) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMemberType_2, name, type));
+            }
+            if (fullTypeName.compareTo(name.scope().name()) != 0) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentNamespace_2,
+                        fullTypeName, name.toFullyQualifiedName()));
+            }
+        }
+    }
+
+    /**
+     * Creates a new record from member names specified as character sequence.
+     * This constructor builds the {@link MemberName} instance itself.
      *
      * @param typeName    The name that identifies this record type.
      * @param container   The schema that contains this record type.
-     * @param memberTypes The name of the members to be included in this record type.
+     * @param members     The name of the members to be included in this record type.
+     * @param nameFactory The factory to use for instantiating {@link MemberName}.
      */
-    public DefaultRecordType(final TypeName typeName, final RecordSchema container, Map<MemberName,Type> memberTypes) {
-        ArgumentChecks.ensureNonNull("typeName",    typeName);
-        ArgumentChecks.ensureNonNull("container",   container);
-        ArgumentChecks.ensureNonNull("memberTypes", memberTypes);
-        memberTypes = new LinkedHashMap<>(memberTypes);
-        memberTypes.remove(null);
-        for (final Map.Entry<MemberName,Type> entry : memberTypes.entrySet()) {
-            final MemberName name = entry.getKey();
-            final Type type = entry.getValue();
-            if (type == null || !name.getAttributeType().equals(type.getTypeName())) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMemberType_2, name, type));
+    DefaultRecordType(final TypeName typeName, final RecordSchema container,
+            final Map<? extends CharSequence, ? extends Type> members, final NameFactory nameFactory)
+    {
+        this.typeName  = typeName;
+        this.container = container;
+        final NameSpace namespace = nameFactory.createNameSpace(typeName, null);
+        final Map<MemberName,Type> memberTypes = new LinkedHashMap<>(Containers.hashMapCapacity(members.size()));
+        for (final Map.Entry<? extends CharSequence, ? extends Type> entry : members.entrySet()) {
+            final Type         type   = entry.getValue();
+            final CharSequence name   = entry.getKey();
+            final MemberName   member = nameFactory.createMemberName(namespace, name, type.getTypeName());
+            if (memberTypes.put(member, type) != null) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedElement_1, member));
             }
         }
-        this.typeName    = typeName;
-        this.container   = container;
-        this.memberTypes = CollectionsExt.unmodifiableOrCopy(memberTypes);
+        this.memberTypes = computeTransientFields(memberTypes);
+    }
+
+    /**
+     * Invoked on deserialization for restoring the transient fields.
+     * See {@link #writeObject(ObjectOutputStream)} for the stream data description.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        final int size = in.readInt();
+        final Map<MemberName,Type> members = new LinkedHashMap<>(Containers.hashMapCapacity(size));
+        for (int i=0; i<size; i++) {
+            final MemberName member = (MemberName) in.readObject();
+            final Type type = (Type) in.readObject();
+            if (members.put(member, type) != null) {
+                throw new InvalidObjectException(Errors.format(Errors.Keys.DuplicatedElement_1, member));
+            }
+        }
+        memberTypes = computeTransientFields(members);
+    }
+
+    /**
+     * Invoked on serialization for writing the member names and their type.
+     *
+     * @serialData The number of members as an {@code int}, followed by a
+     *             ({@code MemberName}, {@code Type}) pair for each member.
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        final int size = size();
+        out.defaultWriteObject();
+        out.writeInt(size);
+        for (int i=0; i<size; i++) {
+            out.writeObject(getName(i));
+            out.writeObject(memberTypes[i]);
+        }
     }
 
     /**
@@ -159,6 +279,14 @@ public class DefaultRecordType implements RecordType, Serializable {
     }
 
     /**
+     * Returns {@code this} since {@link RecordDefinition} is the definition of this record type.
+     */
+    @Override
+    final RecordType getRecordType() {
+        return this;
+    }
+
+    /**
      * Returns the name that identifies this record type. If this {@code RecordType} is contained in a
      * {@linkplain DefaultRecordSchema record schema}, then the record type name shall be valid in the
      * {@linkplain DefaultNameSpace name space} of the record schema:
@@ -167,9 +295,10 @@ public class DefaultRecordType implements RecordType, Serializable {
      *     NameSpace namespace = getContainer().getSchemaName().scope()
      * }
      *
-     * {@section Comparison with Java reflection}
+     * <div class="note"><b>Comparison with Java reflection:</b>
      * If we think about this {@code RecordType} as equivalent to a {@code Class} instance,
      * then this method can be think as the equivalent of the Java {@link Class#getName()} method.
+     * </div>
      *
      * @return The name that identifies this record type.
      */
@@ -192,15 +321,20 @@ public class DefaultRecordType implements RecordType, Serializable {
      * Returns the dictionary of all (<var>name</var>, <var>type</var>) pairs in this record type.
      * The returned map is unmodifiable.
      *
-     * {@section Comparison with Java reflection}
+     * <div class="note"><b>Comparison with Java reflection:</b>
      * If we think about this {@code RecordType} as equivalent to a {@code Class} instance, then
      * this method can be though as the related to the Java {@link Class#getFields()} method.
+     * </div>
      *
      * @return The dictionary of (<var>name</var>, <var>type</var>) pairs, or an empty map if none.
      */
     @Override
-    public Map<MemberName, Type> getMemberTypes() {
-        return memberTypes;
+    public Map<MemberName,Type> getMemberTypes() {
+        return ObjectConverters.derivedValues(memberIndices(), MemberName.class, new SurjectiveConverter<Integer,Type>() {
+            @Override public Class<Integer> getSourceClass() {return Integer.class;}
+            @Override public Class<Type>    getTargetClass() {return Type.class;}
+            @Override public Type apply(final Integer index) {return getType(index);}
+        });
     }
 
     /**
@@ -215,7 +349,14 @@ public class DefaultRecordType implements RecordType, Serializable {
      */
     @Override
     public Set<MemberName> getMembers() {
-        return memberTypes.keySet();
+        return memberIndices().keySet();
+    }
+
+    /**
+     * Returns the type at the given index.
+     */
+    final Type getType(final int index) {
+        return memberTypes[index];
     }
 
     /**
@@ -226,17 +367,18 @@ public class DefaultRecordType implements RecordType, Serializable {
      *     getMemberTypes().get(memberName).getTypeName();
      * }
      *
-     * {@section Comparison with Java reflection}
+     * <div class="note"><b>Comparison with Java reflection:</b>
      * If we think about this {@code RecordType} as equivalent to a {@code Class} instance, then
      * this method can be though as related to the Java {@link Class#getField(String)} method.
+     * </div>
      *
      * @param  memberName The attribute name for which to get the associated type name.
      * @return The associated type name, or {@code null} if none.
      */
     @Override
     public TypeName locate(final MemberName memberName) {
-        final Type type = memberTypes.get(memberName);
-        return (type != null) ? type.getTypeName() : null;
+        final Integer index = indexOf(memberName);
+        return (index != null) ? getType(index).getTypeName() : null;
     }
 
     /**
@@ -273,9 +415,10 @@ public class DefaultRecordType implements RecordType, Serializable {
         }
         if (other != null && other.getClass() == getClass()) {
             final DefaultRecordType that = (DefaultRecordType) other;
-            return Objects.equals(typeName,    that.typeName)  &&
-                   Objects.equals(container,   that.container) &&
-                   Objects.equals(memberTypes, that.memberTypes);
+            return Objects.equals(typeName,    that.typeName)    &&
+                   Objects.equals(container,   that.container)   &&
+                   Arrays .equals(memberTypes, that.memberTypes) &&
+                   memberIndices().equals(that.memberIndices());
         }
         return false;
     }
@@ -285,19 +428,6 @@ public class DefaultRecordType implements RecordType, Serializable {
      */
     @Override
     public int hashCode() {
-        int code = memberTypes.hashCode();
-        if (typeName  != null) code = 31*code + typeName .hashCode();
-        if (container != null) code = 31*code + container.hashCode();
-        return code;
-    }
-
-    /**
-     * Returns a string representation of this {@code RecordType}.
-     * The string representation is for debugging purpose and may change in any future SIS version.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        return "RecordType[\"" + typeName + "\"]";
+        return Objects.hashCode(typeName) + 31*(memberIndices().hashCode() + 31*Arrays.hashCode(memberTypes));
     }
 }

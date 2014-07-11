@@ -60,6 +60,7 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.XLinkMarshallingTest.class,
 
     // ISO implementations.
+    org.apache.sis.metadata.iso.citation.DefaultContactTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
     org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,

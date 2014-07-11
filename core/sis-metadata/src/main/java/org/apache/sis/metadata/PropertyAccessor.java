@@ -1100,9 +1100,7 @@ class PropertyAccessor {
     {
         assert type.isInstance(metadata1) : metadata1;
         assert type.isInstance(metadata2) : metadata2;
-        final int count = (mode == ComparisonMode.STRICT &&
-                EXTRA_GETTER.getDeclaringClass().isInstance(metadata2)) ? allCount : standardCount;
-        for (int i=0; i<count; i++) {
+        for (int i=0; i<standardCount; i++) {
             final Method method = getters[i];
             final Object value1 = get(method, metadata1);
             final Object value2 = get(method, metadata2);
@@ -1116,6 +1114,16 @@ class PropertyAccessor {
                     continue; // Accept this slight difference.
                 }
                 return false;
+            }
+        }
+        /*
+         * One final check for the IdentifiedObjects.getIdentifiers() collection.
+         */
+        if (mode == ComparisonMode.STRICT && EXTRA_GETTER.getDeclaringClass().isInstance(metadata2)) {
+            final Object value1 = get(EXTRA_GETTER, metadata1);
+            final Object value2 = get(EXTRA_GETTER, metadata2);
+            if (!isNullOrEmpty(value1) || !isNullOrEmpty(value2)) {
+                return Utilities.deepEquals(value1, value2, mode);
             }
         }
         return true;
@@ -1134,7 +1142,20 @@ class PropertyAccessor {
             final Cloner cloner = new Cloner();
             for (int i=0; i<allCount; i++) {
                 final Method setter = setters[i];
-                if (setter != null && !setter.isAnnotationPresent(Deprecated.class)) {
+                if (setter != null) {
+                    if (setter.isAnnotationPresent(Deprecated.class)) {
+                        /*
+                         * We need to skip deprecated setter methods, because those methods may delegate
+                         * their work to other setter methods in different objects and those objects may
+                         * have been made unmodifiable by previous iteration in this loop.  If we do not
+                         * skip them, we get an UnmodifiableMetadataException in the call to set(…).
+                         *
+                         * Note that in some cases, only the setter method is deprecated, not the getter.
+                         * This happen when Apache SIS classes represent a more recent ISO standard than
+                         * the GeoAPI interfaces.
+                         */
+                        continue;
+                    }
                     final Method getter = getters[i];
                     final Object source = get(getter, metadata);
                     final Object target = cloner.clone(source);
@@ -1142,7 +1163,7 @@ class PropertyAccessor {
                         arguments[0] = target;
                         set(setter, metadata, arguments);
                         /*
-                         * We invoke the set(...) method which do not perform type conversion
+                         * We invoke the set(…) method variant that do not perform type conversion
                          * because we don't want it to replace the immutable collection created
                          * by ModifiableMetadata.unmodifiable(source). Conversion should not be
                          * required anyway because the getter method should have returned a value

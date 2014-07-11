@@ -72,6 +72,13 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.5
  * @module
+ *
+ * @see Names
+ * @see DefaultNameSpace
+ * @see DefaultScopedName
+ * @see DefaultLocalName
+ * @see DefaultTypeName
+ * @see DefaultMemberName
  */
 public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**

@@ -1,0 +1,89 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.metadata.iso.citation;
+
+import java.util.Collection;
+import org.opengis.metadata.citation.Telephone;
+import org.opengis.metadata.citation.TelephoneType;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+
+
+/**
+ * An adapter for converting telephone lists from ISO 19115:2014 definition to ISO 19115:2003 definition.
+ * Used for implementation of deprecated {@link DefaultTelephone#getVoices()} and
+ * {@link DefaultTelephone#getFacsimiles()} methods.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.5
+ * @version 0.5
+ * @module
+ */
+final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
+    /**
+     * The type of telephone number.
+     * Either {@link TelephoneType#VOICE} or {@link TelephoneType#FACSIMILE}.
+     */
+    private final TelephoneType type;
+
+    /**
+     * Wraps the given telephone list for the given type.
+     */
+    LegacyTelephones(final Collection<Telephone> telephones, final TelephoneType type) {
+        super(telephones);
+        this.type = type;
+    }
+
+    /**
+     * Wraps the given telephone number in a new {@link DefaultTelephone} instance.
+     */
+    @Override
+    protected Telephone wrap(final String value) {
+        final DefaultTelephone telephone = new DefaultTelephone();
+        telephone.setNumber(value);
+        telephone.setNumberType(type);
+        return telephone;
+    }
+
+    /**
+     * Extracts the telephone number from the given {@link DefaultTelephone} instance.
+     */
+    @Override
+    protected String unwrap(final Telephone container) {
+        if (container != null && type.equals(container.getNumberType())) {
+            return container.getNumber();
+        }
+        return null;
+    }
+
+    /**
+     * Updates the telephone number in an existing {@link DefaultTelephone} instance, if possible.
+     */
+    @Override
+    protected boolean update(final Telephone container, final String value) {
+        if (container instanceof DefaultTelephone) {
+            final TelephoneType ct = container.getNumberType();
+            if (ct == null || ct.equals(type)) {
+                if (ct == null) {
+                    ((DefaultTelephone) container).setNumberType(type);
+                }
+                ((DefaultTelephone) container).setNumber(value);
+                return true;
+            }
+        }
+        return false;
+    }
+}

@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import org.apache.sis.metadata.AbstractMetadata;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -159,8 +160,8 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
                         }
                         caller.warningOccurred = true;
                     }
-                    MetadataUtilities.warning(callerClass, callerMethod,
-                            Messages.Keys.IgnoredPropertiesAfterFirst_1, valueClass);
+                    Context.warningOccured(Context.current(), callerClass, callerMethod,
+                            Messages.class, Messages.Keys.IgnoredPropertiesAfterFirst_1, valueClass);
                 }
                 return value;
             }

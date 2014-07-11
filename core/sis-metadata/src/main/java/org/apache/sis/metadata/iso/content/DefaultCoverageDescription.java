@@ -30,9 +30,9 @@ import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
-import org.apache.sis.internal.metadata.MetadataUtilities;
 
 
 /**
@@ -229,8 +229,8 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
                         if (type == null) {
                             type = t;
                         } else {
-                            MetadataUtilities.warning(DefaultCoverageDescription.class, "getContentType",
-                                    Messages.Keys.IgnoredPropertiesAfterFirst_1, CoverageContentType.class);
+                            Context.warningOccured(Context.current(), DefaultCoverageDescription.class, "getContentType",
+                                    Messages.class, Messages.Keys.IgnoredPropertiesAfterFirst_1, CoverageContentType.class);
                             break;
                         }
                     }
