@@ -27,7 +27,7 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -36,7 +36,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase implements WarningListener<Object> {
@@ -118,5 +118,35 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
          */
         assertEquals("warning", "NullCollectionElement_1", resourceKey);
         assertArrayEquals("warning", new String[] {"CodeListSet<Restriction>"}, parameters);
+    }
+
+    /**
+     * Tests (un)marshalling of a XML fragment containing the {@link Restriction#LICENCE} code.
+     * The spelling changed between ISO 19115:2003 and 19115:2014, from "license" to "licence".
+     * We need to ensure that XML marshalling use the old spelling, until the XML schema is updated.
+     *
+     * @throws JAXBException If an error occurred during the during unmarshalling processes.
+     */
+    @Test
+    public void testLicenceCode() throws JAXBException {
+        final String xml =
+                "<gmd:MD_LegalConstraints xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+                "  <gmd:useConstraints>\n" +
+                "    <gmd:MD_RestrictionCode"
+                        + " codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode\""
+                        + " codeListValue=\"license\""                              // Note the "s" - from old ISO 19115:2013 spelling.
+                        + " codeSpace=\"eng\">Licence</gmd:MD_RestrictionCode>\n" + // Note the "c" - this one come from resource file.
+                "  </gmd:useConstraints>\n" +
+                "</gmd:MD_LegalConstraints>\n";
+
+        final DefaultLegalConstraints c = new DefaultLegalConstraints();
+        c.getUseConstraints().add(Restriction.LICENCE);
+        assertXmlEquals(xml, marshal(c), "xmlns:*");
+        /*
+         * Unmarshall and ensure that we got back the original LICENCE code, not a new "LICENSE" code.
+         */
+        final DefaultLegalConstraints actual = unmarshal(xml);
+        assertSame(Restriction.LICENCE, getSingleton(actual.getUseConstraints()));
+        assertEquals(c, actual);
     }
 }
