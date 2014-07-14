@@ -20,15 +20,18 @@ import java.util.Locale;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Party;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultAddress;
 import org.apache.sis.metadata.iso.citation.DefaultContact;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.metadata.iso.citation.DefaultIndividual;
+import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.test.DependsOnMethod;
@@ -45,7 +48,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(TreeNodeChildrenTest.class)
@@ -56,39 +59,40 @@ public final strictfp class TreeNodeTest extends TestCase {
      *
      * {@preformat text
      *   Citation
-     *     ├─Title…………………………………………………………………………………… Some title
-     *     ├─Alternate title (1 of 2)………………………………… First alternate title
-     *     ├─Alternate title (2 of 2)………………………………… Second alternate title
-     *     ├─Edition……………………………………………………………………………… Some edition
+     *     ├─Title…………………………………………………………………………………………… Some title
+     *     ├─Alternate title (1 of 2)………………………………………… First alternate title
+     *     ├─Alternate title (2 of 2)………………………………………… Second alternate title
+     *     ├─Edition……………………………………………………………………………………… Some edition
      *     ├─Cited responsible party (1 of 2)
-     *     │   ├─Organisation name………………………………………… Some organisation
-     *     │   └─Role…………………………………………………………………………… Distributor
+     *     │   └─Party (Organisation)
+     *     │      ├─Name…………………………………………………………………………… Some organisation
+     *     │      └─Role…………………………………………………………………………… Distributor
      *     ├─Cited responsible party (2 of 2)
-     *     │   ├─Individual name……………………………………………… Some person of contact
-     *     │   ├─Contact info
-     *     │   │   └─Address
-     *     │   │       └─Electronic mail address…… Some email
-     *     │   └─Role…………………………………………………………………………… Point of contact
-     *     ├─Presentation form (1 of 2)…………………………… Map digital
-     *     ├─Presentation form (2 of 2)…………………………… map hardcopy
-     *     └─Other citation details……………………………………… Some other details
+     *     │   └─Party (Individual)
+     *     │      ├─Name…………………………………………………………………………… Some person of contact
+     *     │      ├─Contact info
+     *     │      │   └─Address
+     *     │      │       └─Electronic mail address…… Some email
+     *     │      └─Role…………………………………………………………………………… Point of contact
+     *     ├─Presentation form (1 of 2)…………………………………… Map digital
+     *     ├─Presentation form (2 of 2)…………………………………… map hardcopy
+     *     └─Other citation details……………………………………………… Some other details
      * }
      */
     static DefaultCitation metadataWithHierarchy() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithMultiOccurrences();
-        DefaultResponsibleParty party = new DefaultResponsibleParty(Role.DISTRIBUTOR);
-        party.setOrganisationName(new SimpleInternationalString("Some organisation"));
-        citation.getCitedResponsibleParties().add(party);
+        AbstractParty party = new DefaultOrganisation("Some organisation", null, null, null);
+        DefaultResponsibility responsibility = new DefaultResponsibility(Role.DISTRIBUTOR, null, party);
+        citation.getCitedResponsibleParties().add(responsibility);
 
         // Add a second responsible party with deeper hierarchy.
-        party = new DefaultResponsibleParty(Role.POINT_OF_CONTACT);
-        party.setIndividualName("Some person of contact");
         final DefaultContact contact = new DefaultContact();
         final DefaultAddress address = new DefaultAddress();
         address.getElectronicMailAddresses().add("Some email");
         contact.getAddresses().add(address);
-        party.setContactInfo(contact);
-        citation.getCitedResponsibleParties().add(party);
+        party = new DefaultIndividual("Some person of contact", null, contact);
+        responsibility = new DefaultResponsibility(Role.POINT_OF_CONTACT, null, party);
+        citation.getCitedResponsibleParties().add(responsibility);
         return citation;
     }
 
@@ -172,13 +176,15 @@ public final strictfp class TreeNodeTest extends TestCase {
               "Alternate title (2 of 2)",
               "Edition",
               "Cited responsible party (1 of 2)",
-                "Organisation name",
+                "Party",
+                  "Name",
                 "Role",
               "Cited responsible party (2 of 2)",
-                "Individual name",
-                "Contact info",
-                  "Address",
-                    "Electronic mail address",
+                "Party",
+                  "Name",
+                  "Contact info",
+                    "Address",
+                      "Electronic mail address",
                 "Role",
               "Presentation form (1 of 2)",
               "Presentation form (2 of 2)",
@@ -202,13 +208,15 @@ public final strictfp class TreeNodeTest extends TestCase {
               "alternateTitle",
               "edition",
               "citedResponsibleParty",
-                "organisationName",
+                "party",
+                  "name",
                 "role",
               "citedResponsibleParty",
-                "individualName",
-                "contactInfo",
-                  "address",
-                    "electronicMailAddress",
+                "party",
+                  "name",
+                  "contactInfo",
+                    "address",
+                      "electronicMailAddress",
                 "role",
               "presentationForm",
               "presentationForm",
@@ -231,13 +239,15 @@ public final strictfp class TreeNodeTest extends TestCase {
               ONE,          // alternateTitle
               null,         // edition
               ZERO,         // citedResponsibleParty
-                null,       // organisationName
+                ZERO,       // party (organisation)
+                  null,     // name
                 null,       // role
               ONE,          // citedResponsibleParty
-                null,       // individualName
-                null,       // contactInfo
-                  ZERO,     // address
-                    ZERO,   // electronicMailAddress
+                ZERO,       // party (individual)
+                  null,     // name
+                  ZERO,     // contactInfo
+                    ZERO,   // address
+                      ZERO, // electronicMailAddress
                 null,       // role
               ZERO,         // presentationForm
               ONE,          // presentationForm
@@ -257,14 +267,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               InternationalString.class,
               InternationalString.class,
               InternationalString.class,
-              ResponsibleParty.class,
-                InternationalString.class,
+              Responsibility.class,
+                Party.class,
+                  InternationalString.class,
                 Role.class,
-              ResponsibleParty.class,
-                String.class,
-                Contact.class,
-                  Address.class,
-                    String.class,
+              Responsibility.class,
+                Party.class,
+                  InternationalString.class,
+                  Contact.class,
+                    Address.class,
+                      String.class,
                 Role.class,
               PresentationForm.class,
               PresentationForm.class,
@@ -285,13 +297,15 @@ public final strictfp class TreeNodeTest extends TestCase {
               "Second alternate title",
               "Some edition",
               null, // ResponsibleParty
-                "Some organisation",
+                null, // Party (organisation)
+                  "Some organisation",
                 Role.DISTRIBUTOR,
               null, // ResponsibleParty
-                "Some person of contact",
-                null, // Contact
-                  null, // Address
-                    "Some email",
+                null, // Party (individual)
+                  "Some person of contact",
+                  null, // Contact
+                    null, // Address
+                      "Some email",
                 Role.POINT_OF_CONTACT,
               PresentationForm.MAP_DIGITAL,
               PresentationForm.MAP_HARDCOPY,

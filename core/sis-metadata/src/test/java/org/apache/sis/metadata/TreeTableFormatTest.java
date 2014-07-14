@@ -29,7 +29,8 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
+import org.apache.sis.metadata.iso.citation.DefaultIndividual;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
@@ -45,7 +46,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(TreeTableViewTest.class)
@@ -87,13 +88,11 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         citation.getAlternateTitles().add(new SimpleInternationalString("Alt A"));
         citation.getAlternateTitles().add(new SimpleInternationalString("Alt B"));
 
-        final DefaultResponsibleParty author = new DefaultResponsibleParty();
-        author.setIndividualName("Testsuya Toyoda");
-        author.setRole(Role.AUTHOR);
-        citation.getCitedResponsibleParties().add(author);
-        final DefaultResponsibleParty duplicated = new DefaultResponsibleParty();
-        duplicated.setIndividualName("A japanese author");
-        citation.getCitedResponsibleParties().add(duplicated);
+        citation.getCitedResponsibleParties().add(new DefaultResponsibility(Role.AUTHOR, null,
+                new DefaultIndividual("Testsuya Toyoda", null, null)));
+        citation.getCitedResponsibleParties().add(new DefaultResponsibility(null, null,
+                new DefaultIndividual("A japanese author", null, null)));
+
         return citation;
     }
 
@@ -114,10 +113,12 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "  │   └─Authority\n" +
             "  │       └─Title………………………………………………… ISBN\n" +
             "  ├─Cited responsible party (1 of 2)\n" +
-            "  │   ├─Individual name………………………………… Testsuya Toyoda\n" +
+            "  │   ├─Party\n" +
+            "  │   │   └─Name…………………………………………………… Testsuya Toyoda\n" +
             "  │   └─Role……………………………………………………………… Author\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   └─Individual name………………………………… A japanese author\n" +
+            "  │   └─Party\n" +
+            "  │       └─Name…………………………………………………… A japanese author\n" +
             "  ├─Presentation form (1 of 2)……………… Document hardcopy\n" +
             "  ├─Presentation form (2 of 2)……………… Image hardcopy\n" +
             "  └─ISBN………………………………………………………………………… 9782505004509\n", text);
@@ -133,7 +134,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final DefaultCitation untitled = new DefaultCitation();
         titled  .getPresentationForms().add(PresentationForm.DOCUMENT_HARDCOPY);
         coded   .getPresentationForms().add(PresentationForm.IMAGE_HARDCOPY);
-        untitled.getCitedResponsibleParties().add(new DefaultResponsibleParty(Role.AUTHOR));
+        untitled.getCitedResponsibleParties().add(new DefaultResponsibility(Role.AUTHOR, null, null));
         final DefaultProcessing processing = new DefaultProcessing();
         processing.getDocumentations().add(titled);
         processing.getDocumentations().add(coded);

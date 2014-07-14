@@ -45,7 +45,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
@@ -218,6 +218,9 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
         final int count = accessor.count();
         for (int i=0; i<count; i++) {
             testingMethod = accessor.name(i, KeyNamePolicy.METHOD_NAME);
+            if (skipTest(accessor.implementation, testingMethod)) {
+                continue;
+            }
             final String property = accessor.name(i, KeyNamePolicy.JAVABEANS_PROPERTY);
             assertNotNull("Missing method name.", testingMethod);
             assertNotNull("Missing property name.", property);
@@ -274,5 +277,20 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                         normalizeType(newValue), normalizeType(value));
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if test for the given property should be skipped.
+     * Reasons for skipping a test are:
+     *
+     * <ul>
+     *   <li>Method which is the delegate of many legacy ISO 19115:2003 methods.
+     *       Having a property that can be modified by many other properties confuse the tests.</li>
+     * </ul>
+     */
+    @SuppressWarnings("deprecation")
+    private static boolean skipTest(final Class<?> implementation, final String method) {
+        return implementation == org.apache.sis.metadata.iso.citation.DefaultResponsibleParty.class
+                && method.equals("getParties");
     }
 }

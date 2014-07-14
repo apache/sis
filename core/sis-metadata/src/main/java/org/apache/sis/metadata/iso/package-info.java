@@ -95,6 +95,7 @@
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
+    @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(DQ_DataQuality.class),
     @XmlJavaTypeAdapter(MD_ApplicationSchemaInformation.class),
