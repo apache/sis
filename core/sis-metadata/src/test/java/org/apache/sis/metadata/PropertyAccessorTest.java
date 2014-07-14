@@ -29,8 +29,10 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.AttributeGroup;
@@ -174,13 +176,15 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Citation.class, "getEdition",                 "edition",                 "edition",               "Edition",                    InternationalString.class,
             Citation.class, "getEditionDate",             "editionDate",             "editionDate",           "Edition date",               Date.class,
             Citation.class, "getIdentifiers",             "identifiers",             "identifier",            "Identifiers",                Identifier[].class,
-            Citation.class, "getCitedResponsibleParties", "citedResponsibleParties", "citedResponsibleParty", "Cited responsible parties",  ResponsibleParty[].class,
+            Citation.class, "getCitedResponsibleParties", "citedResponsibleParties", "citedResponsibleParty", "Cited responsible parties",  Responsibility[].class,
             Citation.class, "getPresentationForms",       "presentationForms",       "presentationForm",      "Presentation forms",         PresentationForm[].class,
             Citation.class, "getSeries",                  "series",                  "series",                "Series",                     Series.class,
             Citation.class, "getOtherCitationDetails",    "otherCitationDetails",    "otherCitationDetails",  "Other citation details",     InternationalString.class,
             Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,
             Citation.class, "getISBN",                    "ISBN",                    "ISBN",                  "ISBN",                       String.class,
-            Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class);
+            Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class,
+            Citation.class, "getGraphics",                "graphics",                "graphic",               "Graphics",                   BrowseGraphic[].class,
+            Citation.class, "getOnlineResources",         "onlineResources",         "onlineResource",        "Online resources",           OnlineResource[].class);
     }
 
     /**
@@ -635,6 +639,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     public void testToString() {
         final PropertyAccessor accessor = createPropertyAccessor();
-        assertEquals("PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
+        assertEquals("PropertyAccessor[15 getters & 15 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
     }
 }

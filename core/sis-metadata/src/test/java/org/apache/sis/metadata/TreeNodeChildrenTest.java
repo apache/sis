@@ -310,7 +310,9 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             "Some other details",
             null, // collective title
             null, // ISBN
-            null  // ISSN
+            null, // ISSN
+            null, // onlineResources (collection)
+            null  // graphics (collection)
         };
         assertFalse ("isEmpty()", children.isEmpty());
         assertEquals("size()", expected.length, children.size());
