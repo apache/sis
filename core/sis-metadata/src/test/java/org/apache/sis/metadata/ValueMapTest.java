@@ -170,7 +170,9 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<>("identifiers",             citation.getIdentifiers()),
             new SimpleEntry<>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<>("presentationForms",       emptySet()),
-            new SimpleEntry<>("ISBN",                    "9782505004509")
+            new SimpleEntry<>("ISBN",                    "9782505004509"),
+            new SimpleEntry<>("graphics",                emptyList()),
+            new SimpleEntry<>("onlineResources",         emptyList())
         }, all.entrySet().toArray());
     }
 
@@ -198,7 +200,9 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<>("identifiers",             citation.getIdentifiers()),
             new SimpleEntry<>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<>("presentationForms",       emptySet()),
-            new SimpleEntry<>("ISBN",                    "9782505004509")
+            new SimpleEntry<>("ISBN",                    "9782505004509"),
+            new SimpleEntry<>("graphics",                emptyList()),
+            new SimpleEntry<>("onlineResources",         emptyList())
         }, all.entrySet().toArray());
     }
 
@@ -229,7 +233,9 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<>("otherCitationDetails",    null),
             new SimpleEntry<>("collectiveTitle",         null),
             new SimpleEntry<>("ISBN",                    "9782505004509"),
-            new SimpleEntry<>("ISSN",                    null)
+            new SimpleEntry<>("ISSN",                    null),
+            new SimpleEntry<>("graphics",                emptyList()),
+            new SimpleEntry<>("onlineResources",         emptyList())
         }, all.entrySet().toArray());
     }
 

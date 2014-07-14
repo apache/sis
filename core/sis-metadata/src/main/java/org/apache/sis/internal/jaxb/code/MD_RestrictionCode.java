@@ -87,16 +87,10 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
 
     /**
      * Invoked by JAXB on unmarshalling.
-     * This method performs the reverse of the {@link #wrap(CodeListProxy)} spelling change:
-     * it converts "license" (ISO 19115:2003) to "licence" (ISO 19115:2014) in order to have
-     * only one {@code CodeList} instance for both.
      *
      * @param proxy The unmarshalled value.
      */
     public void setElement(final CodeListProxy proxy) {
-        if ("license".equals(proxy.codeListValue)) {
-            proxy.codeListValue = "licence";
-        }
         this.proxy = proxy;
     }
 }
