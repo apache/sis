@@ -22,6 +22,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Contact;
+import org.opengis.metadata.citation.Individual;
+import org.opengis.metadata.citation.Organisation;
 import org.opengis.metadata.citation.Party;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
@@ -97,6 +99,10 @@ public class AbstractParty extends ISOMetadata implements Party {
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is an instance of {@link Individual} or {@link Organisation},
+     *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
+     *       Note that if the given object implements more than one of the above-cited interfaces,
+     *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
      *   <li>Otherwise if the given object is already an instance of
      *       {@code AbstractParty}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code AbstractParty} instance is created using the
@@ -110,6 +116,12 @@ public class AbstractParty extends ISOMetadata implements Party {
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractParty castOrCopy(final Party object) {
+        if (object instanceof Individual) {
+            return DefaultIndividual.castOrCopy((Individual) object);
+        }
+        if (object instanceof Organisation) {
+            return DefaultOrganisation.castOrCopy((Organisation) object);
+        }
         if (object == null || object instanceof AbstractParty) {
             return (AbstractParty) object;
         }

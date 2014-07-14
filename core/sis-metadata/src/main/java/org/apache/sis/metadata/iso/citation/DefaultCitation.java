@@ -24,9 +24,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
+import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -51,8 +54,9 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "CI_Citation_Type", propOrder = {
@@ -125,10 +129,10 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     private long editionDate = Long.MIN_VALUE;
 
     /**
-     * Name and position information for an individual or organization that is responsible
+     * Roles, Name, contact, and position information for an individual or organization that is responsible
      * for the resource. Returns an empty collection if there is none.
      */
-    private Collection<ResponsibleParty> citedResponsibleParties;
+    private Collection<Responsibility> citedResponsibleParties;
 
     /**
      * Mode in which the resource is represented, or an empty collection if none.
@@ -153,6 +157,16 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * source cited. May be {@code null} if there is no title.
      */
     private InternationalString collectiveTitle;
+
+    /**
+     * Online references to the cited resource.
+     */
+    private Collection<OnlineResource> onlineResources;
+
+    /**
+     * Citation graphic or logo for cited party.
+     */
+    private Collection<BrowseGraphic> graphics;
 
     /**
      * Constructs an initially empty citation.
@@ -180,10 +194,13 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param party The name and position information for an individual or organization that is
      *              responsible for the resource, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, {@link ResponsibleParty} has been replaced by {@link Responsibility}.
      */
+    @Deprecated
     public DefaultCitation(final ResponsibleParty party) {
         if (party != null) {
-            citedResponsibleParties = singleton(party, ResponsibleParty.class);
+            citedResponsibleParties = singleton(party, Responsibility.class);
             title = party.getOrganisationName();
             if (title == null) {
                 title = party.getPositionName();
@@ -215,11 +232,13 @@ public class DefaultCitation extends ISOMetadata implements Citation {
             edition                 = object.getEdition();
             editionDate             = toMilliseconds(object.getEditionDate());
             identifiers             = copyCollection(object.getIdentifiers(), Identifier.class);
-            citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), ResponsibleParty.class);
+            citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), Responsibility.class);
             presentationForms       = copyCollection(object.getPresentationForms(), PresentationForm.class);
             series                  = object.getSeries();
             otherCitationDetails    = object.getOtherCitationDetails();
             collectiveTitle         = object.getCollectiveTitle();
+            onlineResources         = copyCollection(object.getOnlineResources(), OnlineResource.class);
+            graphics                = copyCollection(object.getGraphics(), BrowseGraphic.class);
             final String id1        = object.getISBN();
             final String id2        = object.getISSN();
             if (id1 != null || id2 != null) {
@@ -277,8 +296,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Returns the short name or other language name by which the cited information is known.
-     * Example: "DCW" as an alternative title for "<cite>Digital Chart of the World</cite>".
+     * Returns short name or other language name by which the cited information is known.
+     *
+     * <div class="note"><b>Example:</b> "DCW" as an alternative title for "Digital Chart of the World".</div>
      *
      * @return Other names for the resource, or an empty collection if none.
      */
@@ -361,7 +381,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the unique identifier for the resource.
-     * Example: Universal Product Code (UPC), National Stock Number (NSN).
+     *
+     * <div class="note"><b>Example:</b> Universal Product Code (UPC), National Stock Number (NSN).</div>
      *
      * {@section Unified identifiers view}
      * In this SIS implementation, the collection returned by this method includes the XML identifiers
@@ -408,25 +429,25 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Returns the name and position information for an individual or organization that is
-     * responsible for the resource.
+     * Returns the role, name, contact and position information for an individual or organization
+     * that is responsible for the resource.
      *
      * @return The individual or organization that is responsible, or an empty collection if none.
      */
     @Override
     @XmlElement(name = "citedResponsibleParty")
-    public Collection<ResponsibleParty> getCitedResponsibleParties() {
-        return citedResponsibleParties = nonNullCollection(citedResponsibleParties, ResponsibleParty.class);
+    public Collection<Responsibility> getCitedResponsibleParties() {
+        return citedResponsibleParties = nonNullCollection(citedResponsibleParties, Responsibility.class);
     }
 
     /**
-     * Sets the name and position information for an individual or organization that is responsible
-     * for the resource.
+     * Sets the role, name, contact and position information for an individual or organization
+     * that is responsible for the resource.
      *
      * @param newValues The new cited responsible parties, or {@code null} if none.
      */
-    public void setCitedResponsibleParties(final Collection<? extends ResponsibleParty> newValues) {
-        citedResponsibleParties = writeCollection(newValues, citedResponsibleParties, ResponsibleParty.class);
+    public void setCitedResponsibleParties(final Collection<? extends Responsibility> newValues) {
+        citedResponsibleParties = writeCollection(newValues, citedResponsibleParties, Responsibility.class);
     }
 
     /**
@@ -492,8 +513,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Returns the common title with holdings note. Note: title identifies elements of a series collectively,
-     * combined with information about what volumes are available at the source cited.
+     * Returns the common title with holdings note.
      *
      * @return The common title, or {@code null} if none.
      */
@@ -590,5 +610,53 @@ public class DefaultCitation extends ISOMetadata implements Citation {
         if (newValue != null || !isNullOrEmpty(identifiers)) {
             getIdentifierMap().putSpecialized(ISSN, newValue);
         }
+    }
+
+    /**
+     * Returns online references to the cited resource.
+     *
+     * @return Online references to the cited resource, or an empty collection if there is none.
+     *
+     * @since 0.5
+     */
+    @Override
+/// @XmlElement(name = "onlineResource")
+    public Collection<OnlineResource> getOnlineResources() {
+        return onlineResources = nonNullCollection(onlineResources, OnlineResource.class);
+    }
+
+    /**
+     * Sets online references to the cited resource.
+     *
+     * @param newValues The new online references to the cited resource.
+     *
+     * @since 0.5
+     */
+    public void setOnlineResources(final Collection<? extends OnlineResource> newValues) {
+        onlineResources = writeCollection(newValues, onlineResources, OnlineResource.class);
+    }
+
+    /**
+     * Returns citation graphics or logo for cited party.
+     *
+     * @return Graphics or logo for cited party, or an empty collection if there is none.
+     *
+     * @since 0.5
+     */
+    @Override
+/// @XmlElement(name = "graphic")
+    public Collection<BrowseGraphic> getGraphics() {
+        return graphics = nonNullCollection(graphics, BrowseGraphic.class);
+    }
+
+    /**
+     * Sets citation graphics or logo for cited party.
+     *
+     * @param newValues The new citation graphics or logo for cited party.
+     *
+     * @since 0.5
+     */
+    public void setGraphics(final Collection<? extends BrowseGraphic> newValues) {
+        graphics = writeCollection(newValues, graphics, BrowseGraphic.class);
     }
 }
