@@ -27,7 +27,6 @@ import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -36,7 +35,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @version 0.4 (derived from geotk-3.00)
- * @since   0.4
+ * @since   0.5
  * @module
  */
 public final strictfp class DirectReferenceSystemTest extends XMLTestCase {
@@ -50,8 +49,9 @@ public final strictfp class DirectReferenceSystemTest extends XMLTestCase {
      */
     private static DefaultMetadata createMetadata() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        final DirectReferenceSystem refSys = new DirectReferenceSystem(new ImmutableIdentifier(
-                new DefaultCitation(getSingleton(HardCodedCitations.EPSG.getCitedResponsibleParties())), null, "4326"));
+        final DefaultCitation citation = new DefaultCitation("European Petroleum Survey Group");
+        citation.setCitedResponsibleParties(HardCodedCitations.EPSG.getCitedResponsibleParties());
+        final DirectReferenceSystem refSys = new DirectReferenceSystem(new ImmutableIdentifier(citation, null, "4326"));
         metadata.setReferenceSystemInfo(Arrays.asList(refSys));
         return metadata;
     }

@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Datatype;
 import org.opengis.metadata.Obligation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
@@ -36,7 +36,7 @@ import org.apache.sis.util.iso.Types;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_ExtendedElementInformation_Type", propOrder = {
@@ -139,7 +139,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     /**
      * Name of the person or organization creating the extended element.
      */
-    private Collection<ResponsibleParty> sources;
+    private Collection<Responsibility> sources;
 
     /**
      * Construct an initially empty extended element information.
@@ -164,7 +164,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
                                              final Datatype     dataType,
                                              final String       parentEntity,
                                              final CharSequence rule,
-                                             final ResponsibleParty source)
+                                             final Responsibility source)
     {
         this.name         = name;
         this.definition   = Types.toInternationalString(definition);
@@ -172,7 +172,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
         this.dataType     = dataType;
         this.parentEntity = singleton(parentEntity, String.class);
         this.rule         = Types.toInternationalString(rule);
-        this.sources      = singleton(source, ResponsibleParty.class);
+        this.sources      = singleton(source, Responsibility.class);
     }
 
     /**
@@ -199,7 +199,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
             parentEntity      = copyCollection(object.getParentEntity(), String.class);
             rule              = object.getRule();
             rationales        = copyCollection(object.getRationales(), InternationalString.class);
-            sources           = copyCollection(object.getSources(), ResponsibleParty.class);
+            sources           = copyCollection(object.getSources(), Responsibility.class);
         }
     }
 
@@ -499,8 +499,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "source", required = true)
-    public Collection<ResponsibleParty> getSources() {
-        return sources = nonNullCollection(sources, ResponsibleParty.class);
+    public Collection<Responsibility> getSources() {
+        return sources = nonNullCollection(sources, Responsibility.class);
     }
 
     /**
@@ -508,7 +508,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValues The new sources.
      */
-    public void setSources(final Collection<? extends ResponsibleParty> newValues) {
-        sources = writeCollection(newValues, sources, ResponsibleParty.class);
+    public void setSources(final Collection<? extends Responsibility> newValues) {
+        sources = writeCollection(newValues, sources, Responsibility.class);
     }
 }

@@ -54,22 +54,24 @@ public final strictfp class TreeTableViewTest extends TestCase {
      */
     private static final String EXPECTED =
             "Citation\n" +
-            "  ├─Title…………………………………………………………………………………… Some title\n" +
-            "  ├─Alternate title (1 of 2)………………………………… First alternate title\n" +
-            "  ├─Alternate title (2 of 2)………………………………… Second alternate title\n" +
-            "  ├─Edition……………………………………………………………………………… Some edition\n" +
+            "  ├─Title……………………………………………………………………………………………… Some title\n" +
+            "  ├─Alternate title (1 of 2)…………………………………………… First alternate title\n" +
+            "  ├─Alternate title (2 of 2)…………………………………………… Second alternate title\n" +
+            "  ├─Edition………………………………………………………………………………………… Some edition\n" +
             "  ├─Cited responsible party (1 of 2)\n" +
-            "  │   ├─Organisation name………………………………………… Some organisation\n" +
-            "  │   └─Role…………………………………………………………………………… Distributor\n" +
+            "  │   ├─Party\n" +
+            "  │   │   └─Name…………………………………………………………………………… Some organisation\n" +
+            "  │   └─Role……………………………………………………………………………………… Distributor\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   ├─Individual name……………………………………………… Some person of contact\n" +
-            "  │   ├─Contact info\n" +
-            "  │   │   └─Address\n" +
-            "  │   │       └─Electronic mail address…… Some email\n" +
-            "  │   └─Role…………………………………………………………………………… Point of contact\n" +
-            "  ├─Presentation form (1 of 2)…………………………… Map digital\n" +
-            "  ├─Presentation form (2 of 2)…………………………… Map hardcopy\n" +
-            "  └─Other citation details……………………………………… Some other details\n";
+            "  │   ├─Party\n" +
+            "  │   │   ├─Name…………………………………………………………………………… Some person of contact\n" +
+            "  │   │   └─Contact info\n" +
+            "  │   │       └─Address\n" +
+            "  │   │           └─Electronic mail address…… Some email\n" +
+            "  │   └─Role……………………………………………………………………………………… Point of contact\n" +
+            "  ├─Presentation form (1 of 2)……………………………………… Map digital\n" +
+            "  ├─Presentation form (2 of 2)……………………………………… Map hardcopy\n" +
+            "  └─Other citation details………………………………………………… Some other details\n";
 
     /**
      * Tests {@link TreeTableView#toString()}.

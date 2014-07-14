@@ -64,7 +64,9 @@ public final strictfp class NameMapTest extends TestCase {
             new SimpleEntry<String,String>("otherCitationDetails",  "otherCitationDetails"),
             new SimpleEntry<String,String>("collectiveTitle",       "collectiveTitle"),
             new SimpleEntry<String,String>("ISBN",                  "ISBN"),
-            new SimpleEntry<String,String>("ISSN",                  "ISSN")
+            new SimpleEntry<String,String>("ISSN",                  "ISSN"),
+            new SimpleEntry<String,String>("graphic",               "graphics"),
+            new SimpleEntry<String,String>("onlineResource",        "onlineResources")
         }, map.entrySet().toArray());
 
         assertEquals("alternateTitles", map.get("alternateTitle"));

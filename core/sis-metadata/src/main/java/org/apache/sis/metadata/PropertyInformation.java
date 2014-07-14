@@ -25,7 +25,7 @@ import org.opengis.metadata.Datatype;
 import org.opengis.metadata.Obligation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
@@ -330,7 +330,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Returns the name of the person or organization creating the element.
      */
     @Override
-    public Collection<? extends ResponsibleParty> getSources() {
+    public Collection<? extends Responsibility> getSources() {
         return authority.getCitedResponsibleParties();
     }
 

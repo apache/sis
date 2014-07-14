@@ -22,11 +22,13 @@ import java.util.Date;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicDescription;
+import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.extent.AbstractGeographicExtent;
@@ -68,13 +70,15 @@ public final strictfp class TypeMapTest extends TestCase {
             new SimpleEntry<String,Class<?>>("edition",               InternationalString.class),
             new SimpleEntry<String,Class<?>>("editionDate",           Date.class),
             new SimpleEntry<String,Class<?>>("identifier",            Identifier.class),
-            new SimpleEntry<String,Class<?>>("citedResponsibleParty", ResponsibleParty.class),
+            new SimpleEntry<String,Class<?>>("citedResponsibleParty", Responsibility.class),
             new SimpleEntry<String,Class<?>>("presentationForm",      PresentationForm.class),
             new SimpleEntry<String,Class<?>>("series",                Series.class),
             new SimpleEntry<String,Class<?>>("otherCitationDetails",  InternationalString.class),
             new SimpleEntry<String,Class<?>>("collectiveTitle",       InternationalString.class),
             new SimpleEntry<String,Class<?>>("ISBN",                  String.class),
-            new SimpleEntry<String,Class<?>>("ISSN",                  String.class)
+            new SimpleEntry<String,Class<?>>("ISSN",                  String.class),
+            new SimpleEntry<String,Class<?>>("graphic",               BrowseGraphic.class),
+            new SimpleEntry<String,Class<?>>("onlineResource",        OnlineResource.class)
         }, map.entrySet().toArray());
 
         assertEquals(InternationalString.class, map.get("alternateTitle"));
