@@ -38,7 +38,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 @XmlType(name = "SV_OperationChainMetadata_Type", propOrder = {
     "name",
     "description",
-    "operation"
+    "operations"
 })
 @XmlRootElement(name = "SV_OperationChainMetadata")
 public class DefaultOperationChainMetadata extends ISOMetadata implements OperationChainMetadata {
