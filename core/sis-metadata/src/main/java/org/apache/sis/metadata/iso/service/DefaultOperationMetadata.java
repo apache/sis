@@ -41,12 +41,12 @@ import org.opengis.metadata.service.Parameter;
  */
 @XmlType(name = "SV_OperationMetadata_Type", propOrder = {
     "operationName",
-    "distributedComputingPlatform",
-    "description",
-    "optionality",
-    "repeatibility",
-    "optionality",
-    "repeatibility"
+    "distributedComputingPlatforms",
+    "operationDescription",
+    "invocationName",
+    "connectPoints",
+    "parameters",
+    "dependsOn"
 })
 @XmlRootElement(name = "SV_OperationMetadata")
 public class DefaultOperationMetadata extends ISOMetadata implements OperationMetadata {
