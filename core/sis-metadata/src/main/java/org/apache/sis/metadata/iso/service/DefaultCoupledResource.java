@@ -39,8 +39,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  */
 @XmlType(name = "SV_CoupledResource_Type", propOrder = {
     "scopedName",
-    "resourceReference",
-    "resource",
+    "resourceReferences",
+    "resources",
     "operation"
 })
 @XmlRootElement(name = "SV_CoupledResource")
