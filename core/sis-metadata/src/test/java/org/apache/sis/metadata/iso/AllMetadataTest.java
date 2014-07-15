@@ -191,7 +191,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.service.OperationChainMetadata.class,
             org.opengis.metadata.service.OperationMetadata.class,
             org.opengis.metadata.service.Parameter.class,
-//          org.opengis.metadata.service.ServiceIdentification.class,
+            org.opengis.metadata.service.ServiceIdentification.class,
             org.opengis.metadata.spatial.CellGeometry.class,
             org.opengis.metadata.spatial.Dimension.class,
             org.opengis.metadata.spatial.DimensionNameType.class,
@@ -231,9 +231,6 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     protected String getExpectedNamespace(final Class<?> impl, final Specification specification) {
         if (impl.getPackage().getName().equals("org.apache.sis.metadata.iso.service")) {
             assertEquals(Specification.ISO_19115, specification);
-            return Namespaces.SRV;
-        }
-        if (impl == org.apache.sis.metadata.iso.identification.DefaultServiceIdentification.class) {
             return Namespaces.SRV;
         }
         return super.getExpectedNamespace(impl, specification);
