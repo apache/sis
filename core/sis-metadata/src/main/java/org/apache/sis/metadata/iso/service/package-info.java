@@ -53,6 +53,7 @@
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
+    @XmlJavaTypeAdapter(DCPList.class),
     @XmlJavaTypeAdapter(MD_DataIdentification.class),
     @XmlJavaTypeAdapter(MD_StandardOrderProcess.class),
     @XmlJavaTypeAdapter(SV_CoupledResource.class),
