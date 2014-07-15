@@ -50,6 +50,22 @@
     @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(CI_OnlineResource.class),
+    @XmlJavaTypeAdapter(MD_DataIdentification.class),
+    @XmlJavaTypeAdapter(MD_StandardOrderProcess.class),
+    @XmlJavaTypeAdapter(SV_CoupledResource.class),
+    @XmlJavaTypeAdapter(SV_CouplingType.class),
+    @XmlJavaTypeAdapter(SV_OperationMetadata.class),
+    @XmlJavaTypeAdapter(SV_OperationChainMetadata.class),
+    @XmlJavaTypeAdapter(SV_Parameter.class),
+
+    // Java types, primitive types and basic OGC types handling
+    @XmlJavaTypeAdapter(InternationalStringAdapter.class),
+    @XmlJavaTypeAdapter(GO_GenericName.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
+})
 package org.apache.sis.metadata.iso.service;
 
 import javax.xml.bind.annotation.XmlNs;
@@ -57,4 +73,9 @@ import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.gco.*;
+import org.apache.sis.internal.jaxb.code.*;
+import org.apache.sis.internal.jaxb.metadata.*;

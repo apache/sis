@@ -16,10 +16,8 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.metadata.identification.ServiceIdentification;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -30,12 +28,14 @@ import org.apache.sis.xml.Namespaces;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
+ *
+ * @deprecated Moved to the {@link org.apache.sis.metadata.iso.service} package.
  */
-@XmlType(name = "MD_ServiceIdentification_Type")
-@XmlRootElement(name = "SV_ServiceIdentification", namespace = Namespaces.SRV) // Prefix is really SV_ according ISO 19115 corrigendum.
-public class DefaultServiceIdentification extends AbstractIdentification implements ServiceIdentification {
+@Deprecated
+@XmlTransient
+public class DefaultServiceIdentification extends org.apache.sis.metadata.iso.service.DefaultServiceIdentification implements ServiceIdentification {
     /**
      * Serial number for compatibility with different versions.
      */

@@ -42,7 +42,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
     "direction",
     "description",
     "optionality",
-    "repeatibility"
+    "repeatability"
 })
 @XmlRootElement(name = "SV_Parameter")
 public class DefaultParameter extends ISOMetadata implements Parameter {
