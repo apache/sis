@@ -41,7 +41,7 @@ import java.util.Objects;
  * By definition, all record members have a [1 … 1] cardinality
  * (for a more flexible construct, see {@linkplain org.apache.sis.feature features}).
  * Since all members are expected to be assigned a value, the initial values on {@code DefaultRecord}
- * instantiation are undetermined. Some may be null, or some may be zero.
+ * instantiation are unspecified. Some may be null, or some may be zero.
  *
  * {@section Limitations}
  * <ul>
@@ -80,7 +80,7 @@ public class DefaultRecord implements Record, Serializable {
 
     /**
      * Creates a new record for the given record type.
-     * The initial values are undetermined - they may be null or zero.
+     * The initial values are unspecified - they may be null or zero.
      * Callers can assign values by a call to {@link #setAll(Object[])}.
      *
      * @param type The type definition of the new record.
