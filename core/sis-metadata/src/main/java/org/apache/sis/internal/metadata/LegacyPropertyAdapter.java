@@ -44,7 +44,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * The collection where to store the elements.
      */
-    final Collection<N> elements;
+    protected final Collection<N> elements;
 
     /**
      * For logging warning only once per collection usage.
@@ -224,13 +224,13 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * Adds a new element.
      *
-     * @param  element The element to add.
+     * @param  value The element to add.
      * @return {@code true} if the element has been added.
      */
     @Override
-    public final boolean add(final L element) {
-        ArgumentChecks.ensureNonNull("element", element);
-        return elements.add(wrap(element));
+    public boolean add(final L value) {
+        ArgumentChecks.ensureNonNull("value", value);
+        return elements.add(wrap(value));
     }
 
     /**

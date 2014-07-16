@@ -82,16 +82,16 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     /**
      * Creates a vertical extent initialized to the specified values.
      *
-     * @param minimumValue The lowest vertical extent contained in the dataset.
-     * @param maximumValue The highest vertical extent contained in the dataset.
+     * @param minimumValue The lowest vertical extent contained in the dataset, or {@link Double#NaN} if none.
+     * @param maximumValue The highest vertical extent contained in the dataset, or {@link Double#NaN} if none.
      * @param verticalCRS  The information about the vertical coordinate reference system, or {@code null}.
      */
     public DefaultVerticalExtent(final double minimumValue,
                                  final double maximumValue,
                                  final VerticalCRS verticalCRS)
     {
-        this.minimumValue = minimumValue;
-        this.maximumValue = maximumValue;
+        if (!Double.isNaN(minimumValue)) this.minimumValue = minimumValue;
+        if (!Double.isNaN(maximumValue)) this.maximumValue = maximumValue;
         this.verticalCRS  = verticalCRS;
     }
 
