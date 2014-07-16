@@ -38,6 +38,10 @@ import static org.apache.sis.test.Assert.*;
  *   <li>{@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso"}</li>
  * </ul>
  *
+ * Metadata tested by this class do not include Coordinate Reference System (CRS) information. A metadata
+ * object with CRS information is tested by {@code org.apache.sis.test.integration.DefaultMetadataTest}
+ * in the {@code sis-referencing} module.
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
