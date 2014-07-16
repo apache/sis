@@ -17,8 +17,10 @@
 package org.apache.sis.test.integration;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import javax.measure.unit.SI;
 
@@ -48,6 +50,7 @@ import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
@@ -82,6 +85,10 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
      * @param endTime   The end time in the {@code "yyy-mm-dd"} format.
      */
     protected void setTemporalBounds(final DefaultTemporalExtent extent, final String startTime, final String endTime) {
+        /*
+         * Note: if this DefaultMetadataTest class is made final and this method removed,
+         *       then testUnmarshalling() can be simplified.
+         */
     }
 
     /**
@@ -302,6 +309,13 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
     }
 
     /**
+     * Returns the URL to the {@code "Metadata.xml"} file to use for this test.
+     */
+    private URL getResource() {
+        return DefaultMetadataTest.class.getResource("Metadata.xml");
+    }
+
+    /**
      * Tests marshalling of a XML document.
      *
      * @throws JAXBException If an error occurred during marshalling.
@@ -310,7 +324,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
     @Ignore("Need to investigate why anchors are lost at marshalling time.")
     public void testMarshalling() throws JAXBException {
         final String xml = marshal(createHardCoded());
-        assertXmlEquals(DefaultMetadataTest.class.getResource("Metadata.xml"), xml, "xmlns:*", "xsi:schemaLocation");
+        assertXmlEquals(getResource(), xml, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -320,7 +334,14 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
-        final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, "Metadata.xml");
+        /*
+         * Note: if this DefaultMetadataTest class is made final, then all following lines
+         * until pool.recycle(…) can be replaced by a call to unmarshallFile("Metadata.xml").
+         */
+        final MarshallerPool pool = getMarshallerPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final DefaultMetadata metadata = (DefaultMetadata) unmarshaller.unmarshal(getResource());
+        pool.recycle(unmarshaller);
         final DefaultMetadata expected = createHardCoded();
         assertTrue(metadata.equals(expected, ComparisonMode.DEBUG));
     }
