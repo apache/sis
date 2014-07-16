@@ -311,7 +311,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     /**
      * Sets the address of the responsible party.
      *
-     * <p>This implementation sets the contact info in the first pary found in the collection of
+     * <p>This implementation sets the contact info in the first party found in the collection of
      * {@linkplain #getParties() parties}.</p>
      *
      * @param newValue The new contact info, or {@code null} if none.
