@@ -17,9 +17,11 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.util.Collection;
+import java.util.Iterator;
 import org.opengis.metadata.citation.Telephone;
 import org.opengis.metadata.citation.TelephoneType;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -85,5 +87,28 @@ final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
             }
         }
         return false;
+    }
+
+    /**
+     * Adds a new telephone number. As a special case if the first element is empty, then the telephone number
+     * will be set in that element. We test only the first element because {@link DefaultTelephone#getOwner()}
+     * initialize new collections as collection containing {@code DefaultTelephone.this}.
+     *
+     * @param  value The telephone number to add.
+     * @return {@code true} if the element has been added.
+     */
+    @Override
+    public boolean add(final String value) {
+        ArgumentChecks.ensureNonNull("value", value);
+        final Iterator<Telephone> it = elements.iterator();
+        if (it.hasNext()) {
+            final Telephone telephone = it.next();
+            if (telephone instanceof DefaultTelephone && ((DefaultTelephone) telephone).isEmpty()) {
+                if (update(telephone, value)) {
+                    return true;
+                }
+            }
+        }
+        return elements.add(wrap(value));
     }
 }
