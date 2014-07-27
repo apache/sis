@@ -119,7 +119,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * (ISO 19115:2014 model) is not yet supported, so we currently use this variable only as a way
      * to identify the code to revisit when we will want to support the new model.
      */
-    protected static final boolean LEGACY_XML = true;
+    public static final boolean LEGACY_XML = true;
 
     /**
      * The wrapped GeoAPI metadata instance, or {@code null} if the metadata shall not be marshalled.

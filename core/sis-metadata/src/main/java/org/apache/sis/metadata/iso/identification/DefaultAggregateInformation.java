@@ -16,15 +16,18 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.Iterator;
+import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AggregateInformation;
+import org.opengis.metadata.identification.AssociatedResource;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
-import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 
 
 /**
@@ -38,9 +41,12 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.5
  * @module
+ *
+ * @deprecated Replaced by {@link DefaultAssociatedResource} as of ISO 19115:2014.
  */
+@Deprecated
 @XmlType(name = "MD_AggregateInformation_Type", propOrder = {
     "aggregateDataSetName",
     "aggregateDataSetIdentifier",
@@ -48,31 +54,11 @@ import org.apache.sis.metadata.iso.ISOMetadata;
     "initiativeType"
 })
 @XmlRootElement(name = "MD_AggregateInformation")
-public class DefaultAggregateInformation extends ISOMetadata implements AggregateInformation {
+public class DefaultAggregateInformation extends DefaultAssociatedResource implements AggregateInformation {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 4183321601376092254L;
-
-    /**
-     * Citation information about the aggregate dataset.
-     */
-    private Citation aggregateDataSetName;
-
-    /**
-     * Identification information about aggregate dataset.
-     */
-    private Identifier aggregateDataSetIdentifier;
-
-    /**
-     * Association type of the aggregate dataset.
-     */
-    private  AssociationType associationType;
-
-    /**
-     * Type of initiative under which the aggregate dataset was produced.
-     */
-    private InitiativeType initiativeType;
+    private static final long serialVersionUID = -8769840909779188495L;
 
     /**
      * Constructs an initially empty Aggregate dataset information.
@@ -89,14 +75,8 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *
      * @see #castOrCopy(AggregateInformation)
      */
-    public DefaultAggregateInformation(final AggregateInformation object) {
+    public DefaultAggregateInformation(final AssociatedResource object) {
         super(object);
-        if (object != null) {
-            aggregateDataSetName       = object.getAggregateDataSetName();
-            aggregateDataSetIdentifier = object.getAggregateDataSetIdentifier();
-            associationType            = object.getAssociationType();
-            initiativeType             = object.getInitiativeType();
-        }
     }
 
     /**
@@ -108,7 +88,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *   <li>Otherwise if the given object is already an instance of
      *       {@code DefaultAggregateInformation}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultAggregateInformation} instance is created using the
-     *       {@linkplain #DefaultAggregateInformation(AggregateInformation) copy constructor}
+     *       {@linkplain #DefaultAggregateInformation(AssociatedResource) copy constructor}
      *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
@@ -117,7 +97,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      * @return A SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultAggregateInformation castOrCopy(final AggregateInformation object) {
+    public static DefaultAggregateInformation castOrCopy(final AssociatedResource object) {
         if (object == null || object instanceof DefaultAggregateInformation) {
             return (DefaultAggregateInformation) object;
         }
@@ -128,42 +108,88 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      * Citation information about the aggregate dataset.
      *
      * @return Citation information about the aggregate dataset, or {@code null}.
+     *
+     * @deprecated Replaced by {@link #getName()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "aggregateDataSetName")
     public Citation getAggregateDataSetName() {
-        return aggregateDataSetName;
+        return getName();
     }
 
     /**
      * Sets the citation information about the aggregate dataset.
      *
      * @param newValue The new citation.
+     *
+     * @deprecated Replaced by {@link #setName(Citation)}.
      */
+    @Deprecated
     public void setAggregateDataSetName(final Citation newValue) {
-        checkWritePermission();
-        aggregateDataSetName = newValue;
+        setName(newValue);
     }
 
     /**
      * Identification information about aggregate dataset.
      *
      * @return Identification information about aggregate dataset, or {@code null}.
+     *
+     * @deprecated Replaced by the first identifier of {@link #getAggregateDataSetName()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "aggregateDataSetIdentifier")
     public Identifier getAggregateDataSetIdentifier() {
-        return aggregateDataSetIdentifier;
+        return getAggregateDataSetIdentifier(getAggregateDataSetName());
+    }
+
+    /**
+     * Returns the first identifier of the given citation.
+     */
+    static Identifier getAggregateDataSetIdentifier(final Citation name) {
+        if (name != null) {
+            final Iterator<? extends Identifier> it = name.getIdentifiers().iterator();
+            if (it.hasNext()) {
+                return it.next();
+            }
+        }
+        return null;
     }
 
     /**
      * Sets the identification information about aggregate dataset.
      *
      * @param newValue The new identifier.
+     *
+     * @deprecated Replaced by an identifier of {@link #getAggregateDataSetName()}.
      */
     public void setAggregateDataSetIdentifier(final Identifier newValue) {
         checkWritePermission();
-        aggregateDataSetIdentifier = newValue;
+        Citation name = getAggregateDataSetName();
+        if (newValue != null) {
+            if (!(name instanceof DefaultCitation)) {
+                name = new DefaultCitation(name);
+                setAggregateDataSetName(name);
+            }
+            /*
+             * If there is more than one value, replace only the first one and keep all other ones unchanged.
+             * The intend is to be consistent with the getter method, which returns the first element.
+             */
+            final ArrayList<Identifier> identifiers = new ArrayList<Identifier>(name.getIdentifiers());
+            if (identifiers.isEmpty()) {
+                identifiers.add(newValue);
+            } else {
+                identifiers.set(0, newValue);
+            }
+            ((DefaultCitation) name).setIdentifiers(identifiers);
+        } else if (name != null) {
+            final Iterator<? extends Identifier> it = name.getIdentifiers().iterator();
+            if (it.hasNext()) {
+                it.next();
+                it.remove();
+            }
+        }
     }
 
     /**
@@ -174,7 +200,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
     @Override
     @XmlElement(name = "associationType", required = true)
     public AssociationType getAssociationType() {
-        return associationType;
+        return super.getAssociationType();
     }
 
     /**
@@ -182,9 +208,9 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *
      * @param newValue The new association type.
      */
+    @Override
     public void setAssociationType(final AssociationType newValue) {
-        checkWritePermission();
-        associationType = newValue;
+        super.setAssociationType(newValue);
     }
 
     /**
@@ -195,7 +221,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
     @Override
     @XmlElement(name = "initiativeType")
     public InitiativeType getInitiativeType() {
-        return initiativeType;
+        return super.getInitiativeType();
     }
 
     /**
@@ -203,8 +229,8 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *
      * @param newValue The new initiative.
      */
+    @Override
     public void setInitiativeType(final InitiativeType newValue) {
-        checkWritePermission();
-        initiativeType = newValue;
+        super.setInitiativeType(newValue);
     }
 }
