@@ -482,7 +482,7 @@ final class MetadataReader {
                 if (type     != null) addIfAbsent(identification.getSpatialRepresentationTypes(), Types.forCodeName(SpatialRepresentationType.class, type, true));
                 if (standard != null) addIfAbsent(identification.getDescriptiveKeywords(), standard);
                 if (keywords != null) addIfAbsent(identification.getDescriptiveKeywords(), keywords);
-                if (credits  != null) addIfAbsent(identification.getCredits(), credits);
+                if (credits  != null) addIfAbsent(identification.getCredits(), Types.toInternationalString(credits));
                 if (license  != null) addIfAbsent(identification.getResourceConstraints(), constraints = new DefaultLegalConstraints(license));
                 if (access   != null) {
                     for (String keyword : access.split(KEYWORD_SEPARATOR)) {

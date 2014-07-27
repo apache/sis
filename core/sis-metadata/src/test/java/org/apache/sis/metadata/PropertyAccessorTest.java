@@ -31,7 +31,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.constraint.Constraints;
@@ -50,6 +49,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.util.InternationalString;
 import org.opengis.util.GenericName;
+import org.opengis.temporal.Duration;
 
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -191,6 +191,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Tests the constructor with the {@link DefaultDataIdentification} implementation.
      * The purpose of this test is to ensure that the properties defined in the parent
      * class are sorted first.
+     *
+     * <div class="note"><b>Note:</b> if there is any element not declared as JAXB elements,
+     * those ones will be last in alphabetical order. Such situation is usually temporary
+     * until the JAXB annotations are completed.</div>
      */
     @Test
     @DependsOnMethod("testConstructor")
@@ -200,24 +204,27 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Identification.class, "getCitation",                   "citation",                   "citation",                  "Citation",                     Citation.class,
             Identification.class, "getAbstract",                   "abstract",                   "abstract",                  "Abstract",                     InternationalString.class,
             Identification.class, "getPurpose",                    "purpose",                    "purpose",                   "Purpose",                      InternationalString.class,
-            Identification.class, "getCredits",                    "credits",                    "credit",                    "Credits",                      String[].class,
+            Identification.class, "getCredits",                    "credits",                    "credit",                    "Credits",                      InternationalString[].class,
             Identification.class, "getStatus",                     "status",                     "status",                    "Status",                       Progress[].class,
-            Identification.class, "getPointOfContacts",            "pointOfContacts",            "pointOfContact",            "Point of contacts",            ResponsibleParty[].class,
+            Identification.class, "getPointOfContacts",            "pointOfContacts",            "pointOfContact",            "Point of contacts",            Responsibility[].class,
             Identification.class, "getResourceMaintenances",       "resourceMaintenances",       "resourceMaintenance",       "Resource maintenances",        MaintenanceInformation[].class,
             Identification.class, "getGraphicOverviews",           "graphicOverviews",           "graphicOverview",           "Graphic overviews",            BrowseGraphic[].class,
             Identification.class, "getResourceFormats",            "resourceFormats",            "resourceFormat",            "Resource formats",             Format[].class,
             Identification.class, "getDescriptiveKeywords",        "descriptiveKeywords",        "descriptiveKeywords",       "Descriptive keywords",         Keywords[].class,
             Identification.class, "getResourceSpecificUsages",     "resourceSpecificUsages",     "resourceSpecificUsage",     "Resource specific usages",     Usage[].class,
             Identification.class, "getResourceConstraints",        "resourceConstraints",        "resourceConstraints",       "Resource constraints",         Constraints[].class,
-            Identification.class, "getAggregationInfo",            "aggregationInfo",            "aggregationInfo",           "Aggregation info",             AggregateInformation[].class,
-        DataIdentification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
-        DataIdentification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
+            Identification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
+            Identification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
         DataIdentification.class, "getLanguages",                  "languages",                  "language",                  "Languages",                    Locale[].class,
         DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               CharacterSet[].class,
-        DataIdentification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
         DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
-        DataIdentification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
-        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class);
+        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class,
+            Identification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
+            Identification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
+            Identification.class, "getAdditionalDocumentations",   "additionalDocumentations",   "additionalDocumentation",   "Additional documentations",    Citation[].class,
+            Identification.class, "getAssociatedResources",        "associatedResources",        "associatedResource",        "Associated resources",         AssociatedResource[].class,
+            Identification.class, "getProcessingLevel",            "processingLevel",            "processingLevel",           "Processing level",             Identifier.class,
+            Identification.class, "getTemporalResolutions",        "temporalResolutions",        "temporalResolution",        "Temporal resolutions",         Duration[].class);
     }
 
     /**
