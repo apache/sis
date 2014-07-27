@@ -25,15 +25,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
+import org.opengis.temporal.Duration;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.xml.XML;
@@ -50,7 +52,7 @@ import static org.junit.Assert.*;
  * @author  Damiano Albani (for code snippet on the mailing list)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.14)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class CustomMetadataTest extends XMLTestCase {
@@ -111,15 +113,17 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
             @Override public InternationalString                   getSupplementalInformation()    {return null;}
             @Override public Citation                              getCitation()                   {return null;}
             @Override public InternationalString                   getPurpose()                    {return null;}
+            @Override public Identifier                            getProcessingLevel()            {return null;}
             @Override public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {return null;}
             @Override public Collection<Resolution>                getSpatialResolutions()         {return null;}
+            @Override public Collection<Duration>                  getTemporalResolutions()        {return null;}
             @Override public Collection<Locale>                    getLanguages()                  {return null;}
             @Override public Collection<CharacterSet>              getCharacterSets()              {return null;}
             @Override public Collection<TopicCategory>             getTopicCategories()            {return null;}
             @Override public Collection<Extent>                    getExtents()                    {return null;}
-            @Override public Collection<String>                    getCredits()                    {return null;}
+            @Override public Collection<InternationalString>       getCredits()                    {return null;}
             @Override public Collection<Progress>                  getStatus()                     {return null;}
-            @Override public Collection<ResponsibleParty>          getPointOfContacts()            {return null;}
+            @Override public Collection<Responsibility>            getPointOfContacts()            {return null;}
             @Override public Collection<MaintenanceInformation>    getResourceMaintenances()       {return null;}
             @Override public Collection<BrowseGraphic>             getGraphicOverviews()           {return null;}
             @Override public Collection<Format>                    getResourceFormats()            {return null;}
@@ -127,6 +131,8 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
             @Override public Collection<Usage>                     getResourceSpecificUsages()     {return null;}
             @Override public Collection<Constraints>               getResourceConstraints()        {return null;}
             @Override public Collection<AggregateInformation>      getAggregationInfo()            {return null;}
+            @Override public Collection<AssociatedResource>        getAssociatedResources()        {return null;}
+            @Override public Collection<Citation>                  getAdditionalDocumentations()   {return null;}
         };
         final DefaultMetadata data = new DefaultMetadata();
         assertTrue(data.getIdentificationInfo().add(identification));
