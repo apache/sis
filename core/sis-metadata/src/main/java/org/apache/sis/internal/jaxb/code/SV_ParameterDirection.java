@@ -58,6 +58,9 @@ public final class SV_ParameterDirection extends EnumAdapter<SV_ParameterDirecti
      */
     @Override
     public final SV_ParameterDirection marshal(final ParameterDirection e) {
+        if (e == null) {
+            return null;
+        }
         final SV_ParameterDirection wrapper = new SV_ParameterDirection();
         wrapper.value = value(e);
         return wrapper;
