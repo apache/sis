@@ -19,11 +19,17 @@ package org.apache.sis.metadata.iso.service;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.service.Parameter;
 import org.opengis.metadata.service.ParameterDirection;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.metadata.direct.GO_MemberName;
+import org.apache.sis.util.iso.Types;
+
+import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
 
 /**
@@ -42,7 +48,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
     "direction",
     "description",
     "optionality",
-    "repeatability"
+    "repeatability",
+    "valueType"
 })
 @XmlRootElement(name = "SV_Parameter")
 public class DefaultParameter extends ISOMetadata implements Parameter {
@@ -90,11 +97,11 @@ public class DefaultParameter extends ISOMetadata implements Parameter {
      * @param repeatability Indication if more than one value of the parameter may be provided.
      */
     public DefaultParameter(final MemberName name,
-                            final InternationalString optionality,
+                            final CharSequence optionality,
                             final boolean repeatability)
     {
         this.name          = name;
-        this.optionality   = optionality;
+        this.optionality   = Types.toInternationalString(optionality);
         this.repeatability = repeatability;
     }
 
@@ -149,6 +156,7 @@ public class DefaultParameter extends ISOMetadata implements Parameter {
      * @return The name, as used by the service for this parameter.
      */
     @Override
+    @XmlJavaTypeAdapter(GO_MemberName.class)
     @XmlElement(name = "name", required = true)
     public MemberName getName() {
         return name;
@@ -246,5 +254,19 @@ public class DefaultParameter extends ISOMetadata implements Parameter {
     public void setRepeatability(final boolean newValue) {
         checkWritePermission();
         this.repeatability = newValue;
+    }
+
+
+
+    // Bridges for elements from legacy ISO 19119
+
+    /**
+     * For JAXB marhalling of ISO 19119 document only.
+     * Note that there is not setter method, since we expect the same information
+     * to be provided in the {@link #name} attribute type.
+     */
+    @XmlElement(name = "valueType")
+    final TypeName getValueType() {
+        return (LEGACY_XML && name != null) ? name.getAttributeType() : null;
     }
 }

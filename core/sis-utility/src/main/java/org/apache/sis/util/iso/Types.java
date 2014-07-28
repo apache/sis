@@ -34,6 +34,7 @@ import org.opengis.util.CodeList;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.util.Enumerated;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Locales;
@@ -50,9 +51,9 @@ import org.apache.sis.internal.system.DefaultFactories;
  * This class provides:
  *
  * <ul>
- *   <li>{@link #getStandardName(Class)}, {@link #getListName(CodeList)} and {@link #getCodeName(CodeList)}
+ *   <li>{@link #getStandardName(Class)}, {@link #getListName(Enumerated)} and {@link #getCodeName(Enumerated)}
  *       for fetching ISO names if possible.</li>
- *   <li>{@link #getCodeTitle(CodeList)}, {@link #getDescription(CodeList)} and
+ *   <li>{@link #getCodeTitle(Enumerated)}, {@link #getDescription(Enumerated)} and
  *       {@link #getDescription(Class)} for fetching human-readable descriptions.</li>
  *   <li>{@link #forStandardName(String)} and {@link #forCodeName(Class, String, boolean)} for
  *       fetching an instance from a name (converse of above {@code get} methods).</li>
@@ -127,14 +128,15 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the ISO classname (if available) or the Java classname (as a fallback)
-     * of the given code. This method uses the {@link UML} annotation if it exists, or
+     * Returns the ISO classname (if available) or the Java classname (as a fallback) of the given
+     * enumeration or code list value. This method uses the {@link UML} annotation if it exists, or
      * fallback on the {@linkplain Class#getSimpleName() simple class name} otherwise.
      *
      * <div class="note"><b>Examples:</b>
      * <ul>
-     *   <li>{@code getListName(AxisDirection.NORTH)} returns {@code "CS_AxisDirection"}.</li>
-     *   <li>{@code getListName(CharacterSet.UTF_8)} returns {@code "MD_CharacterSetCode"}.</li>
+     *   <li>{@code getListName(ParameterDirection.IN_OUT)}      returns {@code "SV_ParameterDirection"}.</li>
+     *   <li>{@code getListName(AxisDirection.NORTH)}            returns {@code "CS_AxisDirection"}.</li>
+     *   <li>{@code getListName(CharacterSet.UTF_8)}             returns {@code "MD_CharacterSetCode"}.</li>
      *   <li>{@code getListName(ImagingCondition.BLURRED_IMAGE)} returns {@code "MD_ImagingConditionCode"}.</li>
      * </ul>
      * </div>
@@ -142,23 +144,24 @@ public final class Types extends Static {
      * @param  code The code for which to get the class name, or {@code null}.
      * @return The ISO (preferred) or Java (fallback) class name, or {@code null} if the given code is null.
      */
-    public static String getListName(final CodeList<?> code) {
+    public static String getListName(final Enumerated code) {
         if (code == null) {
             return null;
         }
-        final Class<?> type = code.getClass();
+        final Class<?> type = (code instanceof Enum<?>) ? ((Enum<?>) code).getDeclaringClass() : code.getClass();
         final String id = getStandardName(type);
         return (id != null) ? id : type.getSimpleName();
     }
 
     /**
-     * Returns the ISO name (if available) or the Java name (as a fallback) of the given code.
-     * If the code has no {@link UML} identifier, then the programmatic name is used as a fallback.
+     * Returns the ISO name (if available) or the Java name (as a fallback) of the given enumeration or code list
+     * value. If the value has no {@link UML} identifier, then the programmatic name is used as a fallback.
      *
      * <div class="note"><b>Examples:</b>
      * <ul>
-     *   <li>{@code getCodeName(AxisDirection.NORTH)} returns {@code "north"}.</li>
-     *   <li>{@code getCodeName(CharacterSet.UTF_8)} returns {@code "utf8"}.</li>
+     *   <li>{@code getCodeName(ParameterDirection.IN_OUT)}      returns {@code "in/out"}.</li>
+     *   <li>{@code getCodeName(AxisDirection.NORTH)}            returns {@code "north"}.</li>
+     *   <li>{@code getCodeName(CharacterSet.UTF_8)}             returns {@code "utf8"}.</li>
      *   <li>{@code getCodeName(ImagingCondition.BLURRED_IMAGE)} returns {@code "blurredImage"}.</li>
      * </ul>
      * </div>
@@ -167,12 +170,12 @@ public final class Types extends Static {
      * @return The UML identifiers or programmatic name for the given code,
      *         or {@code null} if the given code is null.
      *
-     * @see #getCodeLabel(CodeList)
-     * @see #getCodeTitle(CodeList)
-     * @see #getDescription(CodeList)
+     * @see #getCodeLabel(Enumerated)
+     * @see #getCodeTitle(Enumerated)
+     * @see #getDescription(Enumerated)
      * @see #forCodeName(Class, String, boolean)
      */
-    public static String getCodeName(final CodeList<?> code) {
+    public static String getCodeName(final Enumerated code) {
         if (code == null) {
             return null;
         }
@@ -181,10 +184,10 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns a unlocalized title for the given code.
+     * Returns a unlocalized title for the given enumeration or code list value.
      * This method builds a title using heuristics rules, which should give reasonable
      * results without the need of resource bundles. For better results, consider using
-     * {@link #getCodeTitle(CodeList)} instead.
+     * {@link #getCodeTitle(Enumerated)} instead.
      *
      * <p>The current heuristic implementation iterates over {@linkplain CodeList#names() all code names},
      * selects the longest one excluding the {@linkplain CodeList#name() field name} if possible, then
@@ -201,11 +204,11 @@ public final class Types extends Static {
      * @param  code The code from which to get a title, or {@code null}.
      * @return A unlocalized title for the given code, or {@code null} if the given code is null.
      *
-     * @see #getCodeName(CodeList)
-     * @see #getCodeTitle(CodeList)
-     * @see #getDescription(CodeList)
+     * @see #getCodeName(Enumerated)
+     * @see #getCodeTitle(Enumerated)
+     * @see #getDescription(Enumerated)
      */
-    public static String getCodeLabel(final CodeList<?> code) {
+    public static String getCodeLabel(final Enumerated code) {
         if (code == null) {
             return null;
         }
@@ -223,30 +226,30 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the title of the given code. Title are usually much shorter than descriptions.
-     * English titles are often the same than the {@linkplain #getCodeLabel(CodeList) code labels}.
+     * Returns the title of the given enumeration or code list value. Title are usually much shorter than descriptions.
+     * English titles are often the same than the {@linkplain #getCodeLabel(Enumerated) code labels}.
      *
      * @param  code The code for which to get the title, or {@code null}.
      * @return The title, or {@code null} if the given code is null.
      *
-     * @see #getDescription(CodeList)
+     * @see #getDescription(Enumerated)
      */
-    public static InternationalString getCodeTitle(final CodeList<?> code) {
+    public static InternationalString getCodeTitle(final Enumerated code) {
         return (code != null) ? new CodeTitle(code) : null;
     }
 
     /**
-     * Returns the description of the given code, or {@code null} if none.
+     * Returns the description of the given enumeration or code list value, or {@code null} if none.
      * For a description of the code list as a whole instead than a particular code,
      * see {@link Types#getDescription(Class)}.
      *
      * @param  code The code for which to get the localized description, or {@code null}.
      * @return The description, or {@code null} if none or if the given code is null.
      *
-     * @see #getCodeTitle(CodeList)
-     * @see #getDescription(Class)
+     * @see #getCodeTitle(Enumerated)
+     * @see #getDescription(Enumerated)
      */
-    public static InternationalString getDescription(final CodeList<?> code) {
+    public static InternationalString getDescription(final Enumerated code) {
         if (code != null) {
             final String resources = getResources(code.getClass().getName());
             if (resources != null) {
@@ -263,7 +266,7 @@ public final class Types extends Static {
      * @param  type The GeoAPI interface or code list from which to get the description, or {@code null}.
      * @return The description, or {@code null} if none or if the given type is {@code null}.
      *
-     * @see #getDescription(CodeList)
+     * @see #getDescription(Enumerated)
      */
     public static InternationalString getDescription(final Class<?> type) {
         final String name = getStandardName(type);
@@ -381,14 +384,14 @@ public final class Types extends Static {
         /**
          * The code list for which to create a title.
          */
-        private final CodeList<?> code;
+        private final Enumerated code;
 
         /**
          * Creates a new international string for the given code list element.
          *
          * @param code The code list for which to create a title.
          */
-        CodeTitle(final CodeList<?> code) {
+        CodeTitle(final Enumerated code) {
             super("org.opengis.metadata.CodeLists", resourceKey(code));
             this.code = code;
         }
@@ -420,7 +423,7 @@ public final class Types extends Static {
     /**
      * Returns the resource key for the given code list.
      */
-    static String resourceKey(final CodeList<?> code) {
+    static String resourceKey(final Enumerated code) {
         String key = getCodeName(code);
         if (key.indexOf(SEPARATOR) < 0) {
             key = getListName(code) + SEPARATOR + key;

@@ -86,6 +86,31 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
     }
 
     /**
+     * Returns a SIS member name implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable action in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of {@code DefaultMemberName},
+     *       then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultMemberName} instance is created
+     *       with the same values than the given name.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     *
+     * @since 0.5
+     */
+    public static DefaultMemberName castOrCopy(final MemberName object) {
+        if (object == null || object instanceof DefaultMemberName) {
+            return (DefaultMemberName) object;
+        }
+        return new DefaultMemberName(object.scope(), object.toInternationalString(), object.getAttributeType());
+    }
+
+    /**
      * Returns the type of the data associated with the record member.
      *
      * @return The type of the data associated with the record member.
