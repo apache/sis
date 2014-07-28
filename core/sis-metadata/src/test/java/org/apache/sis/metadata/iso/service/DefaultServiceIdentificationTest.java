@@ -42,7 +42,10 @@ import static org.apache.sis.internal.system.DefaultFactories.SIS_NAMES;
  * @version 0.5
  * @module
  */
-@DependsOn(org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class)
+@DependsOn({
+    org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class,
+    DefaultParameterTest.class
+})
 public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase {
     /**
      * An XML file in this package containing a service identification.
