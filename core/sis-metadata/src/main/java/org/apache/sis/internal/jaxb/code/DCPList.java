@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.service.DistributedComputingPlatform;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -68,7 +69,7 @@ public final class DCPList extends CodeListAdapter<DCPList, DistributedComputing
      * @return The value to be marshalled.
      */
     @Override
-    @XmlElement(name = "DCPList")
+    @XmlElement(name = "DCPList", namespace = Namespaces.SRV)
     public CodeListProxy getElement() {
         return proxy;
     }
