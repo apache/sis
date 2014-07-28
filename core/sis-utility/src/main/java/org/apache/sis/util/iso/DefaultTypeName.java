@@ -37,7 +37,7 @@ import org.opengis.util.NameSpace;
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see DefaultMemberName
@@ -67,5 +67,30 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      */
     protected DefaultTypeName(final NameSpace scope, final CharSequence name) {
         super(scope, name);
+    }
+
+    /**
+     * Returns a SIS type name implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable action in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of {@code DefaultTypeName},
+     *       then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultTypeName} instance is created
+     *       with the same values than the given name.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     *
+     * @since 0.5
+     */
+    public static DefaultTypeName castOrCopy(final TypeName object) {
+        if (object == null || object instanceof DefaultTypeName) {
+            return (DefaultTypeName) object;
+        }
+        return new DefaultTypeName(object.scope(), object.toInternationalString());
     }
 }

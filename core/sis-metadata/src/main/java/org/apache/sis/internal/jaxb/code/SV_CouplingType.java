@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.service.CouplingType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -68,7 +69,7 @@ public final class SV_CouplingType extends CodeListAdapter<SV_CouplingType, Coup
      * @return The value to be marshalled.
      */
     @Override
-    @XmlElement(name = "SV_CouplingType")
+    @XmlElement(name = "SV_CouplingType", namespace = Namespaces.SRV)
     public CodeListProxy getElement() {
         return proxy;
     }

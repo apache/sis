@@ -28,6 +28,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.service.DistributedComputingPlatform;
 import org.opengis.metadata.service.OperationMetadata;
 import org.opengis.metadata.service.Parameter;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -44,8 +45,8 @@ import org.opengis.metadata.service.Parameter;
     "distributedComputingPlatforms",
     "operationDescription",
     "invocationName",
-    "connectPoints",
     "parameters",
+    "connectPoints",
     "dependsOn"
 })
 @XmlRootElement(name = "SV_OperationMetadata")
@@ -103,11 +104,11 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @param platform      Distributed computing platforms on which the operation has been implemented.
      * @param connectPoint  Handle for accessing the service interface.
      */
-    public DefaultOperationMetadata(final InternationalString operationName,
+    public DefaultOperationMetadata(final CharSequence operationName,
                                     final DistributedComputingPlatform platform,
                                     final OnlineResource connectPoint)
     {
-        this.operationName                 = operationName;
+        this.operationName                 = Types.toInternationalString(operationName);
         this.distributedComputingPlatforms = singleton(platform, DistributedComputingPlatform.class);
         this.connectPoints                 = singleton(connectPoint, OnlineResource.class);
     }
@@ -186,7 +187,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @return Distributed computing platforms on which the operation has been implemented.
      */
     @Override
-    @XmlElement(name = "distributedComputingPlatform", required = true)
+    @XmlElement(name = "DCP", required = true)
     public Collection<DistributedComputingPlatform> getDistributedComputingPlatforms() {
         return distributedComputingPlatforms = nonNullCollection(distributedComputingPlatforms, DistributedComputingPlatform.class);
     }
@@ -271,7 +272,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
     @Override
     @XmlElement(name = "parameters")
     public Set<Parameter> getParameters() {
-        return nonNullSet(parameters, Parameter.class);
+        return parameters = nonNullSet(parameters, Parameter.class);
     }
 
     /**
