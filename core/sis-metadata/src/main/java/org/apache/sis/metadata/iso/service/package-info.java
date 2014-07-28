@@ -61,8 +61,10 @@
     @XmlJavaTypeAdapter(SV_OperationMetadata.class),
     @XmlJavaTypeAdapter(SV_OperationChainMetadata.class),
     @XmlJavaTypeAdapter(SV_Parameter.class),
+    @XmlJavaTypeAdapter(SV_ParameterDirection.class),
 
     // Java types, primitive types and basic OGC types handling
+    @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_GenericName.class),
     @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)

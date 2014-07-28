@@ -19,7 +19,7 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
-import org.opengis.util.CodeList;
+import org.opengis.util.Enumerated;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.internal.util.CollectionsExt;
 
@@ -162,7 +162,7 @@ final class Pruner {
                         } else if (!prune && element instanceof Emptiable) {
                             isEmptyElement = ((Emptiable) element).isEmpty();
                             // If 'prune' is true, we will rather test for Emptiable after our pruning attempt.
-                        } else if (!(element instanceof Enum<?>) && !(element instanceof CodeList<?>)) {
+                        } else if (!(element instanceof Enumerated)) {
                             final MetadataStandard standard = MetadataStandard.forClass(element.getClass());
                             if (standard != null) {
                                 isEmptyElement = isEmpty(asMap(standard, element, prune), tested, prune);
