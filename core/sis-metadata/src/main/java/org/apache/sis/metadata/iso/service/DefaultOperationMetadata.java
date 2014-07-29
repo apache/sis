@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.service;
 
-import java.util.Set;
 import java.util.List;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
@@ -84,7 +83,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
     /**
      * The parameters that are required for this interface.
      */
-    private Set<Parameter> parameters;
+    private Collection<Parameter> parameters;
 
     /**
      * List of operation that must be completed immediately.
@@ -271,8 +270,8 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      */
     @Override
     @XmlElement(name = "parameters")
-    public Set<Parameter> getParameters() {
-        return parameters = nonNullSet(parameters, Parameter.class);
+    public Collection<Parameter> getParameters() {
+        return parameters = nonNullCollection(parameters, Parameter.class);
     }
 
     /**
@@ -280,8 +279,8 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      *
      * @param newValues The new set of parameters that are required for this interface.
      */
-    public void setParameters(final Set<? extends Parameter> newValues) {
-        parameters = writeSet(newValues, parameters, Parameter.class);
+    public void setParameters(final Collection<? extends Parameter> newValues) {
+        parameters = writeCollection(newValues, parameters, Parameter.class);
     }
 
     /**

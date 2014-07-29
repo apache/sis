@@ -74,6 +74,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.identification.DefaultBrowseGraphicTest.class,
     org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class,
     org.apache.sis.metadata.iso.service.DefaultParameterTest.class,
+    org.apache.sis.metadata.iso.service.DefaultCoupledResourceTest.class,
     org.apache.sis.metadata.iso.service.DefaultServiceIdentificationTest.class,
     org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
     org.apache.sis.metadata.iso.quality.AbstractPositionalAccuracyTest.class,
