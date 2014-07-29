@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.content.ImagingCondition;
 import org.opengis.metadata.identification.CharacterSet;
+import org.opengis.metadata.service.ParameterDirection;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.test.TestCase;
@@ -40,7 +41,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class TypesTest extends TestCase {
@@ -151,7 +152,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Types#getDescription(CodeList)} method.
+     * Tests the {@link Types#getDescription(Enumerated)} method.
      */
     @Test
     public void testGetCodeDescription() {
@@ -165,27 +166,29 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the examples given in {@link Types#getListName(CodeList)} javadoc.
+     * Tests the examples given in {@link Types#getListName(Enumerated)} javadoc.
      */
     @Test
     public void testGetListName() {
-        assertEquals("CS_AxisDirection",        Types.getListName(AxisDirection   .NORTH));
-        assertEquals("MD_CharacterSetCode",     Types.getListName(CharacterSet    .UTF_8));
-        assertEquals("MD_ImagingConditionCode", Types.getListName(ImagingCondition.BLURRED_IMAGE));
+        assertEquals("SV_ParameterDirection",   Types.getListName(ParameterDirection.IN_OUT));
+        assertEquals("CS_AxisDirection",        Types.getListName(AxisDirection     .NORTH));
+        assertEquals("MD_CharacterSetCode",     Types.getListName(CharacterSet      .UTF_8));
+        assertEquals("MD_ImagingConditionCode", Types.getListName(ImagingCondition  .BLURRED_IMAGE));
     }
 
     /**
-     * Tests the examples given in {@link Types#getCodeName(CodeList)} javadoc.
+     * Tests the examples given in {@link Types#getCodeName(Enumerated)} javadoc.
      */
     @Test
     public void testGetCodeName() {
-        assertEquals("north",        Types.getCodeName(AxisDirection   .NORTH));
-        assertEquals("utf8",         Types.getCodeName(CharacterSet    .UTF_8));
-        assertEquals("blurredImage", Types.getCodeName(ImagingCondition.BLURRED_IMAGE));
+        assertEquals("in/out",       Types.getCodeName(ParameterDirection.IN_OUT));
+        assertEquals("north",        Types.getCodeName(AxisDirection     .NORTH));
+        assertEquals("utf8",         Types.getCodeName(CharacterSet      .UTF_8));
+        assertEquals("blurredImage", Types.getCodeName(ImagingCondition  .BLURRED_IMAGE));
     }
 
     /**
-     * Tests the examples given in {@link Types#getCodeLabel(CodeList)} javadoc.
+     * Tests the examples given in {@link Types#getCodeLabel(Enumerated)} javadoc.
      */
     @Test
     public void testGetCodeLabel() {
@@ -195,7 +198,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Types#getCodeTitle(CodeList)}.
+     * Tests {@link Types#getCodeTitle(Enumerated)}.
      */
     @Test
     public void testGetCodeTitle() {

@@ -229,6 +229,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      */
     @Override
     public LocalName createLocalName(final NameSpace scope, final CharSequence name) {
+        /*
+         * Maintenance note: if the body of this method is modified (except for the use of the cache),
+         * consider updating DefaultLocalName.castOrCopy(LocalName) method accordingly.
+         */
         if (scope instanceof DefaultNameSpace) {
             // Following may return a cached instance.
             return ((DefaultNameSpace) scope).local(name, null);

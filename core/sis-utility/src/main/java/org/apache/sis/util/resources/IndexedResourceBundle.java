@@ -30,6 +30,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.util.CodeList;
+import org.opengis.util.Enumerated;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
@@ -408,8 +409,8 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 replacement = message;
             } else if (element instanceof Class<?>) {
                 replacement = Classes.getShortName((Class<?>) element);
-            } else if (element instanceof CodeList<?>) {
-                replacement = Types.getCodeTitle((CodeList<?>) element).toString(getLocale());
+            } else if (element instanceof Enumerated) {
+                replacement = Types.getCodeTitle((Enumerated) element).toString(getLocale());
             }
             // No need to check for Numbers or Dates instances, since they are
             // properly formatted in the ResourceBundle locale by MessageFormat.

@@ -24,6 +24,7 @@ import org.opengis.metadata.service.OperationChainMetadata;
 import org.opengis.metadata.service.OperationMetadata;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -74,10 +75,10 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
      * @param name      The name as used by the service for this chain.
      * @param operation Information about the operations applied by the chain.
      */
-    public DefaultOperationChainMetadata(final InternationalString name,
+    public DefaultOperationChainMetadata(final CharSequence name,
                                          final OperationMetadata operation)
     {
-        this.name       = name;
+        this.name       = Types.toInternationalString(name);
         this.operations = singleton(operation, OperationMetadata.class);
     }
 

@@ -28,7 +28,7 @@ import java.text.Format;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
-import org.opengis.util.CodeList;
+import org.opengis.util.Enumerated;
 import org.opengis.util.InternationalString;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
@@ -342,6 +342,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * @throws ParseException If an error occurred while parsing a node value.
      */
     @Override
+    @SuppressWarnings("null")
     public TreeTable parse(final CharSequence text, final ParsePosition pos) throws ParseException {
         final Matcher matcher   = getColumnSeparatorMatcher(text);
         final int length        = text.length();
@@ -630,8 +631,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 text = ((InternationalString) value).toString(getDisplayLocale());
             } else if (value instanceof CharSequence) {
                 text = value.toString();
-            } else if (value instanceof CodeList<?>) {
-                text = Types.getCodeTitle((CodeList<?>) value).toString(getDisplayLocale());
+            } else if (value instanceof Enumerated) {
+                text = Types.getCodeTitle((Enumerated) value).toString(getDisplayLocale());
             } else if (value instanceof Enum<?>) {
                 text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
             } else {

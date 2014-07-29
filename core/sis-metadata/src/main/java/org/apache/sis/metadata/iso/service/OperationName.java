@@ -1,0 +1,126 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.metadata.iso.service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Locale;
+import java.io.Serializable;
+import org.opengis.metadata.citation.OnlineResource;
+import org.opengis.metadata.service.CoupledResource;
+import org.opengis.metadata.service.DistributedComputingPlatform;
+import org.opengis.metadata.service.OperationMetadata;
+import org.opengis.metadata.service.Parameter;
+import org.opengis.util.InternationalString;
+
+
+/**
+ * An {@code OperationMetadata} placeholder to be replaced later by a reference to an other {@link OperationMetadata}.
+ * This temporary place holder is used when the operation name is unmarshalled before the actual operation definition.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.5
+ * @since   0.5
+ * @module
+ */
+final class OperationName implements OperationMetadata, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -7958898214063034276L;
+
+    /**
+     * The operation name.
+     */
+    private final InternationalString operationName;
+
+    /**
+     * Creates a new placeholder for the operation of the given name.
+     */
+    OperationName(final InternationalString operationName) {
+        this.operationName = operationName;
+    }
+
+    /**
+     * Returns the operation name.
+     */
+    @Override public InternationalString                      getOperationName()                 {return operationName;}
+    @Override public InternationalString                      getInvocationName()                {return null;}
+    @Override public InternationalString                      getOperationDescription()          {return null;}
+    @Override public Collection<DistributedComputingPlatform> getDistributedComputingPlatforms() {return Collections.emptySet();}
+    @Override public Collection<OnlineResource>               getConnectPoints()                 {return Collections.emptySet();}
+    @Override public Collection<Parameter>                    getParameters()                    {return Collections.emptySet();}
+    @Override public List<OperationMetadata>                  getDependsOn()                     {return Collections.emptyList();}
+
+    /**
+     * Returns a string representation of this placeholder.
+     */
+    @Override
+    public String toString() {
+        return "OperationMetadata[“" + operationName + "”]";
+    }
+
+    /**
+     * For every instance of {@link DefaultCoupledResource} associated to an operation of kind {@code OperationName},
+     * replaces the operation by a "real" {@link DefaultOperationMetadata} of the same name, if any.
+     *
+     * <p>This method updates the elements in the {@code coupledResources} collection in-place.
+     * The other collection is unmodified.</p>
+     *
+     * <p>This method is invoked at unmarshalling time for resolving the {@code OperationMetadata} instance which
+     * were identified only by a name in a {@code <srv:operationName>} element.</p>
+     */
+    static void resolve(final Collection<OperationMetadata> containsOperations, final Collection<CoupledResource> coupledResources) {
+        final Map<String,OperationMetadata> byName = new HashMap<String,OperationMetadata>();
+        for (final OperationMetadata operation : containsOperations) {
+            final InternationalString name = operation.getOperationName();
+            add(byName, name.toString(Locale.ROOT), operation);
+            add(byName, name.toString(/*default*/), operation);
+        }
+        for (final CoupledResource resource : coupledResources) {
+            if (resource instanceof DefaultCoupledResource) {
+                OperationMetadata operation = resource.getOperation();
+                if (operation instanceof OperationName) {
+                    final InternationalString name = operation.getOperationName();
+                    operation = byName.get(name.toString(Locale.ROOT));
+                    if (operation == null) {
+                        operation = byName.get(name.toString());
+                        if (operation == null) {
+                            continue;
+                        }
+                    }
+                    ((DefaultCoupledResource) resource).setOperation(operation);
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds the given operation in the given map under the given name. If an entry already exists for the given name,
+     * then this method sets the value to {@code null} for meaning that we have duplicated values for that name.
+     */
+    private static void add(final Map<String,OperationMetadata> byName, final String name, final OperationMetadata operation) {
+        final boolean exists = byName.containsKey(name);
+        final OperationMetadata previous = byName.put(name, operation);
+        if (previous != operation && (previous != null || exists)) {
+            byName.put(name, null); // Mark the entry as duplicated.
+        }
+    }
+}
