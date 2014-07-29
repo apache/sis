@@ -17,8 +17,9 @@
 package org.apache.sis.metadata.iso.service;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
@@ -47,15 +48,15 @@ import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 @XmlType(name = "MD_ServiceIdentification_Type", propOrder = { // ISO 19139 still use the old prefix.
     "serviceType",
     "serviceTypeVersions",
-    "accessProperties",
-    "couplingType",
+/// "accessProperties",
     "coupledResources",
-    "operatedDatasets",
-    "profiles",
-    "serviceStandards",
+    "couplingType",
+/// "operatedDatasets",
+/// "profiles",
+/// "serviceStandards",
     "containsOperations",
     "operatesOn",
-    "containsChain"
+/// "containsChain"
 })
 @XmlRootElement(name = "SV_ServiceIdentification")
 public class DefaultServiceIdentification extends AbstractIdentification implements ServiceIdentification {
@@ -240,7 +241,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @return Information about the availability of the service, or {@code null} if none.
      */
     @Override
-    @XmlElement(name = "accessProperties")
+/// @XmlElement(name = "accessProperties")
     public StandardOrderProcess getAccessProperties() {
         return accessProperties;
 
@@ -303,7 +304,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @return Reference(s) to the resource on which the service operates.
      */
     @Override
-    @XmlElement(name = "operatedDataset")
+/// @XmlElement(name = "operatedDataset")
     public Collection<Citation> getOperatedDatasets() {
         return operatedDatasets = nonNullCollection(operatedDatasets, Citation.class);
     }
@@ -323,7 +324,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @return Profile(s) to which the service adheres.
      */
     @Override
-    @XmlElement(name = "profile")
+/// @XmlElement(name = "profile")
     public Collection<Citation> getProfiles() {
         return profiles = nonNullCollection(profiles, Citation.class);
     }
@@ -343,7 +344,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @return Standard(s) to which the service adheres.
      */
     @Override
-    @XmlElement(name = "serviceStandard")
+/// @XmlElement(name = "serviceStandard")
     public Collection<Citation> getServiceStandards() {
         return serviceStandards = nonNullCollection(serviceStandards, Citation.class);
     }
@@ -403,7 +404,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @return Information about the chain applied by the service.
      */
     @Override
-    @XmlElement(name = "containsChain")
+/// @XmlElement(name = "containsChain")
     public Collection<OperationChainMetadata> getContainsChain() {
         return containsChain = nonNullCollection(containsChain, OperationChainMetadata.class);
     }
@@ -415,5 +416,14 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      */
     public void setContainsChain(final Collection<? extends OperationChainMetadata>  newValues) {
         containsChain = writeCollection(newValues, containsChain, OperationChainMetadata.class);
+    }
+
+    /**
+     * Invoked after JAXB has unmarshalled this object.
+     */
+    private void afterUnmarshal(final Unmarshaller u, final Object parent) {
+        if (containsOperations != null && coupledResources != null) {
+            OperationName.resolve(containsOperations, coupledResources);
+        }
     }
 }

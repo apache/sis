@@ -33,12 +33,27 @@
   <srv:serviceType>
     <gco:LocalName>Web Map Server</gco:LocalName>
   </srv:serviceType>
+
   <srv:serviceTypeVersion>
     <gco:CharacterString>1.0</gco:CharacterString>
   </srv:serviceTypeVersion>
+
+  <srv:coupledResource>
+    <srv:SV_CoupledResource>
+      <srv:operationName>
+        <gco:CharacterString>Get Map</gco:CharacterString>
+      </srv:operationName>
+      <srv:identifier>
+        <gco:CharacterString>ABC-123</gco:CharacterString>
+      </srv:identifier>
+      <gco:ScopedName>mySpace:ABC-123</gco:ScopedName>
+    </srv:SV_CoupledResource>
+  </srv:coupledResource>
+
   <srv:couplingType>
     <srv:SV_CouplingType codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#SV_CouplingType" codeListValue="loose">Loose</srv:SV_CouplingType>
   </srv:couplingType>
+
   <srv:containsOperations>
     <srv:SV_OperationMetadata>
       <srv:operationName>

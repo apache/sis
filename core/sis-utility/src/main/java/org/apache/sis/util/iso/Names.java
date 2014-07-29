@@ -94,12 +94,29 @@ public final class Names extends Static {
      * @return The namespace object.
      */
     private static NameSpace createNameSpace(final CharSequence namespace, final String separator) {
-        if (namespace == null) {
+        if (namespace == null || namespace.length() == 0) {
             return null;
         }
         return DefaultFactories.NAMES.createNameSpace(
                 DefaultFactories.NAMES.createLocalName(null, namespace),
                 (separator == null) ? null : Collections.singletonMap("separator.head", separator));
+    }
+
+    /**
+     * Creates a local or scoped name in the given namespace.
+     * The character sequences can be either {@link String} or {@link InternationalString} instances.
+     * The {@code namespace} character sequences is taken verbatim, while {@code scopedName} is parsed
+     * as described in {@linkplain DefaultNameFactory#createGenericName(NameSpace, CharSequence...) name factory}.
+     *
+     * @param  namespace  The namespace, or {@code null} for the global namespace.
+     * @param  separator  The separator between the namespace and the scoped name.
+     * @param  scopedName The name to parse.
+     * @return A local or scoped name in the given namespace.
+     */
+    public static GenericName parseGenericName(final CharSequence namespace, final String separator, final CharSequence scopedName) {
+        ensureNonNull("localPart", scopedName);
+        ensureNonNull("separator", separator);
+        return DefaultFactories.NAMES.parseGenericName(createNameSpace(namespace, separator), scopedName);
     }
 
     /**

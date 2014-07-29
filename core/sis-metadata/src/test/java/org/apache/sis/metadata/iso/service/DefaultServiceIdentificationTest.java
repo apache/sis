@@ -17,13 +17,8 @@
 package org.apache.sis.metadata.iso.service;
 
 import javax.xml.bind.JAXBException;
-import org.opengis.util.TypeName;
-import org.opengis.util.MemberName;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.service.CouplingType;
-import org.opengis.metadata.service.DistributedComputingPlatform;
-import org.opengis.metadata.service.ParameterDirection;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
@@ -43,8 +38,9 @@ import static org.apache.sis.internal.system.DefaultFactories.SIS_NAMES;
  * @module
  */
 @DependsOn({
-    org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class,
-    DefaultParameterTest.class
+    DefaultParameterTest.class,
+    DefaultCoupledResourceTest.class,
+    org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class
 })
 public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase {
     /**
@@ -56,24 +52,15 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      * Creates the service identification to use for testing purpose.
      */
     private static DefaultServiceIdentification create() {
-        final TypeName   valueType = SIS_NAMES.createTypeName(null, "CharacterString");
-        final MemberName paramName = SIS_NAMES.createMemberName(null, "Version", valueType);
-        final DefaultParameter param = new DefaultParameter(paramName, "Optional", false);
-        assertSame("valueType", valueType, param.getValueType());
-        param.setDirection(ParameterDirection.IN);
-
-        final DefaultOperationMetadata md = new DefaultOperationMetadata("Get Map",
-                DistributedComputingPlatform.WEB_SERVICES, null);
-        md.setParameters(singleton(param));
-        md.setConnectPoints(singleton(NilReason.MISSING.createNilObject(OnlineResource.class)));
-
+        final DefaultCoupledResource resource = DefaultCoupledResourceTest.create();
         final DefaultServiceIdentification id = new DefaultServiceIdentification(
                 SIS_NAMES.createGenericName(null, "Web Map Server"),    // serviceType
                 NilReason.MISSING.createNilObject(Citation.class),      // citation
                 "A dummy service for testing purpose.");                // abstract
         id.setServiceTypeVersions(singleton("1.0"));
+        id.setCoupledResources(singleton(resource));
         id.setCouplingType(CouplingType.LOOSE);
-        id.setContainsOperations(singleton(md));
+        id.setContainsOperations(singleton(resource.getOperation()));
         return id;
     }
 
