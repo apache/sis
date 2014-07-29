@@ -19,8 +19,6 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ConcurrentModificationException;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -56,8 +54,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @see DefaultNameSpace
  * @see DefaultLocalName
  */
-@XmlType(name = "ScopedName") // Actually 'gml:CodeType', but the later is used elsewhere.
-@XmlRootElement(name = "ScopedName")
+// No JAXB annotation, because we can't use @XmlValue in this class.
 public class DefaultScopedName extends AbstractName implements ScopedName {
     /**
      * Serial number for inter-operability with different versions.
@@ -87,14 +84,6 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
             case 1:  return names.get(0);
             case 0:  throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "names"));
         }
-    }
-
-    /**
-     * Empty constructor to be used by JAXB only. Despite its "final" declaration,
-     * the {@link #parsedNames} field will be set by JAXB during unmarshalling.
-     */
-    private DefaultScopedName() {
-        parsedNames = null;
     }
 
     /**
