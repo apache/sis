@@ -19,13 +19,19 @@ package org.apache.sis.metadata.iso.service;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.ScopedName;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.service.CoupledResource;
 import org.opengis.metadata.service.OperationMetadata;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.metadata.direct.GO_ScopedName;
+
+import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
 
 /**
@@ -38,10 +44,12 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @module
  */
 @XmlType(name = "SV_CoupledResource_Type", propOrder = {
-    "scopedName",
+    "operationName",
+    "identifier",
+    "scopedName" /*,
     "resourceReferences",
     "resources",
-    "operation"
+    "operation" */
 })
 @XmlRootElement(name = "SV_CoupledResource")
 public class DefaultCoupledResource extends ISOMetadata implements CoupledResource {
@@ -145,7 +153,8 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @return identifier of the resource, or {@code null} if none.
      */
     @Override
-    @XmlElement(name = "scopedName")
+    @XmlElementRef
+    @XmlJavaTypeAdapter(GO_ScopedName.class)
     public ScopedName getScopedName() {
         return scopedName;
     }
@@ -166,7 +175,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @return References to the resource on which the services operates.
      */
     @Override
-    @XmlElement(name = "resourceReference")
+/// @XmlElement(name = "resourceReference")
     public Collection<Citation> getResourceReferences() {
         return resourceReferences = nonNullCollection(resourceReferences, Citation.class);
     }
@@ -186,7 +195,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @return tightly coupled resources.
      */
     @Override
-    @XmlElement(name = "resource")
+/// @XmlElement(name = "resource")
     public Collection<DataIdentification> getResources() {
         return resources = nonNullCollection(resources, DataIdentification.class);
     }
@@ -206,7 +215,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @return The service operation, or {@code null} if none.
      */
     @Override
-    @XmlElement(name = "operation")
+/// @XmlElement(name = "operation")
     public OperationMetadata getOperation() {
         return operation;
     }
@@ -219,5 +228,48 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     public void setOperation(final OperationMetadata newValue) {
         checkWritePermission();
         this.operation = newValue;
+    }
+
+
+
+    // Bridges for elements from legacy ISO 19119
+
+    /**
+     * For JAXB marhalling of ISO 19119 document only.
+     */
+    @XmlElement(name = "operationName")
+    final InternationalString getOperationName() {
+        if (LEGACY_XML) {
+            final OperationMetadata operation = getOperation();
+            if (operation != null) {
+                return operation.getOperationName();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * For JAXB unmarhalling of ISO 19119 document only. Sets {@link #operation} to a temporary
+     * {@link OperationName} placeholder. That temporary instance will be replaced by the real
+     * one when the enclosing {@link DefaultServiceIdentification} is unmarshalled.
+     */
+    final void setOperationName(final InternationalString name) {
+        if (operation == null) {
+            operation = new OperationName(name);
+        }
+    }
+
+    /**
+     * Returns the resource identifier, which is assumed to be the name as a string.
+     */
+    @XmlElement(name = "identifier")
+    final String getIdentifier() {
+        if (LEGACY_XML) {
+            final ScopedName name = getScopedName();
+            if (name != null) {
+                return name.tip().toString();
+            }
+        }
+        return null;
     }
 }
