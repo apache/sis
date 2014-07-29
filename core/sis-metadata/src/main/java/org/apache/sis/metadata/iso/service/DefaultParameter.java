@@ -19,11 +19,16 @@ package org.apache.sis.metadata.iso.service;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.service.Parameter;
 import org.opengis.metadata.service.ParameterDirection;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.metadata.direct.GO_MemberName;
+
+import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
 
 /**
@@ -41,8 +46,9 @@ import org.apache.sis.metadata.iso.ISOMetadata;
     "name",
     "direction",
     "description",
-    "optionality",
-    "repeatability"
+    "optionalityLabel",
+    "repeatability",
+    "valueType"
 })
 @XmlRootElement(name = "SV_Parameter")
 public class DefaultParameter extends ISOMetadata implements Parameter {
@@ -69,12 +75,12 @@ public class DefaultParameter extends ISOMetadata implements Parameter {
     /**
      * Indication if the parameter is required.
      */
-    private InternationalString optionality;
+    private Boolean optionality;
 
     /**
      * Indication if more than one value of the parameter may be provided.
      */
-    private boolean repeatability;
+    private Boolean repeatability;
 
     /**
      * Constructs an initially empty parameter.
@@ -90,7 +96,7 @@ public class DefaultParameter extends ISOMetadata implements Parameter {
      * @param repeatability Indication if more than one value of the parameter may be provided.
      */
     public DefaultParameter(final MemberName name,
-                            final InternationalString optionality,
+                            final boolean optionality,
                             final boolean repeatability)
     {
         this.name          = name;
@@ -149,6 +155,7 @@ public class DefaultParameter extends ISOMetadata implements Parameter {
      * @return The name, as used by the service for this parameter.
      */
     @Override
+    @XmlJavaTypeAdapter(GO_MemberName.class)
     @XmlElement(name = "name", required = true)
     public MemberName getName() {
         return name;
@@ -212,8 +219,8 @@ public class DefaultParameter extends ISOMetadata implements Parameter {
      * @return Whether the parameter is required.
      */
     @Override
-    @XmlElement(name = "optionality", required = true)
-    public InternationalString getOptionality() {
+/// @XmlElement(name = "optionality", required = true)
+    public Boolean getOptionality() {
         return optionality;
     }
 
@@ -222,7 +229,7 @@ public class DefaultParameter extends ISOMetadata implements Parameter {
      *
      * @param newValue Whether the parameter is required.
      */
-    public void setOptionality(final InternationalString newValue) {
+    public void setOptionality(final Boolean newValue) {
         checkWritePermission();
         this.optionality = newValue;
     }
@@ -234,7 +241,7 @@ public class DefaultParameter extends ISOMetadata implements Parameter {
      */
     @Override
     @XmlElement(name = "repeatability", required = true)
-    public boolean getRepeatability() {
+    public Boolean getRepeatability() {
         return repeatability;
     }
 
@@ -243,8 +250,37 @@ public class DefaultParameter extends ISOMetadata implements Parameter {
      *
      * @param newValue Whether more than one value of the parameter may be provided.
      */
-    public void setRepeatability(final boolean newValue) {
+    public void setRepeatability(final Boolean newValue) {
         checkWritePermission();
         this.repeatability = newValue;
+    }
+
+
+
+    // Bridges for elements from legacy ISO 19119
+
+    /**
+     * Returns the optionality as a "Optional" or "Mandatory" string.
+     */
+    @XmlElement(name = "optionality", required = true)
+    final String getOptionalityLabel() {
+        return (optionality == null) ? null : (optionality) ? "Optional" : "Mandatory";
+    }
+
+    /**
+     * Sets optionality to {@code true} if the given string is equals, ignoring case, to {@code "Optional"}.
+     */
+    final void setOptionalityLabel(final String label) {
+        optionality = (label == null) ? null : label.equalsIgnoreCase("Optional");
+    }
+
+    /**
+     * For JAXB marhalling of ISO 19119 document only.
+     * Note that there is not setter method, since we expect the same information
+     * to be provided in the {@link #name} attribute type.
+     */
+    @XmlElement(name = "valueType")
+    final TypeName getValueType() {
+        return (LEGACY_XML && name != null) ? name.getAttributeType() : null;
     }
 }

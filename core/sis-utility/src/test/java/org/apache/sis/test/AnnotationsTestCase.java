@@ -231,6 +231,16 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     }
 
     /**
+     * Returns the name of the XML element for the given UML element.
+     *
+     * @param  uml The UML element.
+     * @return The corresponding XML element name.
+     */
+    protected String getExpectedName(final UML uml) {
+        return uml.identifier();
+    }
+
+    /**
      * Replaces {@value #DEFAULT} value by the {@link XmlSchema} namespace if needed,
      * then performs validity check on the resulting namespace. This method checks that:
      *
@@ -542,7 +552,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                  * is because subclasses may choose to override the above test method.
                  */
                 if (uml != null) {
-                    assertEquals("Wrong @XmlElement.name().", uml.identifier(), element.name());
+                    assertEquals("Wrong @XmlElement.name().", getExpectedName(uml), element.name());
                     assertEquals("Wrong @XmlElement.required().", uml.obligation() == Obligation.MANDATORY, element.required());
                 }
                 /*

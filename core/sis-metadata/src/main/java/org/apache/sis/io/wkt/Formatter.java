@@ -49,7 +49,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.util.CodeList;
+import org.opengis.util.Enumerated;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.DecimalFunctions;
@@ -929,12 +929,12 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends a code list.
+     * Appends an enumeration or code list value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the code list if needed.
      *
      * @param code The code list to append to the WKT, or {@code null} if none.
      */
-    public void append(final CodeList<?> code) {
+    public void append(final Enumerated code) {
         if (code != null) {
             appendSeparator();
             setColor(ElementKind.CODE_LIST);
@@ -1140,7 +1140,7 @@ public class Formatter implements Localized {
                 append(number.doubleValue());
             }
         }
-        else if (value instanceof CodeList<?>) append((CodeList<?>) value);
+        else if (value instanceof Enumerated)  append((Enumerated) value);
         else if (value instanceof Date)        append((Date)        value);
         else if (value instanceof Boolean)     append((Boolean)     value);
         else if (value instanceof CharSequence) {

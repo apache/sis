@@ -52,6 +52,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     /**
      * Creates a new test case with all GeoAPI interfaces and code lists to test.
      */
+    @SuppressWarnings("deprecation")
     public AllMetadataTest() {
         super(MetadataStandard.ISO_19115,
             org.opengis.metadata.ApplicationSchemaInformation.class,
@@ -218,6 +219,21 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     public void testPropertyValues() {
         listener.maximumLogCount = 3;
         super.testPropertyValues();
+    }
+
+    /**
+     * Returns the name of the XML element for the given UML element.
+     * This method checks for the special cases which are known to have different UML and XML names.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    protected String getExpectedName(final UML uml) {
+        String name = uml.identifier();
+        if (name.equals("distributedComputingPlatform")) {
+            name = "DCP";
+        }
+        return name;
     }
 
     /**
