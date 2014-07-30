@@ -19,9 +19,8 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Collections;
 import java.util.Locale;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
@@ -63,8 +62,16 @@ import java.util.Objects;
  * @see DefaultNameSpace
  * @see DefaultScopedName
  */
-@XmlType(name = "LocalName") // Actually 'gml:CodeType', but the later is used elsewhere.
-@XmlRootElement(name = "LocalName")
+
+/*
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * since "CodeType" is used for various classes (including GenericName and ScopedName).
+ * (Un)marhalling of this class needs to be handled by a JAXB adapter.
+ */
+@XmlSeeAlso({
+    DefaultTypeName.class,
+    DefaultMemberName.class
+})
 public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * Serial number for inter-operability with different versions.

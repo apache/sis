@@ -46,6 +46,15 @@ import org.apache.sis.xml.Namespaces;
  * According ISO 19115, at least one of {@linkplain #getDescription() description} and
  * {@linkplain #getSourceExtents() source extents} shall be provided.
  *
+ * {@section Limitations}
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
@@ -233,7 +242,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @return Representative fraction on a source map, or {@code null}.
      *
-     * @deprecated Moved to {@link DefaultResolution#getEquivalentScale()}.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultResolution#getEquivalentScale()}.
      */
     @Override
     @Deprecated
@@ -250,7 +259,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValue The new scale denominator.
      *
-     * @deprecated Moved to {@link DefaultResolution#setEquivalentScale(RepresentativeFraction)}.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultResolution#setEquivalentScale(RepresentativeFraction)}.
      */
     @Deprecated
     public final void setScaleDenominator(final RepresentativeFraction newValue)  {
@@ -364,7 +373,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @return Information about the extent of the source data.
      *
-     * @deprecated Moved to {@link DefaultScope#getExtent()}.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#getExtent()}.
      */
     @Override
     @Deprecated
@@ -384,7 +393,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValues The new source extents.
      *
-     * @deprecated Moved to {@link DefaultScope#setExtent(Extent)}.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#setExtent(Extent)}.
      */
     @Deprecated
     public final void setSourceExtents(final Collection<? extends Extent> newValues) {

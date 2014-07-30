@@ -34,6 +34,15 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 /**
  * Information required to identify a dataset.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
@@ -44,9 +53,9 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
     "languages",
     "characterSets",
-    "legacy1", // topicCategories
+    "topicCategory",
     "environmentDescription",
-    "legacy2", // extents
+    "extent",
     "supplementalInformation"
 })
 @XmlRootElement(name = "MD_DataIdentification")
@@ -236,14 +245,14 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * For JAXB marhalling of ISO 19115:2003 document only.
      */
     @XmlElement(name = "topicCategory")
-    private Collection<TopicCategory> getLegacy1()  {
+    private Collection<TopicCategory> getTopicCategory()  {
         return LEGACY_XML ? getTopicCategories() : null;
     }
 
     /**
      * For JAXB unmarhalling of ISO 19115:2003 document only.
      */
-    private void setLegacy1(final Collection<? extends TopicCategory> newValues) {
+    private void setTopicCategory(final Collection<? extends TopicCategory> newValues) {
         setTopicCategories(newValues);
     }
 
@@ -251,14 +260,14 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * For JAXB marhalling of ISO 19115:2003 document only.
      */
     @XmlElement(name = "extent")
-    private Collection<Extent> getLegacy2() {
+    private Collection<Extent> getExtent() {
         return LEGACY_XML ? getExtents() : null;
     }
 
     /**
      * For JAXB unmarhalling of ISO 19115:2003 document only.
      */
-    private void setLegacy2(final Collection<? extends Extent> newValues) {
+    private void setExtent(final Collection<? extends Extent> newValues) {
         setExtents(newValues);
     }
 }

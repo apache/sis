@@ -42,6 +42,15 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * The base class of ISO 19115 implementation classes. Each sub-classes implements one
  * of the ISO Metadata interface provided by <a href="http://www.geoapi.org">GeoAPI</a>.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3

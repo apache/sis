@@ -31,6 +31,15 @@ import org.apache.sis.measure.ValueRange;
 /**
  * The characteristic of each dimension (layer) included in the resource.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Remi Marechal (geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
