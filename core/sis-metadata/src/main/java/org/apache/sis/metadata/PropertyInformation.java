@@ -179,7 +179,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Unconditionally returns {@code null}.
      *
      * @deprecated This property was defined in the 2003 edition of ISO 19115,
-     *             but has been removed in the 2013 edition.
+     *             but has been removed in the 2014 edition.
      */
     @Override
     @Deprecated
@@ -191,7 +191,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Unconditionally returns {@code null}.
      *
      * @deprecated This property was defined in the 2003 edition of ISO 19115,
-     *             but has been removed in the 2013 edition.
+     *             but has been removed in the 2014 edition.
      */
     @Override
     @Deprecated
