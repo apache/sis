@@ -17,7 +17,6 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import org.opengis.util.GenericName;
-import org.apache.sis.util.iso.AbstractName;
 
 
 /**
@@ -49,12 +48,12 @@ public final class GO_GenericName extends NameAdapter<GO_GenericName, GenericNam
     /**
      * Wraps a name at marshalling-time.
      */
-    private GO_GenericName(final AbstractName value) {
+    private GO_GenericName(final GenericName value) {
         name = value;
     }
 
     /**
-     * Does the link between an {@link AbstractName} and the adapter associated.
+     * Does the link between an {@link GenericName} and the adapter associated.
      * JAXB calls automatically this method at marshalling-time.
      *
      * @param  value The implementing class for this metadata value.
@@ -62,7 +61,7 @@ public final class GO_GenericName extends NameAdapter<GO_GenericName, GenericNam
      */
     @Override
     public GO_GenericName marshal(final GenericName value) {
-        return (value != null) ? new GO_GenericName(AbstractName.castOrCopy(value)) : null;
+        return (value != null) ? new GO_GenericName(value) : null;
     }
 
     /**

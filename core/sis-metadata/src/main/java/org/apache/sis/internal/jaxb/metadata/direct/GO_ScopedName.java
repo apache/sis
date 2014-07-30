@@ -16,9 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.metadata.direct;
 
-import org.opengis.util.GenericName;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.ScopedName;
+import org.opengis.util.GenericName;
+import org.apache.sis.internal.jaxb.gml.CodeType;
 
 
 /**
@@ -32,7 +33,7 @@ import org.opengis.util.ScopedName;
  *
  * @see org.apache.sis.internal.jaxb.gco.GO_GenericName
  */
-public final class GO_ScopedName extends XmlAdapter<Name, ScopedName> {
+public final class GO_ScopedName extends XmlAdapter<CodeType.ScopedName, ScopedName> {
     /**
      * Converts a GeoAPI interface to the SIS implementation for XML marshalling.
      *
@@ -40,11 +41,11 @@ public final class GO_ScopedName extends XmlAdapter<Name, ScopedName> {
      * @return The adapter for the given value, here the SIS implementation.
      */
     @Override
-    public Name marshal(final ScopedName name) {
+    public CodeType.ScopedName marshal(final ScopedName name) {
         if (name != null) {
-            final Name wrapper = new Name();
-            wrapper.set(name);
-            return wrapper;
+            final CodeType.ScopedName code = new CodeType.ScopedName();
+            code.setName(name);
+            return code;
         }
         return null;
     }
@@ -52,13 +53,13 @@ public final class GO_ScopedName extends XmlAdapter<Name, ScopedName> {
     /**
      * Returns the scope name from the given string.
      *
-     * @param  wrapper The metadata value.
+     * @param  code The metadata value.
      * @return The value to marshal (which is the same).
      */
     @Override
-    public ScopedName unmarshal(final Name wrapper) {
-        if (wrapper != null) {
-            final GenericName parsed = wrapper.get();
+    public ScopedName unmarshal(final CodeType.ScopedName code) {
+        if (code != null) {
+            final GenericName parsed = code.getName();
             if (parsed instanceof ScopedName) {
                 return (ScopedName) parsed;
             }

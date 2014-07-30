@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
@@ -68,7 +68,10 @@ import java.util.Objects;
  * since "CodeType" is used for various classes (including GenericName and ScopedName).
  * (Un)marhalling of this class needs to be handled by a JAXB adapter.
  */
-@XmlTransient
+@XmlSeeAlso({
+    DefaultTypeName.class,
+    DefaultMemberName.class
+})
 public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * Serial number for inter-operability with different versions.
