@@ -38,6 +38,15 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 /**
  * Information about the content of a grid data cell.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
@@ -214,7 +223,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @return Type of information represented by the cell value, or {@code null}.
      *
-     * @deprecated Moved to {@link DefaultAttributeGroup#getContentTypes()} as of ISO 19115:2014.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#getContentTypes()}.
      */
     @Override
     @Deprecated
@@ -246,7 +255,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @param newValue The new content type.
      *
-     * @deprecated Moved to {@link DefaultAttributeGroup#setContentTypes(Collection)}.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#setContentTypes(Collection)}.
      */
     @Deprecated
     public final void setContentType(final CoverageContentType newValue) {
@@ -270,7 +279,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @return Dimensions of the cell measurement value.
      *
-     * @deprecated Moved to {@link DefaultAttributeGroup#getGroupAttributes()} as of ISO 19115:2014.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#getGroupAttributes()}.
      */
     @Override
     @Deprecated
@@ -307,7 +316,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @param newValues The new dimensions.
      *
-     * @deprecated Moved to {@link DefaultAttributeGroup#setGroupAttributes(Collection)}.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#setGroupAttributes(Collection)}.
      */
     @Deprecated
     public final void setDimensions(final Collection<? extends RangeDimension> newValues) {

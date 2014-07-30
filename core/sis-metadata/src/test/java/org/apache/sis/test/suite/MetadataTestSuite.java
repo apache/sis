@@ -52,7 +52,6 @@ import org.junit.BeforeClass;
     // XML marshalling.
     org.apache.sis.internal.jaxb.code.CodeListMarshallingTest.class,
     org.apache.sis.internal.jaxb.code.PT_LocaleTest.class,
-    org.apache.sis.internal.jaxb.gml.TimePeriodTest.class,
     org.apache.sis.xml.FreeTextMarshallingTest.class,
     org.apache.sis.xml.NilReasonMarshallingTest.class,
     org.apache.sis.xml.AnchorMarshallingTest.class,

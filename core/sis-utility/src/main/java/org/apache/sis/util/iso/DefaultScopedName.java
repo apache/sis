@@ -19,6 +19,7 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ConcurrentModificationException;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -54,7 +55,13 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @see DefaultNameSpace
  * @see DefaultLocalName
  */
-// No JAXB annotation, because we can't use @XmlValue in this class.
+
+/*
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * since "CodeType" is used for various classes (including GenericName and LocalName).
+ * (Un)marhalling of this class needs to be handled by a JAXB adapter.
+ */
+@XmlTransient
 public class DefaultScopedName extends AbstractName implements ScopedName {
     /**
      * Serial number for inter-operability with different versions.
