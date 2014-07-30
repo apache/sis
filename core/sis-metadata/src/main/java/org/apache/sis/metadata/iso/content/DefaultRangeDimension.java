@@ -32,6 +32,15 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Information on the range of each dimension of a cell measurement value.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
@@ -176,7 +185,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * @return Description of the range of a cell measurement value, or {@code null}.
      *
-     * @deprecated Renamed {@link #getDescription()} as of ISO 19115:2014.
+     * @deprecated As of ISO 19115:2014, renamed {@link #getDescription()}.
      */
     @Override
     @Deprecated
@@ -191,7 +200,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * @param newValue The new descriptor.
      *
-     * @deprecated Renamed {@link #setDescription(InternationalString)}.
+     * @deprecated As of ISO 19115:2014, renamed {@link #setDescription(InternationalString)}.
      */
     @Deprecated
     public final void setDescriptor(final InternationalString newValue) {
