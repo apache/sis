@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Collection;
+import java.nio.charset.Charset;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -34,7 +35,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Distribution;
-import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -59,6 +59,15 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * instances of in this {@code DefaultMetadata} object and every children, as required by
  * INSPIRE rules. If no language were specified, then the default locale will be the one
  * defined in the {@link org.apache.sis.xml.XML#LOCALE} marshaller property, if any.
+ *
+ * {@section Limitations}
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -99,7 +108,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7337533776231004504L;
+    private static final long serialVersionUID = -5374952007292101340L;
 
     /**
      * Unique identifier for this metadata file, or {@code null} if none.
@@ -120,7 +129,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Full name of the character coding standard used for the metadata set.
      */
-    private CharacterSet characterSet;
+    private Charset characterSet;
 
     /**
      * File identifier of the metadata to which this metadata is a subset (child).
@@ -383,22 +392,22 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Returns the full name of the character coding standard used for the metadata set.
+     * Returns the character coding standard used for the metadata set.
      *
-     * @return character coding standard used for the metadata, or {@code null}.
+     * @return Character coding standard used for the metadata, or {@code null}.
      */
     @Override
     @XmlElement(name = "characterSet")
-    public CharacterSet getCharacterSet()  {
+    public Charset getCharacterSet()  {
         return characterSet;
     }
 
     /**
-     * Sets the full name of the character coding standard used for the metadata set.
+     * Sets the character coding standard used for the metadata set.
      *
      * @param newValue The new character set.
      */
-    public void setCharacterSet(final CharacterSet newValue) {
+    public void setCharacterSet(final Charset newValue) {
         checkWritePermission();
         characterSet = newValue;
     }

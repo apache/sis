@@ -18,12 +18,12 @@ package org.apache.sis.metadata.iso.identification;
 
 import java.util.Collection;
 import java.util.Locale;
+import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.util.InternationalString;
@@ -33,6 +33,15 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
 /**
  * Information required to identify a dataset.
+ *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -44,9 +53,9 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
     "languages",
     "characterSets",
-    "legacy1", // topicCategories
+    "topicCategory",
     "environmentDescription",
-    "legacy2", // extents
+    "extent",
     "supplementalInformation"
 })
 @XmlRootElement(name = "MD_DataIdentification")
@@ -54,7 +63,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 6104637930243499850L;
+    private static final long serialVersionUID = 6104637930243499851L;
 
     /**
      * Language(s) used within the dataset.
@@ -64,7 +73,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Full name of the character coding standard used for the dataset.
      */
-    private Collection<CharacterSet> characterSets;
+    private Collection<Charset> characterSets;
 
     /**
      * Description of the dataset in the producers processing environment, including items
@@ -114,7 +123,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
         super(object);
         if (object != null) {
             languages                  = copyCollection(object.getLanguages(), Locale.class);
-            characterSets              = copyCollection(object.getCharacterSets(), CharacterSet.class);
+            characterSets              = copyCollection(object.getCharacterSets(), Charset.class);
             environmentDescription     = object.getEnvironmentDescription();
             supplementalInformation    = object.getSupplementalInformation();
         }
@@ -146,9 +155,16 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Returns the language(s) used within the dataset.
+     * Returns the language(s) used within the resource.
+     * The first element in iteration order shall be the default language.
+     * All other elements, if any, are alternate language(s) used within the resource.
+     *
+     * <p>The language string representations should use ISO 639-2 language code as
+     * returned by {@link Locale#getISO3Language()}.</p>
      *
      * @return Language(s) used.
+     *
+     * @see Locale#getISO3Language()
      */
     @Override
     @XmlElement(name = "language", required = true)
@@ -166,30 +182,30 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Returns the full name of the character coding standard used for the dataset.
+     * Returns the character coding standard used for the dataset.
      *
-     * @return Name(s) of the character coding standard(s) used.
+     * @return Character coding standard(s) used.
      */
     @Override
     @XmlElement(name = "characterSet")
-    public Collection<CharacterSet> getCharacterSets() {
-        return characterSets = nonNullCollection(characterSets, CharacterSet.class);
+    public Collection<Charset> getCharacterSets() {
+        return characterSets = nonNullCollection(characterSets, Charset.class);
     }
 
     /**
-     * Sets the full name of the character coding standard used for the dataset.
+     * Sets the character coding standard used for the dataset.
      *
      * @param newValues The new character sets.
      */
-    public void setCharacterSets(final Collection<? extends CharacterSet> newValues) {
-        characterSets = writeCollection(newValues, characterSets, CharacterSet.class);
+    public void setCharacterSets(final Collection<? extends Charset> newValues) {
+        characterSets = writeCollection(newValues, characterSets, Charset.class);
     }
 
     /**
-     * Returns a description of the dataset in the producer's processing environment. This includes
+     * Returns a description of the resource in the producer's processing environment. This includes
      * items such as the software, the computer operating system, file name, and the dataset size.
      *
-     * @return Description of the dataset in the producer's processing environment, or {@code null}.
+     * @return Description of the resource in the producer's processing environment, or {@code null}.
      */
     @Override
     @XmlElement(name = "environmentDescription")
@@ -198,7 +214,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Sets the description of the dataset in the producers processing environment.
+     * Sets the description of the resource in the producers processing environment.
      *
      * @param newValue The new environment description.
      */
@@ -208,7 +224,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Any other descriptive information about the dataset.
+     * Any other descriptive information about the resource.
      *
      * @return Other descriptive information, or {@code null}.
      */
@@ -219,7 +235,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Sets any other descriptive information about the dataset.
+     * Sets any other descriptive information about the resource.
      *
      * @param newValue The new supplemental information.
      */
@@ -236,14 +252,14 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * For JAXB marhalling of ISO 19115:2003 document only.
      */
     @XmlElement(name = "topicCategory")
-    private Collection<TopicCategory> getLegacy1()  {
+    private Collection<TopicCategory> getTopicCategory()  {
         return LEGACY_XML ? getTopicCategories() : null;
     }
 
     /**
      * For JAXB unmarhalling of ISO 19115:2003 document only.
      */
-    private void setLegacy1(final Collection<? extends TopicCategory> newValues) {
+    private void setTopicCategory(final Collection<? extends TopicCategory> newValues) {
         setTopicCategories(newValues);
     }
 
@@ -251,14 +267,14 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * For JAXB marhalling of ISO 19115:2003 document only.
      */
     @XmlElement(name = "extent")
-    private Collection<Extent> getLegacy2() {
+    private Collection<Extent> getExtent() {
         return LEGACY_XML ? getExtents() : null;
     }
 
     /**
      * For JAXB unmarhalling of ISO 19115:2003 document only.
      */
-    private void setLegacy2(final Collection<? extends Extent> newValues) {
+    private void setExtent(final Collection<? extends Extent> newValues) {
         setExtents(newValues);
     }
 }

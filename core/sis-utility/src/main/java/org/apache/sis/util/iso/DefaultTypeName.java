@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.iso;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
@@ -43,6 +44,7 @@ import org.opengis.util.NameSpace;
  * @see DefaultMemberName
  * @see DefaultNameFactory
  */
+@XmlType(name = "TypeName_Type")
 @XmlRootElement(name = "TypeName")
 public class DefaultTypeName extends DefaultLocalName implements TypeName {
     /**

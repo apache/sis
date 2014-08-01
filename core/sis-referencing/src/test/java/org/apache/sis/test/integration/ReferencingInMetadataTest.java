@@ -28,7 +28,6 @@ import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.VerticalExtent;
-import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.spatial.GeometricObjectType;
 import org.opengis.metadata.spatial.SpatialRepresentation;
@@ -48,6 +47,9 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.StandardCharsets;
 
 
 /**
@@ -83,7 +85,7 @@ public final strictfp class ReferencingInMetadataTest extends XMLTestCase {
         final Metadata metadata = unmarshalFile(Metadata.class, VERTICAL_CRS_XML);
         assertEquals("fileIdentifier", "20090901",                     metadata.getFileIdentifier());
         assertEquals("language",       Locale.ENGLISH,                 metadata.getLanguage());
-        assertEquals("characterSet",   CharacterSet.UTF_8,             metadata.getCharacterSet());
+        assertEquals("characterSet",   StandardCharsets.UTF_8,         metadata.getCharacterSet());
         assertEquals("dateStamp",      xmlDate("2014-01-04 00:00:00"), metadata.getDateStamp());
         /*
          * <gmd:contact>

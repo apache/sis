@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;

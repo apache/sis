@@ -17,14 +17,13 @@
 package org.apache.sis.internal.jaxb.code;
 
 import java.util.Locale;
+import java.nio.charset.Charset;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.metadata.identification.CharacterSet;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmd.Country;
 import org.apache.sis.internal.jaxb.gmd.LanguageCode;
@@ -105,7 +104,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          */
         @XmlElement(required = true)
         @XmlJavaTypeAdapter(MD_CharacterSetCode.class)
-        CharacterSet characterEncoding;
+        Charset characterEncoding;
 
         /**
          * Empty constructor for JAXB only.
@@ -141,7 +140,8 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
                 return;
             }
             if (encoding != null) {
-                characterEncoding = Types.forCodeName(CharacterSet.class, encoding, true);
+                final Context context = Context.current();
+                characterEncoding = Context.converter(context).toCharset(context, encoding);
             }
         }
     }

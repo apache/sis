@@ -25,7 +25,7 @@ import java.nio.charset.Charset;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from GeoAPI)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public final class StandardCharsets {
@@ -44,4 +44,9 @@ public final class StandardCharsets {
      * Sixteen-bit UCS Transformation Format.
      */
     public static final Charset UTF_16 = Charset.forName("UTF-16");
+
+    /**
+     * ISO/IEC 8859-1, Information technology - 8-bit single byte coded graphic character sets - Part 1 : Latin alphabet No.1.
+     */
+    public static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 }

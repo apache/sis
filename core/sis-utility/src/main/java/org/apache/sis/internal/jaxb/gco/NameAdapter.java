@@ -16,15 +16,15 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.util.iso.AbstractName;
+import org.apache.sis.internal.jaxb.gml.CodeType;
+import org.apache.sis.util.iso.DefaultLocalName;
 import org.apache.sis.util.iso.DefaultTypeName;
 import org.apache.sis.util.iso.DefaultMemberName;
 import org.apache.sis.util.resources.Errors;
@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, BoundType extends GenericName>
@@ -55,7 +55,7 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
     /**
      * The generic name to be marshalled.
      */
-    AbstractName name;
+    GenericName name;
 
     /**
      * Empty constructor for subclasses only.
@@ -75,118 +75,70 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
     }
 
     /**
-     * Returns the {@code LocalName} generated from the metadata value.
-     * The local name is returned only if it is not a {@link TypeName} or a {@link MemberName}
-     * (otherwise, the corresponding {@code getXXX()} method needs to be invoked instead.
+     * Returns the {@code LocalName} or {@code ScopedName} to marshall. Returns {@code null} if the name
+     * is a {@link TypeName} or a {@link MemberName}, in order to use {@link #getNameType()} instead.
      *
-     * @return The current local name, or {@code null} if none.
-     *
-     * @see #getTypeName()
-     * @see #getMemberName()
+     * @return The code for the current name, or {@code null} if none.
      */
-    @XmlElement(name = "LocalName")
-    public final String getLocalName() {
-        final AbstractName name = this.name;
-        return (name instanceof LocalName) && !(name instanceof TypeName)
-                && !(name instanceof MemberName) ? name.toString() : null;
+    @XmlElementRef
+    public final CodeType getCodeType() {
+        final GenericName name = this.name;
+        final CodeType code;
+        if (name instanceof LocalName) {
+            if (name instanceof TypeName || name instanceof MemberName) {
+                return null;
+            } else {
+                code = new CodeType.LocalName();
+            }
+        } else if (name instanceof ScopedName) {
+            code = new CodeType.ScopedName();
+        } else {
+            return null;
+        }
+        code.setName(name);
+        return code;
     }
 
     /**
-     * Sets the value for the {@code LocalName}.
+     * Sets the value for the {@code LocalName} or {@code ScopedName}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param  value The new name.
+     * @param  code The new name.
      * @throws IllegalStateException If a name is already defined.
      */
-    public final void setLocalName(final String value) throws IllegalStateException {
+    public final void setCodeType(final CodeType code) throws IllegalStateException {
         ensureUndefined();
-        if (value == null) {
-            name = null;
-        } else {
-            /*
-             * Following cast should be safe because the SIS_NAMES factory is fixed to a
-             * DefaultNameFactory instance, which is known to create AbstractName instances.
-             */
-            name = (AbstractName) DefaultFactories.SIS_NAMES.createLocalName(null, value);
+        if (code != null) {
+            name = code.getName();
         }
     }
 
     /**
-     * Returns the {@code ScopedName} generated from the metadata value.
-     * This method is called at marshalling-time by JAXB.
+     * Returns the {@code TypeName} or {@code MemberName} to marshall. Returns {@code null} if the name
+     * is a {@link LocalName} or {@link ScopedName}, in order to use {@link #getCodeType()} instead.
      *
      * @return The current name, or {@code null} if none.
      */
-    @XmlElement(name = "ScopedName")
-    public final String getScopedName() {
-        final AbstractName name = this.name;
-        return (name instanceof ScopedName) ? name.toString() : null;
-    }
-
-    /**
-     * Sets the value for the {@code ScopedName}.
-     * This method is called at unmarshalling-time by JAXB.
-     *
-     * @param  value The new name.
-     * @throws IllegalStateException If a name is already defined.
-     */
-    public final void setScopedName(final String value) throws IllegalStateException {
-        ensureUndefined();
-        if (value == null) {
-            name = null;
+    @XmlElementRef
+    public final DefaultLocalName getNameType() {
+        final GenericName name = this.name;
+        if (name instanceof TypeName) {
+            return DefaultTypeName.castOrCopy((TypeName) name);
+        } else if (name instanceof MemberName) {
+            return DefaultMemberName.castOrCopy((MemberName) name);
         } else {
-            /*
-             * Following cast should be safe because the SIS_NAMES factory is fixed to a
-             * DefaultNameFactory instance, which is known to create AbstractName instances.
-             */
-            name = (AbstractName) DefaultFactories.SIS_NAMES.parseGenericName(null, value);
+            return null;
         }
     }
 
     /**
-     * Returns the {@code TypeName} generated from the metadata value.
-     * This method is called at marshalling-time by JAXB.
-     *
-     * @return The current name, or {@code null} if none.
-     */
-    @XmlElement(name = "TypeName")
-    public final DefaultTypeName getTypeName() {
-        final AbstractName name = this.name;
-        return (name instanceof DefaultTypeName) ? (DefaultTypeName) name : null;
-    }
-
-    /**
-     * Sets the value for the {@code TypeName}.
+     * Sets the value from the {@code TypeName} or {@code MemberName}.
      * This method is called at unmarshalling-time by JAXB.
      *
      * @param  value The new name.
      * @throws IllegalStateException If a name is already defined.
      */
-    public final void setTypeName(final DefaultTypeName value) throws IllegalStateException {
-        ensureUndefined();
-        name = value;
-    }
-
-    /**
-     * Returns the {@code MemberName} generated from the metadata value.
-     * This method is called at marshalling-time by JAXB.
-     *
-     * @return The current name, or {@code null} if none.
-     */
-    @XmlElement(name = "MemberName")
-    public final DefaultMemberName getMemberName() {
-        final AbstractName name = this.name;
-        return (name instanceof MemberName) ? (DefaultMemberName) name : null;
-    }
-
-    /**
-     * Sets the value for the {@code MemberName}.
-     * This method is called at unmarshalling-time by JAXB.
-     *
-     * @param  value The new name.
-     * @throws IllegalStateException If a name is already defined.
-     */
-    public final void setMemberName(final DefaultMemberName value) throws IllegalStateException {
+    public final void setNameType(final DefaultLocalName value) throws IllegalStateException {
         ensureUndefined();
         name = value;
     }

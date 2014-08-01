@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.gmd;
 
-import java.util.Locale;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.Enumerated;
 import org.apache.sis.util.iso.Types;
@@ -56,21 +55,19 @@ public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundT
      * @return The presumed enumeration constant name.
      */
     protected static String name(String value) {
-        value = value.toUpperCase(Locale.ROOT);
         /*
          * Replace space ! " # $ % & ' ( ) * + , - . / punction characters by '_'.
          * For example this replace "in/out" by "IN_OUT" in ParameterDirection.
+         *
+         * Note: we do not use codepoint API because this method is mostly for
+         * GeoAPI programmatic constant names, which are written in English.
          */
-        StringBuilder replaced = null;
-        for (int i=value.length(); --i>=0;) {
-            if (value.charAt(i) < '0') {
-                if (replaced == null) {
-                    replaced = new StringBuilder(value);
-                }
-                replaced.setCharAt(i, '_');
-            }
+        final char[] ca = value.toCharArray();
+        for (int i=0; i<ca.length; i++) {
+            final char c = ca[i];
+            ca[i] = (c >= '0') ? Character.toUpperCase(c) : '_';
         }
-        return (replaced != null) ? replaced.toString() : value;
+        return String.valueOf(ca);
     }
 
     /**

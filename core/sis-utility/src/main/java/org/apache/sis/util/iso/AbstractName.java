@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.Iterator;
 import java.util.ConcurrentModificationException;
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -64,7 +64,12 @@ import org.apache.sis.internal.jdk7.Objects;
  * @version 0.5
  * @module
  */
-@XmlType(name = "GenericName") // Actually 'gml:CodeType', but the later is used elsewhere.
+
+/*
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * since "CodeType" is used for various classes (including LocalName and ScopedName).
+ */
+@XmlTransient
 public abstract class AbstractName implements GenericName, Serializable {
     /**
      * Serial number for inter-operability with different versions.

@@ -61,6 +61,9 @@ import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.StandardCharsets;
+
 
 /**
  * Tests XML (un)marshalling of a metadata object containing various elements
@@ -98,7 +101,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setFileIdentifier("Apache SIS/Metadata test");
         metadata.setLanguage(Locale.ENGLISH);
-        metadata.setCharacterSet(CharacterSet.UTF_8);
+        metadata.setCharacterSet(StandardCharsets.UTF_8);
         metadata.setHierarchyLevels(singleton(ScopeCode.DATASET));
         metadata.setHierarchyLevelNames(singleton("Common Data Index record"));
         metadata.setDateStamp(TestUtilities.date("2009-01-01 04:00:00"));
