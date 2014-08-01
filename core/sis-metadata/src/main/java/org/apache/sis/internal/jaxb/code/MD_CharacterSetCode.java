@@ -16,50 +16,67 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import java.util.Locale;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import javax.xml.bind.annotation.XmlElement;
-import org.opengis.metadata.identification.CharacterSet;
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.apache.sis.xml.ValueConverter;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
- * JAXB adapter for {@link CharacterSet}, in order to integrate the value in an element
+ * JAXB adapter for {@link Charset}, in order to integrate the value in an element
  * complying with ISO-19139 standard. See package documentation for more information about
  * the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.5
  * @module
  */
-public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCode, CharacterSet> {
+public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, Charset> {
     /**
-     * Empty constructor for JAXB only.
+     * A proxy form of the {@link CodeList}.
      */
-    public MD_CharacterSetCode() {
-    }
+    private CodeListProxy proxy;
 
     /**
-     * Creates a new adapter for the given proxy.
-     */
-    private MD_CharacterSetCode(final CodeListProxy proxy) {
-        super(proxy);
-    }
-
-    /**
-     * {@inheritDoc}
+     * Substitutes the adapter value read from an XML stream by the object which will
+     * contains the value. JAXB calls automatically this method at unmarshalling time.
+     *
+     * @param  adapter The adapter for this metadata value.
+     * @return A code list which represents the metadata value.
      */
     @Override
-    protected MD_CharacterSetCode wrap(CodeListProxy proxy) {
-        return new MD_CharacterSetCode(proxy);
+    public final Charset unmarshal(final MD_CharacterSetCode adapter) throws IllegalCharsetNameException {
+        final Context context = Context.current();
+        return Context.converter(context).toCharset(context, adapter.proxy.identifier());
     }
 
     /**
-     * {@inheritDoc}
+     * Substitutes the code list by the adapter to be marshalled into an XML file
+     * or stream. JAXB calls automatically this method at marshalling time.
+     *
+     * @param  value The code list value.
+     * @return The adapter for the given code list.
      */
     @Override
-    protected Class<CharacterSet> getCodeListClass() {
-        return CharacterSet.class;
+    public final MD_CharacterSetCode marshal(final Charset value) {
+        final Context context = Context.current();
+        final ValueConverter converter = Context.converter(context);
+        final String code = converter.toCharsetCode(context, value);
+        if (code != null) {
+            final Locale locale = context.getLocale();
+            final MD_CharacterSetCode c = new MD_CharacterSetCode();
+            c.proxy = new CodeListProxy(context, "MD_CharacterSetCode", code,
+                    (locale != null) ? converter.toLanguageCode(context, locale) : null,
+                    (locale != null) ? value.displayName(locale) : value.displayName());
+            return c;
+        }
+        return null;
     }
 
     /**
@@ -67,7 +84,6 @@ public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCo
      *
      * @return The value to be marshalled.
      */
-    @Override
     @XmlElement(name = "MD_CharacterSetCode")
     public CodeListProxy getElement() {
         return proxy;
