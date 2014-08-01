@@ -17,7 +17,6 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import org.opengis.util.LocalName;
-import org.apache.sis.util.iso.DefaultLocalName;
 
 
 /**
@@ -48,7 +47,7 @@ public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
     /**
      * Wraps a name at marshalling-time.
      */
-    private GO_LocalName(final DefaultLocalName value) {
+    private GO_LocalName(final LocalName value) {
         name = value;
     }
 
@@ -61,7 +60,7 @@ public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
      */
     @Override
     public GO_LocalName marshal(final LocalName value) {
-        return (value != null) ? new GO_LocalName(DefaultLocalName.castOrCopy(value)) : null;
+        return (value != null) ? new GO_LocalName(value) : null;
     }
 
     /**

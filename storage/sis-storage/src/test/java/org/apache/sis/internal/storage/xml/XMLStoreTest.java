@@ -23,7 +23,6 @@ import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.ResponsibleParty;
-import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -32,6 +31,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.StandardCharsets;
 
 
 /**
@@ -103,7 +105,7 @@ public final strictfp class XMLStoreTest extends TestCase {
         final OnlineResource resource = party.getContactInfo().getOnlineResource();
 
         assertEquals(Locale.ENGLISH,              metadata.getLanguage());
-        assertEquals(CharacterSet.UTF_8,          metadata.getCharacterSet());
+        assertEquals(StandardCharsets.UTF_8,      metadata.getCharacterSet());
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, party.getRole());
         assertEquals("Apache SIS",                String.valueOf(party.getOrganisationName()));
         assertEquals("http://sis.apache.org",     String.valueOf(resource.getLinkage()));

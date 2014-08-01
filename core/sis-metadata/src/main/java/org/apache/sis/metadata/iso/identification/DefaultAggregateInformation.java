@@ -34,9 +34,17 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
  * Aggregate dataset information.
  *
  * {@section Relationship between properties}
- * According ISO 19115, at least one of {@linkplain #getAggregateDataSetName() aggregate dataset
- * name} and {@linkplain #getAggregateDataSetIdentifier() aggregate dataset identifier} shall be
- * provided.
+ * According ISO 19115, at least one of {@linkplain #getAggregateDataSetName() aggregate dataset name}
+ * and {@linkplain #getAggregateDataSetIdentifier() aggregate dataset identifier} shall be provided.
+ *
+ * {@section Limitations}
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -44,7 +52,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
  * @version 0.5
  * @module
  *
- * @deprecated Replaced by {@link DefaultAssociatedResource} as of ISO 19115:2014.
+ * @deprecated As of ISO 19115:2014, replaced by {@link DefaultAssociatedResource}.
  */
 @Deprecated
 @XmlType(name = "MD_AggregateInformation_Type", propOrder = {
@@ -109,7 +117,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      *
      * @return Citation information about the aggregate dataset, or {@code null}.
      *
-     * @deprecated Replaced by {@link #getName()}.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getName()}.
      */
     @Override
     @Deprecated
@@ -123,7 +131,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      *
      * @param newValue The new citation.
      *
-     * @deprecated Replaced by {@link #setName(Citation)}.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setName(Citation)}.
      */
     @Deprecated
     public void setAggregateDataSetName(final Citation newValue) {
@@ -135,7 +143,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      *
      * @return Identification information about aggregate dataset, or {@code null}.
      *
-     * @deprecated Replaced by the first identifier of {@link #getAggregateDataSetName()}.
+     * @deprecated As of ISO 19115:2014, replaced by the first identifier of {@link #getAggregateDataSetName()}.
      */
     @Override
     @Deprecated
@@ -162,7 +170,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      *
      * @param newValue The new identifier.
      *
-     * @deprecated Replaced by an identifier of {@link #getAggregateDataSetName()}.
+     * @deprecated As of ISO 19115:2014, replaced by an identifier of {@link #getAggregateDataSetName()}.
      */
     public void setAggregateDataSetIdentifier(final Identifier newValue) {
         checkWritePermission();

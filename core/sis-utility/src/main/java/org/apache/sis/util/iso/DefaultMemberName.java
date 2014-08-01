@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.iso;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.MemberName;
@@ -51,6 +52,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see DefaultNameFactory
  * @see DefaultRecordType
  */
+@XmlType(name = "MemberName_Type")
 @XmlRootElement(name = "MemberName")
 public class DefaultMemberName extends DefaultLocalName implements MemberName {
     /**

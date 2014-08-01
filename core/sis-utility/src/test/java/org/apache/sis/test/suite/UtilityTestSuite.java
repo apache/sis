@@ -125,6 +125,7 @@ import org.junit.BeforeClass;
     // XML most basic types.
     org.apache.sis.xml.XLinkTest.class,
     org.apache.sis.xml.NilReasonTest.class,
+    org.apache.sis.xml.LegacyCodesTest.class,
     org.apache.sis.xml.ValueConverterTest.class,
     org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
     org.apache.sis.xml.MarshallerPoolTest.class,
@@ -135,6 +136,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.gco.MeasureTest.class,
     org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
     org.apache.sis.internal.jaxb.gmd.LanguageCodeTest.class,
+    org.apache.sis.internal.jaxb.gml.TimePeriodTest.class,
     org.apache.sis.util.iso.NameMarshallingTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
