@@ -20,6 +20,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
+import java.nio.charset.StandardCharsets;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import javax.measure.unit.SI;
@@ -98,7 +99,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setFileIdentifier("Apache SIS/Metadata test");
         metadata.setLanguage(Locale.ENGLISH);
-        metadata.setCharacterSet(CharacterSet.UTF_8);
+        metadata.setCharacterSet(StandardCharsets.UTF_8);
         metadata.setHierarchyLevels(singleton(ScopeCode.DATASET));
         metadata.setHierarchyLevelNames(singleton("Common Data Index record"));
         metadata.setDateStamp(TestUtilities.date("2009-01-01 04:00:00"));

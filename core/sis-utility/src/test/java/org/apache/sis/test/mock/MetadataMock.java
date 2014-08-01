@@ -19,6 +19,7 @@ package org.apache.sis.test.mock;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Collection;
+import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -31,7 +32,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Distribution;
-import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -100,7 +100,7 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
-    public CharacterSet getCharacterSet() {
+    public Charset getCharacterSet() {
         return null;
     }
 
