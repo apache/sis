@@ -24,6 +24,8 @@ import java.util.MissingResourceException;
 import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.UUID;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import javax.measure.unit.Unit;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Locales;
@@ -64,7 +66,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public class ValueConverter {
@@ -180,6 +182,69 @@ public class ValueConverter {
     }
 
     /**
+     * Converts the given character set to a code.
+     *
+     * <p>The default implementation first invokes {@link Charset#name()}. Then if marshalling to ISO 19139:2007,
+     * this method converts the <a href="http://www.iana.org/assignments/character-sets">IANA</a> name to a
+     * ISO 19115:2003 {@code MD_CharacterSetCode} using the following equivalence table:</p>
+     *
+     * <table class="sis">
+     *   <caption>IANA to ISO 19115:2003 character set code</caption>
+     *   <tr>
+     *     <td><table class="compact" summary="IANA to ISO 19115:2003">
+     *       <tr><td style="width: 90px"><b>IANA</b></td><td><b>ISO 19115:2003</b></td></tr>
+     *       <tr><td>{@code ISO-8859-1}</td>  <td>{@code 8859part1}</td></tr>
+     *       <tr><td>{@code ISO-8859-2}</td>  <td>{@code 8859part2}</td></tr>
+     *       <tr><td>{@code ISO-8859-3}</td>  <td>{@code 8859part3}</td></tr>
+     *       <tr><td>{@code ISO-8859-4}</td>  <td>{@code 8859part4}</td></tr>
+     *       <tr><td>{@code ISO-8859-5}</td>  <td>{@code 8859part5}</td></tr>
+     *       <tr><td>{@code ISO-8859-6}</td>  <td>{@code 8859part6}</td></tr>
+     *       <tr><td>{@code ISO-8859-7}</td>  <td>{@code 8859part7}</td></tr>
+     *       <tr><td>{@code ISO-8859-8}</td>  <td>{@code 8859part8}</td></tr>
+     *       <tr><td>{@code ISO-8859-9}</td>  <td>{@code 8859part9}</td></tr>
+     *       <tr><td>{@code ISO-8859-10}</td> <td>{@code 8859part10}</td></tr>
+     *       <tr><td>{@code ISO-8859-11}</td> <td>{@code 8859part11}</td></tr>
+     *       <tr><td>{@code ISO-8859-12}</td> <td>{@code 8859part12}</td></tr>
+     *       <tr><td>{@code ISO-8859-13}</td> <td>{@code 8859part13}</td></tr>
+     *       <tr><td>{@code ISO-8859-14}</td> <td>{@code 8859part14}</td></tr>
+     *       <tr><td>{@code ISO-8859-15}</td> <td>{@code 8859part15}</td></tr>
+     *       <tr><td>{@code ISO-8859-16}</td> <td>{@code 8859part16}</td></tr>
+     *     </table></td>
+     *     <td class="sep"><table class="compact" summary="IANA to ISO 19115:2003">
+     *       <tr><td style="width: 90px"><b>IANA</b></td><td><b>ISO 19115:2003</b></td></tr>
+     *       <tr><td>{@code UCS-2}</td>     <td>{@code ucs2}</td></tr>
+     *       <tr><td>{@code UCS-4}</td>     <td>{@code ucs4}</td></tr>
+     *       <tr><td>{@code UTF-7}</td>     <td>{@code utf7}</td></tr>
+     *       <tr><td>{@code UTF-8}</td>     <td>{@code utf8}</td></tr>
+     *       <tr><td>{@code UTF-16}</td>    <td>{@code utf16}</td></tr>
+     *       <tr><td>{@code JIS_X0201}</td> <td>{@code jis}</td></tr>
+     *       <tr><td>{@code Shift_JIS}</td> <td>{@code shiftJIS}</td></tr>
+     *       <tr><td>{@code EUC-JP}</td>    <td>{@code eucJP}</td></tr>
+     *       <tr><td>{@code US-ASCII}</td>  <td>{@code usAscii}</td></tr>
+     *       <tr><td>{@code EBCDIC}</td>    <td>{@code ebcdic}</td></tr>
+     *       <tr><td>{@code EUC-KR}</td>    <td>{@code eucKR}</td></tr>
+     *       <tr><td>{@code Big5}</td>      <td>{@code big5}</td></tr>
+     *       <tr><td>{@code GB2312}</td>    <td>{@code GB2312}</td></tr>
+     *     </table></td>
+     *   </tr>
+     * </table>
+     *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value The locale to convert to a character set code, or {@code null}.
+     * @return The country code, or {@code null} if the given value was null.
+     *
+     * @see Charset#name()
+     *
+     * @since 0.5
+     */
+    public String toCharsetCode(final MarshalContext context, final Charset value) {
+        if (value != null) {
+            return LegacyCodes.fromIANA(value.name());
+        }
+        return null;
+    }
+
+    /**
      * Converts the given string to a locale. The string is the language code either as the 2
      * letters or the 3 letters ISO code. It can optionally be followed by the {@code '_'}
      * character and the country code (again either as 2 or 3 letters), optionally followed
@@ -200,6 +265,36 @@ public class ValueConverter {
         } catch (IllformedLocaleException e) {
             if (!exceptionOccured(context, value, String.class, Locale.class, e)) {
                 throw e;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Converts the given string to a character set. The string can be either a
+     * <a href="http://www.iana.org/assignments/character-sets">IANA</a> identifier,
+     * or one of the ISO 19115:2003 {@code MD_CharacterSetCode} identifier.
+     *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value The string to convert to a character set, or {@code null}.
+     * @return The converted character set, or {@code null} if the given value was null or empty, or
+     *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
+     * @throws IllegalCharsetNameException If the given string can not be converted to a character set.
+     *
+     * @see Charset#forName(String)
+     *
+     * @since 0.5
+     */
+    public Charset toCharset(final MarshalContext context, String value) throws IllegalCharsetNameException {
+        value = trimWhitespaces(value);
+        if (value != null && !value.isEmpty()) {
+            value = LegacyCodes.toIANA(value);
+            try {
+                return Charset.forName(value);
+            } catch (IllegalCharsetNameException e) {
+                if (!exceptionOccured(context, value, String.class, Charset.class, e)) {
+                    throw e;
+                }
             }
         }
         return null;

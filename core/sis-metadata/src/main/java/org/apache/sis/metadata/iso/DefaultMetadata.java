@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Collection;
+import java.nio.charset.Charset;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -34,7 +35,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Distribution;
-import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -108,7 +108,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7337533776231004504L;
+    private static final long serialVersionUID = -5374952007292101340L;
 
     /**
      * Unique identifier for this metadata file, or {@code null} if none.
@@ -129,7 +129,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Full name of the character coding standard used for the metadata set.
      */
-    private CharacterSet characterSet;
+    private Charset characterSet;
 
     /**
      * File identifier of the metadata to which this metadata is a subset (child).
@@ -392,22 +392,22 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Returns the full name of the character coding standard used for the metadata set.
+     * Returns the character coding standard used for the metadata set.
      *
-     * @return character coding standard used for the metadata, or {@code null}.
+     * @return Character coding standard used for the metadata, or {@code null}.
      */
     @Override
     @XmlElement(name = "characterSet")
-    public CharacterSet getCharacterSet()  {
+    public Charset getCharacterSet()  {
         return characterSet;
     }
 
     /**
-     * Sets the full name of the character coding standard used for the metadata set.
+     * Sets the character coding standard used for the metadata set.
      *
      * @param newValue The new character set.
      */
-    public void setCharacterSet(final CharacterSet newValue) {
+    public void setCharacterSet(final Charset newValue) {
         checkWritePermission();
         characterSet = newValue;
     }
