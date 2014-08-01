@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.identification;
 
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -157,9 +158,12 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      */
     static Identifier getAggregateDataSetIdentifier(final Citation name) {
         if (name != null) {
-            final Iterator<? extends Identifier> it = name.getIdentifiers().iterator();
-            if (it.hasNext()) {
-                return it.next();
+            final Collection<? extends Identifier> names = name.getIdentifiers();
+            if (names != null) { // May be null on XML marshalling.
+                final Iterator<? extends Identifier> it = names.iterator();
+                if (it.hasNext()) {
+                    return it.next();
+                }
             }
         }
         return null;
