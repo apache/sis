@@ -18,7 +18,6 @@ package org.apache.sis.test.integration;
 
 import java.net.URI;
 import java.util.Locale;
-import java.nio.charset.StandardCharsets;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Citation;
@@ -48,6 +47,9 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Branch-dependent imports
+import java.nio.charset.StandardCharsets;
 
 
 /**

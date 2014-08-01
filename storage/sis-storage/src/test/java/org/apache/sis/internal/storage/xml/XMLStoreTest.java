@@ -18,7 +18,6 @@ package org.apache.sis.internal.storage.xml;
 
 import java.util.Locale;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.OnLineFunction;
@@ -32,6 +31,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Branch-dependent imports
+import java.nio.charset.StandardCharsets;
 
 
 /**
