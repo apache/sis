@@ -37,7 +37,7 @@ import org.apache.sis.internal.jaxb.Schemas;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see CodeListAdapter
@@ -117,15 +117,15 @@ public final class CodeListProxy {
     }
 
     /**
-     * Builds a value for {@link LanguageCode} and {@link Country} elements.
+     * Builds a code list with the given attributes.
      *
      * @param context       The current (un)marshalling context, or {@code null} if none.
      * @param codeList      The {@code codeList} attribute, to be concatenated after the {@code "#"} symbol.
-     * @param codeListValue The {@code codeListValue} attribute, to be declared in the attribute.
+     * @param codeListValue The {@code codeListValue} attribute, to be declared in the XML element.
      * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
-    CodeListProxy(final Context context, final String codeList, final String codeListValue,
+    public CodeListProxy(final Context context, final String codeList, final String codeListValue,
             final String codeSpace, final String value)
     {
         this.codeList      = schema(context, codeList);

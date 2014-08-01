@@ -523,9 +523,10 @@ public final class Units extends Static {
      *   </tr>
      * </table>
      *
-     * <b>Note:</b> EPSG uses code 9102 (<cite>degree</cite>) for prime meridian and coordinate operation parameters,
+     * <div class="note"><b>Note:</b>
+     * EPSG uses code 9102 (<cite>degree</cite>) for prime meridian and coordinate operation parameters,
      * and code 9122 (<cite>degree (supplier to define representation)</cite>) for coordinate system axes.
-     * But Apache SIS considers those two codes as synonymous.
+     * But Apache SIS considers those two codes as synonymous.</div>
      *
      * @param  code The EPSG code for a unit of measurement.
      * @return The unit, or {@code null} if the code is unrecognized.

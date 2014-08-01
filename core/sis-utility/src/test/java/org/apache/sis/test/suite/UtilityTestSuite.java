@@ -125,6 +125,7 @@ import org.junit.BeforeClass;
     // XML most basic types.
     org.apache.sis.xml.XLinkTest.class,
     org.apache.sis.xml.NilReasonTest.class,
+    org.apache.sis.xml.LegacyCodesTest.class,
     org.apache.sis.xml.ValueConverterTest.class,
     org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
     org.apache.sis.xml.MarshallerPoolTest.class,

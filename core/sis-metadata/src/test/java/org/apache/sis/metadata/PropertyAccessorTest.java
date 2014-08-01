@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Date;
+import java.nio.charset.Charset;
 
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
@@ -216,7 +217,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Identification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
             Identification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
         DataIdentification.class, "getLanguages",                  "languages",                  "language",                  "Languages",                    Locale[].class,
-        DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               CharacterSet[].class,
+        DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               Charset[].class,
         DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
         DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class,
             Identification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,

@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
+import java.nio.charset.Charset;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
@@ -120,7 +121,7 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
             @Override public Collection<Resolution>                getSpatialResolutions()         {return null;}
             @Override public Collection<Duration>                  getTemporalResolutions()        {return null;}
             @Override public Collection<Locale>                    getLanguages()                  {return null;}
-            @Override public Collection<CharacterSet>              getCharacterSets()              {return null;}
+            @Override public Collection<Charset>                   getCharacterSets()              {return null;}
             @Override public Collection<TopicCategory>             getTopicCategories()            {return null;}
             @Override public Collection<Extent>                    getExtents()                    {return null;}
             @Override public Collection<InternationalString>       getCredits()                    {return null;}
@@ -132,7 +133,7 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
             @Override public Collection<Keywords>                  getDescriptiveKeywords()        {return null;}
             @Override public Collection<Usage>                     getResourceSpecificUsages()     {return null;}
             @Override public Collection<Constraints>               getResourceConstraints()        {return null;}
-            @Override public Collection<AggregateInformation>      getAggregationInfo()            {return null;}
+@Deprecated @Override public Collection<AggregateInformation>      getAggregationInfo()            {return null;}
             @Override public Collection<AssociatedResource>        getAssociatedResources()        {return null;}
             @Override public Collection<Citation>                  getAdditionalDocumentations()   {return null;}
         };
