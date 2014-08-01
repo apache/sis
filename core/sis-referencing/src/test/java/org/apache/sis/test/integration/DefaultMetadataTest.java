@@ -20,7 +20,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
-import java.nio.charset.StandardCharsets;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import javax.measure.unit.SI;
@@ -61,6 +60,9 @@ import org.junit.Test;
 import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
+
+// Branch-dependent imports
+import java.nio.charset.StandardCharsets;
 
 
 /**
