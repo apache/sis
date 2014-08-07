@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.DigitalTransferOptions;
 import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.distribution.Distributor;
@@ -43,7 +44,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Distribution_Type", propOrder = {
@@ -57,6 +58,11 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 1331353255189686369L;
+
+    /**
+     * Brief description of a set of distribution options.
+     */
+    private InternationalString description;
 
     /**
      * Provides a description of the format of the data to be distributed.
@@ -92,6 +98,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     public DefaultDistribution(final Distribution object) {
         super(object);
         if (object != null) {
+            description         = object.getDescription();
             distributionFormats = copyCollection(object.getDistributionFormats(), Format.class);
             distributors        = copyCollection(object.getDistributors(), Distributor.class);
             transferOptions     = copyCollection(object.getTransferOptions(), DigitalTransferOptions.class);
@@ -121,6 +128,30 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
             return (DefaultDistribution) object;
         }
         return new DefaultDistribution(object);
+    }
+
+    /**
+     * Returns a brief description of a set of distribution options.
+     *
+     * @return Brief description of a set of distribution options.
+     *
+     * @since 0.5
+     */
+    @Override
+    public InternationalString getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets a brief description of a set of distribution options.
+     *
+     * @param newValue The new description.
+     *
+     * @since 0.5
+     */
+    public void setDescription(final InternationalString newValue) {
+        checkWritePermission();
+        description = newValue;
     }
 
     /**

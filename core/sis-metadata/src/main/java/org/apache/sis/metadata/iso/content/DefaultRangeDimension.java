@@ -63,7 +63,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     private static final long serialVersionUID = 4517148689016920767L;
 
     /**
-     * Number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
+     * Unique name or number that identifies attributes included in the coverage.
      */
     private MemberName sequenceIdentifier;
 
@@ -134,9 +134,9 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     }
 
     /**
-     * Returns the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
+     * Returns a unique name or number that identifies attributes included in the coverage.
      *
-     * @return Identifier of bands on which a sensor operates, or {@code null}.
+     * @return Unique name or number, or {@code null}.
      */
     @Override
     @XmlElement(name = "sequenceIdentifier")

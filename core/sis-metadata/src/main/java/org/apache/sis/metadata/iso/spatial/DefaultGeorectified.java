@@ -251,9 +251,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
 
     /**
      * Returns the Earth location in the coordinate system defined by the Spatial Reference System
-     * and the grid coordinate of the cells at opposite ends of grid coverage along two
-     * diagonals in the grid spatial dimensions. There are four corner points in a
-     * georectified grid; at least two corner points along one diagonal are required.
+     * and the grid coordinate of the cells at opposite ends of grid coverage along two diagonals.
      *
      * @return The corner points.
      */
@@ -265,6 +263,12 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
 
     /**
      * Sets the corner points.
+     *
+     * The {@linkplain List#size() list size} should be 2 or 4.
+     * The list should contain at least two corner points along one diagonal.
+     * or may contains the 4 corner points of the georectified grid.
+     *
+     * <p>The first corner point shall correspond to the origin of the grid.</p>
      *
      * @param newValues The new corner points.
      */
@@ -317,9 +321,9 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     }
 
     /**
-     * Returns a description of the information about which grid dimensions are the spatial dimensions.
+     * Returns a general description of the transformation.
      *
-     * @return Description of the information about grid dimensions, or {@code null}.
+     * @return General description of the transformation, or {@code null}.
      */
     @Override
     @XmlElement(name = "transformationDimensionDescription")
@@ -328,9 +332,9 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     }
 
     /**
-     * Sets the description of the information about which grid dimensions are the spatial dimensions.
+     * Sets a general description of the transformation.
      *
-     * @param newValue The new transformation dimension description.
+     * @param newValue The new general description.
      */
     public void setTransformationDimensionDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -350,6 +354,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
 
     /**
      * Sets information about which grid dimensions are the spatial dimensions.
+     * The given list should contain at most 2 elements.
      *
      * @param newValues The new transformation mapping.
      */

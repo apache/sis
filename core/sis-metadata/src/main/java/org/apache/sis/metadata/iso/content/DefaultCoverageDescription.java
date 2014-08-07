@@ -289,20 +289,20 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
             /** Stores a legacy value into the new kind of value. */
             @Override protected AttributeGroup wrap(final RangeDimension value) {
                 final DefaultAttributeGroup container = new DefaultAttributeGroup();
-                container.setGroupAttributes(asCollection(value));
+                container.setAttributes(asCollection(value));
                 return container;
             }
 
             /** Extracts the legacy value from the new kind of value. */
             @Override protected RangeDimension unwrap(final AttributeGroup container) {
-                return getSingleton(container.getGroupAttributes(), RangeDimension.class,
+                return getSingleton(container.getAttributes(), RangeDimension.class,
                         this, DefaultCoverageDescription.class, "getDimensions");
             }
 
             /** Updates the legacy value in an existing instance of the new kind of value. */
             @Override protected boolean update(final AttributeGroup container, final RangeDimension value) {
                 if (container instanceof DefaultAttributeGroup) {
-                    ((DefaultAttributeGroup) container).setGroupAttributes(asCollection(value));
+                    ((DefaultAttributeGroup) container).setAttributes(asCollection(value));
                     return true;
                 }
                 return false;

@@ -62,6 +62,8 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.4
  * @module
+ *
+ * @see DefaultResolution#getEquivalentScale()
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")

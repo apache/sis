@@ -23,6 +23,7 @@ import org.opengis.metadata.acquisition.EnvironmentalRecord;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -153,7 +154,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * @return Maximum relative humidity along the flight pass during the photo flight, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0, maximum=100)
+    @ValueRange(minimum = 0, maximum = 100)
     @XmlElement(name = "maxRelativeHumidity", required = true)
     public Double getMaxRelativeHumidity() {
         return maxRelativeHumidity;
@@ -166,6 +167,9 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      */
     public void setMaxRelativeHumidity(final Double newValue) {
         checkWritePermission();
+        if (newValue != null) {
+            ArgumentChecks.ensureBetween("maxRelativeHumidity", 0, 100, newValue);
+        }
         maxRelativeHumidity = newValue;
     }
 

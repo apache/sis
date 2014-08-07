@@ -21,11 +21,15 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
+import org.opengis.temporal.PeriodDuration;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.distribution.DigitalTransferOptions;
+import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Medium;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -44,7 +48,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_DigitalTransferOptions_Type", propOrder = {
@@ -58,7 +62,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3797035083686261676L;
+    private static final long serialVersionUID = -2901375920581273330L;
 
     /**
      * Tiles, layers, geographic areas, etc., in which data is available.
@@ -79,7 +83,17 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Information about offline media on which the resource can be obtained.
      */
-    private Medium offLine;
+    private Collection<Medium> offLines;
+
+    /**
+     * Rate of occurrence of distribution.
+     */
+    private PeriodDuration transferFrequency;
+
+    /**
+     * Formats of distribution.
+     */
+    private Collection<Format> distributionFormats;
 
     /**
      * Constructs an initially empty digital transfer options.
@@ -102,7 +116,9 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
             unitsOfDistribution = object.getUnitsOfDistribution();
             transferSize        = object.getTransferSize();
             onLines             = copyCollection(object.getOnLines(), OnlineResource.class);
-            offLine             = object.getOffLine();
+            offLines            = copyCollection(object.getOffLines(), Medium.class);
+            transferFrequency   = object.getTransferFrequency();
+            distributionFormats = copyCollection(object.getDistributionFormats(), Format.class);
         }
     }
 
@@ -160,7 +176,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      */
     @Override
     @XmlElement(name = "transferSize")
-    @ValueRange(minimum=0, isMinIncluded=false)
+    @ValueRange(minimum = 0, isMinIncluded = false)
     public Double getTransferSize() {
         return transferSize;
     }
@@ -170,9 +186,13 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * The transfer shall be greater than zero.
      *
      * @param newValue The new transfer size.
+     * @throws IllegalArgumentException if the given value is negative.
      */
-    public void setTransferSize(final Double newValue) {
+    public void setTransferSize(final Double newValue) throws IllegalArgumentException {
         checkWritePermission();
+        if (newValue != null) {
+            ArgumentChecks.ensurePositive("transferSize", newValue);
+        }
         transferSize = newValue;
     }
 
@@ -199,21 +219,96 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Returns information about offline media on which the resource can be obtained.
      *
-     * @return Offline media on which the resource can be obtained, or {@code null}.
+     * @return Offline media on which the resource can be obtained.
+     *
+     * @since 0.5
      */
     @Override
+    public Collection<Medium> getOffLines() {
+        return offLines = nonNullCollection(offLines, Medium.class);
+    }
+
+    /**
+     * Sets information about offline media on which the resource can be obtained.
+     *
+     * @param newValues The new offline media.
+     *
+     * @since 0.5
+     */
+    public void setOffLines(final Collection<? extends Medium> newValues) {
+        offLines = writeCollection(newValues, offLines, Medium.class);
+    }
+
+    /**
+     * Returns information about offline media on which the resource can be obtained.
+     *
+     * @return Offline media on which the resource can be obtained, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getOffLines()}.
+     */
+    @Override
+    @Deprecated
     @XmlElement(name = "offLine")
-    public Medium getOffLine() {
-        return offLine;
+    public final Medium getOffLine() {
+        return LegacyPropertyAdapter.getSingleton(offLines, Medium.class, null, DefaultDigitalTransferOptions.class, "getOffLine");
     }
 
     /**
      * Sets information about offline media on which the resource can be obtained.
      *
      * @param newValue The new offline media.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setOffLines(Collection)}.
      */
+    @Deprecated
     public void setOffLine(final Medium newValue) {
+        setOffLines(LegacyPropertyAdapter.asCollection(newValue));
+    }
+
+    /**
+     * Returns the rate of occurrence of distribution.
+     *
+     * @return Rate of occurrence of distribution, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public PeriodDuration getTransferFrequency() {
+        return transferFrequency;
+    }
+
+    /**
+     * Sets the rate of occurrence of distribution.
+     *
+     * @param newValue The new rate of occurrence of distribution.
+     *
+     * @since 0.5
+     */
+    public void setTransferFrequency(final PeriodDuration newValue) {
         checkWritePermission();
-        offLine = newValue;
+        transferFrequency = newValue;
+    }
+
+    /**
+     * Returns the formats of distribution.
+     *
+     * @return Formats of distribution.
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<Format> getDistributionFormats() {
+        return distributionFormats = nonNullCollection(distributionFormats, Format.class);
+    }
+
+    /**
+     * Sets the formats of distribution.
+     *
+     * @param newValues The new formats of distribution.
+     *
+     * @since 0.5
+     */
+    public void setDistributionFormats(final Collection<? extends Format> newValues) {
+        distributionFormats = writeCollection(newValues, distributionFormats, Format.class);
     }
 }

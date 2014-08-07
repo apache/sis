@@ -27,11 +27,13 @@ import org.opengis.metadata.constraint.LegalConstraints;
 
 /**
  * Restrictions and legal prerequisites for accessing and using the resource.
- * The {@linkplain #getOtherConstraints() other constraint} element shall be non-empty only if
+ *
+ * {@section Relationship between properties}
+ * The {@linkplain #getOtherConstraints() other constraints} collection shall be non-empty if
  * {@linkplain #getAccessConstraints() access constraints} and/or {@linkplain #getUseConstraints()
  * use constraints} elements have a value of {@link Restriction#OTHER_RESTRICTIONS}.
  *
- * <p><b>Limitations:</b></p>
+ * {@section Limitations}
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

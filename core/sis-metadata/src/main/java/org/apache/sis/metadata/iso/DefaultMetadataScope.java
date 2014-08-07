@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso.maintenance;
+package org.apache.sis.metadata.iso;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.maintenance.MetadataScope;
+import org.opengis.metadata.MetadataScope;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.metadata.iso.ISOMetadata;
 
 
 /**

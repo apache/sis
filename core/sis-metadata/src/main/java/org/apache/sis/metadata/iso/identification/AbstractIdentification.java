@@ -438,6 +438,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Returns the factor which provides a general understanding of the density of spatial data in the resource(s).
+     * This element should be repeated when describing upper and lower range.
      *
      * @return Factor which provides a general understanding of the density of spatial data.
      *
