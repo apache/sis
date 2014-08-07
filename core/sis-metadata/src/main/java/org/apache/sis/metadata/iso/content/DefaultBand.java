@@ -187,7 +187,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @since 0.5
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
 /// @XmlElement(name = "boundMax")
     public Double getBoundMax() {
         return boundMax;
@@ -215,7 +215,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @since 0.5
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
 /// @XmlElement(name = "boundMin")
     public Double getBoundMin() {
         return boundMin;
@@ -265,7 +265,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return Wavelength at which the response is the highest, or {@code null} if unspecified.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "peakResponse")
     public Double getPeakResponse() {
         return peakResponse;
@@ -285,7 +285,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * {@inheritDoc}
      */
     @Override
-    @ValueRange(minimum=1)
+    @ValueRange(minimum = 1)
     @XmlElement(name = "bitsPerValue")
     public Integer getBitsPerValue() {
         return super.getBitsPerValue();
@@ -305,7 +305,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return Number of discrete numerical values in the grid data, or {@code null} if none.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "toneGradation")
     public Integer getToneGradation() {
         return toneGradation;
@@ -383,7 +383,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return Smallest distance between which separate points can be distinguished, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0, isMinIncluded=false)
+    @ValueRange(minimum = 0, isMinIncluded = false)
     @XmlElement(name = "nominalSpatialResolution", namespace = Namespaces.GMI)
     public Double getNominalSpatialResolution() {
         return nominalSpatialResolution;

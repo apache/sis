@@ -47,7 +47,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  */
 @XmlType(name = "MD_AttributeGroup_Type", propOrder = {
     "contentType",
-    "groupAttribute"
+    "attribute"
 })
 @XmlRootElement(name = "MD_AttributeGroup")
 public class DefaultAttributeGroup extends ISOMetadata implements AttributeGroup {
@@ -64,12 +64,23 @@ public class DefaultAttributeGroup extends ISOMetadata implements AttributeGroup
     /**
      * Content type for attributes groups for a {@link RangeDimension}.
      */
-    private Collection<RangeDimension> groupAttributes;
+    private Collection<RangeDimension> attributes;
 
     /**
      * Constructs an initially empty attribute group.
      */
-    public DefaultAttributeGroup(){
+    public DefaultAttributeGroup() {
+    }
+
+    /**
+     * Constructs an attribute group initialized to the given values.
+     *
+     * @param contentType Type of information represented by the value, or {@code null}.
+     * @param attribute   The attribute, or {@code null}.
+     */
+    public DefaultAttributeGroup(final CoverageContentType contentType, final RangeDimension attribute) {
+        contentTypes = singleton(contentType, CoverageContentType.class);
+        attributes   = singleton(attribute, RangeDimension.class);
     }
 
     /**
@@ -84,8 +95,8 @@ public class DefaultAttributeGroup extends ISOMetadata implements AttributeGroup
     public DefaultAttributeGroup(final AttributeGroup object) {
         super(object);
         if (object != null) {
-            contentTypes    = copyCollection(object.getContentTypes(), CoverageContentType.class);
-            groupAttributes = copyCollection(object.getGroupAttributes(), RangeDimension.class);
+            contentTypes = copyCollection(object.getContentTypes(), CoverageContentType.class);
+            attributes   = copyCollection(object.getAttributes(), RangeDimension.class);
         }
     }
 
@@ -135,22 +146,22 @@ public class DefaultAttributeGroup extends ISOMetadata implements AttributeGroup
     }
 
     /**
-     * Returns the content types for attributes groups for a {@code RangeDimension}, or {@code null} if none.
+     * Returns information on an attribute of the resource.
      *
-     * @return The content types for attributes groups for a {@code RangeDimension}, or {@code null} if none.
+     * @return Information on an attribute of the resource.
      */
     @Override
-    @XmlElement(name = "groupAttribute")
-    public Collection<RangeDimension> getGroupAttributes() {
-        return groupAttributes = nonNullCollection(groupAttributes, RangeDimension.class);
+    @XmlElement(name = "attribute")
+    public Collection<RangeDimension> getAttributes() {
+        return attributes = nonNullCollection(attributes, RangeDimension.class);
     }
 
     /**
-     * Sets the content types for attributes groups for a {@code RangeDimension}.
+     * Sets information on an attribute of the resource.
      *
-     * @param newValues The new content types for attributes groups for a {@code RangeDimension}.
+     * @param newValues The new attributes.
      */
-    public void setGroupAttributes(final Collection<? extends RangeDimension> newValues) {
-        groupAttributes = writeCollection(newValues, groupAttributes, RangeDimension.class);
+    public void setAttributes(final Collection<? extends RangeDimension> newValues) {
+        attributes = writeCollection(newValues, attributes, RangeDimension.class);
     }
 }
