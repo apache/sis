@@ -144,7 +144,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │           └─Maximum value……………………………………………… 0.0\n" +
             "  ├─Content info\n" +
             "  │   └─Attribute group\n" +
-            "  │       └─Group attribute\n" +
+            "  │       └─Attribute\n" +
             "  │           ├─Sequence identifier……………………………… SST\n" +
             "  │           └─Description…………………………………………………… Sea temperature\n" +
             "  └─Data quality info\n" +

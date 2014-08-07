@@ -26,7 +26,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 
 
 /**
- * Description of the content of a dataset.
+ * Description of the content of a resource.
  *
  * <p><b>Limitations:</b></p>
  * <ul>

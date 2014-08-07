@@ -197,7 +197,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @return A value between -90° and +90°, or {@code null} if unspecified.
      */
     @Override
-    @ValueRange(minimum=0, maximum=180)
+    @ValueRange(minimum = -90, maximum = +90)
     @XmlElement(name = "illuminationElevationAngle")
     public Double getIlluminationElevationAngle() {
         return illuminationElevationAngle;
@@ -222,7 +222,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @return A value between 0° and 360°, or {@code null} if unspecified.
      */
     @Override
-    @ValueRange(minimum=0, maximum=360)
+    @ValueRange(minimum = 0, maximum = 360)
     @XmlElement(name = "illuminationAzimuthAngle")
     public Double getIlluminationAzimuthAngle() {
         return illuminationAzimuthAngle;
@@ -240,9 +240,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Returns the conditions affected the image.
+     * Returns the conditions which affected the image.
      *
-     * @return Conditions affected the image, or {@code null} if unspecified.
+     * @return Conditions which affected the image, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "imagingCondition")
@@ -251,7 +251,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Sets the conditions affected the image.
+     * Sets the conditions that affected the image.
      *
      * @param newValue The new imaging condition.
      */
@@ -261,7 +261,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Returns the identifier that specifies the image quality.
+     * Returns a code in producer’s codespace that specifies the image quality.
      *
      * @return The image quality, or {@code null} if unspecified.
      */
@@ -272,7 +272,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Sets the identifier that specifies the image quality.
+     * Sets a code in producer’s codespace that specifies the image quality.
      *
      * @param newValue The new image quality code.
      */
@@ -287,7 +287,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @return A value between 0 and 100, or {@code null} if unspecified.
      */
     @Override
-    @ValueRange(minimum=0, maximum=100)
+    @ValueRange(minimum = 0, maximum = 100)
     @XmlElement(name = "cloudCoverPercentage")
     public Double getCloudCoverPercentage() {
         return cloudCoverPercentage;
@@ -334,7 +334,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *         or {@code null} if unspecified.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "compressionGenerationQuantity")
     public Integer getCompressionGenerationQuantity() {
         return compressionGenerationQuantity;

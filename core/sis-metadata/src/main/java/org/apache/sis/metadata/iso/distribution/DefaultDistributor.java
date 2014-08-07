@@ -20,7 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.StandardOrderProcess;
@@ -44,7 +44,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Distributor_Type", propOrder = {
@@ -58,12 +58,12 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5706757156163948001L;
+    private static final long serialVersionUID = -8819538342342106743L;
 
     /**
      * Party from whom the resource may be obtained. This list need not be exhaustive.
      */
-    private ResponsibleParty distributorContact;
+    private Responsibility distributorContact;
 
     /**
      * Provides information about how the resource may be obtained, and related
@@ -92,7 +92,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      *
      * @param distributorContact Party from whom the resource may be obtained, or {@code null}.
      */
-    public DefaultDistributor(final ResponsibleParty distributorContact) {
+    public DefaultDistributor(final Responsibility distributorContact) {
         this.distributorContact = distributorContact;
     }
 
@@ -141,22 +141,22 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     }
 
     /**
-     * Party from whom the resource may be obtained. This list need not be exhaustive.
+     * Party from whom the resource may be obtained.
      *
      * @return Party from whom the resource may be obtained, or {@code null}.
      */
     @Override
     @XmlElement(name = "distributorContact", required = true)
-    public ResponsibleParty getDistributorContact() {
+    public Responsibility getDistributorContact() {
         return distributorContact;
     }
 
     /**
-     * Sets the party from whom the resource may be obtained. This list need not be exhaustive.
+     * Sets the party from whom the resource may be obtained.
      *
      * @param newValue The new distributor contact.
      */
-    public void setDistributorContact(final ResponsibleParty newValue) {
+    public void setDistributorContact(final Responsibility newValue) {
         checkWritePermission();
         distributorContact = newValue;
     }

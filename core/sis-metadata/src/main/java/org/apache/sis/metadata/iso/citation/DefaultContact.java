@@ -309,7 +309,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @param newValue The new address, or {@code null} if none.
      *
-     * @deprecated As of ISO 19115:2014, replaced by {@link #setAddresses(Collectio)}.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setAddresses(Collection)}.
      */
     @Deprecated
     public final void setAddress(final Address newValue) {

@@ -406,9 +406,9 @@ public class DefaultSource extends ISOMetadata implements Source {
     }
 
     /**
-     * Returns information about an event in the creation process for the source data.
+     * Returns information about process steps in which this source was used.
      *
-     * @return Information about an event in the creation process.
+     * @return Information about process steps in which this source was used.
      */
     @Override
     @XmlElement(name = "sourceStep")
@@ -417,9 +417,9 @@ public class DefaultSource extends ISOMetadata implements Source {
     }
 
     /**
-     * Sets information about an event in the creation process for the source data.
+     * Sets information about process steps in which this source was used.
      *
-     * @param newValues The new source steps.
+     * @param newValues The new process steps.
      */
     public void setSourceSteps(final Collection<? extends ProcessStep> newValues) {
         sourceSteps = writeCollection(newValues, sourceSteps, ProcessStep.class);
