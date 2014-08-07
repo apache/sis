@@ -72,17 +72,12 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
     }
 
     /**
-     * Constructs a feature type info initialized to the specified value.
+     * Constructs a feature type info initialized to the specified name.
      *
      * @param featureTypeName Name of the feature type.
-     * @param featureInstanceCount Number of occurrence of feature instances for this feature types, or {@code null}.
      */
-    public DefaultFeatureTypeInfo(final GenericName featureTypeName, final Integer featureInstanceCount) {
-        if (featureInstanceCount != null) {
-            ArgumentChecks.ensurePositive("featureInstanceCount", featureInstanceCount);
-        }
-        this.featureTypeName      = featureTypeName;
-        this.featureInstanceCount = featureInstanceCount;
+    public DefaultFeatureTypeInfo(final GenericName featureTypeName) {
+        this.featureTypeName = featureTypeName;
     }
 
     /**
@@ -131,6 +126,8 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
      * Returns the name of the feature type.
      *
      * @return Name of the feature type.
+     *
+     * @see org.apache.sis.feature.DefaultFeatureType#getName()
      */
     @Override
     @XmlElement(name = "featureTypeName", required = true)
@@ -164,8 +161,9 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
      * Set a new number of occurrence of feature instances for this feature types.
      *
      * @param newValue the new number of occurrence.
+     * @throws IllegalArgumentException if the given value is negative.
      */
-    public void setFeatureInstanceCount(final Integer newValue) {
+    public void setFeatureInstanceCount(final Integer newValue) throws IllegalArgumentException {
         checkWritePermission();
         if (newValue != null) {
             ArgumentChecks.ensurePositive("featureInstanceCount", newValue);

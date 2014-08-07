@@ -82,7 +82,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Spatial and / or temporal extent and or level of the application of the constraints restrictions.
      */
-    private Collection<Scope> constraintApplicationScopes;
+    private Scope constraintApplicationScope;
 
     /**
      * Graphic / symbol indicating the constraint.
@@ -131,12 +131,12 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     public DefaultConstraints(final Constraints object) {
         super(object);
         if (object != null) {
-            useLimitations              = copyCollection(object.getUseLimitations(), InternationalString.class);
-            constraintApplicationScopes = copyCollection(object.getConstraintApplicationScopes(), Scope.class);
-            graphics                    = copyCollection(object.getGraphics(), BrowseGraphic.class);
-            references                  = copyCollection(object.getReferences(), Citation.class);
-            releasability               = object.getReleasability();
-            responsibleParties          = copyCollection(object.getResponsibleParties(), Responsibility.class);
+            useLimitations             = copyCollection(object.getUseLimitations(), InternationalString.class);
+            constraintApplicationScope = object.getConstraintApplicationScope();
+            graphics                   = copyCollection(object.getGraphics(), BrowseGraphic.class);
+            references                 = copyCollection(object.getReferences(), Citation.class);
+            releasability              = object.getReleasability();
+            responsibleParties         = copyCollection(object.getResponsibleParties(), Responsibility.class);
         }
     }
 
@@ -209,19 +209,20 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      */
     @Override
 /// @XmlElement(name = "constraintApplicationScope")
-    public Collection<Scope> getConstraintApplicationScopes() {
-        return constraintApplicationScopes = nonNullCollection(constraintApplicationScopes, Scope.class);
+    public Scope getConstraintApplicationScope() {
+        return constraintApplicationScope;
     }
 
     /**
      * Sets the spatial and / or temporal extents and or levels of the application of the constraints restrictions.
      *
-     * @param newValues The new spatial and / or temporal extents.
+     * @param newValue The new spatial and / or temporal extents.
      *
      * @since 0.5
      */
-    public void setConstraintApplicationScopes(final Collection<? extends Scope> newValues) {
-        constraintApplicationScopes = writeCollection(newValues, constraintApplicationScopes, Scope.class);
+    public void setConstraintApplicationScope(final Scope newValue) {
+        checkWritePermission();
+        constraintApplicationScope = newValue;
     }
 
     /**

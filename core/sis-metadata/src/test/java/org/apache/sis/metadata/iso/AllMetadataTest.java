@@ -62,6 +62,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.Identifier.class,
             org.opengis.metadata.Metadata.class,
             org.opengis.metadata.MetadataExtensionInformation.class,
+            org.opengis.metadata.MetadataScope.class,
 //          org.opengis.metadata.Obligation.class, // Excluded CodeList because it doesn't use the usual kind of adapter.
             org.opengis.metadata.PortrayalCatalogueReference.class,
             org.opengis.metadata.acquisition.AcquisitionInformation.class,
@@ -156,9 +157,8 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.lineage.Source.class,
             org.opengis.metadata.maintenance.MaintenanceFrequency.class,
             org.opengis.metadata.maintenance.MaintenanceInformation.class,
-            org.opengis.metadata.maintenance.MetadataScope.class,
             org.opengis.metadata.maintenance.ScopeCode.class,
-//          org.opengis.metadata.maintenance.ScopeDescription.class,  // Excluded because this is an union.
+            org.opengis.metadata.maintenance.ScopeDescription.class,
             org.opengis.metadata.quality.AbsoluteExternalPositionalAccuracy.class,
             org.opengis.metadata.quality.AccuracyOfATimeMeasurement.class,
             org.opengis.metadata.quality.Completeness.class,
@@ -217,7 +217,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     @Test
     @Override
     public void testPropertyValues() {
-        listener.maximumLogCount = 3;
+        listener.maximumLogCount = 4;
         super.testPropertyValues();
     }
 
@@ -232,6 +232,9 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
         String name = uml.identifier();
         if (name.equals("distributedComputingPlatform")) {
             name = "DCP";
+        }
+        if (name.equals("stepDateTime")) {
+            name = "dateTime";
         }
         return name;
     }

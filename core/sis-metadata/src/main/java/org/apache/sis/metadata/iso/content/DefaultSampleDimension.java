@@ -407,7 +407,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      *         for the value in each band of each pixel, or {@code null} if none.
      */
     @Override
-    @ValueRange(minimum=1)
+    @ValueRange(minimum = 1)
 /// @XmlElement(name = "bitsPerValues")
     public Integer getBitsPerValue() {
         return bitsPerValue;

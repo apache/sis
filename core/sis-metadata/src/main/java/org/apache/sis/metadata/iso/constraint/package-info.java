@@ -30,14 +30,16 @@
  *   <th class="sep">Aggregation hierarchy</th>
  * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
- * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints         Constraints}<br>
- * {@code      ├─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints    Legal constraints}<br>
- * {@code      └─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints         Constraints}<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints    Legal constraints}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.constraint.DefaultReleasability       Releasability}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.constraint.Restriction    Restriction}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.constraint.Classification Classification}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *             {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints         Constraints}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultReleasability       Releasability}<br>
  *             {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints    Legal constraints}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.constraint.Restriction                       Restriction} «code list»<br>
  *             {@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<br>

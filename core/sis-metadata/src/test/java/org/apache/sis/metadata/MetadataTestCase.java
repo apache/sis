@@ -284,13 +284,15 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      * Reasons for skipping a test are:
      *
      * <ul>
+     *   <li>Class which is a union (those classes behave differently than non-union classes).</li>
      *   <li>Method which is the delegate of many legacy ISO 19115:2003 methods.
      *       Having a property that can be modified by many other properties confuse the tests.</li>
      * </ul>
      */
     @SuppressWarnings("deprecation")
     private static boolean skipTest(final Class<?> implementation, final String method) {
-        return implementation == org.apache.sis.metadata.iso.citation.DefaultResponsibleParty.class
-                && method.equals("getParties");
+        return implementation == org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription.class ||
+              (implementation == org.apache.sis.metadata.iso.citation.DefaultResponsibleParty.class &&
+               method.equals("getParties"));
     }
 }
