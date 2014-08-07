@@ -36,8 +36,8 @@ import org.apache.sis.metadata.iso.quality.DefaultScope;
  * the scope or lack of knowledge about lineage.
  *
  * {@section Relationship between properties}
- * Only one of {@linkplain #getStatement statement}, {@linkplain #getProcessSteps() process steps}
- * and {@link #getSources() sources} should be provided.
+ * At least one of {@linkplain #getStatement statement}, {@linkplain #getProcessSteps() process steps}
+ * and {@link #getSources() sources} shall be provided.
  *
  * {@section Limitations}
  * <ul>
@@ -80,7 +80,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     /**
      * Type of resource and / or extent to which the lineage information applies.
      */
-    private Collection<Scope> scopes;
+    private Scope scope;
 
     /**
      * A resources (for example publication) that describes the whole
@@ -117,7 +117,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
         super(object);
         if (object != null) {
             statement               = object.getStatement();
-            scopes                  = copyCollection(object.getScopes(), Scope.class);
+            scope                   = object.getScope();
             additionalDocumentation = copyCollection(object.getAdditionalDocumentation(), Citation.class);
             processSteps            = copyCollection(object.getProcessSteps(), ProcessStep.class);
             sources                 = copyCollection(object.getSources(), Source.class);
@@ -173,34 +173,34 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     }
 
     /**
-     * Returns the types of resource and / or extents to which the lineage information applies.
+     * Returns the type of resource and / or extents to which the lineage information applies.
      *
-     * @return Types of resource and / or extents to which the lineage information applies.
+     * @return Type of resource and / or extents to which the lineage information applies.
      *
      * @since 0.5
      */
     @Override
 /// @XmlElement(name = "scope")
-    public Collection<Scope> getScopes() {
-        return scopes = nonNullCollection(scopes, Scope.class);
+    public Scope getScope() {
+        return scope;
     }
 
     /**
-     * Sets the types of resource and / or extents to which the lineage information applies.
+     * Sets the type of resource and / or extents to which the lineage information applies.
      *
-     * @param newValues The new types of resource.
+     * @param newValue The new type of resource.
      *
      * @since 0.5
      */
-    public void setScopes(final Collection<? extends Scope> newValues)  {
-        scopes = writeCollection(newValues, scopes, Scope.class);
+    public void setScope(final Scope newValue) {
+        checkWritePermission();
+        scope = newValue;
     }
 
     /**
-     * Returns information about resources (for example publication) that describes the whole
-     * process to generate this resource (for example a dataset).
+     * Returns additional documentation.
      *
-     * @return Resources that describes the whole process to generate this resource.
+     * @return Additional documentation.
      *
      * @since 0.5
      */
@@ -211,20 +211,20 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     }
 
     /**
-     * Sets information about resources that describes the whole process to generate this resource.
+     * Sets additional documentation.
      *
-     * @param newValues The new information about resource.
+     * @param newValues Additional documentation.
      *
      * @since 0.5
      */
     public void setAdditionalDocumentation(final Collection<? extends Citation> newValues)  {
-        additionalDocumentation = writeCollection(newValues, additionalDocumentation , Citation.class);
+        additionalDocumentation = writeCollection(newValues, additionalDocumentation, Citation.class);
     }
 
     /**
-     * Returns the information about an event in the creation process for the data specified by the scope.
+     * Returns the information about about events in the life of a resource specified by the scope.
      *
-     * @return Information about an event in the creation process.
+     * @return Information about events in the life of a resource.
      */
     @Override
     @XmlElement(name = "processStep")
@@ -233,7 +233,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     }
 
     /**
-     * Sets information about an event in the creation process for the data specified by the scope.
+     * Sets information about events in the life of a resource specified by the scope.
      *
      * @param newValues The new process steps.
      */
