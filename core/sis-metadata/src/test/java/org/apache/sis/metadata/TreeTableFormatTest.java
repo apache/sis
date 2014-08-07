@@ -31,6 +31,7 @@ import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
@@ -158,18 +159,20 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     @Test
     public void testImageDescription() {
         final DefaultImageDescription image = new DefaultImageDescription();
-        image.getDimensions().add(createBand(0.25, 0.26));
-        image.getDimensions().add(createBand(0.28, 0.29));
+        image.setAttributeGroups(Arrays.asList(
+            new DefaultAttributeGroup(null, createBand(0.25, 0.26)),
+            new DefaultAttributeGroup(null, createBand(0.28, 0.29))
+        ));
         final String text = format.format(image.asTreeTable());
         assertMultilinesEquals(
             "Image description\n" +
             "  ├─Attribute group (1 of 2)\n" +
-            "  │   └─Group attribute\n" +
+            "  │   └─Attribute\n" +
             "  │       ├─Max value………………… 0.26\n" +
             "  │       ├─Min value………………… 0.25\n" +
             "  │       └─Units…………………………… cm\n" +
             "  └─Attribute group (2 of 2)\n" +
-            "      └─Group attribute\n" +
+            "      └─Attribute\n" +
             "          ├─Max value………………… 0.29\n" +
             "          ├─Min value………………… 0.28\n" +
             "          └─Units…………………………… cm\n", text);

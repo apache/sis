@@ -150,7 +150,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
      * @return Total number of the point or vector object type, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 1)
     @XmlElement(name = "geometricObjectCount")
     public Integer getGeometricObjectCount() {
         return geometricObjectCount;

@@ -26,6 +26,7 @@ import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 
 
@@ -398,7 +399,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * @return Maximum occurrence of the extended element, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "maximumOccurrence")
     public Integer getMaximumOccurrence() {
         return maximumOccurrence;
@@ -408,9 +409,13 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Sets the maximum occurrence of the extended element.
      *
      * @param newValue The new maximum occurrence.
+     * @throws IllegalArgumentException if the given value is negative.
      */
-    public void setMaximumOccurrence(final Integer newValue) {
+    public void setMaximumOccurrence(final Integer newValue) throws IllegalArgumentException {
         checkWritePermission();
+        if (newValue != null) {
+            ArgumentChecks.ensurePositive("maximumOccurrence", newValue);
+        }
         maximumOccurrence = newValue;
     }
 
