@@ -160,13 +160,26 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
                         }
                         caller.warningOccurred = true;
                     }
-                    Context.warningOccured(Context.current(), callerClass, callerMethod,
-                            Messages.class, Messages.Keys.IgnoredPropertiesAfterFirst_1, valueClass);
+                    warnIgnoredExtraneous(valueClass, callerClass, callerMethod);
                 }
                 return value;
             }
         }
         return null;
+    }
+
+    /**
+     * Emit a warning about extraneous ignored values.
+     *
+     * @param  valueClass    The value class, used in case of warning only.
+     * @param  callerClass   The caller class, used in case of warning only.
+     * @param  callerMethod  The caller method, used in case of warning only.
+     */
+    public static void warnIgnoredExtraneous(final Class<?> valueClass,
+            final Class<?> callerClass, final String callerMethod)
+    {
+        Context.warningOccured(Context.current(), callerClass, callerMethod,
+                Messages.class, Messages.Keys.IgnoredPropertiesAfterFirst_1, valueClass);
     }
 
     /**

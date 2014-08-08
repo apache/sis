@@ -20,6 +20,8 @@ import java.util.Date;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.opengis.util.Record;
+import org.opengis.util.RecordType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -45,7 +47,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_StandardOrderProcess_Type", propOrder = {
@@ -84,6 +86,16 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     private InternationalString turnaround;
 
     /**
+     * Description of the order options record.
+     */
+    private RecordType orderOptionType;
+
+    /**
+     * Request/purchase choices.
+     */
+    private Record orderOptions;
+
+    /**
      * Constructs an initially empty standard order process.
      */
     public DefaultStandardOrderProcess() {
@@ -105,6 +117,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
             plannedAvailableDateTime = toMilliseconds(object.getPlannedAvailableDateTime());
             orderingInstructions     = object.getOrderingInstructions();
             turnaround               = object.getTurnaround();
+            orderOptionType          = object.getOrderOptionType();
+            orderOptions             = object.getOrderOptions();
         }
     }
 
@@ -217,5 +231,61 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     public void setTurnaround(final InternationalString newValue) {
         checkWritePermission();
         turnaround = newValue;
+    }
+
+    /**
+     * Returns the description of the {@linkplain #getOrderOptions() order options} record.
+     *
+     * @return Description of the order options record, or {@code null} if none.
+     *
+     * @since 0.5
+     *
+     * @see org.apache.sis.util.iso.DefaultRecord#getRecordType()
+     */
+    @Override
+/// @XmlElement(name = "orderOptionType")
+    public RecordType getOrderOptionType() {
+        return orderOptionType;
+    }
+
+    /**
+     * Sets the description of the {@linkplain #getOrderOptions() order options} record.
+     *
+     * @param newValue New description of the order options record.
+     *
+     * @since 0.5
+     */
+    public void setOrderOptionType(final RecordType newValue) {
+        checkWritePermission();
+        orderOptionType = newValue;
+    }
+
+    /**
+     * Returns the request/purchase choices.
+     *
+     * @return Request/purchase choices.
+     *
+     * @since 0.5
+     *
+     * @todo We presume that this record is filled by the vendor for describing the options chosen by the client
+     *       when he ordered the resource. We presume that this is not a record to be filled by the user for new
+     *       orders, otherwise this method would need to be a factory rather than a getter.
+     */
+    @Override
+/// @XmlElement(name = "orderOptions")
+    public Record getOrderOptions() {
+        return orderOptions;
+    }
+
+    /**
+     * Sets the request/purchase choices.
+     *
+     * @param newValue the new request/purchase choices.
+     *
+     * @since 0.5
+     */
+    public void setOrderOptions(final Record newValue) {
+        checkWritePermission();
+        orderOptions = newValue;
     }
 }
