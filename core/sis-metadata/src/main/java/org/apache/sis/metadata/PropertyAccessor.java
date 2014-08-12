@@ -146,6 +146,13 @@ class PropertyAccessor {
      * {@preformat java
      *     type.isAssignableFrom(implementation);
      * }
+     *
+     * <div class="note"><b>Design note:</b>
+     * We could enforce the above-cited restriction with type parameter: if the {@link #type} field is declared
+     * as {@code Class<T>}, then this {@code implementation} field would be declared as {@code Class<? extends T>}.
+     * However this is not useful for this internal class because the {@code <T>} type is never known; we have the
+     * {@code <?>} type everywhere except in tests, which result in compiler warnings at {@code PropertyAccessor}
+     * construction.</div>
      */
     final Class<?> implementation;
 
