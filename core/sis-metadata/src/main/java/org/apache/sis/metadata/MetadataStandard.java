@@ -88,7 +88,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see AbstractMetadata
@@ -412,6 +412,7 @@ public class MetadataStandard implements Serializable {
      * The standard package is usually made of interfaces and code lists only, but this is
      * not verified by this method.</div>
      *
+     * @param  <T>  The compile-time {@code type}.
      * @param  type The implementation class.
      * @return The interface implemented by the given implementation class.
      * @throws ClassCastException if the specified implementation class does
@@ -419,23 +420,28 @@ public class MetadataStandard implements Serializable {
      *
      * @see AbstractMetadata#getInterface()
      */
-    public Class<?> getInterface(final Class<?> type) throws ClassCastException {
+    @SuppressWarnings("unchecked")
+    public <T> Class<? super T> getInterface(final Class<T> type) throws ClassCastException {
         ensureNonNull("type", type);
+        final Class<?> standard;
         synchronized (accessors) {
             final Object value = accessors.get(type);
             if (value != null) {
                 if (value instanceof PropertyAccessor) {
-                    return ((PropertyAccessor) value).type;
+                    standard = ((PropertyAccessor) value).type;
+                } else {
+                    standard = (Class<?>) value;
                 }
-                return (Class<?>) value;
+            } else {
+                standard = findInterface(type);
+                if (standard == null) {
+                    throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
+                }
+                accessors.put(type, standard);
             }
-            final Class<?> standard = findInterface(type);
-            if (standard == null) {
-                throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
-            }
-            accessors.put(type, standard);
-            return standard;
         }
+        assert standard.isAssignableFrom(type) : type;
+        return (Class<? super T>) standard;
     }
 
     /**
@@ -443,10 +449,11 @@ public class MetadataStandard implements Serializable {
      * The default implementation returns {@code null} if every cases. Subclasses shall
      * override this method in order to map GeoAPI interfaces to their implementation.
      *
+     * @param  <T>  The compile-time {@code type}.
      * @param  type The interface, typically from the {@code org.opengis.metadata} package.
      * @return The implementation class, or {@code null} if none.
      */
-    public Class<?> getImplementation(final Class<?> type) {
+    public <T> Class<? extends T> getImplementation(final Class<T> type) {
         return null;
     }
 

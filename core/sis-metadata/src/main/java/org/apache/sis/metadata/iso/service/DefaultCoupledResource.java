@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.ScopedName;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.service.CoupledResource;
@@ -247,7 +246,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * For JAXB marhalling of ISO 19119 document only.
      */
     @XmlElement(name = "operationName")
-    final InternationalString getOperationName() {
+    final String getOperationName() {
         if (LEGACY_XML) {
             final OperationMetadata operation = getOperation();
             if (operation != null) {
@@ -262,7 +261,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * {@link OperationName} placeholder. That temporary instance will be replaced by the real
      * one when the enclosing {@link DefaultServiceIdentification} is unmarshalled.
      */
-    final void setOperationName(final InternationalString name) {
+    final void setOperationName(final String name) {
         if (operation == null) {
             operation = new OperationName(name);
         }

@@ -55,7 +55,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.05)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see InformationMap
@@ -319,9 +319,18 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
     }
 
     /**
+     * Unconditionally returns {@code null}.
+     */
+    @Override
+    public InternationalString getRationale() {
+        return null;
+    }
+
+    /**
      * Unconditionally returns an empty list.
      */
     @Override
+    @Deprecated
     public Collection<InternationalString> getRationales() {
         return Collections.emptyList();
     }

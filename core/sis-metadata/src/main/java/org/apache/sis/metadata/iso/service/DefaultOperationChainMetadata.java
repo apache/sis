@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.service;
 
-import java.util.Collection;
+import java.util.List;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -70,7 +70,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
     /**
      * Information about the operations applied by the chain.
      */
-    private Collection<OperationMetadata> operations;
+    private List<OperationMetadata> operations;
 
     /**
      * Constructs an initially empty operation chain metadata.
@@ -79,16 +79,12 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
     }
 
     /**
-     * Constructs a new operation chain metadata initialized to the specified values.
+     * Constructs a new operation chain metadata initialized to the specified name.
      *
-     * @param name      The name as used by the service for this chain.
-     * @param operation Information about the operations applied by the chain.
+     * @param name The name as used by the service for this chain.
      */
-    public DefaultOperationChainMetadata(final CharSequence name,
-                                         final OperationMetadata operation)
-    {
-        this.name       = Types.toInternationalString(name);
-        this.operations = singleton(operation, OperationMetadata.class);
+    public DefaultOperationChainMetadata(final CharSequence name) {
+        this.name = Types.toInternationalString(name);
     }
 
     /**
@@ -105,7 +101,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
         if (object != null) {
             this.name        = object.getName();
             this.description = object.getDescription();
-            this.operations  = copyCollection(object.getOperations(), OperationMetadata.class);
+            this.operations  = copyList(object.getOperations(), OperationMetadata.class);
         }
     }
 
@@ -183,8 +179,8 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
      */
     @Override
     @XmlElement(name = "operation", required = true)
-    public Collection<OperationMetadata> getOperations() {
-        return operations = nonNullCollection(operations, OperationMetadata.class);
+    public List<OperationMetadata> getOperations() {
+        return operations = nonNullList(operations, OperationMetadata.class);
     }
 
     /**
@@ -192,7 +188,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
      *
      * @param newValues The new information about the operations applied by the chain.
      */
-    public void setOperations(final Collection<? extends OperationMetadata> newValues) {
-        operations = writeCollection(newValues, operations, OperationMetadata.class);
+    public void setOperations(final List<? extends OperationMetadata> newValues) {
+        operations = writeList(newValues, operations, OperationMetadata.class);
     }
 }

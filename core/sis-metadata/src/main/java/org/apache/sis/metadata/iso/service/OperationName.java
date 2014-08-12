@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Locale;
 import java.io.Serializable;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.service.CoupledResource;
@@ -49,19 +48,19 @@ final class OperationName implements OperationMetadata, Serializable {
     /**
      * The operation name.
      */
-    private final InternationalString operationName;
+    private final String operationName;
 
     /**
      * Creates a new placeholder for the operation of the given name.
      */
-    OperationName(final InternationalString operationName) {
+    OperationName(final String operationName) {
         this.operationName = operationName;
     }
 
     /**
      * Returns the operation name.
      */
-    @Override public InternationalString                      getOperationName()                 {return operationName;}
+    @Override public String                                   getOperationName()                 {return operationName;}
     @Override public InternationalString                      getInvocationName()                {return null;}
     @Override public InternationalString                      getOperationDescription()          {return null;}
     @Override public Collection<DistributedComputingPlatform> getDistributedComputingPlatforms() {return Collections.emptySet();}
@@ -90,18 +89,16 @@ final class OperationName implements OperationMetadata, Serializable {
     static void resolve(final Collection<OperationMetadata> containsOperations, final Collection<CoupledResource> coupledResources) {
         final Map<String,OperationMetadata> byName = new HashMap<String,OperationMetadata>();
         for (final OperationMetadata operation : containsOperations) {
-            final InternationalString name = operation.getOperationName();
-            add(byName, name.toString(Locale.ROOT), operation);
-            add(byName, name.toString(/*default*/), operation);
+            add(byName, operation.getOperationName(), operation);
         }
         for (final CoupledResource resource : coupledResources) {
             if (resource instanceof DefaultCoupledResource) {
                 OperationMetadata operation = resource.getOperation();
                 if (operation instanceof OperationName) {
-                    final InternationalString name = operation.getOperationName();
-                    operation = byName.get(name.toString(Locale.ROOT));
+                    final String name = operation.getOperationName();
+                    operation = byName.get(name);
                     if (operation == null) {
-                        operation = byName.get(name.toString());
+                        operation = byName.get(name);
                         if (operation == null) {
                             continue;
                         }
