@@ -98,11 +98,12 @@ final class StandardImplementation extends MetadataStandard {
      * Returns the implementation class for the given interface, or {@code null} if none.
      * This class uses heuristic rules based on naming conventions.
      *
+     * @param  <T>  The compile-time {@code type}.
      * @param  type The interface, typically from the {@code org.opengis.metadata} package.
      * @return The implementation class, or {@code null} if none.
      */
     @Override
-    public Class<?> getImplementation(final Class<?> type) {
+    public <T> Class<? extends T> getImplementation(final Class<T> type) {
         /*
          * We require the type to be an interface in order to exclude
          * CodeLists, Enums and Exceptions.
@@ -113,7 +114,7 @@ final class StandardImplementation extends MetadataStandard {
                 synchronized (implementations) {
                     Class<?> candidate = implementations.get(type);
                     if (candidate != null) {
-                        return (candidate != Void.TYPE) ? candidate : null;
+                        return (candidate != Void.TYPE) ? candidate.asSubclass(type) : null;
                     }
                     /*
                      * Prepares a buffer with a copy of the class name in which the interface
@@ -141,7 +142,7 @@ final class StandardImplementation extends MetadataStandard {
                     try {
                         candidate = Class.forName(name);
                         implementations.put(type, candidate);
-                        return candidate;
+                        return candidate.asSubclass(type);
                     } catch (ClassNotFoundException e) {
                         Logging.recoverableException(MetadataStandard.class, "getImplementation", e);
                     }
