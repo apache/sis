@@ -21,7 +21,6 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.service.CoupledResource;
 import org.opengis.metadata.service.DistributedComputingPlatform;
 import org.opengis.metadata.service.OperationMetadata;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -74,7 +73,7 @@ public final strictfp class DefaultCoupledResourceTest extends TestCase {
         /*
          * If the name doesn't match, no replacement shall be done.
          */
-        final OperationName other = new OperationName(new SimpleInternationalString("Other"));
+        final OperationName other = new OperationName("Other");
         resource.setOperation(other);
         assertSame("Before resolve", other, resource.getOperation());
         OperationName.resolve(singleton(operation), singleton((CoupledResource) resource));

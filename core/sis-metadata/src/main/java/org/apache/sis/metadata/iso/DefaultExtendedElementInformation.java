@@ -16,7 +16,9 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.Iterator;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -28,10 +30,12 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
 /**
  * New metadata element, not found in ISO 19115, which is required to describe geographic data.
+ * Metadata elements are contained in a {@linkplain DefaultMetadataExtensionInformation metadata extension information}.
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -71,7 +75,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5892811836634834434L;
+    private static final long serialVersionUID = 489138542195499530L;
 
     /**
      * Name of the extended metadata element.
@@ -144,7 +148,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     /**
      * Reason for creating the extended element.
      */
-    private Collection<InternationalString> rationales;
+    private InternationalString rationale;
 
     /**
      * Name of the person or organization creating the extended element.
@@ -194,6 +198,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @see #castOrCopy(ExtendedElementInformation)
      */
+    @SuppressWarnings("deprecation")
     public DefaultExtendedElementInformation(final ExtendedElementInformation object) {
         super(object);
         if (object != null) {
@@ -208,7 +213,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
             domainValue       = object.getDomainValue();
             parentEntity      = copyCollection(object.getParentEntity(), String.class);
             rule              = object.getRule();
-            rationales        = copyCollection(object.getRationales(), InternationalString.class);
+            rationale         = object.getRationale();
             sources           = copyCollection(object.getSources(), Responsibility.class);
         }
     }
@@ -263,8 +268,11 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Short form suitable for use in an implementation method such as XML or SGML.
      *
      * @return Short form suitable for use in an implementation method such as XML or SGML, or {@code null}.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "shortName")
     public String getShortName()  {
         return shortName;
@@ -274,7 +282,10 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Sets a short form suitable for use in an implementation method such as XML or SGML.
      *
      * @param newValue The new short name.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
+    @Deprecated
     public void setShortName(final String newValue)  {
         checkWritePermission();
         shortName = newValue;
@@ -286,8 +297,11 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * is {@linkplain Datatype#CODE_LIST_ELEMENT code list element}.
      *
      * @return Three digit code assigned to the extended element, or {@code null}.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "domainCode")
     public Integer getDomainCode() {
         return domainCode;
@@ -297,7 +311,10 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Sets a three digit code assigned to the extended element.
      *
      * @param newValue The new domain code.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
+    @Deprecated
     public void setDomainCode(final Integer newValue) {
         checkWritePermission();
         domainCode = newValue;
@@ -490,20 +507,69 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Reason for creating the extended element.
      *
      * @return Reason for creating the extended element.
+     *
+     * @since 0.5
      */
     @Override
-    @XmlElement(name = "rationale")
-    public Collection<InternationalString> getRationales() {
-        return rationales = nonNullCollection(rationales, InternationalString.class);
+    public InternationalString getRationale() {
+        return rationale;
     }
 
     /**
      * Sets the reason for creating the extended element.
      *
+     * @param newValue The new rationale.
+     *
+     * @since 0.5
+     */
+    public void setRationale(final InternationalString newValue) {
+        checkWritePermission();
+        rationale = newValue;
+    }
+
+    /**
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getRationale()}.
+     *
+     * @return Reason for creating the extended element.
+     */
+    @Override
+    @Deprecated
+    @XmlElement(name = "rationale")
+    public Collection<InternationalString> getRationales() {
+        return new AbstractSet<InternationalString>() {
+            /** Returns 0 if empty, or 1 if a density has been specified. */
+            @Override public int size() {
+                return getRationale() != null ? 1 : 0;
+            }
+
+            /** Returns an iterator over 0 or 1 element. Current iterator implementation is unmodifiable. */
+            @Override public Iterator<InternationalString> iterator() {
+                return LegacyPropertyAdapter.asCollection(getRationale()).iterator();
+            }
+
+            /** Adds an element only if the set is empty. This method is invoked by JAXB at unmarshalling time. */
+            @Override public boolean add(final InternationalString newValue) {
+                if (isEmpty()) {
+                    setRationale(newValue);
+                    return true;
+                } else {
+                    LegacyPropertyAdapter.warnIgnoredExtraneous(InternationalString.class,
+                            DefaultExtendedElementInformation.class, "setRationales");
+                    return false;
+                }
+            }
+        };
+    }
+
+    /**
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setRationale(InternationalString)}.
+     *
      * @param newValues The new rationales.
      */
+    @Deprecated
     public void setRationales(final Collection<? extends InternationalString> newValues) {
-        rationales = writeCollection(newValues, rationales, InternationalString.class);
+        setRationale(LegacyPropertyAdapter.getSingleton(newValues, InternationalString.class,
+                null, DefaultExtendedElementInformation.class, "setRationales"));
     }
 
     /**

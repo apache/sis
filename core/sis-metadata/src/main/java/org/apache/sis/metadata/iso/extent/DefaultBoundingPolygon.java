@@ -116,9 +116,9 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
     }
 
     /**
-     * Returns the sets of points defining the bounding polygon.
+     * Returns the sets of points defining the bounding polygon or other geometry.
      *
-     * @return The sets of points defining the bounding polygon.
+     * @return The sets of points defining the resource boundary.
      */
     @Override
     @XmlElement(name = "polygon", required = true)
@@ -127,9 +127,9 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
     }
 
     /**
-     * Sets the sets of points defining the bounding polygon.
+     * Sets the sets of points defining the resource boundary.
      *
-     * @param newValues The new polygons.
+     * @param newValues The new boundaries.
      */
     public void setPolygons(final Collection<? extends Geometry> newValues) {
         polygons = writeCollection(newValues, polygons, Geometry.class);
