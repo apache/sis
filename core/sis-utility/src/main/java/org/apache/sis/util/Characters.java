@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public final class Characters extends Static {
@@ -97,6 +97,25 @@ public final class Characters extends Static {
     }
 
     /**
+     * Returns {@code true} if the given character is an hexadecimal digit.
+     * This method returns {@code true} if {@code c} is between {@code '0'} and {@code '9'} inclusive,
+     * or between {@code 'A'} and {@code 'F'} inclusive, or between {@code 'a'} and {@code 'f'} inclusive.
+     *
+     * @param  c The character to test.
+     * @return {@code true} if the given character is an hexadecimal digit.
+     *
+     * @since 0.5
+     */
+    public static boolean isHexadecimal(int c) {
+        /*
+         * The &= ~32 is a cheap conversion of lower-case letters to upper-case letters.
+         * It is not a rigorous conversion since it does not check if 'c' is a letter,
+         * but for the purpose of this method it is okay.
+         */
+        return (c >= '0' && c <= '9') || ((c &= ~32) >= 'A' && c <= 'F');
+    }
+
+    /**
      * Determines whether the given character is a superscript. Most (but not all) superscripts
      * have a Unicode value in the [2070 … 207F] range. Superscripts are the following symbols:
      *
@@ -115,7 +134,7 @@ public final class Characters extends Static {
             case '\u2071': // Would be the '¹', '²' and '³' values if they were declared in the
             case '\u2072': // normal range. Since they are not, those values are unassigned.
             case '\u2073': return false;
-            default:       return (c>='⁰' && c<='ⁿ');
+            default:       return (c >= '⁰' && c <= 'ⁿ');
         }
     }
 
@@ -131,7 +150,7 @@ public final class Characters extends Static {
      * @return {@code true} if the given character is a subscript.
      */
     public static boolean isSubScript(final int c) {
-        return (c>='₀' && c<='₎');
+        return (c >= '₀' && c <= '₎');
     }
 
     /**

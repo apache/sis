@@ -79,9 +79,9 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
     @Override
     protected <T> Class<? extends T> getImplementation(final Class<T> type) {
         assertTrue(standard.isMetadata(type));
-        final Class<?> impl = standard.getImplementation(type);
+        final Class<? extends T> impl = standard.getImplementation(type);
         assertNotNull(type.getName(), impl);
-        return impl.asSubclass(type);
+        return impl;
     }
 
     /**
