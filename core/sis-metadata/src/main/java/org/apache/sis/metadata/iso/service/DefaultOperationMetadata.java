@@ -27,7 +27,6 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.service.DistributedComputingPlatform;
 import org.opengis.metadata.service.OperationMetadata;
 import org.opengis.metadata.service.Parameter;
-import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -67,7 +66,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
     /**
      * An unique identifier for this interface.
      */
-    private InternationalString operationName;
+    private String operationName;
 
     /**
      * Distributed computing platforms on which the operation has been implemented.
@@ -112,11 +111,11 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @param platform      Distributed computing platforms on which the operation has been implemented.
      * @param connectPoint  Handle for accessing the service interface.
      */
-    public DefaultOperationMetadata(final CharSequence operationName,
+    public DefaultOperationMetadata(final String operationName,
                                     final DistributedComputingPlatform platform,
                                     final OnlineResource connectPoint)
     {
-        this.operationName                 = Types.toInternationalString(operationName);
+        this.operationName                 = operationName;
         this.distributedComputingPlatforms = singleton(platform, DistributedComputingPlatform.class);
         this.connectPoints                 = singleton(connectPoint, OnlineResource.class);
     }
@@ -175,8 +174,8 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      */
     @Override
     @XmlElement(name = "operationName", required = true)
-    public InternationalString getOperationName() {
-        return this.operationName;
+    public String getOperationName() {
+        return operationName;
     }
 
     /**
@@ -184,9 +183,9 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      *
      * @param newValue The new unique identifier for this interface.
      */
-    public void setOperationName(final InternationalString newValue) {
+    public void setOperationName(final String newValue) {
         checkWritePermission();
-        this.operationName = newValue;
+        operationName = newValue;
     }
 
     /**

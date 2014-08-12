@@ -16,12 +16,12 @@
  */
 package org.apache.sis.metadata.iso;
 
-import java.net.URI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.OnlineResource;
 
 
 /**
@@ -40,16 +40,16 @@ import org.opengis.metadata.citation.Citation;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_ApplicationSchemaInformation_Type", propOrder = {
     "name",
     "schemaLanguage",
     "constraintLanguage",
-    "schemaAscii",
-    "graphicsFile",
-    "softwareDevelopmentFile",
+/// "schemaAscii",
+/// "graphicsFile",
+/// "softwareDevelopmentFile",
     "softwareDevelopmentFileFormat"
 })
 @XmlRootElement(name = "MD_ApplicationSchemaInformation")
@@ -59,7 +59,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -884081423040392985L;
+    private static final long serialVersionUID = 5667352094985433121L;
 
     /**
      * Name of the application schema used.
@@ -79,17 +79,17 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Full application schema given as an ASCII file.
      */
-    private URI schemaAscii;
+    private CharSequence schemaAscii;
 
     /**
      * Full application schema given as a graphics file.
      */
-    private URI graphicsFile;
+    private OnlineResource graphicsFile;
 
     /**
      * Full application schema given as a software development file.
      */
-    private URI softwareDevelopmentFile;
+    private OnlineResource softwareDevelopmentFile;
 
     /**
      * Software dependent format used for the application schema software dependent file.
@@ -234,8 +234,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      * @return Application schema as an ASCII file, or {@code null}.
      */
     @Override
-    @XmlElement(name = "schemaAscii")
-    public URI getSchemaAscii()  {
+/// @XmlElement(name = "schemaAscii")
+    public CharSequence getSchemaAscii()  {
         return schemaAscii;
     }
 
@@ -244,7 +244,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *
      * @param newValue The new ASCII file.
      */
-    public void setSchemaAscii(final URI newValue) {
+    public void setSchemaAscii(final CharSequence newValue) {
         checkWritePermission();
         schemaAscii = newValue;
     }
@@ -255,8 +255,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      * @return Application schema as a graphics file, or {@code null}.
      */
     @Override
-    @XmlElement(name = "graphicsFile")
-    public URI getGraphicsFile()  {
+/// @XmlElement(name = "graphicsFile")
+    public OnlineResource getGraphicsFile()  {
         return graphicsFile;
     }
 
@@ -265,7 +265,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *
      * @param newValue The new graphics file.
      */
-    public void setGraphicsFile(final URI newValue) {
+    public void setGraphicsFile(final OnlineResource newValue) {
         checkWritePermission();
         graphicsFile = newValue;
     }
@@ -276,8 +276,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      * @return Application schema as a software development file, or {@code null}.
      */
     @Override
-    @XmlElement(name = "softwareDevelopmentFile")
-    public URI getSoftwareDevelopmentFile()  {
+/// @XmlElement(name = "softwareDevelopmentFile")
+    public OnlineResource getSoftwareDevelopmentFile()  {
         return softwareDevelopmentFile;
     }
 
@@ -286,7 +286,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *
      * @param newValue The new software development file.
      */
-    public void setSoftwareDevelopmentFile(final URI newValue) {
+    public void setSoftwareDevelopmentFile(final OnlineResource newValue) {
         checkWritePermission();
         softwareDevelopmentFile = newValue;
     }
