@@ -23,7 +23,8 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
+import org.apache.sis.metadata.iso.citation.DefaultIndividual;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -66,7 +67,7 @@ public final strictfp class ValueMapTest extends TestCase {
     /**
      * The author of the metadata instance created by {@link #createCitation()}.
      */
-    private DefaultResponsibleParty author;
+    private DefaultResponsibility author;
 
     /**
      * Creates the metadata instance to be used for testing purpose.
@@ -89,9 +90,9 @@ public final strictfp class ValueMapTest extends TestCase {
      */
     private Map<String,Object> createCitation() {
         title    = new SimpleInternationalString("Undercurrent");
-        author   = new DefaultResponsibleParty();
+        author   = new DefaultResponsibility();
         citation = new DefaultCitation(title);
-        author.setIndividualName("Testsuya Toyoda");
+        author.setParties(singleton(new DefaultIndividual("Testsuya Toyoda", null, null)));
         citation.getCitedResponsibleParties().add(author);
         citation.setISBN("9782505004509");
         citation.setEdition(NilReason.UNKNOWN.createNilObject(InternationalString.class));
@@ -170,6 +171,7 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<String,Object>("identifiers",             citation.getIdentifiers()),
             new SimpleEntry<String,Object>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<String,Object>("presentationForms",       emptySet()),
+            new SimpleEntry<String,Object>("otherCitationDetails",    emptyList()),
             new SimpleEntry<String,Object>("ISBN",                    "9782505004509"),
             new SimpleEntry<String,Object>("graphics",                emptyList()),
             new SimpleEntry<String,Object>("onlineResources",         emptyList())
@@ -200,6 +202,7 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<String,Object>("identifiers",             citation.getIdentifiers()),
             new SimpleEntry<String,Object>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<String,Object>("presentationForms",       emptySet()),
+            new SimpleEntry<String,Object>("otherCitationDetails",    emptyList()),
             new SimpleEntry<String,Object>("ISBN",                    "9782505004509"),
             new SimpleEntry<String,Object>("graphics",                emptyList()),
             new SimpleEntry<String,Object>("onlineResources",         emptyList())
@@ -230,8 +233,8 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<String,Object>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<String,Object>("presentationForms",       emptySet()),
             new SimpleEntry<String,Object>("series",                  null),
-            new SimpleEntry<String,Object>("otherCitationDetails",    null),
-            new SimpleEntry<String,Object>("collectiveTitle",         null),
+            new SimpleEntry<String,Object>("otherCitationDetails",    emptyList()),
+//          new SimpleEntry<String,Object>("collectiveTitle",         null),  -- deprecated as of ISO 19115:2014.
             new SimpleEntry<String,Object>("ISBN",                    "9782505004509"),
             new SimpleEntry<String,Object>("ISSN",                    null),
             new SimpleEntry<String,Object>("graphics",                emptyList()),

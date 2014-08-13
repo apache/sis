@@ -71,6 +71,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 // Consequently the compiled class files should not have this dependency.
 import ucar.nc2.constants.CF;
 
+import static java.util.Collections.singleton;
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
 
 
@@ -281,7 +282,7 @@ final class MetadataReader {
     private static Address createAddress(final String email) {
         if (email != null) {
             final DefaultAddress address = new DefaultAddress();
-            address.getElectronicMailAddresses().add(email);
+            address.setElectronicMailAddresses(singleton(email));
             return address;
         }
         return null;
@@ -293,8 +294,8 @@ final class MetadataReader {
     private static Contact createContact(final Address address, final OnlineResource url) {
         if (address != null || url != null) {
             final DefaultContact contact = new DefaultContact();
-            contact.setAddress(address);
-            contact.setOnlineResource(url);
+            if (address != null) contact.setAddresses(singleton(address));
+            if (url     != null) contact.setOnlineResources(singleton(url));
             return contact;
         }
         return null;
@@ -424,18 +425,18 @@ final class MetadataReader {
         final String references = decoder.stringValue(REFERENCES);
         final DefaultCitation citation = new DefaultCitation(title);
         if (identifier != null) {
-            citation.getIdentifiers().add(identifier);
+            citation.setIdentifiers(singleton(identifier));
         }
-        if (creation != null) citation.getDates().add(new DefaultCitationDate(creation, DateType.CREATION));
-        if (modified != null) citation.getDates().add(new DefaultCitationDate(modified, DateType.REVISION));
-        if (issued   != null) citation.getDates().add(new DefaultCitationDate(issued,   DateType.PUBLICATION));
+        if (creation != null) citation.setDates(singleton(new DefaultCitationDate(creation, DateType.CREATION)));
+        if (modified != null) citation.getDates()  .add  (new DefaultCitationDate(modified, DateType.REVISION));
+        if (issued   != null) citation.getDates()  .add  (new DefaultCitationDate(issued,   DateType.PUBLICATION));
         if (pointOfContact != null) {
             // Same responsible party than the contact, except for the role.
             final DefaultResponsibleParty np = new DefaultResponsibleParty(Role.ORIGINATOR);
             np.setIndividualName  (pointOfContact.getIndividualName());
             np.setOrganisationName(pointOfContact.getOrganisationName());
             np.setContactInfo     (pointOfContact.getContactInfo());
-            citation.getCitedResponsibleParties().add(np);
+            citation.setCitedResponsibleParties(singleton(np));
         }
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
@@ -445,7 +446,9 @@ final class MetadataReader {
             }
         }
         decoder.setSearchPath(searchPath);
-        citation.setOtherCitationDetails(toInternationalString(references));
+        if (references != null) {
+            citation.setOtherCitationDetails(singleton(toInternationalString(references)));
+        }
         return citation.isEmpty() ? null : citation;
     }
 
@@ -499,7 +502,7 @@ final class MetadataReader {
                     // Takes only ONE extent, because a NetCDF file may declare many time the same
                     // extent with different precision. The groups are ordered in such a way that
                     // the first extent should be the most accurate one.
-                    identification.getExtents().add(extent);
+                    identification.setExtents(singleton(extent));
                     hasExtent = true;
                 }
             }
@@ -519,7 +522,7 @@ final class MetadataReader {
         identification.setAbstract(toInternationalString(summary));
         identification.setPurpose (toInternationalString(purpose));
         if (pointOfContact != null) {
-            identification.getPointOfContacts().add(pointOfContact);
+            identification.setPointOfContacts(singleton(pointOfContact));
         }
         addKeywords(identification, project,   "project"); // Not necessarily the same string than PROJECT.
         addKeywords(identification, publisher, "dataCenter");
@@ -641,7 +644,7 @@ final class MetadataReader {
             if (extent == null) {
                 extent = new DefaultExtent();
             }
-            extent.getVerticalElements().add(new DefaultVerticalExtent(min, max, VERTICAL_CRS));
+            extent.setVerticalElements(singleton(new DefaultVerticalExtent(min, max, VERTICAL_CRS)));
         }
         /*
          * Get the start and end times as Date objects if available, or as numeric values otherwise.
@@ -672,7 +675,7 @@ final class MetadataReader {
             if (extent == null) {
                 extent = new DefaultExtent();
             }
-            extent.getTemporalElements().add(t);
+            extent.setTemporalElements(singleton(t));
         } catch (UnsupportedOperationException e) {
             decoder.listeners.warning(null, e);
         }
@@ -684,7 +687,7 @@ final class MetadataReader {
             if (extent == null) {
                 extent = new DefaultExtent();
             }
-            extent.getGeographicElements().add(new DefaultGeographicDescription(null, identifier));
+            extent.setGeographicElements(singleton(new DefaultGeographicDescription(null, identifier)));
         }
         return extent;
     }
@@ -850,7 +853,7 @@ final class MetadataReader {
             metadata.setFileIdentifier(code);
         }
         metadata.setDateStamp(decoder.dateValue(METADATA_CREATION));
-        metadata.getHierarchyLevels().add(ScopeCode.DATASET);
+        metadata.setHierarchyLevels(singleton(ScopeCode.DATASET));
         final String wms = decoder.stringValue("wms_service");
         final String wcs = decoder.stringValue("wcs_service");
         if (wms != null || wcs != null) {
@@ -906,7 +909,7 @@ final class MetadataReader {
          */
         final DataIdentification identification = createIdentificationInfo(identifier, publisher);
         if (identification != null) {
-            metadata.getIdentificationInfo().add(identification);
+            metadata.setIdentificationInfo(singleton(identification));
         }
         metadata.setContentInfo(createContentInfo());
         /*

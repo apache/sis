@@ -74,7 +74,7 @@ public final strictfp class TypeMapTest extends TestCase {
             new SimpleEntry<String,Class<?>>("presentationForm",      PresentationForm.class),
             new SimpleEntry<String,Class<?>>("series",                Series.class),
             new SimpleEntry<String,Class<?>>("otherCitationDetails",  InternationalString.class),
-            new SimpleEntry<String,Class<?>>("collectiveTitle",       InternationalString.class),
+//          new SimpleEntry<String,Class<?>>("collectiveTitle",       InternationalString.class),  -- deprecated as of ISO 19115:2014
             new SimpleEntry<String,Class<?>>("ISBN",                  String.class),
             new SimpleEntry<String,Class<?>>("ISSN",                  String.class),
             new SimpleEntry<String,Class<?>>("graphic",               BrowseGraphic.class),
