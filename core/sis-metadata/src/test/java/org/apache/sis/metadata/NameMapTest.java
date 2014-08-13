@@ -62,7 +62,7 @@ public final strictfp class NameMapTest extends TestCase {
             new SimpleEntry<>("presentationForm",      "presentationForms"),
             new SimpleEntry<>("series",                "series"),
             new SimpleEntry<>("otherCitationDetails",  "otherCitationDetails"),
-            new SimpleEntry<>("collectiveTitle",       "collectiveTitle"),
+//          new SimpleEntry<>("collectiveTitle",       "collectiveTitle"),  -- deprecated as of ISO 19115:2014
             new SimpleEntry<>("ISBN",                  "ISBN"),
             new SimpleEntry<>("ISSN",                  "ISSN"),
             new SimpleEntry<>("graphic",               "graphics"),
