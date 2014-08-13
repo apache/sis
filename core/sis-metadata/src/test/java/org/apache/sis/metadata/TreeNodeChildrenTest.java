@@ -32,6 +32,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static java.util.Collections.singleton;
 import static org.apache.sis.test.TestUtilities.createRandomNumberGenerator;
 
 
@@ -65,7 +66,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     static DefaultCitation metadataWithoutCollections() {
         final DefaultCitation citation = new DefaultCitation("Some title");
         citation.setEdition(new SimpleInternationalString("Some edition"));
-        citation.setOtherCitationDetails(new SimpleInternationalString("Some other details"));
+        citation.setOtherCitationDetails(singleton(new SimpleInternationalString("Some other details")));
         return citation;
     }
 
@@ -308,7 +309,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             "PresentationForm[MAP_HARDCOPY]",
             null, // series
             "Some other details",
-            null, // collective title
+//          null, // collective title  -- deprecated as of ISO 19115:2014.
             null, // ISBN
             null, // ISSN
             null, // onlineResources (collection)
