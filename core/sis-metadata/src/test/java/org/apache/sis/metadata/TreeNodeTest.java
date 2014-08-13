@@ -251,7 +251,7 @@ public final strictfp class TreeNodeTest extends TestCase {
                 null,       // role
               ZERO,         // presentationForm
               ONE,          // presentationForm
-              null);        // otherCitationDetails
+              ZERO);        // otherCitationDetails
     }
 
     /**

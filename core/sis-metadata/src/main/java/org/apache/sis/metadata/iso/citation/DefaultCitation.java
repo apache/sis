@@ -88,7 +88,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3490090845236158848L;
+    private static final long serialVersionUID = -7343644724857519090L;
 
     /**
      * The authority for International Standard Book Number.
@@ -158,13 +158,16 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Other information required to complete the citation that is not recorded elsewhere.
      * May be {@code null} if none.
      */
-    private InternationalString otherCitationDetails;
+    private Collection<InternationalString> otherCitationDetails;
 
     /**
      * Common title with holdings note. Note: title identifies elements of a series
      * collectively, combined with information about what volumes are available at the
      * source cited. May be {@code null} if there is no title.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
+    @Deprecated
     private InternationalString collectiveTitle;
 
     /**
@@ -232,6 +235,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @see #castOrCopy(Citation)
      */
+    @SuppressWarnings("deprecation")
     public DefaultCitation(final Citation object) {
         super(object);
         if (object != null) {
@@ -244,7 +248,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
             citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), Responsibility.class);
             presentationForms       = copyCollection(object.getPresentationForms(), PresentationForm.class);
             series                  = object.getSeries();
-            otherCitationDetails    = object.getOtherCitationDetails();
+            otherCitationDetails    = copyCollection(object.getOtherCitationDetails(), InternationalString.class);
             collectiveTitle         = object.getCollectiveTitle();
             onlineResources         = copyCollection(object.getOnlineResources(), OnlineResource.class);
             graphics                = copyCollection(object.getGraphics(), BrowseGraphic.class);
@@ -507,26 +511,28 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "otherCitationDetails")
-    public InternationalString getOtherCitationDetails() {
-        return otherCitationDetails;
+    public Collection<InternationalString> getOtherCitationDetails() {
+        return otherCitationDetails = nonNullCollection(otherCitationDetails, InternationalString.class);
     }
 
     /**
      * Sets other information required to complete the citation that is not recorded elsewhere.
      *
-     * @param newValue Other citations details, or {@code null} if none.
+     * @param newValues Other citations details.
      */
-    public void setOtherCitationDetails(final InternationalString newValue) {
-        checkWritePermission();
-        otherCitationDetails = newValue;
+    public void setOtherCitationDetails(final Collection<? extends InternationalString> newValues) {
+        otherCitationDetails = writeCollection(newValues, otherCitationDetails, InternationalString.class);
     }
 
     /**
      * Returns the common title with holdings note.
      *
      * @return The common title, or {@code null} if none.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "collectiveTitle")
     public InternationalString getCollectiveTitle() {
         return collectiveTitle;
@@ -537,7 +543,10 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * combined with information about what volumes are available at the source cited.
      *
      * @param newValue The new collective title, or {@code null} if none.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
+    @Deprecated
     public void setCollectiveTitle(final InternationalString newValue) {
         checkWritePermission();
         collectiveTitle = newValue;

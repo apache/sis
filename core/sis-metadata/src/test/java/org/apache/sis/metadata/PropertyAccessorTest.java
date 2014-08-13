@@ -180,8 +180,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Citation.class, "getCitedResponsibleParties", "citedResponsibleParties", "citedResponsibleParty", "Cited responsible parties",  Responsibility[].class,
             Citation.class, "getPresentationForms",       "presentationForms",       "presentationForm",      "Presentation forms",         PresentationForm[].class,
             Citation.class, "getSeries",                  "series",                  "series",                "Series",                     Series.class,
-            Citation.class, "getOtherCitationDetails",    "otherCitationDetails",    "otherCitationDetails",  "Other citation details",     InternationalString.class,
-            Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,
+            Citation.class, "getOtherCitationDetails",    "otherCitationDetails",    "otherCitationDetails",  "Other citation details",     InternationalString[].class,
+//          Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,   -- deprecated as of ISO 19115:2014
             Citation.class, "getISBN",                    "ISBN",                    "ISBN",                  "ISBN",                       String.class,
             Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class,
             Citation.class, "getGraphics",                "graphics",                "graphic",               "Graphics",                   BrowseGraphic[].class,
@@ -647,6 +647,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     public void testToString() {
         final PropertyAccessor accessor = createPropertyAccessor();
-        assertEquals("PropertyAccessor[15 getters & 15 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
+        assertEquals("PropertyAccessor[14 getters (+1 ext.) & 15 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
     }
 }
