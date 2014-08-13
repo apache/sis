@@ -43,7 +43,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "CI_OnlineResource_Type", propOrder = {
@@ -93,6 +93,12 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     private OnLineFunction function;
 
     /**
+     * Request used to access the resource depending on the protocol.
+     * This is used mainly for POST requests.
+     */
+    private String protocolRequest;
+
+    /**
      * Creates an initially empty on line resource.
      */
     public DefaultOnlineResource() {
@@ -126,6 +132,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
             name               = object.getName();
             description        = object.getDescription();
             function           = object.getFunction();
+            protocolRequest    = object.getProtocolRequest();
         }
     }
 
@@ -241,7 +248,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the location (address) for on-line access using a Uniform Resource Locator address or
-     * similar addressing scheme such as "{@code http://www.statkart.no/isotc211}".
+     * similar addressing scheme.
      *
      * @return Location for on-line access using a Uniform Resource Locator address or similar scheme, or {@code null}.
      */
@@ -265,6 +272,10 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Returns the connection protocol to be used.
      *
+     * <div class="note"><b>Example:</b>
+     * ftp, http get KVP, http POST, <i>etc</i>.
+     * </div>
+     *
      * @return Connection protocol to be used, or {@code null}.
      */
     @Override
@@ -274,12 +285,47 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     }
 
     /**
-     * Returns the connection protocol to be used.
+     * Sets the connection protocol to be used.
      *
      * @param newValue The new protocol, or {@code null} if none.
      */
     public void setProtocol(final String newValue) {
         checkWritePermission();
         protocol = newValue;
+    }
+
+    /**
+     * Returns the request used to access the resource depending on the protocol.
+     * This is used mainly for POST requests.
+     *
+     * <div class="note"><b>Example:</b>
+     * {@preformat xml
+     *     <GetFeature service="WFS" version="2.0.0"
+     *                 outputFormat="application/gml+xml;verson=3.2"
+     *                 xmlns="(…snip…)">
+     *         <Query typeNames="Roads"/>
+     *     </GetFeature>
+     * }
+     * </div>
+     *
+     * @return Request used to access the resource.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getProtocolRequest() {
+        return protocolRequest;
+    }
+
+    /**
+     * Sets the request to be used.
+     *
+     * @param newValue The new request, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    public void setProtocolRequest(final String newValue) {
+        checkWritePermission();
+        protocolRequest = newValue;
     }
 }
