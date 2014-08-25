@@ -21,7 +21,6 @@ import java.util.Iterator;
 import org.opengis.metadata.citation.Telephone;
 import org.opengis.metadata.citation.TelephoneType;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -99,7 +98,9 @@ final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
      */
     @Override
     public boolean add(final String value) {
-        ArgumentChecks.ensureNonNull("value", value);
+        if (value == null || value.isEmpty()) { // Null value happen with empty XML elements like <gco:CharacterString/>
+            return false;
+        }
         final Iterator<Telephone> it = elements.iterator();
         if (it.hasNext()) {
             final Telephone telephone = it.next();
