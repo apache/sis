@@ -228,7 +228,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * @return {@inheritDoc}
      */
     @Override
-    protected String getExpectedPropertyName(final UML uml) {
+    protected String getExpectedXmlElementName(final UML uml) {
         String name = uml.identifier();
         if (name.equals("distributedComputingPlatform")) {
             name = "DCP";
@@ -246,7 +246,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * @return {@inheritDoc}
      */
     @Override
-    protected String getExpectedTypeName(final UML uml) {
+    protected String getExpectedXmlRootElementName(final UML uml) {
         String name = uml.identifier();
         if (name.equals("MD_Scope")) {  // ISO 19115:2014
             name = "DQ_Scope";          // ISO 19115:2003
@@ -277,7 +277,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * @return {@inheritDoc}
      */
     @Override
-    protected String getExpectedTypeForElement(final Class<?> type, final Class<?> impl) {
+    protected String getExpectedXmlTypeForElement(final Class<?> type, final Class<?> impl) {
         final String rootName = type.getAnnotation(UML.class).identifier();
         switch (rootName) {
             // We don't know yet what is the type of this one.
