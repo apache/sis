@@ -17,8 +17,8 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.quality.Scope;
-import org.apache.sis.metadata.iso.quality.DefaultScope;
+import org.opengis.metadata.maintenance.Scope;
+import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -32,11 +32,11 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @version 0.3
  * @module
  */
-public final class DQ_Scope extends PropertyType<DQ_Scope, Scope> {
+public final class MD_Scope extends PropertyType<MD_Scope, Scope> {
     /**
      * Empty constructor for JAXB only.
      */
-    public DQ_Scope() {
+    public MD_Scope() {
     }
 
     /**
@@ -54,7 +54,7 @@ public final class DQ_Scope extends PropertyType<DQ_Scope, Scope> {
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private DQ_Scope(final Scope metadata) {
+    private MD_Scope(final Scope metadata) {
         super(metadata);
     }
 
@@ -66,8 +66,8 @@ public final class DQ_Scope extends PropertyType<DQ_Scope, Scope> {
      * @return A {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected DQ_Scope wrap(final Scope metadata) {
-        return new DQ_Scope(metadata);
+    protected MD_Scope wrap(final Scope metadata) {
+        return new MD_Scope(metadata);
     }
 
     /**

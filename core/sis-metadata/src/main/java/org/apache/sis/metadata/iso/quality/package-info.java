@@ -53,16 +53,15 @@
  * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultNonQuantitativeAttributeAccuracy   Non quantitative attribute accuracy}<br>
  * {@code  │   │   └─} {@linkplain org.apache.sis.metadata.iso.quality.DefaultThematicClassificationCorrectness  Thematic classification correctness}<br>
  * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultUsability                          Usability}<br>
- * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.quality.AbstractResult                            Result} «abstract»<br>
- * {@code  │   ├─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult                  Conformance result}<br>
- * {@code  │   ├─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult                 Quantitative result}<br>
- * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultCoverageResult                     Coverage result}<br>
- * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.quality.DefaultScope                              Scope}<br>
+ * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.quality.AbstractResult                            Result} «abstract»<br>
+ * {@code      ├─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult                  Conformance result}<br>
+ * {@code      ├─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult                 Quantitative result}<br>
+ * {@code      └─}     {@linkplain org.apache.sis.metadata.iso.quality.DefaultCoverageResult                     Coverage result}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.quality.EvaluationMethodType Evaluation method type}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                     {@linkplain org.apache.sis.metadata.iso.quality.DefaultDataQuality                        Data quality}<br>
- * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.quality.DefaultScope                              Scope}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScope                          Scope}<br>
  * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.quality.AbstractElement                           Element} «abstract»<br>
  * {@code      ├─}     {@linkplain org.opengis.metadata.quality.EvaluationMethodType                             Evaluation method type} «code list»<br>
  * {@code      └─}     {@linkplain org.apache.sis.metadata.iso.quality.AbstractResult                            Result} «abstract»<br>
@@ -127,12 +126,12 @@
     @XmlJavaTypeAdapter(DQ_Element.class),
     @XmlJavaTypeAdapter(DQ_EvaluationMethodTypeCode.class),
     @XmlJavaTypeAdapter(DQ_Result.class),
-    @XmlJavaTypeAdapter(DQ_Scope.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(LI_Lineage.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_Format.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
+    @XmlJavaTypeAdapter(MD_Scope.class),
     @XmlJavaTypeAdapter(MD_ScopeCode.class),
     @XmlJavaTypeAdapter(MD_ScopeDescription.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentation.class),

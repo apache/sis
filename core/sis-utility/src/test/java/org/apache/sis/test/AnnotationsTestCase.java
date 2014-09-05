@@ -236,7 +236,17 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * @param  uml The UML element.
      * @return The corresponding XML element name.
      */
-    protected String getExpectedName(final UML uml) {
+    protected String getExpectedTypeName(final UML uml) {
+        return uml.identifier();
+    }
+
+    /**
+     * Returns the name of the XML element for the given UML element.
+     *
+     * @param  uml The UML element.
+     * @return The corresponding XML element name.
+     */
+    protected String getExpectedPropertyName(final UML uml) {
         return uml.identifier();
     }
 
@@ -480,7 +490,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
             assertNotNull("Missing @XmlRootElement annotation.", root);
             final UML uml = type.getAnnotation(UML.class);
             if (uml != null) {
-                assertEquals("Wrong @XmlRootElement.name().", uml.identifier(), root.name());
+                assertEquals("Wrong @XmlRootElement.name().", getExpectedTypeName(uml), root.name());
             }
             /*
              * Check that the namespace is the expected one (according subclass)
@@ -552,7 +562,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                  * is because subclasses may choose to override the above test method.
                  */
                 if (uml != null) {
-                    assertEquals("Wrong @XmlElement.name().", getExpectedName(uml), element.name());
+                    assertEquals("Wrong @XmlElement.name().", getExpectedPropertyName(uml), element.name());
                     assertEquals("Wrong @XmlElement.required().", uml.obligation() == Obligation.MANDATORY, element.required());
                 }
                 /*
