@@ -157,6 +157,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.lineage.Source.class,
             org.opengis.metadata.maintenance.MaintenanceFrequency.class,
             org.opengis.metadata.maintenance.MaintenanceInformation.class,
+            org.opengis.metadata.maintenance.Scope.class,
             org.opengis.metadata.maintenance.ScopeCode.class,
             org.opengis.metadata.maintenance.ScopeDescription.class,
             org.opengis.metadata.quality.AbsoluteExternalPositionalAccuracy.class,
@@ -180,7 +181,6 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.quality.QuantitativeResult.class,
             org.opengis.metadata.quality.RelativeInternalPositionalAccuracy.class,
             org.opengis.metadata.quality.Result.class,
-            org.opengis.metadata.quality.Scope.class,
             org.opengis.metadata.quality.TemporalAccuracy.class,
             org.opengis.metadata.quality.TemporalConsistency.class,
             org.opengis.metadata.quality.TemporalValidity.class,
@@ -228,13 +228,28 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * @return {@inheritDoc}
      */
     @Override
-    protected String getExpectedName(final UML uml) {
+    protected String getExpectedPropertyName(final UML uml) {
         String name = uml.identifier();
         if (name.equals("distributedComputingPlatform")) {
             name = "DCP";
         }
         if (name.equals("stepDateTime")) {
             name = "dateTime";
+        }
+        return name;
+    }
+
+    /**
+     * Returns the name of the XML element for the given UML element.
+     * This method checks for the special cases which are known to have different UML and XML names.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    protected String getExpectedTypeName(final UML uml) {
+        String name = uml.identifier();
+        if (name.equals("MD_Scope")) {  // ISO 19115:2014
+            name = "DQ_Scope";          // ISO 19115:2003
         }
         return name;
     }
@@ -273,6 +288,11 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             // but ISO 19139 still use the old prefix.
             if (rootName.equals("SV_ServiceIdentification")) {
                 return "MD_ServiceIdentification_Type";
+            }
+            // Following prefix was changed in ISO 19115:2014,
+            // but ISO 19139 still use the old prefix.
+            if (rootName.equals("MD_Scope")) {
+                return "DQ_Scope_Type";
             }
         }
         final StringBuilder buffer = new StringBuilder(rootName.length() + 13);

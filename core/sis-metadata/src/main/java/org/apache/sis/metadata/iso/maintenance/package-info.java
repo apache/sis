@@ -31,6 +31,7 @@
  * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultMaintenanceInformation Maintenance information}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScope Scope}<br>
  * {@code  └─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription Scope description}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.maintenance.MaintenanceFrequency Maintenance frequency}<br>
@@ -38,8 +39,9 @@
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *             {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultMaintenanceInformation Maintenance information}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.maintenance.MaintenanceFrequency                 Maintenance frequency} «code list»<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.maintenance.ScopeCode                            Scope code} «code list»<br>
- * {@code  └─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription       Scope description}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScope                  Scope}<br>
+ * {@code      ├─} {@linkplain org.opengis.metadata.maintenance.ScopeCode                        Scope code} «code list»<br>
+ * {@code      └─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription   Scope description}<br>
  * </td></tr></table>
  *
  * {@section Null values, nil objects and collections}
@@ -71,6 +73,7 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(MD_MaintenanceFrequencyCode.class),
     @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),

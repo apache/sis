@@ -27,7 +27,7 @@ import org.apache.sis.metadata.iso.quality.AbstractElement;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.metadata.iso.quality.DefaultDomainConsistency;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
-import org.apache.sis.metadata.iso.quality.DefaultScope;
+import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.resources.Errors;
 
