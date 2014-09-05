@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
-import org.opengis.metadata.quality.Scope;
+import org.opengis.metadata.maintenance.Scope;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 

@@ -29,7 +29,7 @@ import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.SecurityConstraints;
-import org.opengis.metadata.quality.Scope;
+import org.opengis.metadata.maintenance.Scope;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
