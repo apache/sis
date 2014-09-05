@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.Responsibility;
-import org.opengis.metadata.quality.Scope;
+import org.opengis.metadata.maintenance.Scope;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.lineage.Processing;
 import org.opengis.metadata.lineage.ProcessStep;

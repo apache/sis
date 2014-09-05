@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso.quality;
+package org.apache.sis.metadata.iso.maintenance;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.quality.Scope;
+import org.opengis.metadata.maintenance.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.opengis.metadata.maintenance.ScopeDescription;
+import org.apache.sis.metadata.iso.ISOMetadata;
 
 
 /**
- * Description of the data specified by the scope.
+ * The target resource and physical extent for which information is reported.
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -41,17 +44,33 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.5
  * @module
- *
- * @deprecated As of ISO 19115:2014, {@code DQ_Scope} has been replaced by {@code MD_Scope}.
- *             The later is defined in the {@link org.apache.sis.metadata.iso.maintenance} package.
  */
-@Deprecated
-@XmlTransient
-public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.DefaultScope implements Scope {
+@XmlType(name = "DQ_Scope_Type", propOrder = {
+   "level",
+   "extents",
+   "levelDescription"
+})
+@XmlRootElement(name = "DQ_Scope")
+public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7517784393752337009L;
+    private static final long serialVersionUID = -979575548481874359L;
+
+    /**
+     * Hierarchical level of the data specified by the scope.
+     */
+    private ScopeCode level;
+
+    /**
+     * Information about the spatial, vertical and temporal extent of the resource specified by the scope.
+     */
+    private Collection<Extent> extents;
+
+    /**
+     * Detailed description about the level of the data specified by the scope.
+     */
+    private Collection<ScopeDescription> levelDescription;
 
     /**
      * Constructs an initially empty scope.
@@ -65,7 +84,7 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
      * @param level The hierarchical level of the data specified by the scope.
      */
     public DefaultScope(final ScopeCode level) {
-        super(level);
+        this.level = level;
     }
 
     /**
@@ -79,6 +98,11 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
      */
     public DefaultScope(final Scope object) {
         super(object);
+        if (object != null) {
+            level            = object.getLevel();
+            extents          = copyCollection(object.getExtents(), Extent.class);
+            levelDescription = copyCollection(object.getLevelDescription(), ScopeDescription.class);
+        }
     }
 
     /**
@@ -107,29 +131,67 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
     }
 
     /**
-     * Information about the spatial, vertical and temporal extent of the data specified by the scope.
-     * This method fetches the value from the {@linkplain #getExtents() extents} collection.
+     * Returns the hierarchical level of the data specified by the scope.
      *
-     * @return Information about the extent of the data, or {@code null}.
-     *
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getExtents()}.
+     * @return Hierarchical level of the data, or {@code null}.
      */
     @Override
-    @Deprecated
-    public final Extent getExtent() {
-        return LegacyPropertyAdapter.getSingleton(getExtents(), Extent.class, null, DefaultScope.class, "getExtent");
+    @XmlElement(name = "level", required = true)
+    public ScopeCode getLevel() {
+        return level;
     }
 
     /**
-     * Sets information about the spatial, vertical and temporal extent of the data specified by the scope.
-     * This method stores the value in the {@linkplain #setExtents(Collection) extents} collection.
+     * Sets the hierarchical level of the data specified by the scope.
      *
-     * @param newValue The new extent.
-     *
-     * @deprecated As of ISO 19115:2014, replaced by {@link #setExtents(Collection)}.
+     * @param newValue The new level.
      */
-    @Deprecated
-    public final void setExtent(final Extent newValue) {
-        setExtents(LegacyPropertyAdapter.asCollection(newValue));
+    public void setLevel(final ScopeCode newValue) {
+        checkWritePermission();
+        level = newValue;
+    }
+
+    /**
+     * Returns information about the spatial, vertical and temporal extents of the resource specified by the scope.
+     *
+     * @return Information about the extent of the resource.
+     *
+     * @since 0.5
+     */
+    @Override
+    @XmlElement(name = "extent")
+    public Collection<Extent> getExtents() {
+        return extents = nonNullCollection(extents, Extent.class);
+    }
+
+    /**
+     * Sets information about the spatial, vertical and temporal extents of the resource specified by the scope.
+     *
+     * @param newValues New information about the extent of the resource.
+     *
+     * @since 0.5
+     */
+    public void setExtents(final Collection<? extends Extent> newValues) {
+        extents = writeCollection(newValues, extents, Extent.class);
+    }
+
+    /**
+     * Returns detailed descriptions about the level of the data specified by the scope.
+     *
+     * @return Detailed description about the level of the data.
+     */
+    @Override
+    @XmlElement(name = "levelDescription")
+    public Collection<ScopeDescription> getLevelDescription() {
+        return levelDescription = nonNullCollection(levelDescription, ScopeDescription.class);
+    }
+
+    /**
+     * Sets detailed descriptions about the level of the data specified by the scope.
+     *
+     * @param newValues The new level description.
+     */
+    public void setLevelDescription(final Collection<? extends ScopeDescription> newValues) {
+        levelDescription = writeCollection(newValues, levelDescription, ScopeDescription.class);
     }
 }
