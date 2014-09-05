@@ -28,11 +28,10 @@ import org.opengis.metadata.maintenance.MaintenanceFrequency;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
-import org.opengis.metadata.quality.Scope;
+import org.opengis.metadata.maintenance.Scope;
 import org.opengis.temporal.PeriodDuration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.metadata.iso.quality.DefaultScope;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 

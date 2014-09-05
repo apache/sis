@@ -23,7 +23,7 @@ import org.apache.sis.util.Classes;
 
 
 /**
- * A pair of objects in process of being compared by the {@code MetadataStandard#equals(…)} method.
+ * A pair of objects in process of being compared by the {@code MetadataStandard.equals(…)} method.
  * We have to remember those pairs for avoiding infinite recursivity when comparing metadata objects
  * having cyclic associations. The objects are compared using the identity comparison.
  * Object order is not significant.
