@@ -18,8 +18,9 @@ package org.apache.sis.metadata.iso.service;
 
 import org.opengis.util.ScopedName;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.service.DistributedComputingPlatform;
 import org.opengis.metadata.service.OperationMetadata;
+import org.opengis.metadata.service.DistributedComputingPlatform;
+import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameterTest;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -38,7 +39,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @module
  */
-@DependsOn(DefaultParameterTest.class)
+@DependsOn(ServiceParameterTest.class)
 public final strictfp class DefaultCoupledResourceTest extends TestCase {
     /**
      * Creates the resource to use for testing purpose.
@@ -46,7 +47,7 @@ public final strictfp class DefaultCoupledResourceTest extends TestCase {
     static DefaultCoupledResource create() {
         final DefaultOperationMetadata operation = new DefaultOperationMetadata("Get Map",
                 DistributedComputingPlatform.WEB_SERVICES, null);
-        operation.setParameters(singleton(DefaultParameterTest.create()));
+        operation.setParameters(singleton(ServiceParameterTest.create()));
         operation.setConnectPoints(singleton(NilReason.MISSING.createNilObject(OnlineResource.class)));
 
         final DefaultCoupledResource resource = new DefaultCoupledResource();

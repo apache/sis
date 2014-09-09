@@ -91,7 +91,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      * @param name The new primary name.
      */
     public void setName(final ReferenceIdentifier name) {
-        referenceSystemIdentifier = name;
+        this.name = name;
     }
 
     /**
