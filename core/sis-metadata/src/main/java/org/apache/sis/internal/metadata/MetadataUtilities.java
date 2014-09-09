@@ -89,6 +89,8 @@ public final class MetadataUtilities extends Static {
             return true;
         }
         final boolean p = value;
+        // (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
+        // DO NOT REPLACE BY 'equals' OR 'booleanValue()' - the exact reference value matter.
         if (p || value == Boolean.FALSE || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
             return p;
         }
