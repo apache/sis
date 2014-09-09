@@ -191,7 +191,6 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.service.CoupledResource.class,
             org.opengis.metadata.service.OperationChainMetadata.class,
             org.opengis.metadata.service.OperationMetadata.class,
-            org.opengis.metadata.service.Parameter.class,
             org.opengis.metadata.service.ServiceIdentification.class,
             org.opengis.metadata.spatial.CellGeometry.class,
             org.opengis.metadata.spatial.Dimension.class,

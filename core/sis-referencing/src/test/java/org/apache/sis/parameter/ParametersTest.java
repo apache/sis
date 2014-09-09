@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Set;
 import javax.measure.unit.SI;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.GenericName;
@@ -40,7 +41,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn({
@@ -113,6 +114,8 @@ public final strictfp class ParametersTest extends TestCase {
             @Override public Collection<GenericName>  getAlias()         {return descriptor.getAlias();}
             @Override public Set<ReferenceIdentifier> getIdentifiers()   {return descriptor.getIdentifiers();}
             @Override public InternationalString      getRemarks()       {return descriptor.getRemarks();}
+            @Override public InternationalString      getDescription()   {return descriptor.getDescription();}
+            @Override public ParameterDirection       getDirection()     {return descriptor.getDirection();}
             @Override public int                      getMinimumOccurs() {return descriptor.getMinimumOccurs();}
             @Override public int                      getMaximumOccurs() {return descriptor.getMaximumOccurs();}
             @Override public Class<T>                 getValueClass()    {return descriptor.getValueClass();}
