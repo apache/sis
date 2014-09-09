@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.jaxb.metadata.ReferenceSystemMetadata;
+import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 
 
 /**

@@ -26,7 +26,7 @@ import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.content.ImagingCondition;
-import org.opengis.metadata.service.ParameterDirection;
+import org.opengis.parameter.ParameterDirection;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.test.TestCase;
