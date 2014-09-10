@@ -17,9 +17,9 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.service.Parameter;
-import org.apache.sis.metadata.iso.service.DefaultParameter;
+import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameter;
 
 
 /**
@@ -31,7 +31,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @version 0.5
  * @module
  */
-public final class SV_Parameter extends PropertyType<SV_Parameter, Parameter> {
+public final class SV_Parameter extends PropertyType<SV_Parameter, ParameterDescriptor<?>> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -43,17 +43,18 @@ public final class SV_Parameter extends PropertyType<SV_Parameter, Parameter> {
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code Parameter.class}
+     * @return {@code ParameterDescriptor.class}
      */
     @Override
-    protected Class<Parameter> getBoundType() {
-        return Parameter.class;
+    @SuppressWarnings("unchecked")
+    protected Class<ParameterDescriptor<?>> getBoundType() {
+        return (Class) ParameterDescriptor.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private SV_Parameter(final Parameter metadata) {
+    private SV_Parameter(final ParameterDescriptor<?> metadata) {
         super(metadata);
     }
 
@@ -65,7 +66,7 @@ public final class SV_Parameter extends PropertyType<SV_Parameter, Parameter> {
      * @return A {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected SV_Parameter wrap(final Parameter metadata) {
+    protected SV_Parameter wrap(final ParameterDescriptor<?> metadata) {
         return new SV_Parameter(metadata);
     }
 
@@ -77,8 +78,8 @@ public final class SV_Parameter extends PropertyType<SV_Parameter, Parameter> {
      * @return The metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultParameter getElement() {
-        return DefaultParameter.castOrCopy(metadata);
+    public ServiceParameter<?> getElement() {
+        return ServiceParameter.castOrCopy(metadata);
     }
 
     /**
@@ -86,7 +87,7 @@ public final class SV_Parameter extends PropertyType<SV_Parameter, Parameter> {
      *
      * @param metadata The unmarshalled metadata.
      */
-    public void setElement(final DefaultParameter metadata) {
+    public void setElement(final ServiceParameter<?> metadata) {
         this.metadata = metadata;
     }
 }

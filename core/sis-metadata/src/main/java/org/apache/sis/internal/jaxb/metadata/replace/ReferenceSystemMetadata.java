@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.metadata;
+package org.apache.sis.internal.jaxb.metadata.replace;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
@@ -38,7 +37,7 @@ import org.apache.sis.util.ComparisonMode;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see org.apache.sis.referencing.AbstractReferenceSystem
@@ -82,7 +81,6 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      */
     @Override
     @XmlElement(name = "referenceSystemIdentifier")
-    @XmlJavaTypeAdapter(RS_Identifier.class)
     public ReferenceIdentifier getName() {
         return super.getName();
     }
@@ -93,7 +91,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      * @param name The new primary name.
      */
     public void setName(final ReferenceIdentifier name) {
-        referenceSystemIdentifier = name;
+        this.name = name;
     }
 
     /**

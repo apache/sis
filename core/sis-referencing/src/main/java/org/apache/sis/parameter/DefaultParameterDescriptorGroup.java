@@ -89,13 +89,13 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.4 (derived from geotk-2.0)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see DefaultParameterValueGroup
  * @see DefaultParameterDescriptor
  */
-public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject implements ParameterDescriptorGroup {
+public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor implements ParameterDescriptorGroup {
     /**
      * Serial number for inter-operability with different versions.
      */

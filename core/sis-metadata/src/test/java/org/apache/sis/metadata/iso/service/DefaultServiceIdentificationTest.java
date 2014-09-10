@@ -38,7 +38,6 @@ import static org.apache.sis.internal.system.DefaultFactories.SIS_NAMES;
  * @module
  */
 @DependsOn({
-    DefaultParameterTest.class,
     DefaultCoupledResourceTest.class,
     org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class
 })

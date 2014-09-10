@@ -41,7 +41,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.5 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
@@ -49,12 +49,12 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 4773397959809985024L;
+    private static final long serialVersionUID = 5297493321524903545L;
 
     /**
      * The primary name by which this object is identified.
      */
-    protected ReferenceIdentifier referenceSystemIdentifier;
+    protected ReferenceIdentifier name;
 
     /**
      * Creates an identified object without identifier.
@@ -69,7 +69,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * @param object The identified object to partially copy.
      */
     public SimpleIdentifiedObject(final IdentifiedObject object) {
-        referenceSystemIdentifier = object.getName();
+        name = object.getName();
     }
 
     /**
@@ -78,7 +78,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * @param name The primary name by which this object is identified.
      */
     public SimpleIdentifiedObject(final ReferenceIdentifier name) {
-        referenceSystemIdentifier = name;
+        this.name = name;
     }
 
     /**
@@ -88,7 +88,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      */
     @Override
     public ReferenceIdentifier getName() {
-        return referenceSystemIdentifier;
+        return name;
     }
 
     /**
@@ -150,9 +150,9 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     @Override
     public final int hashCode() {
         int code = (int) serialVersionUID;
-        final ReferenceIdentifier id = referenceSystemIdentifier;
-        if (id != null) {
-            code ^= id.hashCode();
+        final ReferenceIdentifier name = this.name;
+        if (name != null) {
+            code ^= name.hashCode();
         }
         return code;
     }
@@ -183,12 +183,12 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
         if (mode == ComparisonMode.STRICT) {
             if (object != null && object.getClass() == getClass()) {
                 final SimpleIdentifiedObject that = (SimpleIdentifiedObject) object;
-                return Objects.equals(referenceSystemIdentifier, that.referenceSystemIdentifier);
+                return Objects.equals(name, that.name);
             }
         } else {
             if (object instanceof IdentifiedObject) {
                 final IdentifiedObject that = (IdentifiedObject) object;
-                return Utilities.deepEquals(referenceSystemIdentifier, that.getName(), mode);
+                return Utilities.deepEquals(name, that.getName(), mode);
             }
         }
         return false;
@@ -212,11 +212,11 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     public String toString() {
         final String code, codespace;
         final Citation authority;
-        final ReferenceIdentifier id = referenceSystemIdentifier;
-        if (id != null) {
-            code      = id.getCode();
-            codespace = id.getCodeSpace();
-            authority = id.getAuthority();
+        final ReferenceIdentifier name = this.name;
+        if (name != null) {
+            code      = name.getCode();
+            codespace = name.getCodeSpace();
+            authority = name.getAuthority();
         } else {
             code      = null;
             codespace = null;

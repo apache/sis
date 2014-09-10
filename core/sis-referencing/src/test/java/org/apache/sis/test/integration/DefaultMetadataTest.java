@@ -45,7 +45,7 @@ import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
-import org.apache.sis.internal.jaxb.metadata.ReferenceSystemMetadata;
+import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;

@@ -31,7 +31,6 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Numerics;
@@ -55,10 +54,10 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
- * @version 0.4
+ * @version 0.5
  * @module
  */
-final class TensorValues<E> extends AbstractIdentifiedObject
+final class TensorValues<E> extends AbstractParameterDescriptor
         implements ParameterDescriptorGroup, ParameterValueGroup, Cloneable
 {
     /**
@@ -168,22 +167,6 @@ final class TensorValues<E> extends AbstractIdentifiedObject
     @Override
     public List<GeneralParameterDescriptor> descriptors() {
         return descriptors.descriptors(dimensions());
-    }
-
-    /**
-     * Returns 1 since this group is considered mandatory.
-     */
-    @Override
-    public int getMinimumOccurs() {
-        return 1;
-    }
-
-    /**
-     * Returns 1 since we expect exactly one instance of this group.
-     */
-    @Override
-    public int getMaximumOccurs() {
-        return 1;
     }
 
     /**

@@ -26,7 +26,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.service.CoupledResource;
 import org.opengis.metadata.service.DistributedComputingPlatform;
 import org.opengis.metadata.service.OperationMetadata;
-import org.opengis.metadata.service.Parameter;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.InternationalString;
 
 
@@ -65,7 +65,7 @@ final class OperationName implements OperationMetadata, Serializable {
     @Override public InternationalString                      getOperationDescription()          {return null;}
     @Override public Collection<DistributedComputingPlatform> getDistributedComputingPlatforms() {return Collections.emptySet();}
     @Override public Collection<OnlineResource>               getConnectPoints()                 {return Collections.emptySet();}
-    @Override public Collection<Parameter>                    getParameters()                    {return Collections.emptySet();}
+    @Override public Collection<ParameterDescriptor<?>>       getParameters()                    {return Collections.emptySet();}
     @Override public List<OperationMetadata>                  getDependsOn()                     {return Collections.emptyList();}
 
     /**

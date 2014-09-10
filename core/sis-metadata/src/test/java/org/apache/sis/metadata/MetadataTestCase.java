@@ -231,6 +231,8 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
              */
             final Class<?> propertyType = Numbers.primitiveToWrapper(accessor.type(i, TypeValuePolicy.PROPERTY_TYPE));
             final Class<?>  elementType = Numbers.primitiveToWrapper(accessor.type(i, TypeValuePolicy.ELEMENT_TYPE));
+            assertNotNull(testingMethod, propertyType);
+            assertNotNull(testingMethod, elementType);
             final boolean isCollection = Collection.class.isAssignableFrom(propertyType);
             assertFalse("Element type can not be Collection.", Collection.class.isAssignableFrom(elementType));
             assertEquals("Property and element types shall be the same if and only if not a collection.",
