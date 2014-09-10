@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.metadata;
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 
 
 /**

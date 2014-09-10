@@ -32,7 +32,10 @@
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation         Citation}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate     Citation date}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibility   Responsibility}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.AbstractParty           Party}<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultIndividual   Individual}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultOrganisation Organisation}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact          Contact}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone        Telephone}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress          Address}<br>
@@ -47,12 +50,13 @@
  *                         {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation         Citation}<br>
  * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate     Citation date}<br>
  * {@code  │   └─}         {@linkplain org.opengis.metadata.citation.DateType                       Date type} «code list»<br>
- * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}<br>
- * {@code  │   ├─}         {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact          Contact}<br>
- * {@code  │   │   ├─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone        Telephone}<br>
- * {@code  │   │   ├─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress          Address}<br>
- * {@code  │   │   └─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource   Online resource}<br>
- * {@code  │   │       └─} {@linkplain org.opengis.metadata.citation.OnLineFunction                 Online function} «code list»<br>
+ * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibility   Responsibility}<br>
+ * {@code  │   ├─}         {@linkplain org.apache.sis.metadata.iso.citation.AbstractParty           Party}<br>
+ * {@code  │   │   └─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact          Contact}<br>
+ * {@code  │   │       ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone        Telephone}<br>
+ * {@code  │   │       ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress          Address}<br>
+ * {@code  │   │       └─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource   Online resource}<br>
+ * {@code  │   │           └─} {@linkplain org.opengis.metadata.citation.OnLineFunction             Online function} «code list»<br>
  * {@code  │   └─}         {@linkplain org.opengis.metadata.citation.Role                           Role} «code list»<br>
  * {@code  ├─}             {@linkplain org.opengis.metadata.citation.PresentationForm               Presentation form} «code list»<br>
  * {@code  └─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries           Series}<br>

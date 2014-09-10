@@ -211,6 +211,11 @@ public final class Classes extends Static {
                  * At this point we are not going to continue the loop anymore.
                  * Check if we have an array, then check the (component) class.
                  */
+                if (type instanceof ParameterizedType) {
+                    // Example: replace ParameterDescriptor<?> by ParameterDescriptor
+                    // before we test for instance of Class.
+                    type = ((ParameterizedType) type).getRawType();
+                }
                 int dimension = 0;
                 while (type instanceof GenericArrayType) {
                     type = ((GenericArrayType) type).getGenericComponentType();

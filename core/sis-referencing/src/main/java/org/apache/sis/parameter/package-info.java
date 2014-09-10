@@ -20,8 +20,19 @@
  * An explanation for this package is provided in the {@linkplain org.opengis.parameter OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * <p>Parameters are organized in <cite>groups</cite>. A group may be for example the set of all parameters needed
- * for the definition of a <cite>Mercator projection</cite>.
+ * <p>There is three categories of classes in this package:</p>
+ * <ul>
+ *   <li><b>Parameter descriptors</b> are immutable types that describes the parameters needed by an operation or a
+ *     process. Descriptors contain information like parameter name, optionality, repeatability and value type, but
+ *     do not contain the actual parameter value.</li>
+ *   <li><b>Parameter values</b> are (<var>descriptor</var>, <var>value</var>) tuples, together with convenience methods
+ *     for performing unit conversions and getting the values as instances of some commonly used types.</li>
+ *   <li>Builders, formatters and static methods aim to simplify the creation of {@code ParameterDescriptor}s,
+ *     the search for parameter values and visualizing them in a tabular format.</li>
+ * </ul>
+ *
+ * <p>Parameters are organized in <cite>groups</cite>.
+ * A group may be for example the set of all parameters needed for the definition of a <cite>Mercator projection</cite>.
  * Parameter groups have some similarities with {@code java.util.Map} where:</p>
  *
  * <ul>
@@ -73,7 +84,7 @@
  * if the given value is not assignable to the expected class or is not inside the value domain.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.5 (derived from geotk-2.0)
  * @version 0.4
  * @module
  */

@@ -26,7 +26,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.service.DistributedComputingPlatform;
 import org.opengis.metadata.service.OperationMetadata;
-import org.opengis.metadata.service.Parameter;
+import org.opengis.parameter.ParameterDescriptor;
 
 
 /**
@@ -91,7 +91,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
     /**
      * The parameters that are required for this interface.
      */
-    private Collection<Parameter> parameters;
+    private Collection<ParameterDescriptor<?>> parameters;
 
     /**
      * List of operation that must be completed immediately.
@@ -129,6 +129,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      *
      * @see #castOrCopy(OperationMetadata)
      */
+    @SuppressWarnings("unchecked")
     public DefaultOperationMetadata(final OperationMetadata object) {
         super(object);
         if (object != null) {
@@ -137,7 +138,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
             this.operationDescription          = object.getOperationDescription();
             this.invocationName                = object.getInvocationName();
             this.connectPoints                 = copyCollection(object.getConnectPoints(), OnlineResource.class);
-            this.parameters                    = copySet(object.getParameters(), Parameter.class);
+            this.parameters                    = copySet(object.getParameters(), (Class) ParameterDescriptor.class);
             this.dependsOn                     = copyList(object.getDependsOn(), OperationMetadata.class);
         }
     }
@@ -277,9 +278,10 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @return The parameters that are required for this interface, or an empty collection if none.
      */
     @Override
+    @SuppressWarnings("unchecked")
     @XmlElement(name = "parameters")
-    public Collection<Parameter> getParameters() {
-        return parameters = nonNullCollection(parameters, Parameter.class);
+    public Collection<ParameterDescriptor<?>> getParameters() {
+        return parameters = nonNullCollection(parameters, (Class) ParameterDescriptor.class);
     }
 
     /**
@@ -287,8 +289,9 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      *
      * @param newValues The new set of parameters that are required for this interface.
      */
-    public void setParameters(final Collection<? extends Parameter> newValues) {
-        parameters = writeCollection(newValues, parameters, Parameter.class);
+    @SuppressWarnings("unchecked")
+    public void setParameters(final Collection<? extends ParameterDescriptor<?>> newValues) {
+        parameters = writeCollection(newValues, parameters, (Class) ParameterDescriptor.class);
     }
 
     /**
