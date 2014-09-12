@@ -24,6 +24,7 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.UnknownNameException;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -211,5 +212,50 @@ public final class Names extends Static {
         final String ns = scope.name().toString();
         return new StringBuilder(ns.length() + localPart.length() + 2)
                 .append('{').append(ns).append('}').append(localPart).toString();
+    }
+
+    /**
+     * Returns the Java class associated to the given type name.
+     * The method performs the following choices:
+     *
+     * <ul>
+     *   <li>If the given type is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given type is an instance of {@code DefaultTypeName},
+     *       then this method delegates to {@link DefaultTypeName#toClass()}.</li>
+     *   <li>Otherwise if the {@linkplain #scope() scope} of the given name is not {@code "OGC"}
+     *       or {@code "class"}, then this method returns {@code null}.</li>
+     *   <li>Otherwise this method interprets the given name as documented in the
+     *       <cite>Mapping Java classes to type names</cite> section of {@link DefaultTypeName} javadoc.
+     *       The result is either a non-null class or an {@code UnknownNameException}.</li>
+     * </ul>
+     *
+     * @param  type The type name from which to infer a Java class.
+     * @return The Java class associated to the given {@code TypeName}, or {@code null} if the given type
+     *         is null or if the {@linkplain #scope() scope} is not one of the supported namespaces.
+     * @throws UnknownNameException if the scope is one of the supported namespaces, but the name is not recognized.
+     *
+     * @since 0.5
+     */
+    public static Class<?> toClass(final TypeName type) throws UnknownNameException {
+        if (type == null) {
+            return null;
+        }
+        Class<?> c;
+        if (type instanceof DefaultTypeName) {
+            c = ((DefaultTypeName) type).toClass();
+        } else {
+            try {
+                c = TypeNames.toClass(type.scope().name().toString(), type.toString());
+            } catch (ClassNotFoundException e) {
+                throw new UnknownNameException(TypeNames.unknown(type), e);
+            }
+            if (c == null) {
+                throw new UnknownNameException(TypeNames.unknown(type));
+            }
+            if (c == Void.TYPE) {
+                c = null;
+            }
+        }
+        return c;
     }
 }

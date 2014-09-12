@@ -415,7 +415,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * and {@code TypeName} objects as documented in the {@link DefaultTypeName} javadoc.
      *
      * <p>In order to protect against potential changes in the {@code Class} ↔ {@code TypeName} mapping, users are
-     * encouraged to retrieve the {@code valueClass} by invoking the {@link DefaultTypeName#getValueClass()} method
+     * encouraged to retrieve the {@code valueClass} by invoking the {@link DefaultTypeName#toClass()} method
      * instead than parsing the name.</p>
      *
      * @param  valueClass The Java class for which to get a type name, or {@code null}.
@@ -424,31 +424,37 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @since 0.5
      */
     public TypeName toTypeName(final Class<?> valueClass) {
-        if (valueClass == null) {
+        if (!TypeNames.isValid(valueClass)) {
             return null;
         }
         /*
          * Note: we do not cache the TypeName for the valueClass argument because:
-         * - It is not needed (at least in the default implementation) for getting unique instance.
-         * - It is not the best place for performance improvement, since TypeName are usually only
-         *   a step in the creation of bigger object (typically AttributeType). Users are better to
-         *   cache the bigger object instead.
+         *
+         *  - It is not needed (at least in the default implementation) for getting unique instance.
+         *  - It is not the best place for performance improvement, since TypeName are usually only
+         *    a step in the creation of bigger object (typically AttributeType). Users are better to
+         *    cache the bigger object instead.
          */
         TypeNames t = typeNames;
         if (t == null) {
-            synchronized (pool) {
-                /*
-                 * Double-check strategy is ok if 'typeNames' is volatile. We synchronize on 'pool' because
-                 * the TypeNames constructor will call back methods from this class, which will use the pool.
-                 * We are better to use only one lock for reducing the risk of dead-lock. Inconvenient is that
-                 * we potentially invoke user code (since our methods are overrideable) while holding the lock.
-                 */
+            /*
+             * Create TypeNames outide the synchronized block because the TypeNames constructor will call back
+             * methods from this class. Since those methods are overrideable, this could invoke user's code.
+             * Note also that methods in this class use the 'pool', which is itself synchronized, so we are
+             * better to avoid double synchronization for reducing the risk of dead-lock.
+             */
+            final TypeNames c = new TypeNames(this);
+            synchronized (this) { // Double-check strategy is ok if 'typeNames' is volatile.
                 t = typeNames;
                 if (t == null) {
-                    typeNames = t = new TypeNames(this);
+                    typeNames = t = c;
                 }
             }
         }
-        return t.toTypeName(this, valueClass);
+        final TypeName name = t.toTypeName(this, valueClass);
+        if (name instanceof DefaultTypeName) {
+            ((DefaultTypeName) name).valueClass = valueClass;
+        }
+        return name;
     }
 }

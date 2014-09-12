@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.UnknownNameException;
 
 
 /**
@@ -42,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  * small and is sometime not an exact match.
  *
  * <table class="sis">
- *   <caption>Mapping from Java classes to type names (non exhaustive list)</caption>
+ *   <caption>Mapping from Java classes to type names (non-exhaustive list)</caption>
  *   <tr><th>Java class</th>                                   <th>Type name (unofficial)</th>      <th>Definition identifier in OGC namespace</th></tr>
  *   <tr><td>{@link org.opengis.util.InternationalString}</td> <td>{@code OGC:FreeText}</td>        <td></td></tr>
  *   <tr><td>{@link java.lang.String}</td>                     <td>{@code OGC:CharacterString}</td> <td>urn:ogc:def:dataType:OGC::string</td></tr>
@@ -58,7 +58,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * The mapping defined by Apache SIS may change in any future version depending on standardization progress.
  * To protect against such changes, users are encouraged to rely on methods or constructors like
- * {@link DefaultNameFactory#toTypeName(Class)} or {@link #getValueClass()} instead than parsing the name.
+ * {@link DefaultNameFactory#toTypeName(Class)} or {@link #toClass()} instead than parsing the name.
  *
  *
  * {@section Immutability and thread safety}
@@ -85,11 +85,17 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
     private static final long serialVersionUID = 7182126541436753582L;
 
     /**
-     * The value class to be returned by {@link #getValueClass()}, or {@code null} if not yet computed.
-     * This field is serialized because it may be specified at construction time.
+     * The value class to be returned by {@link #toClass()}, or {@code null} if not yet computed.
      * {@link Void#TYPE} is used as a sentinel value meaning explicit {@code null}.
+     *
+     * <p>This value is only computed. We do not allow the user to explicitely specify it, because we
+     * need that {@code DefaultTypeName}s having identical name also have the same {@code valueClass}.
+     * This is necessary {@link DefaultNameFactory#pool} cache integrity. Users who want to explicitely
+     * specify their own value class can override {@link #toClass()} instead.</p>
+     *
+     * @see #toClass()
      */
-    private Class<?> valueClass;
+    transient Class<?> valueClass;
 
     /**
      * Empty constructor to be used by JAXB only. Despite its "final" declaration,
@@ -99,37 +105,16 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
     }
 
     /**
-     * Constructs a type name from the given character sequence. The argument are given unchanged
-     * to the {@linkplain DefaultLocalName#DefaultLocalName(NameSpace,CharSequence) super-class
-     * constructor}.
+     * Constructs a type name from the given character sequence. The argument are given unchanged to the
+     * {@linkplain DefaultLocalName#DefaultLocalName(NameSpace,CharSequence) super-class constructor}.
      *
      * @param scope The scope of this name, or {@code null} for a global scope.
      * @param name  The local name (never {@code null}).
+     *
+     * @see DefaultNameFactory#createTypeName(NameSpace, CharSequence)
      */
     protected DefaultTypeName(final NameSpace scope, final CharSequence name) {
         super(scope, name);
-    }
-
-    /**
-     * Constructs a type name from the given character sequence and value class.
-     * The given value class is stored for retrieval by {@link #getValueClass()}.
-     *
-     * @param scope      The scope of this name, or {@code null} for a global scope.
-     * @param name       The local name (never {@code null}).
-     * @param valueClass The Java class associated to this {@code TypeName}, or {@code null}.
-     *
-     * @see DefaultNameFactory#toTypeName(Class)
-     *
-     * @since 0.5
-     */
-    protected DefaultTypeName(final NameSpace scope, final CharSequence name, Class<?> valueClass) {
-        super(scope, name);
-        if (valueClass == null) {
-            valueClass = Void.TYPE;
-        } else if (valueClass == Void.TYPE) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "valueClass", "void"));
-        }
-        this.valueClass = valueClass;
     }
 
     /**
@@ -158,23 +143,48 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
     }
 
     /**
-     * Returns the Java class associated to this type name. If a Java class has been explicitely specified to the
-     * {@linkplain #DefaultTypeName(NameSpace, CharSequence, Class) constructor}, then that class is returned
-     * (note that it may be explicitely {@code null}). Otherwise if this {@code TypeName} is as documented in
-     * the <cite>Mapping Java classes to type names</cite> section of class javadoc, then the corresponding
-     * Java class is returned. Otherwise this method returns {@code null}.
+     * Returns the Java class associated to this type name.
+     * The default implementation performs the following choices:
      *
-     * @return The Java class associated to this {@code TypeName}, or {@code null} if none.
+     * <ul>
+     *   <li>If the {@linkplain #scope() scope} of this name is not {@code "OGC"} or {@code "class"},
+     *       then this method returns {@code null}.</li>
+     *   <li>Otherwise this method interprets this {@code TypeName} as documented in the
+     *       <cite>Mapping Java classes to type names</cite> section of class javadoc.
+     *       The result is either a non-null class or an {@code UnknownNameException}.</li>
+     * </ul>
+     *
+     * @return The Java class associated to this {@code TypeName}, or {@code null} if and only if
+     *         the {@linkplain #scope() scope} is not one of the supported namespaces.
+     * @throws UnknownNameException if the scope is one of the supported namespaces, but the name is not recognized.
      *
      * @since 0.5
      */
-    public Class<?> getValueClass() {
-        if (valueClass == Void.TYPE) {
+    public Class<?> toClass() throws UnknownNameException {
+        /*
+         * No synchronization, because it is not a problem if two threads compute the same value concurrently.
+         * No volatile field neither, because instances of Class are safely published (well, I presume...).
+         */
+        Class<?> c = valueClass;
+        if (c == Void.TYPE) {
             return null;
         }
-        if (valueClass == null) {
-            // TODO: infer here.
+        if (c == null) {
+            /*
+             * Invoke super.foo() instead than this.foo() because we do not want to invoke any overridden method.
+             * This is for ensuring that two TypeNames constructed with the same name will map to the same class.
+             * See 'valueClass' javadoc for more information.
+             */
+            try {
+                c = TypeNames.toClass(super.scope().name().toString(), super.toString());
+            } catch (ClassNotFoundException e) {
+                throw new UnknownNameException(TypeNames.unknown(super.toFullyQualifiedName()), e);
+            }
+            if (c == null) {
+                throw new UnknownNameException(TypeNames.unknown(super.toFullyQualifiedName()));
+            }
+            valueClass = c;
         }
-        return valueClass;
+        return c;
     }
 }
