@@ -427,10 +427,27 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
         if (valueClass == null) {
             return null;
         }
+        /*
+         * Note: we do not cache the TypeName for the valueClass argument because:
+         * - It is not needed (at least in the default implementation) for getting unique instance.
+         * - It is not the best place for performance improvement, since TypeName are usually only
+         *   a step in the creation of bigger object (typically AttributeType). Users are better to
+         *   cache the bigger object instead.
+         */
         TypeNames t = typeNames;
-        if (t == null) synchronized (this) {
-            // Double-check strategy is ok if 'typeNames' is volatile.
-            typeNames = t = new TypeNames(this);
+        if (t == null) {
+            synchronized (pool) {
+                /*
+                 * Double-check strategy is ok if 'typeNames' is volatile. We synchronize on 'pool' because
+                 * the TypeNames constructor will call back methods from this class, which will use the pool.
+                 * We are better to use only one lock for reducing the risk of dead-lock. Inconvenient is that
+                 * we potentially invoke user code (since our methods are overrideable) while holding the lock.
+                 */
+                t = typeNames;
+                if (t == null) {
+                    typeNames = t = new TypeNames(this);
+                }
+            }
         }
         return t.toTypeName(this, valueClass);
     }
