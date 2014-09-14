@@ -415,11 +415,14 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * and {@code TypeName} objects as documented in the {@link DefaultTypeName} javadoc.
      *
      * <p>In order to protect against potential changes in the {@code Class} ↔ {@code TypeName} mapping, users are
-     * encouraged to retrieve the {@code valueClass} by invoking the {@link DefaultTypeName#toClass()} method
-     * instead than parsing the name.</p>
+     * encouraged to retrieve the {@code valueClass} by invoking the {@link Names#toClass(TypeName)} method instead
+     * than parsing the name.</p>
      *
      * @param  valueClass The Java class for which to get a type name, or {@code null}.
      * @return A suggested type name, or {@code null} if the given class was null.
+     *
+     * @see DefaultTypeName#toClass()
+     * @see Names#toClass(TypeName)
      *
      * @since 0.5
      */
