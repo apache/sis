@@ -55,7 +55,7 @@ public final strictfp class TypeNamesTest extends TestCase {
     {
         final TypeName type = DefaultFactories.SIS_NAMES.toTypeName(valueClass);
         assertNotNull(name, type);
-        assertSame   (name, valueClass, ((DefaultTypeName) type).valueClass);
+        assertSame   (name, valueClass, ((DefaultTypeName) type).toClass());
         assertEquals (name, namespace,  type.scope().name().toString());
         assertEquals (name, name,       type.toString());
         assertEquals (name, valueClass, TypeNames.toClass(namespace, name));

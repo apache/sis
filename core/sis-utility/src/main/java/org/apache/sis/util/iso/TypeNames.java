@@ -123,7 +123,14 @@ final class TypeNames {
                 name = valueClass.getCanonicalName();
             }
         }
-        return factory.createTypeName(ns, name);
+        /*
+         * Now create the name and remember the 'valueClass' for that name if the implementation allows that.
+         */
+        final TypeName t = factory.createTypeName(ns, name);
+        if (t instanceof DefaultTypeName) {
+            ((DefaultTypeName) t).setValueClass(ns, name, valueClass);
+        }
+        return t;
     }
 
     /**
