@@ -16,7 +16,14 @@
  */
 package org.apache.sis.util.iso;
 
+import java.util.List;
+import org.opengis.util.GenericName;
+import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
+import org.opengis.util.InternationalString;
+import org.opengis.util.NameSpace;
+import org.opengis.util.ScopedName;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -44,5 +51,32 @@ public final strictfp class NamesTest extends TestCase {
         assertEquals("4326",                                          name.toString());
         assertEquals("http://www.opengis.net/gml/srs/epsg.xml#4326",  name.toFullyQualifiedName().toString());
         assertEquals("{http://www.opengis.net/gml/srs/epsg.xml}4326", Names.toExpandedString(name));
+    }
+
+    /**
+     * Test {@link Names#toClass(TypeName)}.
+     */
+    @Test
+    public void testToClass() {
+        final TypeName type = DefaultFactories.SIS_NAMES.toTypeName(String.class);
+        assertEquals("OGC:CharacterString", type.toFullyQualifiedName().toString());
+        assertEquals(String.class, Names.toClass(type));
+
+        // Tests detection from the name.
+        assertEquals(InternationalString.class, Names.toClass(new DefaultTypeName(type.scope(), "FreeText")));
+
+        // Tests detection with an implementation which is not the SIS one.
+        assertEquals(String.class, Names.toClass(new TypeName() {
+            @Override public int                       depth()                  {return type.depth();}
+            @Override public List<? extends LocalName> getParsedNames()         {return type.getParsedNames();}
+            @Override public LocalName                 head()                   {return type.head();}
+            @Override public LocalName                 tip()                    {return type.tip();}
+            @Override public NameSpace                 scope()                  {return type.scope();}
+            @Override public GenericName               toFullyQualifiedName()   {return type.toFullyQualifiedName();}
+            @Override public ScopedName                push(GenericName scope)  {return type.push(scope);}
+            @Override public String                    toString()               {return type.toString();}
+            @Override public InternationalString       toInternationalString()  {return type.toInternationalString();}
+            @Override public int                       compareTo(GenericName o) {return type.compareTo(o);}
+        }));
     }
 }

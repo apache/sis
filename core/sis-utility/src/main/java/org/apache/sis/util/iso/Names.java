@@ -234,6 +234,9 @@ public final class Names extends Static {
      *         is null or if the {@linkplain #scope() scope} is not one of the supported namespaces.
      * @throws UnknownNameException if the scope is one of the supported namespaces, but the name is not recognized.
      *
+     * @see DefaultTypeName#toClass()
+     * @see DefaultNameFactory#toTypeName(Class)
+     *
      * @since 0.5
      */
     public static Class<?> toClass(final TypeName type) throws UnknownNameException {

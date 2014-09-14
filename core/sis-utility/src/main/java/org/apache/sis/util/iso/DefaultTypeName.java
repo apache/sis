@@ -172,6 +172,9 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      *         the {@linkplain #scope() scope} is not one of the supported namespaces.
      * @throws UnknownNameException if the scope is one of the supported namespaces, but the name is not recognized.
      *
+     * @see Names#toClass(TypeName)
+     * @see DefaultNameFactory#toTypeName(Class)
+     *
      * @since 0.5
      */
     public Class<?> toClass() throws UnknownNameException {

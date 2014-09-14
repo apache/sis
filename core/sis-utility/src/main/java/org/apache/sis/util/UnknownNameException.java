@@ -20,7 +20,8 @@ package org.apache.sis.util;
 /**
  * Thrown when an operation can not complete because a given name is unrecognized.
  * The unrecognized name may be a {@link org.opengis.util.GenericName}, an
- * {@link org.opengis.metadata.Identifier} or a {@link String} for instance.
+ * {@link org.opengis.metadata.Identifier}, a {@link String} used as a name or identifier,
+ * or any other objects with similar purpose.
  *
  * <p><b>Note:</b> in the particular case of objects created from a {@link org.opengis.util.Factory},
  * the exception for unrecognized identifiers is rather {@link org.opengis.util.NoSuchIdentifierException}.</p>
