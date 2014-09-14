@@ -54,19 +54,34 @@ public final strictfp class NamesTest extends TestCase {
     }
 
     /**
-     * Test {@link Names#toClass(TypeName)}.
+     * Tests {@link Names#toClass(TypeName)} with a known type name.
      */
     @Test
     public void testToClass() {
         final TypeName type = DefaultFactories.SIS_NAMES.toTypeName(String.class);
         assertEquals("OGC:CharacterString", type.toFullyQualifiedName().toString());
-        assertEquals(String.class, Names.toClass(type));
 
         // Tests detection from the name.
         assertEquals(InternationalString.class, Names.toClass(new DefaultTypeName(type.scope(), "FreeText")));
+        assertValueClassEquals(String.class, type);
+    }
+
+    /**
+     * Tests {@link Names#toClass(TypeName)} with an unknown type name.
+     */
+    @Test
+    public void testUnknownType() {
+        assertValueClassEquals(null, Names.createTypeName("MyOrg", ":", "CharacterString"));
+    }
+
+    /**
+     * Asserts that calls to {@link Names#toClass(TypeName)} returns the expected value class.
+     */
+    private static void assertValueClassEquals(final Class<?> expected, final TypeName type) {
+        assertEquals(expected, Names.toClass(type));
 
         // Tests detection with an implementation which is not the SIS one.
-        assertEquals(String.class, Names.toClass(new TypeName() {
+        assertEquals(expected, Names.toClass(new TypeName() {
             @Override public int                       depth()                  {return type.depth();}
             @Override public List<? extends LocalName> getParsedNames()         {return type.getParsedNames();}
             @Override public LocalName                 head()                   {return type.head();}

@@ -78,7 +78,7 @@ public final class SV_Parameter extends PropertyType<SV_Parameter, ParameterDesc
      * @return The metadata to be marshalled.
      */
     @XmlElementRef
-    public ServiceParameter<?> getElement() {
+    public ServiceParameter getElement() {
         return ServiceParameter.castOrCopy(metadata);
     }
 
@@ -87,7 +87,7 @@ public final class SV_Parameter extends PropertyType<SV_Parameter, ParameterDesc
      *
      * @param metadata The unmarshalled metadata.
      */
-    public void setElement(final ServiceParameter<?> metadata) {
+    public void setElement(final ServiceParameter metadata) {
         this.metadata = metadata;
     }
 }

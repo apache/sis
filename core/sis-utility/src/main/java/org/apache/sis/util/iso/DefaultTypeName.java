@@ -202,6 +202,6 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
             }
             valueClass = c;
         }
-        return c;
+        return (c != Void.TYPE) ? c : null;
     }
 }

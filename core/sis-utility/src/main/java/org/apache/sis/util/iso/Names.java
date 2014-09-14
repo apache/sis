@@ -19,6 +19,7 @@ package org.apache.sis.util.iso;
 import java.util.Collections;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
+import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.InternationalString;
@@ -190,28 +191,28 @@ public final class Names extends Static {
     }
 
     /**
-     * Formats the given name in <cite>expanded form</cite> close to the Java Content Repository (JCR) definition.
-     * The expanded form is defined as below:
+     * Creates a member name for values of the given class. A {@link TypeName} will be inferred
+     * from the given {@code valueClass} as documented in the {@link DefaultTypeName} javadoc.
      *
-     * <blockquote><pre> ExpandedName ::= '{' NameSpace '}' LocalPart
-     * NameSpace    ::= name.{@linkplain AbstractName#scope() scope()}.{@linkplain DefaultNameSpace#name() name()}.toString()
-     * LocalPart    ::= name.{@linkplain AbstractName#toString() toString()}</pre></blockquote>
+     * <div class="note"><b>Performance note:</b> this method is okay for <em>casual</em> use. If many names
+     * need to be created, then {@link DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)}
+     * is more efficient since it allows to create the {@code NameSpace} and {@code TypeName} objects only once.</div>
      *
-     * @param  name The generic name to format in expanded form.
-     * @return Expanded form of the given generic name.
-     *
-     * @see DefaultNameSpace#toString()
+     * @param  namespace  The namespace, or {@code null} for the global namespace.
+     * @param  separator  The separator between the namespace and the local part.
+     * @param  localPart  The name which is locale in the given namespace.
+     * @param  valueClass The type of values, used for inferring a {@link TypeName} instance.
+     * @return A member name in the given namespace for values of the given type.
      */
-    public static String toExpandedString(final GenericName name) {
-        ensureNonNull("name", name);
-        final String localPart = name.toString();
-        final NameSpace scope = name.scope();
-        if (scope == null || scope.isGlobal()) {
-            return localPart;
-        }
-        final String ns = scope.name().toString();
-        return new StringBuilder(ns.length() + localPart.length() + 2)
-                .append('{').append(ns).append('}').append(localPart).toString();
+    public static MemberName createMemberName(final CharSequence namespace, final String separator,
+            final CharSequence localPart, final Class<?> valueClass)
+    {
+        ensureNonNull("localPart",  localPart);
+        ensureNonNull("separator",  separator);
+        ensureNonNull("valueClass", valueClass);
+        return DefaultFactories.NAMES.createMemberName(
+                createNameSpace(namespace, separator), localPart,
+                DefaultFactories.SIS_NAMES.toTypeName(valueClass));
     }
 
     /**
@@ -260,5 +261,32 @@ public final class Names extends Static {
             }
         }
         return c;
+    }
+
+    /**
+     * Formats the given name in <cite>expanded form</cite> close to the Java Content Repository (JCR) definition.
+     * The expanded form is defined as below:
+     *
+     * <blockquote><pre> ExpandedName ::= '{' NameSpace '}' LocalPart
+     * NameSpace    ::= name.{@linkplain AbstractName#scope() scope()}.{@linkplain DefaultNameSpace#name() name()}.toString()
+     * LocalPart    ::= name.{@linkplain AbstractName#toString() toString()}</pre></blockquote>
+     *
+     * @param  name The generic name to format in expanded form, or {@code null}.
+     * @return Expanded form of the given generic name, or {@code null} if the given name was null.
+     *
+     * @see DefaultNameSpace#toString()
+     */
+    public static String toExpandedString(final GenericName name) {
+        if (name == null) {
+            return null;
+        }
+        final String localPart = name.toString();
+        final NameSpace scope = name.scope();
+        if (scope == null || scope.isGlobal()) {
+            return localPart;
+        }
+        final String ns = scope.name().toString();
+        return new StringBuilder(ns.length() + localPart.length() + 2)
+                .append('{').append(ns).append('}').append(localPart).toString();
     }
 }
