@@ -41,11 +41,21 @@ abstract class AbstractParameterDescriptor extends AbstractIdentifiedObject impl
         super(other);
     }
 
+    /**
+     * Returns an indication if the parameter is an input to the service, an output or both.
+     *
+     * @return Indication if the parameter is an input or output to the service, or {@code null} if unspecified.
+     */
     @Override
     public ParameterDirection getDirection() {
         return ParameterDirection.IN;
     }
 
+    /**
+     * Returns a narrative explanation of the role of the parameter.
+     *
+     * @return A narrative explanation of the role of the parameter, or {@code null} if none.
+     */
     @Override
     public InternationalString getDescription() {
         return null;

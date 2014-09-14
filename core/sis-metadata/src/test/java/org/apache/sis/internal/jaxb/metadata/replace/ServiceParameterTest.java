@@ -17,14 +17,13 @@
 package org.apache.sis.internal.jaxb.metadata.replace;
 
 import javax.xml.bind.JAXBException;
-import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.parameter.ParameterDirection;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.internal.system.DefaultFactories.SIS_NAMES;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -42,16 +41,24 @@ public final strictfp class ServiceParameterTest extends XMLTestCase {
      *
      * @return The test parameter.
      */
-    public static ServiceParameter<?> create() {
-        final TypeName   valueType = SIS_NAMES.createTypeName(null, "CharacterString");
-        final MemberName paramName = SIS_NAMES.createMemberName(null, "Version", valueType);
-        final ServiceParameter<?> param = new ServiceParameter<>();
-        param.name          = paramName;
+    public static ServiceParameter create() {
+        final MemberName paramName = Names.createMemberName(null, ":", "Version", String.class);
+        final ServiceParameter param = new ServiceParameter();
+        param.memberName    = paramName;
         param.optionality   = true;
         param.repeatability = false;
         param.direction     = ParameterDirection.IN;
-        assertSame("valueType", valueType, param.getValueType());
         return param;
+    }
+
+    /**
+     * Tests {@link ServiceParameter#getValueType()} and {@link ServiceParameter#getValueClass()}.
+     */
+    @Test
+    public void testGetValueType() {
+        final ServiceParameter param = create();
+        assertEquals("valueType", "OGC:CharacterString", param.getValueType().toFullyQualifiedName().toString());
+        assertEquals("valueClass", String.class, param.getValueClass());
     }
 
     /**
@@ -59,7 +66,7 @@ public final strictfp class ServiceParameterTest extends XMLTestCase {
      */
     @Test
     public void testOptionalityLabel() {
-        final ServiceParameter<?> param = create();
+        final ServiceParameter param = create();
         assertEquals("Optional", param.getOptionality());
 
         param.optionality = false;
@@ -81,7 +88,7 @@ public final strictfp class ServiceParameterTest extends XMLTestCase {
      */
     @Test
     public void testMarshalEmpty() throws JAXBException {
-        final String xml = marshal(new ServiceParameter<>());
+        final String xml = marshal(new ServiceParameter());
         assertXmlEquals(
                 "<srv:SV_Parameter xmlns:srv=\"" + Namespaces.SRV + '"' +
                                  " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
