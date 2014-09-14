@@ -93,9 +93,10 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      * This is necessary {@link DefaultNameFactory#pool} cache integrity. Users who want to explicitely
      * specify their own value class can override {@link #toClass()} instead.</p>
      *
+     * @see #setValueClass(NameSpace, String, Class)
      * @see #toClass()
      */
-    transient Class<?> valueClass;
+    private transient Class<?> valueClass;
 
     /**
      * Empty constructor to be used by JAXB only. Despite its "final" declaration,
@@ -140,6 +141,19 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
             return (DefaultTypeName) object;
         }
         return new DefaultTypeName(object.scope(), object.toInternationalString());
+    }
+
+    /**
+     * Sets {@link #valueClass} to the given value, only if the scope and the name of this {@code TypeName}
+     * are equal to the given values. The check for scope and name is a protection against renaming that user
+     * could apply if they subclass {@link DefaultNameFactory}. If the user performed such renaming, then the
+     * value class may be wrong, so we will ignore the given value class and let {@link #toClass()} computes
+     * the class itself.
+     */
+    final void setValueClass(final NameSpace scope, final String name, final Class<?> valueClass) {
+        if (scope == super.scope() && name.equals(super.toString())) {
+            this.valueClass = valueClass;
+        }
     }
 
     /**

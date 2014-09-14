@@ -451,10 +451,6 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
                 }
             }
         }
-        final TypeName name = t.toTypeName(this, valueClass);
-        if (name instanceof DefaultTypeName) {
-            ((DefaultTypeName) name).valueClass = valueClass;
-        }
-        return name;
+        return t.toTypeName(this, valueClass);
     }
 }
