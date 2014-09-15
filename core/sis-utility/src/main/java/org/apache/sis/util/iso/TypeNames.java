@@ -134,17 +134,20 @@ final class TypeNames {
     }
 
     /**
-     * Returns the class for the given name. This method is the converse of {@link #toTypeName(NameFactory, Class)}.
+     * Returns the class for a {@code TypeName} made of the given scope and name.
+     * This method is the converse of {@link #toTypeName(NameFactory, Class)}.
      * This method returns 3 kind of values:
      *
      * <ul>
-     *   <li>{@code Void.TYPE} if {@code namespace} is unrecognized.
+     *   <li>{@code Void.TYPE} if the namespace or the name is unrecognized, without considering that as an error.
      *       This is a sentinel value expected by {@link DefaultTypeName#toClass()} for such case.</li>
-     *   <li>{@code null} if {@code namespace} is recognized, but not the {@code name}.</li>
+     *   <li>{@code null} if {@code namespace} is recognized, but not the {@code name}.
+     *       This will be considered as an error by {@link DefaultTypeName#toClass()}.</li>
      *   <li>Otherwise the class for the given name.</li>
      * </ul>
      *
-     * @param  namespace The namespace ("OGC" or "class"), case-insensitive.
+     * @param  namespace The namespace, case-insensitive. Can be any value, but this method recognizes
+     *         only {@code "OGC"}, {@code "class"} and {@code null}. Other namespaces will be ignored.
      * @param  name The name, case-sensitive.
      * @return The class, or {@code Void.TYPE} if the given namespace is not recognized,
      *         or {@code null} if the namespace is recognized but not the name.
@@ -153,10 +156,13 @@ final class TypeNames {
      */
     static Class<?> toClass(final String namespace, final String name) throws ClassNotFoundException {
         Class<?> c;
-        if (namespace.equalsIgnoreCase("OGC")) {
+        if (namespace == null || namespace.equalsIgnoreCase("OGC")) {
             c = MAPPING.get(name);
             if (c == null) {
                 c = Types.forStandardName(name);
+                if (c == null && namespace == null) {
+                    c = Void.TYPE; // Unknown name not considered an error if not in "OGC" namespace.
+                }
             }
         } else if (namespace.equalsIgnoreCase("class")) {
             c = Class.forName(name);
@@ -175,6 +181,19 @@ final class TypeNames {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "valueClass", "void"));
         }
         return (valueClass != null);
+    }
+
+    /**
+     * Null-safe getter for the namespace argument to be given to {@link #toClass(String, String)}.
+     */
+    static String namespace(final NameSpace ns) {
+        if (ns != null && !ns.isGlobal()) {
+            final GenericName name = ns.name();
+            if (name != null) {
+                return name.toString();
+            }
+        }
+        return null;
     }
 
     /**

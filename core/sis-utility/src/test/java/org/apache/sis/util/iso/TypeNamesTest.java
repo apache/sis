@@ -124,7 +124,10 @@ public final strictfp class TypeNamesTest extends TestCase {
      */
     @Test
     public void testInvalidNames() throws ClassNotFoundException {
-        assertEquals("Dummy:any", Void.TYPE, TypeNames.toClass("Dummy", "any"));
-        assertNull  ("OGC:Dummy",            TypeNames.toClass("OGC", "Dummy"));
+        assertEquals("Dummy:Real", Void.TYPE,    TypeNames.toClass("Dummy", "Real"));
+        assertEquals("OGC:Real",   Double.class, TypeNames.toClass("OGC",   "Real"));
+        assertEquals("Real",       Double.class, TypeNames.toClass(null,    "Real"));
+        assertEquals("Dummy",      Void.TYPE,    TypeNames.toClass(null,    "Dummy")); // Considered not an error.
+        assertNull  ("OGC:Dummy",                TypeNames.toClass("OGC",   "Dummy")); // Considered an error.
     }
 }
