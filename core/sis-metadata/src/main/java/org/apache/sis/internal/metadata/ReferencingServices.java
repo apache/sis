@@ -17,6 +17,7 @@
 package org.apache.sis.internal.metadata;
 
 import org.opengis.geometry.Envelope;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -38,8 +39,8 @@ import org.apache.sis.util.resources.Errors;
  * implementation using Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.18)
- * @version 0.3
+ * @since   0.3 (derived from geotk-3.18)
+ * @version 0.5
  * @module
  */
 public abstract class ReferencingServices extends SystemListener {
@@ -116,6 +117,16 @@ public abstract class ReferencingServices extends SystemListener {
      * @since 0.4
      */
     public abstract Matrix getMatrix(MathTransform tr);
+
+    /**
+     * Returns a fully implemented parameter descriptor.
+     *
+     * @param  parameter A partially implemented parameter descriptor, or {@code null}.
+     * @return A fully implemented parameter descriptor, or {@code null} if the given argument was null.
+     *
+     * @since 0.5
+     */
+    public abstract ParameterDescriptor<?> toImplementation(ParameterDescriptor<?> parameter);
 
     /**
      * Converts the given object in a {@link org.apache.sis.io.wkt.FormattableObject} instance.

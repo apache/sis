@@ -32,6 +32,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.internal.jaxb.metadata.direct.GO_MemberName;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Names;
@@ -125,6 +126,12 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     public boolean repeatability;
 
     /**
+     * A copy of {@code this} as a fully-implemented parameter descriptor.
+     * This is created when first needed for implementation of {@link #createValue()}.
+     */
+    private transient ParameterDescriptor descriptor;
+
+    /**
      * Creates an initially empty parameter.
      * This constructor is needed by JAXB.
      *
@@ -160,7 +167,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     }
 
     /**
-     * Gets the parameter name as a {@code MemberName}. This method first check if the primary name is an instance of
+     * Gets the parameter name as a {@code MemberName}. This method first checks if the primary name is an instance of
      * {@code MemberName}. If not, this method searches for the first alias which is an instance of {@code MemberName}.
      * If none is found, then this method tries to build a member name from the primary name and value class.
      *
@@ -302,9 +309,23 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     @Override public Object        getDefaultValue() {return null;}
     @Override public Unit<?>       getUnit()         {return null;}
 
+    /**
+     * Creates a new instance of {@code ParameterValue}.
+     * This method delegates the work to {@link org.apache.sis.parameter.DefaultParameterDescriptor}
+     * since this {@code ServiceParameter} class is not a full-featured parameter descriptor implementation.
+     *
+     * @return A new instance of {@code ParameterValue}.
+     */
     @Override
     public ParameterValue<?> createValue() {
-        throw new UnsupportedOperationException("Not supported yet."); // TODO
+        ParameterDescriptor<?> desc;
+        synchronized (this) {
+            desc = descriptor;
+            if (desc == null) {
+                descriptor = desc = ReferencingServices.getInstance().toImplementation(this);
+            }
+        }
+        return desc.createValue();
     }
 
     /**
