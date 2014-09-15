@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.XmlElement;
-import org.opengis.metadata.service.DistributedComputingPlatform;
+import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import org.apache.sis.xml.Namespaces;
