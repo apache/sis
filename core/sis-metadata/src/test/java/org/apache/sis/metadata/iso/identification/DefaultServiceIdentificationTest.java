@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso.service;
+package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.service.CouplingType;
+import org.opengis.metadata.identification.CouplingType;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
