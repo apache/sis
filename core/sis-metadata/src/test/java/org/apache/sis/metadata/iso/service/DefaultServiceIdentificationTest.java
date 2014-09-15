@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.service;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.service.CouplingType;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
@@ -83,6 +84,6 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      */
     @Test
     public void testUnmarshal() throws JAXBException {
-        assertEquals(create(), unmarshalFile(DefaultServiceIdentification.class, XML_FILE));
+        assertTrue(create().equals(unmarshalFile(DefaultServiceIdentification.class, XML_FILE), ComparisonMode.DEBUG));
     }
 }

@@ -32,14 +32,17 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.internal.jaxb.metadata.direct.GO_MemberName;
+import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.Namespaces;
 
+import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
-import static org.apache.sis.util.Utilities.deepEquals;
+// Branch-dependent imports
+import java.util.Objects;
 
 
 /**
@@ -197,12 +200,12 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * @return The parameter name as an identifier (the type specified by ISO 19111).
      */
     @Override
-    public ReferenceIdentifier getName() {
+    public synchronized ReferenceIdentifier getName() {
         if (name == null && memberName != null) {
             if (memberName instanceof ReferenceIdentifier) {
                 name = (ReferenceIdentifier) memberName;
             } else {
-                // TODO: name = new NameToIdentifier(memberName);
+                name = new NameToIdentifier(memberName);
             }
         }
         return name;
@@ -323,9 +326,10 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
                 that.getValueClass()   == getValueClass())
             {
                 if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
-                    return true;
+                    return Objects.equals(toString(getName()), toString(that.getName()));
                 }
                 return deepEquals(that.getDescription(), getDescription(), mode) &&
+                       that.getDirection()     == getDirection()     &&
                        that.getMinimumOccurs() == getMinimumOccurs() &&
                        that.getMaximumOccurs() == getMaximumOccurs() &&
                        that.getValidValues()   == null &&
@@ -334,5 +338,13 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
             }
         }
         return false;
+    }
+
+    /**
+     * Null-safe string representation of the given identifier, for comparison purpose.
+     * We ignore codespace because they can not be represented in ISO 19139 XML documents.
+     */
+    private static String toString(final ReferenceIdentifier identifier) {
+        return (identifier != null) ? identifier.toString() : null;
     }
 }
