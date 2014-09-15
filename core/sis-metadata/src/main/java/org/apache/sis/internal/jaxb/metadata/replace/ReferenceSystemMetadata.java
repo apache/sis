@@ -23,6 +23,9 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.util.ComparisonMode;
 
+// Branch-dependent imports
+import java.util.Objects;
+
 
 /**
  * An implementation of {@link ReferenceSystem} marshalled as specified in ISO 19115.
@@ -81,7 +84,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      */
     @Override
     @XmlElement(name = "referenceSystemIdentifier")
-    public ReferenceIdentifier getName() {
+    public final ReferenceIdentifier getName() {
         return super.getName();
     }
 
@@ -90,7 +93,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      *
      * @param name The new primary name.
      */
-    public void setName(final ReferenceIdentifier name) {
+    public final void setName(final ReferenceIdentifier name) {
         this.name = name;
     }
 
@@ -103,6 +106,14 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        return super.equals(object, mode) && (object instanceof ReferenceSystem);
+        if (super.equals(object, mode) && (object instanceof ReferenceSystem)) {
+            final ReferenceSystem that = (ReferenceSystem) object;
+            if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+                // Compare the name because it was ignored by super.equals(…) in "ignore metadata" mode.
+                return Objects.equals(getName(), that.getName());
+            }
+            return that.getDomainOfValidity() == null && that.getScope() == null;
+        }
+        return false;
     }
 }

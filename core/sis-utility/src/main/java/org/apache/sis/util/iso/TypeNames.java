@@ -115,12 +115,13 @@ final class TypeNames {
             } while (base != Boolean.class); // See MAPPING javadoc for the role of Boolean as a sentinel value.
             /*
              * Found no special case. Checks for the UML annotation, to be also formatted in the "OGC:" namespace.
-             * If no UML identifier is found, then we will format the Java class in the "class:" namespace.
+             * If no UML identifier is found, then we will format the Java class in the "class:" namespace. We use
+             * Class.getName() - not Class.getCanonicalName() - because we want a name readable by Class.forName(…).
              */
             name = Types.getStandardName(valueClass);
             if (name == null) {
                 ns = classNS;
-                name = valueClass.getCanonicalName();
+                name = valueClass.getName(); // See above comment.
             }
         }
         /*

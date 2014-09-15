@@ -31,7 +31,10 @@ import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 
-import static org.apache.sis.util.Utilities.deepEquals;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+
+// Branch-dependent imports
+import java.util.Objects;
 
 
 /**
@@ -42,6 +45,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @since   0.5 (derived from geotk-3.00)
  * @version 0.3
  * @module
+ *
+ * @see org.apache.sis.referencing.AbstractIdentifiedObject
  */
 public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparable, Serializable {
     /**
@@ -93,10 +98,13 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * Method required by the {@link IdentifiedObject} interface.
      * Current implementation returns an empty set.
      *
+     * <p>If a future version allows this method to returns a non-empty set,
+     * revisit {@link #equals(Object, ComparisonMode)}.</p>
+     *
      * @return The identifiers, or an empty set if none.
      */
     @Override
-    public Set<ReferenceIdentifier> getIdentifiers() {
+    public final Set<ReferenceIdentifier> getIdentifiers() {
         return Collections.emptySet();
     }
 
@@ -104,10 +112,13 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * Method required by the {@link IdentifiedObject} interface.
      * Current implementation returns an empty set.
      *
+     * <p>If a future version allows this method to returns a non-empty set,
+     * revisit {@link #equals(Object, ComparisonMode)}.</p>
+     *
      * @return The aliases, or an empty set if none.
      */
     @Override
-    public Collection<GenericName> getAlias() {
+    public final Collection<GenericName> getAlias() {
         return Collections.emptySet();
     }
 
@@ -115,9 +126,12 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * Method required by most {@link IdentifiedObject} sub-interfaces.
      * Current implementation returns {@code null}.
      *
+     * <p>If a future version allows this method to returns a non-null value,
+     * revisit {@link #equals(Object, ComparisonMode)} in subclasses.</p>
+     *
      * @return The domain of validity, or {@code null} if none.
      */
-    public Extent getDomainOfValidity() {
+    public final Extent getDomainOfValidity() {
         return null;
     }
 
@@ -125,9 +139,12 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * Method required by most {@link IdentifiedObject} sub-interfaces.
      * Current implementation returns {@code null}.
      *
+     * <p>If a future version allows this method to returns a non-null value,
+     * revisit {@link #equals(Object, ComparisonMode)} in subclasses.</p>
+     *
      * @return The scope, or {@code null} if none.
      */
-    public InternationalString getScope() {
+    public final InternationalString getScope() {
         return null;
     }
 
@@ -135,10 +152,13 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * Method required by the {@link IdentifiedObject} interface.
      * Current implementation returns {@code null}.
      *
+     * <p>If a future version allows this method to returns a non-null value,
+     * revisit {@link #equals(Object, ComparisonMode)}.</p>
+     *
      * @return The remarks, or {@code null} if none.
      */
     @Override
-    public InternationalString getRemarks() {
+    public final InternationalString getRemarks() {
         return null;
     }
 
@@ -148,7 +168,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     @Override
     public final int hashCode() {
         int code = (int) serialVersionUID;
-        final ReferenceIdentifier name = this.name;
+        final ReferenceIdentifier name = getName();
         if (name != null) {
             code ^= name.hashCode();
         }
@@ -168,6 +188,9 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
 
     /**
      * Compares this object with the given one for equality.
+     * This method compares the {@linkplain #name} only in "strict" or "by contract" modes.
+     * If name is a critical component of this object, then it shall be compared by the subclass.
+     * This behavior is consistent with {@link org.apache.sis.referencing.AbstractIdentifiedObject}.
      *
      * @param  object The object to compare with this reference system.
      * @param  mode The strictness level of the comparison.
@@ -181,14 +204,13 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
         if (object instanceof IdentifiedObject) {
             if (mode != ComparisonMode.STRICT || object.getClass() == getClass()) {
                 final IdentifiedObject that = (IdentifiedObject) object;
-                if (deepEquals(getName(), that.getName(), mode)) {
-                    if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
-                        return true;
-                    }
-                    return deepEquals(getAlias(),       that.getAlias(),       mode) &&
-                           deepEquals(getIdentifiers(), that.getIdentifiers(), mode) &&
-                           deepEquals(getRemarks(),     that.getRemarks(),     mode);
+                if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+                    return true;
                 }
+                return Objects.equals(getName(), that.getName()) &&
+                        isNullOrEmpty(that.getIdentifiers()) &&
+                        isNullOrEmpty(that.getAlias()) &&
+                        that.getRemarks() == null;
             }
         }
         return false;
@@ -222,7 +244,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
             codespace = null;
             authority = null;
         }
-        final StringBuilder buffer = new StringBuilder("OBJECT[\"");
+        final StringBuilder buffer = new StringBuilder("IdentifiedObject[\"");
         if (codespace != null) {
             buffer.append(codespace).append(DefaultNameSpace.DEFAULT_SEPARATOR);
         }
