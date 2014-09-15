@@ -17,10 +17,10 @@
 package org.apache.sis.util.iso;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
-import java.util.Date;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
 import org.opengis.util.Type;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
@@ -30,7 +30,6 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.RecordSchema;
 import org.opengis.util.RecordType;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
@@ -54,7 +53,7 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  * by overriding the following methods:
  *
  * <ul>
- *   <li>{@link #toTypeName(Class)}</li>
+ *   <li>{@link DefaultNameFactory#toTypeName(Class)} if the factory given to the constructor.</li>
  * </ul>
  *
  * {@section Thread safety}
@@ -86,6 +85,12 @@ public class DefaultRecordSchema implements RecordSchema {
     protected final NameFactory nameFactory;
 
     /**
+     * The helper class to use for mapping Java classes to {@code TypeName} instances, or {@code null} if not needed.
+     * This helper class is needed only if {@link #nameFactory} is not an instance of {@link DefaultNameFactory}.
+     */
+    private final TypeNames typeFactory;
+
+    /**
      * The namespace of {@link RecordType} to be created by this class.
      * This is also (indirectly) the {@linkplain #getSchemaName() schema name}.
      */
@@ -98,9 +103,8 @@ public class DefaultRecordSchema implements RecordSchema {
 
     /**
      * The pool of attribute types created so far.
-     * Shall be used only in synchronized blocks.
      */
-    private final Map<Class<?>,Type> attributeTypes;
+    private final ConcurrentMap<Class<?>,Type> attributeTypes;
 
     /**
      * The converter to use for converting Java {@link Class} to ISO 19103 {@link Type}.
@@ -126,9 +130,10 @@ public class DefaultRecordSchema implements RecordSchema {
             nameFactory = DefaultFactories.NAMES;
         }
         this.nameFactory    = nameFactory;
+        this.typeFactory    = (nameFactory instanceof DefaultNameFactory) ? null : new TypeNames(nameFactory);
         this.namespace      = nameFactory.createNameSpace(nameFactory.createLocalName(parent, schemaName), null);
         this.description    = new WeakValueHashMap<>(TypeName.class);
-        this.attributeTypes = new HashMap<>();
+        this.attributeTypes = new ConcurrentHashMap<>();
     }
 
     /**
@@ -189,76 +194,35 @@ public class DefaultRecordSchema implements RecordSchema {
     }
 
     /**
-     * Suggests an attribute type for the given value class. For a short list of known classes,
-     * this method returns the ISO 19103 type as used in XML documents. Examples:
-     *
-     * <table class="sis">
-     *   <caption>Attribute types for Java classes (non exhaustive list)</caption>
-     *   <tr><th>Java class</th>        <th>Attribute type</th></tr>
-     *   <tr><td>{@link String}</td>    <td>{@code gco:CharacterString}</td></tr>
-     *   <tr><td>{@link Date}</td>      <td>{@code gco:DateTime}</td></tr>
-     *   <tr><td>{@link Double}</td>    <td>{@code gco:Real}</td></tr>
-     *   <tr><td>{@link Integer}</td>   <td>{@code gco:Integer}</td></tr>
-     *   <tr><td>{@link Boolean}</td>   <td>{@code gco:Boolean}</td></tr>
-     * </table>
+     * Suggests an attribute type for the given value class. The {@code TypeName} will use the UML identifier
+     * of OGC/ISO specification when possible, e.g. {@code "GCO:CharacterString"} for {@code java.lang.String}.
+     * See <cite>Mapping Java classes to type names</cite> in {@link DefaultTypeName} javadoc for more information.
      *
      * @param  valueClass The value class to represent as an attribute type.
      * @return Attribute type for the given value class.
      */
-    private Type toAttributeType(final Class<?> valueClass) {
-        Type type;
-        synchronized (attributeTypes) {
-            type = attributeTypes.get(valueClass);
+    final Type toAttributeType(final Class<?> valueClass) {
+        if (!TypeNames.isValid(valueClass)) {
+            return null;
         }
+        Type type = attributeTypes.get(valueClass);
         if (type == null) {
-            type = new SimpleAttributeType<>(toTypeName(valueClass), valueClass);
-            synchronized (attributeTypes) {
-                final Type old = attributeTypes.put(valueClass, type);
-                if (old != null) { // May happen if the type has been computed concurrently.
-                    attributeTypes.put(valueClass, old);
-                    return old;
-                }
+            if (valueClass == Void.TYPE) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "valueClass", "void"));
+            }
+            final TypeName name;
+            if (nameFactory instanceof DefaultNameFactory) {
+                name = ((DefaultNameFactory) nameFactory).toTypeName(valueClass);
+            } else {
+                name = typeFactory.toTypeName(nameFactory, valueClass);
+            }
+            type = new SimpleAttributeType<>(name, valueClass);
+            final Type old = attributeTypes.putIfAbsent(valueClass, type);
+            if (old != null) { // May happen if the type has been computed concurrently.
+                return old;
             }
         }
         return type;
-    }
-
-    /**
-     * Suggests a type name for the given value class. For a short list of known classes,
-     * this method returns the ISO 19103 type name as used in XML documents. Examples:
-     *
-     * <table class="sis">
-     *   <caption>Type names for Java classes (non exhaustive list)</caption>
-     *   <tr><th>Java class</th>        <th>Type name</th></tr>
-     *   <tr><td>{@link String}</td>    <td>"{@code gco:CharacterString}"</td></tr>
-     *   <tr><td>{@link Date}</td>      <td>"{@code gco:DateTime}"</td></tr>
-     *   <tr><td>{@link Double}</td>    <td>"{@code gco:Real}"</td></tr>
-     *   <tr><td>{@link Integer}</td>   <td>"{@code gco:Integer}"</td></tr>
-     *   <tr><td>{@link Boolean}</td>   <td>"{@code gco:Boolean}"</td></tr>
-     * </table>
-     *
-     * Subclasses can override this method for defining more type names.
-     *
-     * @param  valueClass The value class for which to get a type name.
-     * @return Type name for the given value class.
-     */
-    protected TypeName toTypeName(final Class<?> valueClass) {
-        String ns = "gco";
-        final String name;
-        if (CharSequence.class.isAssignableFrom(valueClass)) {
-            name = "CharacterString";
-        } else if (Number.class.isAssignableFrom(valueClass)) {
-            name = Numbers.isInteger(valueClass) ? "Integer" : "Real";
-        } else if (Date.class.isAssignableFrom(valueClass)) {
-            name = "DateTime";
-        } else if (valueClass == Boolean.class) {
-            name = "Boolean";
-        } else {
-            ns   = "java";
-            name = valueClass.getCanonicalName();
-        }
-        return nameFactory.createTypeName(nameFactory.createNameSpace(
-                nameFactory.createLocalName(null, ns), null), name);
     }
 
     /**

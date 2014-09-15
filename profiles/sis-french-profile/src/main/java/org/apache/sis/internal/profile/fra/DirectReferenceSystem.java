@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
+import org.apache.sis.util.ComparisonMode;
 
 
 /**
@@ -72,5 +73,17 @@ public class DirectReferenceSystem extends ReferenceSystemMetadata {
      */
     public DirectReferenceSystem(final ReferenceIdentifier identifier) {
         super(identifier);
+    }
+
+    /**
+     * Compares this object with the given one for equality.
+     *
+     * @param  object The object to compare with this reference system.
+     * @param  mode The strictness level of the comparison.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        return super.equals(object, mode) && (object instanceof DirectReferenceSystem);
     }
 }

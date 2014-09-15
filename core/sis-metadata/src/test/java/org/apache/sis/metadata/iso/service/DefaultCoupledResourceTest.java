@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.service;
 
 import org.opengis.util.ScopedName;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.service.CoupledResource;
 import org.opengis.metadata.service.OperationMetadata;
@@ -48,7 +49,7 @@ public final strictfp class DefaultCoupledResourceTest extends TestCase {
     static DefaultCoupledResource create() {
         final DefaultOperationMetadata operation = new DefaultOperationMetadata("Get Map",
                 DistributedComputingPlatform.WEB_SERVICES, null);
-        operation.setParameters(singleton(ServiceParameterTest.create()));
+        operation.setParameters(singleton((ParameterDescriptor<?>) ServiceParameterTest.create()));
         operation.setConnectPoints(singleton(NilReason.MISSING.createNilObject(OnlineResource.class)));
 
         final DefaultCoupledResource resource = new DefaultCoupledResource();
