@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import org.apache.sis.util.collection.CheckedContainer;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
@@ -229,7 +230,7 @@ public final class Utilities extends Static {
         final Iterator<?> it2 = object2.iterator();
         while (it1.hasNext()) {
             if (!it2.hasNext()) {
-                assert isNotDebug(mode) : "Sizes not equal";
+                assert isNotDebug(mode) : mismatchedElement("Iterable", object1, object2, "size");
                 return false;
             }
             Object element1 = it1.next();
@@ -238,7 +239,7 @@ public final class Utilities extends Static {
                 continue;
             }
             if (!(object1 instanceof Set<?> && object2 instanceof Set<?>)) {
-                assert isNotDebug(mode) : "Lists not equal";
+                assert isNotDebug(mode) : mismatchedElement("Iterable", object1, object2, "element");
                 return false;
             }
             /*
@@ -258,7 +259,7 @@ public final class Utilities extends Static {
             while (true) {
                 final Iterator<?> it = copy.iterator();
                 do if (!it.hasNext()) {
-                    assert isNotDebug(mode) : "Sets not equal";
+                    assert isNotDebug(mode) : mismatchedElement("Set", object1, object2, "element");
                     return false; // An element has not been found.
                 } while (!deepEquals(it.next(), element2, mode));
                 it.remove();
@@ -290,6 +291,20 @@ public final class Utilities extends Static {
      */
     private static String mismatchedType(final Class<?> expected, final Object actual) {
         return "Expected " + expected + " but got " + actual.getClass();
+    }
+
+    /**
+     * Returns an assertion error message for mismatched collections.
+     */
+    private static String mismatchedElement(final String header, final Iterable<?> object1, final Iterable<?> object2, final String tail) {
+        Class<?> type = null;
+        if (object1 instanceof CheckedContainer<?>) {
+            type = ((CheckedContainer<?>) object1).getElementType();
+        }
+        if (type == null && object2 instanceof CheckedContainer<?>) {
+            type = ((CheckedContainer<?>) object2).getElementType();
+        }
+        return header + '<' + (type != null ? type.getSimpleName() : "?") + ">: " + tail + " not equals.";
     }
 
     /**

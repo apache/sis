@@ -69,25 +69,25 @@ public final strictfp class DefaultRecordSchemaTest extends TestCase {
             switch (count) {
                 case 0: {
                     expectedName  = "city";
-                    expectedType  = "gco:CharacterString";
+                    expectedType  = "OGC:CharacterString";
                     expectedClass = String.class;
                     break;
                 }
                 case 1: {
                     expectedName  = "latitude";
-                    expectedType  = "gco:Real";
+                    expectedType  = "OGC:Real";
                     expectedClass = Double.class;
                     break;
                 }
                 case 2: {
                     expectedName  = "longitude";
-                    expectedType  = "gco:Real";
+                    expectedType  = "OGC:Real";
                     expectedClass = Double.class;
                     break;
                 }
                 case 3: {
                     expectedName  = "population";
-                    expectedType  = "gco:Integer";
+                    expectedType  = "OGC:Integer";
                     expectedClass = Integer.class;
                     break;
                 }

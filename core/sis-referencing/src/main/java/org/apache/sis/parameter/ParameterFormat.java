@@ -50,7 +50,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.referencing.NameToIdentifier;
+import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.X364;
 
