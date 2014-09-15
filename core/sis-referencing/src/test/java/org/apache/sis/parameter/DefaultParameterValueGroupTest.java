@@ -102,7 +102,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
             } catch (AssertionError e) {
                 error = e;
             }
-            if (param.getDescriptor() instanceof MultiOccurrenceDescriptor) {
+            if (param.getDescriptor().getMaximumOccurs() > 1) {
                 assertNotNull("Validation methods should have detected that the descriptor is invalid.", error);
             } else if (error != null) {
                 throw error;
@@ -237,7 +237,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         final DefaultParameterValueGroup    group = createGroup(10);
         final List<GeneralParameterValue>  values = group.values();
         final ParameterValue<Integer> nonExistent = new DefaultParameterDescriptor<>(
-                singletonMap(NAME_KEY, "Optional 5"), Integer.class, null, null, null, false).createValue();
+                singletonMap(NAME_KEY, "Optional 5"), 0, 1, Integer.class, null, null, null).createValue();
         try {
             values.add(nonExistent);
             fail("“Optional 5” is not a parameter for this group.");
