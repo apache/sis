@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso.service;
+package org.apache.sis.metadata.iso.identification;
 
 import java.util.List;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.service.OperationChainMetadata;
-import org.opengis.metadata.service.OperationMetadata;
+import org.opengis.metadata.identification.OperationChainMetadata;
+import org.opengis.metadata.identification.OperationMetadata;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -45,12 +46,12 @@ import org.apache.sis.util.iso.Types;
  * @since   0.5
  * @module
  */
-@XmlType(name = "SV_OperationChainMetadata_Type", propOrder = {
+@XmlType(name = "SV_OperationChainMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "name",
     "description",
     "operations"
 })
-@XmlRootElement(name = "SV_OperationChainMetadata")
+@XmlRootElement(name = "SV_OperationChainMetadata", namespace = Namespaces.SRV)
 public class DefaultOperationChainMetadata extends ISOMetadata implements OperationChainMetadata {
     /**
      * Serial number for compatibility with different versions.
@@ -136,7 +137,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
      * @return Name as used by the service for this chain.
      */
     @Override
-    @XmlElement(name = "name", required = true)
+    @XmlElement(name = "name", namespace = Namespaces.SRV, required = true)
     public InternationalString getName() {
         return name;
     }
@@ -157,7 +158,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
      * @return Narrative explanation of the services in the chain and resulting output, or {@code null} if none.
      */
     @Override
-    @XmlElement(name = "description")
+    @XmlElement(name = "description", namespace = Namespaces.SRV)
     public InternationalString getDescription() {
         return description;
     }
@@ -178,7 +179,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
      * @return Information about the operations applied by the chain.
      */
     @Override
-    @XmlElement(name = "operation", required = true)
+    @XmlElement(name = "operation", namespace = Namespaces.SRV, required = true)
     public List<OperationMetadata> getOperations() {
         return operations = nonNullList(operations, OperationMetadata.class);
     }

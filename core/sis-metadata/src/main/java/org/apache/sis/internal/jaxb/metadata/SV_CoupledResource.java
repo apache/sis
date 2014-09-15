@@ -17,8 +17,8 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.service.CoupledResource;
-import org.apache.sis.metadata.iso.service.DefaultCoupledResource;
+import org.opengis.metadata.identification.CoupledResource;
+import org.apache.sis.metadata.iso.identification.DefaultCoupledResource;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 

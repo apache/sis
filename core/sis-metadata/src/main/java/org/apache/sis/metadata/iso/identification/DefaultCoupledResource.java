@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso.service;
+package org.apache.sis.metadata.iso.identification;
 
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
@@ -25,10 +25,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.ScopedName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.metadata.service.CoupledResource;
-import org.opengis.metadata.service.OperationMetadata;
+import org.opengis.metadata.identification.CoupledResource;
+import org.opengis.metadata.identification.OperationMetadata;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.metadata.direct.GO_ScopedName;
+import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
@@ -51,7 +52,7 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
  * @since   0.5
  * @module
  */
-@XmlType(name = "SV_CoupledResource_Type", propOrder = {
+@XmlType(name = "SV_CoupledResource_Type", namespace = Namespaces.SRV, propOrder = {
     "operationName",
     "identifier",
     "scopedName" /*,
@@ -59,7 +60,7 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
     "resources",
     "operation" */
 })
-@XmlRootElement(name = "SV_CoupledResource")
+@XmlRootElement(name = "SV_CoupledResource", namespace = Namespaces.SRV)
 public class DefaultCoupledResource extends ISOMetadata implements CoupledResource {
     /**
      * Serial number for compatibility with different versions.
@@ -183,7 +184,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @return References to the resource on which the services operates.
      */
     @Override
-/// @XmlElement(name = "resourceReference")
+/// @XmlElement(name = "resourceReference", namespace = Namespaces.SRV)
     public Collection<Citation> getResourceReferences() {
         return resourceReferences = nonNullCollection(resourceReferences, Citation.class);
     }
@@ -203,7 +204,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @return tightly coupled resources.
      */
     @Override
-/// @XmlElement(name = "resource")
+/// @XmlElement(name = "resource", namespace = Namespaces.SRV)
     public Collection<DataIdentification> getResources() {
         return resources = nonNullCollection(resources, DataIdentification.class);
     }
@@ -223,7 +224,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @return The service operation, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "operation")
+/// @XmlElement(name = "operation", namespace = Namespaces.SRV)
     public OperationMetadata getOperation() {
         return operation;
     }
@@ -245,7 +246,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * For JAXB marhalling of ISO 19119 document only.
      */
-    @XmlElement(name = "operationName")
+    @XmlElement(name = "operationName", namespace = Namespaces.SRV)
     final String getOperationName() {
         if (LEGACY_XML) {
             final OperationMetadata operation = getOperation();
@@ -270,7 +271,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * Returns the resource identifier, which is assumed to be the name as a string.
      */
-    @XmlElement(name = "identifier")
+    @XmlElement(name = "identifier", namespace = Namespaces.SRV)
     final String getIdentifier() {
         if (LEGACY_XML) {
             final ScopedName name = getScopedName();

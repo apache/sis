@@ -32,7 +32,7 @@
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification       Identification} «abstract»<br>
  * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.identification.DefaultDataIdentification    Data identification}<br>
- * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.service.DefaultServiceIdentification        Service identification}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.identification.DefaultServiceIdentification Service identification}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution            Resolution}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic         Browse graphic}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultKeywords              Keywords}<br>
@@ -95,8 +95,10 @@
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(CI_OnlineResource.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
+    @XmlJavaTypeAdapter(DCPList.class),
     @XmlJavaTypeAdapter(DS_AssociationTypeCode.class),
     @XmlJavaTypeAdapter(DS_InitiativeTypeCode.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
@@ -104,6 +106,7 @@
     @XmlJavaTypeAdapter(MD_BrowseGraphic.class),
     @XmlJavaTypeAdapter(MD_CharacterSetCode.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
+    @XmlJavaTypeAdapter(MD_DataIdentification.class),
     @XmlJavaTypeAdapter(MD_Format.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(MD_Keywords.class),
@@ -113,15 +116,24 @@
     @XmlJavaTypeAdapter(MD_RepresentativeFraction.class),
     @XmlJavaTypeAdapter(MD_Resolution.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentationTypeCode.class),
+    @XmlJavaTypeAdapter(MD_StandardOrderProcess.class),
     @XmlJavaTypeAdapter(MD_TopicCategoryCode.class),
     @XmlJavaTypeAdapter(MD_Usage.class),
+    @XmlJavaTypeAdapter(SV_CoupledResource.class),
+    @XmlJavaTypeAdapter(SV_CouplingType.class),
+    @XmlJavaTypeAdapter(SV_OperationMetadata.class),
+    @XmlJavaTypeAdapter(SV_OperationChainMetadata.class),
+    @XmlJavaTypeAdapter(SV_Parameter.class),
+    @XmlJavaTypeAdapter(SV_ParameterDirection.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(URIAdapter.class),
     @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class)
+    @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(GO_GenericName.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
 })
 package org.apache.sis.metadata.iso.identification;
 
