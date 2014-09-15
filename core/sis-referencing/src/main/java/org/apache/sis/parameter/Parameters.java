@@ -141,15 +141,21 @@ public final class Parameters extends Static {
 
     /**
      * Gets the parameter name as an instance of {@code MemberName}.
-     * This method first checks if the {@linkplain DefaultParameterDescriptor#getName()} primary name is an instance of
-     * {@code MemberName}. If not, this method searches for the first {@linkplain DefaultParameterDescriptor#getAlias()
-     * alias} which is an instance of {@code MemberName}. If none is found, then this method tries to build a member name
-     * from the primary name and {@linkplain DefaultParameterDescriptor#getValueClass() value class} using the mapping
-     * defined in {@link org.apache.sis.util.iso.DefaultTypeName} javadoc.
+     * This method performs the following checks:
      *
-     * <p>This method can be used as a bridge between the parameter object
+     * <ul>
+     *   <li>If the {@linkplain DefaultParameterDescriptor#getName()} primary name is an instance of {@code MemberName},
+     *       returns that primary name.</li>
+     *   <li>Otherwise this method searches for the first {@linkplain DefaultParameterDescriptor#getAlias() alias}
+     *       which is an instance of {@code MemberName}. If found, that alias is returned.</li>
+     *   <li>If no alias is found, then this method tries to build a member name from the primary name and the
+     *       {@linkplain DefaultParameterDescriptor#getValueClass() value class}, using the mapping defined in
+     *       {@link org.apache.sis.util.iso.DefaultTypeName} javadoc.</li>
+     * </ul>
+     *
+     * This method can be used as a bridge between the parameter object
      * defined by ISO 19111 (namely {@code CC_OperationParameter}) and the one
-     * defined by ISO 19115 (namely {@code SV_Parameter}).</p>
+     * defined by ISO 19115 (namely {@code SV_Parameter}).
      *
      * @param  parameter The parameter from which to get the name (may be {@code null}).
      * @return The member name, or {@code null} if none.
