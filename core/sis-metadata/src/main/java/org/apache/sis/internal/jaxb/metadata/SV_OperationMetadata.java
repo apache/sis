@@ -17,8 +17,8 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.service.OperationMetadata;
-import org.apache.sis.metadata.iso.service.DefaultOperationMetadata;
+import org.opengis.metadata.identification.OperationMetadata;
+import org.apache.sis.metadata.iso.identification.DefaultOperationMetadata;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 

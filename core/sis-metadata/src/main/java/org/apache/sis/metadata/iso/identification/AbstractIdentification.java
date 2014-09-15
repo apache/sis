@@ -37,13 +37,12 @@ import org.opengis.metadata.identification.Progress;
 import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.Usage;
-import org.opengis.metadata.service.ServiceIdentification;
+import org.opengis.metadata.identification.ServiceIdentification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.temporal.Duration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
-import org.apache.sis.metadata.iso.service.DefaultServiceIdentification;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
