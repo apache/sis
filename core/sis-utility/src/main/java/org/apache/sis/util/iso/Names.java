@@ -19,11 +19,13 @@ package org.apache.sis.util.iso;
 import java.util.Collections;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
+import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.UnknownNameException;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -189,6 +191,98 @@ public final class Names extends Static {
     }
 
     /**
+     * Creates a member name for values of the given class. A {@link TypeName} will be inferred
+     * from the given {@code valueClass} as documented in the {@link DefaultTypeName} javadoc.
+     *
+     * <div class="note"><b>Performance note:</b> this method is okay for <em>casual</em> use. If many names
+     * need to be created, then {@link DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)}
+     * is more efficient since it allows to create the {@code NameSpace} and {@code TypeName} objects only once.</div>
+     *
+     * @param  namespace  The namespace, or {@code null} for the global namespace.
+     * @param  separator  The separator between the namespace and the local part.
+     * @param  localPart  The name which is locale in the given namespace.
+     * @param  valueClass The type of values, used for inferring a {@link TypeName} instance.
+     * @return A member name in the given namespace for values of the given type.
+     */
+    public static MemberName createMemberName(final CharSequence namespace, final String separator,
+            final CharSequence localPart, final Class<?> valueClass)
+    {
+        ensureNonNull("localPart",  localPart);
+        ensureNonNull("separator",  separator);
+        ensureNonNull("valueClass", valueClass);
+        return DefaultFactories.NAMES.createMemberName(
+                createNameSpace(namespace, separator), localPart,
+                DefaultFactories.SIS_NAMES.toTypeName(valueClass));
+    }
+
+    /**
+     * Returns the Java class associated to the given type name.
+     * The method performs the following choices:
+     *
+     * <ul>
+     *   <li>If the given type name is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Else if the given type name is an instance of {@code DefaultTypeName},
+     *       then this method delegates to {@link DefaultTypeName#toClass()}.</li>
+     *   <li>Else if the type name {@linkplain DefaultTypeName#scope() scope} is {@code "OGC"}, then:
+     *     <ul>
+     *       <li>If the name is {@code "CharacterString"}, {@code "Integer"}, {@code "Real"} or other recognized names
+     *           (see {@link DefaultTypeName} javadoc), then the corresponding class is returned.</li>
+     *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Else if the scope is {@code "class"}, then:
+     *     <ul>
+     *       <li>If the name is accepted by {@link Class#forName(String)}, then that class is returned.</li>
+     *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Else if the scope {@linkplain DefaultNameSpace#isGlobal() is global}, then:
+     *     <ul>
+     *       <li>If the name is one of the names recognized in {@code "OGC"} scope (see above),
+     *           then the corresponding class is returned.</li>
+     *       <li>Otherwise {@code null} is returned. No exception is thrown because names in the global namespace
+     *           could be anything, so we can not be sure that the given name was wrong.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Otherwise {@code null} is returned, since this method can not check the validity of names in other
+     *       namespaces.</li>
+     * </ul>
+     *
+     * @param  type The type name from which to infer a Java class.
+     * @return The Java class associated to the given {@code TypeName},
+     *         or {@code null} if there is no mapping from the given name to a Java class.
+     * @throws UnknownNameException if a mapping from the given name to a Java class was expected to exist
+     *         (typically because of the {@linkplain DefaultTypeName#scope() scope}) but the operation failed.
+     *
+     * @see DefaultTypeName#toClass()
+     * @see DefaultNameFactory#toTypeName(Class)
+     *
+     * @since 0.5
+     */
+    public static Class<?> toClass(final TypeName type) throws UnknownNameException {
+        if (type == null) {
+            return null;
+        }
+        Class<?> c;
+        if (type instanceof DefaultTypeName) {
+            c = ((DefaultTypeName) type).toClass();
+        } else {
+            try {
+                c = TypeNames.toClass(TypeNames.namespace(type.scope()), type.toString());
+            } catch (ClassNotFoundException e) {
+                throw new UnknownNameException(TypeNames.unknown(type), e);
+            }
+            if (c == null) {
+                throw new UnknownNameException(TypeNames.unknown(type));
+            }
+            if (c == Void.TYPE) {
+                c = null;
+            }
+        }
+        return c;
+    }
+
+    /**
      * Formats the given name in <cite>expanded form</cite> close to the Java Content Repository (JCR) definition.
      * The expanded form is defined as below:
      *
@@ -196,13 +290,15 @@ public final class Names extends Static {
      * NameSpace    ::= name.{@linkplain AbstractName#scope() scope()}.{@linkplain DefaultNameSpace#name() name()}.toString()
      * LocalPart    ::= name.{@linkplain AbstractName#toString() toString()}</pre></blockquote>
      *
-     * @param  name The generic name to format in expanded form.
-     * @return Expanded form of the given generic name.
+     * @param  name The generic name to format in expanded form, or {@code null}.
+     * @return Expanded form of the given generic name, or {@code null} if the given name was null.
      *
      * @see DefaultNameSpace#toString()
      */
     public static String toExpandedString(final GenericName name) {
-        ensureNonNull("name", name);
+        if (name == null) {
+            return null;
+        }
         final String localPart = name.toString();
         final NameSpace scope = name.scope();
         if (scope == null || scope.isGlobal()) {

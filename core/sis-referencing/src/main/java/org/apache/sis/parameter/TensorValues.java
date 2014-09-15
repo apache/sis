@@ -34,6 +34,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
@@ -41,7 +42,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -89,7 +89,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     TensorValues(final Map<String,?> properties, final TensorParameters<E> descriptors) {
-        super(properties);
+        super(properties, 1, 1);
         this.descriptors = descriptors;
         dimensions = new ParameterValue[descriptors.rank()];
         for (int i=0; i<dimensions.length; i++) {
@@ -436,24 +436,6 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     }
 
     /**
-     * Returns a string representation of this group.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        return ParameterFormat.sharedFormat(this);
-    }
-
-    /**
-     * Prints a string representation of this group to the {@linkplain System#out standard output stream}.
-     */
-    @Debug
-    @Override
-    public void print() {
-        ParameterFormat.print(this);
-    }
-
-    /**
      * Formats this group as a pseudo-<cite>Well Known Text</cite> element.
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
@@ -461,7 +443,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
+        WKTUtilities.appendName(this, formatter, ElementKind.PARAMETER);
         WKTUtilities.append(this, formatter);
         return "ParameterGroup";
     }

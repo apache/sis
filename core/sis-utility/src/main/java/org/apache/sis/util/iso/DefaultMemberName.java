@@ -35,6 +35,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * <ul>
  *   <li>{@link DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)}</li>
+ *   <li>Similar static convenience method in {@link Names}.</li>
  * </ul>
  *
  * {@section Immutability and thread safety}

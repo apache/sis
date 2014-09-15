@@ -44,9 +44,10 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * <p>{@code DefaultLocalName} can be instantiated by any of the following methods:</p>
  * <ul>
- *   <li>{@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}</li>
- *   <li>{@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} with an array of length 1</li>
- *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} without separator</li>
+ *   <li>{@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}.</li>
+ *   <li>{@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} with an array of length 1.</li>
+ *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} with no occurrence of the separator in the path.</li>
+ *   <li>Similar static convenience methods in {@link Names}.</li>
  * </ul>
  *
  * {@section Immutability and thread safety}

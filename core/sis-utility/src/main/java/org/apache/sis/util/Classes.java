@@ -213,7 +213,7 @@ public final class Classes extends Static {
                  */
                 if (type instanceof ParameterizedType) {
                     // Example: replace ParameterDescriptor<?> by ParameterDescriptor
-                    // before we test for instance of Class.
+                    // before we test if (type instanceof Class<?>).
                     type = ((ParameterizedType) type).getRawType();
                 }
                 int dimension = 0;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.internal.metadata;
 
 import java.util.Locale;
 import org.opengis.util.NameSpace;
@@ -23,10 +23,13 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.iso.DefaultNameSpace;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -34,7 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class NameToIdentifier implements ReferenceIdentifier {
@@ -131,13 +134,43 @@ public final class NameToIdentifier implements ReferenceIdentifier {
     }
 
     /**
+     * Returns a hash code value for this object.
+     */
+    @Override
+    public int hashCode() {
+        return ~Objects.hashCode(name);
+    }
+
+    /**
+     * Compares this object with the given one for equality.
+     *
+     * @param object The object to compare with this identifier.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object == this) {
+            return true;
+        }
+        if (object != null && object.getClass() == getClass()) {
+            return Objects.equals(name, ((NameToIdentifier) object).name);
+        }
+        return false;
+    }
+
+    /**
      * Returns the string representation of this identifier.
      *
      * @return The string representation of this identifier.
      */
     @Override
     public String toString() {
-        return IdentifiedObjects.toString(this);
+        final String code = getCode();
+        final String cs = getCodeSpace();
+        if (cs != null && !cs.isEmpty()) {
+            return cs + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+        }
+        return code;
     }
 
     /**

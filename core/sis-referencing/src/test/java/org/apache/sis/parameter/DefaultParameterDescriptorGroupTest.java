@@ -54,10 +54,10 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
         final Class<Integer> type = Integer.class;
         final Map<String,Object> properties = new HashMap<String,Object>(4);
         M1_M1_O1_O2 = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1,
-            new DefaultParameterDescriptor<Integer>(name(properties, "Mandatory 1", "Ambiguity"), type, null, null, DEFAULT_VALUE, true),
-            new DefaultParameterDescriptor<Integer>(name(properties, "Mandatory 2", "Alias 2"),   type, null, null, DEFAULT_VALUE, true),
-            new DefaultParameterDescriptor<Integer>(name(properties,  "Optional 3", "Alias 3"),   type, null, null, DEFAULT_VALUE, false),
-            new MultiOccurrenceDescriptor <Integer>(name(properties,  "Optional 4", "Ambiguity"), type, null, null, DEFAULT_VALUE, false)
+            new DefaultParameterDescriptor<Integer>(name(properties, "Mandatory 1", "Ambiguity"), 1, 1, type, null, null, DEFAULT_VALUE),
+            new DefaultParameterDescriptor<Integer>(name(properties, "Mandatory 2", "Alias 2"),   1, 1, type, null, null, DEFAULT_VALUE),
+            new DefaultParameterDescriptor<Integer>(name(properties, "Optional 3", "Alias 3"),    0, 1, type, null, null, DEFAULT_VALUE),
+            new DefaultParameterDescriptor<Integer>(name(properties, "Optional 4", "Ambiguity"),  0, 2, type, null, null, DEFAULT_VALUE)
         );
     }
 
@@ -78,8 +78,8 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
         final Class<Integer> type = Integer.class;
         final Map<String,Object> properties = new HashMap<String,Object>(4);
         final DefaultParameterDescriptor<Integer> p1, p2;
-        p1 = new DefaultParameterDescriptor<Integer>(name(properties, "Name", null), type, null, null, null, true);
-        p2 = new DefaultParameterDescriptor<Integer>(name(properties, "  NAME ", null), type, null, null, null, true);
+        p1 = new DefaultParameterDescriptor<Integer>(name(properties,    "Name", null), 1, 1, type, null, null, null);
+        p2 = new DefaultParameterDescriptor<Integer>(name(properties, "  NAME ", null), 1, 1, type, null, null, null);
         try {
             new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1, p1, p2);
             fail("Constructor should have detected the duplicated names.");
@@ -102,7 +102,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
             } catch (AssertionError e) {
                 error = e;
             }
-            if (descriptor instanceof MultiOccurrenceDescriptor) {
+            if (descriptor.getMaximumOccurs() > 1) {
                 assertNotNull("Validation methods should have detected that the descriptor is invalid.", error);
             } else if (error != null) {
                 throw error;
