@@ -39,6 +39,8 @@ import org.apache.sis.xml.Namespaces;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
+import static org.apache.sis.util.Utilities.deepEquals;
+
 
 /**
  * Parameter information conform to the ISO 19115:2014 specification.
@@ -311,6 +313,9 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true;
+        }
         if (super.equals(object, mode) && object instanceof ParameterDescriptor<?>) {
             final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
             if (that.getUnit()         == null &&
@@ -320,7 +325,8 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
                 if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
                     return true;
                 }
-                return that.getMinimumOccurs() == getMinimumOccurs() &&
+                return deepEquals(that.getDescription(), getDescription(), mode) &&
+                       that.getMinimumOccurs() == getMinimumOccurs() &&
                        that.getMaximumOccurs() == getMaximumOccurs() &&
                        that.getValidValues()   == null &&
                        that.getMinimumValue()  == null &&

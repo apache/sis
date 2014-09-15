@@ -30,10 +30,8 @@ import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Utilities;
 
-// Branch-dependent imports
-import java.util.Objects;
+import static org.apache.sis.util.Utilities.deepEquals;
 
 
 /**
@@ -180,15 +178,17 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
         if (object == this) {
             return true;
         }
-        if (mode == ComparisonMode.STRICT) {
-            if (object != null && object.getClass() == getClass()) {
-                final SimpleIdentifiedObject that = (SimpleIdentifiedObject) object;
-                return Objects.equals(name, that.name);
-            }
-        } else {
-            if (object instanceof IdentifiedObject) {
+        if (object instanceof IdentifiedObject) {
+            if (mode != ComparisonMode.STRICT || object.getClass() == getClass()) {
                 final IdentifiedObject that = (IdentifiedObject) object;
-                return Utilities.deepEquals(name, that.getName(), mode);
+                if (deepEquals(getName(), that.getName(), mode)) {
+                    if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+                        return true;
+                    }
+                    return deepEquals(getAlias(),       that.getAlias(),       mode) &&
+                           deepEquals(getIdentifiers(), that.getIdentifiers(), mode) &&
+                           deepEquals(getRemarks(),     that.getRemarks(),     mode);
+                }
             }
         }
         return false;
