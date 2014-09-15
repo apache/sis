@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso.service;
+package org.apache.sis.metadata.iso.identification;
 
 import org.opengis.util.ScopedName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.service.CoupledResource;
-import org.opengis.metadata.service.OperationMetadata;
-import org.opengis.metadata.service.DistributedComputingPlatform;
+import org.opengis.metadata.identification.CoupledResource;
+import org.opengis.metadata.identification.OperationMetadata;
+import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameterTest;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;

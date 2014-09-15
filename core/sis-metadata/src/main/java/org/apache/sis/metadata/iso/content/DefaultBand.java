@@ -83,7 +83,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Units in which sensor wavelengths are expressed.
      */
-    private Unit<Length> boundUnit;
+    private Unit<Length> boundUnits;
 
     /**
      * Wavelength at which the response is the highest.
@@ -141,7 +141,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
         if (object != null) {
             boundMin                 = object.getBoundMin();
             boundMax                 = object.getBoundMax();
-            boundUnit                = object.getBoundUnit();
+            boundUnits               = object.getBoundUnits();
             peakResponse             = object.getPeakResponse();
             toneGradation            = object.getToneGradation();
             bandBoundaryDefinition   = object.getBandBoundaryDefinition();
@@ -241,9 +241,9 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "boundUnit")
-    public Unit<Length> getBoundUnit() {
-        return boundUnit;
+/// @XmlElement(name = "boundUnits")
+    public Unit<Length> getBoundUnits() {
+        return boundUnits;
     }
 
     /**
@@ -253,9 +253,9 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      *
      * @since 0.5
      */
-    public void setBoundUnit(final Unit<Length> newValue) {
+    public void setBoundUnits(final Unit<Length> newValue) {
         checkWritePermission();
-        boundUnit = newValue;
+        boundUnits = newValue;
     }
 
     /**
