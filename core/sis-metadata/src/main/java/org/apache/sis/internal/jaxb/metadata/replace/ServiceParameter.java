@@ -39,9 +39,6 @@ import org.apache.sis.xml.Namespaces;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
-// Branch-dependent imports
-import java.util.Objects;
-
 
 /**
  * Parameter information conform to the ISO 19115:2014 specification.
@@ -317,8 +314,8 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
         if (super.equals(object, mode) && object instanceof ParameterDescriptor<?>) {
             final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
             if (that.getUnit()         == null &&
-                that.getDefaultValue() == null /*&&
-                that.getValueClass()   == getValueClass()*/) // TODO
+                that.getDefaultValue() == null &&
+                that.getValueClass()   == getValueClass())
             {
                 if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
                     return true;

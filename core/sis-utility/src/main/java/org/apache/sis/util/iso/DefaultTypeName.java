@@ -158,19 +158,38 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
 
     /**
      * Returns the Java class associated to this type name.
-     * The default implementation performs the following choices:
+     * The default implementation parses this name in different ways depending on the {@linkplain #scope() scope}:
      *
      * <ul>
-     *   <li>If the {@linkplain #scope() scope} of this name is not {@code "OGC"} or {@code "class"},
-     *       then this method returns {@code null}.</li>
-     *   <li>Otherwise this method interprets this {@code TypeName} as documented in the
-     *       <cite>Mapping Java classes to type names</cite> section of class javadoc.
-     *       The result is either a non-null class or an {@code UnknownNameException}.</li>
+     *   <li>If the scope is {@code "OGC"}, then:
+     *     <ul>
+     *       <li>If the name is {@code "CharacterString"}, {@code "Integer"}, {@code "Real"} or other recognized names
+     *           (see {@linkplain DefaultTypeName class javadoc}), then the corresponding class is returned.</li>
+     *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Else if the scope is {@code "class"}, then:
+     *     <ul>
+     *       <li>If the name is accepted by {@link Class#forName(String)}, then that class is returned.</li>
+     *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Else if the scope {@linkplain DefaultNameSpace#isGlobal() is global}, then:
+     *     <ul>
+     *       <li>If the name is one of the names recognized in {@code "OGC"} scope (see above),
+     *           then the corresponding class is returned.</li>
+     *       <li>Otherwise {@code null} is returned. No exception is thrown because names in the global namespace
+     *           could be anything, so we can not be sure that the given name was wrong.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Otherwise {@code null} is returned, since this method can not check the validity of names in other
+     *       namespaces.</li>
      * </ul>
      *
-     * @return The Java class associated to this {@code TypeName}, or {@code null} if and only if
-     *         the {@linkplain #scope() scope} is not one of the supported namespaces.
-     * @throws UnknownNameException if the scope is one of the supported namespaces, but the name is not recognized.
+     * @return The Java class associated to this {@code TypeName},
+     *         or {@code null} if there is no mapping from this name to a Java class.
+     * @throws UnknownNameException if a mapping from this name to a Java class was expected to exist
+     *         (typically because of the {@linkplain #scope() scope}) but the operation failed.
      *
      * @see Names#toClass(TypeName)
      * @see DefaultNameFactory#toTypeName(Class)
@@ -193,7 +212,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
              * See 'valueClass' javadoc for more information.
              */
             try {
-                c = TypeNames.toClass(super.scope().name().toString(), super.toString());
+                c = TypeNames.toClass(TypeNames.namespace(super.scope()), super.toString());
             } catch (ClassNotFoundException e) {
                 throw new UnknownNameException(TypeNames.unknown(super.toFullyQualifiedName()), e);
             }

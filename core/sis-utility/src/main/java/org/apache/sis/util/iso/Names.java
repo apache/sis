@@ -220,20 +220,39 @@ public final class Names extends Static {
      * The method performs the following choices:
      *
      * <ul>
-     *   <li>If the given type is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given type is an instance of {@code DefaultTypeName},
+     *   <li>If the given type name is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Else if the given type name is an instance of {@code DefaultTypeName},
      *       then this method delegates to {@link DefaultTypeName#toClass()}.</li>
-     *   <li>Otherwise if the {@linkplain #scope() scope} of the given name is not {@code "OGC"}
-     *       or {@code "class"}, then this method returns {@code null}.</li>
-     *   <li>Otherwise this method interprets the given name as documented in the
-     *       <cite>Mapping Java classes to type names</cite> section of {@link DefaultTypeName} javadoc.
-     *       The result is either a non-null class or an {@code UnknownNameException}.</li>
+     *   <li>Else if the type name {@linkplain DefaultTypeName#scope() scope} is {@code "OGC"}, then:
+     *     <ul>
+     *       <li>If the name is {@code "CharacterString"}, {@code "Integer"}, {@code "Real"} or other recognized names
+     *           (see {@link DefaultTypeName} javadoc), then the corresponding class is returned.</li>
+     *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Else if the scope is {@code "class"}, then:
+     *     <ul>
+     *       <li>If the name is accepted by {@link Class#forName(String)}, then that class is returned.</li>
+     *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Else if the scope {@linkplain DefaultNameSpace#isGlobal() is global}, then:
+     *     <ul>
+     *       <li>If the name is one of the names recognized in {@code "OGC"} scope (see above),
+     *           then the corresponding class is returned.</li>
+     *       <li>Otherwise {@code null} is returned. No exception is thrown because names in the global namespace
+     *           could be anything, so we can not be sure that the given name was wrong.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Otherwise {@code null} is returned, since this method can not check the validity of names in other
+     *       namespaces.</li>
      * </ul>
      *
      * @param  type The type name from which to infer a Java class.
-     * @return The Java class associated to the given {@code TypeName}, or {@code null} if the given type
-     *         is null or if the {@linkplain #scope() scope} is not one of the supported namespaces.
-     * @throws UnknownNameException if the scope is one of the supported namespaces, but the name is not recognized.
+     * @return The Java class associated to the given {@code TypeName},
+     *         or {@code null} if there is no mapping from the given name to a Java class.
+     * @throws UnknownNameException if a mapping from the given name to a Java class was expected to exist
+     *         (typically because of the {@linkplain DefaultTypeName#scope() scope}) but the operation failed.
      *
      * @see DefaultTypeName#toClass()
      * @see DefaultNameFactory#toTypeName(Class)
@@ -249,7 +268,7 @@ public final class Names extends Static {
             c = ((DefaultTypeName) type).toClass();
         } else {
             try {
-                c = TypeNames.toClass(type.scope().name().toString(), type.toString());
+                c = TypeNames.toClass(TypeNames.namespace(type.scope()), type.toString());
             } catch (ClassNotFoundException e) {
                 throw new UnknownNameException(TypeNames.unknown(type), e);
             }
