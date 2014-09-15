@@ -16,7 +16,6 @@
  */
 package org.apache.sis.util.iso;
 
-
 import java.net.URI;
 import java.util.Date;
 import java.util.Locale;

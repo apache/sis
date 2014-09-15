@@ -22,7 +22,11 @@ import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.MetadataTestCase;
+import org.apache.sis.metadata.iso.identification.DefaultCoupledResource;
+import org.apache.sis.metadata.iso.identification.DefaultOperationChainMetadata;
+import org.apache.sis.metadata.iso.identification.DefaultOperationMetadata;
 import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
+import org.apache.sis.metadata.iso.identification.DefaultServiceIdentification;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.Namespaces;
 import org.junit.Rule;
@@ -138,14 +142,18 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.identification.AssociationType.class,
             org.opengis.metadata.identification.BrowseGraphic.class,
             org.opengis.metadata.identification.CharacterSet.class,
+            org.opengis.metadata.identification.CoupledResource.class,
             org.opengis.metadata.identification.DataIdentification.class,
             org.opengis.metadata.identification.Identification.class,
             org.opengis.metadata.identification.InitiativeType.class,
             org.opengis.metadata.identification.Keywords.class,
             org.opengis.metadata.identification.KeywordType.class,
             org.opengis.metadata.identification.Progress.class,
+            org.opengis.metadata.identification.OperationChainMetadata.class,
+            org.opengis.metadata.identification.OperationMetadata.class,
             org.opengis.metadata.identification.RepresentativeFraction.class,
             org.opengis.metadata.identification.Resolution.class,
+            org.opengis.metadata.identification.ServiceIdentification.class,
             org.opengis.metadata.identification.TopicCategory.class,
             org.opengis.metadata.identification.Usage.class,
             org.opengis.metadata.lineage.Algorithm.class,
@@ -188,10 +196,6 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.quality.ThematicClassificationCorrectness.class,
             org.opengis.metadata.quality.TopologicalConsistency.class,
             org.opengis.metadata.quality.Usability.class,
-            org.opengis.metadata.service.CoupledResource.class,
-            org.opengis.metadata.service.OperationChainMetadata.class,
-            org.opengis.metadata.service.OperationMetadata.class,
-            org.opengis.metadata.service.ServiceIdentification.class,
             org.opengis.metadata.spatial.CellGeometry.class,
             org.opengis.metadata.spatial.Dimension.class,
             org.opengis.metadata.spatial.DimensionNameType.class,
@@ -262,7 +266,11 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      */
     @Override
     protected String getExpectedNamespace(final Class<?> impl, final Specification specification) {
-        if (impl.getPackage().getName().equals("org.apache.sis.metadata.iso.service")) {
+        if (impl == DefaultCoupledResource.class ||
+            impl == DefaultOperationChainMetadata.class ||
+            impl == DefaultOperationMetadata.class ||
+            impl == DefaultServiceIdentification.class)
+        {
             assertEquals(Specification.ISO_19115, specification);
             return Namespaces.SRV;
         }
