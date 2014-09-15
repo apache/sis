@@ -38,7 +38,7 @@ import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
-import org.apache.sis.internal.referencing.NameToIdentifier;
+import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.util.X364;
 
 import static org.apache.sis.internal.util.X364.*;

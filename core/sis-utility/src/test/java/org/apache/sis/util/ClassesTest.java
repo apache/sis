@@ -57,7 +57,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public final strictfp class ClassesTest extends TestCase {
@@ -106,13 +106,13 @@ public final strictfp class ClassesTest extends TestCase {
         assertArrayEquals("TreeSet class", new Class<?>[] {NavigableSet.class},
                 getLeafInterfaces(TreeSet.class, Collection.class));
 
-        assertArrayEquals("Convolved class", new Class<?>[] {GeographicCRS.class},
+        assertArrayEquals("GeographicCRS", new Class<?>[] {GeographicCRS.class},
                 getLeafInterfaces(T1.class, IdentifiedObject.class));
 
-        assertArrayEquals("Convolved class", new Class<?>[] {GeographicCRS.class, CoordinateOperation.class},
+        assertArrayEquals("Mixed types",   new Class<?>[] {GeographicCRS.class, CoordinateOperation.class},
                 getLeafInterfaces(T2.class, IdentifiedObject.class));
 
-        assertArrayEquals("Convolved class", new Class<?>[] {Transformation.class, GeographicCRS.class},
+        assertArrayEquals("Mixed types",   new Class<?>[] {Transformation.class, GeographicCRS.class},
                 getLeafInterfaces(T3.class, IdentifiedObject.class));
     }
 
@@ -198,28 +198,30 @@ public final strictfp class ClassesTest extends TestCase {
         final Class<Parameterized> c = Parameterized.class;
         assertNull(                 boundOfParameterizedProperty(c.getMethod("getter0", g)));
         assertNull(                 boundOfParameterizedProperty(c.getMethod("setter0", s)));
-        assertEquals(Long   .class, boundOfParameterizedProperty(c.getField ("attrib2"   )));
-        assertEquals(Integer.class, boundOfParameterizedProperty(c.getMethod("getter1", g)));
-        assertEquals(Byte   .class, boundOfParameterizedProperty(c.getMethod("getter2", g)));
-        assertEquals(Object .class, boundOfParameterizedProperty(c.getMethod("getter3", g)));
-        assertEquals(short[].class, boundOfParameterizedProperty(c.getMethod("getter4", g)));
-        assertEquals(String .class, boundOfParameterizedProperty(c.getMethod("setter1", s)));
-        assertEquals(Short  .class, boundOfParameterizedProperty(c.getMethod("setter2", s)));
-        assertEquals(Object .class, boundOfParameterizedProperty(c.getMethod("setter3", s)));
+        assertEquals(Long      .class, boundOfParameterizedProperty(c.getField ("attrib2"   )));
+        assertEquals(Integer   .class, boundOfParameterizedProperty(c.getMethod("getter1", g)));
+        assertEquals(Byte      .class, boundOfParameterizedProperty(c.getMethod("getter2", g)));
+        assertEquals(Object    .class, boundOfParameterizedProperty(c.getMethod("getter3", g)));
+        assertEquals(short[]   .class, boundOfParameterizedProperty(c.getMethod("getter4", g)));
+        assertEquals(Comparable.class, boundOfParameterizedProperty(c.getMethod("getter5", g)));
+        assertEquals(String    .class, boundOfParameterizedProperty(c.getMethod("setter1", s)));
+        assertEquals(Short     .class, boundOfParameterizedProperty(c.getMethod("setter2", s)));
+        assertEquals(Object    .class, boundOfParameterizedProperty(c.getMethod("setter3", s)));
     }
 
     /**
      * Dummy class for {@link #testBoundOfParameterizedProperty()} usage only.
      */
+    @SuppressWarnings("rawtypes")
     private static final class Parameterized {
         public Set<? extends Long> attrib2 = null;
-        @SuppressWarnings("rawtypes")
         public Set                 getter0() {return null;} // Intentionnaly unparameterized.
         public Set<       Integer> getter1() {return null;}
         public Set<? extends Byte> getter2() {return null;}
         public Set<? super  Float> getter3() {return null;}
         public Set<       short[]> getter4() {return null;}
-        @SuppressWarnings("rawtypes")
+        public Set<Comparable<?>>  getter5() {return null;}
+
         public void setter0(Set                  dummy) {}  // Intentionnaly unparameterized.
         public void setter1(Set<         String> dummy) {}
         public void setter2(Set<? extends Short> dummy) {}

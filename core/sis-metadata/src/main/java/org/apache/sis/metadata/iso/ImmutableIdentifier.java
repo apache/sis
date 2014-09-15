@@ -217,10 +217,10 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * @param authority
      *          Organization or party responsible for definition and maintenance of the code
-     *          space or code.
+     *          space or code, or {@code null} if not available.
      * @param codeSpace
-     *          Name or identifier of the person or organization responsible for namespace.
-     *          This is often an abbreviation of the authority name.
+     *          Name or identifier of the person or organization responsible for namespace, or
+     *          {@code null} if not available. This is often an abbreviation of the authority name.
      * @param code
      *          Identifier code or name, optionally from a controlled list or pattern defined by
      *          a code space. The code can not be null.
