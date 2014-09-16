@@ -43,7 +43,7 @@ import java.util.Objects;
  * Service Metadata (ISO 19115) and Web Processing Services (WPS) standards.
  * The main information are:
  *
- * <table class="ogc">
+ * <table class="sis">
  *   <caption>Main parameter properties</caption>
  *   <tr>
  *     <th>Getter method</th>
@@ -53,11 +53,11 @@ import java.util.Objects;
  *     <th class="sep">Remarks</th>
  *   </tr>
  *   <tr>
- *      <td>{@link #getName()}</td>
+ *      <td>{@link #getName() getName()}</td>
  *      <td>{@code name}</td>
  *      <td>{@code Identifier}</td>
  *      <td>{@code name}</td>
- *      <td class="sep">See {@linkplain #getName() method javadoc} for {@code MemberName} ↔ {@code Identifier} mapping.</td>
+ *      <td class="sep">See {@link Parameters#getMemberName(ParameterDescriptor)} for {@code MemberName} ↔ {@code Identifier} mapping.</td>
  *   </tr>
  *   <!-- "Title" (WPS) equivalent to "designation" (Feature), but not yet provided. -->
  *   <tr>
