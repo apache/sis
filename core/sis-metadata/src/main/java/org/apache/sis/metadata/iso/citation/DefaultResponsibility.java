@@ -101,6 +101,7 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
      * @see #castOrCopy(Responsibility)
      */
     public DefaultResponsibility(final Responsibility object) {
+        super(object);
         if (object != null) {
             this.role    = object.getRole();
             this.extents = copyCollection(object.getExtents(), Extent.class);
