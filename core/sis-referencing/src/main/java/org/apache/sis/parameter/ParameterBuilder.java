@@ -101,6 +101,22 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
+     * Sets the parameter description as a {@code String} or {@code InternationalString} instance.
+     * Calls to this method overwrite any previous value.
+     *
+     * <p><b>Lifetime:</b>
+     * previous descriptions are discarded by calls to {@code setDescription(…)}.
+     * Descriptions are cleared after a {@code createXXX(…)} method has been invoked.</p>
+     *
+     * @param  description The description, or {@code null} if none.
+     * @return {@code this}, for method call chaining.
+     */
+    public ParameterBuilder setDescription(final CharSequence description) {
+        properties.put(AbstractParameterDescriptor.DESCRIPTION_KEY, description);
+        return this;
+    }
+
+    /**
      * Sets whether the parameter is mandatory or optional.
      * This property determines the {@linkplain DefaultParameterDescriptor#getMinimumOccurs() minimum number
      * of times} that values are required, which will be 0 for an optional parameter and 1 for a mandatory one.

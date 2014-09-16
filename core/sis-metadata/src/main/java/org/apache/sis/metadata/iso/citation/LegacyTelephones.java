@@ -53,10 +53,7 @@ final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
      */
     @Override
     protected Telephone wrap(final String value) {
-        final DefaultTelephone telephone = new DefaultTelephone();
-        telephone.setNumber(value);
-        telephone.setNumberType(type);
-        return telephone;
+        return new DefaultTelephone(value, type);
     }
 
     /**
