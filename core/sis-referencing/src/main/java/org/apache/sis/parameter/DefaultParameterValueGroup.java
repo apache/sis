@@ -27,10 +27,13 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
+import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 
+import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForName;
 
 // Branch-dependent imports
@@ -100,7 +103,9 @@ import java.util.Objects;
  * @see DefaultParameterDescriptorGroup
  * @see DefaultParameterValue
  */
-public class DefaultParameterValueGroup implements ParameterValueGroup, Serializable, Cloneable {
+public class DefaultParameterValueGroup implements ParameterValueGroup,
+        LenientComparable, Serializable, Cloneable
+{
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -318,21 +323,50 @@ public class DefaultParameterValueGroup implements ParameterValueGroup, Serializ
 
     /**
      * Compares the specified object with this parameter for equality.
+     * The strictness level is controlled by the second argument.
+     *
+     * @param  object The object to compare to {@code this}.
+     * @param  mode The strictness level of the comparison.
+     * @return {@code true} if both objects are equal according the given comparison mode.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            // Slight optimization
+            return true;
+        }
+        if (object != null) {
+            if (mode == ComparisonMode.STRICT) {
+                if (getClass() == object.getClass()) {
+                    final DefaultParameterValueGroup that = (DefaultParameterValueGroup) object;
+                    return Objects.equals(values.descriptor, that.values.descriptor) &&
+                           Objects.equals(values, that.values);
+                }
+            } else if (object instanceof ParameterValueGroup) {
+                final ParameterValueGroup that = (ParameterValueGroup) object;
+                return deepEquals(getDescriptor(), that.getDescriptor(), mode) &&
+                       deepEquals(values(), that.values(), mode);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Compares the specified object with this parameter for equality.
+     * This method is implemented as below:
+     *
+     * {@preformat java
+     *     return equals(other, ComparisonMode.STRICT);
+     * }
+     *
+     * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
      *
      * @param  object The object to compare to {@code this}.
      * @return {@code true} if both objects are equal.
      */
     @Override
-    public boolean equals(final Object object) {
-        if (object == this) {
-            return true;
-        }
-        if (object != null && getClass() == object.getClass()) {
-            final DefaultParameterValueGroup that = (DefaultParameterValueGroup) object;
-            return Objects.equals(values.descriptor, that.values.descriptor) &&
-                   Objects.equals(values, that.values);
-        }
-        return false;
+    public final boolean equals(final Object object) {
+        return equals(object, ComparisonMode.STRICT);
     }
 
     /**

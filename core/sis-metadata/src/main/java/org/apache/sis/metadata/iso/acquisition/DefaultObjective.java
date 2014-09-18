@@ -268,7 +268,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     }
 
     /**
-     * Set the extent information including the bounding box, bounding polygon, vertical and
+     * Sets the extent information including the bounding box, bounding polygon, vertical and
      * temporal extent of the objective.
      *
      * @param newValues The new extents values.

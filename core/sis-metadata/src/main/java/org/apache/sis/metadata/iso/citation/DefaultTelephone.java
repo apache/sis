@@ -183,7 +183,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Set the type of telephone number.
+     * Sets the type of telephone number.
      *
      * @param newValue The new type of telephone number.
      *

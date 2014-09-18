@@ -247,7 +247,7 @@ public final class Types extends Static {
      * @return The description, or {@code null} if none or if the given code is null.
      *
      * @see #getCodeTitle(Enumerated)
-     * @see #getDescription(Enumerated)
+     * @see #getDescription(Class)
      */
     public static InternationalString getDescription(final Enumerated code) {
         if (code != null) {
