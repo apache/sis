@@ -247,7 +247,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     }
 
     /**
-     * Set a new units in which sensor wavelengths are expressed.
+     * Sets a new units in which sensor wavelengths are expressed.
      *
      * @param newValue the new unit.
      *

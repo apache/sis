@@ -30,6 +30,7 @@ import org.opengis.metadata.distribution.MediumName;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
@@ -99,11 +100,6 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     private InternationalString mediumNote;
 
     /**
-     * Unique identifier for an instance of the medium.
-     */
-    private Identifier identifier;
-
-    /**
      * Constructs an initially empty medium.
      */
     public DefaultMedium() {
@@ -127,7 +123,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
             volumes       = object.getVolumes();
             mediumFormats = copyCollection(object.getMediumFormats(), MediumFormat.class);
             mediumNote    = object.getMediumNote();
-            identifier    = object.getIdentifier();
+            identifiers   = singleton(object.getIdentifier(), Identifier.class);
         }
     }
 
@@ -341,7 +337,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     @Override
 /// @XmlElement(name = "identifier")
     public Identifier getIdentifier() {
-        return identifier;
+        return NonMarshalledAuthority.getMarshallable(identifiers);
     }
 
     /**
@@ -353,6 +349,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      */
     public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
-        identifier = newValue;
+        identifiers = nonNullCollection(identifiers, Identifier.class);
+        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
     }
 }

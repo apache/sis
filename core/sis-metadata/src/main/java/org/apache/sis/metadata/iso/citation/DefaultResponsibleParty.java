@@ -16,8 +16,8 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.Collection;
 import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;

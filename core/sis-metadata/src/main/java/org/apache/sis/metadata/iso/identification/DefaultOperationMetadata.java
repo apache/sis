@@ -181,7 +181,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
     }
 
     /**
-     * Set the unique identifier for this interface.
+     * Sets the unique identifier for this interface.
      *
      * @param newValue The new unique identifier for this interface.
      */
@@ -307,7 +307,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
     }
 
     /**
-     * Set the list of operation that must be completed before current operation is invoked.
+     * Sets the list of operation that must be completed before current operation is invoked.
      *
      * @param newValues The new list of operation.
      */
