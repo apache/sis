@@ -92,7 +92,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Creates a new property accessor for the {@link DefaultCitation} class.
      */
     private static PropertyAccessor createPropertyAccessor() {
-        return new PropertyAccessor(HardCodedCitations.ISO_19115, Citation.class, DefaultCitation.class);
+        return new PropertyAccessor(HardCodedCitations.ISO_19115, Citation.class, DefaultCitation.class, false);
     }
 
     /**
@@ -125,11 +125,11 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             final String   propertyName  = (String)   expected[i++];
             final String   umlIdentifier = (String)   expected[i++];
             final String   sentence      = (String)   expected[i++];
-            assertEquals("declaringType", declaringType, accessor.type(index, TypeValuePolicy.DECLARING_INTERFACE));
             assertEquals("methodName",    methodName,    accessor.name(index, KeyNamePolicy.METHOD_NAME));
             assertEquals("propertyName",  propertyName,  accessor.name(index, KeyNamePolicy.JAVABEANS_PROPERTY));
             assertEquals("umlIdentifier", umlIdentifier, accessor.name(index, KeyNamePolicy.UML_IDENTIFIER));
             assertEquals("sentence",      sentence,      accessor.name(index, KeyNamePolicy.SENTENCE));
+            assertEquals("declaringType", declaringType, accessor.type(index, TypeValuePolicy.DECLARING_INTERFACE));
             assertEquals(methodName,      index,         accessor.indexOf(methodName,    false));
             assertEquals(propertyName,    index,         accessor.indexOf(propertyName,  false));
             assertEquals(umlIdentifier,   index,         accessor.indexOf(umlIdentifier, false));
@@ -200,7 +200,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     @DependsOnMethod("testConstructor")
     public void testConstructorWithInheritance() {
-        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19115, DataIdentification.class, DefaultDataIdentification.class),
+        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19115, DataIdentification.class, DefaultDataIdentification.class, false),
         //……Declaring type………………………Method………………………………………………………………………JavaBeans………………………………………………………UML identifier………………………………………Sentence……………………………………………………………Type………………………………………………………………
             Identification.class, "getCitation",                   "citation",                   "citation",                  "Citation",                     Citation.class,
             Identification.class, "getAbstract",                   "abstract",                   "abstract",                  "Abstract",                     InternationalString.class,
@@ -218,10 +218,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Identification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
         DataIdentification.class, "getLanguages",                  "languages",                  "language",                  "Languages",                    Locale[].class,
         DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               Charset[].class,
-        DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
-        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class,
-            Identification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
             Identification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
+        DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
+            Identification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
+        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class,
             Identification.class, "getAdditionalDocumentations",   "additionalDocumentations",   "additionalDocumentation",   "Additional documentations",    Citation[].class,
             Identification.class, "getAssociatedResources",        "associatedResources",        "associatedResource",        "Associated resources",         AssociatedResource[].class,
             Identification.class, "getProcessingLevel",            "processingLevel",            "processingLevel",           "Processing level",             Identifier.class,
@@ -239,7 +239,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @DependsOnMethod("testConstructorWithInheritance")
     public void testConstructorWithCovariantReturnType() {
         final Class<?> type = GeographicCRS.class;
-        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO, type, type),
+        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO, type, type, false),
         //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier………………Sentence…………………………………Type…………………………………………………………
             GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
             GeodeticCRS.class,      "getDatum",            "datum",            "datum",            "Datum",              GeodeticDatum.class,       // Covariant return type
@@ -369,7 +369,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @DependsOnMethod("testSet")
     public void testSetDeprecated() {
         final PropertyAccessor accessor = new PropertyAccessor(HardCodedCitations.ISO_19115,
-                CoverageDescription.class, DefaultCoverageDescription.class);
+                CoverageDescription.class, DefaultCoverageDescription.class, false);
         final int indexOfDeprecated  = accessor.indexOf("contentType", true);
         final int indexOfReplacement = accessor.indexOf("attributeGroup", true);
         assertTrue("Deprecated elements shall be sorted after non-deprecated ones.",

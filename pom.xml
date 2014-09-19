@@ -517,6 +517,39 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </configuration>
       </plugin>
 
+      <!-- Copy Javadoc resources in the top-level directory (not from "doc-files" subdirectories).
+           While the Maven documentation said that the "src/main/javadoc" directory is copied by default,
+           or a directory can be specified with <javadocResourcesDirectory>, I have been unable to make it
+           work even with absolute paths.
+        -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <encoding>${project.build.sourceEncoding}</encoding>
+        </configuration>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>prepare-package</phase> <!-- TODO: find some way to execute this plugin only before javadoc, not before JAR. -->
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <resources>
+                <resource>
+                  <directory>src/main/javadoc/</directory>
+                  <includes>
+                    <include>*.png</include>
+                  </includes>
+                </resource>
+              </resources>
+              <outputDirectory>${basedir}/target/site/apidocs/</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -536,28 +569,11 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
           <stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
           <validateLinks>true</validateLinks>
-
-          <!-- TODO
-            Following was used to work prior JDK 8. But as of Java 1.8.0_05 with maven-javadoc-plugin 2.9.1,
-            this does not work anymore.  A trailing slash seems mandatory with JDK 8, while the Maven plugin
-            unconditionally removes any trailing slash we may insert below. For now we workaround this issue
-            by using <additionalparam>-link ...</additionalparam> instead of <links>.
-
-            For verifying if this problem is fixed in future JDK/Maven versions, remove the -link argument,
-            uncomment the <links> block and execute "mvn javadoc:aggregate". If the following line appears,
-            then the problem is not yet fixed:
-
-            javadoc: warning - Error fetching URL: http://www.geoapi.org/snapshot/javadoc
-
-
           <links>
-            <link>http://www.geoapi.org/snapshot/javadoc</link>
             <link>http://www.geoapi.org/snapshot/pending</link>
           </links>
-          -->
 
           <additionalparam>
-              -link http://www.geoapi.org/snapshot/pending/
           </additionalparam>
 
           <!-- Separates packages on the overview page into the groups specified. -->

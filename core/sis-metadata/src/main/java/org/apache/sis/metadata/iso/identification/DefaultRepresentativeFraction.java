@@ -250,6 +250,17 @@ public class DefaultRepresentativeFraction extends Number implements Representat
         return (int) denominator;
     }
 
+    /**
+     * Returns a string representation of this scale, or {@code NaN} if undefined.
+     * If defined, the string representation uses the colon as in "1:20000".
+     *
+     * @return A string representation of this scale.
+     */
+    @Override
+    public String toString() {
+        return (denominator != 0) ? "1:" + denominator : "NaN";
+    }
+
 
 
 
