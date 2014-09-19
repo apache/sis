@@ -17,7 +17,6 @@
 package org.apache.sis.metadata;
 
 import java.util.Arrays;
-import java.util.Collections;
 import javax.measure.unit.SI;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.PresentationForm;
@@ -29,7 +28,9 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
+import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
@@ -38,6 +39,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static java.util.Collections.singleton;
 
 
 /**
@@ -45,7 +47,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(TreeTableViewTest.class)
@@ -87,12 +89,11 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         citation.getAlternateTitles().add(new SimpleInternationalString("Alt A"));
         citation.getAlternateTitles().add(new SimpleInternationalString("Alt B"));
 
-        final DefaultResponsibleParty author = new DefaultResponsibleParty();
-        author.setIndividualName("Testsuya Toyoda");
-        author.setRole(Role.AUTHOR);
+        final DefaultResponsibleParty author = new DefaultResponsibleParty(Role.AUTHOR);
+        author.setParties(singleton(new DefaultIndividual("Testsuya Toyoda", null, null)));
         citation.getCitedResponsibleParties().add(author);
         final DefaultResponsibleParty duplicated = new DefaultResponsibleParty();
-        duplicated.setIndividualName("A japanese author");
+        duplicated.setParties(singleton(new DefaultIndividual("A japanese author", null, null)));
         citation.getCitedResponsibleParties().add(duplicated);
         return citation;
     }
@@ -157,8 +158,10 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     @Test
     public void testImageDescription() {
         final DefaultImageDescription image = new DefaultImageDescription();
-        image.getDimensions().add(createBand(0.25, 0.26));
-        image.getDimensions().add(createBand(0.28, 0.29));
+        image.setAttributeGroups(Arrays.asList(
+            new DefaultAttributeGroup(null, createBand(0.25, 0.26)),
+            new DefaultAttributeGroup(null, createBand(0.28, 0.29))
+        ));
         final String text = format.format(image.asTreeTable());
         assertMultilinesEquals(
             "Image description\n" +
@@ -186,7 +189,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
                 new SimpleInternationalString("Kiwi")));
 
         final DefaultDataIdentification identification = new DefaultDataIdentification();
-        identification.setDescriptiveKeywords(Collections.singleton(keywords));
+        identification.setDescriptiveKeywords(singleton(keywords));
         identification.setTopicCategories(Arrays.asList(
                 TopicCategory.HEALTH,
                 TopicCategory.valueOf("OCEANS"), // Existing category

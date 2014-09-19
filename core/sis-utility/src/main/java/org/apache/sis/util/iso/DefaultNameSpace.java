@@ -55,6 +55,12 @@ import org.apache.sis.internal.jdk7.Objects;
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
+ *
+ * @see DefaultScopedName
+ * @see DefaultLocalName
+ * @see DefaultTypeName
+ * @see DefaultMemberName
+ * @see DefaultNameFactory
  */
 public class DefaultNameSpace implements NameSpace, Serializable {
     /**
@@ -78,8 +84,10 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * We don't use direct reference to {@code GLOBAL} because {@code null} is used as a sentinel
      * value for stopping iterative searches (using GLOBAL would have higher risk of never-ending
      * loops in case of bug), and in order to reduce the stream size during serialization.
+     *
+     * @see #parent()
      */
-    final DefaultNameSpace parent;
+    private final DefaultNameSpace parent;
 
     /**
      * The name of this namespace, usually as a {@link String} or an {@link InternationalString}.
@@ -122,8 +130,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     private transient WeakValueHashMap<String,Object> childs;
 
     /**
-     * Creates the global namespace. This constructor can be invoked by {@link GlobalNameSpace}
-     * only.
+     * Creates the global namespace. This constructor can be invoked by {@link GlobalNameSpace} only.
      */
     DefaultNameSpace() {
         this.parent        = null;
@@ -151,7 +158,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     protected DefaultNameSpace(final DefaultNameSpace parent, CharSequence name,
                                final String headSeparator, final String separator)
     {
-        this.parent = parent;
+        this.parent = (parent != GlobalNameSpace.GLOBAL) ? parent : null;
         ensureNonNull("name",          name);
         ensureNonNull("headSeparator", headSeparator);
         ensureNonNull("separator",     separator);
@@ -245,6 +252,13 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     @Override
     public boolean isGlobal() {
         return false; // To be overridden by GlobalNameSpace.
+    }
+
+    /**
+     * Returns the parent namespace, replacing null parent by {@link GlobalNameSpace#GLOBAL}.
+     */
+    final DefaultNameSpace parent() {
+        return (parent != null) ? parent : GlobalNameSpace.GLOBAL;
     }
 
     /**
@@ -398,7 +412,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
                 }
             }
         }
-        assert child.parent == this;
+        assert child.parent() == this;
         return child;
     }
 
@@ -518,7 +532,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * @return The unique instance.
      */
     Object readResolve() {
-        final DefaultNameSpace p = (parent != null) ? parent : GlobalNameSpace.GLOBAL;
+        final DefaultNameSpace p = parent();
         final String key = key(name);
         final WeakValueHashMap<String,Object> pool = p.childs;
         synchronized (pool) {

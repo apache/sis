@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.Iterator;
 import java.util.ConcurrentModificationException;
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -61,10 +61,15 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
-@XmlType(name = "GenericName") // Actually 'gml:CodeType', but the later is used elsewhere.
+
+/*
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * since "CodeType" is used for various classes (including LocalName and ScopedName).
+ */
+@XmlTransient
 public abstract class AbstractName implements GenericName, Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -102,10 +107,10 @@ public abstract class AbstractName implements GenericName, Serializable {
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is already an instance of {@code AbstractName},
-     *       then it is returned unchanged.</li>
      *   <li>Otherwise if the given object is an instance of {@link LocalName}, then this
      *       method delegates to {@link DefaultLocalName#castOrCopy(LocalName)}.</li>
+     *   <li>Otherwise if the given object is already an instance of {@code AbstractName},
+     *       then it is returned unchanged.</li>
      *   <li>Otherwise a new instance of an {@code AbstractName} subclass is created using the
      *       {@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} method.</li>
      * </ul>
@@ -115,11 +120,11 @@ public abstract class AbstractName implements GenericName, Serializable {
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractName castOrCopy(final GenericName object) {
-        if (object == null || object instanceof AbstractName) {
-            return (AbstractName) object;
-        }
         if (object instanceof LocalName) {
             return DefaultLocalName.castOrCopy((LocalName) object);
+        }
+        if (object == null || object instanceof AbstractName) {
+            return (AbstractName) object;
         }
         /*
          * Recreates a new name for the given name in order to get

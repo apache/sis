@@ -29,6 +29,15 @@ import org.apache.sis.measure.ValueRange;
 /**
  * Information about an image's suitability for use.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
@@ -56,7 +65,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1756867502303578675L;
+    private static final long serialVersionUID = -239683653229623567L;
 
     /**
      * Illumination elevation measured in degrees clockwise from the target plane
@@ -85,12 +94,6 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * Area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
      */
     private Double cloudCoverPercentage;
-
-    /**
-     * Image distributor's code that identifies the level of radiometric and geometric
-     * processing that has been applied.
-     */
-    private Identifier processingLevelCode;
 
     /**
      * Count of the number of lossy compression cycles performed on the image.
@@ -150,7 +153,6 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
             imagingCondition                      = object.getImagingCondition();
             imageQualityCode                      = object.getImageQualityCode();
             cloudCoverPercentage                  = object.getCloudCoverPercentage();
-            processingLevelCode                   = object.getProcessingLevelCode();
             compressionGenerationQuantity         = object.getCompressionGenerationQuantity();
             triangulationIndicator                = object.getTriangulationIndicator();
             radiometricCalibrationDataAvailable   = object.isRadiometricCalibrationDataAvailable();
@@ -195,7 +197,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @return A value between -90° and +90°, or {@code null} if unspecified.
      */
     @Override
-    @ValueRange(minimum=0, maximum=180)
+    @ValueRange(minimum = -90, maximum = +90)
     @XmlElement(name = "illuminationElevationAngle")
     public Double getIlluminationElevationAngle() {
         return illuminationElevationAngle;
@@ -220,7 +222,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @return A value between 0° and 360°, or {@code null} if unspecified.
      */
     @Override
-    @ValueRange(minimum=0, maximum=360)
+    @ValueRange(minimum = 0, maximum = 360)
     @XmlElement(name = "illuminationAzimuthAngle")
     public Double getIlluminationAzimuthAngle() {
         return illuminationAzimuthAngle;
@@ -238,9 +240,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Returns the conditions affected the image.
+     * Returns the conditions which affected the image.
      *
-     * @return Conditions affected the image, or {@code null} if unspecified.
+     * @return Conditions which affected the image, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "imagingCondition")
@@ -249,7 +251,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Sets the conditions affected the image.
+     * Sets the conditions that affected the image.
      *
      * @param newValue The new imaging condition.
      */
@@ -259,7 +261,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Returns the identifier that specifies the image quality.
+     * Returns a code in producer’s codespace that specifies the image quality.
      *
      * @return The image quality, or {@code null} if unspecified.
      */
@@ -270,7 +272,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Sets the identifier that specifies the image quality.
+     * Sets a code in producer’s codespace that specifies the image quality.
      *
      * @param newValue The new image quality code.
      */
@@ -285,7 +287,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @return A value between 0 and 100, or {@code null} if unspecified.
      */
     @Override
-    @ValueRange(minimum=0, maximum=100)
+    @ValueRange(minimum = 0, maximum = 100)
     @XmlElement(name = "cloudCoverPercentage")
     public Double getCloudCoverPercentage() {
         return cloudCoverPercentage;
@@ -311,7 +313,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @XmlElement(name = "processingLevelCode")
     public Identifier getProcessingLevelCode() {
-        return processingLevelCode;
+        return super.getProcessingLevelCode();
     }
 
     /**
@@ -320,9 +322,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue The new processing level code.
      */
+    @Override
     public void setProcessingLevelCode(final Identifier newValue) {
-        checkWritePermission();
-        processingLevelCode = newValue;
+        super.setProcessingLevelCode(newValue);
     }
 
     /**
@@ -332,7 +334,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *         or {@code null} if unspecified.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "compressionGenerationQuantity")
     public Integer getCompressionGenerationQuantity() {
         return compressionGenerationQuantity;

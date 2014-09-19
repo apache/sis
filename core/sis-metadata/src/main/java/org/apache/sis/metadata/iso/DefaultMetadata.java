@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Collection;
+import java.nio.charset.Charset;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -59,6 +60,15 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * instances of in this {@code DefaultMetadata} object and every children, as required by
  * INSPIRE rules. If no language were specified, then the default locale will be the one
  * defined in the {@link org.apache.sis.xml.XML#LOCALE} marshaller property, if any.
+ *
+ * {@section Limitations}
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -383,9 +393,16 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Returns the full name of the character coding standard used for the metadata set.
+     * Returns the character coding standard used for the metadata set.
      *
-     * @return character coding standard used for the metadata, or {@code null}.
+     * <div class="warning"><b>Upcoming API change — JDK integration</b><br>
+     * As of ISO 19115:2014, {@code CharacterSet} is replaced by a reference to the
+     * <a href="http://www.iana.org/assignments/character-sets">IANA Character Set register</a>,
+     * which is represented in Java by {@link Charset}.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Character coding standard used for the metadata, or {@code null}.
      */
     @Override
     @XmlElement(name = "characterSet")
@@ -394,7 +411,14 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Sets the full name of the character coding standard used for the metadata set.
+     * Sets the character coding standard used for the metadata set.
+     *
+     * <div class="warning"><b>Upcoming API change — JDK integration</b><br>
+     * As of ISO 19115:2014, {@code CharacterSet} is replaced by a reference to the
+     * <a href="http://www.iana.org/assignments/character-sets">IANA Character Set register</a>,
+     * which is represented in Java by {@link Charset}.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValue The new character set.
      */

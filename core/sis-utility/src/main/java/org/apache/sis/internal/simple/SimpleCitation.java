@@ -88,9 +88,10 @@ public class SimpleCitation implements Citation, Serializable {
     @Override public Collection<PresentationForm>     getPresentationForms()       {return Collections.emptyList();}
     @Override public Series                           getSeries()                  {return null;}
     @Override public InternationalString              getOtherCitationDetails()    {return null;}
-    @Override public InternationalString              getCollectiveTitle()         {return null;}
     @Override public String                           getISBN()                    {return null;}
     @Override public String                           getISSN()                    {return null;}
+    @Deprecated
+    @Override public InternationalString              getCollectiveTitle()         {return null;}
 
     /**
      * Compares the given object with this citation for equality.

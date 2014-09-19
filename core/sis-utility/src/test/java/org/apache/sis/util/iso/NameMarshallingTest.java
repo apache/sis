@@ -24,6 +24,7 @@ import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
+import org.opengis.util.NameSpace;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
@@ -42,7 +43,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(DefaultNameFactoryTest.class)
@@ -97,7 +98,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(name, unmarshall(actual));
+        assertEquals(name, unmarshall(expected));
     }
 
     /**
@@ -120,7 +121,31 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(name, unmarshall(actual));
+        assertEquals(name, unmarshall(expected));
+    }
+
+    /**
+     * Tests XML of a {@link LocalName} with a scope.
+     *
+     * @throws JAXBException Should not happen.
+     */
+    @Test
+    @DependsOnMethod("testLocalName")
+    public void testLocalNameWithScope() throws JAXBException {
+        final NameFactory factory = DefaultFactories.SIS_NAMES;
+        final NameSpace scope = factory.createNameSpace(factory.createLocalName(null, "A code space"), null);
+        final LocalName name = factory.createLocalName(scope, "A name in a scope");
+        assertEquals("A name in a scope", name.toString());
+        final String expected =
+                "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
+                                        " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+                "  <gml:alias>\n" +
+                "    <gco:LocalName codeSpace=\"A code space\">A name in a scope</gco:LocalName>\n" +
+                "  </gml:alias>\n" +
+                "</gml:IO_IdentifiedObject>\n";
+        final String actual = marshal(name);
+        assertXmlEquals(expected, actual, "xmlns:*");
+        assertEquals(name, unmarshall(expected));
     }
 
     /**
@@ -146,7 +171,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(name, unmarshall(actual));
+        assertEquals(name, unmarshall(expected));
     }
 
     /**
@@ -168,7 +193,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
         assertXmlEquals(expected, actual, "xmlns:*");
-        assertEquals(name, unmarshall(actual));
+        assertEquals(name, unmarshall(expected));
     }
 
     /**

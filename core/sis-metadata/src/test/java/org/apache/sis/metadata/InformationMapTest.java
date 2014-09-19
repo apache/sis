@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.05)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})
@@ -87,7 +87,7 @@ public final strictfp class InformationMapTest extends TestCase {
                 descriptions.get("cloudCoverPercentage").getDefinition().toString(Locale.ENGLISH));
 
         assertEquals("Testing a property inherited from the CoverageDescription parent.",
-                "Type of information represented by the cell value.",
-                descriptions.get("contentType").getDefinition().toString(Locale.ENGLISH));
+                "Description of the attribute described by the measurement value.",
+                descriptions.get("attributeDescription").getDefinition().toString(Locale.ENGLISH));
     }
 }

@@ -33,7 +33,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -867,51 +866,6 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Helper method for implementation of {@link #equals(Object, ComparisonMode)} methods in
-     * {@link LinearTransform} implementations. Those implementations shall replace completely the
-     * {@link #equals(Object, ComparisonMode)} default implementation, <strong>except</strong> for
-     * {@link ComparisonMode#STRICT} which should continue to rely on the default implementation.
-     * The pattern is:
-     *
-     * {@preformat java
-     *     public boolean equals(Object object, ComparisonMode mode) {
-     *         if (object == this) { // Slight optimization
-     *             return true;
-     *         }
-     *         if (mode != ComparisonMode.STRICT) {
-     *             return equals(this, object, mode);
-     *         }
-     *         if (super.equals(object, mode)) {
-     *             // Compare the internal fields here.
-     *         }
-     *         return false;
-     *     }
-     * }
-     *
-     * Note that this pattern considers {@link ComparisonMode#BY_CONTRACT} as synonymous to
-     * {@code IGNORE_METADATA} rather than {@code STRICT}. This is valid if we consider that
-     * the behavior of the math transform is completely specified by its matrix.
-     *
-     * @param  t1  The first transform to compare.
-     * @param  t2  The second transform to compare, or {@code null} if none.
-     * @param  mode The strictness level of the comparison.
-     * @return {@code true} if both transforms are equal.
-     */
-    static boolean equals(final LinearTransform t1, final Object t2, final ComparisonMode mode) {
-        if (t2 instanceof LinearTransform) {
-            final Matrix m1 = t1.getMatrix();
-            if (m1 != null) {
-                final Matrix m2 = ((LinearTransform) t2).getMatrix();
-                if (m1 instanceof LenientComparable) {
-                    return ((LenientComparable) m1).equals(m2, mode);
-                }
-                return Matrices.equals(m1, m2, mode);
-            }
-        }
-        return false;
-    }
-
-    /**
      * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
      * The default implementation formats all parameter values returned by {@link #getParameterValues()}.
      * The parameter group name is used as the math transform name.
@@ -944,7 +898,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @see AbstractMathTransform2D#beforeFormat(List, int, boolean)
      * @see ConcatenatedTransform#getPseudoSteps()
      */
-    int beforeFormat(List<MathTransform> transforms, int index, boolean inverse) {
+    int beforeFormat(List<Object> transforms, int index, boolean inverse) {
         return index;
     }
 

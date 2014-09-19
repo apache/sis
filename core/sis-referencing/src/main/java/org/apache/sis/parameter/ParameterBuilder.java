@@ -276,8 +276,8 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         final ParameterDescriptor<T> descriptor;
         onCreate(false);
         try {
-            descriptor = new DefaultParameterDescriptor<T>(properties,
-                    valueClass, valueDomain, validValues, defaultValue, required);
+            descriptor = new DefaultParameterDescriptor<T>(properties, required ? 1 : 0, 1,
+                    valueClass, valueDomain, validValues, defaultValue);
         } finally {
             onCreate(true);
         }

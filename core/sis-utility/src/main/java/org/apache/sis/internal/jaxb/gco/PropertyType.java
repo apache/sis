@@ -115,6 +115,13 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
         extends XmlAdapter<ValueType,BoundType>
 {
     /**
+     * {@code true} if marshalling an XML based on ISO 19115:2003 model. A value of {@code false}
+     * (ISO 19115:2014 model) is not yet supported, so we currently use this variable only as a way
+     * to identify the code to revisit when we will want to support the new model.
+     */
+    public static final boolean LEGACY_XML = true;
+
+    /**
      * The wrapped GeoAPI metadata instance, or {@code null} if the metadata shall not be marshalled.
      * Metadata are not marshalled when replaced by {@code xlink:href} or {@code uuidref} attributes.
      */

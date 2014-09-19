@@ -31,11 +31,14 @@
  * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation         Content information} «abstract»<br>
+ * {@code  │   ├─}                                                                                        Feature catalogue<br>
  * {@code  │   ├─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}<br>
  * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription         Coverage description}<br>
  * {@code  │       └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription            Image description}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo             Feature type info}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension              Range dimension}<br>
- * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultBand                        Band}<br>
+ * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultSampleDimension             Sample dimension}<br>
+ * {@code  │       └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultBand                        Band}<br>
  * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription     Range element description}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.content.BandDefinition          Band definition}<br>
@@ -44,18 +47,20 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.content.PolarizationOrientation Polarization orientation}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.content.TransferFunctionType    Transfer function type}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
- *             {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation         Content information} «abstract»<br>
- *             {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}<br>
- *             {@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription         Coverage description}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.content.CoverageContentType                       Coverage content type} «code list»<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension              Range dimension}<br>
- * {@code  └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription     Range element description}<br>
- *             {@linkplain org.apache.sis.metadata.iso.content.DefaultBand                        Band}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.content.BandDefinition                            Band definition} «code list»<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.content.PolarizationOrientation                   Polarization orientation} «code list»<br>
- * {@code  └─} {@linkplain org.opengis.metadata.content.TransferFunctionType                      Transfer function type} «code list»<br>
- *             {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription            Image description}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.content.ImagingCondition                          Imaging condition} «code list»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation         Content information} «abstract»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo             Feature type info}<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription         Coverage description}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultAttributeGroup              Attribute group}<br>
+ * {@code  │   ├─} {@linkplain org.opengis.metadata.content.CoverageContentType                       Coverage content type} «code list»<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension              Range dimension}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription     Range element description}<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.content.DefaultBand                        Band}<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.content.BandDefinition                            Band definition} «code list»<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.content.PolarizationOrientation                   Polarization orientation} «code list»<br>
+ * {@code  └─}     {@linkplain org.opengis.metadata.content.TransferFunctionType                      Transfer function type} «code list»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription            Image description}<br>
+ * {@code  └─}     {@linkplain org.opengis.metadata.content.ImagingCondition                          Imaging condition} «code list»<br>
  * </td></tr></table>
  *
  * {@section Bands in gridded data}
@@ -68,7 +73,7 @@
  * {@link org.opengis.metadata.content.RangeDimension}.
  *
  * {@section Null values, nil objects and collections}
- * All constructors (except the <cite>copy constructors</cite>) and setter methods accept {@code null} arguments.
+ * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.

@@ -140,9 +140,9 @@ public class TensorParameters<E> implements Serializable {
         final Map<String,Object> properties = new HashMap<String,Object>(4);
         properties.put(ReferenceIdentifier.AUTHORITY_KEY, Citations.OGC);
         properties.put(ReferenceIdentifier.CODE_KEY, "num_row");
-        numRow = new DefaultParameterDescriptor<Integer>(properties, Integer.class, valueDomain, null, defaultSize, true);
+        numRow = new DefaultParameterDescriptor<Integer>(properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
         properties.put(ReferenceIdentifier.CODE_KEY, "num_col");
-        numCol = new DefaultParameterDescriptor<Integer>(properties, Integer.class, valueDomain, null, defaultSize, true);
+        numCol = new DefaultParameterDescriptor<Integer>(properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
         WKT1 = new TensorParameters<Double>(Double.class, "elt_", "_", numRow, numCol);
     }
 
@@ -378,7 +378,7 @@ public class TensorParameters<E> implements Serializable {
         final Map<String,Object> properties = new HashMap<String,Object>(4);
         properties.put(ReferenceIdentifier.CODE_KEY, indicesToName(indices));
         properties.put(ReferenceIdentifier.AUTHORITY_KEY, dimensions[0].getName().getAuthority());
-        return new DefaultParameterDescriptor<E>(properties, elementType, null, null, isDiagonal ? one : zero, false);
+        return new DefaultParameterDescriptor<E>(properties, 0, 1, elementType, null, null, isDiagonal ? one : zero);
     }
 
     /**

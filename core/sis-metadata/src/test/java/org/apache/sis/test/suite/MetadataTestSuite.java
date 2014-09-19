@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @Suite.SuiteClasses({
@@ -52,7 +52,6 @@ import org.junit.BeforeClass;
     // XML marshalling.
     org.apache.sis.internal.jaxb.code.CodeListMarshallingTest.class,
     org.apache.sis.internal.jaxb.code.PT_LocaleTest.class,
-    org.apache.sis.internal.jaxb.gml.TimePeriodTest.class,
     org.apache.sis.xml.FreeTextMarshallingTest.class,
     org.apache.sis.xml.NilReasonMarshallingTest.class,
     org.apache.sis.xml.AnchorMarshallingTest.class,
@@ -60,6 +59,7 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.XLinkMarshallingTest.class,
 
     // ISO implementations.
+    org.apache.sis.metadata.iso.citation.DefaultContactTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
     org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,
@@ -72,6 +72,9 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.identification.DefaultResolutionTest.class,
     org.apache.sis.metadata.iso.identification.DefaultBrowseGraphicTest.class,
     org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class,
+    org.apache.sis.internal.jaxb.metadata.replace.ServiceParameterTest.class,
+    org.apache.sis.metadata.iso.identification.DefaultCoupledResourceTest.class,
+    org.apache.sis.metadata.iso.identification.DefaultServiceIdentificationTest.class,
     org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
     org.apache.sis.metadata.iso.quality.AbstractPositionalAccuracyTest.class,
     org.apache.sis.metadata.iso.lineage.DefaultLineageTest.class,

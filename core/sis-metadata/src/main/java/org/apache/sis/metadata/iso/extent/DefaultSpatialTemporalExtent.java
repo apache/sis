@@ -21,6 +21,8 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.extent.TemporalExtent;
+import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
@@ -31,11 +33,21 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 /**
  * Extent with respect to date/time and spatial boundaries.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "EX_SpatialTemporalExtent_Type")
@@ -53,9 +65,32 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     private Collection<GeographicExtent> spatialExtent;
 
     /**
+     * Vertical extent component.
+     */
+    private VerticalExtent verticalExtent;
+
+    /**
      * Constructs an initially empty spatial-temporal extent.
      */
     public DefaultSpatialTemporalExtent() {
+    }
+
+    /**
+     * Constructs a new spatial-temporal extent initialized to the specified values.
+     *
+     * @param spatialExtent  The spatial extent component of composite spatial and temporal extent.
+     * @param verticalExtent The vertical extent component, or {@code null} if none.
+     * @param extent         The date and time for the content of the dataset, or {@code null} if unspecified.
+     *
+     * @since 0.5
+     */
+    public DefaultSpatialTemporalExtent(final GeographicExtent spatialExtent,
+                                        final VerticalExtent verticalExtent,
+                                        final TemporalExtent extent)
+    {
+        super(extent);
+        this.verticalExtent = verticalExtent;
+        this.spatialExtent  = singleton(spatialExtent, GeographicExtent.class);
     }
 
     /**
@@ -70,7 +105,10 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     public DefaultSpatialTemporalExtent(final SpatialTemporalExtent object) {
         super(object);
         if (object != null) {
-            spatialExtent = copyCollection(object.getSpatialExtent(), GeographicExtent.class);
+            spatialExtent  = copyCollection(object.getSpatialExtent(), GeographicExtent.class);
+            if (object instanceof DefaultSpatialTemporalExtent) {
+                verticalExtent = ((DefaultSpatialTemporalExtent) object).getVerticalExtent();
+            }
         }
     }
 
@@ -117,6 +155,30 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      */
     public void setSpatialExtent(final Collection<? extends GeographicExtent> newValues) {
         spatialExtent = writeCollection(newValues, spatialExtent, GeographicExtent.class);
+    }
+
+    /**
+     * Returns the vertical extent component.
+     *
+     * @return Vertical extent component, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @XmlElement(name = "verticalExtent")
+    public VerticalExtent getVerticalExtent() {
+        return verticalExtent;
+    }
+
+    /**
+     * Set the vertical extent component.
+     *
+     * @param newValue The new vertical extent component.
+     *
+     * @since 0.5
+     */
+    public void setVerticalExtent(final VerticalExtent newValue) {
+        checkWritePermission();
+        verticalExtent = newValue;
     }
 
     /**

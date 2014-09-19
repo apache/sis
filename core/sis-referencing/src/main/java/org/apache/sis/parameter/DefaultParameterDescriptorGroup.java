@@ -22,21 +22,15 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.Collections;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -89,27 +83,17 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.4 (derived from geotk-2.0)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see DefaultParameterValueGroup
  * @see DefaultParameterDescriptor
  */
-public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject implements ParameterDescriptorGroup {
+public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor implements ParameterDescriptorGroup {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4613190550542423839L;
-
-    /**
-     * The minimum number of times that values for this parameter group are required.
-     */
-    private final int minimumOccurs;
-
-    /**
-     * The maximum number of times that values for this parameter group are required.
-     */
-    private final int maximumOccurs;
+    private static final long serialVersionUID = 6058599597772994456L;
 
     /**
      * The {@linkplain #descriptors() parameter descriptors} for this group.
@@ -118,7 +102,7 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
 
     /**
      * Constructs a parameter group from a set of properties. The properties map is given unchanged to the
-     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
+     * {@linkplain AbstractParameterDescriptor#AbstractParameterDescriptor(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
@@ -144,6 +128,11 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
+     *     <td>{@value org.apache.sis.parameter.AbstractParameterDescriptor#DESCRIPTION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDescription()}</td>
+     *   </tr>
+     *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
@@ -151,10 +140,10 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
      * </table>
      *
      * @param properties    The properties to be given to the identified object.
-     * @param minimumOccurs The {@linkplain #getMinimumOccurs() minimum number of times}
-     *                      that values for this parameter group are required.
-     * @param maximumOccurs The {@linkplain #getMaximumOccurs() maximum number of times}
-     *                      that values for this parameter group are required.
+     * @param minimumOccurs The {@linkplain #getMinimumOccurs() minimum number of times} that values
+     *                      for this parameter group are required, or 0 if no restriction.
+     * @param maximumOccurs The {@linkplain #getMaximumOccurs() maximum number of times} that values
+     *                      for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
      * @param parameters    The {@linkplain #descriptors() parameter descriptors} for this group.
      *
      * @throws InvalidParameterNameException If a parameter name is duplicated.
@@ -162,13 +151,7 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
     public DefaultParameterDescriptorGroup(final Map<String,?> properties,
             final int minimumOccurs, final int maximumOccurs, GeneralParameterDescriptor... parameters)
     {
-        super(properties);
-        this.minimumOccurs = minimumOccurs;
-        this.maximumOccurs = maximumOccurs;
-        if (minimumOccurs < 0  || minimumOccurs > maximumOccurs || maximumOccurs == 0) {
-            throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                    Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
-        }
+        super(properties, minimumOccurs, maximumOccurs);
         ArgumentChecks.ensureNonNull("parameters", parameters);
         parameters = parameters.clone();
         for (int i=0; i<parameters.length; i++) {
@@ -198,8 +181,6 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
      */
     protected DefaultParameterDescriptorGroup(final ParameterDescriptorGroup descriptor) {
         super(descriptor);
-        minimumOccurs = descriptor.getMinimumOccurs();
-        maximumOccurs = descriptor.getMaximumOccurs();
         final List<GeneralParameterDescriptor> c = descriptor.descriptors();
         if (descriptor instanceof DefaultParameterDescriptorGroup &&
                 ((DefaultParameterDescriptorGroup) descriptor).descriptors == c)
@@ -282,27 +263,6 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
     }
 
     /**
-     * The minimum number of times that values for this parameter group or parameter are required.
-     * A value of 0 means an optional parameter.
-     *
-     * @return The minimum occurrence.
-     */
-    @Override
-    public int getMinimumOccurs() {
-        return minimumOccurs;
-    }
-
-    /**
-     * The maximum number of times that values for this parameter group are required.
-     *
-     * @return The maximum occurrence.
-     */
-    @Override
-    public int getMaximumOccurs() {
-        return maximumOccurs;
-    }
-
-    /**
      * Creates a new instance of {@linkplain DefaultParameterValueGroup parameter value group}
      * initialized with the {@linkplain DefaultParameterDescriptor#getDefaultValue default values}.
      * The {@linkplain DefaultParameterValueGroup#getDescriptor() parameter descriptor} for the
@@ -375,16 +335,10 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
         if (super.equals(object, mode)) {
             switch (mode) {
                 case STRICT: {
-                    final DefaultParameterDescriptorGroup that = (DefaultParameterDescriptorGroup) object;
-                    return minimumOccurs == that.minimumOccurs &&
-                           maximumOccurs == that.maximumOccurs &&
-                           descriptors.equals(that.descriptors);
+                    return descriptors.equals(((DefaultParameterDescriptorGroup) object).descriptors);
                 }
                 default: {
-                    final ParameterDescriptorGroup that = (ParameterDescriptorGroup) object;
-                    return getMinimumOccurs() == that.getMinimumOccurs() &&
-                           getMaximumOccurs() == that.getMaximumOccurs() &&
-                           deepEquals(descriptors(), that.descriptors(), mode);
+                    return deepEquals(descriptors(), ((ParameterDescriptorGroup) object).descriptors(), mode);
                 }
             }
         }
@@ -399,61 +353,5 @@ public class DefaultParameterDescriptorGroup extends AbstractIdentifiedObject im
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + descriptors.hashCode();
-    }
-
-    /**
-     * Returns a string representation of this descriptor.
-     * The default implementation delegates to {@link ParameterFormat}.
-     *
-     * <p>This method is for information purpose only and may change in future SIS version.</p>
-     */
-    @Debug
-    @Override
-    public String toString() {
-        return ParameterFormat.sharedFormat(this);
-    }
-
-    /**
-     * Prints a string representation of this descriptor to the {@linkplain System#out standard output stream}.
-     * If a {@linkplain java.io.Console console} is attached to the running JVM (i.e. if the application is run
-     * from the command-line and the output is not redirected to a file) and if Apache SIS thinks that the console
-     * supports the ANSI escape codes (a.k.a. X3.64), then a syntax coloring will be applied.
-     *
-     * <p>This is a convenience method for debugging purpose and for console applications.</p>
-     */
-    @Debug
-    @Override
-    public void print() {
-        ParameterFormat.print(this);
-    }
-
-    /**
-     * Formats this group as a pseudo-<cite>Well Known Text</cite> element. The WKT specification
-     * does not define any representation of parameter descriptors. Apache SIS fallback on a list
-     * of {@linkplain DefaultParameterDescriptor#formatTo(Formatter) single descriptors}.
-     * The text formatted by this method is {@linkplain Formatter#setInvalidWKT flagged as invalid WKT}.
-     *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return {@code "ParameterGroup"}.
-     */
-    @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
-    protected String formatTo(final Formatter formatter) {
-        WKTUtilities.appendName(this, formatter, null);
-        formatter.setInvalidWKT(this, null);
-        for (GeneralParameterDescriptor parameter : descriptors) {
-            if (!(parameter instanceof FormattableObject)) {
-                if (parameter instanceof ParameterDescriptor<?>) {
-                    parameter = new DefaultParameterDescriptor((ParameterDescriptor<?>) parameter);
-                } else if (parameter instanceof ParameterDescriptorGroup) {
-                    parameter = new DefaultParameterDescriptorGroup((ParameterDescriptorGroup) parameter);
-                } else {
-                    continue;
-                }
-            }
-            formatter.newLine();
-            formatter.append((FormattableObject) parameter);
-        }
-        return "ParameterGroup";
     }
 }

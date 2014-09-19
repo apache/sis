@@ -31,10 +31,10 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
@@ -42,7 +42,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -55,10 +54,10 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
- * @version 0.4
+ * @version 0.5
  * @module
  */
-final class TensorValues<E> extends AbstractIdentifiedObject
+final class TensorValues<E> extends AbstractParameterDescriptor
         implements ParameterDescriptorGroup, ParameterValueGroup, Cloneable
 {
     /**
@@ -90,7 +89,7 @@ final class TensorValues<E> extends AbstractIdentifiedObject
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     TensorValues(final Map<String,?> properties, final TensorParameters<E> descriptors) {
-        super(properties);
+        super(properties, 1, 1);
         this.descriptors = descriptors;
         dimensions = new ParameterValue[descriptors.rank()];
         for (int i=0; i<dimensions.length; i++) {
@@ -168,22 +167,6 @@ final class TensorValues<E> extends AbstractIdentifiedObject
     @Override
     public List<GeneralParameterDescriptor> descriptors() {
         return descriptors.descriptors(dimensions());
-    }
-
-    /**
-     * Returns 1 since this group is considered mandatory.
-     */
-    @Override
-    public int getMinimumOccurs() {
-        return 1;
-    }
-
-    /**
-     * Returns 1 since we expect exactly one instance of this group.
-     */
-    @Override
-    public int getMaximumOccurs() {
-        return 1;
     }
 
     /**
@@ -453,24 +436,6 @@ final class TensorValues<E> extends AbstractIdentifiedObject
     }
 
     /**
-     * Returns a string representation of this group.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        return ParameterFormat.sharedFormat(this);
-    }
-
-    /**
-     * Prints a string representation of this group to the {@linkplain System#out standard output stream}.
-     */
-    @Debug
-    @Override
-    public void print() {
-        ParameterFormat.print(this);
-    }
-
-    /**
      * Formats this group as a pseudo-<cite>Well Known Text</cite> element.
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
@@ -478,7 +443,7 @@ final class TensorValues<E> extends AbstractIdentifiedObject
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
+        WKTUtilities.appendName(this, formatter, ElementKind.PARAMETER);
         WKTUtilities.append(this, formatter);
         return "ParameterGroup";
     }

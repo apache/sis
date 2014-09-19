@@ -19,9 +19,8 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Collections;
 import java.util.Locale;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
@@ -31,7 +30,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 
 // Branch-dependent imports
@@ -46,9 +44,10 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * <p>{@code DefaultLocalName} can be instantiated by any of the following methods:</p>
  * <ul>
- *   <li>{@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}</li>
- *   <li>{@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} with an array of length 1</li>
- *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} without separator</li>
+ *   <li>{@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}.</li>
+ *   <li>{@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} with an array of length 1.</li>
+ *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} with no occurrence of the separator in the path.</li>
+ *   <li>Similar static convenience methods in {@link Names}.</li>
  * </ul>
  *
  * {@section Immutability and thread safety}
@@ -58,11 +57,22 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
+ *
+ * @see DefaultNameSpace
+ * @see DefaultScopedName
  */
-@XmlType(name = "LocalName") // Actually 'gml:CodeType', but the later is used elsewhere.
-@XmlRootElement(name = "LocalName")
+
+/*
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * since "CodeType" is used for various classes (including GenericName and ScopedName).
+ * (Un)marhalling of this class needs to be handled by a JAXB adapter.
+ */
+@XmlSeeAlso({
+    DefaultTypeName.class,
+    DefaultMemberName.class
+})
 public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * Serial number for inter-operability with different versions.
@@ -150,12 +160,12 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is an instance of {@link MemberName} or {@link TypeName},
+     *       then this method delegates to {@code castOrCopy(…)} method of the corresponding subclass.</li>
      *   <li>Otherwise if the given object is already an instance of {@code DefaultLocalName},
      *       then it is returned unchanged.</li>
-     *   <li>Otherwise a new {@code DefaultLocalName} instance is created using the
-     *       {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)} method,
-     *       or the {@code createTypeName} or {@code createMemberName} variants if the
-     *       given object implements the corresponding interface.</li>
+     *   <li>Otherwise a new {@code DefaultLocalName} instance is created
+     *       with the same values than the given name.</li>
      * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
@@ -163,24 +173,22 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultLocalName castOrCopy(final LocalName object) {
+        if (object instanceof MemberName) {
+            return DefaultMemberName.castOrCopy((MemberName) object);
+        }
+        if (object instanceof TypeName) {
+            return DefaultTypeName.castOrCopy((TypeName) object);
+        }
         if (object == null || object instanceof DefaultLocalName) {
             return (DefaultLocalName) object;
         }
         final NameSpace scope = object.scope();
         final InternationalString name = object.toInternationalString();
-        final LocalName result;
-        if (object instanceof MemberName) {
-            result = DefaultFactories.SIS_NAMES.createMemberName(scope, name, ((MemberName) object).getAttributeType());
-        } else if (object instanceof TypeName) {
-            result = DefaultFactories.SIS_NAMES.createTypeName(scope, name);
+        if (scope instanceof DefaultNameSpace) {
+            return ((DefaultNameSpace) scope).local(name, null); // May return a cached instance.
         } else {
-            result = DefaultFactories.SIS_NAMES.createLocalName(scope, name);
+            return new DefaultLocalName(scope, name);
         }
-        /*
-         * Following cast should be safe because the SIS_NAMES factory is fixed to a
-         * DefaultNameFactory instance, which is known to create AbstractName instances.
-         */
-        return (DefaultLocalName) result;
     }
 
     /**
@@ -309,7 +317,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * Invoked by {@link #hashCode()} for computing the hash code value when first needed.
      */
     @Override
-    final int computeHashCode() {
+    int computeHashCode() {
         return Objects.hash(scope, name) ^ (int) serialVersionUID;
     }
 

@@ -33,6 +33,8 @@ import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.constraint.Constraints;
+import org.opengis.metadata.content.CoverageContentType;
+import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.identification.*; // Really using almost everything.
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
@@ -50,6 +52,8 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
+import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -76,7 +80,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn(PropertyInformationTest.class)
@@ -85,7 +89,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Creates a new property accessor for the {@link DefaultCitation} class.
      */
     private static PropertyAccessor createPropertyAccessor() {
-        return new PropertyAccessor(HardCodedCitations.ISO_19115, Citation.class, DefaultCitation.class);
+        return new PropertyAccessor(HardCodedCitations.ISO_19115, Citation.class, DefaultCitation.class, false);
     }
 
     /**
@@ -183,11 +187,15 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Tests the constructor with the {@link DefaultDataIdentification} implementation.
      * The purpose of this test is to ensure that the properties defined in the parent
      * class are sorted first.
+     *
+     * <div class="note"><b>Note:</b> if there is any element not declared as JAXB elements,
+     * those ones will be last in alphabetical order. Such situation is usually temporary
+     * until the JAXB annotations are completed.</div>
      */
     @Test
     @DependsOnMethod("testConstructor")
     public void testConstructorWithInheritance() {
-        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19115, DataIdentification.class, DefaultDataIdentification.class),
+        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19115, DataIdentification.class, DefaultDataIdentification.class, false),
         //……Declaring type………………………Method………………………………………………………………………JavaBeans………………………………………………………UML identifier………………………………………Sentence……………………………………………………………Type………………………………………………………………
             Identification.class, "getCitation",                   "citation",                   "citation",                  "Citation",                     Citation.class,
             Identification.class, "getAbstract",                   "abstract",                   "abstract",                  "Abstract",                     InternationalString.class,
@@ -223,7 +231,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @DependsOnMethod("testConstructorWithInheritance")
     public void testConstructorWithCovariantReturnType() {
         final Class<?> type = GeographicCRS.class;
-        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO, type, type),
+        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO, type, type, false),
         //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier………………Sentence…………………………………Type…………………………………………………………
             GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
             GeodeticCRS.class,      "getDatum",            "datum",            "datum",            "Datum",              GeodeticDatum.class,       // Covariant return type
@@ -343,6 +351,41 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         instance.setTitle(title);
         assertSame("title", title, accessor.set(index, instance, null, RETURN_PREVIOUS));
         assertNull("title", instance.getTitle());
+    }
+
+    /**
+     * Tests setting a deprecated properties. This properties should not be visible in the map,
+     * but still be accepted by the map views.
+     */
+    @Test
+    @DependsOnMethod("testSet")
+    @org.junit.Ignore("Pending completion of ISO 19115:2014 upgrade.")
+    public void testSetDeprecated() {
+        final PropertyAccessor accessor = new PropertyAccessor(HardCodedCitations.ISO_19115,
+                CoverageDescription.class, DefaultCoverageDescription.class, false);
+        final int indexOfDeprecated  = accessor.indexOf("contentType", true);
+        final int indexOfReplacement = accessor.indexOf("attributeGroup", true);
+        assertTrue("Deprecated elements shall be sorted after non-deprecated ones.",
+                indexOfDeprecated > indexOfReplacement);
+        /*
+         * Writes a value using the deprecated property.
+         */
+        final DefaultCoverageDescription instance = new DefaultCoverageDescription();
+        assertNull("Shall be initially empty.", accessor.set(indexOfDeprecated, instance,
+                CoverageContentType.IMAGE, PropertyAccessor.RETURN_PREVIOUS));
+        assertEquals(CoverageContentType.IMAGE, accessor.get(indexOfDeprecated, instance));
+        /*
+         * Compares with the non-deprecated property.
+         */
+        final Collection<DefaultAttributeGroup> groups = instance.getAttributeGroups();
+        assertSame(groups, accessor.get(indexOfReplacement, instance));
+        assertEquals(CoverageContentType.IMAGE, getSingleton(getSingleton(groups).getContentTypes()));
+        /*
+         * While we can read/write the value through two properties,
+         * only one should be visible.
+         */
+        assertEquals("Deprecated property shall not be visible.", 1, accessor.count(
+                instance, ValueExistencePolicy.NON_EMPTY, PropertyAccessor.COUNT_SHALLOW));
     }
 
     /**

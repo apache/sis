@@ -18,6 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
+import org.opengis.annotation.UML;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 
@@ -90,14 +91,25 @@ final class StandardImplementation extends MetadataStandard {
     }
 
     /**
+     * Accepts Apache SIS implementation classes as "pseudo-interfaces" if they are annotated with {@link UML}.
+     * We use this feature for example in the transition from ISO 19115:2003 to ISO 19115:2014, when new API is
+     * defined in Apache SIS but not yet available in GeoAPI interfaces.
+     */
+    @Override
+    boolean isPendingAPI(final Class<?> type) {
+        return type.getName().startsWith(implementationPackage) && type.isAnnotationPresent(UML.class);
+    }
+
+    /**
      * Returns the implementation class for the given interface, or {@code null} if none.
      * This class uses heuristic rules based on naming conventions.
      *
+     * @param  <T>  The compile-time {@code type}.
      * @param  type The interface, typically from the {@code org.opengis.metadata} package.
      * @return The implementation class, or {@code null} if none.
      */
     @Override
-    public Class<?> getImplementation(final Class<?> type) {
+    public <T> Class<? extends T> getImplementation(final Class<T> type) {
         /*
          * We require the type to be an interface in order to exclude
          * CodeLists, Enums and Exceptions.
@@ -108,7 +120,7 @@ final class StandardImplementation extends MetadataStandard {
                 synchronized (implementations) {
                     Class<?> candidate = implementations.get(type);
                     if (candidate != null) {
-                        return (candidate != Void.TYPE) ? candidate : null;
+                        return (candidate != Void.TYPE) ? candidate.asSubclass(type) : null;
                     }
                     /*
                      * Prepares a buffer with a copy of the class name in which the interface
@@ -143,11 +155,14 @@ final class StandardImplementation extends MetadataStandard {
                         }
                         if (candidate.isAnnotationPresent(Deprecated.class)) {
                             // Skip deprecated implementations.
-                            length = p.length();
-                            continue;
+                            candidate = candidate.getSuperclass();
+                            if (!type.isAssignableFrom(candidate) || candidate.isAnnotationPresent(Deprecated.class)) {
+                                length = p.length();
+                                continue;
+                            }
                         }
                         implementations.put(type, candidate);
-                        return candidate;
+                        return candidate.asSubclass(type);
                     }
                     implementations.put(type, Void.TYPE); // Marker for "class not found".
                 }

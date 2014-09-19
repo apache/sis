@@ -238,7 +238,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of
+     *   <li>Otherwise if the given object is an instance of
      *       {@link org.opengis.referencing.cs.AffineCS},
      *       {@link org.opengis.referencing.cs.CartesianCS},
      *       {@link org.opengis.referencing.cs.SphericalCS},

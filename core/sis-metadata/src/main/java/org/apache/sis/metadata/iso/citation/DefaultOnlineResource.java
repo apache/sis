@@ -30,11 +30,20 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * Information about on-line sources from which the dataset, specification, or
  * community profile name and extended metadata elements can be obtained.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "CI_OnlineResource_Type", propOrder = {
@@ -84,6 +93,12 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     private OnLineFunction function;
 
     /**
+     * Request used to access the resource depending on the protocol.
+     * This is used mainly for POST requests.
+     */
+    private String protocolRequest;
+
+    /**
      * Creates an initially empty on line resource.
      */
     public DefaultOnlineResource() {
@@ -117,6 +132,9 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
             name               = object.getName();
             description        = object.getDescription();
             function           = object.getFunction();
+            if (object instanceof DefaultOnlineResource) {
+                protocolRequest = ((DefaultOnlineResource) object).getProtocolRequest();
+            }
         }
     }
 
@@ -232,7 +250,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the location (address) for on-line access using a Uniform Resource Locator address or
-     * similar addressing scheme such as "{@code http://www.statkart.no/isotc211}".
+     * similar addressing scheme.
      *
      * @return Location for on-line access using a Uniform Resource Locator address or similar scheme, or {@code null}.
      */
@@ -256,6 +274,10 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Returns the connection protocol to be used.
      *
+     * <div class="note"><b>Example:</b>
+     * ftp, http get KVP, http POST, <i>etc</i>.
+     * </div>
+     *
      * @return Connection protocol to be used, or {@code null}.
      */
     @Override
@@ -265,12 +287,46 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     }
 
     /**
-     * Returns the connection protocol to be used.
+     * Sets the connection protocol to be used.
      *
      * @param newValue The new protocol, or {@code null} if none.
      */
     public void setProtocol(final String newValue) {
         checkWritePermission();
         protocol = newValue;
+    }
+
+    /**
+     * Returns the request used to access the resource depending on the protocol.
+     * This is used mainly for POST requests.
+     *
+     * <div class="note"><b>Example:</b>
+     * {@preformat xml
+     *     <GetFeature service="WFS" version="2.0.0"
+     *                 outputFormat="application/gml+xml;verson=3.2"
+     *                 xmlns="(…snip…)">
+     *         <Query typeNames="Roads"/>
+     *     </GetFeature>
+     * }
+     * </div>
+     *
+     * @return Request used to access the resource.
+     *
+     * @since 0.5
+     */
+    public String getProtocolRequest() {
+        return protocolRequest;
+    }
+
+    /**
+     * Sets the request to be used.
+     *
+     * @param newValue The new request, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    public void setProtocolRequest(final String newValue) {
+        checkWritePermission();
+        protocolRequest = newValue;
     }
 }

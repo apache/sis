@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
  * @author  Damiano Albani (for code snippet on the mailing list)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.14)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class CustomMetadataTest extends XMLTestCase {
@@ -128,7 +128,7 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
             @Override public Collection<Keywords>                  getDescriptiveKeywords()        {return null;}
             @Override public Collection<Usage>                     getResourceSpecificUsages()     {return null;}
             @Override public Collection<Constraints>               getResourceConstraints()        {return null;}
-            @Override public Collection<AggregateInformation>      getAggregationInfo()            {return null;}
+@Deprecated @Override public Collection<AggregateInformation>      getAggregationInfo()            {return null;}
         };
         final DefaultMetadata data = new DefaultMetadata();
         assertTrue(data.getIdentificationInfo().add(identification));

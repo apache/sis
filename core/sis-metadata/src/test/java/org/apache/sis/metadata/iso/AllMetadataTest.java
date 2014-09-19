@@ -22,7 +22,11 @@ import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.MetadataTestCase;
+import org.apache.sis.metadata.iso.identification.DefaultCoupledResource;
+import org.apache.sis.metadata.iso.identification.DefaultOperationChainMetadata;
+import org.apache.sis.metadata.iso.identification.DefaultOperationMetadata;
 import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
+import org.apache.sis.metadata.iso.identification.DefaultServiceIdentification;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.Namespaces;
 import org.junit.Rule;
@@ -152,7 +156,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.maintenance.MaintenanceFrequency.class,
             org.opengis.metadata.maintenance.MaintenanceInformation.class,
             org.opengis.metadata.maintenance.ScopeCode.class,
-//          org.opengis.metadata.maintenance.ScopeDescription.class,  // Excluded because this is an union.
+            org.opengis.metadata.maintenance.ScopeDescription.class,
             org.opengis.metadata.quality.AbsoluteExternalPositionalAccuracy.class,
             org.opengis.metadata.quality.AccuracyOfATimeMeasurement.class,
             org.opengis.metadata.quality.Completeness.class,
@@ -206,8 +210,41 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     @Test
     @Override
     public void testPropertyValues() {
-        listener.maximumLogCount = 3;
+        listener.maximumLogCount = 4;
         super.testPropertyValues();
+    }
+
+    /**
+     * Returns the name of the XML element for the given UML element.
+     * This method checks for the special cases which are known to have different UML and XML names.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    protected String getExpectedXmlElementName(final UML uml) {
+        String name = uml.identifier();
+        if (name.equals("distributedComputingPlatform")) {
+            name = "DCP";
+        }
+        if (name.equals("stepDateTime")) {
+            name = "dateTime";
+        }
+        return name;
+    }
+
+    /**
+     * Returns the name of the XML element for the given UML element.
+     * This method checks for the special cases which are known to have different UML and XML names.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    protected String getExpectedXmlRootElementName(final UML uml) {
+        String name = uml.identifier();
+        if (name.equals("MD_Scope")) {  // ISO 19115:2014
+            name = "DQ_Scope";          // ISO 19115:2003
+        }
+        return name;
     }
 
     /**
@@ -219,7 +256,12 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      */
     @Override
     protected String getExpectedNamespace(final Class<?> impl, final Specification specification) {
-        if (impl == org.apache.sis.metadata.iso.identification.DefaultServiceIdentification.class) {
+        if (impl == DefaultCoupledResource.class ||
+            impl == DefaultOperationChainMetadata.class ||
+            impl == DefaultOperationMetadata.class ||
+            impl == DefaultServiceIdentification.class)
+        {
+            assertEquals(Specification.ISO_19115, specification);
             return Namespaces.SRV;
         }
         return super.getExpectedNamespace(impl, specification);
@@ -232,7 +274,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * @return {@inheritDoc}
      */
     @Override
-    protected String getExpectedTypeForElement(final Class<?> type, final Class<?> impl) {
+    protected String getExpectedXmlTypeForElement(final Class<?> type, final Class<?> impl) {
         final String rootName = type.getAnnotation(UML.class).identifier();
         /* switch (rootName) */ { // "String in switch" on the JDK7 branch.
             // We don't know yet what is the type of this one.
@@ -243,6 +285,11 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             // but ISO 19139 still use the old prefix.
             if (rootName.equals("SV_ServiceIdentification")) {
                 return "MD_ServiceIdentification_Type";
+            }
+            // Following prefix was changed in ISO 19115:2014,
+            // but ISO 19139 still use the old prefix.
+            if (rootName.equals("MD_Scope")) {
+                return "DQ_Scope_Type";
             }
         }
         final StringBuilder buffer = new StringBuilder(rootName.length() + 13);
@@ -257,6 +304,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * or {@code null} if no adapter is expected for the given type.
      *
      * @return {@inheritDoc}
+     * @throws ClassNotFoundException {@inheritDoc}
      */
     @Override
     protected Class<?> getWrapperFor(final Class<?> type) throws ClassNotFoundException {
@@ -268,9 +316,12 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
              */
             return null;
         }
+        String identifier = type.getAnnotation(UML.class).identifier();
+        if (identifier.equals("DQ_Scope")) {  // Old name in ISO 19115:2003
+            identifier = "MD_Scope";          // New name in ISO 19115:2014
+        }
         final String classname = "org.apache.sis.internal.jaxb." +
-              (CodeList.class.isAssignableFrom(type) ? "code" : "metadata") +
-              '.' + type.getAnnotation(UML.class).identifier();
+              (CodeList.class.isAssignableFrom(type) ? "code" : "metadata") + '.' + identifier;
         final Class<?> wrapper = Class.forName(classname);
         assertTrue("Expected a final class for " + wrapper.getName(), Modifier.isFinal(wrapper.getModifiers()));
         return wrapper;

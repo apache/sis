@@ -23,10 +23,20 @@ import org.opengis.metadata.acquisition.EnvironmentalRecord;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
  * Information about the environmental conditions during the acquisition.
+ *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -144,7 +154,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * @return Maximum relative humidity along the flight pass during the photo flight, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0, maximum=100)
+    @ValueRange(minimum = 0, maximum = 100)
     @XmlElement(name = "maxRelativeHumidity", required = true)
     public Double getMaxRelativeHumidity() {
         return maxRelativeHumidity;
@@ -157,6 +167,9 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      */
     public void setMaxRelativeHumidity(final Double newValue) {
         checkWritePermission();
+        if (newValue != null) {
+            ArgumentChecks.ensureBetween("maxRelativeHumidity", 0, 100, newValue);
+        }
         maxRelativeHumidity = newValue;
     }
 

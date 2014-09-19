@@ -31,11 +31,20 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Information about the distributor.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Distributor_Type", propOrder = {
@@ -132,7 +141,12 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     }
 
     /**
-     * Party from whom the resource may be obtained. This list need not be exhaustive.
+     * Party from whom the resource may be obtained.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
      *
      * @return Party from whom the resource may be obtained, or {@code null}.
      */
@@ -143,7 +157,12 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     }
 
     /**
-     * Sets the party from whom the resource may be obtained. This list need not be exhaustive.
+     * Sets the party from whom the resource may be obtained.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValue The new distributor contact.
      */

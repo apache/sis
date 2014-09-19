@@ -24,9 +24,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
+import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -49,10 +51,20 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * other identifiers. Consequently the ISBN and ISSN codes are included in the collection
  * returned by {@link #getIdentifiers()}, except at XML marshalling time (for ISO 19139 compliance).
  *
+ * {@section Limitations}
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "CI_Citation_Type", propOrder = {
@@ -125,7 +137,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     private long editionDate = Long.MIN_VALUE;
 
     /**
-     * Name and position information for an individual or organization that is responsible
+     * Roles, Name, contact, and position information for an individual or organization that is responsible
      * for the resource. Returns an empty collection if there is none.
      */
     private Collection<ResponsibleParty> citedResponsibleParties;
@@ -151,8 +163,21 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Common title with holdings note. Note: title identifies elements of a series
      * collectively, combined with information about what volumes are available at the
      * source cited. May be {@code null} if there is no title.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
+    @Deprecated
     private InternationalString collectiveTitle;
+
+    /**
+     * Online references to the cited resource.
+     */
+    private Collection<OnlineResource> onlineResources;
+
+    /**
+     * Citation graphic or logo for cited party.
+     */
+    private Collection<BrowseGraphic> graphics;
 
     /**
      * Constructs an initially empty citation.
@@ -174,13 +199,16 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Constructs a citation with the specified responsible party.
      * This convenience constructor initializes the citation title
      * to the first non-null of the following properties:
-     * {@linkplain DefaultResponsibleParty#getOrganisationName() organisation name},
+     * {@linkplain DefaultResponsibleParty#getOrganisationName() organization name},
      * {@linkplain DefaultResponsibleParty#getPositionName() position name} or
      * {@linkplain DefaultResponsibleParty#getIndividualName() individual name}.
      *
      * @param party The name and position information for an individual or organization that is
      *              responsible for the resource, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, {@link ResponsibleParty} has been replaced by {@code Responsibility}.
      */
+    @Deprecated
     public DefaultCitation(final ResponsibleParty party) {
         if (party != null) {
             citedResponsibleParties = singleton(party, ResponsibleParty.class);
@@ -220,6 +248,11 @@ public class DefaultCitation extends ISOMetadata implements Citation {
             series                  = object.getSeries();
             otherCitationDetails    = object.getOtherCitationDetails();
             collectiveTitle         = object.getCollectiveTitle();
+            if (object instanceof DefaultCitation) {
+                final DefaultCitation c = (DefaultCitation) object;
+                onlineResources = copyCollection(c.getOnlineResources(), OnlineResource.class);
+                graphics        = copyCollection(c.getGraphics(), BrowseGraphic.class);
+            }
             final String id1        = object.getISBN();
             final String id2        = object.getISSN();
             if (id1 != null || id2 != null) {
@@ -277,8 +310,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Returns the short name or other language name by which the cited information is known.
-     * Example: "DCW" as an alternative title for "<cite>Digital Chart of the World</cite>".
+     * Returns short name or other language name by which the cited information is known.
+     *
+     * <div class="note"><b>Example:</b> "DCW" as an alternative title for "Digital Chart of the World".</div>
      *
      * @return Other names for the resource, or an empty collection if none.
      */
@@ -361,7 +395,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the unique identifier for the resource.
-     * Example: Universal Product Code (UPC), National Stock Number (NSN).
+     *
+     * <div class="note"><b>Example:</b> Universal Product Code (UPC), National Stock Number (NSN).</div>
      *
      * {@section Unified identifiers view}
      * In this SIS implementation, the collection returned by this method includes the XML identifiers
@@ -408,8 +443,13 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Returns the name and position information for an individual or organization that is
-     * responsible for the resource.
+     * Returns the role, name, contact and position information for an individual or organization
+     * that is responsible for the resource.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
      *
      * @return The individual or organization that is responsible, or an empty collection if none.
      */
@@ -420,8 +460,13 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Sets the name and position information for an individual or organization that is responsible
-     * for the resource.
+     * Sets the role, name, contact and position information for an individual or organization
+     * that is responsible for the resource.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValues The new cited responsible parties, or {@code null} if none.
      */
@@ -473,6 +518,11 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Returns other information required to complete the citation that is not recorded elsewhere.
      *
+     * <div class="warning"><b>Upcoming API change — multiplicity</b><br>
+     * As of ISO 19115:2014, this singleton has been replaced by a collection.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return Other details, or {@code null} if none.
      */
     @Override
@@ -484,6 +534,11 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Sets other information required to complete the citation that is not recorded elsewhere.
      *
+     * <div class="warning"><b>Upcoming API change — multiplicity</b><br>
+     * As of ISO 19115:2014, this singleton has been replaced by a collection.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValue Other citations details, or {@code null} if none.
      */
     public void setOtherCitationDetails(final InternationalString newValue) {
@@ -492,12 +547,14 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Returns the common title with holdings note. Note: title identifies elements of a series collectively,
-     * combined with information about what volumes are available at the source cited.
+     * Returns the common title with holdings note.
      *
      * @return The common title, or {@code null} if none.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "collectiveTitle")
     public InternationalString getCollectiveTitle() {
         return collectiveTitle;
@@ -508,7 +565,10 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * combined with information about what volumes are available at the source cited.
      *
      * @param newValue The new collective title, or {@code null} if none.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
+    @Deprecated
     public void setCollectiveTitle(final InternationalString newValue) {
         checkWritePermission();
         collectiveTitle = newValue;
@@ -590,5 +650,51 @@ public class DefaultCitation extends ISOMetadata implements Citation {
         if (newValue != null || !isNullOrEmpty(identifiers)) {
             getIdentifierMap().putSpecialized(ISSN, newValue);
         }
+    }
+
+    /**
+     * Returns online references to the cited resource.
+     *
+     * @return Online references to the cited resource, or an empty collection if there is none.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "onlineResource")
+    public Collection<OnlineResource> getOnlineResources() {
+        return onlineResources = nonNullCollection(onlineResources, OnlineResource.class);
+    }
+
+    /**
+     * Sets online references to the cited resource.
+     *
+     * @param newValues The new online references to the cited resource.
+     *
+     * @since 0.5
+     */
+    public void setOnlineResources(final Collection<? extends OnlineResource> newValues) {
+        onlineResources = writeCollection(newValues, onlineResources, OnlineResource.class);
+    }
+
+    /**
+     * Returns citation graphics or logo for cited party.
+     *
+     * @return Graphics or logo for cited party, or an empty collection if there is none.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "graphic")
+    public Collection<BrowseGraphic> getGraphics() {
+        return graphics = nonNullCollection(graphics, BrowseGraphic.class);
+    }
+
+    /**
+     * Sets citation graphics or logo for cited party.
+     *
+     * @param newValues The new citation graphics or logo for cited party.
+     *
+     * @since 0.5
+     */
+    public void setGraphics(final Collection<? extends BrowseGraphic> newValues) {
+        graphics = writeCollection(newValues, graphics, BrowseGraphic.class);
     }
 }

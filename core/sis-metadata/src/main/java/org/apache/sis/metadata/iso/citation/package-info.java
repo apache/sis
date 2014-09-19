@@ -32,7 +32,10 @@
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation         Citation}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate     Citation date}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibility   Responsibility}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.AbstractParty           Party}<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultIndividual   Individual}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultOrganisation Organisation}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact          Contact}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone        Telephone}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress          Address}<br>
@@ -47,12 +50,13 @@
  *                         {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation         Citation}<br>
  * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate     Citation date}<br>
  * {@code  │   └─}         {@linkplain org.opengis.metadata.citation.DateType                       Date type} «code list»<br>
- * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}<br>
- * {@code  │   ├─}         {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact          Contact}<br>
- * {@code  │   │   ├─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone        Telephone}<br>
- * {@code  │   │   ├─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress          Address}<br>
- * {@code  │   │   └─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource   Online resource}<br>
- * {@code  │   │       └─} {@linkplain org.opengis.metadata.citation.OnLineFunction                 Online function} «code list»<br>
+ * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibility   Responsibility}<br>
+ * {@code  │   ├─}         {@linkplain org.apache.sis.metadata.iso.citation.AbstractParty           Party}<br>
+ * {@code  │   │   └─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact          Contact}<br>
+ * {@code  │   │       ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone        Telephone}<br>
+ * {@code  │   │       ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress          Address}<br>
+ * {@code  │   │       └─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource   Online resource}<br>
+ * {@code  │   │           └─} {@linkplain org.opengis.metadata.citation.OnLineFunction             Online function} «code list»<br>
  * {@code  │   └─}         {@linkplain org.opengis.metadata.citation.Role                           Role} «code list»<br>
  * {@code  ├─}             {@linkplain org.opengis.metadata.citation.PresentationForm               Presentation form} «code list»<br>
  * {@code  └─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries           Series}<br>
@@ -66,7 +70,7 @@
  * See {@link org.apache.sis.xml.IdentifierMap} for more information.
  *
  * {@section Null values, nil objects and collections}
- * All constructors (except the <cite>copy constructors</cite>) and setter methods accept {@code null} arguments.
+ * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
@@ -99,11 +103,14 @@
     @XmlJavaTypeAdapter(CI_DateTypeCode.class),
     @XmlJavaTypeAdapter(CI_OnLineFunctionCode.class),
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
+    @XmlJavaTypeAdapter(CI_Party.class),
     @XmlJavaTypeAdapter(CI_PresentationFormCode.class),
+    @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(CI_RoleCode.class),
     @XmlJavaTypeAdapter(CI_Series.class),
     @XmlJavaTypeAdapter(CI_Telephone.class),
+    @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
 
     // Java types, primitive types and basic OGC types handling

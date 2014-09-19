@@ -126,14 +126,15 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the ISO classname (if available) or the Java classname (as a fallback)
-     * of the given code. This method uses the {@link UML} annotation if it exists, or
+     * Returns the ISO classname (if available) or the Java classname (as a fallback) of the given
+     * enumeration or code list value. This method uses the {@link UML} annotation if it exists, or
      * fallback on the {@linkplain Class#getSimpleName() simple class name} otherwise.
      *
      * <div class="note"><b>Examples:</b>
      * <ul>
-     *   <li>{@code getListName(AxisDirection.NORTH)} returns {@code "CS_AxisDirection"}.</li>
-     *   <li>{@code getListName(CharacterSet.UTF_8)} returns {@code "MD_CharacterSetCode"}.</li>
+     *   <li>{@code getListName(ParameterDirection.IN_OUT)}      returns {@code "SV_ParameterDirection"}.</li>
+     *   <li>{@code getListName(AxisDirection.NORTH)}            returns {@code "CS_AxisDirection"}.</li>
+     *   <li>{@code getListName(CharacterSet.UTF_8)}             returns {@code "MD_CharacterSetCode"}.</li>
      *   <li>{@code getListName(ImagingCondition.BLURRED_IMAGE)} returns {@code "MD_ImagingConditionCode"}.</li>
      * </ul>
      * </div>
@@ -151,13 +152,14 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the ISO name (if available) or the Java name (as a fallback) of the given code.
-     * If the code has no {@link UML} identifier, then the programmatic name is used as a fallback.
+     * Returns the ISO name (if available) or the Java name (as a fallback) of the given enumeration or code list
+     * value. If the value has no {@link UML} identifier, then the programmatic name is used as a fallback.
      *
      * <div class="note"><b>Examples:</b>
      * <ul>
-     *   <li>{@code getCodeName(AxisDirection.NORTH)} returns {@code "north"}.</li>
-     *   <li>{@code getCodeName(CharacterSet.UTF_8)} returns {@code "utf8"}.</li>
+     *   <li>{@code getCodeName(ParameterDirection.IN_OUT)}      returns {@code "in/out"}.</li>
+     *   <li>{@code getCodeName(AxisDirection.NORTH)}            returns {@code "north"}.</li>
+     *   <li>{@code getCodeName(CharacterSet.UTF_8)}             returns {@code "utf8"}.</li>
      *   <li>{@code getCodeName(ImagingCondition.BLURRED_IMAGE)} returns {@code "blurredImage"}.</li>
      * </ul>
      * </div>
@@ -180,7 +182,7 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns a unlocalized title for the given code.
+     * Returns a unlocalized title for the given enumeration or code list value.
      * This method builds a title using heuristics rules, which should give reasonable
      * results without the need of resource bundles. For better results, consider using
      * {@link #getCodeTitle(CodeList)} instead.
@@ -222,7 +224,7 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the title of the given code. Title are usually much shorter than descriptions.
+     * Returns the title of the given enumeration or code list value. Title are usually much shorter than descriptions.
      * English titles are often the same than the {@linkplain #getCodeLabel(CodeList) code labels}.
      *
      * @param  code The code for which to get the title, or {@code null}.
@@ -235,7 +237,7 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the description of the given code, or {@code null} if none.
+     * Returns the description of the given enumeration or code list value, or {@code null} if none.
      * For a description of the code list as a whole instead than a particular code,
      * see {@link Types#getDescription(Class)}.
      *
