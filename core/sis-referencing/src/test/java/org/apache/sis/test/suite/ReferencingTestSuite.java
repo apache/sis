@@ -48,6 +48,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.ExponentialTransform1DTest.class,
     org.apache.sis.referencing.operation.transform.CopyTransformTest.class,
     org.apache.sis.referencing.operation.transform.PassThroughTransformTest.class,
+    org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
 
     org.apache.sis.internal.referencing.FormulasTest.class,
@@ -112,7 +113,8 @@ import org.junit.BeforeClass;
 
     org.apache.sis.distance.LatLonPointRadiusTest.class, // Pending refactoring in a geometry package.
 
-    org.apache.sis.test.integration.ReferencingInMetadataTest.class
+    org.apache.sis.test.integration.ReferencingInMetadataTest.class,
+    org.apache.sis.test.integration.DefaultMetadataTest.class
 })
 public final strictfp class ReferencingTestSuite extends TestSuite {
     /**

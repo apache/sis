@@ -37,6 +37,15 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
  * </ul>
  *
+ * {@section Limitations}
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
@@ -82,16 +91,16 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     /**
      * Creates a vertical extent initialized to the specified values.
      *
-     * @param minimumValue The lowest vertical extent contained in the dataset.
-     * @param maximumValue The highest vertical extent contained in the dataset.
+     * @param minimumValue The lowest vertical extent contained in the dataset, or {@link Double#NaN} if none.
+     * @param maximumValue The highest vertical extent contained in the dataset, or {@link Double#NaN} if none.
      * @param verticalCRS  The information about the vertical coordinate reference system, or {@code null}.
      */
     public DefaultVerticalExtent(final double minimumValue,
                                  final double maximumValue,
                                  final VerticalCRS verticalCRS)
     {
-        this.minimumValue = minimumValue;
-        this.maximumValue = maximumValue;
+        if (!Double.isNaN(minimumValue)) this.minimumValue = minimumValue;
+        if (!Double.isNaN(maximumValue)) this.maximumValue = maximumValue;
         this.verticalCRS  = verticalCRS;
     }
 

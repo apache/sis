@@ -19,8 +19,7 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ConcurrentModificationException;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -38,8 +37,9 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *
  * <p>{@code DefaultScopedName} can be instantiated by any of the following methods:</p>
  * <ul>
- *   <li>{@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} with an array of length 2 or more</li>
- *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} with at least one separator</li>
+ *   <li>{@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} with an array of length 2 or more.</li>
+ *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} with at least one occurrence of the separator in the path.</li>
+ *   <li>Similar static convenience methods in {@link Names}.</li>
  * </ul>
  *
  * {@section Immutability and thread safety}
@@ -52,9 +52,17 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
+ *
+ * @see DefaultNameSpace
+ * @see DefaultLocalName
  */
-@XmlType(name = "ScopedName") // Actually 'gml:CodeType', but the later is used elsewhere.
-@XmlRootElement(name = "ScopedName")
+
+/*
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * since "CodeType" is used for various classes (including GenericName and LocalName).
+ * (Un)marhalling of this class needs to be handled by a JAXB adapter.
+ */
+@XmlTransient
 public class DefaultScopedName extends AbstractName implements ScopedName {
     /**
      * Serial number for inter-operability with different versions.
@@ -84,14 +92,6 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
             case 1:  return names.get(0);
             case 0:  throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "names"));
         }
-    }
-
-    /**
-     * Empty constructor to be used by JAXB only. Despite its "final" declaration,
-     * the {@link #parsedNames} field will be set by JAXB during unmarshalling.
-     */
-    private DefaultScopedName() {
-        parsedNames = null;
     }
 
     /**
@@ -183,7 +183,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         final LocalName lastName  = locals[index-1];
         final NameSpace lastScope = lastName.scope();
         final NameSpace tailScope = name.scope();
-        if (tailScope instanceof DefaultNameSpace && ((DefaultNameSpace) tailScope).parent == lastScope) {
+        if (tailScope instanceof DefaultNameSpace && ((DefaultNameSpace) tailScope).parent() == lastScope) {
             /*
              * If the tail is actually the tip (a LocalName), remember the tail so we
              * don't need to create it again later. Then copy the tail after the path.

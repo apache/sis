@@ -23,6 +23,7 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -91,7 +92,7 @@ public final strictfp class ValueMapTest extends TestCase {
         title    = new SimpleInternationalString("Undercurrent");
         author   = new DefaultResponsibleParty();
         citation = new DefaultCitation(title);
-        author.setIndividualName("Testsuya Toyoda");
+        author.setParties(singleton(new DefaultIndividual("Testsuya Toyoda", null, null)));
         citation.getCitedResponsibleParties().add(author);
         citation.setISBN("9782505004509");
         citation.setEdition(NilReason.UNKNOWN.createNilObject(InternationalString.class));

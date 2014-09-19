@@ -47,15 +47,27 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
     }
 
     /**
-     * {@inheritDoc}
+     * Fix the spelling of words that changed between ISO 19115:2003 and ISO 19115:2014,
+     * then wraps the proxy value into an adapter.
+     *
+     * <p>The spelling of "license" was changed to "licence" in latest standard, but XML
+     * marshalling shall use the previous spelling until XML schema are updated.</p>
+     *
+     * @param proxy The proxy version of {@link CodeList}, to be marshalled.
+     * @return The adapter that wraps the proxy value.
      */
     @Override
     protected MD_RestrictionCode wrap(CodeListProxy proxy) {
+        if ("licence".equals(proxy.codeListValue)) {
+            proxy.codeListValue = "license";
+        }
         return new MD_RestrictionCode(proxy);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the class of code list wrapped by this adapter.
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<Restriction> getCodeListClass() {

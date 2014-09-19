@@ -27,6 +27,7 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -119,11 +120,19 @@ public final class MathTransforms extends Static {
             }
             if (Matrices.isAffine(matrix)) {
                 switch (sourceDimension) {
-                    case 1: return linear(matrix.getElement(0,0), matrix.getElement(0,1));
-                    case 2: return new AffineTransform2D(
-                            matrix.getElement(0,0), matrix.getElement(1,0),
-                            matrix.getElement(0,1), matrix.getElement(1,1),
-                            matrix.getElement(0,2), matrix.getElement(1,2));
+                    case 1: {
+                        return linear(matrix.getElement(0,0), matrix.getElement(0,1));
+                    }
+                    case 2: {
+                        if (matrix instanceof ExtendedPrecisionMatrix) {
+                            return new AffineTransform2D(((ExtendedPrecisionMatrix) matrix).getExtendedElements());
+                        } else {
+                            return new AffineTransform2D(
+                                    matrix.getElement(0,0), matrix.getElement(1,0),
+                                    matrix.getElement(0,1), matrix.getElement(1,1),
+                                    matrix.getElement(0,2), matrix.getElement(1,2));
+                        }
+                    }
                 }
             } else if (sourceDimension == 2) {
                 return new ProjectiveTransform2D(matrix);

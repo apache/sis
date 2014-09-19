@@ -21,16 +21,20 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.lineage.NominalResolution;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.lineage.ProcessStep;
+import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.RepresentativeFraction;
+import org.opengis.metadata.quality.Scope;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.iso.maintenance.DefaultScope;
+import org.apache.sis.metadata.iso.identification.DefaultResolution;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
@@ -42,11 +46,21 @@ import org.apache.sis.xml.Namespaces;
  * According ISO 19115, at least one of {@linkplain #getDescription() description} and
  * {@linkplain #getSourceExtents() source extents} shall be provided.
  *
+ * {@section Limitations}
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "LI_Source_Type", propOrder = {
@@ -64,7 +78,7 @@ public class DefaultSource extends ISOMetadata implements Source {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -398526682785377249L;
+    private static final long serialVersionUID = -8444238043227180224L;
 
     /**
      * Detailed description of the level of the source data.
@@ -72,9 +86,9 @@ public class DefaultSource extends ISOMetadata implements Source {
     private InternationalString description;
 
     /**
-     * Denominator of the representative fraction on a source map.
+     * Spatial resolution expressed as a scale factor, an angle or a level of detail.
      */
-    private RepresentativeFraction scaleDenominator;
+    private Resolution sourceSpatialResolution;
 
     /**
      * Spatial reference system used by the source data.
@@ -87,9 +101,14 @@ public class DefaultSource extends ISOMetadata implements Source {
     private Citation sourceCitation;
 
     /**
-     * Information about the spatial, vertical and temporal extent of the source data.
+     * Reference to metadata for the source.
      */
-    private Collection<Extent> sourceExtents;
+    private Collection<Citation> sourceMetadata;
+
+    /**
+     * Type and / or extent of the source.
+     */
+    private Scope scope;
 
     /**
      * Information about an event in the creation process for the source data.
@@ -102,8 +121,7 @@ public class DefaultSource extends ISOMetadata implements Source {
     private Identifier processedLevel;
 
     /**
-     * Distance between consistent parts (centre, left side, right side) of two adjacent
-     * pixels.
+     * Distance between consistent parts (centre, left side, right side) of two adjacent pixels.
      */
     private NominalResolution resolution;
 
@@ -134,14 +152,20 @@ public class DefaultSource extends ISOMetadata implements Source {
     public DefaultSource(final Source object) {
         super(object);
         if (object != null) {
-            description           = object.getDescription();
-            scaleDenominator      = object.getScaleDenominator();
-            sourceCitation        = object.getSourceCitation();
-            sourceExtents         = copyCollection(object.getSourceExtents(), Extent.class);
-            sourceSteps           = copyCollection(object.getSourceSteps(), ProcessStep.class);
-            processedLevel        = object.getProcessedLevel();
-            resolution            = object.getResolution();
-            sourceReferenceSystem = object.getSourceReferenceSystem();
+            description             = object.getDescription();
+            sourceReferenceSystem   = object.getSourceReferenceSystem();
+            sourceCitation          = object.getSourceCitation();
+            sourceSteps             = copyCollection(object.getSourceSteps(), ProcessStep.class);
+            processedLevel          = object.getProcessedLevel();
+            resolution              = object.getResolution();
+            if (object instanceof DefaultSource) {
+                sourceSpatialResolution = ((DefaultSource) object).getSourceSpatialResolution();
+                sourceMetadata          = copyCollection(((DefaultSource) object).getSourceMetadata(), Citation.class);
+                scope                   = ((DefaultSource) object).getScope();
+            } else {
+                setScaleDenominator(object.getScaleDenominator());
+                setSourceExtents(object.getSourceExtents());
+            }
         }
     }
 
@@ -192,24 +216,64 @@ public class DefaultSource extends ISOMetadata implements Source {
     }
 
     /**
+     * Returns the spatial resolution expressed as a scale factor, an angle or a level of detail.
+     *
+     * @return Spatial resolution expressed as a scale factor, an angle or a level of detail, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "sourceSpatialResolution")
+    public Resolution getSourceSpatialResolution() {
+        return sourceSpatialResolution;
+    }
+
+    /**
+     * Sets the spatial resolution expressed as a scale factor, an angle or a level of detail.
+     *
+     * @param newValue The new spatial resolution.
+     *
+     * @since 0.5
+     */
+    public void setSourceSpatialResolution(final Resolution newValue) {
+        checkWritePermission();
+        sourceSpatialResolution = newValue;
+    }
+
+    /**
      * Returns the denominator of the representative fraction on a source map.
+     * This method fetches the value from the
+     * {@linkplain #getSourceSpatialResolution() source spatial resolution}.
      *
      * @return Representative fraction on a source map, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultResolution#getEquivalentScale()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "scaleDenominator")
-    public RepresentativeFraction getScaleDenominator()  {
-        return scaleDenominator;
+    public final RepresentativeFraction getScaleDenominator() {
+        final Resolution resolution = getSourceSpatialResolution();
+        return (resolution != null) ? resolution.getEquivalentScale() : null;
     }
 
     /**
      * Sets the denominator of the representative fraction on a source map.
+     * This method stores the value in the
+     * {@linkplain #setSourceSpatialResolution(RepresentativeFraction) source spatial resolution}.
      *
      * @param newValue The new scale denominator.
+     *
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultResolution#setEquivalentScale(RepresentativeFraction)}.
      */
-    public void setScaleDenominator(final RepresentativeFraction newValue)  {
+    @Deprecated
+    public final void setScaleDenominator(final RepresentativeFraction newValue)  {
         checkWritePermission();
-        scaleDenominator = newValue;
+        Resolution resolution = getSourceSpatialResolution();
+        if (resolution instanceof DefaultResolution) {
+            ((DefaultResolution) resolution).setEquivalentScale(newValue);
+        } else if (newValue != null) {
+            setSourceSpatialResolution(new DefaultResolution(newValue));
+        }
     }
 
     /**
@@ -220,6 +284,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @todo We need to annotate the referencing module before we can annotate this method.
      */
     @Override
+/// @XmlElement(name = "sourceReferenceSystem")
     public ReferenceSystem getSourceReferenceSystem()  {
         return sourceReferenceSystem;
     }
@@ -256,29 +321,96 @@ public class DefaultSource extends ISOMetadata implements Source {
     }
 
     /**
+     * Returns the references to metadata for the source.
+     *
+     * @return References to metadata for the source.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "sourceMetadata")
+    public Collection<Citation> getSourceMetadata() {
+        return sourceMetadata = nonNullCollection(sourceMetadata, Citation.class);
+    }
+
+    /**
+     * Sets the references to metadata for the source.
+     *
+     * @param newValues The new references.
+     *
+     * @since 0.5
+     */
+    public void setSourceMetadata(final Collection<? extends Citation> newValues) {
+        sourceMetadata = writeCollection(newValues, sourceMetadata, Citation.class);
+    }
+
+    /**
+     * Return the type and / or extent of the source.
+     *
+     * @return Type and / or extent of the source, or {@code null} if none.
+     *
+     * @condition Mandatory if the {@linkplain #getDescription() description} is not provided.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "scope")
+    public Scope getScope() {
+        return scope;
+    }
+
+    /**
+     * Sets the type and / or extent of the source.
+     *
+     * @param newValue The new type and / or extent of the source.
+     *
+     * @since 0.5
+     */
+    public void setScope(final Scope newValue){
+        checkWritePermission();
+        scope = newValue;
+    }
+
+    /**
      * Returns the information about the spatial, vertical and temporal extent of the source data.
+     * This method fetches the values from the {@linkplain #getScope() scope}.
      *
      * @return Information about the extent of the source data.
+     *
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#getExtent()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "sourceExtent")
-    public Collection<Extent> getSourceExtents()  {
-        return sourceExtents = nonNullCollection(sourceExtents, Extent.class);
+    public final Collection<Extent> getSourceExtents() {
+        Scope scope = getScope();
+        if (!(scope instanceof DefaultScope)) {
+            scope = new DefaultScope(scope);
+            setScope(scope);
+        }
+        return ((DefaultScope) scope).getExtents();
     }
 
     /**
      * Information about the spatial, vertical and temporal extent of the source data.
+     * This method stores the values in the {@linkplain #setScope(Scope) scope}.
      *
      * @param newValues The new source extents.
+     *
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#setExtent(Extent)}.
      */
-    public void setSourceExtents(final Collection<? extends Extent> newValues) {
-        sourceExtents = writeCollection(newValues, sourceExtents, Extent.class);
+    @Deprecated
+    public final void setSourceExtents(final Collection<? extends Extent> newValues) {
+        Scope scope = getScope();
+        if (!(scope instanceof DefaultScope)) {
+            scope = new DefaultScope(scope);
+            setScope(scope);
+        }
+        ((DefaultScope) scope).setExtents(newValues);
     }
 
     /**
-     * Returns information about an event in the creation process for the source data.
+     * Returns information about process steps in which this source was used.
      *
-     * @return Information about an event in the creation process.
+     * @return Information about process steps in which this source was used.
      */
     @Override
     @XmlElement(name = "sourceStep")
@@ -287,9 +419,9 @@ public class DefaultSource extends ISOMetadata implements Source {
     }
 
     /**
-     * Sets information about an event in the creation process for the source data.
+     * Sets information about process steps in which this source was used.
      *
-     * @param newValues The new source steps.
+     * @param newValues The new process steps.
      */
     public void setSourceSteps(final Collection<? extends ProcessStep> newValues) {
         sourceSteps = writeCollection(newValues, sourceSteps, ProcessStep.class);

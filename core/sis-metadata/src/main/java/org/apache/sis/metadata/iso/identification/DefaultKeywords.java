@@ -31,11 +31,20 @@ import org.apache.sis.util.iso.Types;
 /**
  * Keywords, their type and reference source.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Keywords_Type", propOrder = {
@@ -64,6 +73,12 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * Name of the formally registered thesaurus or a similar authoritative source of keywords.
      */
     private Citation thesaurusName;
+
+    /**
+     * User-defined categorization of groups of keywords that extend or are orthogonal
+     * to the standardized {@linkplain #getType() keyword type} codes.
+     */
+    private Object keywordClass;
 
     /**
      * Constructs an initially empty keywords.
@@ -194,5 +209,39 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     public void setThesaurusName(final Citation newValue) {
         checkWritePermission();
         thesaurusName = newValue;
+    }
+
+    /**
+     * Returns the user-defined categorization of groups of keywords that extend or
+     * are orthogonal to the standardized {@linkplain #getType() keyword type} codes.
+     *
+     * <div class="warning"><b>Upcoming API change — specialization</b><br>
+     * The element type will be changed to the {@code KeywordClass} code list
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @return User-defined categorization of groups of keywords, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    public Object getKeywordClass() {
+        return keywordClass;
+    }
+
+    /**
+     * Sets the user-defined categorization of groups of keywords.
+     *
+     * <div class="warning"><b>Upcoming API change — specialization</b><br>
+     * The element type will be changed to the {@code KeywordClass} code list
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @param newValue New user-defined categorization of groups of keywords.
+     *
+     * @since 0.5
+     */
+    public void setKeywordClass(final Object newValue) {
+        checkWritePermission();
+        keywordClass = newValue;
     }
 }

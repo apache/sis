@@ -27,8 +27,17 @@ import org.opengis.metadata.quality.ConceptualConsistency;
 
 
 /**
- * Degree of adherence to logical rules of data structure, attribution and relationships (data
- * structure can be conceptual, logical or physical).
+ * Degree of adherence to logical rules of data structure, attribution and relationships.
+ * Data structure can be conceptual, logical or physical.
+ *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -75,7 +84,7 @@ public class AbstractLogicalConsistency extends AbstractElement implements Logic
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link ConceptualConsistency},
+     *   <li>Otherwise if the given object is an instance of {@link ConceptualConsistency},
      *       {@link DomainConsistency}, {@link FormatConsistency} or {@link TopologicalConsistency},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
      *       Note that if the given object implements more than one of the above-cited interfaces,

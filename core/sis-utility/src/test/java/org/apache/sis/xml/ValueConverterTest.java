@@ -17,10 +17,14 @@
 package org.apache.sis.xml;
 
 import java.util.Locale;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.StandardCharsets;
 
 
 /**
@@ -28,9 +32,10 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
+@DependsOn(LegacyCodesTest.class)
 public final strictfp class ValueConverterTest extends TestCase {
     /**
      * Tests {@link ValueConverter#toLanguageCode(MarshalContext, Locale)}.
@@ -65,5 +70,27 @@ public final strictfp class ValueConverterTest extends TestCase {
         assertNull  (      ValueConverter.DEFAULT.toCountryCode(null, Locale.FRENCH));
         assertEquals("JP", ValueConverter.DEFAULT.toCountryCode(null, Locale.JAPAN));
         assertNull  (      ValueConverter.DEFAULT.toCountryCode(null, Locale.JAPANESE));
+    }
+
+    /**
+     * Tests {@link ValueConverter#toCharsetCode(MarshalContext, Charset)}.
+     */
+    @Test
+    public void testToCharsetCode() {
+        assertEquals("utf8",      ValueConverter.DEFAULT.toCharsetCode(null, StandardCharsets.UTF_8));
+        assertEquals("utf16",     ValueConverter.DEFAULT.toCharsetCode(null, StandardCharsets.UTF_16));
+        assertEquals("8859part1", ValueConverter.DEFAULT.toCharsetCode(null, StandardCharsets.ISO_8859_1));
+    }
+
+    /**
+     * Tests {@link ValueConverter#toCharset(MarshalContext, String)}.
+     */
+    @Test
+    public void testToCharset() {
+        assertEquals(StandardCharsets.UTF_8,      ValueConverter.DEFAULT.toCharset(null, "utf8"));
+        assertEquals(StandardCharsets.UTF_8,      ValueConverter.DEFAULT.toCharset(null, "UTF-8"));
+        assertEquals(StandardCharsets.UTF_16,     ValueConverter.DEFAULT.toCharset(null, "utf16"));
+        assertEquals(StandardCharsets.ISO_8859_1, ValueConverter.DEFAULT.toCharset(null, "8859part1"));
+        assertEquals(StandardCharsets.ISO_8859_1, ValueConverter.DEFAULT.toCharset(null, "ISO-8859-1"));
     }
 }

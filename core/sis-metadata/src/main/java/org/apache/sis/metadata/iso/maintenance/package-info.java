@@ -31,6 +31,7 @@
  * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultMaintenanceInformation Maintenance information}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScope Scope}<br>
  * {@code  └─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription Scope description}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.maintenance.MaintenanceFrequency Maintenance frequency}<br>
@@ -38,12 +39,13 @@
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *             {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultMaintenanceInformation Maintenance information}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.maintenance.MaintenanceFrequency                 Maintenance frequency} «code list»<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.maintenance.ScopeCode                            Scope code} «code list»<br>
- * {@code  └─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription       Scope description}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScope                  Scope}<br>
+ * {@code      ├─} {@linkplain org.opengis.metadata.maintenance.ScopeCode                        Scope code} «code list»<br>
+ * {@code      └─} {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription   Scope description}<br>
  * </td></tr></table>
  *
  * {@section Null values, nil objects and collections}
- * All constructors (except the <cite>copy constructors</cite>) and setter methods accept {@code null} arguments.
+ * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
@@ -71,6 +73,7 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(MD_MaintenanceFrequencyCode.class),
     @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),

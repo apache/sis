@@ -16,6 +16,9 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -23,18 +26,24 @@ import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
-import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.util.iso.Types;
 
 
 /**
  * Identification of, and means of communication with, person(s) and
  * organizations associated with the dataset.
  *
+ * <div class="warning"><b>Upcoming API change — deprecation</b><br>
+ * As of ISO 19115:2014, the {@code ResponsibleParty} type has been replaced by {@code Responsibility}
+ * to allow more flexible associations of individuals, organisations, and roles.
+ * This {@code ResponsibleParty} interface may be deprecated in GeoAPI 4.0.
+ * </div>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "CI_ResponsibleParty_Type", propOrder = {
@@ -45,36 +54,11 @@ import org.apache.sis.metadata.iso.ISOMetadata;
     "role"
 })
 @XmlRootElement(name = "CI_ResponsibleParty")
-public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleParty {
+public class DefaultResponsibleParty extends DefaultResponsibility implements ResponsibleParty {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3429257224445006902L;
-
-    /**
-     * Name of the responsible person- surname, given name, title separated by a delimiter.
-     */
-    private String individualName;
-
-    /**
-     * Name of the responsible organization.
-     */
-    private InternationalString organisationName;
-
-    /**
-     * Role or position of the responsible person
-     */
-    private InternationalString positionName;
-
-    /**
-     * Address of the responsible party.
-     */
-    private Contact contactInfo;
-
-    /**
-     * Function performed by the responsible party.
-     */
-    private Role role;
+    private static final long serialVersionUID = -1022635486627088812L;
 
     /**
      * Constructs an initially empty responsible party.
@@ -88,7 +72,18 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      * @param role The function performed by the responsible party, or {@code null}.
      */
     public DefaultResponsibleParty(final Role role) {
-        this.role = role;
+        super(role, null, null);
+    }
+
+    /**
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
+     */
+    public DefaultResponsibleParty(final DefaultResponsibility object) {
+        super(object);
     }
 
     /**
@@ -102,12 +97,9 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      */
     public DefaultResponsibleParty(final ResponsibleParty object) {
         super(object);
-        if (object != null) {
-            individualName   = object.getIndividualName();
-            organisationName = object.getOrganisationName();
-            positionName     = object.getPositionName();
-            contactInfo      = object.getContactInfo();
-            role             = object.getRole();
+        if (object != null && !(object instanceof DefaultResponsibility)) {
+            setIndividualName(object.getIndividualName());
+            setOrganisationName(object.getOrganisationName());
         }
     }
 
@@ -137,16 +129,71 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
     }
 
     /**
+     * Returns the name of the first party of the given type, or {@code null} if none.
+     */
+    private InternationalString getName(final Class<? extends AbstractParty> type, final boolean position) {
+        final Collection<AbstractParty> parties = getParties();
+        if (parties != null) { // May be null on marshalling.
+            for (final AbstractParty party : parties) {
+                if (type.isInstance(party)) {
+                    final InternationalString name;
+                    if (position) {
+                        name = ((DefaultIndividual) party).getPositionName();
+                    } else {
+                        name = party.getName();
+                    }
+                    if (name != null) {
+                        return name;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Sets the name of the first party of the given type.
+     *
+     * @return {@code true} if the name has been set, or {@code false} otherwise.
+     */
+    private boolean setName(final Class<? extends AbstractParty> type, final boolean position, final InternationalString name) {
+        checkWritePermission();
+        final Iterator<AbstractParty> it = getParties().iterator();
+        while (it.hasNext()) {
+            final AbstractParty party = it.next();
+            if (type.isInstance(party)) {
+                if (position) {
+                    ((DefaultIndividual) party).setPositionName(name);
+                } else {
+                    party.setName(name);
+                }
+                if (party.isEmpty()) {
+                    it.remove();
+                }
+                return true;
+            }
+        }
+        return name == null; // If no party and name is null, there is nothing to set.
+    }
+
+    /**
      * Returns the name of the responsible person- surname, given name, title separated by a delimiter.
      * Only one of {@code individualName}, {@link #getOrganisationName() organisationName}
      * and {@link #getPositionName() positionName} shall be provided.
      *
+     * <p>This implementation returns the first non-null name of an {@link Individual}
+     * in the collection of {@linkplain #getParties() parties}.</p>
+     *
      * @return Name, surname, given name and title of the responsible person, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@code getName()} in {@link DefaultIndividual}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "individualName")
     public String getIndividualName() {
-        return individualName;
+        final InternationalString name = getName(DefaultIndividual.class, false);
+        return (name != null) ? name.toString() : null;
     }
 
     /**
@@ -154,11 +201,18 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      * Only one of {@code individualName}, {@link #getOrganisationName() organisationName}
      * and {@link #getPositionName() positionName} shall be provided.
      *
+     * <p>This implementation sets the name of the first {@link Individual} found in the collection of
+     * {@linkplain #getParties() parties}, or create a new individual if no existing instance was found.</p>
+     *
      * @param newValue The new individual name, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@code setName(InternationalString)} in {@link DefaultIndividual}.
      */
+    @Deprecated
     public void setIndividualName(final String newValue) {
-        checkWritePermission();
-        individualName = newValue;
+        if (!setName(DefaultIndividual.class, false, Types.toInternationalString(newValue))) {
+            getParties().add(new DefaultIndividual(newValue, null, null));
+        }
     }
 
     /**
@@ -166,12 +220,18 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      * {@link #getIndividualName() individualName}, {@code organisationName}
      * and {@link #getPositionName() positionName} shall be provided.
      *
+     * <p>This implementation returns the first non-null name of an {@link Organisation}
+     * in the collection of {@linkplain #getParties() parties}.</p>
+     *
      * @return Name of the responsible organization, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@code getName()} in {@link DefaultOrganisation}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "organisationName")
     public InternationalString getOrganisationName() {
-        return organisationName;
+        return getName(DefaultOrganisation.class, false);
     }
 
     /**
@@ -179,11 +239,18 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      * {@link #getIndividualName() individualName}, {@code organisationName}
      * and {@link #getPositionName() positionName} shall be provided.
      *
+     * <p>This implementation sets the name of the first {@link Organisation} found in the collection of
+     * {@linkplain #getParties() parties}, or create a new organization if no existing instance was found.</p>
+     *
      * @param newValue The new organization name, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@code setName(InternationalString)} in {@link DefaultOrganisation}.
      */
+    @Deprecated
     public void setOrganisationName(final InternationalString newValue) {
-        checkWritePermission();
-        organisationName = newValue;
+        if (!setName(DefaultOrganisation.class, false, Types.toInternationalString(newValue))) {
+            getParties().add(new DefaultOrganisation(newValue, null, null, null));
+        }
     }
 
     /**
@@ -191,12 +258,18 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      * {@link #getIndividualName() individualName}, {@link #getOrganisationName() organisationName}
      * and {@code positionName} shall be provided.
      *
+     * <p>This implementation returns the first non-null position name of an {@link Individual}
+     * in the collection of {@linkplain #getParties() parties}.</p>
+     *
      * @return Role or position of the responsible person, or {@code null}
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link DefaultIndividual#getPositionName()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "positionName")
     public InternationalString getPositionName() {
-        return positionName;
+        return getName(DefaultIndividual.class, true);
     }
 
     /**
@@ -204,52 +277,99 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      * {@link #getIndividualName() individualName}, {@link #getOrganisationName() organisationName}
      * and {@code positionName} shall be provided.
      *
+     * <p>This implementation sets the position name of the first {@link Individual} found in the collection of
+     * {@linkplain #getParties() parties}, or create a new individual if no existing instance was found.</p>
+     *
      * @param newValue The new position name, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link DefaultIndividual#setPositionName(InternationalString)}.
      */
+    @Deprecated
     public void setPositionName(final InternationalString newValue) {
-        checkWritePermission();
-        positionName = newValue;
+        if (!setName(DefaultIndividual.class, true, newValue)) {
+            getParties().add(new DefaultIndividual(null, newValue, null));
+        }
     }
 
     /**
      * Returns the address of the responsible party.
      *
+     * <p>This implementation returns the first non-null contact found in the collection of
+     * {@linkplain #getParties() parties}.</p>
+     *
      * @return Address of the responsible party, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link AbstractParty#getContactInfo()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "contactInfo")
     public Contact getContactInfo() {
-        return contactInfo;
+        final Collection<AbstractParty> parties = getParties();
+        if (parties != null) { // May be null on marshalling.
+            for (final AbstractParty party : parties) {
+                final Collection<? extends Contact> contacts = party.getContactInfo();
+                if (contacts != null) { // May be null on marshalling.
+                    for (final Contact contact : contacts) {
+                        if (contact != null) { // Paranoiac check.
+                            return contact;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
      * Sets the address of the responsible party.
      *
+     * <p>This implementation sets the contact info in the first party found in the collection of
+     * {@linkplain #getParties() parties}.</p>
+     *
      * @param newValue The new contact info, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link AbstractParty#setContactInfo(Collection)}.
      */
+    @Deprecated
     public void setContactInfo(final Contact newValue) {
         checkWritePermission();
-        contactInfo = newValue;
+        final Iterator<AbstractParty> it = getParties().iterator();
+        while (it.hasNext()) {
+            final AbstractParty party = it.next();
+            party.setContactInfo(newValue != null ? Collections.singleton(newValue) : null);
+            if (party.isEmpty()) {
+                it.remove();
+            }
+            return;
+        }
+        /*
+         * If no existing AbstractParty were found, add a new one. However there is no way to know if
+         * it should be an individual or an organization. Arbitrarily choose an individual for now.
+         */
+        if (newValue != null) {
+            getParties().add(new DefaultIndividual(null, null, newValue));
+        }
     }
 
     /**
      * Returns the function performed by the responsible party.
      *
-     * @return Function performed by the responsible party, or {@code null}.
-     */
+     * @return Function performed by the responsible party.
+    */
     @Override
     @XmlElement(name = "role", required = true)
     public Role getRole() {
-        return role;
+        return super.getRole();
     }
 
     /**
      * Sets the function performed by the responsible party.
      *
-     * @param newValue The new role, or {@code null} if none.
+     * @param newValue The new role.
      */
+    @Override
     public void setRole(final Role newValue) {
-        checkWritePermission();
-        role = newValue;
+        super.setRole(newValue);
     }
 }

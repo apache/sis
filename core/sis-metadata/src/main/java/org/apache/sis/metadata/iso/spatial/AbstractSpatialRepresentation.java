@@ -28,6 +28,15 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Method used to represent geographic information in the dataset.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
@@ -72,7 +81,7 @@ public class AbstractSpatialRepresentation extends ISOMetadata implements Spatia
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link VectorSpatialRepresentation} or
+     *   <li>Otherwise if the given object is an instance of {@link VectorSpatialRepresentation} or
      *       {@link GridSpatialRepresentation}, then this method delegates to the {@code castOrCopy(…)}
      *       method of the corresponding SIS subclass. Note that if the given object implements
      *       more than one of the above-cited interfaces, then the {@code castOrCopy(…)} method

@@ -29,6 +29,9 @@ import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -46,7 +49,9 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  *
  * @see java.awt.geom.AffineTransform
  */
-class ProjectiveTransform extends AbstractMathTransform implements LinearTransform, Serializable {
+class ProjectiveTransform extends AbstractMathTransform implements LinearTransform, ExtendedPrecisionMatrix,
+        Serializable // Not Cloneable, despite the clone() method.
+{
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -64,6 +69,9 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
 
     /**
      * Elements of the matrix. Column indices vary fastest.
+     *
+     * <p>This array may have twice the normal length ({@link #numRow} × {@link #numCol}),
+     * in which case the second half contains the error terms in double-double arithmetic.</p>
      */
     private final double[] elt;
 
@@ -83,11 +91,16 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
     protected ProjectiveTransform(final Matrix matrix) {
         numRow = matrix.getNumRow();
         numCol = matrix.getNumCol();
-        elt = new double[numRow * numCol];
-        int mix = 0;
-        for (int j=0; j<numRow; j++) {
-            for (int i=0; i<numCol; i++) {
-                elt[mix++] = matrix.getElement(j,i);
+        if (matrix instanceof ExtendedPrecisionMatrix) {
+            elt = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
+            assert (elt.length % (numRow * numCol)) == 0;
+        } else {
+            elt = new double[numRow * numCol];
+            int mix = 0;
+            for (int j=0; j<numRow; j++) {
+                for (int i=0; i<numCol; i++) {
+                    elt[mix++] = matrix.getElement(j,i);
+                }
             }
         }
     }
@@ -106,6 +119,87 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
     @Override
     public final int getTargetDimensions() {
         return numRow - 1;
+    }
+
+    /**
+     * Gets the number of rows in the matrix.
+     */
+    @Override
+    public final int getNumRow() {
+        return numRow;
+    }
+
+    /**
+     * Gets the number of columns in the matrix.
+     */
+    @Override
+    public final int getNumCol() {
+        return numCol;
+    }
+
+    /**
+     * Returns a copy of the matrix given to the constructor.
+     */
+    @Override
+    public final Matrix getMatrix() {
+        return this;
+    }
+
+    /**
+     * Returns the parameter descriptors for this math transform.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        return Affine.PARAMETERS;
+    }
+
+    /**
+     * Returns the matrix elements as a group of parameters values. The number of parameters depends on the
+     * matrix size. Only matrix elements different from their default value will be included in this group.
+     *
+     * @return A copy of the parameter values for this math transform.
+     */
+    @Override
+    public ParameterValueGroup getParameterValues() {
+        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
+    }
+
+    /**
+     * Returns a copy of matrix elements, including error terms if any.
+     */
+    @Override
+    public final double[] getExtendedElements() {
+        return elt.clone();
+    }
+
+    /**
+     * Returns the matrix element at the given index.
+     */
+    @Override
+    public final double getElement(final int row, final int column) {
+        ArgumentChecks.ensureBetween("row",    0, numRow - 1, row);
+        ArgumentChecks.ensureBetween("column", 0, numCol - 1, column);
+        return elt[row * numCol + column];
+    }
+
+    /**
+     * Unsupported operation, since this matrix is unmodifiable.
+     */
+    @Override
+    public final void setElement(final int row, final int column, final double value) {
+        throw new UnsupportedOperationException(Matrices.isAffine(this)
+                ? Errors.format(Errors.Keys.UnmodifiableAffineTransform)
+                : Errors.format(Errors.Keys.UnmodifiableObject_1, ProjectiveTransform.class));
+    }
+
+    /**
+     * Returns a copy of the matrix that user can modify.
+     */
+    @Override
+    public final Matrix clone() {
+        return Matrices.copy(this);
     }
 
     /**
@@ -130,35 +224,6 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
             }
         }
         return true;
-    }
-
-    /**
-     * Returns a copy of the matrix given to the constructor.
-     */
-    @Override
-    public final Matrix getMatrix() {
-        return Matrices.create(numRow, numCol, elt);
-    }
-
-    /**
-     * Returns the parameter descriptors for this math transform.
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.PARAMETERS;
-    }
-
-    /**
-     * Returns the matrix elements as a group of parameters values. The number of parameters depends on the
-     * matrix size. Only matrix elements different from their default value will be included in this group.
-     *
-     * @return A copy of the parameter values for this math transform.
-     */
-    @Override
-    public ParameterValueGroup getParameterValues() {
-        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
     }
 
     /**
@@ -415,7 +480,7 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
              *           inverse = this;
              *       } else { ... }
              */
-            MatrixSIS matrix = Matrices.create(numRow, numCol, elt);
+            MatrixSIS matrix = Matrices.copy(this);
             matrix = matrix.inverse();
             ProjectiveTransform inv = createInverse(matrix);
             inv.inverse = this;
@@ -453,9 +518,10 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
             return true;
         }
         if (mode != ComparisonMode.STRICT) {
-            return equals(this, object, mode);
-        }
-        if (super.equals(object, mode)) {
+            if (object instanceof LinearTransform) {
+                return Matrices.equals(this, ((LinearTransform) object).getMatrix(), mode);
+            }
+        } else if (super.equals(object, mode)) {
             final ProjectiveTransform that = (ProjectiveTransform) object;
             return this.numRow == that.numRow &&
                    this.numCol == that.numCol &&

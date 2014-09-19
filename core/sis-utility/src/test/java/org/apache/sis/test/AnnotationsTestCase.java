@@ -45,9 +45,11 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * <ul>
  *   <li>All implementation classes have {@link XmlRootElement} and {@link XmlType} annotations.</li>
  *   <li>The name declared in the {@code XmlType} annotations matches the
- *       {@linkplain #getExpectedTypeForElement expected value}.</li>
+ *       {@link #getExpectedXmlTypeForElement expected value}.</li>
  *   <li>The name declared in the {@code XmlRootElement} (classes) or {@link XmlElement} (methods)
- *       annotations matches the identifier declared in the {@link UML} annotation of the GeoAPI interfaces.</li>
+ *       annotations matches the identifier declared in the {@link UML} annotation of the GeoAPI interfaces.
+ *       The UML - XML name mapping can be changed by overriding {@link #getExpectedXmlElementName(UML)} and
+ *       {@link #getExpectedXmlRootElementName(UML)}.</li>
  *   <li>The {@code XmlElement.required()} boolean is consistent with the UML {@linkplain Obligation obligation}.</li>
  *   <li>The namespace declared in the {@code XmlRootElement} or {@code XmlElement} annotations
  *       is not redundant with the {@link XmlSchema} annotation in the package.</li>
@@ -198,7 +200,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      *
      * @see #testImplementationAnnotations()
      */
-    protected abstract String getExpectedTypeForElement(Class<?> type, Class<?> impl);
+    protected abstract String getExpectedXmlTypeForElement(Class<?> type, Class<?> impl);
 
     /**
      * Returns the expected namespace for an element defined by the given specification.
@@ -228,6 +230,26 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
             case ISO_19108:   return Namespaces.GMD;
             default: throw new IllegalArgumentException(specification.toString());
         }
+    }
+
+    /**
+     * Returns the name of the XML element for the given UML element.
+     *
+     * @param  uml The UML element.
+     * @return The corresponding XML element name.
+     */
+    protected String getExpectedXmlRootElementName(final UML uml) {
+        return uml.identifier();
+    }
+
+    /**
+     * Returns the name of the XML element for the given UML element.
+     *
+     * @param  uml The UML element.
+     * @return The corresponding XML element name.
+     */
+    protected String getExpectedXmlElementName(final UML uml) {
+        return uml.identifier();
     }
 
     /**
@@ -276,8 +298,10 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
         } else {
             namespace = schemaNamespace;
         }
-        assertEquals("Wrong namespace for the ISO specification.",
-                getExpectedNamespace(impl, (uml != null) ? uml.specification() : null), namespace);
+        if (uml != null) {
+            assertEquals("Wrong namespace for the ISO specification.",
+                    getExpectedNamespace(impl, uml.specification()), namespace);
+        }
         return namespace;
     }
 
@@ -350,18 +374,11 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
 
     /**
      * Returns {@code true} if the given method should be ignored.
-     * This method returns {@code true} of deprecated methods and
-     * some standard methods from the JDK.
+     * This method returns {@code true} for some standard methods from the JDK.
      */
     private static boolean isIgnored(final Method method) {
-        if (method.isAnnotationPresent(Deprecated.class)) {
-            return true;
-        }
         final String name = method.getName();
-        if (name.equals("equals") || name.equals("hashCode") || name.equals("doubleValue")) {
-            return true;
-        }
-        return false;
+        return name.equals("equals") || name.equals("hashCode") || name.equals("doubleValue");
     }
 
     /**
@@ -387,7 +404,9 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                     testingMethod = method.getName();
                     if (!isIgnored(method)) {
                         uml = method.getAnnotation(UML.class);
-                        assertNotNull("Missing @UML annotation.", uml);
+                        if (!method.isAnnotationPresent(Deprecated.class)) {
+                            assertNotNull("Missing @UML annotation.", uml);
+                        }
                     }
                 }
             }
@@ -436,7 +455,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * <ul>
      *   <li>All implementation classes have {@link XmlRootElement} and {@link XmlType} annotations.</li>
      *   <li>The name declared in the {@code XmlType} annotations matches the
-     *       {@linkplain #getExpectedTypeForElement expected value}.</li>
+     *       {@link #getExpectedXmlTypeForElement expected value}.</li>
      *   <li>The name declared in the {@code XmlRootElement} annotations matches the identifier declared
      *       in the {@link UML} annotation of the GeoAPI interfaces.</li>
      *   <li>The namespace declared in the {@code XmlRootElement} annotations is not redundant with
@@ -473,7 +492,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
             assertNotNull("Missing @XmlRootElement annotation.", root);
             final UML uml = type.getAnnotation(UML.class);
             if (uml != null) {
-                assertEquals("Wrong @XmlRootElement.name().", uml.identifier(), root.name());
+                assertEquals("Wrong @XmlRootElement.name().", getExpectedXmlRootElementName(uml), root.name());
             }
             /*
              * Check that the namespace is the expected one (according subclass)
@@ -485,7 +504,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
              */
             final XmlType xmlType = impl.getAnnotation(XmlType.class);
             assertNotNull("Missing @XmlType annotation.", xmlType);
-            String expected = getExpectedTypeForElement(type, impl);
+            String expected = getExpectedXmlTypeForElement(type, impl);
             if (expected == null) {
                 expected = DEFAULT;
             }
@@ -545,7 +564,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                  * is because subclasses may choose to override the above test method.
                  */
                 if (uml != null) {
-                    assertEquals("Wrong @XmlElement.name().", uml.identifier(), element.name());
+                    assertEquals("Wrong @XmlElement.name().", getExpectedXmlElementName(uml), element.name());
                     assertEquals("Wrong @XmlElement.required().", uml.obligation() == Obligation.MANDATORY, element.required());
                 }
                 /*

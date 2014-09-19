@@ -27,15 +27,11 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
@@ -68,24 +64,17 @@ import org.apache.sis.internal.jdk7.Objects;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.4 (derived from geotk-2.0)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see DefaultParameterValue
  * @see DefaultParameterDescriptorGroup
  */
-public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject implements ParameterDescriptor<T> {
+public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor implements ParameterDescriptor<T> {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7433401733923393656L;
-
-    /**
-     * {@code true} if this parameter is mandatory, or {@code false} if it is optional.
-     *
-     * @see #getMinimumOccurs()
-     */
-    private final boolean required;
+    private static final long serialVersionUID = -1978932430298071693L;
 
     /**
      * The class that describe the type of parameter values.
@@ -126,7 +115,7 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
 
     /**
      * Constructs a descriptor from the given properties. The properties map is given unchanged to the
-     * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
+     * {@linkplain AbstractParameterDescriptor#AbstractParameterDescriptor(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
@@ -150,6 +139,11 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.referencing.ReferenceIdentifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.parameter.AbstractParameterDescriptor#DESCRIPTION_KEY}</td>
+     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
+     *     <td>{@link #getDescription()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
@@ -179,25 +173,29 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
      * If both {@code valueDomain} and {@code validValues} are non-null, then all valid values shall be contained
      * in the value domain.
      *
-     * @param properties   The properties to be given to the identified object.
-     * @param valueClass   The class that describes the type of the parameter value.
-     * @param valueDomain  The minimum value, maximum value and unit of measurement, or {@code null} if none.
-     * @param validValues  The list of valid values, or {@code null} if there is no restriction.
-     *                     This property is mostly for restricting values to a {@linkplain CodeList code list}
-     *                     or enumeration subset. It is not necessary to provide this property when all values
-     *                     from the code list or enumeration are valid.
-     * @param defaultValue The default value for the parameter, or {@code null} if none.
-     * @param required     {@code true} if this parameter is mandatory, or {@code false} if it is optional.
+     * @param properties    The properties to be given to the identified object.
+     * @param minimumOccurs The {@linkplain #getMinimumOccurs() minimum number of times} that values
+     *                      for this parameter group are required, or 0 if no restriction.
+     * @param maximumOccurs The {@linkplain #getMaximumOccurs() maximum number of times} that values
+     *                      for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
+     * @param valueClass    The class that describes the type of the parameter value.
+     * @param valueDomain   The minimum value, maximum value and unit of measurement, or {@code null} if none.
+     * @param validValues   The list of valid values, or {@code null} if there is no restriction.
+     *                      This property is mostly for restricting values to a {@linkplain CodeList code list}
+     *                      or enumeration subset. It is not necessary to provide this property when all values
+     *                      from the code list or enumeration are valid.
+     * @param defaultValue  The default value for the parameter, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     public DefaultParameterDescriptor(final Map<String,?> properties,
+                                      final int           minimumOccurs,
+                                      final int           maximumOccurs,
                                       final Class<T>      valueClass,
                                       final Range<?>      valueDomain,
                                       final T[]           validValues,
-                                      final T             defaultValue,
-                                      final boolean       required)
+                                      final T             defaultValue)
     {
-        super(properties);
+        super(properties, minimumOccurs, maximumOccurs);
         ensureNonNull("valueClass",   valueClass);
         ensureCanCast("defaultValue", valueClass, defaultValue);
         if (valueDomain != null) {
@@ -218,7 +216,6 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
                         .getString(Errors.Keys.IllegalRange_2, valueDomain.getMinValue(), valueDomain.getMaxValue()));
             }
         }
-        this.required     = required;
         this.valueClass   = valueClass;
         this.valueDomain  = valueDomain;
         this.defaultValue = Numerics.cached(defaultValue);
@@ -254,6 +251,33 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     }
 
     /**
+     * Creates an optional or mandatory parameter. As a consequence of the merge with ISO 19115 {@code SV_Parameter},
+     * {@code DefaultParameterDescriptor} has been generalized to accept an arbitrary amount of occurrences.
+     *
+     * @param properties   The properties to be given to the identified object.
+     * @param valueClass   The class that describes the type of the parameter value.
+     * @param valueDomain  The minimum value, maximum value and unit of measurement, or {@code null} if none.
+     * @param validValues  The list of valid values, or {@code null} if there is no restriction.
+     *                     This property is mostly for restricting values to a {@linkplain CodeList code list}
+     *                     or enumeration subset. It is not necessary to provide this property when all values
+     *                     from the code list or enumeration are valid.
+     * @param defaultValue The default value for the parameter, or {@code null} if none.
+     * @param required     {@code true} if this parameter is mandatory, or {@code false} if it is optional.
+     *
+     * @deprecated Replaced by the constructor with explicit minimum and maximum number of occurrences.
+     */
+    @Deprecated
+    public DefaultParameterDescriptor(final Map<String,?> properties,
+                                      final Class<T>      valueClass,
+                                      final Range<?>      valueDomain,
+                                      final T[]           validValues,
+                                      final T             defaultValue,
+                                      final boolean       required)
+    {
+        this(properties, required ? 1 : 0, 1, valueClass, valueDomain, validValues, defaultValue);
+    }
+
+    /**
      * Creates a new descriptor with the same values than the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one or a
      * user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
@@ -267,7 +291,6 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     @SuppressWarnings("unchecked")
     protected DefaultParameterDescriptor(final ParameterDescriptor<T> descriptor) {
         super(descriptor);
-        required     = descriptor.getMinimumOccurs() != 0;
         valueClass   = descriptor.getValueClass();
         validValues  = descriptor.getValidValues();
         defaultValue = descriptor.getDefaultValue();
@@ -305,30 +328,6 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
     @SuppressWarnings("unchecked")
     public Class<? extends ParameterDescriptor<T>> getInterface() {
         return (Class) ParameterDescriptor.class;
-    }
-
-    /**
-     * The minimum number of times that values for this parameter are required.
-     * A value of 0 means an optional parameter and a value of 1 means a mandatory parameter.
-     *
-     * @see #getMaximumOccurs()
-     */
-    @Override
-    public int getMinimumOccurs() {
-        return required ? 1 : 0;
-    }
-
-    /**
-     * The maximum number of times that values for this parameter can be included.
-     * For a {@code ParameterDescriptor}, the value is always 1.
-     *
-     * @return The maximum occurrence.
-     *
-     * @see #getMinimumOccurs()
-     */
-    @Override
-    public int getMaximumOccurs() {
-        return 1;
     }
 
     /**
@@ -507,8 +506,7 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
                 }
                 case STRICT: {
                     final DefaultParameterDescriptor<?> that = (DefaultParameterDescriptor<?>) object;
-                    return                    this.required   == that.required     &&
-                                              this.valueClass == that.valueClass   &&
+                    return                    this.valueClass == that.valueClass   &&
                            Objects.    equals(this.validValues,  that.validValues) &&
                            Objects.    equals(this.valueDomain,  that.valueDomain) &&
                            Objects.deepEquals(this.defaultValue, that.defaultValue);
@@ -525,31 +523,6 @@ public class DefaultParameterDescriptor<T> extends AbstractIdentifiedObject impl
      */
     @Override
     protected long computeHashCode() {
-        return Arrays.deepHashCode(new Object[] {required, valueClass, valueDomain, defaultValue})
-                + super.computeHashCode();
-    }
-
-    /**
-     * Formats this parameter as a pseudo-<cite>Well Known Text</cite> element. The WKT specification
-     * does not define any representation of parameter descriptors. Apache SIS fallback on the
-     * {@linkplain DefaultParameterValue#formatTo(Formatter) same representation than parameter value},
-     * with the descriptor {@linkplain #getDefaultValue() default value} in place of the parameter value.
-     * The text formatted by this method is {@linkplain Formatter#setInvalidWKT flagged as invalid WKT}.
-     *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return {@code "Parameter"}.
-     */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        WKTUtilities.appendName(this, formatter, ElementKind.PARAMETER);
-        formatter.setInvalidWKT(this, null);
-        formatter.appendAny(defaultValue);
-        final Unit<?> unit = getUnit();
-        if (unit != null) {
-            if (!formatter.getConvention().isSimplified() || !unit.equals(formatter.toContextualUnit(unit))) {
-                formatter.append(unit);
-            }
-        }
-        return "Parameter";
+        return Arrays.deepHashCode(new Object[] {valueClass, valueDomain, defaultValue}) + super.computeHashCode();
     }
 }

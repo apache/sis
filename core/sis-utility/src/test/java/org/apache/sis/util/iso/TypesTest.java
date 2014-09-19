@@ -16,10 +16,8 @@
  */
 package org.apache.sis.util.iso;
 
-import java.util.Set;
 import java.util.Map;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Locale;
@@ -28,7 +26,6 @@ import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.content.ImagingCondition;
-import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.test.TestCase;
@@ -42,7 +39,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class TypesTest extends TestCase {
@@ -132,12 +129,12 @@ public final strictfp class TypesTest extends TestCase {
      */
     @Test
     public void testGetDescription() {
-        final InternationalString description = Types.getDescription(CharacterSet.class);
-        assertEquals("Name of the character coding standard used in the resource.",
+        final InternationalString description = Types.getDescription(OnLineFunction.class);
+        assertEquals("Function performed by the resource.",
                 description.toString(Locale.ROOT));
-        assertEquals("Name of the character coding standard used in the resource.",
+        assertEquals("Function performed by the resource.",
                 description.toString(Locale.ENGLISH));
-        assertEquals("Jeu de caractères.",
+        assertEquals("Fonctionnalité offerte par la ressource.",
                 description.toString(Locale.FRENCH));
     }
 
@@ -153,51 +150,51 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Types#getDescription(CodeList)} method.
+     * Tests the {@link Types#getDescription(Enumerated)} method.
      */
     @Test
     public void testGetCodeDescription() {
-        final InternationalString description = Types.getDescription(CharacterSet.ISO_8859_1);
-        assertEquals("ISO/IEC 8859-1, Information technology - 8-bit single byte coded graphic character sets - Part 1 : Latin alphabet No.1.",
+        final InternationalString description = Types.getDescription(OnLineFunction.DOWNLOAD);
+        assertEquals("Online instructions for transferring data from one storage device or system to another.",
                 description.toString(Locale.ROOT));
-        assertEquals("ISO/IEC 8859-1, Information technology - 8-bit single byte coded graphic character sets - Part 1 : Latin alphabet No.1.",
+        assertEquals("Online instructions for transferring data from one storage device or system to another.",
                 description.toString(Locale.ENGLISH));
-        assertEquals("ISO/IEC 8859-1, alphabet latin 1.",
+        assertEquals("Transfert de la ressource d'un système à un autre.",
                 description.toString(Locale.FRENCH));
     }
 
     /**
-     * Tests the examples given in {@link Types#getListName(CodeList)} javadoc.
+     * Tests the examples given in {@link Types#getListName(Enumerated)} javadoc.
      */
     @Test
     public void testGetListName() {
-        assertEquals("CS_AxisDirection",        Types.getListName(AxisDirection   .NORTH));
-        assertEquals("MD_CharacterSetCode",     Types.getListName(CharacterSet    .UTF_8));
-        assertEquals("MD_ImagingConditionCode", Types.getListName(ImagingCondition.BLURRED_IMAGE));
+        assertEquals("CS_AxisDirection",        Types.getListName(AxisDirection     .NORTH));
+        assertEquals("CI_OnLineFunctionCode",   Types.getListName(OnLineFunction    .DOWNLOAD));
+        assertEquals("MD_ImagingConditionCode", Types.getListName(ImagingCondition  .BLURRED_IMAGE));
     }
 
     /**
-     * Tests the examples given in {@link Types#getCodeName(CodeList)} javadoc.
+     * Tests the examples given in {@link Types#getCodeName(Enumerated)} javadoc.
      */
     @Test
     public void testGetCodeName() {
-        assertEquals("north",        Types.getCodeName(AxisDirection   .NORTH));
-        assertEquals("utf8",         Types.getCodeName(CharacterSet    .UTF_8));
-        assertEquals("blurredImage", Types.getCodeName(ImagingCondition.BLURRED_IMAGE));
+        assertEquals("north",        Types.getCodeName(AxisDirection     .NORTH));
+        assertEquals("download",     Types.getCodeName(OnLineFunction    .DOWNLOAD));
+        assertEquals("blurredImage", Types.getCodeName(ImagingCondition  .BLURRED_IMAGE));
     }
 
     /**
-     * Tests the examples given in {@link Types#getCodeLabel(CodeList)} javadoc.
+     * Tests the examples given in {@link Types#getCodeLabel(Enumerated)} javadoc.
      */
     @Test
     public void testGetCodeLabel() {
         assertEquals("North",         Types.getCodeLabel(AxisDirection   .NORTH));
-        assertEquals("UTF-8",         Types.getCodeLabel(CharacterSet    .UTF_8));
+        assertEquals("Download",      Types.getCodeLabel(OnLineFunction  .DOWNLOAD));
         assertEquals("Blurred image", Types.getCodeLabel(ImagingCondition.BLURRED_IMAGE));
     }
 
     /**
-     * Tests {@link Types#getCodeTitle(CodeList)}.
+     * Tests {@link Types#getCodeTitle(Enumerated)}.
      */
     @Test
     public void testGetCodeTitle() {
@@ -211,10 +208,9 @@ public final strictfp class TypesTest extends TestCase {
      */
     @Test
     public void testGetCodeValues() {
-        final Set<OnLineFunction> expected = new HashSet<OnLineFunction>(Arrays.asList(
-                OnLineFunction.INFORMATION, OnLineFunction.SEARCH, OnLineFunction.ORDER,
-                OnLineFunction.DOWNLOAD, OnLineFunction.OFFLINE_ACCESS));
         final OnLineFunction[] actual = Types.getCodeValues(OnLineFunction.class);
-        assertTrue(expected.containsAll(Arrays.asList(actual)));
+        assertTrue(Arrays.asList(actual).containsAll(Arrays.asList(
+                OnLineFunction.INFORMATION, OnLineFunction.SEARCH, OnLineFunction.ORDER,
+                OnLineFunction.DOWNLOAD, OnLineFunction.OFFLINE_ACCESS)));
     }
 }

@@ -32,9 +32,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @version 0.3
  * @module
  */
-public final class CI_ResponsibleParty extends
-        PropertyType<CI_ResponsibleParty, ResponsibleParty>
-{
+@SuppressWarnings("deprecation")
+public final class CI_ResponsibleParty extends PropertyType<CI_ResponsibleParty, ResponsibleParty> {
     /**
      * Empty constructor for JAXB only.
      */

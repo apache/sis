@@ -33,23 +33,24 @@ import org.apache.sis.measure.ValueRange;
 /**
  * Range of wavelengths in the electromagnetic spectrum.
  *
- * {@section SIS extension}
- * The {@link Band} interface defined by ISO 19115-2 is specific to measurements in
- * electromagnetic spectrum. For the needs of Image I/O, an additional interface -
- * {@link org.apache.sis.image.io.metadata.SampleDimension} - has been defined with
- * a subset of the {@code Band} API but without the restriction to wavelengths.
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Band_Type", propOrder = {
-    "maxValue",
-    "minValue",
-    "units",
     "peakResponse",
     "bitsPerValue",
     "toneGradation",
@@ -63,28 +64,26 @@ import org.apache.sis.measure.ValueRange;
 })
 @XmlRootElement(name = "MD_Band")
 @XmlSeeAlso(org.apache.sis.internal.jaxb.gmi.MI_Band.class)
-public class DefaultBand extends DefaultRangeDimension implements Band {
+public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6969884732125615287L;
-
-    /**
-     * Longest wavelength that the sensor is capable of collecting within a designated band.
-     */
-    private Double maxValue;
+    private static final long serialVersionUID = -2474871120376144737L;
 
     /**
      * Shortest wavelength that the sensor is capable of collecting within a designated band.
      */
-    private Double minValue;
+    private Double boundMin;
 
     /**
-     * Units in which sensor wavelengths are expressed. Should be non-null if
-     * {@linkplain #getMinValue() min value} or {@linkplain #getMaxValue() max value}
-     * are provided.
+     * Longest wavelength that the sensor is capable of collecting within a designated band.
      */
-    private Unit<Length> units;
+    private Double boundMax;
+
+    /**
+     * Units in which sensor wavelengths are expressed.
+     */
+    private Unit<Length> boundUnits;
 
     /**
      * Wavelength at which the response is the highest.
@@ -92,25 +91,9 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     private Double peakResponse;
 
     /**
-     * Maximum number of significant bits in the uncompressed representation for the value
-     * in each band of each pixel.
-     */
-    private Integer bitsPerValue;
-
-    /**
      * Number of discrete numerical values in the grid data.
      */
     private Integer toneGradation;
-
-    /**
-     * Scale factor which has been applied to the cell value.
-     */
-    private Double scaleFactor;
-
-    /**
-     * The physical value corresponding to a cell value of zero.
-     */
-    private Double offset;
 
     /**
      * Designation of criterion for defining maximum and minimum wavelengths for a spectral band.
@@ -156,14 +139,14 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     public DefaultBand(final Band object) {
         super(object);
         if (object != null) {
-            maxValue                 = object.getMaxValue();
-            minValue                 = object.getMinValue();
-            units                    = object.getUnits();
+            if (object instanceof DefaultBand) {
+                final DefaultBand c = (DefaultBand) object;
+                boundMin   = c.getBoundMin();
+                boundMax   = c.getBoundMax();
+                boundUnits = c.getBoundUnits();
+            }
             peakResponse             = object.getPeakResponse();
-            bitsPerValue             = object.getBitsPerValue();
             toneGradation            = object.getToneGradation();
-            scaleFactor              = object.getScaleFactor();
-            offset                   = object.getOffset();
             bandBoundaryDefinition   = object.getBandBoundaryDefinition();
             nominalSpatialResolution = object.getNominalSpatialResolution();
             transferFunctionType     = object.getTransferFunctionType();
@@ -203,69 +186,107 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @return Longest wavelength that the sensor is capable of collecting within a designated band,
      *         or {@code null} if unspecified.
+     *
+     * @since 0.5
      */
-    @Override
-    @XmlElement(name = "maxValue")
-    public Double getMaxValue() {
-        return maxValue;
+    @ValueRange(minimum = 0)
+/// @XmlElement(name = "boundMax")
+    public Double getBoundMax() {
+        return boundMax;
     }
 
     /**
      * Sets the longest wavelength that the sensor is capable of collecting within a designated band.
      *
      * @param newValue The new longest wavelength.
+     *
+     * @since 0.5
      */
-    public void setMaxValue(final Double newValue) {
+    public void setBoundMax(final Double newValue) {
         checkWritePermission();
-        maxValue = newValue;
+        boundMax = newValue;
     }
 
     /**
      * Returns the shortest wavelength that the sensor is capable of collecting within a designated band.
-     * The units of measurement is given by {@link #getUnits()}.
+     * The units of measurement is given by {@link #getBoundUnit()}.
      *
      * @return Shortest wavelength that the sensor is capable of collecting within a designated band,
      *         or {@code null} if unspecified.
+     *
+     * @since 0.5
      */
-    @Override
-    @XmlElement(name = "minValue")
-    public Double getMinValue() {
-        return minValue;
+    @ValueRange(minimum = 0)
+/// @XmlElement(name = "boundMin")
+    public Double getBoundMin() {
+        return boundMin;
     }
 
     /**
      * Sets the shortest wavelength that the sensor is capable of collecting within a designated band.
      *
      * @param newValue The new shortest wavelength.
+     *
+     * @since 0.5
      */
-    public void setMinValue(final Double newValue) {
+    public void setBoundMin(final Double newValue) {
         checkWritePermission();
-        minValue = newValue;
+        boundMin = newValue;
     }
 
     /**
-     * Returns the units in which sensor wavelengths are expressed. Shall be non-null
-     * if {@linkplain #getMinValue() min value} or {@linkplain #getMaxValue() max value}
-     * are provided.
+     * Returns units in which sensor wavelengths are expressed.
      *
-     * @return Units in which sensor wavelengths are expressed, or {@code null}.
+     * @return Units in which sensor wavelengths are expressed.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "boundUnits")
+    public Unit<Length> getBoundUnits() {
+        return boundUnits;
+    }
+
+    /**
+     * Set a new units in which sensor wavelengths are expressed.
+     *
+     * @param newValue the new unit.
+     *
+     * @since 0.5
+     */
+    public void setBoundUnits(final Unit<Length> newValue) {
+        checkWritePermission();
+        boundUnits = newValue;
+    }
+
+    /**
+     * Returns the units of data as a unit of length.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, the units of wavelength is rather {@code boundUnits}.
+     * The restriction for units of length in this {@code units} property may be relaxed in GeoAPI 4.0.
+     * </div>
+     *
+     * @return The units of data.
      */
     @Override
-    @XmlElement(name = "units")
     public Unit<Length> getUnits() {
-        return units;
+        final Unit<?> units = super.getUnits();
+        return (units != null) ? units.asType(Length.class) : null;
     }
 
     /**
-     * Sets the units in which sensor wavelengths are expressed. Shall be non-null if
-     * {@linkplain #getMinValue() min value} or {@linkplain #getMaxValue() max value}
-     * are provided.
+     * Sets the units of data as a unit of length.
      *
-     * @param newValue The new units.
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, the units of wavelength is rather {@code boundUnits}.
+     * The restriction for units of length in this {@code units} property may be relaxed in GeoAPI 4.0.
+     * </div>
+     *
+     * @param newValue The new units of data as an instance of {@code Unit<Length>}.
      */
-    public void setUnits(final Unit<Length> newValue) {
-        checkWritePermission();
-        units = newValue;
+    @Override
+    public void setUnits(final Unit<?> newValue) {
+        super.setUnits(newValue.asType(Length.class));
     }
 
     /**
@@ -275,6 +296,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      * @return Wavelength at which the response is the highest, or {@code null} if unspecified.
      */
     @Override
+    @ValueRange(minimum = 0)
     @XmlElement(name = "peakResponse")
     public Double getPeakResponse() {
         return peakResponse;
@@ -291,36 +313,30 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Returns the maximum number of significant bits in the uncompressed
-     * representation for the value in each band of each pixel.
-     *
-     * @return Maximum number of significant bits in the uncompressed representation, or {@code null}.
+     * {@inheritDoc}
      */
     @Override
-    @ValueRange(minimum=1)
+    @ValueRange(minimum = 1)
     @XmlElement(name = "bitsPerValue")
     public Integer getBitsPerValue() {
-        return bitsPerValue;
+        return super.getBitsPerValue();
     }
 
     /**
-     * Sets the maximum number of significant bits in the uncompressed representation
-     * for the value in each band of each pixel.
-     *
-     * @param newValue The new number of bits per value.
+     * {@inheritDoc}
      */
+    @Override
     public void setBitsPerValue(final Integer newValue) {
-        checkWritePermission();
-        bitsPerValue = newValue;
+        super.setBitsPerValue(newValue);
     }
 
     /**
      * Returns the number of discrete numerical values in the grid data.
      *
-     * @return Number of discrete numerical values in the grid data, or {@code null}.
+     * @return Number of discrete numerical values in the grid data, or {@code null} if none.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "toneGradation")
     public Integer getToneGradation() {
         return toneGradation;
@@ -337,45 +353,37 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Returns the scale factor which has been applied to the cell value.
-     *
-     * @return Scale factor which has been applied to the cell value, or {@code null}.
+     * {@inheritDoc}
      */
     @Override
     @XmlElement(name = "scaleFactor")
     public Double getScaleFactor() {
-        return scaleFactor;
+        return super.getScaleFactor();
     }
 
     /**
-     * Sets the scale factor which has been applied to the cell value.
-     *
-     * @param newValue The new scale factor.
+     * {@inheritDoc}
      */
+    @Override
     public void setScaleFactor(final Double newValue) {
-        checkWritePermission();
-        scaleFactor = newValue;
+        super.setScaleFactor(newValue);
     }
 
     /**
-     * Returns the physical value corresponding to a cell value of zero.
-     *
-     * @return The physical value corresponding to a cell value of zero, or {@code null}.
+     * {@inheritDoc}
      */
     @Override
     @XmlElement(name = "offset")
     public Double getOffset() {
-        return offset;
+        return super.getOffset();
     }
 
     /**
-     * Sets the physical value corresponding to a cell value of zero.
-     *
-     * @param newValue The new offset.
+     * {@inheritDoc}
      */
+    @Override
     public void setOffset(final Double newValue) {
-        checkWritePermission();
-        offset = newValue;
+        super.setOffset(newValue);
     }
 
     /**
@@ -406,7 +414,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      * @return Smallest distance between which separate points can be distinguished, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0, isMinIncluded=false)
+    @ValueRange(minimum = 0, isMinIncluded = false)
     @XmlElement(name = "nominalSpatialResolution", namespace = Namespaces.GMI)
     public Double getNominalSpatialResolution() {
         return nominalSpatialResolution;
@@ -445,7 +453,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Polarization of the radiation transmitted.
+     * Returns the polarization of the radiation transmitted.
      *
      * @return Polarization of the radiation transmitted, or {@code null}.
      */
@@ -466,7 +474,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Polarization of the radiation detected.
+     * Returns polarization of the radiation detected.
      *
      * @return Polarization of the radiation detected, or {@code null}.
      */

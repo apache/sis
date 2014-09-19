@@ -26,17 +26,28 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 
 
 /**
  * New metadata element, not found in ISO 19115, which is required to describe geographic data.
+ * Metadata elements are contained in a {@linkplain DefaultMetadataExtensionInformation metadata extension information}.
+ *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_ExtendedElementInformation_Type", propOrder = {
@@ -184,6 +195,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @see #castOrCopy(ExtendedElementInformation)
      */
+    @SuppressWarnings("deprecation")
     public DefaultExtendedElementInformation(final ExtendedElementInformation object) {
         super(object);
         if (object != null) {
@@ -253,8 +265,11 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Short form suitable for use in an implementation method such as XML or SGML.
      *
      * @return Short form suitable for use in an implementation method such as XML or SGML, or {@code null}.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "shortName")
     public String getShortName()  {
         return shortName;
@@ -264,7 +279,10 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Sets a short form suitable for use in an implementation method such as XML or SGML.
      *
      * @param newValue The new short name.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
+    @Deprecated
     public void setShortName(final String newValue)  {
         checkWritePermission();
         shortName = newValue;
@@ -276,8 +294,11 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * is {@linkplain Datatype#CODE_LIST_ELEMENT code list element}.
      *
      * @return Three digit code assigned to the extended element, or {@code null}.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "domainCode")
     public Integer getDomainCode() {
         return domainCode;
@@ -287,7 +308,10 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Sets a three digit code assigned to the extended element.
      *
      * @param newValue The new domain code.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
+    @Deprecated
     public void setDomainCode(final Integer newValue) {
         checkWritePermission();
         domainCode = newValue;
@@ -389,7 +413,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * @return Maximum occurrence of the extended element, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "maximumOccurrence")
     public Integer getMaximumOccurrence() {
         return maximumOccurrence;
@@ -399,9 +423,13 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Sets the maximum occurrence of the extended element.
      *
      * @param newValue The new maximum occurrence.
+     * @throws IllegalArgumentException if the given value is negative.
      */
-    public void setMaximumOccurrence(final Integer newValue) {
+    public void setMaximumOccurrence(final Integer newValue) throws IllegalArgumentException {
         checkWritePermission();
+        if (newValue != null) {
+            ArgumentChecks.ensurePositive("maximumOccurrence", newValue);
+        }
         maximumOccurrence = newValue;
     }
 
@@ -495,6 +523,11 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     /**
      * Name of the person or organization creating the extended element.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return Name of the person or organization creating the extended element.
      */
     @Override
@@ -505,6 +538,11 @@ public class DefaultExtendedElementInformation extends ISOMetadata
 
     /**
      * Sets the name of the person or organization creating the extended element.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValues The new sources.
      */

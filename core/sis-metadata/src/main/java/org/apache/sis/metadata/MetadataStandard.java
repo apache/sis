@@ -88,7 +88,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see AbstractMetadata
@@ -122,7 +122,7 @@ public class MetadataStandard implements Serializable {
      * An instance working on ISO 19119 standard as defined by GeoAPI interfaces
      * in the {@code org.opengis.service} package and sub-packages.
      *
-     * @deprecated Merged with {@link #ISO_19115} as of ISO 19115:2014 revision.
+     * @deprecated as of ISO 19115:2014 revision, merged with {@link #ISO_19115}.
      */
     @Deprecated
     public static final MetadataStandard ISO_19119;
@@ -304,7 +304,14 @@ public class MetadataStandard implements Serializable {
             if (SpecialCases.isSpecialCase(type)) {
                 accessor = new SpecialCases(citation, type, implementation);
             } else {
-                accessor = new PropertyAccessor(citation, type, implementation);
+                /*
+                 * If "multi-value returns" was allowed in the Java language, the 'onlyUML' boolean would
+                 * be returned by 'findInterface(Class)' method when it falls in the special case for the
+                 * UML annotation on implementation class. But since we do not have multi-values, we have
+                 * to infer it from our knownledge of how 'findInterface(Class)' is implemented.
+                 */
+                final boolean onlyUML = (type == implementation && !type.isInterface());
+                accessor = new PropertyAccessor(citation, type, implementation, onlyUML);
             }
             accessors.put(implementation, accessor);
             return accessor;
@@ -337,6 +344,18 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
+     * Returns {@code true} if the given implementation class, normally rejected by {@link #findInterface(Class)},
+     * should be accepted as a pseudo-interface. We use this undocumented feature when Apache SIS experiments a new
+     * API which is not yet published in GeoAPI. This happen for example when upgrading Apache SIS public API from
+     * the ISO 19115:2003 standard to the ISO 19115:2014 version, but GeoAPI interfaces are still the old version.
+     * In such case, API that would normally be present in GeoAPI interfaces are temporarily available only in
+     * Apache SIS implementation classes.
+     */
+    boolean isPendingAPI(final Class<?> type) {
+        return false;
+    }
+
+    /**
      * Returns the metadata interface implemented by the specified implementation.
      * Only one metadata interface can be implemented. If the given type is already
      * an interface from the standard, then it is returned directly.
@@ -344,7 +363,7 @@ public class MetadataStandard implements Serializable {
      * @param  type The standard interface or the implementation class.
      * @return The single interface, or {@code null} if none where found.
      */
-    private Class<?> findInterface(Class<?> type) {
+    private Class<?> findInterface(final Class<?> type) {
         if (type != null) {
             if (type.isInterface()) {
                 if (type.getName().startsWith(interfacePackage)) {
@@ -356,10 +375,9 @@ public class MetadataStandard implements Serializable {
                  * including the ones declared in the super-class.
                  */
                 final Set<Class<?>> interfaces = new LinkedHashSet<Class<?>>();
-                do {
-                    getInterfaces(type, interfaces);
-                    type = type.getSuperclass();
-                } while (type != null);
+                for (Class<?> t=type; t!=null; t=t.getSuperclass()) {
+                    getInterfaces(t, interfaces);
+                }
                 /*
                  * If we found more than one interface, removes the
                  * ones that are sub-interfaces of the other.
@@ -381,6 +399,17 @@ public class MetadataStandard implements Serializable {
                     }
                     // Found more than one interface; we don't know which one to pick.
                     // Returns 'null' for now; the caller will thrown an exception.
+                } else if (isPendingAPI(type)) {
+                    /*
+                     * Found no interface. According to our method contract we should return null.
+                     * However we make an exception if the implementation class has a UML annotation.
+                     * The reason is that when upgrading  API  from ISO 19115:2003 to ISO 19115:2014,
+                     * implementations are provided in Apache SIS before the corresponding interfaces
+                     * are published on GeoAPI. The reason why GeoAPI is slower to upgrade is that we
+                     * have to go through a voting process inside the Open Geospatial Consortium (OGC).
+                     * So we use those implementation classes as a temporary substitute for the interfaces.
+                     */
+                    return type;
                 }
             }
         }
@@ -413,6 +442,7 @@ public class MetadataStandard implements Serializable {
      * The standard package is usually made of interfaces and code lists only, but this is
      * not verified by this method.</div>
      *
+     * @param  <T>  The compile-time {@code type}.
      * @param  type The implementation class.
      * @return The interface implemented by the given implementation class.
      * @throws ClassCastException if the specified implementation class does
@@ -420,23 +450,28 @@ public class MetadataStandard implements Serializable {
      *
      * @see AbstractMetadata#getInterface()
      */
-    public Class<?> getInterface(final Class<?> type) throws ClassCastException {
+    @SuppressWarnings("unchecked")
+    public <T> Class<? super T> getInterface(final Class<T> type) throws ClassCastException {
         ensureNonNull("type", type);
+        final Class<?> standard;
         synchronized (accessors) {
             final Object value = accessors.get(type);
             if (value != null) {
                 if (value instanceof PropertyAccessor) {
-                    return ((PropertyAccessor) value).type;
+                    standard = ((PropertyAccessor) value).type;
+                } else {
+                    standard = (Class<?>) value;
                 }
-                return (Class<?>) value;
+            } else {
+                standard = findInterface(type);
+                if (standard == null) {
+                    throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
+                }
+                accessors.put(type, standard);
             }
-            final Class<?> standard = findInterface(type);
-            if (standard == null) {
-                throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
-            }
-            accessors.put(type, standard);
-            return standard;
         }
+        assert standard.isAssignableFrom(type) : type;
+        return (Class<? super T>) standard;
     }
 
     /**
@@ -444,10 +479,11 @@ public class MetadataStandard implements Serializable {
      * The default implementation returns {@code null} if every cases. Subclasses shall
      * override this method in order to map GeoAPI interfaces to their implementation.
      *
+     * @param  <T>  The compile-time {@code type}.
      * @param  type The interface, typically from the {@code org.opengis.metadata} package.
      * @return The implementation class, or {@code null} if none.
      */
-    public Class<?> getImplementation(final Class<?> type) {
+    public <T> Class<? extends T> getImplementation(final Class<T> type) {
         return null;
     }
 

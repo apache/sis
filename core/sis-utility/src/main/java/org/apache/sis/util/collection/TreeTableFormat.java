@@ -342,6 +342,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * @throws ParseException If an error occurred while parsing a node value.
      */
     @Override
+    @SuppressWarnings("null")
     public TreeTable parse(final CharSequence text, final ParsePosition pos) throws ParseException {
         final Matcher matcher   = getColumnSeparatorMatcher(text);
         final int length        = text.length();

@@ -16,27 +16,40 @@
  */
 package org.apache.sis.metadata.iso.distribution;
 
+import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.Iterator;
 import javax.measure.unit.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.MediumName;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
 /**
  * Information about the media on which the resource can be distributed.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Medium_Type", propOrder = {
@@ -61,7 +74,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
 
     /**
      * Density at which the data is recorded.
-     * If non-null, then the numbers shall be greater than zero.
+     * If non-null, then the number shall be greater than zero.
      */
     private Collection<Double> densities;
 
@@ -84,6 +97,11 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * Description of other limitations or requirements for using the medium.
      */
     private InternationalString mediumNote;
+
+    /**
+     * Unique identifier for an instance of the medium.
+     */
+    private Identifier identifier;
 
     /**
      * Constructs an initially empty medium.
@@ -109,6 +127,9 @@ public class DefaultMedium extends ISOMetadata implements Medium {
             volumes       = object.getVolumes();
             mediumFormats = copyCollection(object.getMediumFormats(), MediumFormat.class);
             mediumNote    = object.getMediumNote();
+            if (object instanceof DefaultMedium) {
+                identifier = ((DefaultMedium) object).getIdentifier();
+            }
         }
     }
 
@@ -208,7 +229,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @return Number of items in the media identified, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "volumes")
     public Integer getVolumes() {
         return volumes;
@@ -263,5 +284,29 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     public void setMediumNote(final InternationalString newValue) {
         checkWritePermission();
         mediumNote = newValue;
+    }
+
+    /**
+     * Returns a unique identifier for an instance of the medium.
+     *
+     * @return Unique identifier, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "identifier")
+    public Identifier getIdentifier() {
+        return identifier;
+    }
+
+    /**
+     * Sets a unique identifier for an instance of the medium.
+     *
+     * @param newValue The new identifier.
+     *
+     * @since 0.5
+     */
+    public void setIdentifier(final Identifier newValue) {
+        checkWritePermission();
+        identifier = newValue;
     }
 }

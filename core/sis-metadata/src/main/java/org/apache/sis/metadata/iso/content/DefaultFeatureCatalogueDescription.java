@@ -24,16 +24,26 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
 /**
- * Information identifying the feature catalogue.
+ * Information identifying the feature catalogue or the conceptual schema.
+ *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_FeatureCatalogueDescription_Type", propOrder = {
@@ -50,7 +60,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3626075463499626815L;
+    private static final long serialVersionUID = 5731044701122380718L;
 
     /**
      * Whether or not the cited feature catalogue complies with ISO 19110.
@@ -67,14 +77,14 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     private Collection<Locale> languages;
 
     /**
-     * Whether or not the feature catalogue is included with the dataset.
+     * Whether or not the feature catalogue is included with the resource.
      */
     private boolean includedWithDataset;
 
     /**
-     * Subset of feature types from cited feature catalogue occurring in dataset.
+     * Subset of feature types from cited feature catalogue occurring in resource.
      */
-    private Collection<GenericName> featureTypes;
+    private Collection<DefaultFeatureTypeInfo> featureTypes;
 
     /**
      * Complete bibliographic reference to one or more external feature catalogues.
@@ -102,8 +112,12 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
             compliant                 = object.isCompliant();
             includedWithDataset       = object.isIncludedWithDataset();
             languages                 = copyCollection(object.getLanguages(), Locale.class);
-            featureTypes              = copyCollection(object.getFeatureTypes(), GenericName.class);
             featureCatalogueCitations = copyCollection(object.getFeatureCatalogueCitations(), Citation.class);
+            if (object instanceof DefaultFeatureCatalogueDescription) {
+                featureTypes = copyCollection(((DefaultFeatureCatalogueDescription) object).getFeatureTypeInfo(), DefaultFeatureTypeInfo.class);
+            } else {
+                setFeatureTypes(object.getFeatureTypes());
+            }
         }
     }
 
@@ -174,9 +188,9 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     }
 
     /**
-     * Returns whether or not the feature catalogue is included with the dataset.
+     * Returns whether or not the feature catalogue is included with the resource.
      *
-     * @return Whether or not the feature catalogue is included with the dataset.
+     * @return Whether or not the feature catalogue is included with the resource.
      */
     @Override
     @XmlElement(name = "includedWithDataset", required = true)
@@ -185,7 +199,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     }
 
     /**
-     * Sets whether or not the feature catalogue is included with the dataset.
+     * Sets whether or not the feature catalogue is included with the resource.
      *
      * @param newValue {@code true} if the feature catalogue is included.
      */
@@ -195,23 +209,81 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     }
 
     /**
-     * Returns the subset of feature types from cited feature catalogue occurring in dataset.
+     * Returns the subset of feature types from cited feature catalogue occurring in resource.
      *
-     * @return Subset of feature types occurring in dataset.
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code FeatureTypeInfo} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @return Subset of feature types occurring in resource.
+     *
+     * @since 0.5
      */
-    @Override
-    @XmlElement(name = "featureTypes")
-    public Collection<GenericName> getFeatureTypes() {
-        return featureTypes = nonNullCollection(featureTypes, GenericName.class);
+    public Collection<DefaultFeatureTypeInfo> getFeatureTypeInfo() {
+        return featureTypes = nonNullCollection(featureTypes, DefaultFeatureTypeInfo.class);
     }
 
     /**
-     * Sets the subset of feature types from cited feature catalogue occurring in dataset.
+     * Sets the subset of feature types from cited feature catalogue occurring in resource.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code FeatureTypeInfo} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
      *
      * @param newValues The new feature types.
+     *
+     * @since 0.5
      */
-    public void setFeatureTypes(final Collection<? extends GenericName> newValues) {
-        featureTypes = writeCollection(newValues, featureTypes, GenericName.class);
+    public void setFeatureTypeInfo(final Collection<? extends DefaultFeatureTypeInfo> newValues) {
+        featureTypes = writeCollection(newValues, featureTypes, DefaultFeatureTypeInfo.class);
+    }
+
+    /**
+     * Returns the names of {@linkplain #getFeatureTypes() feature types}.
+     *
+     * @return The feature type names.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getFeatureTypeInfo()}.
+     */
+    @Override
+    @Deprecated
+    @XmlElement(name = "featureTypes")
+    public final Collection<GenericName> getFeatureTypes() {
+        return new LegacyPropertyAdapter<GenericName,DefaultFeatureTypeInfo>(getFeatureTypeInfo()) {
+            /** Stores a legacy value into the new kind of value. */
+            @Override protected DefaultFeatureTypeInfo wrap(final GenericName value) {
+                return new DefaultFeatureTypeInfo(value);
+            }
+
+            /** Extracts the legacy value from the new kind of value. */
+            @Override protected GenericName unwrap(final DefaultFeatureTypeInfo container) {
+                return container.getFeatureTypeName();
+            }
+
+            /** Updates the legacy value in an existing instance of the new kind of value. */
+            @Override protected boolean update(final DefaultFeatureTypeInfo container, final GenericName value) {
+                if (container instanceof DefaultFeatureTypeInfo) {
+                    container.setFeatureTypeName(value);
+                    return true;
+                }
+                return false;
+            }
+        }.validOrNull();
+    }
+
+    /**
+     * Sets the names of {@linkplain #getFeatureTypes() feature types}.
+     *
+     * @param newValues The new feature type names.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setFeatureTypeInfo(Collection)}.
+     */
+    @Deprecated
+    public final void setFeatureTypes(final Collection<? extends GenericName> newValues) {
+        checkWritePermission();
+        ((LegacyPropertyAdapter<GenericName,?>) getFeatureTypes()).setValues(newValues);
     }
 
     /**

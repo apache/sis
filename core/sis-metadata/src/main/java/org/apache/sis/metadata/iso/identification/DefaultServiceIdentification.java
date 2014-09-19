@@ -16,8 +16,15 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.Collection;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.identification.DataIdentification;
+import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.opengis.metadata.identification.ServiceIdentification;
 import org.apache.sis.xml.Namespaces;
 
@@ -26,25 +33,117 @@ import org.apache.sis.xml.Namespaces;
  * Identification of capabilities which a service provider makes available to a service user
  * through a set of interfaces that define a behaviour.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @author  Rémi Maréchal (Geomatys)
+ * @since   0.5
+ * @version 0.5
  * @module
  */
-@XmlType(name = "MD_ServiceIdentification_Type")
-@XmlRootElement(name = "SV_ServiceIdentification", namespace = Namespaces.SRV) // Prefix is really SV_ according ISO 19115 corrigendum.
+@XmlType(name = "MD_ServiceIdentification_Type", propOrder = { // ISO 19139 still use the old prefix.
+    "serviceType",
+    "serviceTypeVersions",
+/// "accessProperties",
+    "coupledResources",
+    "couplingType",
+/// "operatedDatasets",
+/// "profiles",
+/// "serviceStandards",
+    "containsOperations",
+    "operatesOn",
+/// "containsChain"
+})
+@XmlRootElement(name = "SV_ServiceIdentification", namespace = Namespaces.SRV)
 public class DefaultServiceIdentification extends AbstractIdentification implements ServiceIdentification {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 4988429302218128178L;
+    private static final long serialVersionUID = 7700836694236616300L;
+
+    /**
+     * A service type name.
+     */
+    private GenericName serviceType;
+
+    /**
+     * The version of the service, supports searching based on the version of serviceType.
+     */
+    private Collection<String> serviceTypeVersions;
+
+    /**
+     * Information about the availability of the service.
+     */
+    private StandardOrderProcess accessProperties;
+
+    /**
+     * Type of coupling between service and associated data (if exist).
+     */
+    private Object couplingType;
+
+    /**
+     * Further description of the data coupling in the case of tightly coupled services.
+     */
+    private Collection<DefaultCoupledResource> coupledResources;
+
+    /**
+     * References to the resource on which the service operates.
+     */
+    private Collection<Citation> operatedDatasets;
+
+    /**
+     * Profiles to which the service adheres.
+     */
+    private Collection<Citation> profiles;
+
+    /**
+     * Standards to which the service adheres.
+     */
+    private Collection<Citation> serviceStandards;
+
+    /**
+     * Information about the operations that comprise the service.
+     */
+    private Collection<DefaultOperationMetadata> containsOperations;
+
+    /**
+     * Information on the resources that the service operates on.
+     */
+    private Collection<DataIdentification> operatesOn;
+
+    /**
+     * Information about the chain applied by the service.
+     */
+    private Collection<DefaultOperationChainMetadata> containsChain;
 
     /**
      * Constructs an initially empty service identification.
      */
     public DefaultServiceIdentification() {
+    }
+
+    /**
+     * Constructs a service identification initialized to the specified values.
+     *
+     * @param serviceType Service type name.
+     * @param citation    Citation data for the resource(s).
+     * @param abstracts   Brief narrative summary of the content of the resource(s).
+     */
+    public DefaultServiceIdentification(final GenericName  serviceType,
+                                        final Citation     citation,
+                                        final CharSequence abstracts)
+    {
+        super(citation, abstracts);
+        this.serviceType = serviceType;
     }
 
     /**
@@ -58,6 +157,20 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      */
     public DefaultServiceIdentification(final ServiceIdentification object) {
         super(object);
+        if (object instanceof DefaultServiceIdentification) {
+            final DefaultServiceIdentification c = (DefaultServiceIdentification) object;
+            serviceType         = c.getServiceType();
+            serviceTypeVersions = copyCollection(c.getServiceTypeVersions(), String.class);
+            accessProperties    = c.getAccessProperties();
+            couplingType        = c.getCouplingType();
+            coupledResources    = copyCollection(c.getCoupledResources(), DefaultCoupledResource.class);
+            operatedDatasets    = copyCollection(c.getOperatedDatasets(), Citation.class);
+            profiles            = copyCollection(c.getProfiles(), Citation.class);
+            serviceStandards    = copyCollection(c.getServiceStandards(), Citation.class);
+            containsOperations  = copyCollection(c.getContainsOperations(), DefaultOperationMetadata.class);
+            operatesOn          = copyCollection(c.getOperatesOn(), DataIdentification.class);
+            containsChain       = copyCollection(c.getContainsChain(), DefaultOperationChainMetadata.class);
+        }
     }
 
     /**
@@ -83,5 +196,269 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
             return (DefaultServiceIdentification) object;
         }
         return new DefaultServiceIdentification(object);
+    }
+
+    /**
+     * Returns a service type name.
+     *
+     * <div class="note"><b>Examples:</b> "discovery", "view", "download", "transformation", or "invoke"</div>
+     *
+     * @return A service type name.
+     */
+    @XmlElement(name = "serviceType", namespace = Namespaces.SRV, required = true)
+    public GenericName getServiceType() {
+        return serviceType;
+    }
+
+    /**
+     * Sets the service type name.
+     *
+     * @param newValue The new service type name.
+     */
+    public void setServiceType(final GenericName newValue) {
+        checkWritePermission();
+        serviceType = newValue;
+    }
+
+    /**
+     * Returns the versions of the service.
+     *
+     * @return The versions of the service.
+     */
+    @XmlElement(name = "serviceTypeVersion", namespace = Namespaces.SRV)
+    public Collection<String> getServiceTypeVersions() {
+        return serviceTypeVersions = nonNullCollection(serviceTypeVersions, String.class);
+    }
+
+    /**
+     * Sets the versions of the service.
+     *
+     * @param newValues The new versions of the service.
+     */
+    public void setServiceTypeVersions(final Collection<? extends String> newValues) {
+        serviceTypeVersions = writeCollection(newValues, serviceTypeVersions, String.class);
+    }
+
+    /**
+     * Returns information about the availability of the service.
+     *
+     * @return Information about the availability of the service, or {@code null} if none.
+     */
+/// @XmlElement(name = "accessProperties", namespace = Namespaces.SRV)
+    public StandardOrderProcess getAccessProperties() {
+        return accessProperties;
+
+    }
+
+    /**
+     * Sets information about the availability of the service.
+     *
+     * @param newValue The new information about the availability of the service.
+     */
+    public void setAccessProperties(final StandardOrderProcess newValue) {
+        checkWritePermission();
+        accessProperties = newValue;
+    }
+
+    /**
+     * Returns type of coupling between service and associated data (if exist).
+     *
+     * <div class="warning"><b>Upcoming API change — specialization</b><br>
+     * The return type will be changed to the {@code CouplingType} code list
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @return Type of coupling between service and associated data, or {@code null} if none.
+     */
+    @XmlElement(name = "couplingType", namespace = Namespaces.SRV)
+    public Object getCouplingType() {
+        return couplingType;
+    }
+
+    /**
+     * Sets the type of coupling between service and associated data.
+     *
+     * <div class="warning"><b>Upcoming API change — specialization</b><br>
+     * The argument type will be changed to the {@code CouplingType} code list
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @param newValue The new type of coupling between service and associated data.
+     */
+    public void setCouplingType(final Object newValue) {
+        checkWritePermission();
+        couplingType = newValue;
+    }
+
+    /**
+     * Returns further description(s) of the data coupling in the case of tightly coupled services.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code CoupledResource} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @return Further description(s) of the data coupling in the case of tightly coupled services.
+     */
+    @XmlElement(name = "coupledResource", namespace = Namespaces.SRV)
+    public Collection<DefaultCoupledResource> getCoupledResources() {
+        return coupledResources = nonNullCollection(coupledResources, DefaultCoupledResource.class);
+    }
+
+    /**
+     * Sets further description(s) of the data coupling in the case of tightly coupled services.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code CoupledResource} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @param newValues The new further description(s) of the data coupling.
+     */
+    public void setCoupledResources(final Collection<? extends DefaultCoupledResource> newValues) {
+        coupledResources = writeCollection(newValues, coupledResources, DefaultCoupledResource.class);
+    }
+
+    /**
+     * Returns the reference(s) to the resource on which the service operates.
+     *
+     * @return Reference(s) to the resource on which the service operates.
+     */
+/// @XmlElement(name = "operatedDataset", namespace = Namespaces.SRV)
+    public Collection<Citation> getOperatedDatasets() {
+        return operatedDatasets = nonNullCollection(operatedDatasets, Citation.class);
+    }
+
+    /**
+     * Sets the reference(s) to the resource on which the service operates.
+     *
+     * @param newValues The new reference(s) to the resource on which the service operates.
+     */
+    public void setOperatedDatasets(final Collection<? extends Citation> newValues) {
+        operatedDatasets = writeCollection(newValues, operatedDatasets, Citation.class);
+    }
+
+    /**
+     * Returns the profile(s) to which the service adheres.
+     *
+     * @return Profile(s) to which the service adheres.
+     */
+/// @XmlElement(name = "profile", namespace = Namespaces.SRV)
+    public Collection<Citation> getProfiles() {
+        return profiles = nonNullCollection(profiles, Citation.class);
+    }
+
+    /**
+     * Sets the profile(s) to which the service adheres.
+     *
+     * @param newValues The new profile(s) to which the service adheres.
+     */
+    public void setProfiles(final Collection<? extends Citation> newValues) {
+        profiles = writeCollection(newValues, profiles, Citation.class);
+    }
+
+    /**
+     * Returns the standard(s) to which the service adheres.
+     *
+     * @return Standard(s) to which the service adheres.
+     */
+/// @XmlElement(name = "serviceStandard", namespace = Namespaces.SRV)
+    public Collection<Citation> getServiceStandards() {
+        return serviceStandards = nonNullCollection(serviceStandards, Citation.class);
+    }
+
+    /**
+     * Sets the standard(s) to which the service adheres.
+     *
+     * @param newValues The new standard(s) to which the service adheres.
+     */
+    public void setServiceStandards(final Collection<? extends Citation> newValues) {
+        serviceStandards = writeCollection(newValues, serviceStandards, Citation.class);
+    }
+
+    /**
+     * Provides information about the operations that comprise the service.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code OperationMetadata} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @return Information about the operations that comprise the service.
+     */
+    @XmlElement(name = "containsOperations", namespace = Namespaces.SRV)
+    public Collection<DefaultOperationMetadata> getContainsOperations() {
+        return containsOperations = nonNullCollection(containsOperations, DefaultOperationMetadata.class);
+    }
+
+    /**
+     * Sets information(s) about the operations that comprise the service.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code OperationMetadata} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @param newValues The new information(s) about the operations that comprise the service.
+     */
+    public void setContainsOperations(final Collection<? extends DefaultOperationMetadata> newValues) {
+        containsOperations = writeCollection(newValues, containsOperations, DefaultOperationMetadata.class);
+    }
+
+    /**
+     * Provides information on the resources that the service operates on.
+     *
+     * @return Information on the resources that the service operates on.
+     */
+    @XmlElement(name = "operatesOn", namespace = Namespaces.SRV)
+    public Collection<DataIdentification> getOperatesOn() {
+        return operatesOn = nonNullCollection(operatesOn, DataIdentification.class);
+    }
+
+    /**
+     * Sets the information on the resources that the service operates on.
+     *
+     * @param newValues The new information on the resources that the service operates on.
+     */
+    public void setOperatesOn(final Collection<? extends DataIdentification> newValues) {
+        operatesOn = writeCollection(newValues, operatesOn, DataIdentification.class);
+    }
+
+    /**
+     * Provides information about the chain applied by the service.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code OperationChainMetadata} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @return Information about the chain applied by the service.
+     */
+/// @XmlElement(name = "containsChain", namespace = Namespaces.SRV)
+    public Collection<DefaultOperationChainMetadata> getContainsChain() {
+        return containsChain = nonNullCollection(containsChain, DefaultOperationChainMetadata.class);
+    }
+
+    /**
+     * Sets the information about the chain applied by the service.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code OperationChainMetadata} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @param newValues The new information about the chain applied by the service.
+     */
+    public void setContainsChain(final Collection<? extends DefaultOperationChainMetadata>  newValues) {
+        containsChain = writeCollection(newValues, containsChain, DefaultOperationChainMetadata.class);
+    }
+
+    /**
+     * Invoked after JAXB has unmarshalled this object.
+     */
+    private void afterUnmarshal(final Unmarshaller u, final Object parent) {
+        if (containsOperations != null && coupledResources != null) {
+            OperationName.resolve(containsOperations, coupledResources);
+        }
     }
 }

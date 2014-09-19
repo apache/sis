@@ -55,7 +55,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.05)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see InformationMap
@@ -179,7 +179,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Unconditionally returns {@code null}.
      *
      * @deprecated This property was defined in the 2003 edition of ISO 19115,
-     *             but has been removed in the 2013 edition.
+     *             but has been removed in the 2014 edition.
      */
     @Override
     @Deprecated
@@ -191,7 +191,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Unconditionally returns {@code null}.
      *
      * @deprecated This property was defined in the 2003 edition of ISO 19115,
-     *             but has been removed in the 2013 edition.
+     *             but has been removed in the 2014 edition.
      */
     @Override
     @Deprecated
@@ -319,9 +319,17 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
     }
 
     /**
+     * Unconditionally returns {@code null}.
+     */
+    public InternationalString getRationale() {
+        return null;
+    }
+
+    /**
      * Unconditionally returns an empty list.
      */
     @Override
+    @Deprecated
     public Collection<InternationalString> getRationales() {
         return Collections.emptyList();
     }

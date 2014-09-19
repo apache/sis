@@ -48,11 +48,22 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *   <li>{@link #setScale(double)} for computing the denominator from a scale value.</li>
  * </ul>
  *
+ * {@section Limitations}
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.4
  * @module
+ *
+ * @see DefaultResolution#getEquivalentScale()
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")
@@ -237,6 +248,17 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     @Override
     public int hashCode() {
         return (int) denominator;
+    }
+
+    /**
+     * Returns a string representation of this scale, or {@code NaN} if undefined.
+     * If defined, the string representation uses the colon as in "1:20000".
+     *
+     * @return A string representation of this scale.
+     */
+    @Override
+    public String toString() {
+        return (denominator != 0) ? "1:" + denominator : "NaN";
     }
 
 

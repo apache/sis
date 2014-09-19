@@ -62,18 +62,22 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
     private static final long serialVersionUID = -5299837898367149069L;
 
     /**
+     * The matrix, or {@code null} if not yet computed.
+     *
+     * <p>This field is also used for determining if the affine transform is mutable.
+     * If this field is {@code null} (which should be a temporary state), then this means that
+     * this affine transform is still under construction. This field <strong>must</strong> be
+     * set to a non-null value before an {@link AffineTransform2D} instance is published.</p>
+     *
+     * @see #getMatrix()
+     * @see #freeze()
+     */
+    private AffineMatrix matrix;
+
+    /**
      * The inverse transform. This field will be computed only when needed.
      */
     private transient volatile AffineTransform2D inverse;
-
-    /**
-     * {@code true} if this transform is mutable. This field may be temporarily set
-     * to {@code true} during construction, but <strong>must</strong> be reset to
-     * {@code false} before an {@link AffineTransform2D} instance is published.
-     *
-     * @see #freeze()
-     */
-    private transient boolean mutable;
 
     /**
      * Constructs a <strong>temporarily mutable</strong> identity affine transform.
@@ -82,7 +86,6 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     public AffineTransform2D() {
         super();
-        mutable = true;
     }
 
     /**
@@ -94,7 +97,9 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     public AffineTransform2D(final AffineTransform transform, final boolean mutable) {
         super(transform);
-        this.mutable = mutable;
+        if (!mutable) {
+            freeze();
+        }
     }
 
     /**
@@ -104,9 +109,20 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     public AffineTransform2D(final AffineTransform transform) {
         super(transform);
-        mutable = true;
         forcePositiveZeros();
-        mutable = false;
+        freeze();
+    }
+
+    /**
+     * Constructs a new {@code AffineTransform2D} from the given 9 or 18 values.
+     *
+     * @param elements The matrix elements, optionally with error terms.
+     */
+    public AffineTransform2D(final double[] elements) {
+        super(pz(elements[0]), pz(elements[3]),
+              pz(elements[1]), pz(elements[4]),
+              pz(elements[2]), pz(elements[5]));
+        matrix = new AffineMatrix(this, elements);
     }
 
     /**
@@ -124,6 +140,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     public AffineTransform2D(double m00, double m10, double m01, double m11, double m02, double m12) {
         super(pz(m00), pz(m10), pz(m01), pz(m11), pz(m02), pz(m12));
+        freeze();
     }
 
     /**
@@ -150,9 +167,11 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
 
     /**
      * Makes this {@code AffineTransform2D} immutable.
+     * This method shall be invoked exactly once.
      */
     public final void freeze() {
-        mutable = false;
+        assert matrix == null;
+        matrix = new AffineMatrix(this, null);
     }
 
     /**
@@ -163,7 +182,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     @Override
     protected final void checkPermission() throws UnsupportedOperationException {
-        if (!mutable) {
+        if (matrix != null) {
             super.checkPermission();
         }
     }
@@ -261,7 +280,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     @Override
     public final Matrix getMatrix() {
-        return AffineTransforms2D.toMatrix(this);
+        return matrix;
     }
 
     /**

@@ -28,7 +28,9 @@ import org.apache.sis.metadata.iso.citation.DefaultAddress;
 import org.apache.sis.metadata.iso.citation.DefaultContact;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.metadata.iso.citation.DefaultIndividual;
+import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.test.DependsOnMethod;
@@ -37,6 +39,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static java.util.Collections.singleton;
 
 
 /**
@@ -45,7 +48,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(TreeNodeChildrenTest.class)
@@ -56,39 +59,42 @@ public final strictfp class TreeNodeTest extends TestCase {
      *
      * {@preformat text
      *   Citation
-     *     ├─Title…………………………………………………………………………………… Some title
-     *     ├─Alternate title (1 of 2)………………………………… First alternate title
-     *     ├─Alternate title (2 of 2)………………………………… Second alternate title
-     *     ├─Edition……………………………………………………………………………… Some edition
+     *     ├─Title…………………………………………………………………………………………… Some title
+     *     ├─Alternate title (1 of 2)………………………………………… First alternate title
+     *     ├─Alternate title (2 of 2)………………………………………… Second alternate title
+     *     ├─Edition……………………………………………………………………………………… Some edition
      *     ├─Cited responsible party (1 of 2)
-     *     │   ├─Organisation name………………………………………… Some organisation
-     *     │   └─Role…………………………………………………………………………… Distributor
+     *     │   └─Party (Organisation)
+     *     │      ├─Name…………………………………………………………………………… Some organisation
+     *     │      └─Role…………………………………………………………………………… Distributor
      *     ├─Cited responsible party (2 of 2)
-     *     │   ├─Individual name……………………………………………… Some person of contact
-     *     │   ├─Contact info
-     *     │   │   └─Address
-     *     │   │       └─Electronic mail address…… Some email
-     *     │   └─Role…………………………………………………………………………… Point of contact
-     *     ├─Presentation form (1 of 2)…………………………… Map digital
-     *     ├─Presentation form (2 of 2)…………………………… map hardcopy
-     *     └─Other citation details……………………………………… Some other details
+     *     │   └─Party (Individual)
+     *     │      ├─Name…………………………………………………………………………… Some person of contact
+     *     │      ├─Contact info
+     *     │      │   └─Address
+     *     │      │       └─Electronic mail address…… Some email
+     *     │      └─Role…………………………………………………………………………… Point of contact
+     *     ├─Presentation form (1 of 2)…………………………………… Map digital
+     *     ├─Presentation form (2 of 2)…………………………………… map hardcopy
+     *     └─Other citation details……………………………………………… Some other details
      * }
      */
     static DefaultCitation metadataWithHierarchy() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithMultiOccurrences();
-        DefaultResponsibleParty party = new DefaultResponsibleParty(Role.DISTRIBUTOR);
-        party.setOrganisationName(new SimpleInternationalString("Some organisation"));
-        citation.getCitedResponsibleParties().add(party);
+        AbstractParty party = new DefaultOrganisation("Some organisation", null, null, null);
+        DefaultResponsibleParty responsibility = new DefaultResponsibleParty(Role.DISTRIBUTOR);
+        responsibility.setParties(singleton(party));
+        citation.getCitedResponsibleParties().add(responsibility);
 
         // Add a second responsible party with deeper hierarchy.
-        party = new DefaultResponsibleParty(Role.POINT_OF_CONTACT);
-        party.setIndividualName("Some person of contact");
         final DefaultContact contact = new DefaultContact();
         final DefaultAddress address = new DefaultAddress();
         address.getElectronicMailAddresses().add("Some email");
-        contact.setAddress(address);
-        party.setContactInfo(contact);
-        citation.getCitedResponsibleParties().add(party);
+        contact.getAddresses().add(address);
+        party = new DefaultIndividual("Some person of contact", null, contact);
+        responsibility = new DefaultResponsibleParty(Role.POINT_OF_CONTACT);
+        responsibility.setParties(singleton(party));
+        citation.getCitedResponsibleParties().add(responsibility);
         return citation;
     }
 

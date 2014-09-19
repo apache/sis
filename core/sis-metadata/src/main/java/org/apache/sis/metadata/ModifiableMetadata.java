@@ -86,8 +86,8 @@ import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 @XmlTransient
 public abstract class ModifiableMetadata extends AbstractMetadata implements Cloneable {
     /**
-     * Initial capacity of lists and sets. We use a small value because those
-     * collections will typically contain few elements (often just a singleton).
+     * Initial capacity of sets. We use a small value because collections will typically
+     * contain few elements (often just a singleton).
      */
     private static final int INITIAL_CAPACITY = 4;
 
@@ -385,7 +385,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             if (unmodifiable == FREEZING) {
                 /*
                  * freeze() method is under progress. The source collection is already
-                 * an unmodifiable instance created by unmodifiable(Object).
+                 * an unmodifiable instance created by Cloner.clone(Object).
                  */
                 assert collectionType(elementType).isInstance(source);
                 return (Collection<E>) source;
@@ -500,7 +500,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (useSet(elementType)) {
             collection = createSet(elementType, INITIAL_CAPACITY);
         } else {
-            collection = new CheckedArrayList<E>(elementType, INITIAL_CAPACITY);
+            collection = new CheckedArrayList<E>(elementType, 1);
         }
         collection.add(value);
         return collection;
@@ -523,7 +523,14 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             return null;
         }
         if (isModifiable()) {
-            return new CheckedArrayList<E>(elementType, INITIAL_CAPACITY);
+            /*
+             * Do not specify an initial capacity, because the list will stay empty in a majority of cases
+             * (i.e. the users will want to iterate over the list elements more often than they will want
+             * to add elements). JDK implementation of ArrayList has a lazy instantiation mechanism for
+             * initially empty lists, but as of JDK8 this lazy instantiation works only for list having
+             * the default capacity.
+             */
+            return new CheckedArrayList<E>(elementType);
         }
         return Collections.emptyList();
     }
@@ -545,7 +552,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             return null;
         }
         if (isModifiable()) {
-            return new CheckedHashSet<E>(elementType, INITIAL_CAPACITY);
+            return createSet(elementType, INITIAL_CAPACITY);
         }
         return Collections.emptySet();
     }
@@ -584,7 +591,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             }
         } else {
             if (isModifiable) {
-                return new CheckedArrayList<E>(elementType, INITIAL_CAPACITY);
+                // Do not specify an initial capacity for the reason explained in nonNullList(…).
+                return new CheckedArrayList<E>(elementType);
             } else {
                 return Collections.emptyList();
             }

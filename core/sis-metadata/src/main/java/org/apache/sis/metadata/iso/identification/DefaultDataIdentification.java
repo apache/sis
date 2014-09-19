@@ -18,37 +18,45 @@ package org.apache.sis.metadata.iso.identification;
 
 import java.util.Collection;
 import java.util.Locale;
+import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
+
+import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
 
 /**
  * Information required to identify a dataset.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
-    "spatialRepresentationTypes",
-    "spatialResolutions",
     "languages",
     "characterSets",
-    "topicCategories",
+    "topicCategory",
     "environmentDescription",
-    "extents",
+    "extent",
     "supplementalInformation"
 })
 @XmlRootElement(name = "MD_DataIdentification")
@@ -56,17 +64,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 8586544979707643009L;
-
-    /**
-     * Method used to spatially represent geographic information.
-     */
-    private Collection<SpatialRepresentationType> spatialRepresentationTypes;
-
-    /**
-     * Factor which provides a general understanding of the density of spatial data in the dataset.
-     */
-    private Collection<Resolution> spatialResolutions;
+    private static final long serialVersionUID = 6104637930243499850L;
 
     /**
      * Language(s) used within the dataset.
@@ -79,21 +77,10 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     private Collection<CharacterSet> characterSets;
 
     /**
-     * Main theme(s) of the datset.
-     */
-    private Collection<TopicCategory> topicCategories;
-
-    /**
      * Description of the dataset in the producers processing environment, including items
      * such as the software, the computer operating system, file name, and the dataset size
      */
     private InternationalString environmentDescription;
-
-    /**
-     * Additional extent information including the bounding polygon, vertical, and temporal
-     * extent of the dataset.
-     */
-    private Collection<Extent> extents;
 
     /**
      * Any other descriptive information about the dataset.
@@ -121,7 +108,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     {
         super(citation, abstracts);
         languages = singleton(language, Locale.class);
-        topicCategories = singleton(topicCategory, TopicCategory.class);
+        super.setTopicCategories(singleton(topicCategory, TopicCategory.class));
     }
 
     /**
@@ -136,13 +123,9 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     public DefaultDataIdentification(final DataIdentification object) {
         super(object);
         if (object != null) {
-            spatialRepresentationTypes = copyCollection(object.getSpatialRepresentationTypes(), SpatialRepresentationType.class);
-            spatialResolutions         = copyCollection(object.getSpatialResolutions(), Resolution.class);
             languages                  = copyCollection(object.getLanguages(), Locale.class);
             characterSets              = copyCollection(object.getCharacterSets(), CharacterSet.class);
-            topicCategories            = copyCollection(object.getTopicCategories(), TopicCategory.class);
             environmentDescription     = object.getEnvironmentDescription();
-            extents                    = copyCollection(object.getExtents(), Extent.class);
             supplementalInformation    = object.getSupplementalInformation();
         }
     }
@@ -173,49 +156,16 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Returns the method used to spatially represent geographic information.
+     * Returns the language(s) used within the resource.
+     * The first element in iteration order shall be the default language.
+     * All other elements, if any, are alternate language(s) used within the resource.
      *
-     * @return Method(s) used to spatially represent geographic information.
-     */
-    @Override
-    @XmlElement(name = "spatialRepresentationType")
-    public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {
-        return spatialRepresentationTypes = nonNullCollection(spatialRepresentationTypes, SpatialRepresentationType.class);
-    }
-
-    /**
-     * Sets the method used to spatially represent geographic information.
-     *
-     * @param newValues The new spatial representation types.
-     */
-    public void setSpatialRepresentationTypes(final Collection<? extends SpatialRepresentationType> newValues) {
-        spatialRepresentationTypes = writeCollection(newValues, spatialRepresentationTypes, SpatialRepresentationType.class);
-    }
-
-    /**
-     * Returns the factor which provides a general understanding of the density of spatial data in the dataset.
-     *
-     * @return Factor which provides a general understanding of the density of spatial data.
-     */
-    @Override
-    @XmlElement(name = "spatialResolution")
-    public Collection<Resolution> getSpatialResolutions() {
-        return spatialResolutions = nonNullCollection(spatialResolutions, Resolution.class);
-    }
-
-    /**
-     * Sets the factor which provides a general understanding of the density of spatial data in the dataset.
-     *
-     * @param newValues The new spatial resolutions.
-     */
-    public void setSpatialResolutions(final Collection<? extends Resolution> newValues) {
-        spatialResolutions = writeCollection(newValues, spatialResolutions, Resolution.class);
-    }
-
-    /**
-     * Returns the language(s) used within the dataset.
+     * <p>The language string representations should use ISO 639-2 language code as
+     * returned by {@link Locale#getISO3Language()}.</p>
      *
      * @return Language(s) used.
+     *
+     * @see Locale#getISO3Language()
      */
     @Override
     @XmlElement(name = "language", required = true)
@@ -233,9 +183,13 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Returns the full name of the character coding standard used for the dataset.
+     * Returns the character coding standard used for the dataset.
      *
-     * @return Name(s) of the character coding standard(s) used.
+     * <div class="warning"><b>Upcoming API change — JDK integration</b><br>
+     * The element type may change to the {@link Charset} class in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Character coding standard(s) used.
      */
     @Override
     @XmlElement(name = "characterSet")
@@ -244,7 +198,11 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Sets the full name of the character coding standard used for the dataset.
+     * Sets the character coding standard used for the dataset.
+     *
+     * <div class="warning"><b>Upcoming API change — JDK integration</b><br>
+     * The element type may change to the {@link Charset} class in GeoAPI 4.0.
+     * </div>
      *
      * @param newValues The new character sets.
      */
@@ -253,30 +211,10 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Returns the main theme(s) of the dataset.
-     *
-     * @return Main theme(s).
-     */
-    @Override
-    @XmlElement(name = "topicCategory")
-    public Collection<TopicCategory> getTopicCategories()  {
-        return topicCategories = nonNullCollection(topicCategories, TopicCategory.class);
-    }
-
-    /**
-     * Sets the main theme(s) of the dataset.
-     *
-     * @param newValues The new topic categories.
-     */
-    public void setTopicCategories(final Collection<? extends TopicCategory> newValues) {
-        topicCategories = writeCollection(newValues, topicCategories, TopicCategory.class);
-    }
-
-    /**
-     * Returns a description of the dataset in the producer's processing environment. This includes
+     * Returns a description of the resource in the producer's processing environment. This includes
      * items such as the software, the computer operating system, file name, and the dataset size.
      *
-     * @return Description of the dataset in the producer's processing environment, or {@code null}.
+     * @return Description of the resource in the producer's processing environment, or {@code null}.
      */
     @Override
     @XmlElement(name = "environmentDescription")
@@ -285,7 +223,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Sets the description of the dataset in the producers processing environment.
+     * Sets the description of the resource in the producers processing environment.
      *
      * @param newValue The new environment description.
      */
@@ -295,28 +233,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Returns additional extent information including the bounding polygon, vertical, and temporal
-     * extent of the dataset.
-     *
-     * @return Additional extent information.
-     */
-    @Override
-    @XmlElement(name = "extent")
-    public Collection<Extent> getExtents() {
-        return extents = nonNullCollection(extents, Extent.class);
-    }
-
-    /**
-     * Sets additional extent information.
-     *
-     * @param newValues The new extents
-     */
-    public void setExtents(final Collection<? extends Extent> newValues) {
-        extents = writeCollection(newValues, extents, Extent.class);
-    }
-
-    /**
-     * Any other descriptive information about the dataset.
+     * Any other descriptive information about the resource.
      *
      * @return Other descriptive information, or {@code null}.
      */
@@ -327,12 +244,46 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Sets any other descriptive information about the dataset.
+     * Sets any other descriptive information about the resource.
      *
      * @param newValue The new supplemental information.
      */
     public void setSupplementalInformation(final InternationalString newValue) {
         checkWritePermission();
         supplementalInformation = newValue;
+    }
+
+
+
+    // Bridges for elements from legacy ISO 19115:2003
+
+    /**
+     * For JAXB marhalling of ISO 19115:2003 document only.
+     */
+    @XmlElement(name = "topicCategory")
+    private Collection<TopicCategory> getTopicCategory()  {
+        return LEGACY_XML ? getTopicCategories() : null;
+    }
+
+    /**
+     * For JAXB unmarhalling of ISO 19115:2003 document only.
+     */
+    private void setTopicCategory(final Collection<? extends TopicCategory> newValues) {
+        setTopicCategories(newValues);
+    }
+
+    /**
+     * For JAXB marhalling of ISO 19115:2003 document only.
+     */
+    @XmlElement(name = "extent")
+    private Collection<Extent> getExtent() {
+        return LEGACY_XML ? getExtents() : null;
+    }
+
+    /**
+     * For JAXB unmarhalling of ISO 19115:2003 document only.
+     */
+    private void setExtent(final Collection<? extends Extent> newValues) {
+        setExtents(newValues);
     }
 }

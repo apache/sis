@@ -43,23 +43,20 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.KeywordType     Keyword type}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.AssociationType Association type}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.InitiativeType  Initiative type}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.identification.TopicCategory   Topic category}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.identification.CharacterSet    Character set}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.identification.TopicCategory   Topic category}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                 {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification       Identification} «abstract»<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution            Resolution}<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.identification.TopicCategory                       Topic category} «code list»<br>
  * {@code  ├─}     {@linkplain org.opengis.metadata.identification.Progress                            Progress} «code list»<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic         Browse graphic}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultKeywords              Keywords}<br>
  * {@code  │   └─} {@linkplain org.opengis.metadata.identification.KeywordType                         Keyword type} «code list»<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultUsage                 Usage}<br>
- * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultAggregateInformation  Aggregate information}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultAssociatedResource    Associated resource}<br>
  * {@code      ├─} {@linkplain org.opengis.metadata.identification.AssociationType                     Association type} «code list»<br>
  * {@code      └─} {@linkplain org.opengis.metadata.identification.InitiativeType                      Initiative type} «code list»<br>
  *                 {@linkplain org.apache.sis.metadata.iso.identification.DefaultDataIdentification    Data identification}<br>
- * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution            Resolution}<br>
- * {@code  └─}     {@linkplain org.opengis.metadata.identification.TopicCategory                       Topic category} «code list»<br>
- *                 {@linkplain org.apache.sis.metadata.iso.identification.DefaultServiceIdentification Service identification}<br>
- *                 {@linkplain org.opengis.metadata.identification.CharacterSet                        Character set} «code list»<br>
  * </td></tr></table>
  *
  * <p>In addition to the standard properties, SIS provides the following methods:</p>
@@ -69,7 +66,7 @@
  * </ul>
  *
  * {@section Null values, nil objects and collections}
- * All constructors (except the <cite>copy constructors</cite>) and setter methods accept {@code null} arguments.
+ * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
@@ -98,6 +95,8 @@
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(CI_OnlineResource.class),
+    @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(DS_AssociationTypeCode.class),
     @XmlJavaTypeAdapter(DS_InitiativeTypeCode.class),
@@ -106,6 +105,7 @@
     @XmlJavaTypeAdapter(MD_BrowseGraphic.class),
     @XmlJavaTypeAdapter(MD_CharacterSetCode.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
+    @XmlJavaTypeAdapter(MD_DataIdentification.class),
     @XmlJavaTypeAdapter(MD_Format.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(MD_Keywords.class),
@@ -115,15 +115,22 @@
     @XmlJavaTypeAdapter(MD_RepresentativeFraction.class),
     @XmlJavaTypeAdapter(MD_Resolution.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentationTypeCode.class),
+    @XmlJavaTypeAdapter(MD_StandardOrderProcess.class),
     @XmlJavaTypeAdapter(MD_TopicCategoryCode.class),
     @XmlJavaTypeAdapter(MD_Usage.class),
+    @XmlJavaTypeAdapter(SV_CoupledResource.class),
+    @XmlJavaTypeAdapter(SV_OperationMetadata.class),
+    @XmlJavaTypeAdapter(SV_OperationChainMetadata.class),
+    @XmlJavaTypeAdapter(SV_Parameter.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(URIAdapter.class),
     @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class)
+    @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(GO_GenericName.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
 })
 package org.apache.sis.metadata.iso.identification;
 

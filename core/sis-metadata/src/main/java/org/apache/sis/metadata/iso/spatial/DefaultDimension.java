@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.jaxb.gco.GO_Measure;
@@ -30,17 +31,29 @@ import org.apache.sis.measure.ValueRange;
 /**
  * Axis properties.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Dimension_Type", propOrder = {
     "dimensionName",
     "dimensionSize",
-    "resolution"
+    "resolution",
+/// "dimensionTitle",
+/// "dimensionDescription"
 })
 @XmlRootElement(name = "MD_Dimension")
 public class DefaultDimension extends ISOMetadata implements Dimension {
@@ -63,6 +76,18 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * Degree of detail in the grid dataset.
      */
     private Double resolution;
+
+    /**
+     * Enhancement/ modifier of the dimension name.
+     * Example: dimensionName = "column",
+     *          dimensionTitle = "longitude"
+     */
+    private InternationalString dimensionTitle;
+
+    /**
+     * Description of the axis.
+     */
+    private InternationalString dimensionDescription;
 
     /**
      * Constructs an initially empty dimension.
@@ -93,9 +118,13 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     public DefaultDimension(final Dimension object) {
         super(object);
         if (object != null) {
-            dimensionName = object.getDimensionName();
-            dimensionSize = object.getDimensionSize();
-            resolution    = object.getResolution();
+            dimensionName        = object.getDimensionName();
+            dimensionSize        = object.getDimensionSize();
+            resolution           = object.getResolution();
+            if (object instanceof DefaultDimension) {
+                dimensionTitle       = ((DefaultDimension) object).getDimensionTitle();
+                dimensionDescription = ((DefaultDimension) object).getDimensionDescription();
+            }
         }
     }
 
@@ -188,5 +217,56 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     public void setResolution(final Double newValue) {
         checkWritePermission();
         resolution = newValue;
+    }
+
+    /**
+     * Returns the enhancement/ modifier of the dimension name.
+     *
+     * <div class="note"><b>Example:</b>
+     * dimensionName = "column", dimensionTitle = "longitude"</div>
+     *
+     * @return The enhancement/ modifier of the dimension name.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "dimensionTitle")
+    public InternationalString getDimensionTitle() {
+        return dimensionTitle;
+    }
+
+    /**
+     * Sets the enhancement/ modifier of the dimension name.
+     *
+     * @param newValue The new enhancement/ modifier of the dimension name.
+     *
+     * @since 0.5
+     */
+    public void setDimensionTitle(final InternationalString newValue) {
+        checkWritePermission();
+        dimensionTitle = newValue;
+    }
+
+    /**
+     * Return the axis dimension description.
+     *
+     * @return The axis dimension description.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "dimensionDescription")
+    public InternationalString getDimensionDescription() {
+        return dimensionDescription;
+    }
+
+    /**
+     * Sets the axis dimension description.
+     *
+     * @param newValue The new axis dimension description.
+     *
+     * @since 0.5
+     */
+    public void setDimensionDescription(final InternationalString newValue) {
+        checkWritePermission();
+        dimensionDescription = newValue;
     }
 }

@@ -31,7 +31,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.collection.WeakHashSet;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -61,6 +60,7 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  * <ul>
  *   <li>{@link #parseGenericName(NameSpace, CharSequence)}</li>
  *   <li>{@link #toGenericNames(Object)}</li>
+ *   <li>{@link #toTypeName(Class)}</li>
  * </ul>
  *
  * {@section Thread safety}
@@ -72,12 +72,34 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.5
  * @module
+ *
+ * @see Names
+ * @see DefaultNameSpace
+ * @see DefaultScopedName
+ * @see DefaultLocalName
+ * @see DefaultTypeName
+ * @see DefaultMemberName
  */
 public class DefaultNameFactory extends AbstractFactory implements NameFactory {
+    /**
+     * The key for name separator.
+     */
+    static final String SEPARATOR_KEY = "separator";
+
+    /**
+     * The key or the separator after the first name.
+     */
+    static final String HEAD_SEPARATOR_KEY = "separator.head";
+
     /**
      * Weak references to the name created by this factory.
      */
     private final WeakHashSet<GenericName> pool;
+
+    /**
+     * Helper class for mapping {@link Class} to {@link TypeName}, created when first needed.
+     */
+    private transient volatile TypeNames typeNames;
 
     /**
      * Creates a new factory.
@@ -160,18 +182,18 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     @Override
     public NameSpace createNameSpace(final GenericName name, final Map<String,?> properties) {
         ensureNonNull("name", name);
-        String separator = getString(properties, "separator");
+        String separator = getString(properties, SEPARATOR_KEY);
         if (separator == null) {
             separator = DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
         }
-        String headSeparator = getString(properties, "separator.head");
+        String headSeparator = getString(properties, HEAD_SEPARATOR_KEY);
         if (headSeparator == null) {
             headSeparator = separator;
         }
         final boolean isEmpty = separator.isEmpty();
         if (isEmpty || headSeparator.isEmpty()) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.EmptyProperty_1, isEmpty ? "separator" : "separator.head"));
+                    Errors.Keys.EmptyProperty_1, isEmpty ? SEPARATOR_KEY : HEAD_SEPARATOR_KEY));
         }
         return DefaultNameSpace.forName(name.toFullyQualifiedName(), headSeparator, separator);
     }
@@ -184,7 +206,9 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *         name to be created, or {@code null} for a global namespace.
      * @param  name The type name as a string or an international string.
      * @return The type name for the given character sequence.
-     * @throws NullArgumentException If the {@code name} argument is null.
+     *
+     * @see #toTypeName(Class)
+     * @see Names#createTypeName(CharSequence, String, CharSequence)
      */
     @Override
     public TypeName createTypeName(final NameSpace scope, final CharSequence name) {
@@ -193,15 +217,13 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
 
     /**
      * Creates a member name from the given character sequence and attribute type.
-     * The default implementation returns a new or an existing {@link DefaultMemberName}
-     * instance.
+     * The default implementation returns a new or an existing {@link DefaultMemberName} instance.
      *
      * @param  scope The {@linkplain AbstractName#scope() scope} of the member
      *         name to be created, or {@code null} for a global namespace.
      * @param  name The member name as a string or an international string.
      * @param  attributeType The type of the data associated with the record member.
      * @return The member name for the given character sequence.
-     * @throws NullArgumentException If the {@code name} or {@code attributeType} argument is null.
      */
     public MemberName createMemberName(final NameSpace scope, final CharSequence name, final TypeName attributeType) {
         return pool.unique(new DefaultMemberName(scope, name, attributeType));
@@ -215,12 +237,15 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *         name to be created, or {@code null} for a global namespace.
      * @param  name The local name as a string or an international string.
      * @return The local name for the given character sequence.
-     * @throws NullArgumentException If the {@code name} argument is null.
      *
      * @see Names#createLocalName(CharSequence, String, CharSequence)
      */
     @Override
     public LocalName createLocalName(final NameSpace scope, final CharSequence name) {
+        /*
+         * Maintenance note: if the body of this method is modified (except for the use of the cache),
+         * consider updating DefaultLocalName.castOrCopy(LocalName) method accordingly.
+         */
         if (scope instanceof DefaultNameSpace) {
             // Following may return a cached instance.
             return ((DefaultNameSpace) scope).local(name, null);
@@ -239,7 +264,8 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @param  parsedNames The local names as an array of {@link String} or {@link InternationalString} instances.
      *         This array shall contain at least one element.
      * @return The generic name for the given parsed names.
-     * @throws NullArgumentException If the given array is empty.
+     *
+     * @see #parseGenericName(NameSpace, CharSequence)
      */
     @Override
     public GenericName createGenericName(final NameSpace scope, final CharSequence... parsedNames) {
@@ -261,6 +287,8 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @param  name The qualified name, as a sequence of names separated by a scope-dependent
      *         separator.
      * @return A name parsed from the given string.
+     *
+     * @see Names#parseGenericName(CharSequence, String, CharSequence)
      */
     @Override
     public GenericName parseGenericName(final NameSpace scope, final CharSequence name) {
@@ -359,8 +387,8 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
 
     /**
      * Creates a generic name from the given value. The value may be an instance of
-     * {@link GenericName}, {@link Identifier} or {@link CharSequence}. If the given
-     * object is not recognized, then this method returns {@code null}.
+     * {@link GenericName}, {@link Identifier}, {@link CharSequence} or {@link Class}.
+     * If the given object is not recognized, then this method returns {@code null}.
      *
      * @param  value The object to convert.
      * @return The converted object, or {@code null} if {@code value} is not convertible.
@@ -375,6 +403,56 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
         if (value instanceof CharSequence) {
             return parseGenericName(null, (CharSequence) value);
         }
+        if (value instanceof Class<?>) {
+            return toTypeName((Class<?>) value);
+        }
         return null;
+    }
+
+    /**
+     * Suggests a type name for the given class. Apache SIS provides a mapping between {@code Class}
+     * and {@code TypeName} objects as documented in the {@link DefaultTypeName} javadoc.
+     *
+     * <p>In order to protect against potential changes in the {@code Class} ↔ {@code TypeName} mapping, users are
+     * encouraged to retrieve the {@code valueClass} by invoking the {@link Names#toClass(TypeName)} method instead
+     * than parsing the name.</p>
+     *
+     * @param  valueClass The Java class for which to get a type name, or {@code null}.
+     * @return A suggested type name, or {@code null} if the given class was null.
+     *
+     * @see DefaultTypeName#toClass()
+     * @see Names#toClass(TypeName)
+     *
+     * @since 0.5
+     */
+    public TypeName toTypeName(final Class<?> valueClass) {
+        if (!TypeNames.isValid(valueClass)) {
+            return null;
+        }
+        /*
+         * Note: we do not cache the TypeName for the valueClass argument because:
+         *
+         *  - It is not needed (at least in the default implementation) for getting unique instance.
+         *  - It is not the best place for performance improvement, since TypeName are usually only
+         *    a step in the creation of bigger object (typically AttributeType). Users are better to
+         *    cache the bigger object instead.
+         */
+        TypeNames t = typeNames;
+        if (t == null) {
+            /*
+             * Create TypeNames outide the synchronized block because the TypeNames constructor will call back
+             * methods from this class. Since those methods are overrideable, this could invoke user's code.
+             * Note also that methods in this class use the 'pool', which is itself synchronized, so we are
+             * better to avoid double synchronization for reducing the risk of dead-lock.
+             */
+            final TypeNames c = new TypeNames(this);
+            synchronized (this) { // Double-check strategy is ok if 'typeNames' is volatile.
+                t = typeNames;
+                if (t == null) {
+                    typeNames = t = c;
+                }
+            }
+        }
+        return t.toTypeName(this, valueClass);
     }
 }

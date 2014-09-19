@@ -105,7 +105,11 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
                 } else {
                     // Conservatively assumes a List if we are not sure to have a Set,
                     // since the list is less destructive (no removal of duplicated).
-                    collection = Containers.unmodifiableList(array);
+                    switch (array.length) {
+                        case 0:  collection = Collections.EMPTY_LIST; break; // Redundant with isEmpty(), but we are paranoiac.
+                        case 1:  collection = Collections.singletonList(array[0]); break;
+                        default: collection = Containers.unmodifiableList(array); break;
+                    }
                 }
             }
             return collection;

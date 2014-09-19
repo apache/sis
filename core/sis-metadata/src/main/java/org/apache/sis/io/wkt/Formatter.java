@@ -929,7 +929,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends a code list.
+     * Appends an enumeration or code list value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the code list if needed.
      *
      * @param code The code list to append to the WKT, or {@code null} if none.

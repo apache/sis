@@ -33,6 +33,7 @@ import org.opengis.annotation.Obligation;
  *
  * <p>This comparator uses the following criterion, in priority order:</p>
  * <ol>
+ *   <li>Deprecated properties are last.</li>
  *   <li>If the property order is specified by a {@link XmlType} annotation,
  *       then this comparator complies to that order.</li>
  *   <li>Otherwise this comparator sorts mandatory methods first, followed by
@@ -43,7 +44,7 @@ import org.opengis.annotation.Obligation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 final class PropertyComparator implements Comparator<Method> {
@@ -115,6 +116,10 @@ final class PropertyComparator implements Comparator<Method> {
      */
     @Override
     public int compare(final Method m1, final Method m2) {
+        final boolean deprecated = m1.isAnnotationPresent(Deprecated.class);
+        if (deprecated != m2.isAnnotationPresent(Deprecated.class)) {
+            return deprecated ? +1 : -1;
+        }
         int c = indexOf(m2) - indexOf(m1); // indexOf(…) are sorted in descending order.
         if (c == 0) {
             final UML a1 = m1.getAnnotation(UML.class);
@@ -157,13 +162,31 @@ final class PropertyComparator implements Comparator<Method> {
      * If positive, the index returned by this method correspond to a sorting in descending order.
      */
     private int indexOf(final Method method) {
+        /*
+         * Check the cached value computed by previous call to 'indexOf(…)'.
+         * Example: "getExtents"
+         */
         Integer index = order.get(method);
         if (index == null) {
+            /*
+             * Check the value computed from @XmlType.propOrder() value.
+             * Inferred from the method name, so name is often plural.
+             * Example: "extents"
+             */
             String name = method.getName();
             name = toPropertyName(name, prefix(name).length());
             index = order.get(name);
             if (index == null) {
-                index = -1;
+                /*
+                 * Do not happen, except when we have private methods or deprecated public methods
+                 * used as bridge between legacy and more recent standards (e.g. ISO 19115:2003 to
+                 * ISO 19115:2014), especially when cardinality changed between the two standards.
+                 * Example: "extent"
+                 */
+                final UML uml = method.getAnnotation(UML.class);
+                if (uml == null || (index = order.get(uml.identifier())) == null) {
+                    index = -1;
+                }
             }
             order.put(method, index);
         }

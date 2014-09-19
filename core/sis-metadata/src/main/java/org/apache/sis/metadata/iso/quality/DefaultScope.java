@@ -16,52 +16,39 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.extent.Extent;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.opengis.metadata.maintenance.ScopeDescription;
-import org.apache.sis.metadata.iso.ISOMetadata;
 
 
 /**
  * Description of the data specified by the scope.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
+ *
+ * @deprecated As of ISO 19115:2014, {@code DQ_Scope} has been replaced by {@code MD_Scope}.
+ *             The later is defined in the {@link org.apache.sis.metadata.iso.maintenance} package.
  */
-@XmlType(name = "DQ_Scope_Type", propOrder = {
-   "level",
-   "extent",
-   "levelDescription"
-})
-@XmlRootElement(name = "DQ_Scope")
-public class DefaultScope extends ISOMetadata implements Scope {
+@Deprecated
+@XmlTransient
+public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.DefaultScope implements Scope {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -1152756005841712646L;
-
-    /**
-     * Hierarchical level of the data specified by the scope.
-     */
-    private ScopeCode level;
-
-    /**
-     * Information about the spatial, vertical and temporal extent of the data specified by the scope.
-     */
-    private Extent extent;
-
-    /**
-     * Detailed description about the level of the data specified by the scope.
-     */
-    private Collection<ScopeDescription> levelDescription;
+    private static final long serialVersionUID = 7517784393752337009L;
 
     /**
      * Constructs an initially empty scope.
@@ -75,7 +62,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      * @param level The hierarchical level of the data specified by the scope.
      */
     public DefaultScope(final ScopeCode level) {
-        this.level = level;
+        super(level);
     }
 
     /**
@@ -89,11 +76,6 @@ public class DefaultScope extends ISOMetadata implements Scope {
      */
     public DefaultScope(final Scope object) {
         super(object);
-        if (object != null) {
-            level            = object.getLevel();
-            extent           = object.getExtent();
-            levelDescription = copyCollection(object.getLevelDescription(), ScopeDescription.class);
-        }
     }
 
     /**
@@ -119,68 +101,5 @@ public class DefaultScope extends ISOMetadata implements Scope {
             return (DefaultScope) object;
         }
         return new DefaultScope(object);
-    }
-
-    /**
-     * Returns the hierarchical level of the data specified by the scope.
-     *
-     * @return Hierarchical level of the data, or {@code null}.
-     */
-    @Override
-    @XmlElement(name = "level", required = true)
-    public ScopeCode getLevel() {
-        return level;
-    }
-
-    /**
-     * Sets the hierarchical level of the data specified by the scope.
-     *
-     * @param newValue The new level.
-     */
-    public void setLevel(final ScopeCode newValue) {
-        checkWritePermission();
-        level = newValue;
-    }
-
-    /**
-     * Returns detailed descriptions about the level of the data specified by the scope.
-     *
-     * @return Detailed description about the level of the data.
-     */
-    @Override
-    @XmlElement(name = "levelDescription")
-    public Collection<ScopeDescription> getLevelDescription() {
-        return levelDescription = nonNullCollection(levelDescription, ScopeDescription.class);
-    }
-
-    /**
-     * Sets detailed descriptions about the level of the data specified by the scope.
-     *
-     * @param newValues The new level description.
-     */
-    public void setLevelDescription(final Collection<? extends ScopeDescription> newValues) {
-        levelDescription = writeCollection(newValues, levelDescription, ScopeDescription.class);
-    }
-
-    /**
-     * Information about the spatial, vertical and temporal extent of the data specified by the scope.
-     *
-     * @return Information about the extent of the data, or {@code null}.
-     */
-    @Override
-    @XmlElement(name = "extent")
-    public Extent getExtent() {
-        return extent;
-    }
-
-    /**
-     * Sets information about the spatial, vertical and temporal extent of the data specified
-     * by the scope.
-     *
-     * @param newValue The new extent.
-     */
-    public void setExtent(final Extent newValue) {
-        checkWritePermission();
-        extent = newValue;
     }
 }

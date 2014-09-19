@@ -45,7 +45,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
@@ -79,9 +79,9 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
     @Override
     protected <T> Class<? extends T> getImplementation(final Class<T> type) {
         assertTrue(standard.isMetadata(type));
-        final Class<?> impl = standard.getImplementation(type);
+        final Class<? extends T> impl = standard.getImplementation(type);
         assertNotNull(type.getName(), impl);
-        return impl.asSubclass(type);
+        return impl;
     }
 
     /**
@@ -128,7 +128,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             return new Date(random.nextInt() * 1000L);
         }
         if (CodeList.class.isAssignableFrom(type)) try {
-            final CodeList[] codes = (CodeList[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
+            final CodeList<?>[] codes = (CodeList<?>[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
             return codes[random.nextInt(codes.length)];
         } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
             fail(e.toString());
@@ -185,7 +185,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                 final Class<?> impl = getImplementation(type);
                 if (impl != null) {
                     assertTrue(type.isAssignableFrom(impl));
-                    testPropertyValues(new PropertyAccessor(standard.getCitation(), type, impl));
+                    testPropertyValues(new PropertyAccessor(standard.getCitation(), type, impl, false));
                 }
             }
         }
@@ -218,6 +218,9 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
         final int count = accessor.count();
         for (int i=0; i<count; i++) {
             testingMethod = accessor.name(i, KeyNamePolicy.METHOD_NAME);
+            if (skipTest(accessor.implementation, testingMethod)) {
+                continue;
+            }
             final String property = accessor.name(i, KeyNamePolicy.JAVABEANS_PROPERTY);
             assertNotNull("Missing method name.", testingMethod);
             assertNotNull("Missing property name.", property);
@@ -228,6 +231,8 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
              */
             final Class<?> propertyType = Numbers.primitiveToWrapper(accessor.type(i, TypeValuePolicy.PROPERTY_TYPE));
             final Class<?>  elementType = Numbers.primitiveToWrapper(accessor.type(i, TypeValuePolicy.ELEMENT_TYPE));
+            assertNotNull(testingMethod, propertyType);
+            assertNotNull(testingMethod, elementType);
             final boolean isCollection = Collection.class.isAssignableFrom(propertyType);
             assertFalse("Element type can not be Collection.", Collection.class.isAssignableFrom(elementType));
             assertEquals("Property and element types shall be the same if and only if not a collection.",
@@ -253,7 +258,9 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
              * Try to write a value.
              */
             final boolean isWritable = isWritable(accessor.implementation, property);
-            assertEquals("isWritable", isWritable, accessor.isWritable(i));
+            if (isWritable != accessor.isWritable(i)) {
+                fail("Non writable property: " + accessor + '.' + property);
+            }
             if (isWritable) {
                 final Object newValue = valueFor(property, elementType);
                 final Object oldValue = accessor.set(i, instance, newValue, PropertyAccessor.RETURN_PREVIOUS);
@@ -272,5 +279,26 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                         normalizeType(newValue), normalizeType(value));
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if test for the given property should be skipped.
+     * Reasons for skipping a test are:
+     *
+     * <ul>
+     *   <li>Class which is a union (those classes behave differently than non-union classes).</li>
+     *   <li>Method which is the delegate of many legacy ISO 19115:2003 methods.
+     *       Having a property that can be modified by many other properties confuse the tests.</li>
+     * </ul>
+     */
+    @SuppressWarnings("deprecation")
+    private static boolean skipTest(final Class<?> implementation, final String method) {
+        return implementation == org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription.class ||
+              (implementation == org.apache.sis.metadata.iso.citation.DefaultContact.class &&
+               method.equals("getPhone")) || // Deprecated method replaced by 'getPhones()'.
+              (implementation == org.apache.sis.metadata.iso.lineage.DefaultSource.class &&
+               method.equals("getScaleDenominator")) || // Deprecated method replaced by 'getSourceSpatialResolution()'.
+              (implementation == org.apache.sis.metadata.iso.citation.DefaultResponsibleParty.class &&
+               method.equals("getParties"));
     }
 }
