@@ -127,7 +127,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     private RecordType otherPropertyType;
 
     /**
-     * Instance of other/attributeType that defines attributs not explicitly
+     * Instance of other/attributeType that defines attributes not explicitly
      * included in {@link CoverageContentType}.
      */
     private Record otherProperty;
@@ -229,7 +229,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     }
 
     /**
-     * Set the maximum value of data values in each dimension included in the resource.
+     * Sets the maximum value of data values in each dimension included in the resource.
      *
      * @param newValue The new new maximum value.
      */
@@ -239,9 +239,9 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     }
 
     /**
-     * Returns the units of data in each dimension included in the resource.
+     * Returns the units of data in the dimension.
      *
-     * @return The units of data in each dimension included in the resource, or {@code null} if unspecified.
+     * @return The units of data in the dimension, or {@code null} if unspecified.
      */
     @XmlElement(name = "units")
     @UML(identifier="units", obligation=CONDITIONAL, specification=ISO_19115)
@@ -250,9 +250,9 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     }
 
     /**
-     * Sets the units of data in each dimension included in the resource.
+     * Sets the units of data in the dimension.
      *
-     * @param newValue The new units of data in each dimension included in the resource.
+     * @param newValue The new units of data in the dimension.
      */
     public void setUnits(final Unit<?> newValue) {
         checkWritePermission();
@@ -271,7 +271,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     }
 
     /**
-     * Set the scale factor which has been applied to the cell value.
+     * Sets the scale factor which has been applied to the cell value.
      *
      * @param newValue The new scale factor which has been applied to the cell value.
      */
@@ -334,7 +334,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     }
 
     /**
-     * Set the number of values used in a thematic classification resource.
+     * Sets the number of values used in a thematic classification resource.
      *
      * @param newValues The new number of values used in a thematic classification resource.
      */
@@ -376,7 +376,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     }
 
     /**
-     * Set a new type of other attribute description.
+     * Sets a new type of other attribute description.
      *
      * @param newValue The new type of other attribute description.
      */
@@ -398,7 +398,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     }
 
     /**
-     * Set a new instance of other/attributeType that defines attributs not explicitly
+     * Sets a new instance of other/attributeType that defines attributes not explicitly
      * included in {@link CoverageContentType}.
      *
      * @param newValue The new instance of other/attributeType.

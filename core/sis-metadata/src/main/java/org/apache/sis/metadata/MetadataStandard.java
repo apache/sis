@@ -333,9 +333,9 @@ public class MetadataStandard implements Serializable {
                 if (accessors.containsKey(type)) {
                     return true;
                 }
-                final Class<?> standard = findInterface(type);
-                if (standard != null) {
-                    accessors.put(type, standard);
+                final Class<?> standardType = findInterface(type);
+                if (standardType != null) {
+                    accessors.put(type, standardType);
                     return true;
                 }
             }

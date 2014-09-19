@@ -131,7 +131,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
     }
 
     /**
-     * Set the name used by the service for this chain.
+     * Sets the name used by the service for this chain.
      *
      * @param newValue The new name used by the service for this chain.
      */

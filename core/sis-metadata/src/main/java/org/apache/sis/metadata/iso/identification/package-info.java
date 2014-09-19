@@ -30,33 +30,46 @@
  *   <th class="sep">Aggregation hierarchy</th>
  * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
- * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification       Identification} «abstract»<br>
- * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.identification.DefaultDataIdentification    Data identification}<br>
- * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.identification.DefaultServiceIdentification Service identification}<br>
- * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution            Resolution}<br>
- * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic         Browse graphic}<br>
- * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultKeywords              Keywords}<br>
- * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultUsage                 Usage}<br>
- * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultAggregateInformation  Aggregate information}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification        Identification} «abstract»<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.identification.DefaultDataIdentification     Data identification}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.identification.DefaultServiceIdentification  Service identification}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution             Resolution}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic          Browse graphic}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultKeywords               Keywords}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultUsage                  Usage}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultAggregateInformation   Aggregate information}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultCoupledResource        Coupled resource}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultOperationMetadata      Operation metadata}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultOperationChainMetadata Operation chain metadata}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.Progress        Progress}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.KeywordType     Keyword type}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.AssociationType Association type}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.InitiativeType  Initiative type}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.identification.TopicCategory   Topic category}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.identification.TopicCategory   Topic category}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.identification.CouplingType    Coupling type}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.identification.DistributedComputingPlatform Distributed computing platform}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
- *                 {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification       Identification} «abstract»<br>
- * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution            Resolution}<br>
- * {@code  ├─}     {@linkplain org.opengis.metadata.identification.TopicCategory                       Topic category} «code list»<br>
- * {@code  ├─}     {@linkplain org.opengis.metadata.identification.Progress                            Progress} «code list»<br>
- * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic         Browse graphic}<br>
- * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultKeywords              Keywords}<br>
- * {@code  │   └─} {@linkplain org.opengis.metadata.identification.KeywordType                         Keyword type} «code list»<br>
- * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultUsage                 Usage}<br>
- * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultAssociatedResource    Associated resource}<br>
- * {@code      ├─} {@linkplain org.opengis.metadata.identification.AssociationType                     Association type} «code list»<br>
- * {@code      └─} {@linkplain org.opengis.metadata.identification.InitiativeType                      Initiative type} «code list»<br>
- *                 {@linkplain org.apache.sis.metadata.iso.identification.DefaultDataIdentification    Data identification}<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification        Identification} «abstract»<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution             Resolution}<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.identification.TopicCategory                        Topic category} «code list»<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.identification.Progress                             Progress} «code list»<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic          Browse graphic}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultKeywords               Keywords}<br>
+ * {@code  │   └─} {@linkplain org.opengis.metadata.identification.KeywordType                          Keyword type} «code list»<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultUsage                  Usage}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultAssociatedResource     Associated resource}<br>
+ * {@code      ├─} {@linkplain org.opengis.metadata.identification.AssociationType                      Association type} «code list»<br>
+ * {@code      └─} {@linkplain org.opengis.metadata.identification.InitiativeType                       Initiative type} «code list»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.identification.DefaultDataIdentification     Data identification}<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.identification.DefaultServiceIdentification  Service identification}<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.identification.CouplingType                         Coupling type} «code list»<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultCoupledResource        Coupled resource}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultOperationMetadata      Operation metadata}<br>
+ * {@code  │   ├─} {@linkplain org.opengis.metadata.identification.DistributedComputingPlatform         Distributed computing platform} «code list»<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor                      Parameter descriptor}<br>
+ * {@code  │       └─} {@linkplain org.opengis.parameter.ParameterDirection                             Parameter direction} «enum»<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultOperationChainMetadata Operation chain metadata}<br>
  * </td></tr></table>
  *
  * <p>In addition to the standard properties, SIS provides the following methods:</p>

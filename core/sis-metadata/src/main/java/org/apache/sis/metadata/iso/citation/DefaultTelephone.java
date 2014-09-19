@@ -191,7 +191,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Set the type of telephone number.
+     * Sets the type of telephone number.
      * If non-null, the type can only be {@code "VOICE"}, {@code "FACSIMILE"} or {@code "SMS"}.
      *
      * <div class="warning"><b>Upcoming API change — specialization</b><br>
