@@ -139,7 +139,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Roles, Name, contact, and position information for an individual or organization that is responsible
-     * for the resource. Returns an empty collection if there is none.
+     * for the resource.
      */
     private Collection<Responsibility> citedResponsibleParties;
 

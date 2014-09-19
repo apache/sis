@@ -303,7 +303,14 @@ public class MetadataStandard implements Serializable {
             if (SpecialCases.isSpecialCase(type)) {
                 accessor = new SpecialCases(citation, type, implementation);
             } else {
-                accessor = new PropertyAccessor(citation, type, implementation);
+                /*
+                 * If "multi-value returns" was allowed in the Java language, the 'onlyUML' boolean would
+                 * be returned by 'findInterface(Class)' method when it falls in the special case for the
+                 * UML annotation on implementation class. But since we do not have multi-values, we have
+                 * to infer it from our knownledge of how 'findInterface(Class)' is implemented.
+                 */
+                final boolean onlyUML = (type == implementation && !type.isInterface());
+                accessor = new PropertyAccessor(citation, type, implementation, onlyUML);
             }
             accessors.put(implementation, accessor);
             return accessor;
@@ -325,13 +332,25 @@ public class MetadataStandard implements Serializable {
                 if (accessors.containsKey(type)) {
                     return true;
                 }
-                final Class<?> standard = findInterface(type);
-                if (standard != null) {
-                    accessors.put(type, standard);
+                final Class<?> standardType = findInterface(type);
+                if (standardType != null) {
+                    accessors.put(type, standardType);
                     return true;
                 }
             }
         }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if the given implementation class, normally rejected by {@link #findInterface(Class)},
+     * should be accepted as a pseudo-interface. We use this undocumented feature when Apache SIS experiments a new
+     * API which is not yet published in GeoAPI. This happen for example when upgrading Apache SIS public API from
+     * the ISO 19115:2003 standard to the ISO 19115:2014 version, but GeoAPI interfaces are still the old version.
+     * In such case, API that would normally be present in GeoAPI interfaces are temporarily available only in
+     * Apache SIS implementation classes.
+     */
+    boolean isPendingAPI(final Class<?> type) {
         return false;
     }
 
@@ -343,7 +362,7 @@ public class MetadataStandard implements Serializable {
      * @param  type The standard interface or the implementation class.
      * @return The single interface, or {@code null} if none where found.
      */
-    private Class<?> findInterface(Class<?> type) {
+    private Class<?> findInterface(final Class<?> type) {
         if (type != null) {
             if (type.isInterface()) {
                 if (type.getName().startsWith(interfacePackage)) {
@@ -355,10 +374,9 @@ public class MetadataStandard implements Serializable {
                  * including the ones declared in the super-class.
                  */
                 final Set<Class<?>> interfaces = new LinkedHashSet<Class<?>>();
-                do {
-                    getInterfaces(type, interfaces);
-                    type = type.getSuperclass();
-                } while (type != null);
+                for (Class<?> t=type; t!=null; t=t.getSuperclass()) {
+                    getInterfaces(t, interfaces);
+                }
                 /*
                  * If we found more than one interface, removes the
                  * ones that are sub-interfaces of the other.
@@ -380,6 +398,17 @@ public class MetadataStandard implements Serializable {
                     }
                     // Found more than one interface; we don't know which one to pick.
                     // Returns 'null' for now; the caller will thrown an exception.
+                } else if (isPendingAPI(type)) {
+                    /*
+                     * Found no interface. According to our method contract we should return null.
+                     * However we make an exception if the implementation class has a UML annotation.
+                     * The reason is that when upgrading  API  from ISO 19115:2003 to ISO 19115:2014,
+                     * implementations are provided in Apache SIS before the corresponding interfaces
+                     * are published on GeoAPI. The reason why GeoAPI is slower to upgrade is that we
+                     * have to go through a voting process inside the Open Geospatial Consortium (OGC).
+                     * So we use those implementation classes as a temporary substitute for the interfaces.
+                     */
+                    return type;
                 }
             }
         }

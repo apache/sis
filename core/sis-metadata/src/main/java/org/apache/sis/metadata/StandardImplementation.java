@@ -18,6 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
+import org.opengis.annotation.UML;
 import org.opengis.annotation.Classifier;
 import org.opengis.annotation.Stereotype;
 import org.apache.sis.util.CharSequences;
@@ -92,6 +93,16 @@ final class StandardImplementation extends MetadataStandard {
     private static boolean isAbstract(final Class<?> type) {
         final Classifier c = type.getAnnotation(Classifier.class);
         return (c != null) && c.value() == Stereotype.ABSTRACT;
+    }
+
+    /**
+     * Accepts Apache SIS implementation classes as "pseudo-interfaces" if they are annotated with {@link UML}.
+     * We use this feature for example in the transition from ISO 19115:2003 to ISO 19115:2014, when new API is
+     * defined in Apache SIS but not yet available in GeoAPI interfaces.
+     */
+    @Override
+    boolean isPendingAPI(final Class<?> type) {
+        return type.getName().startsWith(implementationPackage) && type.isAnnotationPresent(UML.class);
     }
 
     /**

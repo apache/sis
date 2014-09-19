@@ -169,7 +169,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     }
 
     /**
-     * Set the vertical extent component.
+     * Sets the vertical extent component.
      *
      * @param newValue The new vertical extent component.
      *

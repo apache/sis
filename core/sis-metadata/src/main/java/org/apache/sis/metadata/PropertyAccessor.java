@@ -255,13 +255,14 @@ class PropertyAccessor {
      * @param  type The interface implemented by the metadata, which must be
      *         the value returned by {@link #getStandardType(Class, String)}.
      * @param  implementation The class of metadata implementations, or {@code type} if none.
+     * @param  onlyUML {@code true} for taking only the getter methods having a {@link UML} annotation.
      */
-    PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation) {
+    PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation, final boolean onlyUML) {
         assert type.isAssignableFrom(implementation) : implementation;
         this.standard       = standard;
         this.type           = type;
         this.implementation = implementation;
-        this.getters        = getGetters(type, implementation);
+        this.getters        = getGetters(type, implementation, onlyUML);
         int allCount = getters.length;
         int standardCount = allCount;
         if (allCount != 0 && getters[allCount-1] == EXTRA_GETTER) {
@@ -417,9 +418,10 @@ class PropertyAccessor {
      *
      * @param  type The metadata interface.
      * @param  implementation The class of metadata implementations.
+     * @param  onlyUML {@code true} for taking only the getter methods having a {@link UML} annotation.
      * @return The getters declared in the given interface (never {@code null}).
      */
-    private static Method[] getGetters(final Class<?> type, final Class<?> implementation) {
+    private static Method[] getGetters(final Class<?> type, final Class<?> implementation, final boolean onlyUML) {
         synchronized (SHARED_GETTERS) {
             Method[] getters = SHARED_GETTERS.get(type);
             if (getters == null) {
@@ -430,7 +432,7 @@ class PropertyAccessor {
                 boolean hasExtraGetter = false;
                 int count = 0;
                 for (final Method candidate : getters) {
-                    if (Classes.isPossibleGetter(candidate)) {
+                    if (Classes.isPossibleGetter(candidate) && (!onlyUML || candidate.isAnnotationPresent(UML.class))) {
                         final String name = candidate.getName();
                         if (name.startsWith(SET)) { // Paranoiac check.
                             continue;

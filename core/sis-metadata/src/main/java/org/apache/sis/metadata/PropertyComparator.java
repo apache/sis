@@ -162,13 +162,31 @@ final class PropertyComparator implements Comparator<Method> {
      * If positive, the index returned by this method correspond to a sorting in descending order.
      */
     private int indexOf(final Method method) {
+        /*
+         * Check the cached value computed by previous call to 'indexOf(…)'.
+         * Example: "getExtents"
+         */
         Integer index = order.get(method);
         if (index == null) {
+            /*
+             * Check the value computed from @XmlType.propOrder() value.
+             * Inferred from the method name, so name is often plural.
+             * Example: "extents"
+             */
             String name = method.getName();
             name = toPropertyName(name, prefix(name).length());
             index = order.get(name);
             if (index == null) {
-                index = -1;
+                /*
+                 * Do not happen, except when we have private methods or deprecated public methods
+                 * used as bridge between legacy and more recent standards (e.g. ISO 19115:2003 to
+                 * ISO 19115:2014), especially when cardinality changed between the two standards.
+                 * Example: "extent"
+                 */
+                final UML uml = method.getAnnotation(UML.class);
+                if (uml == null || (index = order.get(uml.identifier())) == null) {
+                    index = -1;
+                }
             }
             order.put(method, index);
         }

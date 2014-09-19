@@ -144,7 +144,7 @@ public final class Parameters extends Static {
      * This method performs the following checks:
      *
      * <ul>
-     *   <li>If the {@linkplain DefaultParameterDescriptor#getName()} primary name is an instance of {@code MemberName},
+     *   <li>If the {@linkplain DefaultParameterDescriptor#getName() primary name} is an instance of {@code MemberName},
      *       returns that primary name.</li>
      *   <li>Otherwise this method searches for the first {@linkplain DefaultParameterDescriptor#getAlias() alias}
      *       which is an instance of {@code MemberName}. If found, that alias is returned.</li>
