@@ -176,7 +176,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
             {
                 final DefaultKeywords keyword = new DefaultKeywords(
                         new Anchor(URI.create("SDN:P021:35:ATTN"), "Transmittance and attenuance of the water column"));
-                keyword.setType(KeywordType.FEATURE_TYPE);
+                keyword.setType(KeywordType.THEME);
                 final DefaultCitation thesaurus = new DefaultCitation("BODC Parameter Discovery Vocabulary");
                 thesaurus.setAlternateTitles(singleton(new SimpleInternationalString("P021")));
                 thesaurus.setDates(singleton(new DefaultCitationDate(TestUtilities.date("2008-11-25 23:00:00"), DateType.REVISION)));

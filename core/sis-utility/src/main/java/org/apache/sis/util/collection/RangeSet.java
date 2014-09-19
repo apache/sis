@@ -94,7 +94,7 @@ import static org.apache.sis.util.Numbers.*;
  * {@link #newRange(Comparable, Comparable)} method. Subclasses can override that method if they
  * need to customize the range objects to be created.
  *
- * <p>While it is possible to create {@code RangeSet<Date>} instances, is more efficient to
+ * <p>While it is possible to create {@code RangeSet<Date>} instances, it is more efficient to
  * use {@code RangeSet<Long>} with millisecond values because {@code RangeSet} will internally
  * use {@code long[]} arrays in the later case.</p>
  *
