@@ -153,7 +153,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     }
 
     /**
-     * Set the unique identifier for this interface.
+     * Sets the unique identifier for this interface.
      *
      * @param newValue The new unique identifier for this interface.
      */
@@ -289,7 +289,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     }
 
     /**
-     * Set the list of operation that must be completed before current operation is invoked.
+     * Sets the list of operation that must be completed before current operation is invoked.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
      * The element type will be changed to the {@code OperationMetadata} interface

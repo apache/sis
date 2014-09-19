@@ -118,7 +118,7 @@ public class DefaultIndividual extends AbstractParty {
     }
 
     /**
-     * Set a new position of the individual in an organization.
+     * Sets a new position of the individual in an organization.
      *
      * @param newValue The new position of the individual in an organization.
      */

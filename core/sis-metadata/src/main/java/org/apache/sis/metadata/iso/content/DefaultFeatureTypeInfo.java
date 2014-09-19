@@ -145,7 +145,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     }
 
     /**
-     * Set a new number of occurrence of feature instances for this feature types.
+     * Sets a new number of occurrence of feature instances for this feature types.
      *
      * @param newValue the new number of occurrence.
      * @throws IllegalArgumentException if the given value is negative.

@@ -122,11 +122,11 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             final String   propertyName  = (String)   expected[i++];
             final String   umlIdentifier = (String)   expected[i++];
             final String   sentence      = (String)   expected[i++];
-            assertEquals("declaringType", declaringType, accessor.type(index, TypeValuePolicy.DECLARING_INTERFACE));
             assertEquals("methodName",    methodName,    accessor.name(index, KeyNamePolicy.METHOD_NAME));
             assertEquals("propertyName",  propertyName,  accessor.name(index, KeyNamePolicy.JAVABEANS_PROPERTY));
             assertEquals("umlIdentifier", umlIdentifier, accessor.name(index, KeyNamePolicy.UML_IDENTIFIER));
             assertEquals("sentence",      sentence,      accessor.name(index, KeyNamePolicy.SENTENCE));
+            assertEquals("declaringType", declaringType, accessor.type(index, TypeValuePolicy.DECLARING_INTERFACE));
             assertEquals(methodName,      index,         accessor.indexOf(methodName,    false));
             assertEquals(propertyName,    index,         accessor.indexOf(propertyName,  false));
             assertEquals(umlIdentifier,   index,         accessor.indexOf(umlIdentifier, false));
