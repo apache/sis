@@ -56,10 +56,15 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @author  Stephen Connolly
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class TestRunner extends BlockJUnit4ClassRunner {
+    /**
+     * {@code true} if ignoring a test should cause its dependencies to be skipped as well.
+     */
+    static final boolean TRANSITIVE_IGNORE = false;
+
     /**
      * The test methods to be executed, sorted according their dependencies.
      * This array is created by {@link #getFilteredChildren()} when first needed.
@@ -152,7 +157,9 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
          */
         @Override
         public void testAssumptionFailure(final Failure failure) {
-            addDependencyFailure(failure.getDescription().getMethodName());
+            if (TRANSITIVE_IGNORE) {
+                addDependencyFailure(failure.getDescription().getMethodName());
+            }
         }
 
         /**
@@ -160,7 +167,9 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
          */
         @Override
         public void testIgnored(final Description description) {
-            addDependencyFailure(description.getMethodName());
+            if (TRANSITIVE_IGNORE) {
+                addDependencyFailure(description.getMethodName());
+            }
         }
     };
 

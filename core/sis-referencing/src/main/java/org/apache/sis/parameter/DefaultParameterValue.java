@@ -708,7 +708,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             } else if (object instanceof ParameterValue<?>) {
                 final ParameterValue<?> that = (ParameterValue<?>) object;
                 return deepEquals(getDescriptor(), that.getDescriptor(), mode) &&
-                       Objects.equals(getValue(),  that.getValue()) &&
+                       deepEquals(getValue(),      that.getValue(), mode) &&
                        Objects.equals(getUnit(),   that.getUnit());
             }
         }

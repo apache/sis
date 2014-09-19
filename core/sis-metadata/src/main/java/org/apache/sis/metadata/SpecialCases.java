@@ -49,7 +49,7 @@ final class SpecialCases extends PropertyAccessor {
      * @param  implementation The class of metadata implementations, or {@code type} if none.
      */
     SpecialCases(final Citation standard, final Class<?> type, final Class<?> implementation) {
-        super(standard, type, implementation);
+        super(standard, type, implementation, false);
         assert isSpecialCase(type) : type;
         westBoundLongitude = indexOf("westBoundLongitude", true);
         eastBoundLongitude = indexOf("eastBoundLongitude", true);
