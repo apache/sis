@@ -25,6 +25,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FilenameFilter;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
 import com.sun.javadoc.RootDoc;
 import com.sun.tools.doclets.formats.html.HtmlDoclet;
 
@@ -78,7 +81,10 @@ public final class Doclet extends HtmlDoclet {
         }
         final boolean status = HtmlDoclet.start(new FilteredRootDoc(root, Arrays.copyOf(filteredOptions, n)));
         if (stylesheetFile != null && outputDirectory != null) try {
-            copyStylesheet(new File(stylesheetFile), new File(outputDirectory));
+            final File input  = new File(stylesheetFile);
+            final File output = new File(outputDirectory);
+            copyStylesheet(input, output);
+            copyResources(input.getParentFile(), output);
         } catch (IOException e) {
             root.printError(e.toString());
             return false;
@@ -136,6 +142,49 @@ public final class Doclet extends HtmlDoclet {
                 if (line.length() < 2 || line.charAt(1) != '*') {
                     out.write(line);
                     out.newLine();
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates links to Javadoc resources in the top-level directory (not from "{@code doc-files}" subdirectories).
+     * While the Maven documentation said that the "{@code src/main/javadoc}" directory is copied by default, or a
+     * directory can be specified with {@code <javadocResourcesDirectory>}, I have been unable to make it work even
+     * with absolute paths.
+     *
+     * @param  inputFile        The directory containing resources.
+     * @param  outputDirectory  The directory where to copy the resource files.
+     * @throws IOException      If an error occurred while reading or writing.
+     */
+    private static void copyResources(final File inputDirectory, final File outputDirectory) throws IOException {
+        final File[] inputFiles = inputDirectory.listFiles(new FilenameFilter() {
+            @Override public boolean accept(final File dir, final String name) {
+                return !name.startsWith(".") &&
+                       !name.equals("overview.html") &&
+                       !name.equals("stylesheet.css");
+            }
+        });
+        try {
+            for (final File input : inputFiles) {
+                final File output = new File(outputDirectory, input.getName());
+                if (!output.exists()) { // For avoiding a failure if the target exists.
+                    Files.createLink(output.toPath(), input.toPath());
+                }
+            }
+        } catch (UnsupportedOperationException | FileSystemException e) {
+            /*
+             * If hard links are not supported, performs plain copy instead.
+             */
+            final byte[] buffer = new byte[4096];
+            for (final File input : inputFiles) {
+                try (final FileInputStream  in  = new FileInputStream(input);
+                     final FileOutputStream out = new FileOutputStream(new File(outputDirectory, input.getName())))
+                {
+                    int c;
+                    while ((c = in.read(buffer)) >= 0) {
+                        out.write(buffer, 0, c);
+                    }
                 }
             }
         }

@@ -86,6 +86,11 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     private Unit<Length> boundUnits;
 
     /**
+     * Designation of criterion for defining maximum and minimum wavelengths for a spectral band.
+     */
+    private BandDefinition bandBoundaryDefinition;
+
+    /**
      * Wavelength at which the response is the highest.
      */
     private Double peakResponse;
@@ -94,11 +99,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * Number of discrete numerical values in the grid data.
      */
     private Integer toneGradation;
-
-    /**
-     * Designation of criterion for defining maximum and minimum wavelengths for a spectral band.
-     */
-    private BandDefinition bandBoundaryDefinition;
 
     /**
      * Smallest distance between which separate points can be distinguished, as specified in
@@ -259,6 +259,27 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     }
 
     /**
+     * Returns the designation of criterion for defining maximum and minimum wavelengths for a spectral band.
+     *
+     * @return Criterion for defining maximum and minimum wavelengths, or {@code null}.
+     */
+    @Override
+    @XmlElement(name = "bandBoundaryDefinition", namespace = Namespaces.GMI)
+    public BandDefinition getBandBoundaryDefinition() {
+        return bandBoundaryDefinition;
+    }
+
+    /**
+     * Sets designation of criterion for defining maximum and minimum wavelengths for a spectral band.
+     *
+     * @param newValue The new band definition.
+     */
+    public void setBandBoundaryDefinition(final BandDefinition newValue) {
+        checkWritePermission();
+        bandBoundaryDefinition = newValue;
+    }
+
+    /**
      * Returns the wavelength at which the response is the highest.
      * The units of measurement is given by {@link #getUnits()}.
      *
@@ -353,27 +374,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     @Override
     public void setOffset(final Double newValue) {
         super.setOffset(newValue);
-    }
-
-    /**
-     * Returns the designation of criterion for defining maximum and minimum wavelengths for a spectral band.
-     *
-     * @return Criterion for defining maximum and minimum wavelengths, or {@code null}.
-     */
-    @Override
-    @XmlElement(name = "bandBoundaryDefinition", namespace = Namespaces.GMI)
-    public BandDefinition getBandBoundaryDefinition() {
-        return bandBoundaryDefinition;
-    }
-
-    /**
-     * Sets designation of criterion for defining maximum and minimum wavelengths for a spectral band.
-     *
-     * @param newValue The new band definition.
-     */
-    public void setBandBoundaryDefinition(final BandDefinition newValue) {
-        checkWritePermission();
-        bandBoundaryDefinition = newValue;
     }
 
     /**

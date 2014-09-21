@@ -68,29 +68,14 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     private static final long serialVersionUID = 4517148689016920767L;
 
     /**
-     * Maximum value of data values in each dimension included in the resource.
-     */
-    private Double maxValue;
-
-    /**
      * Minimum value of data values in each dimension included in the resource.
      */
     private Double minValue;
 
     /**
-     * Units of data in each dimension included in the resource.
+     * Maximum value of data values in each dimension included in the resource.
      */
-    private Unit<?> units;
-
-    /**
-     * Scale factor which has been applied to the cell value.
-     */
-    private Double scaleFactor;
-
-    /**
-     * Physical value corresponding to a cell value of zero.
-     */
-    private Double offset;
+    private Double maxValue;
 
     /**
      * Mean value of data values in each dimension included in the resource.
@@ -108,6 +93,27 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     private Double standardDeviation;
 
     /**
+     * Units of data in each dimension included in the resource.
+     */
+    private Unit<?> units;
+
+    /**
+     * Scale factor which has been applied to the cell value.
+     */
+    private Double scaleFactor;
+
+    /**
+     * Physical value corresponding to a cell value of zero.
+     */
+    private Double offset;
+
+    /**
+     * Maximum number of significant bits in the uncompressed representation
+     * for the value in each band of each pixel.
+     */
+    private Integer bitsPerValue;
+
+    /**
      * Type of other attribute description.
      */
     private RecordType otherPropertyType;
@@ -117,12 +123,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * included in {@link CoverageContentType}.
      */
     private Record otherProperty;
-
-    /**
-     * Maximum number of significant bits in the uncompressed representation
-     * for the value in each band of each pixel.
-     */
-    private Integer bitsPerValue;
 
     /**
      * Constructs an initially empty sample dimension.
@@ -142,17 +142,17 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     public DefaultSampleDimension(final SampleDimension object) {
         super(object);
         if (object != null) {
-            maxValue          = object.getMaxValue();
             minValue          = object.getMinValue();
-            units             = object.getUnits();
-            scaleFactor       = object.getScaleFactor();
-            offset            = object.getOffset();
+            maxValue          = object.getMaxValue();
             meanValue         = object.getMeanValue();
             numberOfValues    = object.getNumberOfValues();
             standardDeviation = object.getStandardDeviation();
+            units             = object.getUnits();
+            scaleFactor       = object.getScaleFactor();
+            offset            = object.getOffset();
+            bitsPerValue      = object.getBitsPerValue();
             otherPropertyType = object.getOtherPropertyType();
             otherProperty     = object.getOtherProperty();
-            bitsPerValue      = object.getBitsPerValue();
         }
     }
 
@@ -230,69 +230,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     }
 
     /**
-     * Returns the units of data in the dimension.
-     *
-     * @return The units of data in the dimension, or {@code null} if unspecified.
-     */
-    @Override
-    @XmlElement(name = "units")
-    public Unit<?> getUnits() {
-        return units;
-    }
-
-    /**
-     * Sets the units of data in the dimension.
-     *
-     * @param newValue The new units of data in the dimension.
-     */
-    public void setUnits(final Unit<?> newValue) {
-        checkWritePermission();
-        units = newValue;
-    }
-
-    /**
-     * Returns the scale factor which has been applied to the cell value.
-     *
-     * @return Scale factor which has been applied to the cell value, or {@code null} if none.
-     */
-    @Override
-/// @XmlElement(name = "scaleFactor")
-    public Double getScaleFactor() {
-        return scaleFactor;
-    }
-
-    /**
-     * Sets the scale factor which has been applied to the cell value.
-     *
-     * @param newValue The new scale factor which has been applied to the cell value.
-     */
-    public void setScaleFactor(final Double newValue) {
-        checkWritePermission();
-        scaleFactor = newValue;
-    }
-
-    /**
-     * Returns the physical value corresponding to a cell value of zero.
-     *
-     * @return The physical value corresponding to a cell value of zero, or {@code null} if none.
-     */
-    @Override
-/// @XmlElement(name = "offset")
-    public Double getOffset() {
-        return offset;
-    }
-
-    /**
-     * Sets the physical value corresponding to a cell value of zero.
-     *
-     * @param newValue The new physical value corresponding to a cell value of zero, or {@code null} if none..
-     */
-    public void setOffset(final Double newValue) {
-        checkWritePermission();
-        offset = newValue;
-    }
-
-    /**
      * Returns the mean value of data values in each dimension included in the resource.
      *
      * @return The mean value of data values in each dimension included in the resource, or {@code null} if none.
@@ -356,6 +293,94 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     }
 
     /**
+     * Returns the units of data in the dimension.
+     *
+     * @return The units of data in the dimension, or {@code null} if unspecified.
+     */
+    @Override
+    @XmlElement(name = "units")
+    public Unit<?> getUnits() {
+        return units;
+    }
+
+    /**
+     * Sets the units of data in the dimension.
+     *
+     * @param newValue The new units of data in the dimension.
+     */
+    public void setUnits(final Unit<?> newValue) {
+        checkWritePermission();
+        units = newValue;
+    }
+
+    /**
+     * Returns the scale factor which has been applied to the cell value.
+     *
+     * @return Scale factor which has been applied to the cell value, or {@code null} if none.
+     */
+    @Override
+/// @XmlElement(name = "scaleFactor")
+    public Double getScaleFactor() {
+        return scaleFactor;
+    }
+
+    /**
+     * Sets the scale factor which has been applied to the cell value.
+     *
+     * @param newValue The new scale factor which has been applied to the cell value.
+     */
+    public void setScaleFactor(final Double newValue) {
+        checkWritePermission();
+        scaleFactor = newValue;
+    }
+
+    /**
+     * Returns the maximum number of significant bits in the uncompressed representation
+     * for the value in each band of each pixel.
+     *
+     * @return Maximum number of significant bits in the uncompressed representation
+     *         for the value in each band of each pixel, or {@code null} if none.
+     */
+    @Override
+    @ValueRange(minimum = 1)
+/// @XmlElement(name = "bitsPerValues")
+    public Integer getBitsPerValue() {
+        return bitsPerValue;
+    }
+
+    /**
+     * Sets the maximum number of significant bits in the uncompressed representation
+     * for the value in each band of each pixel.
+     *
+     * @param newValue The new maximum number of significant bits.
+     */
+    public void setBitsPerValue(final Integer newValue) {
+        checkWritePermission();
+        bitsPerValue = newValue;
+    }
+
+    /**
+     * Returns the physical value corresponding to a cell value of zero.
+     *
+     * @return The physical value corresponding to a cell value of zero, or {@code null} if none.
+     */
+    @Override
+/// @XmlElement(name = "offset")
+    public Double getOffset() {
+        return offset;
+    }
+
+    /**
+     * Sets the physical value corresponding to a cell value of zero.
+     *
+     * @param newValue The new physical value corresponding to a cell value of zero, or {@code null} if none..
+     */
+    public void setOffset(final Double newValue) {
+        checkWritePermission();
+        offset = newValue;
+    }
+
+    /**
      * Returns type of other attribute description.
      *
      * @return Type of other attribute description, or {@code null} if none.
@@ -397,30 +422,5 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     public void setOtherProperty(final Record newValue) {
         checkWritePermission();
         otherProperty = newValue;
-    }
-
-    /**
-     * Returns the maximum number of significant bits in the uncompressed representation
-     * for the value in each band of each pixel.
-     *
-     * @return Maximum number of significant bits in the uncompressed representation
-     *         for the value in each band of each pixel, or {@code null} if none.
-     */
-    @Override
-    @ValueRange(minimum = 1)
-/// @XmlElement(name = "bitsPerValues")
-    public Integer getBitsPerValue() {
-        return bitsPerValue;
-    }
-
-    /**
-     * Sets the maximum number of significant bits in the uncompressed representation
-     * for the value in each band of each pixel.
-     *
-     * @param newValue The new maximum number of significant bits.
-     */
-    public void setBitsPerValue(final Integer newValue) {
-        checkWritePermission();
-        bitsPerValue = newValue;
     }
 }

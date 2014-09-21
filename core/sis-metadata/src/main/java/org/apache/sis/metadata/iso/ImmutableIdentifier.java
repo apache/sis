@@ -619,10 +619,10 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * The {@code CITATION[…]} element inside an {@code ID[…]}.
      */
     private static final class Cite extends FormattableObject {
-        /** The component of the citation to format. */
+        /** The value of the citation to format. */
         private final String identifier;
 
-        /** Creates a new citation with the given component. */
+        /** Creates a new citation with the given value. */
         Cite(final String identifier) {
             this.identifier = identifier;
         }
