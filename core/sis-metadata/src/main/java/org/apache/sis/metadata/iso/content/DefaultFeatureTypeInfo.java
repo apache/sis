@@ -41,7 +41,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * while GeoAPI 3.0 is based on the version published in 2003. Consequently this implementation class does
  * not yet implement a GeoAPI interface, but is expected to do so after the next GeoAPI releases.
  * When the interface will become available, all references to this implementation class in Apache SIS will
- * be replaced be references to the corresponding interface.
+ * be replaced be references to the {@code FeatureTypeInfo} interface.
  * </div>
  *
  * <p><b>Limitations:</b></p>
@@ -111,7 +111,9 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
         }
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns the name of the feature type.
      *
      * @return Name of the feature type.
@@ -134,7 +136,9 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
         featureTypeName = newValue;
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns the number of occurrence of feature instances for this feature types, or {@code null} if none.
      *
      * @return The number of occurrence of feature instances for this feature types, or {@code null} if none.

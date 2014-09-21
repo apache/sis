@@ -40,7 +40,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * while GeoAPI 3.0 is based on the version published in 2003. Consequently this implementation class does
  * not yet implement a GeoAPI interface, but is expected to do so after the next GeoAPI releases.
  * When the interface will become available, all references to this implementation class in Apache SIS will
- * be replaced be references to the corresponding interface.
+ * be replaced be references to the {@code Organisation} interface.
  * </div>
  *
  * <p><b>Limitations:</b></p>
@@ -119,7 +119,9 @@ public class DefaultOrganisation extends AbstractParty {
         }
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns the graphics identifying organization.
      *
      * @return Graphics identifying organization, or an empty collection if there is none.
@@ -139,7 +141,9 @@ public class DefaultOrganisation extends AbstractParty {
         logo = writeCollection(newValues, logo, BrowseGraphic.class);
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns the individuals in the named organization.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>

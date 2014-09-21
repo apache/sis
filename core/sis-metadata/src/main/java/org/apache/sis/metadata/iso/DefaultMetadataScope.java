@@ -39,7 +39,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * while GeoAPI 3.0 is based on the version published in 2003. Consequently this implementation class does
  * not yet implement a GeoAPI interface, but is expected to do so after the next GeoAPI releases.
  * When the interface will become available, all references to this implementation class in Apache SIS will
- * be replaced be references to the corresponding interface.
+ * be replaced be references to the {@code MetadataScope} interface.
  * </div>
  *
  * <p><b>Limitations:</b></p>
@@ -109,7 +109,9 @@ public class DefaultMetadataScope extends ISOMetadata {
         }
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Return the code for the scope.
      *
      * @return The ode for the scope.
@@ -130,7 +132,9 @@ public class DefaultMetadataScope extends ISOMetadata {
         resourceScope = newValue;
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Return a description of the scope, or {@code null} if none.
      *
      * @return Description of the scope, or {@code null} if none.

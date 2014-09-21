@@ -44,7 +44,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * while GeoAPI 3.0 is based on the version published in 2003. Consequently this implementation class does
  * not yet implement a GeoAPI interface, but is expected to do so after the next GeoAPI releases.
  * When the interface will become available, all references to this implementation class in Apache SIS will
- * be replaced be references to the corresponding interface.
+ * be replaced be references to the {@code OperationMetadata} interface.
  * </div>
  *
  * <p><b>Limitations:</b></p>
@@ -143,7 +143,9 @@ public class DefaultOperationMetadata extends ISOMetadata {
         }
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns an unique identifier for this interface.
      *
      * @return An unique identifier for this interface.
@@ -164,7 +166,9 @@ public class DefaultOperationMetadata extends ISOMetadata {
         operationName = newValue;
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns the distributed computing platforms (DCPs) on which the operation has been implemented.
      *
      * <div class="warning"><b>Upcoming API change — specialization</b><br>
@@ -189,7 +193,9 @@ public class DefaultOperationMetadata extends ISOMetadata {
         distributedComputingPlatforms = writeCollection(newValues, distributedComputingPlatforms, Object.class);
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns free text description of the intent of the operation and the results of the operation.
      *
      * @return Free text description of the intent of the operation and the results of the operation, or {@code null} if none.
@@ -210,7 +216,9 @@ public class DefaultOperationMetadata extends ISOMetadata {
         operationDescription = newValue;
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns the name used to invoke this interface within the context of the DCP.
      *
      * @return The name used to invoke this interface within the context of the distributed computing platforms,
@@ -232,7 +240,9 @@ public class DefaultOperationMetadata extends ISOMetadata {
         invocationName = newValue;
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns the handle for accessing the service interface.
      *
      * @return Handle for accessing the service interface.
@@ -252,7 +262,9 @@ public class DefaultOperationMetadata extends ISOMetadata {
         connectPoints = writeCollection(newValue, connectPoints, OnlineResource.class);
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns the parameters that are required for this interface.
      *
      * @return The parameters that are required for this interface, or an empty collection if none.
@@ -274,7 +286,9 @@ public class DefaultOperationMetadata extends ISOMetadata {
         parameters = writeCollection(newValues, parameters, (Class) ParameterDescriptor.class);
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns the list of operation that must be completed immediately before current operation is invoked.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
