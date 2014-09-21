@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -318,6 +319,7 @@ public class Formatter implements Localized {
         this.dateFormat    = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
         this.unitFormat    = UnitFormat.getInstance(symbols.getLocale());
         this.buffer        = new StringBuffer();
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     /**

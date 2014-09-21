@@ -103,7 +103,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @see #createFormat(Class)
      */
-    static final String DATE_PATTERN = "yyyy-MM-dd";
+    static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SX";
 
     /**
      * The symbols to use for this formatter.
