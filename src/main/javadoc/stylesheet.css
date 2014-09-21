@@ -213,3 +213,8 @@ div.block pre, code, tt, dt code, table tr td dt code {
   line-height: 1em;
   font-size:   1em;
 }
+
+h5 {
+  font-size: 110%;
+  margin-bottom: 3pt;
+}
