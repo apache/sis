@@ -42,7 +42,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * while GeoAPI 3.0 is based on the version published in 2003. Consequently this implementation class does
  * not yet implement a GeoAPI interface, but is expected to do so after the next GeoAPI releases.
  * When the interface will become available, all references to this implementation class in Apache SIS will
- * be replaced be references to the corresponding interface.
+ * be replaced be references to the {@code AttributeGroup} interface.
  * </div>
  *
  * <p><b>Limitations:</b></p>
@@ -116,7 +116,9 @@ public class DefaultAttributeGroup extends ISOMetadata {
         }
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns the types of information represented by the value(s).
      *
      * @return The types of information represented by the value(s).
@@ -136,7 +138,9 @@ public class DefaultAttributeGroup extends ISOMetadata {
         contentTypes = writeCollection(newValues, contentTypes, CoverageContentType.class);
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns information on an attribute of the resource.
      *
      * @return Information on an attribute of the resource.

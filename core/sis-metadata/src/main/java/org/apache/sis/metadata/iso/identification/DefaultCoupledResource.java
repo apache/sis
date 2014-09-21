@@ -47,7 +47,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * while GeoAPI 3.0 is based on the version published in 2003. Consequently this implementation class does
  * not yet implement a GeoAPI interface, but is expected to do so after the next GeoAPI releases.
  * When the interface will become available, all references to this implementation class in Apache SIS will
- * be replaced be references to the corresponding interface.
+ * be replaced be references to the {@code CoupledResource} interface.
  * </div>
  *
  * <p><b>Limitations:</b></p>
@@ -145,7 +145,9 @@ public class DefaultCoupledResource extends ISOMetadata {
         }
     }
 
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
+     * </pre>
      * Returns scoped identifier of the resource in the context of the given service instance.
      *
      * @return identifier of the resource, or {@code null} if none.
