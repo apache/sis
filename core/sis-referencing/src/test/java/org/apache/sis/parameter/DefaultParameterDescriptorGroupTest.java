@@ -19,6 +19,7 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
+import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.test.DependsOn;
@@ -37,7 +38,7 @@ import static org.opengis.referencing.IdentifiedObject.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.4 (derived from geotk-2.1)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn(DefaultParameterDescriptorTest.class)
@@ -95,6 +96,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      */
     @Test
     public void validateTestObjects() {
+        assertEquals(ParameterDirection.IN, M1_M1_O1_O2.getDirection());
         for (final GeneralParameterDescriptor descriptor : M1_M1_O1_O2.descriptors()) {
             AssertionError error = null;
             try {
