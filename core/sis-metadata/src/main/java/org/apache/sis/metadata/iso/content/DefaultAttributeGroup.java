@@ -31,7 +31,9 @@ import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
+// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
+ * </pre>
  * Information about content type for groups of attributes for a specific
  * {@linkplain DefaultRangeDimension range dimension}.
  *

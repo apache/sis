@@ -32,7 +32,9 @@ import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
+// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
+ * </pre>
  * Information about the individual and / or organization of the party.
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
