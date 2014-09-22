@@ -90,6 +90,12 @@ public final strictfp class HardCodedDatum {
             properties("UNIX", null), new Date(0));
 
     /**
+     * Default datum for time measured since November 17, 1858 at 00:00 UTC.
+     */
+    public static final DefaultTemporalDatum MODIFIED_JULIAN = new DefaultTemporalDatum(
+            properties("Modified Julian", null), new Date(-40587 * (24*60*60*1000L)));
+
+    /**
      * Image with {@link PixelInCell#CELL_CENTER}.
      */
     public static final DefaultImageDatum IMAGE = new DefaultImageDatum(

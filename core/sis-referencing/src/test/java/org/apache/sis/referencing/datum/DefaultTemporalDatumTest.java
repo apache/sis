@@ -64,6 +64,16 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
     }
 
     /**
+     * Tests the consistency of our test with {@link HardCodedDatum#MODIFIED_JULIAN}.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testConsistency() {
+        assertEquals(HardCodedDatum.MODIFIED_JULIAN.getOrigin(), new Date(ORIGIN));
+    }
+
+    /**
      * Tests {@link DefaultTemporalDatum#toWKT()}.
      *
      * @since 0.5
