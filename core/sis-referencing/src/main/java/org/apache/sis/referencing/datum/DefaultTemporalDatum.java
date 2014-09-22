@@ -29,7 +29,6 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 
@@ -288,9 +287,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        final Convention convention = formatter.getConvention();
         formatter.append(new Origin(MetadataUtilities.toDate(origin)));
-        if (convention.majorVersion() == 1) {
+        if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
         return "TimeDatum";

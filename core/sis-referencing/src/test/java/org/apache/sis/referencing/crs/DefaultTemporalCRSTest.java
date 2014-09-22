@@ -33,6 +33,20 @@ import static org.apache.sis.test.MetadataAssert.*;
  */
 public final strictfp class DefaultTemporalCRSTest extends TestCase {
     /**
+     * Tests WKT 1 pseudo-formatting.
+     * This is not part of OGC 01-009 standard.
+     */
+    @Test
+    public void testWKT1() {
+        assertWktEquals(Convention.WKT1,
+                "TIMECRS[“Time”,\n" +
+                "  TIMEDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z]],\n" +
+                "  UNIT[“day”, 86400],\n" +
+                "  AXIS[“Time”, FUTURE]]",
+                HardCodedCRS.TIME);
+    }
+
+    /**
      * Tests WKT 2 formatting.
      */
     @Test
