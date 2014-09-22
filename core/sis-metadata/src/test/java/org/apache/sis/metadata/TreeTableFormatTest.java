@@ -39,6 +39,8 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -84,16 +86,15 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final InternationalString title = new SimpleInternationalString("Undercurrent");
         citation.setTitle(title);
         citation.setISBN("9782505004509");
-        citation.getPresentationForms().add(PresentationForm.DOCUMENT_HARDCOPY);
-        citation.getPresentationForms().add(PresentationForm.IMAGE_HARDCOPY);
-        citation.getAlternateTitles().add(new SimpleInternationalString("Alt A"));
-        citation.getAlternateTitles().add(new SimpleInternationalString("Alt B"));
-
-        citation.getCitedResponsibleParties().add(new DefaultResponsibility(Role.AUTHOR, null,
-                new DefaultIndividual("Testsuya Toyoda", null, null)));
-        citation.getCitedResponsibleParties().add(new DefaultResponsibility(null, null,
-                new DefaultIndividual("A japanese author", null, null)));
-
+        citation.setPresentationForms(asList(
+                PresentationForm.DOCUMENT_HARDCOPY,
+                PresentationForm.IMAGE_HARDCOPY));
+        citation.setAlternateTitles(asList(
+                new SimpleInternationalString("Alt A"),
+                new SimpleInternationalString("Alt B")));
+        citation.setCitedResponsibleParties(asList(
+                new DefaultResponsibility(Role.AUTHOR, null, new DefaultIndividual("Testsuya Toyoda", null, null)),
+                new DefaultResponsibility(null, null, new DefaultIndividual("A japanese author", null, null))));
         return citation;
     }
 
@@ -133,13 +134,11 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final DefaultCitation   titled = new DefaultCitation("Some specification");
         final DefaultCitation    coded = new DefaultCitation();
         final DefaultCitation untitled = new DefaultCitation();
-        titled  .getPresentationForms().add(PresentationForm.DOCUMENT_HARDCOPY);
-        coded   .getPresentationForms().add(PresentationForm.IMAGE_HARDCOPY);
-        untitled.getCitedResponsibleParties().add(new DefaultResponsibility(Role.AUTHOR, null, null));
+        titled  .setPresentationForms(singleton(PresentationForm.DOCUMENT_HARDCOPY));
+        coded   .setPresentationForms(singleton(PresentationForm.IMAGE_HARDCOPY));
+        untitled.setCitedResponsibleParties(singleton(new DefaultResponsibility(Role.AUTHOR, null, null)));
         final DefaultProcessing processing = new DefaultProcessing();
-        processing.getDocumentations().add(titled);
-        processing.getDocumentations().add(coded);
-        processing.getDocumentations().add(untitled);
+        processing.setDocumentations(asList(titled, coded, untitled));
         final String text = format.format(processing.asTreeTable());
         assertMultilinesEquals(
             "Processing\n" +
