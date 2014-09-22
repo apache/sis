@@ -36,6 +36,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -123,7 +124,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
         final DefaultPlatform platform = new DefaultPlatform();
         platform.setDescription(new SimpleInternationalString("A platform."));
         instrument.setMountedOn(platform);
-        platform.getInstruments().add(instrument);
+        platform.setInstruments(singleton(instrument));
         return platform;
     }
 
