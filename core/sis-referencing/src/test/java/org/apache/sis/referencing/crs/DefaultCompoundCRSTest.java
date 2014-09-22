@@ -162,7 +162,7 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "    UNIT[“metre”, 1],\n" +
                 "    AXIS[“Gravity-related height”, UP]],\n" +
                 "  TIMECRS[“Time”,\n" +
-                "    TIMEDATUM[“UNIX”, TIMEORIGIN[1970-01-01T00:00:00.0Z]],\n" +
+                "    TIMEDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z]],\n" +
                 "    UNIT[“day”, 86400],\n" +
                 "    AXIS[“Time”, FUTURE]]]",
                 HardCodedCRS.GEOID_4D);
@@ -190,7 +190,7 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "      Axis[“Gravity-related height (H)”, up],\n" +
                 "      LengthUnit[“metre”, 1]],\n" +
                 "  TimeCRS[“Time”,\n" +
-                "    TimeDatum[“UNIX”, TimeOrigin[1970-01-01T00:00:00.0Z]],\n" +
+                "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +
                 "    CS[“temporal”, 1],\n" +
                 "      Axis[“Time (t)”, future],\n" +
                 "      TimeUnit[“day”, 86400]],\n" +
