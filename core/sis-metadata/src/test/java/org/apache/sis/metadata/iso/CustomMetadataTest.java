@@ -42,6 +42,7 @@ import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.xml.XML;
 import org.junit.Test;
 
+import static java.util.Collections.singleton;
 import static org.junit.Assert.*;
 
 
@@ -136,7 +137,7 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
             @Override public Collection<Citation>                  getAdditionalDocumentations()   {return null;}
         };
         final DefaultMetadata data = new DefaultMetadata();
-        assertTrue(data.getIdentificationInfo().add(identification));
+        data.setIdentificationInfo(singleton(identification));
         final String xml = XML.marshal(data);
         /*
          * A few simple checks.
