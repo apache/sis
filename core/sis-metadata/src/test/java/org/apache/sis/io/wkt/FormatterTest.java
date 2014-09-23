@@ -23,9 +23,11 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.measure.Units;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.test.mock.MatrixMock;
+import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -38,7 +40,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn({ConventionTest.class, SymbolsTest.class, ColorsTest.class})
@@ -61,6 +63,19 @@ public final strictfp class FormatterTest extends TestCase {
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77));
         assertWktEquals(Convention.WKT1, "BBOX[51.43, 2.54, 55.77, 6.40]",
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77));
+    }
+
+    /**
+     * Tests (indirectly) formatting of a vertical extent.
+     */
+    @Test
+    public void testAppendVerticalExtent() {
+        final DefaultVerticalExtent extent = new DefaultVerticalExtent(102, 108, VerticalCRSMock.HEIGHT_ft);
+        assertWktEquals(Convention.WKT2, "VerticalExtent[102, 108, LengthUnit[“ft”, 0.3048]]", extent);
+
+        extent.setMinimumValue(100.2);
+        extent.setMaximumValue(100.8);
+        assertWktEquals(Convention.WKT2, "VerticalExtent[100.2, 100.8, LengthUnit[“ft”, 0.3048]]", extent);
     }
 
     /**
