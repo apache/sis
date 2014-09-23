@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.xml.bind.DatatypeConverter;
 
@@ -58,6 +59,45 @@ public final class JDK8 {
      */
     public static double nextDown(final double value) {
         return Math.nextAfter(value, Double.NEGATIVE_INFINITY);
+    }
+
+    /**
+     * Atomically computes and stores the value for the given key. This is a substitute for
+     * {@link ConcurrentMap#compute(java.lang.Object, java.util.function.BiFunction)}
+     * on pre-JDK8 branches.
+     *
+     * @param  <K> The type of keys.
+     * @param  <V> The type of values.
+     * @param  map The map where to store the value.
+     * @param  key The key for the value to compute and store.
+     * @param  remappingFunction The function for computing the value.
+     * @return The new value computed by the given function.
+     *
+     * @since 0.5
+     */
+    public static <K,V> V compute(final ConcurrentMap<K,V> map, final K key,
+            BiFunction<? super K, ? super V, ? extends V> remappingFunction)
+    {
+        V newValue;
+        boolean success;
+        do {
+            final V oldValue = map.get(key);
+            newValue = remappingFunction.apply(key, oldValue);
+            if (newValue != null) {
+                if (oldValue != null) {
+                    success = map.replace(key, oldValue, newValue);
+                } else {
+                    success = (map.putIfAbsent(key, newValue) == null);
+                }
+            } else {
+                if (oldValue != null) {
+                    success = map.remove(key, oldValue);
+                } else {
+                    return null;
+                }
+            }
+        } while (!success);
+        return newValue;
     }
 
     /**

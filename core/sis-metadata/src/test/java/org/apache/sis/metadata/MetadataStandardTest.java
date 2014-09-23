@@ -23,12 +23,15 @@ import java.util.HashSet;
 import java.util.Collection;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Completeness;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.coverage.grid.RectifiedGrid;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
 import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
 import org.apache.sis.metadata.iso.quality.AbstractCompleteness;
+import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOnMethod;
@@ -67,13 +70,79 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     ValueMapTest.class})
 public final strictfp class MetadataStandardTest extends TestCase {
     /**
+     * Tests {@link MetadataStandard#isMetadata(Class)}.
+     */
+    @Test
+    public void testIsMetadata() {
+        MetadataStandard std = MetadataStandard.ISO_19115;
+        assertFalse("isMetadata(String)",                 std.isMetadata(String.class));
+        assertTrue ("isMetadata(Citation)",               std.isMetadata(Citation.class));
+        assertTrue ("isMetadata(DefaultCitation)",        std.isMetadata(DefaultCitation.class));
+        assertFalse("isMetadata(IdentifiedObject)",       std.isMetadata(IdentifiedObject.class));
+        assertFalse("isMetadata(SimpleIdentifiedObject)", std.isMetadata(SimpleIdentifiedObject.class));
+        assertFalse("isMetadata(GeographicCRS)",          std.isMetadata(GeographicCRS.class));
+        assertFalse("isMetadata(RectifiedGrid)",          std.isMetadata(RectifiedGrid.class));
+
+        std = MetadataStandard.ISO_19111;
+        assertFalse("isMetadata(String)",                 std.isMetadata(String.class));
+        assertTrue ("isMetadata(Citation)",               std.isMetadata(Citation.class));          // Dependency
+        assertTrue ("isMetadata(DefaultCitation)",        std.isMetadata(DefaultCitation.class));   // Dependency
+        assertTrue ("isMetadata(IdentifiedObject)",       std.isMetadata(IdentifiedObject.class));
+        assertTrue ("isMetadata(SimpleIdentifiedObject)", std.isMetadata(SimpleIdentifiedObject.class));
+        assertTrue ("isMetadata(GeographicCRS)",          std.isMetadata(GeographicCRS.class));
+        assertFalse("isMetadata(RectifiedGrid)",          std.isMetadata(RectifiedGrid.class));
+
+        std = MetadataStandard.ISO_19123;
+        assertFalse("isMetadata(String)",                 std.isMetadata(String.class));
+        assertTrue ("isMetadata(Citation)",               std.isMetadata(Citation.class));               // Transitive dependency
+        assertTrue ("isMetadata(DefaultCitation)",        std.isMetadata(DefaultCitation.class));        // Transivive dependency
+        assertTrue ("isMetadata(IdentifiedObject)",       std.isMetadata(IdentifiedObject.class));       // Dependency
+        assertTrue ("isMetadata(SimpleIdentifiedObject)", std.isMetadata(SimpleIdentifiedObject.class)); // Dependency
+        assertTrue ("isMetadata(GeographicCRS)",          std.isMetadata(GeographicCRS.class));          // Dependency
+        assertTrue ("isMetadata(RectifiedGrid)",          std.isMetadata(RectifiedGrid.class));
+    }
+
+    /**
      * Tests {@link MetadataStandard#getInterface(Class)}.
      */
     @Test
+    @DependsOnMethod("testIsMetadata")
     public void testGetInterface() {
-        final MetadataStandard std = MetadataStandard.ISO_19115;
-        assertEquals(Citation.class,     std.getInterface(DefaultCitation.class));
-        assertEquals(Completeness.class, std.getInterface(AbstractCompleteness.class));
+        MetadataStandard std = MetadataStandard.ISO_19115;
+        assertEquals("getInterface(Citation)",             Citation.class,     std.getInterface(Citation.class));
+        assertEquals("getInterface(DefaultCitation)",      Citation.class,     std.getInterface(DefaultCitation.class));
+        assertEquals("getInterface(AbstractCompleteness)", Completeness.class, std.getInterface(AbstractCompleteness.class));
+
+        std = MetadataStandard.ISO_19111;
+        assertEquals("getInterface(Citation)",               Citation.class,         std.getInterface(Citation.class));
+        assertEquals("getInterface(DefaultCitation)",        Citation.class,         std.getInterface(DefaultCitation.class));
+        assertEquals("getInterface(AbstractCompleteness)",   Completeness.class,     std.getInterface(AbstractCompleteness.class));
+        assertEquals("getInterface(IdentifiedObject)",       IdentifiedObject.class, std.getInterface(IdentifiedObject.class));
+        assertEquals("getInterface(SimpleIdentifiedObject)", IdentifiedObject.class, std.getInterface(SimpleIdentifiedObject.class));
+        assertEquals("getInterface(GeographicCRS)",          GeographicCRS.class,    std.getInterface(GeographicCRS.class));
+
+        // Verify that the cache has not been updated in inconsistent way.
+        testIsMetadata();
+    }
+
+    /**
+     * Tests {@link MetadataStandard#getAccessor(Class, boolean)}.
+     */
+    @Test
+    @DependsOnMethod("testGetInterface")
+    public void testGetAccessor() {
+        MetadataStandard std = MetadataStandard.ISO_19115;
+        assertEquals("getAccessor(DefaultCitation)",      Citation.class,     std.getAccessor(DefaultCitation.class, true).type);
+        assertEquals("getAccessor(AbstractCompleteness)", Completeness.class, std.getAccessor(AbstractCompleteness.class, true).type);
+        assertNull  ("getAccessor(SimpleIdentifiedObject)",                   std.getAccessor(SimpleIdentifiedObject.class, false));
+
+        std = MetadataStandard.ISO_19111;
+        assertEquals("getAccessor(DefaultCitation)",        Citation.class,         std.getAccessor(DefaultCitation.class, true).type);
+        assertEquals("getAccessor(AbstractCompleteness)",   Completeness.class,     std.getAccessor(AbstractCompleteness.class, true).type);
+        assertEquals("getAccessor(SimpleIdentifiedObject)", IdentifiedObject.class, std.getAccessor(SimpleIdentifiedObject.class, true).type);
+
+        // Verify that the cache has not been updated in inconsistent way.
+        testGetInterface();
     }
 
     /**
@@ -81,8 +150,9 @@ public final strictfp class MetadataStandardTest extends TestCase {
      * A {@link ClassCastException} is expected.
      */
     @Test
+    @DependsOnMethod("testGetInterface")
     public void testGetWrongInterface() {
-        final MetadataStandard std = new MetadataStandard("SIS", "org.apache.sis.dummy.");
+        final MetadataStandard std = new MetadataStandard("SIS", "org.apache.sis.dummy.", null);
         try {
             std.getInterface(DefaultCitation.class);
             fail("No dummy interface expected.");
@@ -96,6 +166,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
      * Tests the {@link MetadataStandard#equals(Object, Object, ComparisonMode)} method.
      */
     @Test
+    @DependsOnMethod("testGetAccessor")
     public void testEquals() {
         final MetadataStandard std = MetadataStandard.ISO_19115;
 
@@ -150,6 +221,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
      * {@code MetadataStandard} methods depend on it ({@code equals}, {@code hashCode}, {@code prune}, <i>etc.</i>).
      */
     @Test
+    @DependsOnMethod("testGetAccessor")
     public void testValueMap() {
         final DefaultCitation instance = new DefaultCitation(HardCodedCitations.EPSG);
         final Map<String,Object> map = MetadataStandard.ISO_19115.asValueMap(instance,
@@ -224,10 +296,12 @@ public final strictfp class MetadataStandardTest extends TestCase {
      * be accessible even if there is no implementation on the classpath.
      */
     @Test
+    @DependsOnMethod("testGetAccessor")
     public void testWithoutImplementation() {
         final MetadataStandard std = MetadataStandard.ISO_19123;
-        assertFalse("isMetadata(Citation)",        std.isMetadata(Citation.class));
-        assertFalse("isMetadata(DefaultCitation)", std.isMetadata(DefaultCitation.class));
+        assertFalse("isMetadata(String)",          std.isMetadata(String.class));
+        assertTrue ("isMetadata(Citation)",        std.isMetadata(Citation.class));         // Transitive dependency
+        assertTrue ("isMetadata(DefaultCitation)", std.isMetadata(DefaultCitation.class));  // Transitive dependency
         assertTrue ("isMetadata(RectifiedGrid)",   std.isMetadata(RectifiedGrid.class));
         /*
          * Ensure that the getters have been found.
