@@ -18,10 +18,11 @@ package org.apache.sis.metadata;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
@@ -40,6 +41,7 @@ import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 
 
 /**
@@ -136,10 +138,10 @@ public class MetadataStandard implements Serializable {
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
 
         // If new StandardImplementation instances are added below, please update StandardImplementation.readResolve().
-        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", acronyms);
-        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", null);
-        ISO_19119 = new MetadataStandard      ("ISO 19119", "org.opengis.service.");
-        ISO_19123 = new MetadataStandard      ("ISO 19123", "org.opengis.coverage.");
+        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", null, null);
+        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", acronyms, new MetadataStandard[] {ISO_19115});
+        ISO_19119 = new MetadataStandard      ("ISO 19119", "org.opengis.service.", ISO_19111.dependencies);
+        ISO_19123 = new MetadataStandard      ("ISO 19123", "org.opengis.coverage.", new MetadataStandard[] {ISO_19111});
         INSTANCES = new MetadataStandard[] {
             ISO_19111,
             ISO_19115,
@@ -161,37 +163,54 @@ public class MetadataStandard implements Serializable {
     final Citation citation;
 
     /**
-     * The root packages for metadata interfaces. Must have a trailing {@code '.'}.
+     * The root package for metadata interfaces. Must have a trailing {@code '.'}.
      */
     final String interfacePackage;
+
+    /**
+     * The dependencies, or {@code null} if none.
+     *
+     * Note: the {@code null} value is for serialization compatibility.
+     */
+    private final MetadataStandard[] dependencies;
 
     /**
      * Accessors for the specified implementations.
      * The only legal value types are:
      *
      * <ul>
-     *   <li>{@link Class} if we have determined the standard interface for a given type
-     *       but did not yet created the {@link PropertyAccessor} for it.</li>
+     *   <li>{@link MetadataStandard} if type is handled by {@linkplain #dependencies} rather than this standard.</li>
+     *   <li>{@link Class} if we found the interface for the type but did not yet created the {@link PropertyAccessor}.</li>
      *   <li>{@link PropertyAccessor} otherwise.</li>
      * </ul>
      */
-    private final transient Map<Class<?>, Object> accessors; // written by reflection on deserialization.
+    private final transient ConcurrentMap<Class<?>, Object> accessors; // written by reflection on deserialization.
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the specified package.
      *
-     * <p><b>Example:</b>: For the ISO 19115 standard reflected by GeoAPI interfaces,
-     * {@code interfacePackage} shall be the {@link org.opengis.metadata} package.</p>
+     * <div class="note"><b>Example:</b>: For the ISO 19115 standard reflected by GeoAPI interfaces,
+     * {@code interfacePackage} shall be the {@link org.opengis.metadata} package.</div>
      *
      * @param citation         Bibliographical reference to the international standard.
      * @param interfacePackage The root package for metadata interfaces.
+     * @param dependencies     The dependencies to other metadata standards.
      */
-    public MetadataStandard(final Citation citation, final Package interfacePackage) {
-        ensureNonNull("citation", citation);
+    public MetadataStandard(final Citation citation, final Package interfacePackage, MetadataStandard... dependencies) {
+        ensureNonNull("citation",         citation);
         ensureNonNull("interfacePackage", interfacePackage);
+        ensureNonNull("dependencies",     dependencies);
         this.citation         = citation;
         this.interfacePackage = interfacePackage.getName() + '.';
-        this.accessors        = new IdentityHashMap<>(); // Also defined in readObject(…)
+        this.accessors        = new ConcurrentHashMap<>(); // Also defined in readObject(…)
+        if (dependencies.length == 0) {
+            this.dependencies = null;
+        } else {
+            this.dependencies = dependencies = dependencies.clone();
+            for (int i=0; i<dependencies.length; i++) {
+                ensureNonNullElement("dependencies", i, dependencies[i]);
+            }
+        }
     }
 
     /**
@@ -200,11 +219,25 @@ public class MetadataStandard implements Serializable {
      *
      * @param citation         Bibliographical reference to the international standard.
      * @param interfacePackage The root package for metadata interfaces.
+     * @param dependencies     The dependencies to other metadata standards, or {@code null} if none.
      */
-    MetadataStandard(final String citation, final String interfacePackage) {
+    MetadataStandard(final String citation, final String interfacePackage, final MetadataStandard[] dependencies) {
         this.citation         = new SimpleCitation(citation);
         this.interfacePackage = interfacePackage;
-        this.accessors        = new IdentityHashMap<>();
+        this.accessors        = new ConcurrentHashMap<>();
+        this.dependencies     = dependencies; // No clone, since this constructor is for internal use only.
+    }
+
+    /**
+     * Returns {@code true} if class or interface of the given name is supported by this standard.
+     * This method verifies if the class is a member of the package given at construction time or
+     * a sub-package. This method does not verify if the type is supported by a dependency.
+     *
+     * @param  classname The name of the type to verify.
+     * @return {@code true} if the given type is supported by this standard.
+     */
+    final boolean isSupported(final String classname) {
+        return classname.startsWith(interfacePackage);
     }
 
     /**
@@ -220,16 +253,16 @@ public class MetadataStandard implements Serializable {
      * @return The metadata standard for the given type, or {@code null} if not found.
      */
     public static MetadataStandard forClass(final Class<?> type) {
-        String name = type.getName();
+        String classname = type.getName();
         for (final MetadataStandard candidate : INSTANCES) {
-            if (name.startsWith(candidate.interfacePackage)) {
+            if (candidate.isSupported(classname)) {
                 return candidate;
             }
         }
         for (final Class<?> interf : Classes.getAllInterfaces(type)) {
-            name = interf.getName();
+            classname = interf.getName();
             for (final MetadataStandard candidate : INSTANCES) {
-                if (name.startsWith(candidate.interfacePackage)) {
+                if (candidate.isSupported(classname)) {
                     return candidate;
                 }
             }
@@ -243,9 +276,7 @@ public class MetadataStandard implements Serializable {
      */
     static void clearCache() {
         for (final MetadataStandard standard : INSTANCES) {
-            synchronized (standard.accessors) {
-                standard.accessors.clear();
-            }
+            standard.accessors.clear();
         }
     }
 
@@ -279,25 +310,53 @@ public class MetadataStandard implements Serializable {
      *         of the expected package and {@code mandatory} is {@code true}.
      */
     final PropertyAccessor getAccessor(final Class<?> implementation, final boolean mandatory) {
-        synchronized (accessors) {
-            // Check for previously created accessors.
-            final Object value = accessors.get(implementation);
-            if (value instanceof PropertyAccessor) {
-                return (PropertyAccessor) value;
-            }
-            // Check if we started some computation that we can finish.
-            final Class<?> type;
-            if (value != null) {
-                type = (Class<?>) value;
-            } else {
-                // Nothing were computed. Try to compute now.
-                type = findInterface(implementation);
-                if (type == null) {
-                    if (mandatory) {
-                        throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, implementation));
+        /*
+         * Check for accessors created by previous call to this method.
+         * Values are added to this cache but never cleared.
+         */
+        final Object value = accessors.get(implementation);
+        if (value instanceof PropertyAccessor) {
+            return (PropertyAccessor) value;
+        }
+        /*
+         * Check if we started some computation that we can finish. A partial computation exists
+         * when we already found the Class<?> for the interface, but didn't created the accessor.
+         */
+        final Class<?> type;
+        if (value instanceof Class<?>) {
+            type = (Class<?>) value; // Stored result of previous call to findInterface(…).
+            assert type == findInterface(implementation) : implementation;
+        } else {
+            /*
+             * Nothing was computed, we need to start from scratch. The first step is to find
+             * the interface implemented by the given class. If we can not find an interface,
+             * we will delegate to the dependencies and store the result for avoiding redoing
+             * this search next time.
+             */
+            type = findInterface(implementation);
+            if (type == null) {
+                if (dependencies != null) {
+                    for (final MetadataStandard dependency : dependencies) {
+                        final PropertyAccessor accessor = dependency.getAccessor(implementation, false);
+                        if (accessor != null) {
+                            accessors.put(implementation, accessor); // Ok to overwrite existing instance here.
+                            return accessor;
+                        }
                     }
-                    return null;
                 }
+                if (mandatory) {
+                    throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, implementation));
+                }
+                return null;
+            }
+        }
+        /*
+         * Found the interface for which to create an accessor. Creates the accessor now, unless an accessor
+         * has been created concurrently in another thread in which case the later will be returned.
+         */
+        return (PropertyAccessor) accessors.compute(implementation, (k, v) -> {
+            if (v instanceof PropertyAccessor) {
+                return v;
             }
             final PropertyAccessor accessor;
             if (SpecialCases.isSpecialCase(type)) {
@@ -312,15 +371,14 @@ public class MetadataStandard implements Serializable {
                 final boolean onlyUML = (type == implementation && !type.isInterface());
                 accessor = new PropertyAccessor(citation, type, implementation, onlyUML);
             }
-            accessors.put(implementation, accessor);
             return accessor;
-        }
+        });
     }
 
     /**
-     * Returns {@code true} if the given type is assignable to a type from this standard.
-     * If this method returns {@code true}, then invoking {@link #getInterface(Class)} is
-     * guaranteed to succeed without throwing an exception.
+     * Returns {@code true} if the given type is assignable to a type from this standard or one of its dependencies.
+     * If this method returns {@code true}, then invoking {@link #getInterface(Class)} is guaranteed to succeed
+     * without throwing an exception.
      *
      * @param  type The implementation class (can be {@code null}).
      * @return {@code true} if the given class is an interface of this standard,
@@ -328,15 +386,26 @@ public class MetadataStandard implements Serializable {
      */
     public boolean isMetadata(final Class<?> type) {
         if (type != null) {
-            synchronized (accessors) {
-                if (accessors.containsKey(type)) {
-                    return true;
+            if (accessors.containsKey(type)) {
+                return true;
+            }
+            if (dependencies != null) {
+                for (final MetadataStandard dependency : dependencies) {
+                    if (dependency.isMetadata(type)) {
+                        accessors.putIfAbsent(type, dependency);
+                        return true;
+                    }
                 }
-                final Class<?> standardType = findInterface(type);
-                if (standardType != null) {
-                    accessors.put(type, standardType);
-                    return true;
-                }
+            }
+            /*
+             * At this point, all cached values (including those in dependencies) have been checked.
+             * Performs the 'findInterface' computation only in last resort. Current implementation
+             * does not store negative results in order to avoid filling the cache with unrelated classes.
+             */
+            final Class<?> standardType = findInterface(type);
+            if (standardType != null) {
+                accessors.putIfAbsent(type, standardType);
+                return true;
             }
         }
         return false;
@@ -359,13 +428,15 @@ public class MetadataStandard implements Serializable {
      * Only one metadata interface can be implemented. If the given type is already
      * an interface from the standard, then it is returned directly.
      *
+     * <p>This method ignores dependencies. Fallback on metadata standard dependencies shall be done by the caller.</p>
+     *
      * @param  type The standard interface or the implementation class.
      * @return The single interface, or {@code null} if none where found.
      */
     private Class<?> findInterface(final Class<?> type) {
         if (type != null) {
             if (type.isInterface()) {
-                if (type.getName().startsWith(interfacePackage)) {
+                if (isSupported(type.getName())) {
                     return type;
                 }
             } else {
@@ -423,7 +494,7 @@ public class MetadataStandard implements Serializable {
      */
     private void getInterfaces(final Class<?> type, final Collection<Class<?>> interfaces) {
         for (final Class<?> candidate : type.getInterfaces()) {
-            if (candidate.getName().startsWith(interfacePackage)) {
+            if (isSupported(candidate.getName())) {
                 interfaces.add(candidate);
             }
             getInterfaces(candidate, interfaces);
@@ -452,25 +523,32 @@ public class MetadataStandard implements Serializable {
     @SuppressWarnings("unchecked")
     public <T> Class<? super T> getInterface(final Class<T> type) throws ClassCastException {
         ensureNonNull("type", type);
-        final Class<?> standard;
-        synchronized (accessors) {
-            final Object value = accessors.get(type);
-            if (value != null) {
-                if (value instanceof PropertyAccessor) {
-                    standard = ((PropertyAccessor) value).type;
-                } else {
-                    standard = (Class<?>) value;
-                }
+        final Class<?> interf;
+        final Object value = accessors.get(type);
+        if (value instanceof PropertyAccessor) {
+            interf = ((PropertyAccessor) value).type;
+        } else if (value instanceof Class<?>) {
+            interf = (Class<?>) value;
+        } else if (value instanceof MetadataStandard) {
+            interf = ((MetadataStandard) value).getInterface(type);
+        } else {
+            interf = findInterface(type);
+            if (interf != null) {
+                accessors.putIfAbsent(type, interf);
             } else {
-                standard = findInterface(type);
-                if (standard == null) {
-                    throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
+                if (dependencies != null) {
+                    for (final MetadataStandard dependency : dependencies) {
+                        if (dependency.isMetadata(type)) {
+                            accessors.putIfAbsent(type, dependency);
+                            return dependency.getInterface(type);
+                        }
+                    }
                 }
-                accessors.put(type, standard);
+                throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
             }
         }
-        assert standard.isAssignableFrom(type) : type;
-        return (Class<? super T>) standard;
+        assert interf.isAssignableFrom(type) : type;
+        return (Class<? super T>) interf;
     }
 
     /**
@@ -793,8 +871,17 @@ public class MetadataStandard implements Serializable {
         if (metadata1 == null || metadata2 == null) {
             return false;
         }
-        final PropertyAccessor accessor = getAccessor(metadata1.getClass(), true);
-        if (accessor.type != findInterface(metadata2.getClass())) {
+        final Class<?> type1 = metadata1.getClass();
+        final Class<?> type2 = metadata2.getClass();
+        if (type1 != type2 && mode == ComparisonMode.STRICT) {
+            return false;
+        }
+        final PropertyAccessor accessor = getAccessor(type1, true);
+        if (type1 != type2 && (!accessor.type.isAssignableFrom(type2) || accessor.type != getAccessor(type2, false).type)) {
+            /*
+             * Note: the check for (accessor.type != getAccessor(…).type) would have been enough, but checking
+             * for isAssignableFrom(…) first can avoid the (relatively costly) creation of new PropertyAccessor.
+             */
             return false;
         }
         /*
@@ -867,7 +954,7 @@ public class MetadataStandard implements Serializable {
         try {
             final Field field = classe.getDeclaredField(name);
             field.setAccessible(true);
-            field.set(this, new IdentityHashMap<>());
+            field.set(this, new ConcurrentHashMap<>());
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e); // Should never happen (tested by MetadataStandardTest).
         }
