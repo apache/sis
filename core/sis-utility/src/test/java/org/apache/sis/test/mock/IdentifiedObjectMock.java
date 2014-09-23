@@ -19,7 +19,6 @@ package org.apache.sis.test.mock;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Collection;
-import java.util.Collections;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -29,6 +28,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
 
 
@@ -151,7 +151,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Referenc
      */
     @Override
     public final Collection<GenericName> getAlias() {
-        return (alias != null) ? Collections.singleton(alias) : Collections.<GenericName>emptySet();
+        return CollectionsExt.singletonOrEmpty(alias);
     }
 
     /**

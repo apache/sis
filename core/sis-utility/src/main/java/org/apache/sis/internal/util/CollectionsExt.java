@@ -76,6 +76,17 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns the given value as a singleton if non-null, or returns an empty set otherwise.
+     *
+     * @param  <E> The element type.
+     * @param  element The element to returns in a collection if non-null.
+     * @return A collection containing the given element if non-null, or an empty collection otherwise.
+     */
+    public static <E> Set<E> singletonOrEmpty(final E element) {
+        return (element != null) ? Collections.singleton(element) : Collections.emptySet();
+    }
+
+    /**
      * Returns the given array if non-empty, or {@code null} if the given array is null or empty.
      * This method is generally not recommended, since public API should prefer empty array instead of null.
      * However this method is occasionally useful for managing private fields.
