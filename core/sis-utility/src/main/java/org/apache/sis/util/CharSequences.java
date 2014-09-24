@@ -18,6 +18,7 @@ package org.apache.sis.util;
 
 import java.util.Arrays;
 import java.nio.CharBuffer;
+import java.util.StringJoiner;
 
 import static java.lang.Character.*;
 
@@ -75,7 +76,6 @@ import static java.lang.Character.*;
  * @module
  *
  * @see StringBuilders
- * @see java.util.Arrays#toString(Object[])
  */
 public final class CharSequences extends Static {
     /**
@@ -934,27 +934,27 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  separator  The element separator, which is usually {@code ", "}.
      * @return The (typically) comma-separated list, or {@code null} if the given {@code collection}
      *         was null or contains only null elements.
+     *
+     * @see java.util.StringJoiner
+     * @see java.util.Arrays#toString(Object[])
+     *
+     * @deprecated As of JDK8, use {@link StringJoiner} instead.
      */
+    @Deprecated
     public static String toString(final Iterable<?> collection, final String separator) {
         ArgumentChecks.ensureNonNull("separator", separator);
         String list = null;
         if (collection != null) {
-            StringBuilder buffer = null;
+            StringJoiner buffer = null;
             for (final Object element : collection) {
                 if (element != null) {
                     if (list == null) {
                         list = element.toString();
                     } else {
                         if (buffer == null) {
-                            buffer = new StringBuilder(list);
+                            buffer = new StringJoiner(separator).add(list);
                         }
-                        buffer.append(separator);
-                        if (element instanceof CharSequence) {
-                            // StringBuilder has numerous optimizations for this case.
-                            buffer.append((CharSequence) element);
-                        } else {
-                            buffer.append(element);
-                        }
+                        buffer.add(element.toString());
                     }
                 }
             }
