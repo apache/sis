@@ -52,6 +52,8 @@ public final class MI_PolarizationOrientationCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MI_PolarizationOrientationCode wrap(CodeListProxy proxy) {
@@ -60,6 +62,8 @@ public final class MI_PolarizationOrientationCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<PolarizationOrientation> getCodeListClass() {

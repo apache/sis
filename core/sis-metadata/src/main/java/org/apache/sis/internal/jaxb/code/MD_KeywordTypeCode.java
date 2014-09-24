@@ -48,6 +48,8 @@ public final class MD_KeywordTypeCode extends CodeListAdapter<MD_KeywordTypeCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_KeywordTypeCode wrap(CodeListProxy proxy) {
@@ -56,6 +58,8 @@ public final class MD_KeywordTypeCode extends CodeListAdapter<MD_KeywordTypeCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<KeywordType> getCodeListClass() {

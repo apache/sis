@@ -48,6 +48,8 @@ public final class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTy
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected DS_InitiativeTypeCode wrap(CodeListProxy proxy) {
@@ -56,6 +58,8 @@ public final class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTy
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<InitiativeType> getCodeListClass() {
