@@ -352,6 +352,7 @@ fill:   for (int i=0; ; i++) {
             if (name == null) {
                 name = resources.getString(nameKey);
             }
+            @SuppressWarnings("null")
             final TreeTable.Node node = section.newChild();
             node.setValue(NAME, name);
             if (children != null) {
