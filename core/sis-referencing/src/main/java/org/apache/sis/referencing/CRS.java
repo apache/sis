@@ -47,6 +47,7 @@ import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
@@ -79,7 +80,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class CRS extends Static {
@@ -156,42 +157,21 @@ public final class CRS extends Static {
             throw new NoSuchIdentifierException(Errors.format(Errors.Keys.MissingAuthority_1, code), code);
         }
         /*
-         * Code below this point is a temporary implementation to
-         * be removed after we ported the EPSG authority factory.
+         * Delegate to the factory for the code space of the given code. If no authority factory
+         * is available, or if the factory failed to create the CRS, delegate to CommonCRS. Note
+         * that CommonCRS is not expected to succeed if the real EPSG factory threw an exception,
+         * so we will log a message at the warning level in such case.
          */
-        NumberFormatException cause = null;
-        try {
-            if (authority.equalsIgnoreCase("CRS")) {
-                switch (Integer.parseInt(value)) {
-                    case 27: return CommonCRS.NAD27.normalizedGeographic();
-                    case 83: return CommonCRS.NAD83.normalizedGeographic();
-                    case 84: return CommonCRS.WGS84.normalizedGeographic();
-                }
-            } else if (authority.equalsIgnoreCase("EPSG")) {
-                final int n = Integer.parseInt(value);
-                if (n != 0) { // CommonCRS uses 0 as a sentinel value for "no EPSG code".
-                    for (final CommonCRS candidate : CommonCRS.values()) {
-                        if (candidate.geographic == n) return candidate.geographic();
-                        if (candidate.geocentric == n) return candidate.geocentric();
-                        if (candidate.geo3D      == n) return candidate.geographic3D();
-                    }
-                    for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
-                        if (candidate.isEPSG && candidate.crs == n) {
-                            return candidate.crs();
-                        }
-                    }
-                }
-            } else {
-                throw new NoSuchIdentifierException(Errors.format(Errors.Keys.UnknownAuthority_1, authority), authority);
-            }
-        } catch (NumberFormatException e) {
-            cause = e;
+        CRSAuthorityFactory factory = null; // TODO
+        if (factory != null) try {
+            return factory.createCoordinateReferenceSystem(value);
+        } catch (FactoryException failure) {
+            final CoordinateReferenceSystem crs = CommonCRS.forCode(authority, value, failure);
+            Logging.unexpectedException(CRS.class, "forCode", failure); // See above comment.
+            return crs;
+        } else {
+            return CommonCRS.forCode(authority, value, null);
         }
-        final NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(
-                Errors.format(Errors.Keys.NoSuchAuthorityCode_3, authority, CoordinateReferenceSystem.class, value),
-                authority, value, code);
-        e.initCause(cause);
-        throw e;
     }
 
     /**
