@@ -49,6 +49,8 @@ public final class SV_CouplingType extends CodeListAdapter<SV_CouplingType, Coup
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected SV_CouplingType wrap(CodeListProxy proxy) {
@@ -57,6 +59,8 @@ public final class SV_CouplingType extends CodeListAdapter<SV_CouplingType, Coup
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<CouplingType> getCodeListClass() {

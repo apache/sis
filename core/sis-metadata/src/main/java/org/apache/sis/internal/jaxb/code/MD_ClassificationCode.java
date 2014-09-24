@@ -48,6 +48,8 @@ public final class MD_ClassificationCode extends CodeListAdapter<MD_Classificati
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_ClassificationCode wrap(CodeListProxy proxy) {
@@ -56,6 +58,8 @@ public final class MD_ClassificationCode extends CodeListAdapter<MD_Classificati
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<Classification> getCodeListClass() {

@@ -49,6 +49,8 @@ public final class MI_ContextCode extends CodeListAdapter<MI_ContextCode, Contex
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MI_ContextCode wrap(CodeListProxy proxy) {
@@ -57,6 +59,8 @@ public final class MI_ContextCode extends CodeListAdapter<MI_ContextCode, Contex
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<Context> getCodeListClass() {

@@ -48,6 +48,8 @@ public final class MD_MediumFormatCode extends CodeListAdapter<MD_MediumFormatCo
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_MediumFormatCode wrap(CodeListProxy proxy) {
@@ -56,6 +58,8 @@ public final class MD_MediumFormatCode extends CodeListAdapter<MD_MediumFormatCo
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<MediumFormat> getCodeListClass() {

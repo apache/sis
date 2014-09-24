@@ -72,9 +72,18 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
 
     /**
      * Wraps the proxy value into an adapter.
+     * Most implementations will be like below:
+     *
+     * {@preformat java
+     *     return new ValueType(proxy);
+     * }
+     *
+     * However is some cases, the {@code proxy} argument may be inspected.
+     * For example {@link org.apache.sis.internal.jaxb.code.MD_RestrictionCode}
+     * replaces {@code "licence"} by {@code "license"} for ISO 19115:2003 compatibility.
      *
      * @param proxy The proxy version of {@link CodeList}, to be marshalled.
-     * @return The adapter that wraps the proxy value.
+     * @return The wrapper for the code list value.
      */
     protected abstract ValueType wrap(final CodeListProxy proxy);
 

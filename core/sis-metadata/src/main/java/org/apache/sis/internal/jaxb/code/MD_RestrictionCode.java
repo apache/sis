@@ -54,7 +54,7 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
      * marshalling shall use the previous spelling until XML schema are updated.</p>
      *
      * @param proxy The proxy version of {@link CodeList}, to be marshalled.
-     * @return The adapter that wraps the proxy value.
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_RestrictionCode wrap(CodeListProxy proxy) {

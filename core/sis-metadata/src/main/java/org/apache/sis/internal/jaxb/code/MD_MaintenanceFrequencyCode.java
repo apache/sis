@@ -50,6 +50,8 @@ public final class MD_MaintenanceFrequencyCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_MaintenanceFrequencyCode wrap(CodeListProxy proxy) {
@@ -58,6 +60,8 @@ public final class MD_MaintenanceFrequencyCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<MaintenanceFrequency> getCodeListClass() {
