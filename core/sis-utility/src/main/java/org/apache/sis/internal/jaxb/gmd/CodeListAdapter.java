@@ -121,8 +121,15 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
         if (value == null) {
             return null;
         }
-        return wrap(isEnum() ? new CodeListProxy(Types.getCodeName(value))
-                             : new CodeListProxy(Context.current(), value));
+        final CodeListProxy p;
+        if (isEnum()) {
+            // To be removed after GEO-199 resolution.
+            p = new CodeListProxy();
+            p.value = Types.getCodeName(value);
+        } else {
+            p = new CodeListProxy(Context.current(), value);
+        }
+        return wrap(p);
     }
 
     /**
@@ -130,6 +137,11 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      * returns {@code false} in every cases, since there is very few enums in ISO 19115.
      *
      * @return {@code true} if this code list is actually an enum.
+     *
+     * @todo Remove this method after we refactored enum wrappers as {@link EnumAdapter} subclasses
+     *       instead of {@code CodeListAdapter}. This requires the resolution of GEO-199 first.
+     *
+     * @see <a href="http://jira.codehaus.org/browse/GEO-199">GEO-199</a>
      */
     protected boolean isEnum() {
         return false;
