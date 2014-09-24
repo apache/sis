@@ -606,6 +606,25 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
+     * Allocates the array to be returned by the {@code split(…)} methods. If the given {@code text} argument is
+     * an instance of {@link String}, {@link StringBuilder} or {@link StringBuffer},  then this method returns a
+     * {@code String[]} array instead than {@code CharSequence[]}. This is possible because the specification of
+     * their {@link CharSequence#subSequence(int, int)} method guarantees to return {@code String} instances.
+     * Some Apache SIS code will cast the {@code split(…)} return value based on this knowledge.
+     *
+     * <p>Note that this is a undocumented SIS features. There is currently no commitment that this implementation
+     * details will not change in future version.</p>
+     *
+     * @param  text The text to be splitted.
+     * @return An array where to store the result of splitting the given {@code text}.
+     */
+    private static CharSequence[] createSplitArray(final CharSequence text) {
+        return (text instanceof String ||
+                text instanceof StringBuilder ||
+                text instanceof StringBuffer) ? new String[8] : new CharSequence[8];
+    }
+
+    /**
      * Splits a text around the given character. The array returned by this method contains all
      * subsequences of the given text that is terminated by the given character or is terminated
      * by the end of the text. The subsequences in the array are in the order in which they occur
@@ -636,37 +655,37 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             return EMPTY_ARRAY;
         }
         if (separator == '\n' || separator == '\r') {
-            final CharSequence[] strings = splitOnEOL(text);
-            for (int i=0; i<strings.length; i++) {
+            final CharSequence[] splitted = splitOnEOL(text);
+            for (int i=0; i<splitted.length; i++) {
                 // For consistency with the rest of this method.
-                strings[i] = trimWhitespaces(strings[i]);
+                splitted[i] = trimWhitespaces(splitted[i]);
             }
-            return strings;
+            return splitted;
         }
         // 'excludeEmpty' must use the same criterion than trimWhitespaces(…).
         final boolean excludeEmpty = isWhitespace(separator);
-        CharSequence[] strings = (text instanceof String) ? new String[4] : new CharSequence[4];
+        CharSequence[] splitted = createSplitArray(text);
         final int length = text.length();
         int count = 0, last  = 0, i = 0;
         while ((i = indexOf(text, separator, i, length)) >= 0) {
             final CharSequence item = trimWhitespaces(text, last, i);
             if (!excludeEmpty || item.length() != 0) {
-                if (count == strings.length) {
-                    strings = Arrays.copyOf(strings, count << 1);
+                if (count == splitted.length) {
+                    splitted = Arrays.copyOf(splitted, count << 1);
                 }
-                strings[count++] = item;
+                splitted[count++] = item;
             }
             last = ++i;
         }
         // Add the last element.
         final CharSequence item = trimWhitespaces(text, last, length);
         if (!excludeEmpty || item.length() != 0) {
-            if (count == strings.length) {
-                strings = Arrays.copyOf(strings, count + 1);
+            if (count == splitted.length) {
+                splitted = Arrays.copyOf(splitted, count + 1);
             }
-            strings[count++] = item;
+            splitted[count++] = item;
         }
-        return ArraysExt.resize(strings, count);
+        return ArraysExt.resize(splitted, count);
     }
 
     /**
@@ -714,7 +733,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             };
         }
         int count = 0;
-        CharSequence[] splitted = new CharSequence[8];
+        CharSequence[] splitted = createSplitArray(text);
         int last = 0;
         boolean hasMore;
         do {
