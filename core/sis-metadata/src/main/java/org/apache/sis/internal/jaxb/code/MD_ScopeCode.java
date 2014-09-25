@@ -48,6 +48,8 @@ public final class MD_ScopeCode extends CodeListAdapter<MD_ScopeCode, ScopeCode>
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_ScopeCode wrap(CodeListProxy proxy) {
@@ -56,6 +58,8 @@ public final class MD_ScopeCode extends CodeListAdapter<MD_ScopeCode, ScopeCode>
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<ScopeCode> getCodeListClass() {
