@@ -408,6 +408,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      */
     @SuppressWarnings("unchecked")
     private boolean isSorted() {
+        if (array == null) {
+            return true;
+        }
         final boolean strict = isMinIncluded | isMaxIncluded;
         switch (elementCode) {
             case DOUBLE:    return ArraysExt.isSorted((double[]) array, strict);
@@ -665,7 +668,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                 removeAt(i0, i1);
             } else {
                 /*
-                 * i0 is pair and i1 is odd.
+                 * i0 is even and i1 is odd.
                  * Case where minValue is outside any existing range and maxValue is inside a specific range.
                  *
                  *   index :      A0    B0       A1       B1        An      Bn     A(n+1)   B(n+1)
@@ -681,13 +684,13 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                  * index :      A0    B0       i1  Bn     A(n+1)   B(n+1)
                  * range :      ███████        █████      ██████████  ◾◾◾
                  */
-                removeAt(i0, i1 & ~1); // i1 - 1
+                removeAt(i0, i1 & ~1); // equivalent to (i0, i1 - 1)
                 Array.set(array, i0, maxValue);
             }
         } else {
             if ((i1 & 1) == 0) {
                 /*
-                 * i0 is odd and i1 is pair.
+                 * i0 is odd and i1 is even.
                  * Case where minValue is inside a specific range and maxValue is outside any range.
                  *
                  *  index :      A0    B0     A1       B1        An      Bn        A(n+1)   B(n+1)
@@ -744,7 +747,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                     final int di = i1 - i0;
                     assert di >= 2 : di;
                     if (di > 2) {
-                        removeAt(i0 + 1, i1 & ~1); // i0 + 1, i1 - 1
+                        removeAt(i0 + 1, i1 & ~1); // equivalent to (i0 + 1, i1 - 1)
                     }
                     Array.set(array, i0,     minValue);
                     Array.set(array, i0 + 1, maxValue);
