@@ -335,6 +335,27 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     }
 
     /**
+     * Returns the physical value corresponding to a cell value of zero.
+     *
+     * @return The physical value corresponding to a cell value of zero, or {@code null} if none.
+     */
+    @Override
+/// @XmlElement(name = "offset")
+    public Double getOffset() {
+        return offset;
+    }
+
+    /**
+     * Sets the physical value corresponding to a cell value of zero.
+     *
+     * @param newValue The new physical value corresponding to a cell value of zero, or {@code null} if none..
+     */
+    public void setOffset(final Double newValue) {
+        checkWritePermission();
+        offset = newValue;
+    }
+
+    /**
      * Returns the maximum number of significant bits in the uncompressed representation
      * for the value in each band of each pixel.
      *
@@ -357,27 +378,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     public void setBitsPerValue(final Integer newValue) {
         checkWritePermission();
         bitsPerValue = newValue;
-    }
-
-    /**
-     * Returns the physical value corresponding to a cell value of zero.
-     *
-     * @return The physical value corresponding to a cell value of zero, or {@code null} if none.
-     */
-    @Override
-/// @XmlElement(name = "offset")
-    public Double getOffset() {
-        return offset;
-    }
-
-    /**
-     * Sets the physical value corresponding to a cell value of zero.
-     *
-     * @param newValue The new physical value corresponding to a cell value of zero, or {@code null} if none..
-     */
-    public void setOffset(final Double newValue) {
-        checkWritePermission();
-        offset = newValue;
     }
 
     /**
