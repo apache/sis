@@ -49,6 +49,8 @@ public final class MI_PriorityCode extends CodeListAdapter<MI_PriorityCode, Prio
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MI_PriorityCode wrap(CodeListProxy proxy) {
@@ -57,6 +59,8 @@ public final class MI_PriorityCode extends CodeListAdapter<MI_PriorityCode, Prio
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<Priority> getCodeListClass() {

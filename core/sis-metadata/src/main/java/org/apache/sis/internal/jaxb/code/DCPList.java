@@ -49,6 +49,8 @@ public final class DCPList extends CodeListAdapter<DCPList, DistributedComputing
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected DCPList wrap(CodeListProxy proxy) {
@@ -57,6 +59,8 @@ public final class DCPList extends CodeListAdapter<DCPList, DistributedComputing
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<DistributedComputingPlatform> getCodeListClass() {

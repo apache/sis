@@ -101,8 +101,9 @@ import static org.apache.sis.util.Numbers.*;
  * @param <E> The type of range elements.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see Range
@@ -248,7 +249,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * The amount of modifications applied on the range {@linkplain #array}.
      * Used for checking concurrent modifications.
      */
-    private transient int modCount;
+     private transient int modCount;
 
     /**
      * Constructs an initially empty set of ranges.
@@ -430,14 +431,14 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      */
     final int binarySearch(final E value, final int lower, final int upper) {
         switch (elementCode) {
-            case DOUBLE:    return Arrays.binarySearch((double[]) array, lower, upper, ((Double)    value).doubleValue());
-            case FLOAT:     return Arrays.binarySearch((float []) array, lower, upper, ((Float)     value).floatValue ());
-            case LONG:      return Arrays.binarySearch((long  []) array, lower, upper, ((Long)      value).longValue  ());
-            case INTEGER:   return Arrays.binarySearch((int   []) array, lower, upper, ((Integer)   value).intValue   ());
-            case SHORT:     return Arrays.binarySearch((short []) array, lower, upper, ((Short)     value).shortValue ());
-            case BYTE:      return Arrays.binarySearch((byte  []) array, lower, upper, ((Byte)      value).byteValue  ());
-            case CHARACTER: return Arrays.binarySearch((char  []) array, lower, upper, ((Character) value).charValue  ());
-            default:        return Arrays.binarySearch((Object[]) array, lower, upper,              value);
+            case DOUBLE:    return Arrays.binarySearch((double[]) array, lower, upper, (Double)    value);
+            case FLOAT:     return Arrays.binarySearch((float []) array, lower, upper, (Float)     value);
+            case LONG:      return Arrays.binarySearch((long  []) array, lower, upper, (Long)      value);
+            case INTEGER:   return Arrays.binarySearch((int   []) array, lower, upper, (Integer)   value);
+            case SHORT:     return Arrays.binarySearch((short []) array, lower, upper, (Short)     value);
+            case BYTE:      return Arrays.binarySearch((byte  []) array, lower, upper, (Byte)      value);
+            case CHARACTER: return Arrays.binarySearch((char  []) array, lower, upper, (Character) value);
+            default:        return Arrays.binarySearch((Object[]) array, lower, upper,             value);
         }
     }
 
@@ -638,7 +639,119 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @throws IllegalArgumentException if {@code minValue} is greater than {@code maxValue}.
      */
     public boolean remove(final E minValue, final E maxValue) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not yet implemented");
+        ArgumentChecks.ensureNonNull("minValue", minValue);
+        ArgumentChecks.ensureNonNull("maxValue", maxValue);
+        if (length == 0) return false; // Nothing to do if no data.
+        ensureOrdered(minValue, maxValue);
+
+        // Search insertion index.
+        int i0 = binarySearch(minValue, 0, length);
+        int i1 = binarySearch(maxValue, (i0 >= 0) ? i0 : ~i0, length);
+        if (i0 < 0) i0 = ~i0;
+        if (i1 < 0) i1 = ~i1;
+        if ((i0 & 1) == 0) {
+            if ((i1 & 1) == 0) {
+                /*
+                 * i0 & i1 are even.
+                 * Case where min and max value are outside any existing range.
+                 *
+                 *   index :      A0    B0       A1       B1        An      Bn     A(n+1)   B(n+1)
+                 *   range :      ███████        ██████████   ◾◾◾   ██████████     ██████████
+                 *                          |-----------------------------------|
+                 *   values :            minValue (i0)                      maxValue (i1)
+                 *
+                 * In this case delete all ranges between minValue and maxValue ([(A1, B1); (An, Bn)]).
+                 */
+                removeAt(i0, i1);
+            } else {
+                /*
+                 * i0 is pair and i1 is odd.
+                 * Case where minValue is outside any existing range and maxValue is inside a specific range.
+                 *
+                 *   index :      A0    B0       A1       B1        An      Bn     A(n+1)   B(n+1)
+                 *   range :      ███████        ██████████   ◾◾◾   ██████████     ██████████
+                 *                          |----------------------------|
+                 *   values :            minValue (i0)               maxValue (i1)
+                 *
+                 * In this case :
+                 * - delete all ranges between minValue and maxValue ([(A1, B1); (A(n-1), B(n-1))]).
+                 * - and replace range (An; Bn) by new range (MaxValue; Bn).
+                 *
+                 * Result :
+                 * index :      A0    B0       i1  Bn     A(n+1)   B(n+1)
+                 * range :      ███████        █████      ██████████  ◾◾◾
+                 */
+                removeAt(i0, i1 & ~1); // i1 - 1
+                Array.set(array, i0, maxValue);
+            }
+        } else {
+            if ((i1 & 1) == 0) {
+                /*
+                 * i0 is odd and i1 is pair.
+                 * Case where minValue is inside a specific range and maxValue is outside any range.
+                 *
+                 *  index :      A0    B0     A1       B1        An      Bn        A(n+1)   B(n+1)
+                 *  range :      ███████      ██████████   ◾◾◾   ██████████        ██████████
+                 *                                 |----------------------------|
+                 *  values :            minValue (i0)               maxValue (i1)
+                 *
+                 * In this case :
+                 *  - delete all ranges between minValue and maxValue ([(A2, B2); (An, Bn)]).
+                 *  - and replace range (A1; B1) by new range (A1; i0).
+                 *
+                 * Result :
+                 *  index :      A0    B0       A1  i0     A(n+1)   B(n+1)
+                 *  range :      ███████        █████      ██████████   ◾◾◾
+                 */
+                removeAt(i0 + 1, i1);
+                Array.set(array, i0, minValue);
+            } else {
+                /*
+                 * i0 and i1 are odd.
+                 * Case where minValue and maxValue are inside any specific range.
+                 *
+                 *  index :      A0    B0     A1       B1         An      Bn       A(n+1)   B(n+1)
+                 *  range :      ███████      ██████████   ◾◾◾    ██████████       ██████████
+                 *                                 |-------------------|
+                 *  values :            minValue (i0)               maxValue (i1)
+                 *
+                 * In this case :
+                 *  - delete all ranges between minValue and maxValue ([(A2, B2); (A(n-1), B(n-1))]).
+                 *  - and replace range (A1; B1) by new range (A1; i0).
+                 *
+                 * Result :
+                 *  index  :      A0    B0       A1  i0    i1  Bn     A(n+1)   B(n+1)
+                 *  range  :      ███████        █████  ◾◾◾    █████      ██████████
+                 *
+                 * A particularity case exist if i0 equal i1, which means minValue
+                 * and maxValue are inside the same specific range.
+                 *
+                 *  index  :      A0    B0     A1                  B1         An      Bn
+                 *  range  :      ███████      █████████████████████   ◾◾◾    ██████████
+                 *                                |-------------|
+                 *  values :            minValue (i0)      maxValue (i1)
+                 * In this case total range number will be increase by one.
+                 *
+                 * Result  :
+                 *  index  :      A0    B0       A1  i0    i1  B1     An   Bn
+                 *  range  :      ███████        █████     █████   ◾◾◾   █████
+                 */
+                if (i0 == i1) {
+                    // Above-cited special case
+                    insertAt(i1 + 1, maxValue, getValue(i1));
+                    Array.set(array, i0, minValue);
+                } else {
+                    final int di = i1 - i0;
+                    assert di >= 2 : di;
+                    if (di > 2) {
+                        removeAt(i0 + 1, i1 & ~1); // i0 + 1, i1 - 1
+                    }
+                    Array.set(array, i0,     minValue);
+                    Array.set(array, i0 + 1, maxValue);
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -967,7 +1080,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         @Override
         public int size() {
             updateBounds();
-            return (upper - lower) / 2;
+            return (upper - lower) >> 1;
         }
 
         /**

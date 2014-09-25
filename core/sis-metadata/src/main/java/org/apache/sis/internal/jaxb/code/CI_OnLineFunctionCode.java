@@ -50,6 +50,8 @@ public final class CI_OnLineFunctionCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected CI_OnLineFunctionCode wrap(CodeListProxy proxy) {
@@ -58,6 +60,8 @@ public final class CI_OnLineFunctionCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<OnLineFunction> getCodeListClass() {

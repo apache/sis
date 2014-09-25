@@ -18,6 +18,8 @@ package org.apache.sis.referencing;
 
 import java.util.Date;
 import org.opengis.test.Validators;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -43,7 +45,7 @@ import static org.apache.sis.test.TestUtilities.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn({
@@ -195,5 +197,44 @@ public final strictfp class CommonCRSTest extends TestCase {
             assertEquals(name, epoch, format(origin));
             assertEquals(name, days, origin.getTime() / DAY_LENGTH - julianEpoch, 0);
         }
+    }
+
+    /**
+     * Tests {@link CommonCRS#forCode(String, String, FactoryException)}.
+     *
+     * @throws FactoryException If a CRS can not be constructed.
+     *
+     * @see CRSTest#testForEpsgCode()
+     * @see CRSTest#testForCrsCode()
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testForCode() throws FactoryException {
+        verifyForCode(CommonCRS.WGS84 .geographic(),            "EPSG", "4326");
+        verifyForCode(CommonCRS.WGS72 .geographic(),            "EPSG", "4322");
+        verifyForCode(CommonCRS.SPHERE.geographic(),            "EPSG", "4047");
+        verifyForCode(CommonCRS.NAD83 .geographic(),            "EPSG", "4269");
+        verifyForCode(CommonCRS.NAD27 .geographic(),            "EPSG", "4267");
+        verifyForCode(CommonCRS.ETRS89.geographic(),            "EPSG", "4258");
+        verifyForCode(CommonCRS.ED50  .geographic(),            "EPSG", "4230");
+        verifyForCode(CommonCRS.WGS84 .geocentric(),            "EPSG", "4978");
+        verifyForCode(CommonCRS.WGS72 .geocentric(),            "EPSG", "4984");
+        verifyForCode(CommonCRS.ETRS89.geocentric(),            "EPSG", "4936");
+        verifyForCode(CommonCRS.WGS84 .geographic3D(),          "EPSG", "4979");
+        verifyForCode(CommonCRS.WGS72 .geographic3D(),          "EPSG", "4985");
+        verifyForCode(CommonCRS.ETRS89.geographic3D(),          "EPSG", "4937");
+        verifyForCode(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(),  "EPSG", "5714");
+        verifyForCode(CommonCRS.Vertical.DEPTH.crs(),           "EPSG", "5715");
+        verifyForCode(CommonCRS.WGS84.normalizedGeographic(),   "CRS",  "84");
+        verifyForCode(CommonCRS.NAD83.normalizedGeographic(),   "CRS",  "83");
+        verifyForCode(CommonCRS.NAD27.normalizedGeographic(),   "CRS",  "27");
+    }
+
+    /**
+     * Asserts that the result of {@link CommonCRS#forCode(String, String, FactoryException)} is the given CRS.
+     */
+    private static void verifyForCode(final SingleCRS expected, final String authority, final String code) throws FactoryException {
+        assertSame(code, expected, CommonCRS.forCode(authority, code, null));
     }
 }
