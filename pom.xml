@@ -444,7 +444,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://jira.codehaus.org/browse/MCOMPILER-209 -->
           <compilerArgs>
             <arg>-Xlint:all</arg>
-            <arg>-Xdoclint:syntax,html,missing,accessibility/private</arg>
+            <arg>-Xdoclint:all,-reference</arg>
           </compilerArgs>
         </configuration>
       </plugin>

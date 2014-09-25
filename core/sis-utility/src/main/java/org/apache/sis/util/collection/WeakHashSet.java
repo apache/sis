@@ -92,7 +92,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
         }
 
         /**
-         * Invoked by {@link org.apache.sis.internal.util.ReferenceQueueConsumer}
+         * Invoked by {@link org.apache.sis.internal.system.ReferenceQueueConsumer}
          * for removing the reference from the enclosing collection.
          */
         @Override
@@ -298,7 +298,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
 
     /**
      * Implementation of the {@link #add(Object)}, {@link #remove(Object)}, {@link #get(Object)},
-     * {@link #contains(Object)} and {@link #intern(Object)} methods.
+     * {@link #contains(Object)} and {@link #unique(Object)} methods.
      */
     private E intern(final Object obj, final int operation) {
         assert isValid();

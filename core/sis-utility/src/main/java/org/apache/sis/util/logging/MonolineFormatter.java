@@ -141,16 +141,14 @@ public class MonolineFormatter extends Formatter {
     /**
      * A comparator for logging level. This comparator sorts finest levels first and severe levels last.
      */
-    private static final Comparator<Level> COMPARATOR = new Comparator<Level>() {
-        @Override public int compare(final Level l1, final Level l2) {
-            // We can't just return (i1 - i2) because some levels are
-            // Integer.MIN_VALUE or Integer.MAX_VALUE, which cause overflow.
-            final int i1 = l1.intValue();
-            final int i2 = l2.intValue();
-            if (i1 < i2) return -1;
-            if (i1 > i2) return +1;
-            return 0;
-        }
+    private static final Comparator<Level> COMPARATOR = (final Level l1, final Level l2) -> {
+        // We can't just return (i1 - i2) because some levels are
+        // Integer.MIN_VALUE or Integer.MAX_VALUE, which cause overflow.
+        final int i1 = l1.intValue();
+        final int i2 = l2.intValue();
+        if (i1 < i2) return -1;
+        if (i1 > i2) return +1;
+        return 0;
     };
 
     /**
@@ -164,7 +162,7 @@ public class MonolineFormatter extends Formatter {
      * The "interesting" elements are the first stack trace elements, and the element which point
      * to the method that produced the log record.
      *
-     * @see #printAbridged(Throwable, Appendable, String, String, String, String)
+     * @see #printAbridged(Throwable, Appendable, String, String, String)
      */
     private static final int CONTEXT_STACK_TRACE_ELEMENTS = 2;
 
@@ -343,7 +341,7 @@ loop:   for (int i=0; ; i++) {
                 default: break loop;
             }
             if (threshold != null && c.intValue() < threshold.intValue()) {
-                break loop;
+                break;
             }
             final int length = c.getLocalizedName().length();
             if (length > levelWidth) levelWidth = length;

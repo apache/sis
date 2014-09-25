@@ -135,9 +135,8 @@ public final class Context extends MarshalContext {
     private WarningListener<?> warningListener;
 
     /**
-     * The context which was previously used. This form a linked list allowing
-     * to push properties (e.g. {@link #pushLocale(Locale)}) and pull back the
-     * context to its previous state once finished.
+     * The context which was previously used. This form a linked list allowing to push properties
+     * (e.g. {@link #push(Locale)}) and pull back the context to its previous state once finished.
      */
     private final Context previous;
 
@@ -446,7 +445,7 @@ public final class Context extends MarshalContext {
      * @param classe  The class to declare as the warning source.
      * @param method  The name of the method to declare as the warning source.
      * @param cause   The exception which occurred.
-     * @param warning {@code true} for {@link Level#WARNING}, or {@code false} for {@link Level#FILE}.
+     * @param warning {@code true} for {@link Level#WARNING}, or {@code false} for {@link Level#FINE}.
      */
     public static void warningOccured(final Context context, final Class<?> classe,
             final String method, final Exception cause, final boolean warning)

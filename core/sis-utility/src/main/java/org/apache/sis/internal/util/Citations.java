@@ -209,7 +209,7 @@ public final class Citations extends Static {
      * character which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
      *
      * <p>If (and <em>only</em> if) the citation does not contain any identifier, then this method
-     * fallback on titles comparison using the {@link #titleMatches(Citation,String) titleMatches}
+     * fallback on titles comparison using the {@link #titleMatches(Citation, CharSequence) titleMatches}
      * method. This fallback exists for compatibility with client codes using citation
      * {@linkplain Citation#getTitle() titles} without identifiers.</p>
      *
