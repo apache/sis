@@ -29,6 +29,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
+import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -62,8 +63,8 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
          *       └─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc
          */
         final DefaultCitation citation = new DefaultCitation("Sea Surface Temperature Analysis Model");
-        citation.getDates().add(new DefaultCitationDate(TestUtilities.date("2005-09-22 00:00:00"), DateType.CREATION));
-        citation.getIdentifiers().add(new DefaultIdentifier("SST_Global.nc"));
+        citation.setDates(singleton(new DefaultCitationDate(TestUtilities.date("2005-09-22 00:00:00"), DateType.CREATION)));
+        citation.setIdentifiers(singleton(new DefaultIdentifier("SST_Global.nc")));
         /*
          * Descriptive keywords
          *   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature
@@ -97,10 +98,10 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
          */
         final DefaultDataIdentification info = new DefaultDataIdentification(citation,
                 "NCEP SST Global 5.0 x 2.5 degree model data", null, null);
-        info.getSpatialRepresentationTypes().add(SpatialRepresentationType.GRID);
-        info.getDescriptiveKeywords().add(keywords);
-        info.getResourceConstraints().add(new DefaultConstraints("Freely available"));
-        info.getExtents().add(Extents.WORLD);
+        info.setSpatialRepresentationTypes(singleton(SpatialRepresentationType.GRID));
+        info.setDescriptiveKeywords(singleton(keywords));
+        info.setResourceConstraints(singleton(new DefaultConstraints("Freely available")));
+        info.setExtents(singleton(Extents.WORLD));
         return info;
     }
 

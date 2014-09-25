@@ -79,11 +79,12 @@ final class StandardImplementation extends MetadataStandard {
      * @param implementationPackage The root package for metadata implementations. with a trailing {@code '.'}.
      * @param prefix                The prefix of implementation class. This array is not cloned.
      * @param acronyms              An array of (full text, acronyms) pairs. This array is not cloned.
+     * @param dependencies          The dependencies to other metadata standards, or {@code null} if none.
      */
-    StandardImplementation(final String citation, final String interfacePackage,
-            final String implementationPackage, final String[] prefix, final String[] acronyms)
+    StandardImplementation(final String citation, final String interfacePackage, final String implementationPackage,
+            final String[] prefix, final String[] acronyms, final MetadataStandard[] dependencies)
     {
-        super(citation, interfacePackage);
+        super(citation, interfacePackage, dependencies);
         this.implementationPackage = implementationPackage;
         this.prefix                = prefix;
         this.acronyms              = acronyms;
@@ -115,8 +116,8 @@ final class StandardImplementation extends MetadataStandard {
          * CodeLists, Enums and Exceptions.
          */
         if (type != null && type.isInterface()) {
-            String name = type.getName();
-            if (name.startsWith(interfacePackage)) {
+            String classname = type.getName();
+            if (isSupported(classname)) {
                 synchronized (implementations) {
                     Class<?> candidate = implementations.get(type);
                     if (candidate != null) {
@@ -128,7 +129,7 @@ final class StandardImplementation extends MetadataStandard {
                      * have been replaced by their acronym (if any).
                      */
                     final StringBuilder buffer = new StringBuilder(implementationPackage)
-                            .append(name, interfacePackage.length(), name.length());
+                            .append(classname, interfacePackage.length(), classname.length());
                     if (acronyms != null) {
                         for (int i=0; i<acronyms.length; i+=2) {
                             final String acronym = acronyms[i];
@@ -145,9 +146,9 @@ final class StandardImplementation extends MetadataStandard {
                     final int prefixPosition = buffer.lastIndexOf(".") + 1;
                     int length = 0;
                     for (final String p : prefix) {
-                        name = buffer.replace(prefixPosition, prefixPosition + length, p).toString();
+                        classname = buffer.replace(prefixPosition, prefixPosition + length, p).toString();
                         try {
-                            candidate = Class.forName(name);
+                            candidate = Class.forName(classname);
                         } catch (ClassNotFoundException e) {
                             Logging.recoverableException(MetadataStandard.class, "getImplementation", e);
                             length = p.length();

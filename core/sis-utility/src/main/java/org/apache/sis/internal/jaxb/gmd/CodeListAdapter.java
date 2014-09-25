@@ -72,9 +72,18 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
 
     /**
      * Wraps the proxy value into an adapter.
+     * Most implementations will be like below:
+     *
+     * {@preformat java
+     *     return new ValueType(proxy);
+     * }
+     *
+     * However is some cases, the {@code proxy} argument may be inspected.
+     * For example {@link org.apache.sis.internal.jaxb.code.MD_RestrictionCode}
+     * replaces {@code "licence"} by {@code "license"} for ISO 19115:2003 compatibility.
      *
      * @param proxy The proxy version of {@link CodeList}, to be marshalled.
-     * @return The adapter that wraps the proxy value.
+     * @return The wrapper for the code list value.
      */
     protected abstract ValueType wrap(final CodeListProxy proxy);
 
@@ -112,8 +121,15 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
         if (value == null) {
             return null;
         }
-        return wrap(isEnum() ? new CodeListProxy(Types.getCodeName(value))
-                             : new CodeListProxy(Context.current(), value));
+        final CodeListProxy p;
+        if (isEnum()) {
+            // To be removed after GEO-199 resolution.
+            p = new CodeListProxy();
+            p.value = Types.getCodeName(value);
+        } else {
+            p = new CodeListProxy(Context.current(), value);
+        }
+        return wrap(p);
     }
 
     /**
@@ -121,6 +137,11 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      * returns {@code false} in every cases, since there is very few enums in ISO 19115.
      *
      * @return {@code true} if this code list is actually an enum.
+     *
+     * @todo Remove this method after we refactored enum wrappers as {@link EnumAdapter} subclasses
+     *       instead of {@code CodeListAdapter}. This requires the resolution of GEO-199 first.
+     *
+     * @see <a href="http://jira.codehaus.org/browse/GEO-199">GEO-199</a>
      */
     protected boolean isEnum() {
         return false;

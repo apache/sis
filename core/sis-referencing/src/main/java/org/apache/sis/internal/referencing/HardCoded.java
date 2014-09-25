@@ -14,46 +14,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.referencing;
+package org.apache.sis.internal.referencing;
 
-import org.opengis.referencing.cs.RangeMeaning;
-import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
-
-import static org.apache.sis.internal.referencing.HardCoded.EPSG;
+import org.apache.sis.util.Static;
 
 
 /**
- * JAXB adapter for (un)marshalling of GeoAPI code list.
+ * Hard coded values (typically identifiers).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  */
-public final class CS_RangeMeaning extends CodeListAdapter<RangeMeaning> {
+public final class HardCoded extends Static {
     /**
-     * Empty constructor for JAXB only.
+     * The {@value} code space.
      */
-    public CS_RangeMeaning() {
-    }
+    public static final String EPSG = "EPSG";
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@code RangeMeaning.class}
+     * The {@value} code space.
      */
-    @Override
-    protected Class<RangeMeaning> getCodeListClass() {
-        return RangeMeaning.class;
-    }
+    public static final String CRS = "CRS";
 
     /**
-     * Sets the default code space to {@code "EPSG"}.
-     *
-     * @return {@code "EPSG"}.
+     * The {@code CRS:27} identifier for a coordinate reference system.
      */
-    @Override
-    protected String getCodeSpace() {
-        return EPSG;
+    public static final byte CRS27 = 27;
+
+    /**
+     * The {@code CRS:83} identifier for a coordinate reference system.
+     */
+    public static final byte CRS83 = 83;
+
+    /**
+     * The {@code CRS:84} identifier for a coordinate reference system.
+     */
+    public static final byte CRS84 = 84;
+
+    /**
+     * Do not allow instantiation of this class.
+     */
+    private HardCoded() {
     }
 }

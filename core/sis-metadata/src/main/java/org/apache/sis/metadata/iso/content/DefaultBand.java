@@ -86,6 +86,11 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     private Unit<Length> boundUnits;
 
     /**
+     * Designation of criterion for defining maximum and minimum wavelengths for a spectral band.
+     */
+    private BandDefinition bandBoundaryDefinition;
+
+    /**
      * Wavelength at which the response is the highest.
      */
     private Double peakResponse;
@@ -94,11 +99,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * Number of discrete numerical values in the grid data.
      */
     private Integer toneGradation;
-
-    /**
-     * Designation of criterion for defining maximum and minimum wavelengths for a spectral band.
-     */
-    private BandDefinition bandBoundaryDefinition;
 
     /**
      * Smallest distance between which separate points can be distinguished, as specified in
@@ -181,33 +181,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     }
 
     /**
-     * Returns the longest wavelength that the sensor is capable of collecting within a designated band.
-     * The units of measurement is given by {@link #getUnits()}.
-     *
-     * @return Longest wavelength that the sensor is capable of collecting within a designated band,
-     *         or {@code null} if unspecified.
-     *
-     * @since 0.5
-     */
-    @ValueRange(minimum = 0)
-/// @XmlElement(name = "boundMax")
-    public Double getBoundMax() {
-        return boundMax;
-    }
-
-    /**
-     * Sets the longest wavelength that the sensor is capable of collecting within a designated band.
-     *
-     * @param newValue The new longest wavelength.
-     *
-     * @since 0.5
-     */
-    public void setBoundMax(final Double newValue) {
-        checkWritePermission();
-        boundMax = newValue;
-    }
-
-    /**
      * Returns the shortest wavelength that the sensor is capable of collecting within a designated band.
      * The units of measurement is given by {@link #getBoundUnit()}.
      *
@@ -235,6 +208,33 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     }
 
     /**
+     * Returns the longest wavelength that the sensor is capable of collecting within a designated band.
+     * The units of measurement is given by {@link #getUnits()}.
+     *
+     * @return Longest wavelength that the sensor is capable of collecting within a designated band,
+     *         or {@code null} if unspecified.
+     *
+     * @since 0.5
+     */
+    @ValueRange(minimum = 0)
+/// @XmlElement(name = "boundMax")
+    public Double getBoundMax() {
+        return boundMax;
+    }
+
+    /**
+     * Sets the longest wavelength that the sensor is capable of collecting within a designated band.
+     *
+     * @param newValue The new longest wavelength.
+     *
+     * @since 0.5
+     */
+    public void setBoundMax(final Double newValue) {
+        checkWritePermission();
+        boundMax = newValue;
+    }
+
+    /**
      * Returns units in which sensor wavelengths are expressed.
      *
      * @return Units in which sensor wavelengths are expressed.
@@ -256,6 +256,27 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     public void setBoundUnits(final Unit<Length> newValue) {
         checkWritePermission();
         boundUnits = newValue;
+    }
+
+    /**
+     * Returns the designation of criterion for defining maximum and minimum wavelengths for a spectral band.
+     *
+     * @return Criterion for defining maximum and minimum wavelengths, or {@code null}.
+     */
+    @Override
+    @XmlElement(name = "bandBoundaryDefinition", namespace = Namespaces.GMI)
+    public BandDefinition getBandBoundaryDefinition() {
+        return bandBoundaryDefinition;
+    }
+
+    /**
+     * Sets designation of criterion for defining maximum and minimum wavelengths for a spectral band.
+     *
+     * @param newValue The new band definition.
+     */
+    public void setBandBoundaryDefinition(final BandDefinition newValue) {
+        checkWritePermission();
+        bandBoundaryDefinition = newValue;
     }
 
     /**
@@ -384,27 +405,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     @Override
     public void setOffset(final Double newValue) {
         super.setOffset(newValue);
-    }
-
-    /**
-     * Returns the designation of criterion for defining maximum and minimum wavelengths for a spectral band.
-     *
-     * @return Criterion for defining maximum and minimum wavelengths, or {@code null}.
-     */
-    @Override
-    @XmlElement(name = "bandBoundaryDefinition", namespace = Namespaces.GMI)
-    public BandDefinition getBandBoundaryDefinition() {
-        return bandBoundaryDefinition;
-    }
-
-    /**
-     * Sets designation of criterion for defining maximum and minimum wavelengths for a spectral band.
-     *
-     * @param newValue The new band definition.
-     */
-    public void setBandBoundaryDefinition(final BandDefinition newValue) {
-        checkWritePermission();
-        bandBoundaryDefinition = newValue;
     }
 
     /**

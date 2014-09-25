@@ -50,6 +50,8 @@ public final class MD_SpatialRepresentationTypeCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_SpatialRepresentationTypeCode wrap(CodeListProxy proxy) {
@@ -58,6 +60,8 @@ public final class MD_SpatialRepresentationTypeCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<SpatialRepresentationType> getCodeListClass() {

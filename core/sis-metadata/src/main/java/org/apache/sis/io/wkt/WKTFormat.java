@@ -101,9 +101,22 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * The pattern of dates.
      *
+     * The JDK7 branch have a 'X' pattern at the end of this format. But JDK6 does not support that pattern.
+     * As a workaround, code using this pattern will append a hard-coded {@code "'Z'"} if the timezone is
+     * known to be UTC.
+     *
      * @see #createFormat(Class)
      */
-    static final String DATE_PATTERN = "yyyy-MM-dd";
+    static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.S";
+
+    /**
+     * Short version of {@link #DATE_PATTERN}, to be used when formatting temporal extents
+     * if the duration is at least {@link Formatter#TEMPORAL_THRESHOLD}. This pattern must
+     * be a prefix of {@link #DATE_PATTERN}, since we will use that condition for deciding
+     * if this pattern is really shorter (the user could have created his own date format
+     * with a different pattern).
+     */
+    static final String SHORT_DATE_PATTERN = "yyyy-MM-dd";
 
     /**
      * The symbols to use for this formatter.
@@ -368,9 +381,12 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Formats the specified object as a Well Know Text. The formatter accepts at least the following types:
      * {@link FormattableObject}, {@link IdentifiedObject},
-     * {@link org.opengis.metadata.extent.GeographicBoundingBox},
      * {@link org.opengis.referencing.operation.MathTransform},
-     * {@link org.opengis.referencing.operation.Matrix} and {@link Unit}.
+     * {@link org.opengis.referencing.operation.Matrix}
+     * {@link org.opengis.metadata.extent.GeographicBoundingBox},
+     * {@link org.opengis.metadata.extent.VerticalExtent},
+     * {@link org.opengis.metadata.extent.TemporalExtent}
+     * and {@link Unit}.
      *
      * @param  object     The object to format.
      * @param  toAppendTo Where the text is to be appended.
@@ -438,8 +454,10 @@ public class WKTFormat extends CompoundFormat<Object> {
             return symbols.createNumberFormat();
         }
         if (valueType == Date.class) {
-            final DateFormat format = new SimpleDateFormat(DATE_PATTERN, symbols.getLocale());
-            format.setTimeZone(getTimeZone());
+            final TimeZone timezone = getTimeZone();
+            final DateFormat format = new SimpleDateFormat("UTC".equals(timezone.getID()) ?
+                    DATE_PATTERN + "'Z'" : DATE_PATTERN, symbols.getLocale());
+            format.setTimeZone(timezone);
             return format;
         }
         return super.createFormat(valueType);

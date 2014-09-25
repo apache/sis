@@ -84,29 +84,14 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     private static final long serialVersionUID = 4517148689016920767L;
 
     /**
-     * Maximum value of data values in each dimension included in the resource.
-     */
-    private Double maxValue;
-
-    /**
      * Minimum value of data values in each dimension included in the resource.
      */
     private Double minValue;
 
     /**
-     * Units of data in each dimension included in the resource.
+     * Maximum value of data values in each dimension included in the resource.
      */
-    private Unit<?> units;
-
-    /**
-     * Scale factor which has been applied to the cell value.
-     */
-    private Double scaleFactor;
-
-    /**
-     * Physical value corresponding to a cell value of zero.
-     */
-    private Double offset;
+    private Double maxValue;
 
     /**
      * Mean value of data values in each dimension included in the resource.
@@ -124,6 +109,27 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     private Double standardDeviation;
 
     /**
+     * Units of data in each dimension included in the resource.
+     */
+    private Unit<?> units;
+
+    /**
+     * Scale factor which has been applied to the cell value.
+     */
+    private Double scaleFactor;
+
+    /**
+     * Physical value corresponding to a cell value of zero.
+     */
+    private Double offset;
+
+    /**
+     * Maximum number of significant bits in the uncompressed representation
+     * for the value in each band of each pixel.
+     */
+    private Integer bitsPerValue;
+
+    /**
      * Type of other attribute description.
      */
     private RecordType otherPropertyType;
@@ -133,12 +139,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * included in {@link CoverageContentType}.
      */
     private Record otherProperty;
-
-    /**
-     * Maximum number of significant bits in the uncompressed representation
-     * for the value in each band of each pixel.
-     */
-    private Integer bitsPerValue;
 
     /**
      * Constructs an initially empty sample dimension.
@@ -166,17 +166,17 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * Initializes this sample dimension to the values of the given object.
      */
     private void init(final DefaultSampleDimension object) {
-        maxValue          = object.getMaxValue();
         minValue          = object.getMinValue();
-        units             = object.getUnits();
-        scaleFactor       = object.getScaleFactor();
-        offset            = object.getOffset();
+        maxValue          = object.getMaxValue();
         meanValue         = object.getMeanValue();
         numberOfValues    = object.getNumberOfValues();
         standardDeviation = object.getStandardDeviation();
+        units             = object.getUnits();
+        scaleFactor       = object.getScaleFactor();
+        offset            = object.getOffset();
+        bitsPerValue      = object.getBitsPerValue();
         otherPropertyType = object.getOtherPropertyType();
         otherProperty     = object.getOtherProperty();
-        bitsPerValue      = object.getBitsPerValue();
     }
 
     /**
@@ -242,75 +242,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     public void setMaxValue(final Double newValue) {
         checkWritePermission();
         maxValue = newValue;
-    }
-
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
-    /**
-     * </pre>
-     * Returns the units of data in the dimension.
-     *
-     * @return The units of data in the dimension, or {@code null} if unspecified.
-     */
-    @XmlElement(name = "units")
-    @UML(identifier="units", obligation=CONDITIONAL, specification=ISO_19115)
-    public Unit<?> getUnits() {
-        return units;
-    }
-
-    /**
-     * Sets the units of data in the dimension.
-     *
-     * @param newValue The new units of data in the dimension.
-     */
-    public void setUnits(final Unit<?> newValue) {
-        checkWritePermission();
-        units = newValue;
-    }
-
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
-    /**
-     * </pre>
-     * Returns the scale factor which has been applied to the cell value.
-     *
-     * @return Scale factor which has been applied to the cell value, or {@code null} if none.
-     */
-/// @XmlElement(name = "scaleFactor")
-    @UML(identifier="scaleFactor", obligation=OPTIONAL, specification=ISO_19115)
-    public Double getScaleFactor() {
-        return scaleFactor;
-    }
-
-    /**
-     * Sets the scale factor which has been applied to the cell value.
-     *
-     * @param newValue The new scale factor which has been applied to the cell value.
-     */
-    public void setScaleFactor(final Double newValue) {
-        checkWritePermission();
-        scaleFactor = newValue;
-    }
-
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
-    /**
-     * </pre>
-     * Returns the physical value corresponding to a cell value of zero.
-     *
-     * @return The physical value corresponding to a cell value of zero, or {@code null} if none.
-     */
-/// @XmlElement(name = "offset")
-    @UML(identifier="offset", obligation=OPTIONAL, specification=ISO_19115)
-    public Double getOffset() {
-        return offset;
-    }
-
-    /**
-     * Sets the physical value corresponding to a cell value of zero.
-     *
-     * @param newValue The new physical value corresponding to a cell value of zero, or {@code null} if none..
-     */
-    public void setOffset(final Double newValue) {
-        checkWritePermission();
-        offset = newValue;
     }
 
     // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
@@ -385,6 +316,102 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
      * </pre>
+     * Returns the units of data in the dimension.
+     *
+     * @return The units of data in the dimension, or {@code null} if unspecified.
+     */
+    @XmlElement(name = "units")
+    @UML(identifier="units", obligation=CONDITIONAL, specification=ISO_19115)
+    public Unit<?> getUnits() {
+        return units;
+    }
+
+    /**
+     * Sets the units of data in the dimension.
+     *
+     * @param newValue The new units of data in the dimension.
+     */
+    public void setUnits(final Unit<?> newValue) {
+        checkWritePermission();
+        units = newValue;
+    }
+
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
+    /**
+     * </pre>
+     * Returns the scale factor which has been applied to the cell value.
+     *
+     * @return Scale factor which has been applied to the cell value, or {@code null} if none.
+     */
+/// @XmlElement(name = "scaleFactor")
+    @UML(identifier="scaleFactor", obligation=OPTIONAL, specification=ISO_19115)
+    public Double getScaleFactor() {
+        return scaleFactor;
+    }
+
+    /**
+     * Sets the scale factor which has been applied to the cell value.
+     *
+     * @param newValue The new scale factor which has been applied to the cell value.
+     */
+    public void setScaleFactor(final Double newValue) {
+        checkWritePermission();
+        scaleFactor = newValue;
+    }
+
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
+    /**
+     * </pre>
+     * Returns the physical value corresponding to a cell value of zero.
+     *
+     * @return The physical value corresponding to a cell value of zero, or {@code null} if none.
+     */
+/// @XmlElement(name = "offset")
+    @UML(identifier="offset", obligation=OPTIONAL, specification=ISO_19115)
+    public Double getOffset() {
+        return offset;
+    }
+
+    /**
+     * Sets the physical value corresponding to a cell value of zero.
+     *
+     * @param newValue The new physical value corresponding to a cell value of zero, or {@code null} if none..
+     */
+    public void setOffset(final Double newValue) {
+        checkWritePermission();
+        offset = newValue;
+    }
+
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
+    /**
+     * </pre>
+     * Returns the maximum number of significant bits in the uncompressed representation
+     * for the value in each band of each pixel.
+     *
+     * @return Maximum number of significant bits in the uncompressed representation
+     *         for the value in each band of each pixel, or {@code null} if none.
+     */
+    @ValueRange(minimum = 1)
+/// @XmlElement(name = "bitsPerValues")
+    @UML(identifier="bitsPerValue", obligation=OPTIONAL, specification=ISO_19115)
+    public Integer getBitsPerValue() {
+        return bitsPerValue;
+    }
+
+    /**
+     * Sets the maximum number of significant bits in the uncompressed representation
+     * for the value in each band of each pixel.
+     *
+     * @param newValue The new maximum number of significant bits.
+     */
+    public void setBitsPerValue(final Integer newValue) {
+        checkWritePermission();
+        bitsPerValue = newValue;
+    }
+
+    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
+    /**
+     * </pre>
      * Returns type of other attribute description.
      *
      * @return Type of other attribute description, or {@code null} if none.
@@ -428,32 +455,5 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     public void setOtherProperty(final Record newValue) {
         checkWritePermission();
         otherProperty = newValue;
-    }
-
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
-    /**
-     * </pre>
-     * Returns the maximum number of significant bits in the uncompressed representation
-     * for the value in each band of each pixel.
-     *
-     * @return Maximum number of significant bits in the uncompressed representation
-     *         for the value in each band of each pixel, or {@code null} if none.
-     */
-    @ValueRange(minimum = 1)
-/// @XmlElement(name = "bitsPerValues")
-    @UML(identifier="bitsPerValue", obligation=OPTIONAL, specification=ISO_19115)
-    public Integer getBitsPerValue() {
-        return bitsPerValue;
-    }
-
-    /**
-     * Sets the maximum number of significant bits in the uncompressed representation
-     * for the value in each band of each pixel.
-     *
-     * @param newValue The new maximum number of significant bits.
-     */
-    public void setBitsPerValue(final Integer newValue) {
-        checkWritePermission();
-        bitsPerValue = newValue;
     }
 }

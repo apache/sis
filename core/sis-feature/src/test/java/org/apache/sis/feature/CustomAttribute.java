@@ -23,7 +23,7 @@ import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.referencing.NamedIdentifier;
 
-import static org.junit.Assert.*;
+import static java.util.Collections.singleton;
 
 
 /**
@@ -81,8 +81,8 @@ final strictfp class CustomAttribute<V> extends AbstractAttribute<V> {
         final DefaultQuantitativeResult result  = new DefaultQuantitativeResult();
         result.setErrorStatistic(new SimpleInternationalString(ADDITIONAL_QUALITY_INFO));
         report.setMeasureIdentification(new NamedIdentifier(getName()));
-        assertTrue(report .getResults().add(result));
-        assertTrue(quality.getReports().add(report));
+        report .setResults(singleton(result));
+        quality.setReports(singleton(report));
         return quality;
     }
 }
