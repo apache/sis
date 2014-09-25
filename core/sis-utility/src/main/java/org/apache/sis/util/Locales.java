@@ -91,7 +91,7 @@ public final class Locales extends Static {
 
     /**
      * Mapping from 3-letters codes to 2-letters codes. We use {@code short} type instead of {@link String}
-     * for compactness (conversions is done by {@link #toNumber(String, int)}) and for avoiding references
+     * for compactness (conversions is done by {@link #toNumber(String, short)}) and for avoiding references
      * to {@code String} instances.
      *
      * <div class="note"><b>Implementation note:</b>

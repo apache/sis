@@ -36,13 +36,12 @@ import java.util.function.Function;
  * Some worthy methods are:
  *
  * <ul>
- *   <li>{@link #toCollection(Object) toCollection} for wrapping or copying arbitrary objects to
- *       list or collection.</li>
- *   <li>{@link #copy(Collection, boolean) copy} method for taking a snapshot of an arbitrary
- *       implementation into an unsynchronized, modifiable, in-memory object.</li>
- *   <li>{@link #unmodifiableOrCopy(Set) unmodifiableOrCopy} methods, which may be slightly more
- *       compact than the standard {@link Collections#unmodifiableSet(Set)} equivalent
- *       when the unmodifiable collection is not required to be a view over the original collection.</li>
+ *   <li>{@link #toCollection(Object)} for wrapping or copying arbitrary objects to list or collection.</li>
+ *   <li>{@link #modifiableCopy(Collection)} method for taking a snapshot of an arbitrary implementation
+ *       into an unsynchronized, modifiable, in-memory object.</li>
+ *   <li>{@link #unmodifiableOrCopy(Set)} methods, which may be slightly more compact than the standard
+ *       {@link Collections#unmodifiableSet(Set)} equivalent when the unmodifiable collection is not required
+ *       to be a view over the original collection.</li>
  * </ul>
  *
  * This class is not in public API because some functionality provided there are not really the

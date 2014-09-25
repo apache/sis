@@ -281,7 +281,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @param  direction The direction to test for compatibility (never {@code null}).
      * @param  unit The unit to test for compatibility (never {@code null}).
      * @return {@link #VALID} if the given direction and unit are compatible with this coordinate system,
-     *         {@link #DIRECTION} if the direction is invalid or {@link #UNIT} if the unit is invalid.
+     *         {@link #INVALID_DIRECTION} if the direction is invalid or {@link #INVALID_UNIT} if the unit
+     *         is invalid.
      */
     int validateAxis(final AxisDirection direction, final Unit<?> unit) {
         return VALID;

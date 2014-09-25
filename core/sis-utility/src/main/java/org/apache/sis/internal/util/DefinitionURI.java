@@ -117,8 +117,8 @@ public final class DefinitionURI {
      * For each URL, value starts after the protocol part and finishes before the authority filename.
      *
      * <p>As of Apache SIS 0.4, this map has a single entry. However more entries may be added in future SIS versions.
-     * If new entries are added, then see the TODO comment in the {@link #codeForHTTP(String, String, String, int)}
-     * method.</p>
+     * If new entries are added, then see the TODO comment in the {@link #codeForHTTP(String, String, String, int,
+     * DefinitionURI)} method.</p>
      */
     private static final Map<String,String> PATHS = Collections.singletonMap("crs", "//www.opengis.net/gml/srs/");
 

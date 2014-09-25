@@ -46,7 +46,7 @@ import java.util.ArrayList;
 abstract class DaemonThread extends Thread {
     /**
      * The previous element in a chain of {@code DaemonThread}s. We maintain a linked list of
-     * {@code DaemonThread} to be killed when {@link #killAll(DaemonThread)} will be invoked.
+     * {@code DaemonThread} to be killed when {@link #killAll(DaemonThread, long)} will be invoked.
      * We do not rely on the thread listed by the {@link Threads#DAEMONS} group because in an
      * OSGi context, we need to handle separately the threads created by each SIS module.
      */

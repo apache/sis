@@ -40,7 +40,7 @@ public final class Semaphores {
 
     /**
      * A flag to indicate that {@link org.apache.sis.referencing.operation.DefaultSingleOperation}
-     * is querying {@link org.apache.sis.referencing.operation.transform.ConcatenatedTransform} in
+     * is querying {@code org.apache.sis.referencing.operation.transform.ConcatenatedTransform} in
      * the intend to format WKT (normally a {@code "PROJCS"} element).
      */
     public static final int PROJCS = 2;
