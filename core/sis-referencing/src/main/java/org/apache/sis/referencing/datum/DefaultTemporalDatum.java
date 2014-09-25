@@ -29,8 +29,8 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.FormattableObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
@@ -72,7 +72,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see org.apache.sis.referencing.CommonCRS.Temporal#datum()
@@ -287,12 +287,30 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        final Convention convention = formatter.getConvention();
-        if (convention == Convention.INTERNAL) {
-            formatter.append(MetadataUtilities.toDate(origin)); // This is an extension compared to ISO 19162.
-        } else if (convention.majorVersion() == 1) {
+        formatter.append(new Origin(MetadataUtilities.toDate(origin)));
+        if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
         return "TimeDatum";
+    }
+
+    /**
+     * The {@code TIMEORIGIN[…]} element inside an {@code TDATUM[…]}.
+     */
+    private static final class Origin extends FormattableObject {
+        /** The value of the origin to format. */
+        private final Date origin;
+
+        /** Creates a new time origin with the given value. */
+        Origin(final Date origin) {
+            this.origin = origin;
+        }
+
+        /** Formats the time origin. */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            formatter.append(origin);
+            return "TimeOrigin";
+        }
     }
 }

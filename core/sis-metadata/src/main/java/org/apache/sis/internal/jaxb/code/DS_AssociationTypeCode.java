@@ -48,6 +48,8 @@ public final class DS_AssociationTypeCode extends CodeListAdapter<DS_Association
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected DS_AssociationTypeCode wrap(CodeListProxy proxy) {
@@ -56,6 +58,8 @@ public final class DS_AssociationTypeCode extends CodeListAdapter<DS_Association
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<AssociationType> getCodeListClass() {

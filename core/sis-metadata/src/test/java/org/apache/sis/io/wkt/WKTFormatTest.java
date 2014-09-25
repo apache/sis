@@ -14,46 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.referencing;
+package org.apache.sis.io.wkt;
 
-import org.opengis.referencing.cs.RangeMeaning;
-import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
 
-import static org.apache.sis.internal.referencing.HardCoded.EPSG;
+import static org.junit.Assert.*;
 
 
 /**
- * JAXB adapter for (un)marshalling of GeoAPI code list.
+ * Tests {@link WKTFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  */
-public final class CS_RangeMeaning extends CodeListAdapter<RangeMeaning> {
+public final strictfp class WKTFormatTest extends TestCase {
     /**
-     * Empty constructor for JAXB only.
+     * Verifies the condition documented in {@link WKTFormat#SHORT_DATE_PATTERN} javadoc.
      */
-    public CS_RangeMeaning() {
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@code RangeMeaning.class}
-     */
-    @Override
-    protected Class<RangeMeaning> getCodeListClass() {
-        return RangeMeaning.class;
-    }
-
-    /**
-     * Sets the default code space to {@code "EPSG"}.
-     *
-     * @return {@code "EPSG"}.
-     */
-    @Override
-    protected String getCodeSpace() {
-        return EPSG;
+    @Test
+    public void testDatePatterns() {
+        assertTrue(WKTFormat.DATE_PATTERN.startsWith(WKTFormat.SHORT_DATE_PATTERN));
     }
 }

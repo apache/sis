@@ -48,6 +48,8 @@ public final class MD_DatatypeCode extends CodeListAdapter<MD_DatatypeCode, Data
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_DatatypeCode wrap(CodeListProxy proxy) {
@@ -56,6 +58,8 @@ public final class MD_DatatypeCode extends CodeListAdapter<MD_DatatypeCode, Data
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<Datatype> getCodeListClass() {

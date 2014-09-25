@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Collections;
+import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -263,16 +264,28 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     }
 
     /**
-     * Creates a new instance of {@linkplain DefaultParameterValueGroup parameter value group}
-     * initialized with the {@linkplain DefaultParameterDescriptor#getDefaultValue default values}.
-     * The {@linkplain DefaultParameterValueGroup#getDescriptor() parameter descriptor} for the
-     * created group will be {@code this} object.
+     * Returns an indication if all parameters in this group are inputs to the service, outputs or both.
+     * If this group contains parameters with different direction, then this method returns {@code null}.
      *
-     * @return A new parameter instance initialized to the default value.
+     * @return Indication if all parameters are inputs or outputs to the service, or {@code null} if undetermined.
      */
     @Override
-    public ParameterValueGroup createValue() {
-        return new DefaultParameterValueGroup(this);
+    public ParameterDirection getDirection() {
+        ParameterDirection dir = null;
+        for (final GeneralParameterDescriptor param : descriptors) {
+            final ParameterDirection c = param.getDirection();
+            if (c == null) {
+                return null;
+            }
+            if (c != dir) {
+                if (dir == null) {
+                    dir = c;
+                } else {
+                    return null;
+                }
+            }
+        }
+        return dir;
     }
 
     /**
@@ -320,6 +333,19 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
         throw new ParameterNotFoundException(ambiguity != null
                 ? Errors.format(Errors.Keys.AmbiguousName_3, fallback.getName(), ambiguity.getName(), name)
                 : Errors.format(Errors.Keys.ParameterNotFound_2, getName(), name), name);
+    }
+
+    /**
+     * Creates a new instance of {@linkplain DefaultParameterValueGroup parameter value group}
+     * initialized with the {@linkplain DefaultParameterDescriptor#getDefaultValue default values}.
+     * The {@linkplain DefaultParameterValueGroup#getDescriptor() parameter descriptor} for the
+     * created group will be {@code this} object.
+     *
+     * @return A new parameter instance initialized to the default value.
+     */
+    @Override
+    public ParameterValueGroup createValue() {
+        return new DefaultParameterValueGroup(this);
     }
 
     /**

@@ -235,6 +235,7 @@ public final strictfp class CharSequencesTest extends TestCase {
      * Tests the {@link CharSequences#toString(Iterable, String)} method.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testToString() {
         assertEquals("4, 8, 12, 9", CharSequences.toString(Arrays.asList(4, 8, 12, 9), ", "));
         assertSame  ("singleton",   CharSequences.toString(Arrays.asList("singleton"), ", "));

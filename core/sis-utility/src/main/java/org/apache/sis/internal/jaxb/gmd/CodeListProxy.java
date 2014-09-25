@@ -103,20 +103,6 @@ public final class CodeListProxy {
     }
 
     /**
-     * Creates a new code list for the given enum.
-     *
-     * @param value The ISO 19115 identifier of the enum.
-     *
-     * @todo Replace the argument type by {@link Enum} if we fix the type of ISO 19115
-     *       code lists which are supposed to be enum.
-     *
-     * @see <a href="http://jira.codehaus.org/browse/GEO-199">GEO-199</a>
-     */
-    CodeListProxy(final String value) {
-        this.value = value;
-    }
-
-    /**
      * Builds a code list with the given attributes.
      *
      * @param context       The current (un)marshalling context, or {@code null} if none.

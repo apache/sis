@@ -28,6 +28,7 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.Performance;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
@@ -39,12 +40,20 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link RangeSet} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(org.apache.sis.measure.RangeTest.class)
 public final strictfp class RangeSetTest extends TestCase {
+    /**
+     * Tolerance factor for comparison of floating point numbers.
+     * Actually we expect exact matches, because {@link RangeSet} does not perform any calculation
+     * other than {@code min} and {@code max} - it just stores the values.
+     */
+    private static final double EPS = 0;
+
     /**
      * Asserts that the two given values are equals to the expected one.
      * This method is used for testing {@link RangeSet#first()} and {@link RangeSet#last()}
@@ -289,6 +298,216 @@ public final strictfp class RangeSetTest extends TestCase {
         assertEqual(NumberRange.create( 5, true, 25, false), it.next(), subset.first());
         assertEqual(NumberRange.create(28, true, 48, false), it.next(), subset.last());
         assertFalse(it.hasNext());
+    }
+
+    /**
+     * Tests the {@link RangeSet#remove(Comparable, Comparable)} method with integer values.
+     * The test is run for 4 different cases, 3 of them resulting in one range and one case
+     * resulting in 2 ranges.
+     *
+     * @since 0.5
+     */
+    @Test
+    @DependsOnMethod("testRangeOfIntegers")
+    public void testRemoveRangeOfIntegers() {
+        final RangeSet<Integer> ranges = RangeSet.create(Integer.class, true, false);
+        assertFalse("Remove on empty collection should return false.", ranges.remove(Integer.MIN_VALUE, Integer.MAX_VALUE));
+        assertTrue(ranges.add(-20, -10));
+        /*
+         *                   A             B
+         * Range  :          [-------------]
+         * Remove :                 |------------|
+         *                          RA          RB
+         * Expected result : [------|
+         *                   A      RA
+         */
+        assertTrue(ranges.remove(-15, -5));
+        assertEquals("size", 1, ranges.size());
+        Range<Integer> r = ranges.first();
+        assertEquals(-20, (int) r.getMinValue());
+        assertEquals(-15, (int) r.getMaxValue());
+        /*
+         *                          A             B
+         * Range  :                 [-------------]
+         * Remove :          |------------|
+         *                   RA          RB
+         * Expected result :              |-------]
+         *                                RB      B
+         */
+        assertTrue(ranges.add(-20, -10));
+        assertEquals("size", 1, ranges.size());
+        assertTrue(ranges.remove(-25, -15));
+        assertEquals("size", 1, ranges.size());
+        r = ranges.first();
+        assertEquals(-15, (int) r.getMinValue());
+        assertEquals(-10, (int) r.getMaxValue());
+        /*
+         *                   A                       B
+         * Range  :          [-----------------------]
+         * Remove :                 |----------|
+         *                          RA         RB
+         * Expected result : [------|          |-----]
+         *                   A      RA         RB    B
+         */
+        assertTrue(ranges.add(-20, -10));
+        assertEquals("size", 1, ranges.size());
+        assertTrue(ranges.remove(-17, -13));
+        assertEquals("size", 2, ranges.size());
+        r = ranges.getRange(0);
+        assertEquals(-20, (int) r.getMinValue());
+        assertEquals(-17, (int) r.getMaxValue());
+        r = ranges.getRange(1);
+        assertEquals(-17, (int) r.getMinValue());
+        assertEquals(-13, (int) r.getMaxValue());
+        r = ranges.getRange(2);
+        assertEquals(-13, (int) r.getMinValue());
+        assertEquals(-10, (int) r.getMaxValue());
+        /*
+         *                       A                B
+         * Range  :              [----------------]
+         * Remove :           |----------------------|
+         *                    RA                     RB
+         * Expected result :           "empty"
+         */
+        assertTrue(ranges.add(-20, -10));
+        assertEquals("size", 1, ranges.size());
+        assertTrue(ranges.remove(-21, -9));
+        assertTrue(ranges.isEmpty());
+    }
+
+    /**
+     * Tests the {@link RangeSet#remove(Comparable, Comparable)} method with double values.
+     * This test uses more ranges than {@link #testRemoveRangeOfIntegers()} did.
+     *
+     * @since 0.5
+     */
+    @Test
+    @DependsOnMethod("testRemoveRangeOfIntegers")
+    public void testRemoveRangeOfDoubles() {
+        /*
+         *                       A0   B0    Ai       Bi    An    Bn
+         * Range  :              [----] ... [-------] ... [-----]
+         * Remove :           |---------------|
+         *                    RA              RB
+         *
+         * Expected result :                  |-----] ... [-----]
+         *                                    RB    Bi    An    Bn
+         */
+        final RangeSet<Double> ranges = RangeSet.create(Double.class, true, false);
+        assertTrue(ranges.add(-20.2, -10.1));
+        assertTrue(ranges.add( -9.5,  -7.9));
+        assertTrue(ranges.add( -6.7,  -3.3));
+        assertTrue(ranges.add( -2.4,   1.1));
+        assertTrue(ranges.add(  1.9,   4.3));
+        assertTrue(ranges.add(  6.1,  12.7));
+        assertTrue(ranges.add( 15.3,  21.71));
+        assertEquals("size", 7, ranges.size());
+        assertTrue(ranges.remove(-21.0, -1.4));
+        assertEquals("size", 4, ranges.size());
+        Range<Double> r = ranges.first();
+        assertEquals(-1.4, r.getMinValue(), EPS);
+        assertEquals( 1.1, r.getMaxValue(), EPS);
+        r = ranges.last();
+        assertEquals(15.3,  r.getMinValue(), EPS);
+        assertEquals(21.71, r.getMaxValue(), EPS);
+        /*
+         *                       A0   B0    Ai       Bi    An    Bn
+         * Range  :              [----] ... [-------] ... [-----]
+         * Remove :                              |------------------|
+         *                                       RA                 RB
+         *
+         * Expected result :     [-----] ... [---|
+         *                       A0    B0    Ai  RA
+         */
+        assertTrue(ranges.add(-20.2, -10.1));
+        assertTrue(ranges.add( -9.5,  -7.9));
+        assertTrue(ranges.add( -6.7,  -3.3));
+        assertTrue(ranges.add( -2.4,   1.1 ));
+        assertEquals("size", 7, ranges.size());
+        assertTrue(ranges.remove(0.7, 22.3));
+        assertEquals("size", 4, ranges.size());
+        r = ranges.first();
+        assertEquals(-20.2, r.getMinValue(), EPS);
+        assertEquals(-10.1, r.getMaxValue(), EPS);
+        r = ranges.last();
+        assertEquals(-2.4, r.getMinValue(), EPS);
+        assertEquals( 0.7, r.getMaxValue(), EPS);
+        /*
+         *                       A0   B0    Ai          Bi    An    Bn
+         * Range  :              [----] ... [-----------] ... [-----]
+         * Remove :                             |---|
+         *                                      RA  RB
+         *
+         * Expected result :     [----] ... [---|   |---] ... [-----]
+         *                       A0    B0   Ai  RA  RB  Bi    An    Bn
+         */
+        assertTrue(ranges.add(-2.4,  1.1));
+        assertTrue(ranges.add( 1.9,  4.3));
+        assertTrue(ranges.add( 6.1, 12.7));
+        assertTrue(ranges.add(15.3, 21.71));
+        assertEquals("size", 7, ranges.size());
+        assertTrue(ranges.remove(-5.4, -3.9));
+        assertEquals("size", 8, ranges.size());
+        r = ranges.getRange(4);
+        assertEquals(-6.7, r.getMinValue(), EPS);
+        assertEquals(-5.4, r.getMaxValue(), EPS);
+        r = ranges.getRange(6);
+        assertEquals(-3.9, r.getMinValue(), EPS);
+        assertEquals(-3.3, r.getMaxValue(), EPS);
+        /*
+         *                       A0   B0    Ai    Bi   Aj    Bj    Ak     Bk    An    Bn
+         * Range  :              [----] ... [-----] ...[-----] ... [------] ... [-----]
+         * Remove :                             |---------------------|
+         *                                      RA                   RB
+         *
+         * Expected result :     [----] ... [-- |                     |-- ] ... [-----]
+         *                       A0    B0   Ai  RA                    RB  Bk    An    Bn
+         */
+        assertTrue(ranges.add(-6.7, -3.3));
+        assertEquals("size", 7, ranges.size());
+        assertTrue(ranges.remove(-5.4, 3.1));
+        assertEquals("size", 6, ranges.size());
+        r = ranges.getRange(4);
+        assertEquals(-6.7, r.getMinValue(), EPS);
+        assertEquals(-5.4, r.getMaxValue(), EPS);
+        r = ranges.getRange(6);
+        assertEquals(3.1, r.getMinValue(), EPS);
+        assertEquals(4.3, r.getMaxValue(), EPS);
+        /*
+         *                       A0   B0   Ai    Bi Ai+1  Bi+1  Ak     Bk Ak+1  Bk+1  An    Bn
+         * Range  :              [----] ...[-----]  [-----] ... [------]  [-----] ... [-----]
+         * Remove :                                |---------------------|
+         *                                         RA                   RB
+         *
+         * Expected result :     [----] ... [----]                         [-----] ... [-----]
+         *                       A0    B0   Ai   Bi                        Ak+1  Bk+1  An    Bn
+         */
+        assertTrue(ranges.add(-6.7, -3.3));
+        assertTrue(ranges.add(-2.4,  1.1));
+        assertTrue(ranges.add( 1.9,  4.3));
+        assertEquals("size", 7, ranges.size());
+        assertTrue(ranges.remove(-7.1, 5.2));
+        assertEquals("size", 4, ranges.size());
+        r = ranges.getRange(2);
+        assertEquals(-9.5, r.getMinValue(), EPS);
+        assertEquals(-7.9, r.getMaxValue(), EPS);
+        r = ranges.getRange(4);
+        assertEquals( 6.1, r.getMinValue(), EPS);
+        assertEquals(12.7, r.getMaxValue(), EPS);
+        /*
+         *                       A0   B0    An    Bn
+         * Range  :              [----] ... [-----]
+         * Remove :            |---------------------|
+         *                     RA                    RB
+         *
+         * Expected result :           "Empty"
+         */
+        assertTrue(ranges.add(-6.7, -3.3));
+        assertTrue(ranges.add(-2.4,  1.1));
+        assertTrue(ranges.add( 1.9,  4.3));
+        assertEquals("size", 7, ranges.size());
+        assertTrue(ranges.remove(-50.5, 45.3));
+        assertTrue(ranges.isEmpty());
     }
 
     /**

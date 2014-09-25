@@ -50,6 +50,8 @@ public final class DQ_EvaluationMethodTypeCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected DQ_EvaluationMethodTypeCode wrap(CodeListProxy proxy) {
@@ -58,6 +60,8 @@ public final class DQ_EvaluationMethodTypeCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<EvaluationMethodType> getCodeListClass() {
