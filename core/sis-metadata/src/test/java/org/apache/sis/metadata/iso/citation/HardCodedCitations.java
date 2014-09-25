@@ -55,7 +55,7 @@ public final strictfp class HardCodedCitations extends Static {
         final DefaultCitation c = new DefaultCitation("Open Geospatial consortium");
         c.setAlternateTitles(singleton(new SimpleInternationalString("OGC")));
         c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
-        c.getIdentifiers().add(new DefaultIdentifier("OGC"));
+        c.setIdentifiers(singleton(new DefaultIdentifier("OGC")));
         c.freeze();
         OGC = c;
     }
@@ -70,7 +70,7 @@ public final strictfp class HardCodedCitations extends Static {
         final DefaultCitation c = new DefaultCitation("International Organization for Standardization");
         c.setAlternateTitles(singleton(new SimpleInternationalString("ISO")));
         c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
-        c.getIdentifiers().add(new DefaultIdentifier("ISO"));
+        c.setIdentifiers(singleton(new DefaultIdentifier("ISO")));
         c.freeze();
         ISO = c;
     }
@@ -96,32 +96,49 @@ public final strictfp class HardCodedCitations extends Static {
     static {
         final DefaultCitation c = new DefaultCitation("International Association of Oil & Gas Producers");
         c.setAlternateTitles(singleton(new SimpleInternationalString("OGP")));
-        c.getIdentifiers().add(new DefaultIdentifier("OGP"));
+        c.setIdentifiers(singleton(new DefaultIdentifier("OGP")));
         c.freeze();
         OGP = c;
     }
 
     /**
      * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> authority.
-     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is
-     * "EPSG" (according ISO 19115, alternate titles often contain abbreviations). In
-     * addition, this citation contains the "EPSG" {@linkplain Citation#getIdentifiers identifier}.
+     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "EPSG"
+     * (according ISO 19115, alternate titles often contain abbreviations). In addition,
+     * this citation contains the "EPSG" {@linkplain Citation#getIdentifiers() identifier}.
+     *
+     * <p>String representation:</p>
+     *
+     * {@preformat text
+     *   Citation
+     *     ├─Title………………………………………………………… European Petroleum Survey Group
+     *     ├─Alternate title……………………………… EPSG
+     *     ├─Identifier
+     *     │   └─Code………………………………………………… EPSG
+     *     ├─Cited responsible party
+     *     │   ├─Party
+     *     │   │   ├─Name……………………………………… International Association of Oil & Gas Producers
+     *     │   │   └─Contact info
+     *     │   │       └─Online resource
+     *     │   │           ├─Linkage………… http://www.epsg.org
+     *     │   │           └─Function……… Information
+     *     │   └─Role………………………………………………… Principal investigator
+     *     └─Presentation form………………………… Table digital
+     * }
      */
     public static final DefaultCitation EPSG;
     static {
-        final SimpleInternationalString title = new SimpleInternationalString("European Petroleum Survey Group");
         final DefaultOnlineResource r = new DefaultOnlineResource(URI.create("http://www.epsg.org"));
         r.setFunction(OnLineFunction.INFORMATION);
 
         final DefaultResponsibleParty p = new DefaultResponsibleParty(Role.PRINCIPAL_INVESTIGATOR);
-        p.setOrganisationName(title);
-        p.setContactInfo(new DefaultContact(r));
+        p.setParties(singleton(new DefaultOrganisation(OGP.getTitle(), null, null, new DefaultContact(r))));
 
-        final DefaultCitation c = new DefaultCitation(title);
+        final DefaultCitation c = new DefaultCitation("European Petroleum Survey Group");
         c.setAlternateTitles(singleton(new SimpleInternationalString("EPSG")));
         c.setPresentationForms(singleton(PresentationForm.TABLE_DIGITAL));
-        c.getIdentifiers().add(new DefaultIdentifier("EPSG"));
-        c.getCitedResponsibleParties().add(p);
+        c.setIdentifiers(singleton(new DefaultIdentifier("EPSG")));
+        c.setCitedResponsibleParties(singleton(p));
         c.freeze();
         EPSG = c;
     }

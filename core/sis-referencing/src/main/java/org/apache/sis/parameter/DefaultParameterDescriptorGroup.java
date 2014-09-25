@@ -263,19 +263,6 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     }
 
     /**
-     * Creates a new instance of {@linkplain DefaultParameterValueGroup parameter value group}
-     * initialized with the {@linkplain DefaultParameterDescriptor#getDefaultValue default values}.
-     * The {@linkplain DefaultParameterValueGroup#getDescriptor() parameter descriptor} for the
-     * created group will be {@code this} object.
-     *
-     * @return A new parameter instance initialized to the default value.
-     */
-    @Override
-    public ParameterValueGroup createValue() {
-        return new DefaultParameterValueGroup(this);
-    }
-
-    /**
      * Returns all parameters in this group.
      *
      * @return The parameter descriptors in this group.
@@ -320,6 +307,19 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
         throw new ParameterNotFoundException(ambiguity != null
                 ? Errors.format(Errors.Keys.AmbiguousName_3, fallback.getName(), ambiguity.getName(), name)
                 : Errors.format(Errors.Keys.ParameterNotFound_2, getName(), name), name);
+    }
+
+    /**
+     * Creates a new instance of {@linkplain DefaultParameterValueGroup parameter value group}
+     * initialized with the {@linkplain DefaultParameterDescriptor#getDefaultValue default values}.
+     * The {@linkplain DefaultParameterValueGroup#getDescriptor() parameter descriptor} for the
+     * created group will be {@code this} object.
+     *
+     * @return A new parameter instance initialized to the default value.
+     */
+    @Override
+    public ParameterValueGroup createValue() {
+        return new DefaultParameterValueGroup(this);
     }
 
     /**

@@ -87,19 +87,19 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     private InternationalString description;
 
     /**
-     * Provides geographic component of the extent of the referring object
+     * Provides geographic component of the extent of the referring object.
      */
     private Collection<GeographicExtent> geographicElements;
 
     /**
-     * Provides temporal component of the extent of the referring object
-     */
-    private Collection<TemporalExtent> temporalElements;
-
-    /**
-     * Provides vertical component of the extent of the referring object
+     * Provides vertical component of the extent of the referring object.
      */
     private Collection<VerticalExtent> verticalElements;
+
+    /**
+     * Provides temporal component of the extent of the referring object.
+     */
+    private Collection<TemporalExtent> temporalElements;
 
     /**
      * Constructs an initially empty extent.
@@ -215,26 +215,6 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     }
 
     /**
-     * Provides temporal component of the extent of the referring object.
-     *
-     * @return The temporal extent, or an empty set if none.
-     */
-    @Override
-    @XmlElement(name = "temporalElement")
-    public Collection<TemporalExtent> getTemporalElements() {
-        return temporalElements = nonNullCollection(temporalElements, TemporalExtent.class);
-    }
-
-    /**
-     * Sets temporal component of the extent of the referring object.
-     *
-     * @param newValues The new temporal elements.
-     */
-    public void setTemporalElements(final Collection<? extends TemporalExtent> newValues) {
-        temporalElements = writeCollection(newValues, temporalElements, TemporalExtent.class);
-    }
-
-    /**
      * Provides vertical component of the extent of the referring object.
      *
      * @return The vertical extent, or an empty set if none.
@@ -252,6 +232,26 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      */
     public void setVerticalElements(final Collection<? extends VerticalExtent> newValues) {
         verticalElements = writeCollection(newValues, verticalElements, VerticalExtent.class);
+    }
+
+    /**
+     * Provides temporal component of the extent of the referring object.
+     *
+     * @return The temporal extent, or an empty set if none.
+     */
+    @Override
+    @XmlElement(name = "temporalElement")
+    public Collection<TemporalExtent> getTemporalElements() {
+        return temporalElements = nonNullCollection(temporalElements, TemporalExtent.class);
+    }
+
+    /**
+     * Sets temporal component of the extent of the referring object.
+     *
+     * @param newValues The new temporal elements.
+     */
+    public void setTemporalElements(final Collection<? extends TemporalExtent> newValues) {
+        temporalElements = writeCollection(newValues, temporalElements, TemporalExtent.class);
     }
 
     /**

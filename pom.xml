@@ -517,39 +517,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </configuration>
       </plugin>
 
-      <!-- Copy Javadoc resources in the top-level directory (not from "doc-files" subdirectories).
-           While the Maven documentation said that the "src/main/javadoc" directory is copied by default,
-           or a directory can be specified with <javadocResourcesDirectory>, I have been unable to make it
-           work even with absolute paths.
-        -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <configuration>
-          <encoding>${project.build.sourceEncoding}</encoding>
-        </configuration>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>prepare-package</phase> <!-- TODO: find some way to execute this plugin only before javadoc, not before JAR. -->
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <resources>
-                <resource>
-                  <directory>src/main/javadoc/</directory>
-                  <includes>
-                    <include>*.png</include>
-                  </includes>
-                </resource>
-              </resources>
-              <outputDirectory>${basedir}/target/site/apidocs/</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>

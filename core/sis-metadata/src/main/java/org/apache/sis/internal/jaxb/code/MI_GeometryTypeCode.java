@@ -49,6 +49,8 @@ public final class MI_GeometryTypeCode extends CodeListAdapter<MI_GeometryTypeCo
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MI_GeometryTypeCode wrap(CodeListProxy proxy) {
@@ -57,6 +59,8 @@ public final class MI_GeometryTypeCode extends CodeListAdapter<MI_GeometryTypeCo
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<GeometryType> getCodeListClass() {

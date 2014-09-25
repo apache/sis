@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -39,6 +40,8 @@ import javax.measure.quantity.Quantity;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.VerticalExtent;
+import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
@@ -62,6 +65,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.simple.SimpleExtent;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
@@ -84,8 +88,8 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5 (derived from geotk-2.0)
- * @version 0.4
+ * @since   0.4 (derived from geotk-2.0)
+ * @version 0.5
  * @module
  */
 public class Formatter implements Localized {
@@ -99,7 +103,13 @@ public class Formatter implements Localized {
      * Maximal accuracy of vertical extents, in number of fraction digits.
      * The value used here is arbitrary and may change in any future SIS version.
      */
-    private static final int VERTICAL_ACCURACY = 3;
+    private static final int VERTICAL_ACCURACY = 9;
+
+    /**
+     * The time span threshold for switching between the {@code "yyyy-MM-dd'T'HH:mm:ss.SX"}
+     * and {@code "yyyy-MM-dd"} date pattern when formatting a temporal extent.
+     */
+    private static final long TEMPORAL_THRESHOLD = 24 * 60 * 60 * 1000L;
 
     /**
      * The value of {@code X364.FOREGROUND_DEFAULT.sequence()}, hard-coded for avoiding
@@ -315,9 +325,10 @@ public class Formatter implements Localized {
         this.lineSeparator = this.symbols.lineSeparator();
         this.indentation   = (byte) indentation;
         this.numberFormat  = symbols.createNumberFormat();
-        this.dateFormat    = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
+        this.dateFormat    = new SimpleDateFormat(WKTFormat.DATE_PATTERN + "'Z'", symbols.getLocale());
         this.unitFormat    = UnitFormat.getInstance(symbols.getLocale());
         this.buffer        = new StringBuffer();
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     /**
@@ -723,32 +734,8 @@ public class Formatter implements Localized {
         if (area != null) {
             appendOnNewLine("Area", area.getDescription(), ElementKind.EXTENT);
             append(Extents.getGeographicBoundingBox(area), BBOX_ACCURACY);
-            final MeasurementRange<Double> range = Extents.getVerticalRange(area);
-            if (range != null) {
-                openElement(true, "VerticalExtent");
-                setColor(ElementKind.EXTENT);
-                numberFormat.setMinimumFractionDigits(0);
-                numberFormat.setMaximumFractionDigits(VERTICAL_ACCURACY);
-                numberFormat.setRoundingMode(RoundingMode.FLOOR);
-                appendPreset(range.getMinDouble());
-                numberFormat.setRoundingMode(RoundingMode.CEILING);
-                appendPreset(range.getMaxDouble());
-                final Unit<?> unit = range.unit();
-                if (!convention.isSimplified() || !SI.METRE.equals(unit)) {
-                    append(unit); // Unit are optional if they are metres.
-                }
-                resetColor();
-                closeElement(true);
-            }
-            final Range<Date> timeRange = Extents.getTimeRange(area);
-            if (timeRange != null) {
-                openElement(true, "TimeExtent");
-                setColor(ElementKind.EXTENT);
-                append(timeRange.getMinValue());
-                append(timeRange.getMaxValue());
-                resetColor();
-                closeElement(true);
-            }
+            appendVerticalExtent(Extents.getVerticalRange(area));
+            appendTemporalExtent(Extents.getTimeRange(area));
         }
     }
 
@@ -780,6 +767,82 @@ public class Formatter implements Localized {
             appendPreset(bbox.getEastBoundLongitude());
             resetColor();
             closeElement(isComplement);
+        }
+    }
+
+    /**
+     * Appends the given vertical extent, if non-null.
+     * This method chooses an accuracy from the vertical span.
+     * Examples:
+     *
+     * <ul>
+     *   <li>“{@code VerticalExtent[102, 108, LengthUnit["m", 1]]}”       (Δz =   6)</li>
+     *   <li>“{@code VerticalExtent[100.2, 100.8, LengthUnit["m", 1]]}”   (Δz = 0.6)</li>
+     * </ul>
+     */
+    private void appendVerticalExtent(final MeasurementRange<Double> range) {
+        if (range != null) {
+            final double min = range.getMinDouble();
+            final double max = range.getMaxDouble();
+            int minimumFractionDigits = Math.max(0, DecimalFunctions.fractionDigitsForDelta(max - min, false));
+            int maximumFractionDigits = minimumFractionDigits + 2; // Arbitrarily allow 2 more digits.
+            if (maximumFractionDigits > VERTICAL_ACCURACY) {
+                maximumFractionDigits = VERTICAL_ACCURACY;
+                minimumFractionDigits = 0;
+            }
+            openElement(true, "VerticalExtent");
+            setColor(ElementKind.EXTENT);
+            numberFormat.setMinimumFractionDigits(minimumFractionDigits);
+            numberFormat.setMaximumFractionDigits(maximumFractionDigits);
+            numberFormat.setRoundingMode(RoundingMode.FLOOR);   appendPreset(min);
+            numberFormat.setRoundingMode(RoundingMode.CEILING); appendPreset(max);
+            final Unit<?> unit = range.unit();
+            if (!convention.isSimplified() || !SI.METRE.equals(unit)) {
+                append(unit); // Unit are optional if they are metres.
+            }
+            resetColor();
+            closeElement(true);
+        }
+    }
+
+    /**
+     * Appends the given temporal extents, if non-null.
+     * This method uses a simplified format if the time span is large enough.
+     * Examples:
+     *
+     * <ul>
+     *   <li>“{@code TemporalExtent[1980-04-12, 1980-04-18]}” (Δt = 6 days)</li>
+     *   <li>“{@code TemporalExtent[1980-04-12T18:00:00.0Z, 1980-04-12T21:00:00.0Z]}” (Δt = 3 hours)</li>
+     * </ul>
+     */
+    private void appendTemporalExtent(final Range<Date> range) {
+        if (range != null) {
+            final Date min = range.getMinValue();
+            final Date max = range.getMaxValue();
+            if (min != null && max != null) {
+                String pattern = null;
+                if (dateFormat instanceof SimpleDateFormat && (max.getTime() - min.getTime()) >= TEMPORAL_THRESHOLD) {
+                    final String p = ((SimpleDateFormat) dateFormat).toPattern();
+                    if (p.length() > WKTFormat.SHORT_DATE_PATTERN.length() &&
+                        p.startsWith(WKTFormat.SHORT_DATE_PATTERN))
+                    {
+                        pattern = p;
+                        ((SimpleDateFormat) dateFormat).applyPattern(WKTFormat.SHORT_DATE_PATTERN);
+                    }
+                }
+                openElement(true, "TimeExtent");
+                setColor(ElementKind.EXTENT);
+                try {
+                    append(min);
+                    append(max);
+                } finally {
+                    if (pattern != null) {
+                        ((SimpleDateFormat) dateFormat).applyPattern(pattern);
+                    }
+                }
+                resetColor();
+                closeElement(true);
+            }
         }
     }
 
@@ -1165,11 +1228,17 @@ public class Formatter implements Localized {
         } else if (value instanceof IdentifiedObject) {
             append(ReferencingServices.getInstance().toFormattableObject((IdentifiedObject) value));
         }
-        else if (value instanceof GeographicBoundingBox) append((GeographicBoundingBox) value, BBOX_ACCURACY);
         else if (value instanceof MathTransform)         append((MathTransform)         value);
         else if (value instanceof Matrix)                append((Matrix)                value);
         else if (value instanceof Unit<?>)               append((Unit<?>)               value);
-        else return false;
+        else if (value instanceof GeographicBoundingBox) append((GeographicBoundingBox) value, BBOX_ACCURACY);
+        else if (value instanceof VerticalExtent) {
+            appendVerticalExtent(Extents.getVerticalRange(new SimpleExtent(null, (VerticalExtent) value, null)));
+        } else if (value instanceof TemporalExtent) {
+            appendTemporalExtent(Extents.getTimeRange(new SimpleExtent(null, null, (TemporalExtent) value)));
+        } else {
+            return false;
+        }
         return true;
     }
 

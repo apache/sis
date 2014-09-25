@@ -137,10 +137,10 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedCS.DEPTH), HardCodedDatum.MEAN_SEA_LEVEL, HardCodedCS.DEPTH);
 
     /**
-     * A temporal coordinate reference system for time in days elapsed since the Unix epoch.
+     * A temporal coordinate reference system for time in days elapsed since November 17, 1858 at 00:00 UTC.
      */
     public static final DefaultTemporalCRS TIME = new DefaultTemporalCRS(
-            getProperties(HardCodedCS.DAYS), HardCodedDatum.UNIX, HardCodedCS.DAYS);
+            getProperties(HardCodedCS.DAYS), HardCodedDatum.MODIFIED_JULIAN, HardCodedCS.DAYS);
 
     /**
      * A (λ,φ,h,t) CRS where <var>h</var> is the {@link #GRAVITY_RELATED_HEIGHT}.

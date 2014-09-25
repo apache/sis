@@ -93,7 +93,7 @@ public final strictfp class ValueMapTest extends TestCase {
         author   = new DefaultResponsibleParty();
         citation = new DefaultCitation(title);
         author.setParties(singleton(new DefaultIndividual("Testsuya Toyoda", null, null)));
-        citation.getCitedResponsibleParties().add(author);
+        citation.setCitedResponsibleParties(singleton(author));
         citation.setISBN("9782505004509");
         citation.setEdition(NilReason.UNKNOWN.createNilObject(InternationalString.class));
         return MetadataStandard.ISO_19115.asValueMap(citation, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);

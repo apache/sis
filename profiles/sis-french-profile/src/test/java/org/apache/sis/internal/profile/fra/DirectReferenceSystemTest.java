@@ -16,16 +16,21 @@
  */
 package org.apache.sis.internal.profile.fra;
 
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import javax.xml.bind.JAXBException;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
+import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -46,13 +51,21 @@ public final strictfp class DirectReferenceSystemTest extends XMLTestCase {
 
     /**
      * Creates the metadata object to be tested.
+     *
+     * @param legacy {@code true} for using the legacy {@code ResponsibleParty} instead of {@code Responsibility}.
+     *        This is sometime needed for comparison purpose with unmarshalled metadata.
      */
-    private static DefaultMetadata createMetadata() {
+    @SuppressWarnings("deprecation")
+    private static DefaultMetadata createMetadata(final boolean legacy) {
         final DefaultMetadata metadata = new DefaultMetadata();
         final DefaultCitation citation = new DefaultCitation("European Petroleum Survey Group");
-        citation.setCitedResponsibleParties(HardCodedCitations.EPSG.getCitedResponsibleParties());
+        Collection<ResponsibleParty> r = HardCodedCitations.EPSG.getCitedResponsibleParties();
+        if (legacy) {
+            r = Collections.<ResponsibleParty>singleton(new DefaultResponsibleParty(TestUtilities.getSingleton(r)));
+        }
+        citation.setCitedResponsibleParties(r);
         final DirectReferenceSystem refSys = new DirectReferenceSystem(new ImmutableIdentifier(citation, null, "4326"));
-        metadata.setReferenceSystemInfo(Arrays.asList(refSys));
+        metadata.setReferenceSystemInfo(singleton(refSys));
         return metadata;
     }
 
@@ -64,7 +77,7 @@ public final strictfp class DirectReferenceSystemTest extends XMLTestCase {
      */
     @Test
     public void marshallingTest() throws JAXBException {
-        assertMarshalEqualsFile(XML_FILE, createMetadata(), "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML_FILE, createMetadata(false), "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -75,7 +88,7 @@ public final strictfp class DirectReferenceSystemTest extends XMLTestCase {
      */
     @Test
     public void unmarshallingTest() throws JAXBException {
-        final DefaultMetadata expected = createMetadata();
+        final DefaultMetadata expected = createMetadata(true);
         final DefaultMetadata result = unmarshalFile(DefaultMetadata.class, XML_FILE);
         /*
          * Compare in debug mode before to perform the real comparison,

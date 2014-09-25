@@ -331,18 +331,6 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     }
 
     /**
-     * Creates a new parameter value instance initialized with the {@linkplain #getDefaultValue() default value}.
-     * The {@linkplain DefaultParameterDescriptor parameter descriptor} for the created parameter value will be
-     * {@code this} object.
-     *
-     * @return A parameter initialized to the default value.
-     */
-    @Override
-    public ParameterValue<T> createValue() {
-        return new DefaultParameterValue<T>(this);
-    }
-
-    /**
      * Returns the class that describe the type of the parameter.
      *
      * @return The parameter value class.
@@ -452,6 +440,18 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     @Override
     public Unit<?> getUnit() {
         return (valueDomain instanceof MeasurementRange<?>) ? ((MeasurementRange<?>) valueDomain).unit() : null;
+    }
+
+    /**
+     * Creates a new parameter value instance initialized with the {@linkplain #getDefaultValue() default value}.
+     * The {@linkplain DefaultParameterDescriptor parameter descriptor} for the created parameter value will be
+     * {@code this} object.
+     *
+     * @return A parameter initialized to the default value.
+     */
+    @Override
+    public ParameterValue<T> createValue() {
+        return new DefaultParameterValue<T>(this);
     }
 
     /**

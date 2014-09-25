@@ -84,17 +84,17 @@ public final strictfp class TreeNodeTest extends TestCase {
         AbstractParty party = new DefaultOrganisation("Some organisation", null, null, null);
         DefaultResponsibleParty responsibility = new DefaultResponsibleParty(Role.DISTRIBUTOR);
         responsibility.setParties(singleton(party));
-        citation.getCitedResponsibleParties().add(responsibility);
+        assertTrue(citation.getCitedResponsibleParties().add(responsibility));
 
         // Add a second responsible party with deeper hierarchy.
         final DefaultContact contact = new DefaultContact();
         final DefaultAddress address = new DefaultAddress();
-        address.getElectronicMailAddresses().add("Some email");
-        contact.getAddresses().add(address);
+        address.setElectronicMailAddresses(singleton("Some email"));
+        contact.setAddresses(singleton(address));
         party = new DefaultIndividual("Some person of contact", null, contact);
         responsibility = new DefaultResponsibleParty(Role.POINT_OF_CONTACT);
         responsibility.setParties(singleton(party));
-        citation.getCitedResponsibleParties().add(responsibility);
+        assertTrue(citation.getCitedResponsibleParties().add(responsibility));
         return citation;
     }
 

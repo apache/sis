@@ -37,7 +37,7 @@ import static org.opengis.referencing.IdentifiedObject.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.4 (derived from geotk-2.1)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn(DefaultParameterDescriptorTest.class)
