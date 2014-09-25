@@ -28,6 +28,7 @@ import java.text.Format;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
+import java.nio.charset.Charset;
 import org.opengis.util.Enumerated;
 import org.opengis.util.InternationalString;
 import org.apache.sis.io.LineAppender;
@@ -93,7 +94,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public class TreeTableFormat extends TabularFormat<TreeTable> {
@@ -635,6 +636,15 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 text = Types.getCodeTitle((Enumerated) value).toString(getDisplayLocale());
             } else if (value instanceof Enum<?>) {
                 text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
+            } else if (value instanceof Locale) {
+                final Locale locale = getDisplayLocale();
+                text = (locale != Locale.ROOT) ? ((Locale) value).getDisplayName(locale) : value.toString();
+            } else if (value instanceof TimeZone) {
+                final Locale locale = getDisplayLocale();
+                text = (locale != Locale.ROOT) ? ((TimeZone) value).getDisplayName(locale) : ((TimeZone) value).getID();
+            } else if (value instanceof Charset) {
+                final Locale locale = getDisplayLocale();
+                text = (locale != Locale.ROOT) ? ((Charset) value).displayName(locale) : ((Charset) value).name();
             } else {
                 /*
                  * Check for a value-by-value format only as last resort.

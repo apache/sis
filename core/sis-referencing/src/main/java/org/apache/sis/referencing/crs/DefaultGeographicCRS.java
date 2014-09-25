@@ -17,14 +17,27 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Arrays;
 import javax.xml.bind.annotation.XmlTransient;
-import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.EllipsoidalCS;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
+
+import org.apache.sis.measure.Longitude;
+import static org.apache.sis.internal.referencing.HardCoded.CRS;
+import static org.apache.sis.internal.referencing.HardCoded.EPSG;
+import static org.apache.sis.internal.referencing.HardCoded.CRS27;
+import static org.apache.sis.internal.referencing.HardCoded.CRS83;
+import static org.apache.sis.internal.referencing.HardCoded.CRS84;
 
 
 /**
@@ -43,11 +56,21 @@ import org.apache.sis.io.wkt.Formatter;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @XmlTransient
 public class DefaultGeographicCRS extends DefaultGeodeticCRS implements GeographicCRS {
+    /**
+     * Some codes in the EPSG namespace, in ascending order.
+     */
+    private static final short[] EPSG_CODES = {4267, 4269, 4326};
+
+    /**
+     * Codes in the CRS namespace for each code listed in the {@link #EPSG} list.
+     */
+    private static final byte[] CRS_CODES = {CRS27, CRS83, CRS84};
+
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -196,9 +219,32 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
 
     /**
      * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     *
+     * {@section Special case}
+     * If the first axis is the longitude in the [-180 … +180]° range and the identifier is EPSG:4267,
+     * EPSG:4269 or EPSG:4326, then this method magically add the CRS:27, CRS:83 or CRS:84 identifier.
+     * Without this special case, the normal behavior would be no identifier. The expected behavior is
+     * that {@code CommonCRS.WGS84.normalizedGeographic()} returns a CRS having the "CRS:84" identifier.
      */
     @Override
-    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+    final AbstractCRS createSameType(Map<String,?> properties, final CoordinateSystem cs) {
+        final CoordinateSystemAxis axis = cs.getAxis(0);
+        if (axis.getMinimumValue() == Longitude.MIN_VALUE &&
+            axis.getMaximumValue() == Longitude.MAX_VALUE) // For excluding the AxesConvention.POSITIVE_RANGE case.
+        {
+            for (final ReferenceIdentifier identifier : super.getIdentifiers()) {
+                if (EPSG.equals(identifier.getCodeSpace())) try {
+                    final int i = Arrays.binarySearch(EPSG_CODES, Short.parseShort(identifier.getCode()));
+                    if (i >= 0) {
+                        final Map<String,Object> c = new HashMap<String,Object>(properties);
+                        c.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.OGC, CRS, Short.toString(CRS_CODES[i])));
+                        properties = c;
+                    }
+                } catch (NumberFormatException e) {
+                    // Okay to igore, because it is not the purpose of this method to disallow non-numeric codes.
+                }
+            }
+        }
         return new DefaultGeographicCRS(properties, super.getDatum(), (EllipsoidalCS) cs);
     }
 

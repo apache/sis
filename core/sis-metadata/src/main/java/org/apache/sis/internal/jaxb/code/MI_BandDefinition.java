@@ -49,6 +49,8 @@ public final class MI_BandDefinition extends CodeListAdapter<MI_BandDefinition, 
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MI_BandDefinition wrap(CodeListProxy proxy) {
@@ -57,6 +59,8 @@ public final class MI_BandDefinition extends CodeListAdapter<MI_BandDefinition, 
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<BandDefinition> getCodeListClass() {

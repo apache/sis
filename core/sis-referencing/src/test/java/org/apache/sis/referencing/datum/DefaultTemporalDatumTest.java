@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 import javax.xml.bind.JAXBException;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.test.XMLTestCase;
@@ -34,7 +35,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
@@ -49,12 +50,9 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
     private static final long ORIGIN = -40587 * (24*60*60*1000L);
 
     /**
-     * Tests XML marshalling.
-     *
-     * @throws JAXBException If an error occurred during marshalling.
+     * Creates the temporal datum to use for testing purpose.
      */
-    @Test
-    public void testMarshalling() throws JAXBException {
+    private static DefaultTemporalDatum create() {
         final Map<String,Object> properties = new HashMap<String,Object>(4);
         assertNull(properties.put(DefaultTemporalDatum.IDENTIFIERS_KEY,
                 new ImmutableIdentifier(HardCodedCitations.SIS, "SIS", "MJ")));
@@ -62,8 +60,39 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
         assertNull(properties.put(DefaultTemporalDatum.SCOPE_KEY, "History."));
         assertNull(properties.put(DefaultTemporalDatum.REMARKS_KEY,
                 "Time measured as days since November 17, 1858 at 00:00 UTC."));
+        return new DefaultTemporalDatum(properties, new Date(ORIGIN));
+    }
 
-        final DefaultTemporalDatum datum = new DefaultTemporalDatum(properties, new Date(ORIGIN));
+    /**
+     * Tests the consistency of our test with {@link HardCodedDatum#MODIFIED_JULIAN}.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testConsistency() {
+        assertEquals(HardCodedDatum.MODIFIED_JULIAN.getOrigin(), new Date(ORIGIN));
+    }
+
+    /**
+     * Tests {@link DefaultTemporalDatum#toWKT()}.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testToWKT() {
+        final DefaultTemporalDatum datum = create();
+        assertWktEquals(Convention.WKT1, "TIMEDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z], AUTHORITY[“SIS”, “MJ”]]", datum);
+        assertWktEquals(Convention.WKT2, "TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z], Id[“SIS”, “MJ”]]", datum);
+    }
+
+    /**
+     * Tests XML marshalling.
+     *
+     * @throws JAXBException If an error occurred during marshalling.
+     */
+    @Test
+    public void testMarshalling() throws JAXBException {
+        final DefaultTemporalDatum datum = create();
         assertMarshalEqualsFile(XML_FILE, datum, "xlmns:*", "xsi:schemaLocation");
     }
 

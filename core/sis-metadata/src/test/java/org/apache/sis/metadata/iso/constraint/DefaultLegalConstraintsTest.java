@@ -27,6 +27,7 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
+import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -140,7 +141,7 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
                 "</gmd:MD_LegalConstraints>\n";
 
         final DefaultLegalConstraints c = new DefaultLegalConstraints();
-        c.getUseConstraints().add(Restriction.LICENCE);
+        c.setUseConstraints(singleton(Restriction.LICENCE));
         assertXmlEquals(xml, marshal(c), "xmlns:*");
         /*
          * Unmarshall and ensure that we got back the original LICENCE code, not a new "LICENSE" code.

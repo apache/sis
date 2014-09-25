@@ -28,6 +28,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static java.util.Collections.singleton;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
 
 
@@ -69,9 +70,9 @@ public final strictfp class PrunerTest extends TestCase {
         identification = new DefaultDataIdentification();
         extent         = new DefaultExtent();
         bbox           = new DefaultGeographicBoundingBox();
-        extent.getGeographicElements().add(bbox);
-        identification.getExtents().add(extent);
-        metadata.getIdentificationInfo().add(identification);
+        extent.setGeographicElements(singleton(bbox));
+        identification.setExtents(singleton(extent));
+        metadata.setIdentificationInfo(singleton(identification));
     }
 
     /**
@@ -123,8 +124,8 @@ public final strictfp class PrunerTest extends TestCase {
      */
     private void createCyclicMetadata() {
         final DefaultAcquisitionInformation acquisition = new DefaultAcquisitionInformation();
-        acquisition.getPlatforms().add(MetadataStandardTest.createCyclicMetadata());
-        metadata.getAcquisitionInformation().add(acquisition);
+        acquisition.setPlatforms(singleton(MetadataStandardTest.createCyclicMetadata()));
+        metadata.setAcquisitionInformation(singleton(acquisition));
     }
 
     /**

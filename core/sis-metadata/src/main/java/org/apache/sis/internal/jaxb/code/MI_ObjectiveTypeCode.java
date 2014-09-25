@@ -49,6 +49,8 @@ public final class MI_ObjectiveTypeCode extends CodeListAdapter<MI_ObjectiveType
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MI_ObjectiveTypeCode wrap(CodeListProxy proxy) {
@@ -57,6 +59,8 @@ public final class MI_ObjectiveTypeCode extends CodeListAdapter<MI_ObjectiveType
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<ObjectiveType> getCodeListClass() {

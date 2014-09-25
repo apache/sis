@@ -40,6 +40,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static java.util.Collections.singleton;
 
 
 /**
@@ -83,16 +84,16 @@ public final strictfp class TreeNodeTest extends TestCase {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithMultiOccurrences();
         AbstractParty party = new DefaultOrganisation("Some organisation", null, null, null);
         DefaultResponsibility responsibility = new DefaultResponsibility(Role.DISTRIBUTOR, null, party);
-        citation.getCitedResponsibleParties().add(responsibility);
+        assertTrue(citation.getCitedResponsibleParties().add(responsibility));
 
         // Add a second responsible party with deeper hierarchy.
         final DefaultContact contact = new DefaultContact();
         final DefaultAddress address = new DefaultAddress();
-        address.getElectronicMailAddresses().add("Some email");
-        contact.getAddresses().add(address);
+        address.setElectronicMailAddresses(singleton("Some email"));
+        contact.setAddresses(singleton(address));
         party = new DefaultIndividual("Some person of contact", null, contact);
         responsibility = new DefaultResponsibility(Role.POINT_OF_CONTACT, null, party);
-        citation.getCitedResponsibleParties().add(responsibility);
+        assertTrue(citation.getCitedResponsibleParties().add(responsibility));
         return citation;
     }
 

@@ -19,6 +19,8 @@ package org.apache.sis.referencing.crs;
 import org.opengis.test.Validators;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.Convention;
@@ -28,6 +30,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -84,6 +87,51 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
         assertSame("longitude", ref.getAxis(1), cs.getAxis(0));
         assertSame("latitude",  ref.getAxis(0), cs.getAxis(1));
         assertSame("height",    ref.getAxis(2), cs.getAxis(2));
+    }
+
+    /**
+     * Verifies the {@link CommonCRS#WGS84} identifiers in both normalized and unnormalized CRS.
+     * The intend is actually to test the replacement of {@code "EPSG:4326"} by {@code "CRS:84"}.
+     */
+    @Test
+    public void testIdentifiers() {
+        GeographicCRS crs = CommonCRS.WGS72.geographic();
+        ReferenceIdentifier identifier = getSingleton(crs.getIdentifiers());
+        assertEquals("codespace", "EPSG", identifier.getCodeSpace());
+        assertEquals("code",      "4322", identifier.getCode());
+
+        crs = CommonCRS.WGS72.normalizedGeographic();
+        assertTrue(crs.getIdentifiers().isEmpty());
+
+        crs = CommonCRS.WGS84.geographic();
+        identifier = getSingleton(crs.getIdentifiers());
+        assertEquals("codespace", "EPSG", identifier.getCodeSpace());
+        assertEquals("code",      "4326", identifier.getCode());
+
+        crs = CommonCRS.WGS84.normalizedGeographic();
+        identifier = getSingleton(crs.getIdentifiers());
+        assertEquals("codespace", "CRS", identifier.getCodeSpace());
+        assertEquals("code",      "84",  identifier.getCode());
+
+        crs = CommonCRS.NAD83.geographic();
+        identifier = getSingleton(crs.getIdentifiers());
+        assertEquals("codespace", "EPSG", identifier.getCodeSpace());
+        assertEquals("code",      "4269", identifier.getCode());
+
+        crs = CommonCRS.NAD83.normalizedGeographic();
+        identifier = getSingleton(crs.getIdentifiers());
+        assertEquals("codespace", "CRS", identifier.getCodeSpace());
+        assertEquals("code",      "83",  identifier.getCode());
+
+        crs = CommonCRS.NAD27.geographic();
+        identifier = getSingleton(crs.getIdentifiers());
+        assertEquals("codespace", "EPSG", identifier.getCodeSpace());
+        assertEquals("code",      "4267", identifier.getCode());
+
+        crs = CommonCRS.NAD27.normalizedGeographic();
+        identifier = getSingleton(crs.getIdentifiers());
+        assertEquals("codespace", "CRS", identifier.getCodeSpace());
+        assertEquals("code",      "27",  identifier.getCode());
     }
 
     /**

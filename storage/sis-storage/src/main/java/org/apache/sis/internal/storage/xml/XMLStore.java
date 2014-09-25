@@ -35,6 +35,8 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 
+import static java.util.Collections.singleton;
+
 
 /**
  * A data store which creates data objects from a XML file.
@@ -175,7 +177,7 @@ public class XMLStore extends DataStore {
                 metadata = (Metadata) object;
             } else if (object instanceof ReferenceSystem) {
                 final DefaultMetadata d = new DefaultMetadata();
-                d.getReferenceSystemInfo().add((ReferenceSystem) object);
+                d.setReferenceSystemInfo(singleton((ReferenceSystem) object));
                 metadata = d;
             }
         }

@@ -19,6 +19,8 @@ package org.apache.sis.internal.jaxb.referencing;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
 
+import static org.apache.sis.internal.referencing.HardCoded.EPSG;
+
 
 /**
  * JAXB adapter for (un)marshalling of GeoAPI code list.
@@ -52,6 +54,6 @@ public final class CS_AxisDirection extends CodeListAdapter<AxisDirection> {
      */
     @Override
     protected String getCodeSpace() {
-        return "EPSG";
+        return EPSG;
     }
 }
