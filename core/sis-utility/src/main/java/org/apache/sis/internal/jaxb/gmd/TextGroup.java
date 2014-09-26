@@ -24,11 +24,11 @@ import org.apache.sis.util.Debug;
 /**
  * A set of strings localized in different languages. This adapter represents the
  * {@code <gmd:textGroup>} element defined for embedded translations in ISO-19139
- * standard. See {@link FreeText} class javadoc for an example.
+ * standard. See {@link PT_FreeText} class javadoc for an example.
  *
  * <p>If a localized string has a {@code null} locale, then this string will not be
  * included in this text group because that string should be already included in
- * the {@code <gco:CharacterString>} element of the parent {@link FreeText}  (at
+ * the {@code <gco:CharacterString>} element of the parent {@link PT_FreeText}  (at
  * least in default behavior - actually the above may not be true anymore if the
  * marshaller {@link org.apache.sis.xml.XML#LOCALE} property has been set).</p>
  *

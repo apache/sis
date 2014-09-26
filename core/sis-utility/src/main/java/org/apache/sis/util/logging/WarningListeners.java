@@ -70,7 +70,7 @@ public class WarningListeners<S> implements Localized {
     private WarningListener<? super S>[] listeners;
 
     /**
-     * Creates a new instance without source. This constructor is for {@link #empty(Locale, Logger)}
+     * Creates a new instance without source. This constructor is for {@link EmptyWarningListeners}
      * usage only, because it requires some method to be overloaded.
      */
     WarningListeners() {
@@ -117,7 +117,7 @@ public class WarningListeners<S> implements Localized {
      * @param record The warning as a log record.
      */
     public void warning(final LogRecord record) {
-        final WarningListener[] current;
+        final WarningListener<?>[] current;
         synchronized (this) {
             current = listeners;
         }

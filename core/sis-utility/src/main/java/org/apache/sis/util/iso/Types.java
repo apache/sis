@@ -75,7 +75,7 @@ public final class Types extends Static {
      * are either class names as {@link String} objects, or the {@link Class} instances.
      * This map will be built only when first needed.
      *
-     * @see #forName(String)
+     * @see #forStandardName(String)
      */
     private static Map<Object,Object> typeForNames;
 

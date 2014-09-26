@@ -164,7 +164,7 @@ public class MonolineFormatter extends Formatter {
      * The "interesting" elements are the first stack trace elements, and the element which point
      * to the method that produced the log record.
      *
-     * @see #printAbridged(Throwable, Appendable, String, String, String, String)
+     * @see #printAbridged(Throwable, Appendable, String, String, String)
      */
     private static final int CONTEXT_STACK_TRACE_ELEMENTS = 2;
 
@@ -343,7 +343,7 @@ loop:   for (int i=0; ; i++) {
                 default: break loop;
             }
             if (threshold != null && c.intValue() < threshold.intValue()) {
-                break loop;
+                break;
             }
             final int length = c.getLocalizedName().length();
             if (length > levelWidth) levelWidth = length;

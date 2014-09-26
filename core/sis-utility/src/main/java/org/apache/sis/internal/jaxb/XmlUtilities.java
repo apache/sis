@@ -132,7 +132,7 @@ public final class XmlUtilities extends SystemListener {
 
     /**
      * Converts the given date to a XML Gregorian calendar using the locale and timezone
-     * from the current {@linkplain MarshalContext marshalling context}.
+     * from the current {@linkplain Context marshalling context}.
      *
      * @param  context The current (un)marshalling context, or {@code null} if none.
      * @param  date The date to convert to a XML calendar, or {@code null}.
