@@ -83,9 +83,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     public static final String LOCALE_KEY = "locale";
 
     /**
-     * Maximum string length for text inserted into another text. This parameter is used by
-     * {@link #summarize}. Resource strings are never cut to this length. However, text replacing
-     * {@code "{0}"} in a string like {@code "Parameter name is {0}"} will be cut to this length.
+     * Maximum string length for text inserted into another text. This parameter is used by {@link #toArray(Object)}.
+     * Resource strings are never cut to this length. However, text replacing {@code "{0}"} in a string like
+     * {@code "Parameter name is {0}"} will be cut to this length.
      */
     private static final int MAX_STRING_LENGTH = 200;
 

@@ -142,7 +142,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * This is considered a non-fatal error, because the parse method can fallback
      * on the generic {@link IdentifierMapEntry} in such cases.
      *
-     * <p>This method assumes that {@link IdentifierMap#put(Citation, String)} is
+     * <p>This method assumes that {@link IdentifierMap#put(Object, Object)} is
      * the public API by which this method has been invoked.</p>
      *
      * @param context The marshalling context, or {@code null} if none.

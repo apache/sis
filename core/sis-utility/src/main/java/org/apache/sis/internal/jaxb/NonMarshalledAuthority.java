@@ -37,7 +37,7 @@ import org.apache.sis.xml.IdentifierSpace;
 /**
  * The {@linkplain Identifier#getAuthority() authority of identifiers} that are not expected to be
  * marshalled in a {@code MD_Identifier} XML element. Those identifiers are also excluded from the
- * tree formatted by {@link org.apache.sis.metadata.AbstractMetadata#asTree()}.
+ * tree formatted by {@link org.apache.sis.metadata.AbstractMetadata#asTreeTable()}.
  *
  * <p>There is two kinds of non-marshalled identifiers:</p>
  *
@@ -269,9 +269,9 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     }
 
     /**
-     * Returns one of the constants in the {@link DefaultCitation} class, or {@code null} if none.
-     * We need to use Java reflection because the {@code sis-metadata} module may not be in the
-     * classpath.
+     * Returns one of the constants in the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class,
+     * or {@code null} if none. We need to use Java reflection because the {@code sis-metadata} module may not
+     * be in the classpath.
      */
     private static IdentifierSpace<?> getCitation(final String name) {
         try {

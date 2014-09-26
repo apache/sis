@@ -65,6 +65,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short ChangedContainerCapacity_2 = 1;
 
         /**
+         * This result indicates if a datum shift method has been applied.
+         */
+        public static final short ConformanceMeansDatumShift = 8;
+
+        /**
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
          * mutually exclusive.
          */

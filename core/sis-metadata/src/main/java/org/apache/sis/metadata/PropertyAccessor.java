@@ -66,8 +66,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * <ul>
  *   <li>The standard properties defined by the GeoAPI (or other standard) interfaces.
  *       Those properties are the only one accessible by most methods in this class,
- *       except {@link #equals(Object, Object, ComparisonMode, boolean)} and
- *       {@link #freeze(Object)}.</li>
+ *       except {@link #equals(Object, Object, ComparisonMode)} and {@link #freeze(Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
  *       invisible in the ISO 19115 model, but appears in ISO 19139 XML marshalling. So we do
@@ -225,7 +224,7 @@ class PropertyAccessor {
      * annotations. Consequently the map may contain many entries for the same value if some
      * method names are different than the UML identifiers.</p>
      *
-     * @see #indexOf(String)
+     * @see #indexOf(String, boolean)
      */
     private final Map<String,Integer> mapping;
 
@@ -252,8 +251,7 @@ class PropertyAccessor {
      * Creates a new property accessor for the specified metadata implementation.
      *
      * @param  standard The standard which define the {@code type} interface.
-     * @param  type The interface implemented by the metadata, which must be
-     *         the value returned by {@link #getStandardType(Class, String)}.
+     * @param  type The interface implemented by the metadata class.
      * @param  implementation The class of metadata implementations, or {@code type} if none.
      * @param  onlyUML {@code true} for taking only the getter methods having a {@link UML} annotation.
      */

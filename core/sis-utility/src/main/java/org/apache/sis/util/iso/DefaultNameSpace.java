@@ -354,7 +354,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     }
 
     /**
-     * Returns a key to be used in the {@linkplain #pool} from the given name.
+     * Returns a key to be used in the {@linkplain #childs} pool from the given name.
      * The key must be the unlocalized version of the given string.
      *
      * @param name The name.

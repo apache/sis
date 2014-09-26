@@ -138,9 +138,9 @@ abstract class Pooled {
      * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
      * If null, then the latest version is assumed.
      *
-     * @see #getGMLVersion()
+     * @see Context#getVersion(String)
      */
-    private Version gmlVersion;
+    private Version versionGML;
 
     /**
      * The reference resolver to use during unmarshalling.
@@ -222,7 +222,7 @@ abstract class Pooled {
         timezone         = template.timezone;
         schemas          = template.schemas;
         xmlnsReplaceCode = template.xmlnsReplaceCode;
-        gmlVersion       = template.gmlVersion;
+        versionGML       = template.versionGML;
         resolver         = template.resolver;
         converter        = template.converter;
         warningListener  = template.warningListener;
@@ -258,8 +258,8 @@ abstract class Pooled {
         switch (xmlnsReplaceCode) {
             case 0: {
                 // Apply namespace replacements only for older versions than the one supported natively by SIS.
-                if (gmlVersion != null) {
-                    if (gmlVersion.compareTo(LegacyNamespaces.VERSION_3_2_1, 2) < 0) {
+                if (versionGML != null) {
+                    if (versionGML.compareTo(LegacyNamespaces.VERSION_3_2_1, 2) < 0) {
                         return FilterVersion.GML31;
                     }
                 }
@@ -354,7 +354,7 @@ abstract class Pooled {
                     return;
                 }
                 if (name.equals(XML.GML_VERSION)) {
-                    gmlVersion = (value instanceof CharSequence) ? new Version(value.toString()) : (Version) value;
+                    versionGML = (value instanceof CharSequence) ? new Version(value.toString()) : (Version) value;
                     return;
                 }
                 if (name.equals(XML.RESOLVER)) {
@@ -423,7 +423,7 @@ abstract class Pooled {
             if (name.equals(XML.LOCALE))           return locale;
             if (name.equals(XML.TIMEZONE))         return timezone;
             if (name.equals(XML.SCHEMAS))          return schemas;
-            if (name.equals(XML.GML_VERSION))      return gmlVersion;
+            if (name.equals(XML.GML_VERSION))      return versionGML;
             if (name.equals(XML.RESOLVER))         return resolver;
             if (name.equals(XML.CONVERTER))        return converter;
             if (name.equals(XML.WARNING_LISTENER)) return warningListener;
@@ -536,6 +536,6 @@ abstract class Pooled {
      * @see Context#finish()
      */
     final Context begin() {
-        return new Context(bitMasks, locale, timezone, schemas, gmlVersion, resolver, converter, warningListener);
+        return new Context(bitMasks, locale, timezone, schemas, versionGML, resolver, converter, warningListener);
     }
 }
