@@ -954,7 +954,7 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * Assigns an {@link IdentityHashMap} instance to the given field.
+     * Assigns an {@link ConcurrentMap} instance to the given field.
      * Used on deserialization only.
      */
     @SuppressWarnings("rawtypes")

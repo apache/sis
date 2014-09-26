@@ -94,8 +94,8 @@ public abstract class ChannelData {
     private Mark mark;
 
     /**
-     * A mark pushed by the {@link ChannelDate#mark()} method
-     * and pooled by the {@link ChannelDate#reset()} method.
+     * A mark pushed by the {@link ChannelData#mark()} method
+     * and pooled by the {@link ChannelData#reset()} method.
      */
     private static final class Mark {
         final long position;

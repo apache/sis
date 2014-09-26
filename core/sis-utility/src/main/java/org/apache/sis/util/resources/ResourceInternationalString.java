@@ -83,7 +83,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      * Creates a new international string for the given key and arguments.
      *
      * @param key The key for the resource to fetch.
-     * @param The argument(s).
+     * @param arguments The argument(s).
      */
     ResourceInternationalString(final short key, final Object arguments) {
         this.key          = key;

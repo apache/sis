@@ -52,7 +52,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * of {@code E}. This class has no way to verify that condition. This class is not in the public API
  * for this reason.
  *
- * <p>Note that the public API, {@link org.apache.sis.util.collection.CollectionsExt#unmodifiableList(E[])},
+ * <p>Note that the public API, {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])},
  * returns {@code List<? extends E>}, which is okay.</p>
  *
  * @param <E> The type of elements in the list.
@@ -103,7 +103,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * {@section WARNING! Type safety hole}
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
-     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(E[])} instead.
+     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
      * See class javadoc for more information.
      *
      * <p>The argument type is intentionally {@code E[]} instead than {@code E...} in order to force
@@ -131,7 +131,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * {@section WARNING! Type safety hole}
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
-     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(E[])} instead.
+     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
      * See class javadoc for more information.
      *
      * @param  <E>   The type of elements in the list.
@@ -374,7 +374,8 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
 
     /**
      * Returns a copy of the backing array. Note that the array type is {@code E[]} rather than {@code Object[]}.
-     * This is not what {@code ArrayList} does, but is not forbidden by {@link List#toArray()} javadoc neither.
+     * This is not what {@code ArrayList} does, but is not forbidden by {@link java.util.List#toArray()} javadoc
+     * neither.
      *
      * @return A copy of the wrapped array.
      */

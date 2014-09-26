@@ -574,7 +574,6 @@ public class StorageConnector implements Serializable {
      * Creates a storage view of the given type if possible, or returns {@code null} otherwise.
      * This method is invoked by {@link #getStorageAs(Class)} when first needed, and the result is cached.
      *
-     * @param  <T>  The compile-time type of the {@code type} argument.
      * @param  type The type of the view to create.
      * @return The storage as a view of the given type, or {@code null} if no view can be created for the given type.
      * @throws IllegalArgumentException If the given {@code type} argument is not a known type.

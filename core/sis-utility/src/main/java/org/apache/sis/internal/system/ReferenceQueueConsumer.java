@@ -25,7 +25,7 @@ import org.apache.sis.util.logging.Logging;
 /**
  * A thread processing all {@link Reference} instances enqueued in a {@link ReferenceQueue}.
  * This is the central place where <em>every</em> weak references produced by the SIS library
- * are consumed. This thread will invoke the {@link Disposeable#dispose()} method for each
+ * are consumed. This thread will invoke the {@link Disposable#dispose()} method for each
  * references enqueued by the garbage collector. Those references <strong>must</strong>
  * implement the {@link Disposable} interface.
  *

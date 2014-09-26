@@ -69,7 +69,7 @@ public class CodeType {
     String value;
 
     /**
-     * Dictionary, thesaurus, classification scheme, authority, or pattern for the {@linkplain #term},
+     * Dictionary, thesaurus, classification scheme, authority, or pattern for the term,
      * or {@code null} if none.
      */
     @XmlAttribute

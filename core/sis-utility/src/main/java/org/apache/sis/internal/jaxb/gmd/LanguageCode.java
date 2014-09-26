@@ -48,7 +48,7 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 @XmlType(name = "LanguageCode_PropertyType")
 public final class LanguageCode extends GO_CharacterString {
     /**
-     * The language using a {@link CodeList}-like format.
+     * The language using a {@link org.opengis.util.CodeList}-like format.
      */
     @XmlElement(name = "LanguageCode")
     private CodeListProxy proxy;
