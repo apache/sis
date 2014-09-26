@@ -336,10 +336,9 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     }
 
     /**
-     * The view returned by {@link IdentifierMap#entrySet()}. If the backing identifier
-     * collection contains null entries, those entries will be ignored. If the backing
-     * collection contains many entries for the same authority, then only the first
-     * occurrence is retained.
+     * The view returned by {@link IdentifierMapAdapter#entrySet()}. If the backing identifier collection
+     * contains null entries, those entries will be ignored. If the backing collection contains many entries
+     * for the same authority, then only the first occurrence is retained.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3 (derived from geotk-3.18)
@@ -349,7 +348,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     private static final class Entries extends AbstractSet<Entry<Citation,String>> {
         /**
          * The identifiers to wrap in a set of entries view. This is a reference
-         * to the same collection than {@link IdentifierMap#identifiers}.
+         * to the same collection than {@link IdentifierMapAdapter#identifiers}.
          */
         private final Collection<? extends Identifier> identifiers;
 
@@ -404,9 +403,9 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     }
 
     /**
-     * The iterator over the (<var>citation</var>, <var>code</var>) entries. This iterator is
-     * created by the {@link IdentifierMap.Entries} collection. It extends {@link HashMap} as
-     * an opportunist implementation strategy, but users don't need to know this detail.
+     * The iterator over the (<var>citation</var>, <var>code</var>) entries. This iterator is created by
+     * the {@link IdentifierMapAdapter.Entries} collection. It extends {@link HashMap} as an opportunist
+     * implementation strategy, but users don't need to know this detail.
      *
      * <p>This iterator supports the {@link #remove()} operation if the underlying collection
      * supports it.</p>
@@ -423,7 +422,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     @SuppressWarnings("serial") // Not intended to be serialized.
     private static final class Iter extends HashMap<Citation,Boolean> implements Iterator<Entry<Citation,String>> {
         /**
-         * An iterator over the {@link IdentifierMap#identifiers} collection,
+         * An iterator over the {@link IdentifierMapAdapter#identifiers} collection,
          * or (@code null} if we have reached the iteration end.
          */
         private Iterator<? extends Identifier> identifiers;

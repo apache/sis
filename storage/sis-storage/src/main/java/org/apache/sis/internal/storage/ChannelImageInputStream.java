@@ -153,7 +153,7 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
 
     /**
      * Reads the new bytes until the next EOL. This method can read only US-ASCII strings.
-     * This method is provided for compliance with the {@link DataInput} interface,
+     * This method is provided for compliance with the {@link java.io.DataInput} interface,
      * but is generally not recommended.
      *
      * @return The next line, or {@code null} if the EOF has been reached.

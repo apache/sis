@@ -178,34 +178,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     }
 
     /**
-     * Returns the longest wavelength that the sensor is capable of collecting within a designated band.
-     * The units of measurement is given by {@link #getUnits()}.
-     *
-     * @return Longest wavelength that the sensor is capable of collecting within a designated band,
-     *         or {@code null} if unspecified.
-     *
-     * @since 0.5
-     */
-    @Override
-    @ValueRange(minimum = 0)
-/// @XmlElement(name = "boundMax")
-    public Double getBoundMax() {
-        return boundMax;
-    }
-
-    /**
-     * Sets the longest wavelength that the sensor is capable of collecting within a designated band.
-     *
-     * @param newValue The new longest wavelength.
-     *
-     * @since 0.5
-     */
-    public void setBoundMax(final Double newValue) {
-        checkWritePermission();
-        boundMax = newValue;
-    }
-
-    /**
      * Returns the shortest wavelength that the sensor is capable of collecting within a designated band.
      * The units of measurement is given by {@link #getBoundUnit()}.
      *
@@ -231,6 +203,34 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     public void setBoundMin(final Double newValue) {
         checkWritePermission();
         boundMin = newValue;
+    }
+
+    /**
+     * Returns the longest wavelength that the sensor is capable of collecting within a designated band.
+     * The units of measurement is given by {@link #getUnits()}.
+     *
+     * @return Longest wavelength that the sensor is capable of collecting within a designated band,
+     *         or {@code null} if unspecified.
+     *
+     * @since 0.5
+     */
+    @Override
+    @ValueRange(minimum = 0)
+/// @XmlElement(name = "boundMax")
+    public Double getBoundMax() {
+        return boundMax;
+    }
+
+    /**
+     * Sets the longest wavelength that the sensor is capable of collecting within a designated band.
+     *
+     * @param newValue The new longest wavelength.
+     *
+     * @since 0.5
+     */
+    public void setBoundMax(final Double newValue) {
+        checkWritePermission();
+        boundMax = newValue;
     }
 
     /**

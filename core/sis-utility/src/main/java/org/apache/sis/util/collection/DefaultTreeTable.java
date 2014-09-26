@@ -174,11 +174,11 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
 
     /**
      * Returns all columns in the given map, sorted by increasing index value.
-     * This method relies on {@link LinkedHashSet} preserving insertion order.
+     * This method relies on {@link LinkedHashMap} preserving insertion order.
      *
      * @return The columns in an array of elements of type {@code TableColumn},
      *         <strong>not a subtype</strong> for allowing usage in
-     *         {@link UnmodifiableArrayList#wrap(E[])}.
+     *         {@link UnmodifiableArrayList#wrap(Object[])}.
      */
     static TableColumn<?>[] getColumns(final Map<TableColumn<?>,Integer> columnIndices) {
         return columnIndices.keySet().toArray(new TableColumn<?>[columnIndices.size()]);

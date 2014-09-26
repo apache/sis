@@ -601,7 +601,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Creates a modifiable set for elements of the given type. This method will create an {@link EnumSet},
-     * {@link CodeListSet} or {@link LinkedHashSet} depending on the {@code elementType} argument.
+     * {@link CodeListSet} or {@link java.util.LinkedHashSet} depending on the {@code elementType} argument.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     private <E> Set<E> createSet(final Class<E> elementType, final int capacity) {

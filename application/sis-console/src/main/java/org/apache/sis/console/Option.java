@@ -96,7 +96,7 @@ enum Option {
     /**
      * Creates a new option.
      *
-     * @param Whether this option expects a value.
+     * @param hasValue Whether this option expects a value.
      */
     private Option(final boolean hasValue) {
         this.hasValue = hasValue;
