@@ -385,6 +385,16 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Timezone = 54;
 
         /**
+         * Transformation
+         */
+        public static final short Transformation = 80;
+
+        /**
+         * Transformation accuracy
+         */
+        public static final short TransformationAccuracy = 81;
+
+        /**
          * Truncated Julian
          */
         public static final short TruncatedJulian = 55;

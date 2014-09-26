@@ -67,7 +67,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     private static final short[] EPSG_CODES = {4267, 4269, 4326};
 
     /**
-     * Codes in the CRS namespace for each code listed in the {@link #EPSG} list.
+     * Codes in the CRS namespace for each code listed in the {@link #EPSG_CODES} list.
      */
     private static final byte[] CRS_CODES = {CRS27, CRS83, CRS84};
 

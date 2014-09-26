@@ -324,7 +324,7 @@ public final class AxisDirections extends Static {
      *
      * @param  source The start direction.
      * @param  target The final direction.
-     * @return The arithmetic angle as a multiple of 360/{@link #DISPLAY_RIGHT}, or {@link Integer#MIN_VALUE} if none.
+     * @return The arithmetic angle as a multiple of 360/{@link #DISPLAY_COUNT}, or {@link Integer#MIN_VALUE} if none.
      */
     public static int angleForDisplay(final AxisDirection source, final AxisDirection target) {
         final int base = DISPLAY_RIGHT.ordinal();
@@ -411,11 +411,12 @@ public final class AxisDirections extends Static {
 
     /**
      * Searches pre-defined {@link AxisDirection} for a given name. This method searches for a match in the set
-     * of known axis directions as returned by {@link AxisDirections#values()}, plus a few special cases like
+     * of known axis directions as returned by {@link AxisDirection#values()}, plus a few special cases like
      * "<cite>Geocentre &gt; equator/90°E</cite>". The later are used in the EPSG database for geocentric CRS.
      *
-     * <p>This method does not know about {@link DirectionAlongMeridian}. The later is a parser which may create
-     * new directions, while this method searches only in a set of predefined directions and never create new ones.</p>
+     * <p>This method does not know about {@code org.apache.sis.referencing.cs.DirectionAlongMeridian}.
+     * The later is a parser which may create new directions, while this method searches only in a set
+     * of predefined directions and never create new ones.</p>
      *
      * @param  name The name of the axis direction to search.
      * @return The first axis direction having a name matching the given one, or {@code null} if none.

@@ -332,8 +332,8 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Constructor for private use by {@link WKTFormat#getFormatter()} only. This allows to use the number
-     * format created by {@link WKTFormat#createFormat(Class)}, which may be overridden by the user.
+     * Constructor for private use by {@link WKTFormat} only. This allows to use the number format
+     * created by {@link WKTFormat#createFormat(Class)}, which may be overridden by the user.
      */
     Formatter(final Locale locale, final Symbols symbols, final NumberFormat numberFormat,
             final DateFormat dateFormat, final UnitFormat unitFormat)
@@ -511,7 +511,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Closes the element opened by {@link #openElement(String)}.
+     * Closes the element opened by {@link #openElement(boolean, String)}.
      *
      * @param newLine {@code true} for invoking {@link #newLine()} last.
      */

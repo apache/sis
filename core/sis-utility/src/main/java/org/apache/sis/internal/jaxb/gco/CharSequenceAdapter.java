@@ -158,7 +158,7 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
     }
 
     /**
-     * Same as {@link #wrap(Object, String)}, but returns directly the {@link GO_CharacterString#text}
+     * Same as {@link #wrap(Context, Object, String)}, but returns directly the {@link GO_CharacterString#text}
      * value without wrapping in a {@code GO_CharacterString} instance.
      *
      * @param  context The current (un)marshalling context, or {@code null} if none.

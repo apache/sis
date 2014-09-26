@@ -69,7 +69,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      *
      * @param locale      The locale for {@link #getLocalizedMessage()}.
      * @param key         The resource key as one of the {@code Errors.Keys} constant.
-     * @param arguments   The value of {@link #arguments(String, ParsePosition)}.
+     * @param arguments   The values to be given to {@link Errors#getString(short, Object)}.
      * @param errorOffset The position where the error is found while parsing.
      */
     public LocalizedParseException(final Locale locale, final short key, final Object[] arguments, final int errorOffset) {
