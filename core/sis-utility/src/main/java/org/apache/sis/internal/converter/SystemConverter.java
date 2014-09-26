@@ -25,7 +25,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Base class of all converters defined in the {@code org.apache.sis.internal} package.
- * Those converters are returned by system-wide {@link ConverterRegitry}, and cached for reuse.
+ * Those converters are returned by system-wide {@link ConverterRegistry}, and cached for reuse.
  *
  * {@section Immutability and thread safety}
  * This base class is immutable, and thus inherently thread-safe. Subclasses should be immutable

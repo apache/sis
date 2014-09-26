@@ -65,7 +65,7 @@ class KeyConstants {
     /**
      * Returns the internal array of key names. <strong>Do not modify the returned array.</strong>
      * This method should usually not be invoked, in order to avoid loading the inner Keys class.
-     * The keys names are used only in rare situation, like {@link IndexedResourceBundle#list(Writer)}
+     * The keys names are used only in rare situation, like {@link IndexedResourceBundle#list(Appendable)}
      * or in log records.
      */
     final synchronized String[] getKeyNames() {

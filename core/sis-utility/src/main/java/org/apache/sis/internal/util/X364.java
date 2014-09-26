@@ -130,7 +130,7 @@ public enum X364 {
     /**
      * Creates a new background code.
      *
-     * @param code The X.364 code.
+     * @param foreground The X.364 code for a foreground color.
      */
     private X364(final X364 foreground) {
         this((byte) (foreground.code + 10), foreground.color);

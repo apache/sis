@@ -51,7 +51,7 @@ public final class LegacyNamespaces {
     public static final String GML = "http://www.opengis.net/gml";
 
     /**
-     * A non-public (un)marshaller property for controlling usage of {@link org.apache.sis.xml.FilteredNamespaces}.
+     * A non-public (un)marshaller property for controlling usage of {@code org.apache.sis.xml.FilteredNamespaces}.
      * Values can be:
      *
      * <ul>
@@ -64,8 +64,8 @@ public final class LegacyNamespaces {
      *       natively by SIS.</li>
      * </ul>
      *
-     * This property can be given to {@link org.apache.sis.xml.MarshallerPool} constructor, or set directly on a
-     * {@code Marshaller} or {@link code Unmarshaller} instance created by {@code MarshallerPool} by invoking its
+     * This property can be given to {@link org.apache.sis.xml.MarshallerPool} constructor, or set directly on
+     * a {@code Marshaller} or {@code Unmarshaller} instance created by {@code MarshallerPool} by invoking its
      * {@code setProperty(String, Object)} method.
      */
     public static final String APPLY_NAMESPACE_REPLACEMENTS = "org.apache.sis.xml.applyNamespaceReplacements";

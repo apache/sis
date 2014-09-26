@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
 @XmlType(name = "Country_PropertyType")
 public final class Country extends GO_CharacterString {
     /**
-     * The country using a {@link CodeList}-like format.
+     * The country using a {@link org.opengis.util.CodeList}-like format.
      */
     @XmlElement(name = "Country")
     private CodeListProxy proxy;
@@ -125,8 +125,6 @@ public final class Country extends GO_CharacterString {
      * @param  country  The wrapper for the country value.
      * @param  caller   The class which is invoking this method, used only in case of warning.
      * @return A locale which represents the language and country value.
-     *
-     * @see LanguageCode#getLocale(Context, LanguageCode, boolean)
      */
     public static Locale getLocale(final Context context, final LanguageCode language, final Country country,
             final Class<?> caller)

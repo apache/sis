@@ -203,7 +203,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *       {@link org.opengis.referencing.crs.TemporalCRS},
      *       {@link org.opengis.referencing.crs.EngineeringCRS},
      *       {@link org.opengis.referencing.crs.ImageCRS} or
-     *       {@link org.opengis.referencing.cs.CompoundCRS},
+     *       {@link org.apache.sis.referencing.cs.DefaultCompoundCS},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
      *       Note that if the given object implements more than one of the above-cited interfaces,
      *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
