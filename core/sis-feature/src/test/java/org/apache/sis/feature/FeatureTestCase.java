@@ -36,6 +36,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests common to {@link DenseFeatureTest} and {@link SparseFeatureTest}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Marc le Bihan
  * @since   0.5
  * @version 0.5
  * @module
@@ -129,11 +130,44 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     }
 
     /**
+     * Tests the {@link AbstractFeature#getProperty(String)} method. This test uses a very simple and
+     * straightforward {@code FeatureType} similar to the ones obtained when reading a ShapeFile.
+     *
+     * <div class="note">In a previous SIS version, the first property value was always {@code null}
+     * if the implementation was {@link DenseFeature} (see SIS-178). This test reproduced the bug,
+     * and now aim to avoid regression.</div>
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-178">SIS-178</a>
+     */
+    @Test
+    public void testGetProperty() {
+        final DefaultFeatureType type = new DefaultFeatureType(
+                Collections.singletonMap(DefaultFeatureType.NAME_KEY, "My shapefile"), false, (DefaultFeatureType[]) null,
+                DefaultAttributeTypeTest.attribute("COMMUNE"),
+                DefaultAttributeTypeTest.attribute("REF_INSEE"),
+                DefaultAttributeTypeTest.attribute("CODE_POSTAL"));
+
+        feature = createFeature(type);
+        feature.setPropertyValue("COMMUNE",     "Bagneux");
+        feature.setPropertyValue("REF_INSEE",   "92007");
+        feature.setPropertyValue("CODE_POSTAL", "92220");
+
+        assertEquals("CODE_POSTAL", "92220",   feature.getProperty("CODE_POSTAL").getValue());
+        assertEquals("REF_INSEE",   "92007",   feature.getProperty("REF_INSEE")  .getValue());
+        assertEquals("COMMUNE",     "Bagneux", feature.getProperty("COMMUNE")    .getValue());
+
+        assertEquals("CODE_POSTAL", "92220",   feature.getPropertyValue("CODE_POSTAL"));
+        assertEquals("REF_INSEE",   "92007",   feature.getPropertyValue("REF_INSEE"));
+        assertEquals("COMMUNE",     "Bagneux", feature.getPropertyValue("COMMUNE"));
+    }
+
+    /**
      * Tests the {@link AbstractFeature#getPropertyValue(String)} method on a simple feature without super-types.
      * This method also tests that attempts to set a value of the wrong type throw an exception and leave the
      * previous value unchanged, that the feature is cloneable and that serialization works.
      */
     @Test
+    @DependsOnMethod("testGetProperty")
     public void testSimpleValues() {
         feature = createFeature(DefaultFeatureTypeTest.city());
         setAttributeValue("city", "Utopia", "Atlantide");
