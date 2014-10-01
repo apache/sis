@@ -26,5 +26,5 @@ package org.opengis.annotation;
  * @module
  */
 public enum Specification {
-    ISO_19103, ISO_19107, ISO_19111, ISO_19115
+    ISO_19103, ISO_19107, ISO_19111, ISO_19115, ISO_19115_2, OGC_01009
 }

@@ -26,6 +26,8 @@ package org.opengis.annotation;
  * The problem is caused by existence of the <code>@UML</code> annotation, defined in GeoAPI.
  * Adding dependency to the GeoAPI JAR file does not help. The workaround applied here is to
  * redefine the UML annotation without the <code>@Documented</code> meta-annotation.
+ * The {@code UML} annotation defined here should have precedence over the GeoAPI annotation
+ * at Javadoc generation time only (not at compile-time).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
