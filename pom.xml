@@ -577,7 +577,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           </groups>
 
           <!-- Internal packages to hide from javadoc. -->
-          <excludePackageNames>org.apache.sis.internal:org.apache.sis.util.resources:org.apache.sis.referencing.operation.provider:com</excludePackageNames>
+          <excludePackageNames>org.apache.sis.internal:org.apache.sis.util.resources:org.apache.sis.referencing.operation.provider:com:org.opengis</excludePackageNames>
 
           <!-- Custom taglets, some of them implemented in Java. -->
           <tags>
