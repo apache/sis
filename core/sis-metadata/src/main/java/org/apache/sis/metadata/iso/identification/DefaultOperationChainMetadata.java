@@ -32,9 +32,7 @@ import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
-// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
- * </pre>
  * Operation chain information.
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
@@ -142,9 +140,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
         name = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns a narrative explanation of the services in the chain and resulting output.
      *
      * @return Narrative explanation of the services in the chain and resulting output, or {@code null} if none.
@@ -165,9 +161,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
         description = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns information about the operations applied by the chain.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>

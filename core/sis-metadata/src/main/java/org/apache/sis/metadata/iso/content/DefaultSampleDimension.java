@@ -33,9 +33,7 @@ import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
-// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
- * </pre>
  * The characteristic of each dimension (layer) included in the resource.
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
@@ -198,9 +196,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         }
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the minimum value of data values in each dimension included in the resource.
      *
      * @return Minimum value of data values in each dimension included in the resource, or {@code null} if unspecified.
@@ -221,9 +217,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         minValue = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the maximum value of data values in each dimension included in the resource.
      *
      * @return Maximum value of data values in each dimension included in the resource, or {@code null} if unspecified.
@@ -244,9 +238,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         maxValue = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the mean value of data values in each dimension included in the resource.
      *
      * @return The mean value of data values in each dimension included in the resource, or {@code null} if none.
@@ -267,9 +259,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         meanValue = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the number of values used in a thematic classification resource.
      *
      * @return The number of values used in a thematic classification resource, or {@code null} if none.
@@ -290,9 +280,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         numberOfValues = newValues;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the standard deviation of data values in each dimension included in the resource.
      *
      * @return Standard deviation of data values in each dimension included in the resource, or {@code null} if none.
@@ -313,9 +301,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         standardDeviation = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the units of data in the dimension.
      *
      * @return The units of data in the dimension, or {@code null} if unspecified.
@@ -336,9 +322,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         units = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the scale factor which has been applied to the cell value.
      *
      * @return Scale factor which has been applied to the cell value, or {@code null} if none.
@@ -359,9 +343,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         scaleFactor = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the physical value corresponding to a cell value of zero.
      *
      * @return The physical value corresponding to a cell value of zero, or {@code null} if none.
@@ -382,9 +364,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         offset = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the maximum number of significant bits in the uncompressed representation
      * for the value in each band of each pixel.
      *
@@ -409,9 +389,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         bitsPerValue = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns type of other attribute description.
      *
      * @return Type of other attribute description, or {@code null} if none.
@@ -432,9 +410,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         otherPropertyType = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns instance of other/attributeType that defines attributes not explicitly
      * included in {@link CoverageContentType}, or {@code null} if none.
      *

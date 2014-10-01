@@ -31,9 +31,7 @@ import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
-// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
- * </pre>
  * Information about resource release constraints.
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
@@ -110,9 +108,7 @@ public class DefaultReleasability extends ISOMetadata {
         }
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the parties to which the release statement applies.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
@@ -142,9 +138,7 @@ public class DefaultReleasability extends ISOMetadata {
         addressees = writeCollection(newValues, addressees, DefaultResponsibility.class);
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the release statement.
      *
      * @return Release statement, or {@code null} if none.
@@ -165,9 +159,7 @@ public class DefaultReleasability extends ISOMetadata {
         statement = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Components in determining releasability.
      *
      * @return Components in determining releasability.

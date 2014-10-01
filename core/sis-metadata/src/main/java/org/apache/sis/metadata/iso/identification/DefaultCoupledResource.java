@@ -37,9 +37,7 @@ import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
-// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
- * </pre>
  * Links a given operation name with a resource identified by an "identifier".
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
@@ -145,9 +143,7 @@ public class DefaultCoupledResource extends ISOMetadata {
         }
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns scoped identifier of the resource in the context of the given service instance.
      *
      * @return identifier of the resource, or {@code null} if none.

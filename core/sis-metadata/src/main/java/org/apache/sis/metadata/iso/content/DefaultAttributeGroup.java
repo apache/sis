@@ -31,9 +31,7 @@ import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
-// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
- * </pre>
  * Information about content type for groups of attributes for a specific
  * {@linkplain DefaultRangeDimension range dimension}.
  *
@@ -116,9 +114,7 @@ public class DefaultAttributeGroup extends ISOMetadata {
         }
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the types of information represented by the value(s).
      *
      * @return The types of information represented by the value(s).
@@ -138,9 +134,7 @@ public class DefaultAttributeGroup extends ISOMetadata {
         contentTypes = writeCollection(newValues, contentTypes, CoverageContentType.class);
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns information on an attribute of the resource.
      *
      * @return Information on an attribute of the resource.
