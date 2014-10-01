@@ -30,9 +30,7 @@ import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
-// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
- * </pre>
  * Information about the party if the party is an organization.
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
@@ -119,9 +117,7 @@ public class DefaultOrganisation extends AbstractParty {
         }
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the graphics identifying organization.
      *
      * @return Graphics identifying organization, or an empty collection if there is none.
@@ -141,9 +137,7 @@ public class DefaultOrganisation extends AbstractParty {
         logo = writeCollection(newValues, logo, BrowseGraphic.class);
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the individuals in the named organization.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>

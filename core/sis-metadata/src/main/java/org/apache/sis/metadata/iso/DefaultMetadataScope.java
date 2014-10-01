@@ -29,9 +29,7 @@ import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
-// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
- * </pre>
  * Information about the scope of the resource.
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
@@ -109,9 +107,7 @@ public class DefaultMetadataScope extends ISOMetadata {
         }
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Return the code for the scope.
      *
      * @return The ode for the scope.
@@ -132,9 +128,7 @@ public class DefaultMetadataScope extends ISOMetadata {
         resourceScope = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Return a description of the scope, or {@code null} if none.
      *
      * @return Description of the scope, or {@code null} if none.

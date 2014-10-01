@@ -31,9 +31,7 @@ import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
-// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
- * </pre>
  * Information about the occurring feature type.
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
@@ -111,9 +109,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
         }
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the name of the feature type.
      *
      * @return Name of the feature type.
@@ -136,9 +132,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
         featureTypeName = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the number of occurrence of feature instances for this feature types, or {@code null} if none.
      *
      * @return The number of occurrence of feature instances for this feature types, or {@code null} if none.

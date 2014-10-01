@@ -29,9 +29,7 @@ import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
-// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
- * </pre>
  * Information about the party if the party is an individual.
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
@@ -108,9 +106,7 @@ public class DefaultIndividual extends AbstractParty {
         }
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns position of the individual in an organization, or {@code null} if none.
      *
      * @return Position of the individual in an organization, or {@code null} if none.

@@ -32,9 +32,7 @@ import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 
-// Leading </pre> is a workaround for a javadoc 6 bug on classes having @UML annotation.
 /**
- * </pre>
  * Information about the party and their role.
  *
  * <div class="warning"><b>Note on International Standard versions</b><br>
@@ -138,9 +136,7 @@ public class DefaultResponsibility extends ISOMetadata {
         }
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the function performed by the responsible party.
      *
      * @return Function performed by the responsible party.
@@ -161,9 +157,7 @@ public class DefaultResponsibility extends ISOMetadata {
         role = newValue;
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns the spatial or temporal extents of the role.
      *
      * @return The spatial or temporal extents of the role.
@@ -183,9 +177,7 @@ public class DefaultResponsibility extends ISOMetadata {
         extents = writeCollection(newValues, extents, Extent.class);
     }
 
-    // Leading </pre> is a workaround for a javadoc 6 bug on methods having @UML annotation.
     /**
-     * </pre>
      * Returns information about the parties.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
