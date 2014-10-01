@@ -26,5 +26,5 @@ package org.opengis.annotation;
  * @module
  */
 public enum Obligation {
-    MANDATORY, OPTIONAL, CONDITIONAL
+    MANDATORY, OPTIONAL, CONDITIONAL, FORBIDDEN
 }
