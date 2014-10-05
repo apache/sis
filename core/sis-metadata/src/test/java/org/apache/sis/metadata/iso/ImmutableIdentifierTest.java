@@ -32,7 +32,7 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
-import static org.opengis.referencing.ReferenceIdentifier.*;
+import static org.opengis.metadata.Identifier.*;
 
 
 /**

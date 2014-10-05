@@ -244,7 +244,11 @@ public class ShapeFile {
             for (FieldDescriptor fd: this.FDArray) {
                 data = new byte[fd.getLength()];
                 df.get(data);
-                String value = new String(data);
+                int length = data.length;
+                while (length != 0 && data[length - 1] <= ' ') {
+                    length--;
+                }
+                String value = new String(data, 0, length);
                 f.setPropertyValue(fd.getName(), value);
             }
 

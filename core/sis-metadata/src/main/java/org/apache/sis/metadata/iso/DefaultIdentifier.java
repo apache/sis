@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.util.InternationalString;
 
 
 /**
@@ -40,8 +41,7 @@ import org.opengis.metadata.citation.Citation;
  * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axis},
  * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum},
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} and more
- * rather use an {@code Identifier} sub-interface, namely {@link org.opengis.referencing.ReferenceIdentifier}.
- * The later is implemented in SIS by {@link ImmutableIdentifier}, which is a class unrelated to the usual
+ * rather use the {@link ImmutableIdentifier} implementation, which is a class unrelated to the usual
  * {@code org.apache.metadata} hierarchy because of the immutable nature of referencing objects.</p>
  *
  * {@section Text, URN and XML representations}
@@ -76,7 +76,7 @@ import org.opengis.metadata.citation.Citation;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see ImmutableIdentifier
@@ -98,12 +98,22 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     private String code;
 
     /**
+     * Identifier or namespace in which the code is valid.
+     */
+    private String codeSpace;
+
+    /**
      * Identifier of the version of the associated code space or code, as specified
      * by the code space or code authority. This version is included only when the
      * {@linkplain #getCode code} uses versions. When appropriate, the edition is
      * identified by the effective date, coded using ISO 8601 date format.
      */
     private String version;
+
+    /**
+     * Natural language description of the meaning of the code value.
+     */
+    private InternationalString description;
 
     /**
      * Organization or party responsible for definition and maintenance of the
@@ -152,8 +162,11 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     public DefaultIdentifier(final Identifier object) {
         super(object);
         if (object != null) {
-            code      = object.getCode();
-            authority = object.getAuthority();
+            code        = object.getCode();
+            codeSpace   = object.getCodeSpace();
+            version     = object.getVersion();
+            description = object.getDescription();
+            authority   = object.getAuthority();
         }
     }
 
@@ -183,9 +196,9 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     }
 
     /**
-     * Alphanumeric value identifying an instance in the namespace.
+     * Returns the alphanumeric value identifying an instance in the namespace.
      *
-     * @return Value identifying an instance in the namespace, or {@code null}.
+     * @return Value identifying an instance in the namespace.
      */
     @Override
     @XmlElement(name = "code", required = true)
@@ -204,6 +217,30 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     }
 
     /**
+     * Returns the identifier or namespace in which the code is valid.
+     *
+     * @return The identifier code space, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getCodeSpace() {
+        return codeSpace;
+    }
+
+    /**
+     * Sets the identifier or namespace in which the code is valid.
+     *
+     * @param newValue The new code space, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    public void setCodeSpace(final String newValue) {
+        checkWritePermission();
+        codeSpace = newValue;
+    }
+
+    /**
      * Identifier of the version of the associated code, as specified by the code space or
      * code authority. This version is included only when the {@linkplain #getCode() code}
      * uses versions. When appropriate, the edition is identified by the effective date,
@@ -211,6 +248,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @return The version, or {@code null} if not available.
      */
+    @Override
     public String getVersion() {
         return version;
     }
@@ -223,6 +261,30 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     public void setVersion(final String newValue) {
         checkWritePermission();
         version = newValue;
+    }
+
+    /**
+     * Returns the natural language description of the meaning of the code value.
+     *
+     * @return The natural language description, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public InternationalString getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the natural language description of the meaning of the code value.
+     *
+     * @param newValue The new natural language description, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    public void setDescription(final InternationalString newValue) {
+        checkWritePermission();
+        description = newValue;
     }
 
     /**

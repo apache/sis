@@ -30,7 +30,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -196,7 +196,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
          * The intend is to allow users to set its own parameters by a call to group.values().addAll(myParam).
          * Otherwise the given parameter will be added, in which case we need to check the cardinality.
          */
-        final ReferenceIdentifier name = desc.getName();
+        final Identifier name = desc.getName();
         int count = 0;
         for (int i=0; i<size; i++) {
             final GeneralParameterValue value = values[i];
@@ -239,7 +239,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
              * For a more accurate error message, check if the operation failed because the
              * parameter name was not found, or the parameter descriptor does not matches.
              */
-            final ReferenceIdentifier name = desc.getName();
+            final Identifier name = desc.getName();
             for (final GeneralParameterDescriptor descriptor : descriptors) {
                 if (name.equals(descriptor.getName())) {
                     throw new IllegalArgumentException(Errors.format(
@@ -257,7 +257,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      * then this method throws an {@link InvalidParameterCardinalityException}.
      */
     private void ensureCanAdd(final GeneralParameterDescriptor desc) {
-        final ReferenceIdentifier name = desc.getName();
+        final Identifier name = desc.getName();
         int count = 0;
         for (int i=0; i<size; i++) {
             if (name.equals(values[i].getDescriptor().getName())) {
@@ -279,7 +279,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
     private void ensureCanRemove(final GeneralParameterDescriptor desc) {
         final int min = desc.getMinimumOccurs();
         if (min != 0) { // Optimization for a common case.
-            final ReferenceIdentifier name = desc.getName();
+            final Identifier name = desc.getName();
             int count = 0;
             for (int i=0; i<size; i++) {
                 if (name.equals(values[i].getDescriptor().getName())) {

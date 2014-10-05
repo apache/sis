@@ -18,13 +18,13 @@ package org.apache.sis.referencing;
 
 import java.util.Iterator;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
  * An iterator over the {@linkplain IdentifiedObject#getName() name} of an identified object followed by
- * {@linkplain IdentifiedObject#getAlias() aliases} which are instance of {@link ReferenceIdentifier}.
+ * {@linkplain IdentifiedObject#getAlias() aliases} which are instance of {@link Identifier}.
  * This iterator is used for {@link AbstractIdentifiedObject} marshalling because GML merges the name and
  * aliases in a single {@code <gml:name>} property.
  *
@@ -33,14 +33,14 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
-final class NameIterator implements Iterator<ReferenceIdentifier> {
+final class NameIterator implements Iterator<Identifier> {
     /**
      * The next element to return, or {@code null} if we reached the end of iteration.
      */
-    private ReferenceIdentifier next;
+    private Identifier next;
 
     /**
      * An iterator over the aliases.
@@ -73,12 +73,12 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
      * will be used only by JAXB, which is presumed checking for {@link #hasNext()} correctly.
      */
     @Override
-    public ReferenceIdentifier next() {
-        final ReferenceIdentifier n = next;
+    public Identifier next() {
+        final Identifier n = next;
         while (alias.hasNext()) {
             final GenericName c = alias.next();
-            if (c instanceof ReferenceIdentifier) {
-                next = (ReferenceIdentifier) c;
+            if (c instanceof Identifier) {
+                next = (Identifier) c;
                 return n;
             }
         }

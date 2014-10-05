@@ -17,11 +17,11 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 
 
 /**
- * JAXB adapter mapping the GeoAPI {@link ReferenceIdentifier} to an implementation class that can
+ * JAXB adapter mapping the GeoAPI {@link Identifier} to an implementation class that can
  * be marshalled. See the package documentation for more information about JAXB and interfaces.
  *
  * <p>Note that a class of the same name is defined in the {@link org.apache.sis.internal.jaxb.metadata}
@@ -36,7 +36,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *   <gml:identifier codeSpace="EPSG">4326</gml:identifier>
  * }
  *
- * If the {@code ReferenceIdentifier} to marshal contains a {@linkplain ReferenceIdentifier#getVersion() version},
+ * If the {@code Identifier} to marshal contains a {@linkplain Identifier#getVersion() version},
  * then this adapter concatenates the version to the codespace in a "URI-like" way like below:
  *
  * {@preformat xml
@@ -50,18 +50,18 @@ import org.opengis.referencing.ReferenceIdentifier;
  *   <gml:identifier codeSpace="OGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
  * }
  *
- * In such case this class takes the codespace as the {@linkplain ReferenceIdentifier#getAuthority() authority}
- * ("OGP" in above example), and the 3 last URI elements are parsed as the codespace, version (optional) and
- * code values respectively.
+ * In such case this class takes the codespace as the {@linkplain Identifier#getAuthority() authority}
+ * ("OGP" in above example), and the 3 last URI elements are parsed as the codespace, version (optional)
+ * and code values respectively.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.00)
- * @version 0.4
+ * @version 0.5
  * @module
  */
-public final class RS_Identifier extends XmlAdapter<Code, ReferenceIdentifier> {
+public final class RS_Identifier extends XmlAdapter<Code, Identifier> {
     /**
      * Substitutes the wrapper value read from an XML stream by the object which will
      * represents the identifier. JAXB calls automatically this method at unmarshalling time.
@@ -70,7 +70,7 @@ public final class RS_Identifier extends XmlAdapter<Code, ReferenceIdentifier> {
      * @return An identifier which represents the value.
      */
     @Override
-    public ReferenceIdentifier unmarshal(final Code value) {
+    public Identifier unmarshal(final Code value) {
         return (value != null) ? value.getIdentifier() : null;
     }
 
@@ -82,7 +82,7 @@ public final class RS_Identifier extends XmlAdapter<Code, ReferenceIdentifier> {
      * @return The adapter for the given metadata.
      */
     @Override
-    public Code marshal(final ReferenceIdentifier value) {
+    public Code marshal(final Identifier value) {
         return (value != null) ? new Code(value) : null;
     }
 }

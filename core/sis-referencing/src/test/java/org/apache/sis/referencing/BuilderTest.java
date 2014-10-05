@@ -20,7 +20,7 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -75,23 +75,23 @@ public final strictfp class BuilderTest extends TestCase {
             fail("Setting a different codespace shall not be allowed.");
         } catch (IllegalStateException e) {
             final String message = e.getMessage();
-            assertTrue(message, message.contains(ReferenceIdentifier.AUTHORITY_KEY));
+            assertTrue(message, message.contains(Identifier.AUTHORITY_KEY));
         }
         /*
          * The failed attempt to set a new codespace shall not have modified builder state.
          */
-        assertEquals("EPSG", builder.properties.get(ReferenceIdentifier.CODESPACE_KEY));
-        assertSame  ( OGP,   builder.properties.get(ReferenceIdentifier.AUTHORITY_KEY));
+        assertEquals("EPSG", builder.properties.get(Identifier.CODESPACE_KEY));
+        assertSame  ( OGP,   builder.properties.get(Identifier.AUTHORITY_KEY));
         /*
          * After a cleanup (normally after a createXXX(…) method call), user shall be allowed to
          * set a new codespace again. Note that the cleanup operation shall not clear the codespace.
          */
         builder.onCreate(true);
-        assertEquals("EPSG", builder.properties.get(ReferenceIdentifier.CODESPACE_KEY));
-        assertSame  ( OGP,   builder.properties.get(ReferenceIdentifier.AUTHORITY_KEY));
+        assertEquals("EPSG", builder.properties.get(Identifier.CODESPACE_KEY));
+        assertSame  ( OGP,   builder.properties.get(Identifier.AUTHORITY_KEY));
         builder.setCodeSpace(EPSG, "EPSG");
-        assertEquals("EPSG", builder.properties.get(ReferenceIdentifier.CODESPACE_KEY));
-        assertSame  ( EPSG,  builder.properties.get(ReferenceIdentifier.AUTHORITY_KEY));
+        assertEquals("EPSG", builder.properties.get(Identifier.CODESPACE_KEY));
+        assertSame  ( EPSG,  builder.properties.get(Identifier.AUTHORITY_KEY));
     }
 
     /**
@@ -104,10 +104,9 @@ public final strictfp class BuilderTest extends TestCase {
         final LocalName alias1 = SIS_NAMES.createLocalName(null, "Mercator (1SP)");
         final LocalName alias2 = SIS_NAMES.createLocalName(null, "Mercator_1SP");
         final LocalName alias3 = SIS_NAMES.createLocalName(null, "CT_Mercator");
-        assertEquals("Mercator (variant A)", name  .toString());
-        assertEquals("Mercator (1SP)",       alias1.toString());
-        assertEquals("Mercator_1SP",         alias2.toString());
-        assertEquals("CT_Mercator",          alias3.toString());
+        assertEquals("Mercator (1SP)", alias1.toString());
+        assertEquals("Mercator_1SP",   alias2.toString());
+        assertEquals("CT_Mercator",    alias3.toString());
 
         // The test.
         final BuilderMock builder = new BuilderMock();
@@ -165,8 +164,8 @@ public final strictfp class BuilderTest extends TestCase {
     @Test
     public void testIdentifiers() {
         // Expected values to be used later in the test.
-        final ReferenceIdentifier id1 = new ImmutableIdentifier(OGP,     "EPSG",    "9804");
-        final ReferenceIdentifier id2 = new ImmutableIdentifier(GEOTIFF, "GeoTIFF", "7");
+        final Identifier id1 = new ImmutableIdentifier(OGP,     "EPSG",    "9804");
+        final Identifier id2 = new ImmutableIdentifier(GEOTIFF, "GeoTIFF", "7");
         assertEquals("EPSG:9804", IdentifiedObjects.toString(id1));
         assertEquals("GeoTIFF:7", IdentifiedObjects.toString(id2));
 
@@ -176,7 +175,6 @@ public final strictfp class BuilderTest extends TestCase {
         assertSame(builder, builder.addIdentifier(      "9804"));
         assertSame(builder, builder.addIdentifier(GEOTIFF, "7"));
         builder.onCreate(false);
-        assertArrayEquals(new ReferenceIdentifier[] {id1, id2},
-                (ReferenceIdentifier[]) builder.properties.get(IDENTIFIERS_KEY));
+        assertArrayEquals(new Identifier[] {id1, id2}, (Identifier[]) builder.properties.get(IDENTIFIERS_KEY));
     }
 }

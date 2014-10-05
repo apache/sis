@@ -22,10 +22,10 @@ import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.LenientComparable;
@@ -57,7 +57,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     /**
      * The primary name by which this object is identified.
      */
-    protected ReferenceIdentifier name;
+    protected Identifier name;
 
     /**
      * Creates an identified object without identifier.
@@ -80,7 +80,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      *
      * @param name The primary name by which this object is identified.
      */
-    public SimpleIdentifiedObject(final ReferenceIdentifier name) {
+    public SimpleIdentifiedObject(final Identifier name) {
         this.name = name;
     }
 
@@ -90,7 +90,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * @return The identifier given at construction time.
      */
     @Override
-    public ReferenceIdentifier getName() {
+    public Identifier getName() {
         return name;
     }
 
@@ -104,7 +104,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * @return The identifiers, or an empty set if none.
      */
     @Override
-    public final Set<ReferenceIdentifier> getIdentifiers() {
+    public final Set<Identifier> getIdentifiers() {
         return Collections.emptySet();
     }
 
@@ -168,7 +168,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     @Override
     public final int hashCode() {
         int code = (int) serialVersionUID;
-        final ReferenceIdentifier name = getName();
+        final Identifier name = getName();
         if (name != null) {
             code ^= name.hashCode();
         }
@@ -234,7 +234,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     public String toString() {
         final String code, codespace;
         final Citation authority;
-        final ReferenceIdentifier name = this.name;
+        final Identifier name = this.name;
         if (name != null) {
             code      = name.getCode();
             codespace = name.getCodeSpace();
