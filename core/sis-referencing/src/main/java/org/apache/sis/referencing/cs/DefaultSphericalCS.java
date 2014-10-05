@@ -96,7 +96,7 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
@@ -106,7 +106,7 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>

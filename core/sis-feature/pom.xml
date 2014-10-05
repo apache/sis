@@ -58,7 +58,26 @@ Representations of geographic features.
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Martin Desruisseaux</name>
+      <id>desruisseaux</id>
+      <email>desruisseaux@apache.org</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
+  <contributors>
+    <contributor>
+      <name>Marc le Bihan</name>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+  </contributors>
 
 
   <!-- ===========================================================

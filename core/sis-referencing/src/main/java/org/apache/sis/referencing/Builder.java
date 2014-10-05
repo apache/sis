@@ -25,9 +25,9 @@ import java.lang.reflect.ParameterizedType;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.resources.Errors;
@@ -146,7 +146,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public abstract class Builder<B extends Builder<B>> {
@@ -175,7 +175,7 @@ public abstract class Builder<B extends Builder<B>> {
     /**
      * A temporary list for identifiers, before to assign them to the {@link #properties}.
      */
-    private final List<ReferenceIdentifier> identifiers;
+    private final List<Identifier> identifiers;
 
     /**
      * The codespace as a {@code NameSpace} object, or {@code null} if not yet created.
@@ -191,7 +191,7 @@ public abstract class Builder<B extends Builder<B>> {
         assert verifyParameterizedType(getClass());
         properties  = new HashMap<String,Object>(8);
         aliases     = new ArrayList<GenericName>(4);
-        identifiers = new ArrayList<ReferenceIdentifier>(4);
+        identifiers = new ArrayList<Identifier> (4);
     }
 
     /**
@@ -226,8 +226,8 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Sets the property value for the given key, if a change is still possible. The check for change permission
-     * is needed for all keys defined in the {@link ReferenceIdentifier} interface. This check is not needed for
-     * other keys, so callers do not need to invoke this method for other keys.
+     * is needed for all keys defined in the {@link Identifier} interface. This check is not needed for other keys,
+     * so callers do not need to invoke this method for other keys.
      *
      * @param  key The key of the property to set.
      * @param  value The value to set.
@@ -250,7 +250,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     private NameSpace namespace() {
         if (namespace == null) {
-            final String codespace = (String) properties.get(ReferenceIdentifier.CODESPACE_KEY);
+            final String codespace = (String) properties.get(Identifier.CODESPACE_KEY);
             if (codespace != null) {
                 namespace = NAMES.createNameSpace(NAMES.createLocalName(null, codespace), null);
             }
@@ -259,7 +259,7 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Sets the {@code ReferenceIdentifier} authority and code space. This method is typically invoked only once,
+     * Sets the {@code Identifier} authority and code space. This method is typically invoked only once,
      * since a compound object often uses the same code space for all individual components.
      *
      * <p><b>Condition:</b>
@@ -277,15 +277,15 @@ public abstract class Builder<B extends Builder<B>> {
      *         once since builder construction or since the last call to a {@code createXXX(…)} method.
      */
     public B setCodeSpace(final Citation authority, final String codespace) {
-        if (!setProperty(ReferenceIdentifier.CODESPACE_KEY, codespace)) {
+        if (!setProperty(Identifier.CODESPACE_KEY, codespace)) {
             namespace = null;
         }
-        setProperty(ReferenceIdentifier.AUTHORITY_KEY, authority);
+        setProperty(Identifier.AUTHORITY_KEY, authority);
         return self();
     }
 
     /**
-     * Sets the {@code ReferenceIdentifier} version of object definitions. This method is typically invoked only once,
+     * Sets the {@code Identifier} version of object definitions. This method is typically invoked only once,
      * since a compound object often uses the same version for all individual components.
      *
      * <p><b>Condition:</b>
@@ -302,15 +302,15 @@ public abstract class Builder<B extends Builder<B>> {
      *         once since builder construction or since the last call to a {@code createXXX(…)} method.
      */
     public B setVersion(final String version) {
-        setProperty(ReferenceIdentifier.VERSION_KEY, version);
+        setProperty(Identifier.VERSION_KEY, version);
         return self();
     }
 
     /**
      * Adds an {@code IdentifiedObject} name given by a {@code String} or {@code InternationalString}.
      * The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space}
-     * and {@link #setVersion(String) version} information for creating the {@link ReferenceIdentifier} or
-     * {@link GenericName} object.
+     * and {@link #setVersion(String) version} information for creating the {@link Identifier} or {@link GenericName}
+     * object.
      *
      * {@section Name and aliases}
      * This method can be invoked many times. The first invocation sets the
@@ -394,7 +394,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  name The {@code IdentifiedObject} name as an identifier.
      * @return {@code this}, for method call chaining.
      */
-    public B addName(final ReferenceIdentifier name) {
+    public B addName(final Identifier name) {
         ensureNonNull("name", name);
         final Object old = properties.put(IdentifiedObject.NAME_KEY, name);
         if (old != null) {
@@ -434,7 +434,7 @@ public abstract class Builder<B extends Builder<B>> {
     /**
      * Adds an {@code IdentifiedObject} identifier given by a {@code String}.
      * The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space}
-     * and {@link #setVersion(String) version} information for creating the {@link ReferenceIdentifier} object.
+     * and {@link #setVersion(String) version} information for creating the {@link Identifier} object.
      *
      * <p><b>Lifetime:</b>
      * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
@@ -444,8 +444,8 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addIdentifier(final String identifier) {
         ensureNonNull("identifier", identifier);
-        identifiers.add(new ImmutableIdentifier((Citation) properties.get(ReferenceIdentifier.AUTHORITY_KEY),
-                (String) properties.get(ReferenceIdentifier.CODESPACE_KEY), identifier));
+        identifiers.add(new ImmutableIdentifier((Citation) properties.get(Identifier.AUTHORITY_KEY),
+                (String) properties.get(Identifier.CODESPACE_KEY), identifier));
         return self();
     }
 
@@ -480,9 +480,25 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  identifier The {@code IdentifiedObject} identifier.
      * @return {@code this}, for method call chaining.
      */
-    public B addIdentifier(final ReferenceIdentifier identifier) {
+    public B addIdentifier(final Identifier identifier) {
         ensureNonNull("identifier", identifier);
         identifiers.add(identifier);
+        return self();
+    }
+
+    /**
+     * Sets the parameter description as a {@code String} or {@code InternationalString} instance.
+     * Calls to this method overwrite any previous value.
+     *
+     * <p><b>Lifetime:</b>
+     * previous descriptions are discarded by calls to {@code setDescription(…)}.
+     * Descriptions are cleared after a {@code createXXX(…)} method has been invoked.</p>
+     *
+     * @param  description The description, or {@code null} if none.
+     * @return {@code this}, for method call chaining.
+     */
+    public B setDescription(final CharSequence description) {
+        properties.put(Identifier.DESCRIPTION_KEY, description);
         return self();
     }
 
@@ -529,8 +545,8 @@ public abstract class Builder<B extends Builder<B>> {
      * @see #properties
      */
     protected void onCreate(final boolean cleanup) {
-        properties.put(IdentifiedObject.ALIAS_KEY,       cleanup ? null : aliases    .toArray(new GenericName        [aliases    .size()]));
-        properties.put(IdentifiedObject.IDENTIFIERS_KEY, cleanup ? null : identifiers.toArray(new ReferenceIdentifier[identifiers.size()]));
+        properties.put(IdentifiedObject.ALIAS_KEY,       cleanup ? null : aliases    .toArray(new GenericName[aliases    .size()]));
+        properties.put(IdentifiedObject.IDENTIFIERS_KEY, cleanup ? null : identifiers.toArray(new Identifier [identifiers.size()]));
         if (cleanup) {
             properties .put(IdentifiedObject.NAME_KEY, null);
             properties .remove(IdentifiedObject.REMARKS_KEY);

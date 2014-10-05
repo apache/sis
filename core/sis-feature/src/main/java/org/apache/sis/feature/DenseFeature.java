@@ -36,6 +36,7 @@ import org.opengis.feature.FeatureAssociation;
  * all (or almost all) elements in the array will be assigned a value.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Marc le Bihan
  * @since   0.5
  * @version 0.5
  * @module
@@ -101,17 +102,21 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     @Override
     public Property getProperty(final String name) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
-        final int index = getIndex(name);
-        if (properties instanceof Property[]) {
-            final Property property = ((Property[]) properties)[index];
-            if (property != null) {
-                return property;
-            }
-        } else {
+        final int index = getIndex(name); // Invoked first because this method checks name validity.
+
+        // Are the properties currently initialized? If not, wrap the values we can find.
+        if (!(properties instanceof Property[])) {
             wrapValuesInProperties();
         }
-        final Property property = createProperty(name);
-        properties[index] = property;
+
+        // Find the wanted property.
+        Property property = ((Property[]) properties)[index];
+
+        // If the property still have a null value, we create it, but we can only tell its type.
+        if (property == null) {
+            property = createProperty(name);
+            properties[index] = property;
+        }
         return property;
     }
 

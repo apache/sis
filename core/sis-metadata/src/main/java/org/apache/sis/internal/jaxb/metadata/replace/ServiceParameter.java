@@ -26,10 +26,10 @@ import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.internal.jaxb.metadata.direct.GO_MemberName;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -176,7 +176,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      */
     public static MemberName getMemberName(final ParameterDescriptor<?> parameter) {
         if (parameter != null) {
-            final ReferenceIdentifier id = parameter.getName();
+            final Identifier id = parameter.getName();
             if (id instanceof MemberName) {
                 return (MemberName) id;
             }
@@ -207,10 +207,10 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * @return The parameter name as an identifier (the type specified by ISO 19111).
      */
     @Override
-    public synchronized ReferenceIdentifier getName() {
+    public synchronized Identifier getName() {
         if (name == null && memberName != null) {
-            if (memberName instanceof ReferenceIdentifier) {
-                name = (ReferenceIdentifier) memberName;
+            if (memberName instanceof Identifier) {
+                name = (Identifier) memberName;
             } else {
                 name = new NameToIdentifier(memberName);
             }
@@ -365,7 +365,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * Null-safe string representation of the given identifier, for comparison purpose.
      * We ignore codespace because they can not be represented in ISO 19139 XML documents.
      */
-    private static String toString(final ReferenceIdentifier identifier) {
+    private static String toString(final Identifier identifier) {
         return (identifier != null) ? identifier.toString() : null;
     }
 }

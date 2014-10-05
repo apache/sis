@@ -342,10 +342,9 @@ public class DefaultSource extends ISOMetadata implements Source {
 
     /**
      * Return the type and / or extent of the source.
+     * This information should be provided if the {@linkplain #getDescription() description} is not provided.
      *
      * @return Type and / or extent of the source, or {@code null} if none.
-     *
-     * @condition Mandatory if the {@linkplain #getDescription() description} is not provided.
      *
      * @since 0.5
      */

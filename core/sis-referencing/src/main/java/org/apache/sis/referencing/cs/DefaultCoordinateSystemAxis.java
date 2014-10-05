@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
@@ -253,7 +253,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
@@ -263,7 +263,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
@@ -458,7 +458,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      */
     private void setMinimum(final Double value) {
         if (value != null && canSetProperty("minimumValue", minimumValue != NEGATIVE_INFINITY)) {
-            final double min = value.doubleValue();
+            final double min = value; // Apply unboxing.
             if (min < maximumValue) {
                 minimumValue = min;
             } else {
@@ -492,7 +492,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      */
     private void setMaximum(final Double value) {
         if (value != null && canSetProperty("maximumValue", maximumValue != POSITIVE_INFINITY)) {
-            final double max = value.doubleValue();
+            final double max = value; // Apply unboxing.
             if (max > minimumValue) {
                 maximumValue = max;
             } else {
@@ -664,7 +664,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         {
             return false;
         }
-        ReferenceIdentifier name = that.getName();
+        Identifier name = that.getName();
         if (name != UNNAMED) {
             /*
              * Checking the abbreviation is not sufficient. For example the polar angle and the

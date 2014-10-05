@@ -24,9 +24,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.iso.Types;
@@ -171,7 +171,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
@@ -181,7 +181,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>

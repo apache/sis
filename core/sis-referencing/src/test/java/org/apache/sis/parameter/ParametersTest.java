@@ -22,7 +22,7 @@ import javax.measure.unit.SI;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValue;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import javax.measure.unit.Unit;
@@ -110,9 +110,9 @@ public final strictfp class ParametersTest extends TestCase {
     {
         assertEquals(valueDomain, Parameters.getValueDomain(descriptor));
         assertEquals(valueDomain, Parameters.getValueDomain(new ParameterDescriptor<T>() {
-            @Override public ReferenceIdentifier      getName()          {return descriptor.getName();}
+            @Override public Identifier               getName()          {return descriptor.getName();}
             @Override public Collection<GenericName>  getAlias()         {return descriptor.getAlias();}
-            @Override public Set<ReferenceIdentifier> getIdentifiers()   {return descriptor.getIdentifiers();}
+            @Override public Set<Identifier>          getIdentifiers()   {return descriptor.getIdentifiers();}
             @Override public InternationalString      getRemarks()       {return descriptor.getRemarks();}
             @Override public InternationalString      getDescription()   {return descriptor.getDescription();}
             @Override public ParameterDirection       getDirection()     {return descriptor.getDirection();}
