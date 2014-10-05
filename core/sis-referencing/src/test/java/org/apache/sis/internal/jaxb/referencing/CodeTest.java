@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.referencing;
 
 import java.util.Collections;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -39,11 +39,11 @@ import static org.junit.Assert.*;
  */
 public final strictfp class CodeTest extends TestCase {
     /**
-     * Tests the {@link Code#Code(ReferenceIdentifier)} constructor with {@code "EPSG:4326"} identifier.
+     * Tests the {@link Code#Code(Identifier)} constructor with {@code "EPSG:4326"} identifier.
      */
     @Test
     public void testSimple() {
-        final ReferenceIdentifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326");
+        final Identifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326");
         final Code value = new Code(id);
         assertEquals("codeSpace", "EPSG", value.codeSpace);
         assertEquals("code",      "4326", value.code);
@@ -51,7 +51,7 @@ public final strictfp class CodeTest extends TestCase {
          * Reverse operation. Note that the authority is lost since there is no room for that in a
          * <gml:identifier> element. Current implementation sets the authority to the code space.
          */
-        final ReferenceIdentifier actual = value.getIdentifier();
+        final Identifier actual = value.getIdentifier();
         assertSame  ("authority",  Citations.EPSG, actual.getAuthority());
         assertEquals("codeSpace", "EPSG", actual.getCodeSpace());
         assertNull  ("version",           actual.getVersion());
@@ -59,12 +59,12 @@ public final strictfp class CodeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Code#Code(ReferenceIdentifier)} constructor with {@code "EPSG:8.3:4326"} identifier.
+     * Tests the {@link Code#Code(Identifier)} constructor with {@code "EPSG:8.3:4326"} identifier.
      */
     @Test
     @DependsOnMethod("testSimple")
     public void testWithVersion() {
-        final ReferenceIdentifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326", "8.2", null);
+        final Identifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326", "8.2", null);
         final Code value = new Code(id);
         assertEquals("codeSpace", "EPSG:8.2", value.codeSpace);
         assertEquals("code",      "4326",     value.code);
@@ -72,7 +72,7 @@ public final strictfp class CodeTest extends TestCase {
          * Reverse operation. Note that the authority is lost since there is no room for that in a
          * <gml:identifier> element. Current implementation sets the authority to the code space.
          */
-        final ReferenceIdentifier actual = value.getIdentifier();
+        final Identifier actual = value.getIdentifier();
         assertSame  ("authority",  Citations.EPSG, actual.getAuthority());
         assertEquals("codeSpace", "EPSG", actual.getCodeSpace());
         assertEquals("version",   "8.2",  actual.getVersion());
@@ -85,7 +85,7 @@ public final strictfp class CodeTest extends TestCase {
     @Test
     @DependsOnMethod("testWithVersion")
     public void testForIdentifiedObject() {
-        final ReferenceIdentifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326", "8.2", null);
+        final Identifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326", "8.2", null);
         final Code value = Code.forIdentifiedObject(GeographicCRS.class, Collections.singleton(id));
         assertNotNull(value);
         assertEquals("codeSpace", "OGP", value.codeSpace);
@@ -103,7 +103,7 @@ public final strictfp class CodeTest extends TestCase {
         final Code value = new Code();
         value.codeSpace = "OGP";
         value.code = "urn:ogc:def:crs:EPSG:8.2:4326";
-        final ReferenceIdentifier actual = value.getIdentifier();
+        final Identifier actual = value.getIdentifier();
         assertSame  ("authority",  Citations.OGP, actual.getAuthority());
         assertEquals("codeSpace", "EPSG", actual.getCodeSpace());
         assertEquals("version",   "8.2",  actual.getVersion());

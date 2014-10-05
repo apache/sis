@@ -21,8 +21,8 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.iso.DefaultNameSpace;
 
@@ -33,14 +33,14 @@ import java.util.Objects;
 
 
 /**
- * Does the unobvious mapping between {@link ReferenceIdentifier} properties and {@link GenericName} ones.
+ * Does the unobvious mapping between {@link Identifier} properties and {@link GenericName} ones.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.5
  * @module
  */
-public final class NameToIdentifier implements ReferenceIdentifier {
+public final class NameToIdentifier implements Identifier {
     /**
      * The name from which to infer the identifier attributes.
      */
@@ -126,10 +126,20 @@ public final class NameToIdentifier implements ReferenceIdentifier {
     }
 
     /**
-     * Names are not versioned.
+     * Returns {@code null} since names are not versioned.
      */
     @Override
     public String getVersion() {
+        return null;
+    }
+
+    /**
+     * Returns {@code null} since we do not provide natural language description.
+     *
+     * @since 0.5
+     */
+    @Override
+    public InternationalString getDescription() {
         return null;
     }
 

@@ -19,6 +19,8 @@ package org.apache.sis.internal.jaxb;
 import java.util.AbstractMap;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.Citations;
 
 
 /**
@@ -30,7 +32,7 @@ import org.opengis.metadata.citation.Citation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements Identifier {
@@ -63,6 +65,42 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
     }
 
     /**
+     * Infers a code space from the authority.
+     *
+     * @return The code space, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getCodeSpace() {
+        return Citations.getIdentifier(getAuthority());
+    }
+
+    /**
+     * Returns {@code null} since this class does not hold version information.
+     *
+     * @return {@code null}.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getVersion() {
+        return null;
+    }
+
+    /**
+     * Returns {@code null} since this class does not hold natural language description.
+     *
+     * @return {@code null}.
+     *
+     * @since 0.5
+     */
+    @Override
+    public InternationalString getDescription() {
+        return null;
+    }
+
+    /**
      * Same than the above, but as an immutable entry. We use this implementation when the
      * entry has been created on-the-fly at iteration time rather than being stored in the
      * identifier collection.
@@ -70,7 +108,10 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
     static final class Immutable extends AbstractMap.SimpleImmutableEntry<Citation,String> implements Identifier {
         private static final long serialVersionUID = -6857931598565368465L;
         Immutable(Citation authority, String code) {super(authority, code);}
-        @Override public Citation getAuthority()   {return getKey();}
-        @Override public String   getCode()        {return getValue();}
+        @Override public Citation            getAuthority()   {return getKey();}
+        @Override public String              getCode()        {return getValue();}
+        @Override public String              getCodeSpace()   {return Citations.getIdentifier(getAuthority());}
+        @Override public String              getVersion()     {return null;}
+        @Override public InternationalString getDescription() {return null;}
     }
 }

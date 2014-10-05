@@ -37,8 +37,8 @@ import javax.measure.unit.Unit;
 import org.opengis.parameter.*;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.OperationMethod;
 
 import org.apache.sis.measure.Range;
@@ -337,7 +337,7 @@ public class ParameterFormat extends TabularFormat<Object> {
 
     /**
      * Filters names, aliases and identifiers by their code spaces. If the given array is non-null, then the only names,
-     * aliases and identifiers to be formatted are those having a {@link ReferenceIdentifier#getCodeSpace()},
+     * aliases and identifiers to be formatted are those having a {@link Identifier#getCodeSpace()},
      * {@link ScopedName#head()} or {@link GenericName#scope()} value in the given list, unless no name or alias
      * matches this criterion.
      *
@@ -406,7 +406,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         final boolean isSummary = contentLevel == ContentLevel.NAME_SUMMARY;
         final ParameterDescriptorGroup descriptor;
         final ParameterValueGroup      values;
-        final ReferenceIdentifier      name;
+        final Identifier               name;
         if (object instanceof ParameterValueGroup) {
             values     = (ParameterValueGroup) object;
             descriptor = values.getDescriptor();
@@ -762,10 +762,10 @@ public class ParameterFormat extends TabularFormat<Object> {
              * Put the first identifier in the first column. If no identifier has a codespace in the list
              * supplied by the user, then we will use the first identifier (any codespace) as a fallback.
              */
-            final Set<ReferenceIdentifier> identifiers = object.getIdentifiers();
+            final Set<Identifier> identifiers = object.getIdentifiers();
             if (identifiers != null) { // Paranoiac check.
-                ReferenceIdentifier identifier = null;
-                for (final ReferenceIdentifier candidate : identifiers) {
+                Identifier identifier = null;
+                for (final Identifier candidate : identifiers) {
                     if (candidate != null) { // Paranoiac check.
                         if (isPreferredCodespace(candidate.getCodeSpace())) {
                             identifier = candidate;
@@ -786,7 +786,7 @@ public class ParameterFormat extends TabularFormat<Object> {
              * in the current row and clear the 'name' locale variable. Otherwise, keep the 'name'
              * locale variable in case we found no alias to format.
              */
-            ReferenceIdentifier name = object.getName();
+            Identifier name = object.getName();
             if (name != null) { // Paranoiac check.
                 final String codespace = name.getCodeSpace();
                 if (isPreferredCodespace(codespace)) {

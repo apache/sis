@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.util.InternationalString;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
@@ -45,7 +46,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.19)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public final class SpecializedIdentifier<T> implements Identifier, Serializable {
@@ -189,6 +190,42 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
     public String getCode() {
         final T value = this.value;
         return (value != null) ? value.toString() : null;
+    }
+
+    /**
+     * Infers a code space from the authority.
+     *
+     * @return The code space, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getCodeSpace() {
+        return Citations.getIdentifier(authority);
+    }
+
+    /**
+     * Returns {@code null} since this class does not hold version information.
+     *
+     * @return {@code null}.
+     *
+     * @since 0.5
+     */
+    @Override
+    public String getVersion() {
+        return null;
+    }
+
+    /**
+     * Returns {@code null} since this class does not hold natural language description.
+     *
+     * @return {@code null}.
+     *
+     * @since 0.5
+     */
+    @Override
+    public InternationalString getDescription() {
+        return null;
     }
 
     /**

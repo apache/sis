@@ -107,7 +107,7 @@ public class DefaultRecord implements Record, Serializable {
 
     /**
      * Returns the dictionary of all (<var>name</var>, <var>value</var>) pairs in this record.
-     * This method returns a view which will delegate all {@get} and {@code pt} operations to
+     * This method returns a view which will delegate all {@code get} and {@code pt} operations to
      * the {@link #locate(MemberName)} and {@link #set(MemberName, Object)} methods respectively.
      *
      * @return The dictionary of all (<var>name</var>, <var>value</var>) pairs in this record.
