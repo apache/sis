@@ -21,8 +21,8 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
@@ -59,7 +59,7 @@ final class IdentifiedObjectFormat extends Format {
      */
     @Override
     public StringBuffer format(final Object obj, final StringBuffer toAppendTo, final FieldPosition pos) {
-        final ReferenceIdentifier identifier = ((IdentifiedObject) obj).getName();
+        final Identifier identifier = ((IdentifiedObject) obj).getName();
         if (identifier == null) {
             return toAppendTo.append(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed));
         }

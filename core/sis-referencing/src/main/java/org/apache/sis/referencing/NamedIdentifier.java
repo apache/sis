@@ -30,7 +30,6 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.Identifier;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -43,7 +42,7 @@ import java.util.Objects;
 
 
 /**
- * An identification of a CRS object which is both a {@link ReferenceIdentifier} and a {@link GenericName}.
+ * An identification of a CRS object which is both a {@link Identifier} and a {@link GenericName}.
  * This class implements both interfaces in order to allow usage of the same instance either as an object
  * {@linkplain AbstractIdentifiedObject#getName() name} or {@linkplain AbstractIdentifiedObject#getAlias() alias}.
  * This flexibility make easier to uses object's names in two different models:
@@ -57,10 +56,10 @@ import java.util.Objects;
  *
  * By using this {@code NamedIdentifier} class, users can declare supplemental object's names as
  * {@linkplain AbstractIdentifiedObject#getAlias() aliases} and have those names used in contexts
- * where {@code ReferenceIdentifier} instances are required, like GML marshalling time.
+ * where {@code Identifier} instances are required, like GML marshalling time.
  *
  * {@section Name ↔ Identifier mapping}
- * The {@code GenericName} attributes will be inferred from {@code ReferenceIdentifier} attributes as below:
+ * The {@code GenericName} attributes will be inferred from {@code Identifier} attributes as below:
  *
  * <ul>
  *   <li><b>{@linkplain #tip() Tip}:</b> derived from the identifier {@linkplain #getCode() code}.</li>
@@ -88,7 +87,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public class NamedIdentifier extends ImmutableIdentifier implements GenericName {
@@ -125,7 +124,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *
      * @param identifier The identifier to copy.
      */
-    public NamedIdentifier(final ReferenceIdentifier identifier) {
+    public NamedIdentifier(final Identifier identifier) {
         super(identifier);
         if (identifier instanceof GenericName) {
             name = (GenericName) identifier;
@@ -141,7 +140,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @param name The name to wrap.
      */
     public NamedIdentifier(final GenericName name) {
-        super(name instanceof ReferenceIdentifier ? (ReferenceIdentifier) name : new NameToIdentifier(name));
+        super(name instanceof Identifier ? (Identifier) name : new NameToIdentifier(name));
         this.name = name;
         isNameSupplied = true;
     }

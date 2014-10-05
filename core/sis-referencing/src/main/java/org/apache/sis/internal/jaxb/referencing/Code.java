@@ -19,8 +19,8 @@ package org.apache.sis.internal.jaxb.referencing;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -72,7 +72,7 @@ public final class Code {
      *
      * @param identifier The identifier from which to get the values.
      */
-    Code(final ReferenceIdentifier identifier) {
+    Code(final Identifier identifier) {
         code      = identifier.getCode();
         codeSpace = identifier.getCodeSpace();
         String version = identifier.getVersion();
@@ -93,7 +93,7 @@ public final class Code {
      *
      * @return The identifier, or {@code null} if none.
      */
-    public ReferenceIdentifier getIdentifier() {
+    public Identifier getIdentifier() {
         String c = code;
         if (c == null) {
             return null;
@@ -130,11 +130,11 @@ public final class Code {
      * @param  identifiers The object identifiers, or {@code null} if none.
      * @return The {@code <gml:identifier>} as a {@code Code} instance, or {@code null} if none.
      */
-    public static Code forIdentifiedObject(final Class<?> type, final Iterable<? extends ReferenceIdentifier> identifiers) {
+    public static Code forIdentifiedObject(final Class<?> type, final Iterable<? extends Identifier> identifiers) {
         if (identifiers != null) {
             boolean isHTTP = false;
-            ReferenceIdentifier fallback = null;
-            for (final ReferenceIdentifier identifier : identifiers) {
+            Identifier fallback = null;
+            for (final Identifier identifier : identifiers) {
                 final String code = identifier.getCode();
                 if (code == null) continue; // Paranoiac check.
                 if (code.regionMatches(true, 0, "urn:", 0, 4)) {

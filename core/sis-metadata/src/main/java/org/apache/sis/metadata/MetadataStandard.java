@@ -27,9 +27,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
@@ -655,11 +655,11 @@ public class MetadataStandard implements Serializable {
      * <p>In the particular case of Apache SIS implementation, all values in the information map
      * additionally implement the following interfaces:</p>
      * <ul>
-     *   <li>{@link ReferenceIdentifier} with the following properties:
+     *   <li>{@link Identifier} with the following properties:
      *     <ul>
-     *       <li>The {@linkplain ReferenceIdentifier#getAuthority() authority} is this metadata standard {@linkplain #getCitation() citation}.</li>
-     *       <li>The {@linkplain ReferenceIdentifier#getCodeSpace() codespace} is the standard name of the interface that contain the property.</li>
-     *       <li>The {@linkplain ReferenceIdentifier#getCode() code} is the standard name of the property.</li>
+     *       <li>The {@linkplain Identifier#getAuthority() authority} is this metadata standard {@linkplain #getCitation() citation}.</li>
+     *       <li>The {@linkplain Identifier#getCodeSpace() codespace} is the standard name of the interface that contain the property.</li>
+     *       <li>The {@linkplain Identifier#getCode() code} is the standard name of the property.</li>
      *     </ul>
      *   </li>
      *   <li>{@link CheckedContainer} with the following properties:

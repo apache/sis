@@ -43,7 +43,6 @@ import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -243,10 +242,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier………………Sentence…………………………………Type…………………………………………………………
             GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
             GeodeticCRS.class,      "getDatum",            "datum",            "datum",            "Datum",              GeodeticDatum.class,       // Covariant return type
-            IdentifiedObject.class, "getName",             "name",             "name",             "Name",               ReferenceIdentifier.class,
+            IdentifiedObject.class, "getName",             "name",             "name",             "Name",               Identifier.class,
             IdentifiedObject.class, "getAlias",            "alias",            "alias",            "Alias",              GenericName[].class,
             ReferenceSystem.class,  "getDomainOfValidity", "domainOfValidity", "domainOfValidity", "Domain of validity", Extent.class,
-            IdentifiedObject.class, "getIdentifiers",      "identifiers",      "identifier",       "Identifiers",        ReferenceIdentifier[].class,
+            IdentifiedObject.class, "getIdentifiers",      "identifiers",      "identifier",       "Identifiers",        Identifier[].class,
             IdentifiedObject.class, "getRemarks",          "remarks",          "remarks",          "Remarks",            InternationalString.class,
             ReferenceSystem.class,  "getScope",            "scope",            "SC_CRS.scope",     "Scope",              InternationalString.class);
     }
