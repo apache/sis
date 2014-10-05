@@ -18,8 +18,8 @@ package org.apache.sis.internal.profile.fra;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.util.ComparisonMode;
 
@@ -71,7 +71,7 @@ public class IndirectReferenceSystem extends ReferenceSystemMetadata {
      *
      * @param identifier The reference system identifier.
      */
-    public IndirectReferenceSystem(final ReferenceIdentifier identifier) {
+    public IndirectReferenceSystem(final Identifier identifier) {
         super(identifier);
     }
 

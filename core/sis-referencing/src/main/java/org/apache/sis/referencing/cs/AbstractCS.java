@@ -26,9 +26,9 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
-import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -139,7 +139,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
@@ -149,7 +149,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
@@ -169,7 +169,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         for (int i=0; i<axes.length; i++) {
             final CoordinateSystemAxis axis = axes[i];
             ensureNonNullElement("axes", i, axis);
-            final ReferenceIdentifier name = axis.getName();
+            final Identifier name = axis.getName();
             ensureNonNullElement("axes[#].name", i, name);
             final AxisDirection direction = axis.getDirection();
             ensureNonNullElement("axes[#].direction", i, direction);

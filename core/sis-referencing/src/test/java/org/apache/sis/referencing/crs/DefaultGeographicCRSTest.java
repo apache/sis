@@ -17,10 +17,10 @@
 package org.apache.sis.referencing.crs;
 
 import org.opengis.test.Validators;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.Convention;
@@ -96,7 +96,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
     @Test
     public void testIdentifiers() {
         GeographicCRS crs = CommonCRS.WGS72.geographic();
-        ReferenceIdentifier identifier = getSingleton(crs.getIdentifiers());
+        Identifier identifier = getSingleton(crs.getIdentifiers());
         assertEquals("codespace", "EPSG", identifier.getCodeSpace());
         assertEquals("code",      "4322", identifier.getCode());
 

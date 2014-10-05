@@ -30,10 +30,10 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.FieldPosition;
 import javax.measure.unit.Unit;
-import org.opengis.util.GenericName;
-import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.NameSpace;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.measure.Range;
@@ -61,7 +61,7 @@ final class ParameterTableRow {
      * <p>Values can be of two kinds:</p>
      * <ul>
      *   <li>{@link String} for names or aliases.</li>
-     *   <li>{@link ReferenceIdentifier} for identifiers.</li>
+     *   <li>{@link Identifier} for identifiers.</li>
      * </ul>
      *
      * @see #addIdentifier(String, Object)
@@ -120,7 +120,7 @@ final class ParameterTableRow {
         values = new ArrayList<>(2); // In the vast majority of cases, we will have only one value.
         units  = new ArrayList<>(2);
         identifiers = new LinkedHashMap<>();
-        ReferenceIdentifier name = object.getName();
+        Identifier name = object.getName();
         if (name != null) { // Paranoiac check.
             final String codespace = name.getCodeSpace();
             if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
@@ -166,9 +166,9 @@ final class ParameterTableRow {
          * Add identifiers (detailed mode only).
          */
         if (!isBrief) {
-            final Collection<? extends ReferenceIdentifier> ids = object.getIdentifiers();
+            final Collection<? extends Identifier> ids = object.getIdentifiers();
             if (ids != null) { // Paranoiac check.
-                for (final ReferenceIdentifier id : ids) {
+                for (final Identifier id : ids) {
                     final String codespace = id.getCodeSpace();
                     if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
                         addIdentifier(codespace, id); // No .getCode() here.
@@ -351,7 +351,7 @@ final class ParameterTableRow {
                 boolean hasIdentifiers = false;
                 while (it.hasNext()) {
                     final Object id = it.next();
-                    if (id instanceof ReferenceIdentifier) {
+                    if (id instanceof Identifier) {
                         out.append(hasIdentifiers ? ", " : " (");
                         writeColor(out, colors, ElementKind.IDENTIFIER);
                         out.append(toString(id));
@@ -376,8 +376,8 @@ final class ParameterTableRow {
      * Returns the string representation of the given parameter name.
      */
     private static String toString(Object parameter) {
-        if (parameter instanceof ReferenceIdentifier) {
-            parameter = ((ReferenceIdentifier) parameter).getCode();
+        if (parameter instanceof Identifier) {
+            parameter = ((Identifier) parameter).getCode();
         }
         return parameter.toString();
     }

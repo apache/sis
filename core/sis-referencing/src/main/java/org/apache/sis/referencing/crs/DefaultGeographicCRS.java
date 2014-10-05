@@ -20,14 +20,14 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import javax.xml.bind.annotation.XmlTransient;
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
@@ -99,7 +99,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
@@ -109,7 +109,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
@@ -232,7 +232,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
         if (axis.getMinimumValue() == Longitude.MIN_VALUE &&
             axis.getMaximumValue() == Longitude.MAX_VALUE) // For excluding the AxesConvention.POSITIVE_RANGE case.
         {
-            for (final ReferenceIdentifier identifier : super.getIdentifiers()) {
+            for (final Identifier identifier : super.getIdentifiers()) {
                 if (EPSG.equals(identifier.getCodeSpace())) try {
                     final int i = Arrays.binarySearch(EPSG_CODES, Short.parseShort(identifier.getCode()));
                     if (i >= 0) {

@@ -17,10 +17,10 @@
 package org.apache.sis.referencing;
 
 import java.util.Locale;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.test.Validators;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.test.DependsOnMethod;
@@ -49,7 +49,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
     @Test
     public void testCreateFromCode() {
         final NamedIdentifier identifier = new NamedIdentifier(OGP, "EPSG", "4326", "8.3", null);
-        Validators.validate((ReferenceIdentifier) identifier);
+        Validators.validate((Identifier)  identifier);
         Validators.validate((GenericName) identifier);
 
         // ImmutableIdentifier properties
@@ -79,7 +79,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
     public void testCreateFromName() {
         final NameSpace scope = SIS_NAMES.createNameSpace(SIS_NAMES.createLocalName(null, "OGP"), null);
         final NamedIdentifier identifier = new NamedIdentifier(SIS_NAMES.createGenericName(scope, "EPSG", "4326"));
-        Validators.validate((ReferenceIdentifier) identifier);
+        Validators.validate((Identifier)  identifier);
         Validators.validate((GenericName) identifier);
 
         // ImmutableIdentifier properties
@@ -116,7 +116,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
     @DependsOnMethod("testCreateFromCode")
     public void testCreateFromInternationalString() {
         final NamedIdentifier identifier = createI18N();
-        Validators.validate((ReferenceIdentifier) identifier);
+        Validators.validate((Identifier)  identifier);
         Validators.validate((GenericName) identifier);
 
         // ImmutableIdentifier properties

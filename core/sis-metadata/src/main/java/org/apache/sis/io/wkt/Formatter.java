@@ -38,6 +38,7 @@ import javax.measure.unit.UnitFormat;
 import javax.measure.quantity.Quantity;
 
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -45,7 +46,6 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.operation.OperationMethod;
@@ -682,17 +682,17 @@ public class Formatter implements Localized {
             appendForSubtypes(object);
         }
         if (showIDs) {
-            Collection<ReferenceIdentifier> identifiers = object.getIdentifiers();
+            Collection<? extends Identifier> identifiers = object.getIdentifiers();
             if (identifiers != null) { // Paranoiac check
                 if (filterID) {
-                    for (final ReferenceIdentifier id : identifiers) {
+                    for (final Identifier id : identifiers) {
                         if (Citations.identifierMatches(authority, id.getAuthority())) {
                             identifiers = Collections.singleton(id);
                             break;
                         }
                     }
                 }
-                for (ReferenceIdentifier id : identifiers) {
+                for (Identifier id : identifiers) {
                     if (!(id instanceof FormattableObject)) {
                         id = ImmutableIdentifier.castOrCopy(id);
                     }
@@ -1389,7 +1389,7 @@ public class Formatter implements Localized {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
         if (invalidElement == null) {
             String name;
-            final ReferenceIdentifier id = unformattable.getName();
+            final Identifier id = unformattable.getName();
             if (id == null || (name = id.getCode()) == null) {
                 name = getName(unformattable.getClass());
             }

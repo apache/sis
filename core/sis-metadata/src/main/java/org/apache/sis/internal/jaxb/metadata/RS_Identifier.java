@@ -17,13 +17,13 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
 /**
- * JAXB adapter mapping the GeoAPI {@link ReferenceIdentifier} to an implementation class that can
+ * JAXB adapter mapping the GeoAPI {@link Identifier} to an implementation class that can
  * be marshalled. See the package documentation for more information about JAXB and interfaces.
  *
  * <p>The XML produced by this adapter shall be compliant to the ISO 19139 syntax.</p>
@@ -37,7 +37,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @version 0.3
  * @module
  */
-public final class RS_Identifier extends PropertyType<RS_Identifier, ReferenceIdentifier> {
+public final class RS_Identifier extends PropertyType<RS_Identifier, Identifier> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -49,17 +49,17 @@ public final class RS_Identifier extends PropertyType<RS_Identifier, ReferenceId
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code ReferenceIdentifier.class}
+     * @return {@code Identifier.class}
      */
     @Override
-    protected Class<ReferenceIdentifier> getBoundType() {
-        return ReferenceIdentifier.class;
+    protected Class<Identifier> getBoundType() {
+        return Identifier.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private RS_Identifier(final ReferenceIdentifier metadata) {
+    private RS_Identifier(final Identifier metadata) {
         super(metadata);
     }
 
@@ -71,7 +71,7 @@ public final class RS_Identifier extends PropertyType<RS_Identifier, ReferenceId
      * @return A {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected RS_Identifier wrap(ReferenceIdentifier metadata) {
+    protected RS_Identifier wrap(Identifier metadata) {
         return new RS_Identifier(metadata);
     }
 
@@ -84,7 +84,7 @@ public final class RS_Identifier extends PropertyType<RS_Identifier, ReferenceId
      */
     @XmlElementRef
     public ImmutableIdentifier getElement() {
-        final ReferenceIdentifier metadata = this.metadata;
+        final Identifier metadata = this.metadata;
         if (metadata == null) {
             return null;
         } else if (metadata instanceof ImmutableIdentifier) {

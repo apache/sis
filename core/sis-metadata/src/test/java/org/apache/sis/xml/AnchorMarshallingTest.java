@@ -18,7 +18,7 @@ package org.apache.sis.xml;
 
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Address;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
@@ -55,7 +55,7 @@ public final strictfp class AnchorMarshallingTest extends XMLTestCase {
                 "    <gco:CharacterString>L101</gco:CharacterString>\n" +
                 "  </gmd:codeSpace>\n" +
                 "</gmd:RS_Identifier>";
-        final ReferenceIdentifier id = (ReferenceIdentifier) XML.unmarshal(expected);
+        final Identifier id = (Identifier) XML.unmarshal(expected);
         assertEquals("codespace", "L101", id.getCodeSpace());
         assertEquals("code", "EPSG:4326", id.getCode());
     }
