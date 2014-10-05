@@ -26,10 +26,10 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.metadata.quality.PositionalAccuracy;
 
@@ -126,11 +126,11 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                     return object.getName();
                 }
                 case 1: {
-                    final Collection<ReferenceIdentifier> c = object.getIdentifiers();
+                    final Collection<Identifier> c = object.getIdentifiers();
                     if (c != null) {
                         final int size = c.size();
                         if (size != 0) {
-                            return c.toArray(new ReferenceIdentifier[size]);
+                            return c.toArray(new Identifier[size]);
                         }
                     }
                     break;

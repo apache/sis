@@ -18,8 +18,8 @@ package org.apache.sis.internal.jaxb.metadata.replace;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.util.ComparisonMode;
 
@@ -73,7 +73,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      *
      * @param name The primary name by which this object is identified.
      */
-    public ReferenceSystemMetadata(final ReferenceIdentifier name) {
+    public ReferenceSystemMetadata(final Identifier name) {
         super(name);
     }
 
@@ -84,7 +84,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      */
     @Override
     @XmlElement(name = "referenceSystemIdentifier")
-    public final ReferenceIdentifier getName() {
+    public final Identifier getName() {
         return super.getName();
     }
 
@@ -93,7 +93,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      *
      * @param name The new primary name.
      */
-    public final void setName(final ReferenceIdentifier name) {
+    public final void setName(final Identifier name) {
         this.name = name;
     }
 

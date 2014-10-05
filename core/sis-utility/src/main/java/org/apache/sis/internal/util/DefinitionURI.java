@@ -18,7 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.Collections;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -453,7 +453,7 @@ public final class DefinitionURI {
      * @param  identifier The identifier to format.
      * @return An identifier using the URN syntax, or {@code null} if an information is missing.
      */
-    public static String format(final String type, final ReferenceIdentifier identifier) {
+    public static String format(final String type, final Identifier identifier) {
         final StringBuilder buffer = new StringBuilder(PREFIX);
         for (int p=0; p<4; p++) {
             final String component;

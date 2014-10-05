@@ -18,7 +18,7 @@ package org.apache.sis.internal.simple;
 
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.CharSequences;
@@ -32,17 +32,17 @@ import java.util.Objects;
 
 
 /**
- * An implementation of {@link ReferenceIdentifier} as a wrapper around a {@link Citation}.
- * {@code ReferenceIdentifier} is defined by the ISO 19111 standard and is implemented publicly
- * in the {@link org.apache.sis.referencing} package. This class is provided for codes that do
- * not depend on the {@code sis-referencing} module but still need a lightweight implementation.
+ * An implementation of {@link Identifier} as a wrapper around a {@link Citation}.
+ * {@code Identifier} is defined by the ISO 19115 standard and is implemented publicly
+ * in the {@link org.apache.sis.metadata} package. This class is provided for codes that do
+ * not depend on the {@code sis-metadata} module but still need a lightweight implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.5
  * @module
  */
-public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializable {
+public class SimpleIdentifier implements Identifier, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -74,14 +74,14 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
      * @param authority Responsible party for definition and maintenance of the code, or null.
      * @param code Alphanumeric value identifying an instance in the namespace.
      */
-    public SimpleReferenceIdentifier(final Citation authority, final String code) {
+    public SimpleIdentifier(final Citation authority, final String code) {
         this.authority = authority;
         this.code = code;
     }
 
     /**
-     * Organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode() code}, or {@code null} if none. It can be a
+     * Returns the organization or party responsible for definition and maintenance
+     * of the {@linkplain #getCode() code}, or {@code null} if none. It can be a
      * bibliographical reference to an international standard such as ISO 19115.
      *
      * <p>The default implementation returns the citation specified at construction time;</p>
@@ -138,16 +138,28 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
     }
 
     /**
-     * Returns {@code true} if the given object is of the same class than this
-     * {@code SimpleReferenceIdentifier} and has the same values.
+     * Returns a natural language description of the meaning of the code value.
      *
-     * @param  obj The object to compare with this {@code SimpleReferenceIdentifier} for equality.
+     * @return Natural language description, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public InternationalString getDescription() {
+        return null;
+    }
+
+    /**
+     * Returns {@code true} if the given object is of the same class than this
+     * {@code SimpleIdentifier} and has the same values.
+     *
+     * @param  obj The object to compare with this {@code SimpleIdentifier} for equality.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object obj) {
         if (obj != null && obj.getClass() == getClass()) {
-            final SimpleReferenceIdentifier that = (SimpleReferenceIdentifier) obj;
+            final SimpleIdentifier that = (SimpleIdentifier) obj;
             return Objects.equals(code, that.code) && Objects.equals(authority, that.authority);
         }
         return false;
@@ -201,7 +213,7 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
 
     /**
      * Returns a pseudo Well Known Text for this identifier.
-     * While this method is not defined in the {@link ReferenceIdentifier} interface, it is often
+     * While this method is not defined in the {@link Identifier} interface, it is often
      * defined in related interfaces like {@link org.opengis.referencing.IdentifiedObject}.
      *
      * @return Pseudo Well Known Text for this identifier.

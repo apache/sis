@@ -27,7 +27,6 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.CoordinateOperation;
 
 import org.apache.sis.util.Static;
@@ -47,7 +46,7 @@ import static org.apache.sis.internal.util.Citations.identifierMatches;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @since   0.4 (derived from geotk-1.2)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see CRS
@@ -119,12 +118,12 @@ public final class IdentifiedObjects extends Static {
      * then all {@linkplain AbstractIdentifiedObject#getAlias() aliases} in their iteration order.
      *
      * <ul>
-     *   <li><p>If the name or alias implements the {@link ReferenceIdentifier} interface,
-     *       then this method compares the {@linkplain ReferenceIdentifier#getAuthority()
+     *   <li><p>If the name or alias implements the {@link Identifier} interface,
+     *       then this method compares the {@linkplain Identifier#getAuthority()
      *       identifier authority} against the specified citation using the
      *       {@link Citations#identifierMatches(Citation, Citation)} method.
      *       If a matching is found, then this method returns the
-     *       {@linkplain ReferenceIdentifier#getCode() identifier code} of that object.</p></li>
+     *       {@linkplain Identifier#getCode() identifier code} of that object.</p></li>
      *
      *   <li><p>Otherwise, if the alias implements the {@link GenericName} interface, then this method
      *       compares the {@linkplain GenericName#scope() name scope} against the specified citation
@@ -133,13 +132,13 @@ public final class IdentifiedObjects extends Static {
      *       {@linkplain GenericName#tip() name tip} of that object.</p></li>
      * </ul>
      *
-     * Note that alias may implement both the {@link ReferenceIdentifier} and {@link GenericName}
+     * Note that alias may implement both the {@link Identifier} and {@link GenericName}
      * interfaces (for example {@link NamedIdentifier}). In such cases, the identifier view has
      * precedence.
      *
      * @param  object The object to get the name from, or {@code null}.
      * @param  authority The authority for the name to return, or {@code null} for any authority.
-     * @return The object's name (either an {@linkplain ReferenceIdentifier#getCode() identifier code}
+     * @return The object's name (either an {@linkplain Identifier#getCode() identifier code}
      *         or a {@linkplain GenericName#tip() name tip}), or {@code null} if no name matching the
      *         specified authority has been found.
      *
@@ -157,7 +156,7 @@ public final class IdentifiedObjects extends Static {
      * @param  object    The object to get the name from, or {@code null}.
      * @param  authority The authority for the name to return, or {@code null} for any authority.
      * @param  addTo     If non-null, the collection where to add all names found.
-     * @return The object's name (either an {@linkplain ReferenceIdentifier#getCode() identifier code}
+     * @return The object's name (either an {@linkplain Identifier#getCode() identifier code}
      *         or a {@linkplain GenericName#tip() name tip}), or {@code null} if no name matching the
      *         specified authority has been found.
      */
@@ -253,11 +252,11 @@ public final class IdentifiedObjects extends Static {
      *
      * @see AbstractIdentifiedObject#getIdentifier()
      */
-    public static ReferenceIdentifier getIdentifier(final IdentifiedObject object, final Citation authority) {
+    public static Identifier getIdentifier(final IdentifiedObject object, final Citation authority) {
         if (object != null) {
-            final Iterator<ReferenceIdentifier> it = iterator(object.getIdentifiers());
+            final Iterator<Identifier> it = iterator(object.getIdentifiers());
             if (it != null) while (it.hasNext()) {
-                final ReferenceIdentifier identifier = it.next();
+                final Identifier identifier = it.next();
                 if (identifier != null) { // Paranoiac check.
                     if (authority == null || identifierMatches(authority, identifier.getAuthority())) {
                         return identifier;
@@ -291,7 +290,7 @@ public final class IdentifiedObjects extends Static {
      */
     public static String getIdentifierOrName(final IdentifiedObject object) {
         if (object != null) {
-            final Iterator<ReferenceIdentifier> it = iterator(object.getIdentifiers());
+            final Iterator<Identifier> it = iterator(object.getIdentifiers());
             if (it != null) while (it.hasNext()) {
                 final String code = toString(it.next());
                 if (code != null) { // Paranoiac check.
@@ -322,7 +321,7 @@ public final class IdentifiedObjects extends Static {
      */
     public static String getUnicodeIdentifier(final IdentifiedObject object) {
         if (object != null) {
-            ReferenceIdentifier identifier = object.getName();
+            Identifier identifier = object.getName();
             if (identifier != null) { // Paranoiac check.
                 final String code = identifier.getCode();
                 if (CharSequences.isUnicodeIdentifier(code)) {
@@ -339,7 +338,7 @@ public final class IdentifiedObjects extends Static {
                     }
                 }
             }
-            final Iterator<ReferenceIdentifier> id = iterator(object.getIdentifiers());
+            final Iterator<Identifier> id = iterator(object.getIdentifiers());
             if (id != null) while (id.hasNext()) {
                 identifier = id.next();
                 if (identifier != null) { // Paranoiac check.
@@ -413,7 +412,7 @@ public final class IdentifiedObjects extends Static {
             CharSequence name)
     {
         name = CharSequences.toASCII(name);
-        final ReferenceIdentifier id = object.getName();
+        final Identifier id = object.getName();
         if (id != null) { // Paranoiac check.
             final CharSequence code = CharSequences.toASCII(id.getCode());
             if (code != null) { // Paranoiac check.
@@ -448,7 +447,7 @@ public final class IdentifiedObjects extends Static {
      * <ul>
      *   <li>If the given identifier implements the {@link GenericName} interface,
      *       then this method delegates to the {@link GenericName#toString()} method.</li>
-     *   <li>Otherwise if the given identifier has a {@linkplain ReferenceIdentifier#getCodeSpace() code space},
+     *   <li>Otherwise if the given identifier has a {@linkplain Identifier#getCodeSpace() code space},
      *       then formats the identifier as "{@code codespace:code}".</li>
      *   <li>Otherwise if the given identifier has an {@linkplain Identifier#getAuthority() authority},
      *       then formats the identifier as "{@code authority:code}".</li>
@@ -456,7 +455,7 @@ public final class IdentifiedObjects extends Static {
      * </ul>
      *
      * This method is provided because the {@link GenericName#toString()} behavior is specified by its javadoc,
-     * while {@link ReferenceIdentifier} has no such contract. For example like most ISO 19115 objects in SIS,
+     * while {@link Identifier} has no such contract. For example like most ISO 19115 objects in SIS,
      * the {@link org.apache.sis.metadata.iso.DefaultIdentifier} implementation is formatted as a tree.
      * This static method can be used when a "name-like" representation is needed for any implementation.
      *
@@ -475,10 +474,8 @@ public final class IdentifiedObjects extends Static {
             return identifier.toString();
         }
         final String code = identifier.getCode();
-        final String cs;
-        if (identifier instanceof ReferenceIdentifier) {
-            cs = ((ReferenceIdentifier) identifier).getCodeSpace();
-        } else {
+        String cs = identifier.getCodeSpace();
+        if (cs == null) {
             cs = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority());
         }
         if (cs != null && !cs.isEmpty()) {

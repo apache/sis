@@ -32,7 +32,7 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -138,10 +138,10 @@ public class TensorParameters<E> implements Serializable {
         final Integer defaultSize = 3;
         final ParameterDescriptor<Integer> numRow, numCol;
         final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(ReferenceIdentifier.AUTHORITY_KEY, Citations.OGC);
-        properties.put(ReferenceIdentifier.CODE_KEY, "num_row");
+        properties.put(Identifier.AUTHORITY_KEY, Citations.OGC);
+        properties.put(Identifier.CODE_KEY, "num_row");
         numRow = new DefaultParameterDescriptor<>(properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
-        properties.put(ReferenceIdentifier.CODE_KEY, "num_col");
+        properties.put(Identifier.CODE_KEY, "num_col");
         numCol = new DefaultParameterDescriptor<>(properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
         WKT1 = new TensorParameters<>(Double.class, "elt_", "_", numRow, numCol);
     }
@@ -377,8 +377,8 @@ public class TensorParameters<E> implements Serializable {
             }
         }
         final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(ReferenceIdentifier.CODE_KEY, indicesToName(indices));
-        properties.put(ReferenceIdentifier.AUTHORITY_KEY, dimensions[0].getName().getAuthority());
+        properties.put(Identifier.CODE_KEY, indicesToName(indices));
+        properties.put(Identifier.AUTHORITY_KEY, dimensions[0].getName().getAuthority());
         return new DefaultParameterDescriptor<>(properties, 0, 1, elementType, null, null, isDiagonal ? one : zero);
     }
 
@@ -548,7 +548,7 @@ public class TensorParameters<E> implements Serializable {
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} or {@link String}</td>
+     *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link DefaultParameterDescriptorGroup#getName()}</td>
      *   </tr>
      *   <tr>
@@ -558,7 +558,7 @@ public class TensorParameters<E> implements Serializable {
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link org.opengis.referencing.ReferenceIdentifier} (optionally as array)</td>
+     *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link DefaultParameterDescriptorGroup#getIdentifiers()}</td>
      *   </tr>
      *   <tr>
