@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
@@ -116,7 +117,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @XmlType(name="IdentifiedObjectType", propOrder={
@@ -251,6 +252,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     <td>{@link NamedIdentifier#getVersion()} on the {@linkplain #getName() name}</td>
      *   </tr>
      *   <tr>
+     *     <td>"description"</td>
+     *     <td>{@link String}</td>
+     *     <td>{@link NamedIdentifier#getDescription()} on the {@linkplain #getName() name}</td>
+     *   </tr>
+     *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
@@ -293,12 +299,12 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     public AbstractIdentifiedObject(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
 
-        // -------------------------------------
-        // "name": String or ReferenceIdentifier
-        // -------------------------------------
+        // ----------------------------
+        // "name": String or Identifier
+        // ----------------------------
         Object value = properties.get(NAME_KEY);
         if (value == null || value instanceof String) {
-            if (value == null && properties.get(ReferenceIdentifier.CODE_KEY) == null) {
+            if (value == null && properties.get(Identifier.CODE_KEY) == null) {
                 throw new IllegalArgumentException(Errors.getResources(properties)
                         .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
             }
@@ -326,9 +332,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         }
         alias = immutableSet(true, names);
 
-        // -----------------------------------------------------------
-        // "identifiers": ReferenceIdentifier or ReferenceIdentifier[]
-        // -----------------------------------------------------------
+        // -----------------------------------------
+        // "identifiers": Identifier or Identifier[]
+        // -----------------------------------------
         value = properties.get(IDENTIFIERS_KEY);
         if (value == null) {
             identifiers = null;
@@ -482,7 +488,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Returns a single element from the {@code Set<ReferenceIdentifier>} collection, or {@code null} if none.
+     * Returns a single element from the {@code Set<Identifier>} collection, or {@code null} if none.
      * We have to define this method because ISO 19111 defines the {@code identifiers} property as a collection
      * while GML 3.2 defines it as a singleton.
      *
@@ -596,7 +602,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Returns the {@link #name} and all aliases which are also instance of {@lik ReferenceIdentifier}.
+     * Returns the {@link #name} and all aliases which are also instance of {@link ReferenceIdentifier}.
      * The later happen often in SIS implementation since many aliases are instance of {@link NamedIdentifier}.
      *
      * <p>The returned collection is <cite>live</cite>: adding elements in that collection will modify this
@@ -690,7 +696,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             }
         }
         boolean isDeprecated = false;
-        for (final ReferenceIdentifier identifier : nonNull(identifiers)) {
+        for (final Identifier identifier : nonNull(identifiers)) {
             if (identifier instanceof Deprecable) {
                 if (!((Deprecable) identifier).isDeprecated()) {
                     return false;

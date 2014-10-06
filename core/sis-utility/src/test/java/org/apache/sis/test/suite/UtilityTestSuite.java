@@ -87,7 +87,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.iso.DefaultNameFactoryTest.class,
     org.apache.sis.util.iso.NamesTest.class,
     org.apache.sis.util.iso.TypeNamesTest.class,
-    org.apache.sis.internal.simple.SimpleReferenceIdentifierTest.class,
+    org.apache.sis.internal.simple.SimpleIdentifierTest.class,
     org.apache.sis.util.iso.DefaultRecordTypeTest.class,
     org.apache.sis.util.iso.DefaultRecordSchemaTest.class,
     org.apache.sis.util.iso.DefaultRecordTest.class,

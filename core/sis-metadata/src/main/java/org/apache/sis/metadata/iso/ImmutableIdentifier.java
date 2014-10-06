@@ -123,7 +123,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see DefaultIdentifier
@@ -134,6 +134,12 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -7681717592582493409L;
+
+    /**
+     * Key for the {@value} property in the map to be given to the constructor.
+     * This can be used for setting the value to be returned by {@link #getDescription()}.
+     */
+    public static final String DESCRIPTION_KEY = "description";
 
     /**
      * Identifier code or name, optionally from a controlled list or pattern defined by a code space.
@@ -174,6 +180,11 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     private final String version;
 
     /**
+     * Natural language description of the meaning of the code value.
+     */
+    private final InternationalString description;
+
+    /**
      * Comments on or information about this identifier, or {@code null} if none.
      *
      * @see #getRemarks()
@@ -184,11 +195,12 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * Empty constructor for JAXB.
      */
     private ImmutableIdentifier() {
-        code      = null;
-        codeSpace = null;
-        authority = null;
-        version   = null;
-        remarks   = null;
+        code        = null;
+        codeSpace   = null;
+        authority   = null;
+        version     = null;
+        description = null;
+        remarks     = null;
     }
 
     /**
@@ -204,6 +216,11 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
         codeSpace = identifier.getCodeSpace();
         authority = identifier.getAuthority();
         version   = identifier.getVersion();
+        if (identifier instanceof DefaultIdentifier) {
+            description = ((DefaultIdentifier) identifier).getDescription();
+        } else {
+            description = null;
+        }
         if (identifier instanceof Deprecable) {
             remarks = ((Deprecable) identifier).getRemarks();
         } else {
@@ -251,11 +268,12 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     public ImmutableIdentifier(final Citation authority, final String codeSpace,
             final String code, final String version, final InternationalString remarks)
     {
-        this.code      = code;
-        this.codeSpace = codeSpace;
-        this.authority = authority;
-        this.version   = version;
-        this.remarks   = remarks;
+        this.code        = code;
+        this.codeSpace   = codeSpace;
+        this.authority   = authority;
+        this.version     = version;
+        this.description = null;
+        this.remarks     = remarks;
         validate(null);
     }
 
@@ -293,6 +311,11 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *     <td>{@link #getVersion()}</td>
      *   </tr>
      *   <tr>
+     *     <td>"description"</td>
+     *     <td>{@link String} or {@link InternationalString}</td>
+     *     <td>{@link #getDescription()}</td>
+     *   </tr>
+     *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getRemarks()}</td>
@@ -320,9 +343,10 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
-        code    = trimWhitespaces(property(properties, CODE_KEY,    String.class));
-        version = trimWhitespaces(property(properties, VERSION_KEY, String.class));
-        remarks = Types.toInternationalString(properties, REMARKS_KEY);
+        code        = trimWhitespaces(  property (properties, CODE_KEY,    String.class));
+        version     = trimWhitespaces(  property (properties, VERSION_KEY, String.class));
+        description = Types.toInternationalString(properties, DESCRIPTION_KEY);
+        remarks     = Types.toInternationalString(properties, REMARKS_KEY);
         /*
          * Map String authority to one of the pre-defined constants (typically EPSG or OGC).
          */
@@ -381,8 +405,8 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *   <li>Otherwise if the given object is already an instance of
      *       {@code ImmutableIdentifier}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code ImmutableIdentifier} instance is created using the
-     *       {@linkplain #ImmutableIdentifier(ReferenceIdentifier) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       {@linkplain #ImmutableIdentifier(ReferenceIdentifier) copy constructor} and returned.
+     *       Note that this is a <cite>shallow</cite> copy operation, since the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
@@ -400,6 +424,8 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     /**
      * Identifier code or name, optionally from a controlled list or pattern.
      *
+     * <div class="note"><b>Example:</b> {@code "4326"}.</div>
+     *
      * @return The code, never {@code null}.
      *
      * @see org.apache.sis.referencing.NamedIdentifier#tip()
@@ -411,6 +437,8 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
 
     /**
      * Name or identifier of the person or organization responsible for namespace.
+     *
+     * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
      *
      * @return The code space, or {@code null} if not available.
      *
@@ -473,6 +501,8 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * uses versions. When appropriate, the edition is identified by the effective date,
      * coded using ISO 8601 date format.
      *
+     * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
+     *
      * @return The version, or {@code null} if not available.
      */
     @Override
@@ -481,7 +511,22 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     }
 
     /**
+     * Natural language description of the meaning of the code value.
+     *
+     * <div class="note"><b>Example:</b> "World Geodetic System 1984".</div>
+     *
+     * @return The natural language description, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    public InternationalString getDescription() {
+        return description;
+    }
+
+    /**
      * Comments on or information about this identifier, or {@code null} if none.
+     *
+     * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
      *
      * @return Optional comments about this identifier, or {@code null} if none.
      */

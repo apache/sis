@@ -43,7 +43,7 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * An identification of a CRS object which is both a {@link ReferenceIdentifier} and a {@link GenericName}.
+ * An identification of a CRS object which is both a {@link Identifier} and a {@link GenericName}.
  * This class implements both interfaces in order to allow usage of the same instance either as an object
  * {@linkplain AbstractIdentifiedObject#getName() name} or {@linkplain AbstractIdentifiedObject#getAlias() alias}.
  * This flexibility make easier to uses object's names in two different models:
@@ -57,10 +57,10 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * By using this {@code NamedIdentifier} class, users can declare supplemental object's names as
  * {@linkplain AbstractIdentifiedObject#getAlias() aliases} and have those names used in contexts
- * where {@code ReferenceIdentifier} instances are required, like GML marshalling time.
+ * where {@code Identifier} instances are required, like GML marshalling time.
  *
  * {@section Name ↔ Identifier mapping}
- * The {@code GenericName} attributes will be inferred from {@code ReferenceIdentifier} attributes as below:
+ * The {@code GenericName} attributes will be inferred from {@code Identifier} attributes as below:
  *
  * <ul>
  *   <li><b>{@linkplain #tip() Tip}:</b> derived from the identifier {@linkplain #getCode() code}.</li>

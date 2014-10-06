@@ -18,6 +18,7 @@ package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 
 
 /**
@@ -36,7 +37,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *   <gml:identifier codeSpace="EPSG">4326</gml:identifier>
  * }
  *
- * If the {@code ReferenceIdentifier} to marshal contains a {@linkplain ReferenceIdentifier#getVersion() version},
+ * If the {@code Identifier} to marshal contains a {@linkplain ReferenceIdentifier#getVersion() version},
  * then this adapter concatenates the version to the codespace in a "URI-like" way like below:
  *
  * {@preformat xml
@@ -50,9 +51,9 @@ import org.opengis.referencing.ReferenceIdentifier;
  *   <gml:identifier codeSpace="OGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
  * }
  *
- * In such case this class takes the codespace as the {@linkplain ReferenceIdentifier#getAuthority() authority}
- * ("OGP" in above example), and the 3 last URI elements are parsed as the codespace, version (optional) and
- * code values respectively.
+ * In such case this class takes the codespace as the {@linkplain Identifier#getAuthority() authority}
+ * ("OGP" in above example), and the 3 last URI elements are parsed as the codespace, version (optional)
+ * and code values respectively.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)

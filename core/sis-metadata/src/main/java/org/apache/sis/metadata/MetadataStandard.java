@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -664,9 +665,9 @@ public class MetadataStandard implements Serializable {
      * <ul>
      *   <li>{@link ReferenceIdentifier} with the following properties:
      *     <ul>
-     *       <li>The {@linkplain ReferenceIdentifier#getAuthority() authority} is this metadata standard {@linkplain #getCitation() citation}.</li>
+     *       <li>The {@linkplain Identifier#getAuthority() authority} is this metadata standard {@linkplain #getCitation() citation}.</li>
      *       <li>The {@linkplain ReferenceIdentifier#getCodeSpace() codespace} is the standard name of the interface that contain the property.</li>
-     *       <li>The {@linkplain ReferenceIdentifier#getCode() code} is the standard name of the property.</li>
+     *       <li>The {@linkplain Identifier#getCode() code} is the standard name of the property.</li>
      *     </ul>
      *   </li>
      *   <li>{@link CheckedContainer} with the following properties:

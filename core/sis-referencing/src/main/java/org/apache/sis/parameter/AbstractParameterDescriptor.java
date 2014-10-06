@@ -22,17 +22,17 @@ import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameter;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 
 
 /**
@@ -100,17 +100,6 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     private static final long serialVersionUID = -4346475760810353590L;
 
     /**
-     * Key for the {@value} property to be given to the constructor.
-     * This is used for setting the value to be returned by {@link #getDescription()}.
-     */
-    public static final String DESCRIPTION_KEY = "description";
-
-    /**
-     * A narrative explanation of the role of the parameter, or {@code null} if none.
-     */
-    private final InternationalString description;
-
-    /**
      * The minimum number of times that values for this parameter group are required, as an unsigned short.
      * We use a short because this value is usually either 0 or 1, or a very small number like 2 or 3.
      * A large number would be a bad idea with this parameter implementation.
@@ -154,11 +143,6 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.apache.sis.parameter.AbstractParameterDescriptor#DESCRIPTION_KEY}</td>
-     *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
-     *     <td>{@link #getDescription()}</td>
-     *   </tr>
-     *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
@@ -175,7 +159,6 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
             final int minimumOccurs, final int maximumOccurs)
     {
         super(properties);
-        this.description   = Types.toInternationalString(properties, DESCRIPTION_KEY);
         this.minimumOccurs = (short) minimumOccurs;
         this.maximumOccurs = (short) maximumOccurs;
         if (minimumOccurs < 0 || minimumOccurs > maximumOccurs || maximumOccurs == 0) {
@@ -201,13 +184,6 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
         super(descriptor);
         minimumOccurs = crop(descriptor.getMinimumOccurs());
         maximumOccurs = crop(descriptor.getMaximumOccurs());
-        if (descriptor instanceof AbstractParameterDescriptor) {
-            description = ((AbstractParameterDescriptor) descriptor).getDescription();
-        } else if (descriptor instanceof ServiceParameter) {
-            description = ((ServiceParameter) descriptor).getDescription();
-        } else {
-            description = null;
-        }
     }
 
     /**
@@ -230,12 +206,21 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     }
 
     /**
-     * Returns a narrative explanation of the role of the parameter.
+     * Returns a narrative explanation of the role of the parameter. The default implementation returns
+     * the {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription() description}
+     * provided by the parameter {@linkplain #getName() name}.
      *
      * @return A narrative explanation of the role of the parameter, or {@code null} if none.
      */
     public InternationalString getDescription() {
-        return description;
+        final ReferenceIdentifier name = getName();
+        if (name instanceof ImmutableIdentifier) {
+            return ((ImmutableIdentifier) name).getDescription();
+        }
+        if (name instanceof DefaultIdentifier) {
+            return ((DefaultIdentifier) name).getDescription();
+        }
+        return null;
     }
 
     /**
@@ -272,8 +257,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
                 case STRICT: {
                     final AbstractParameterDescriptor that = (AbstractParameterDescriptor) object;
                     return minimumOccurs == that.minimumOccurs &&
-                           maximumOccurs == that.maximumOccurs &&
-                           Objects.equals(description, that.description);
+                           maximumOccurs == that.maximumOccurs;
                 }
                 default: {
                     final GeneralParameterDescriptor that = (GeneralParameterDescriptor) object;

@@ -38,6 +38,7 @@ import javax.measure.unit.UnitFormat;
 import javax.measure.quantity.Quantity;
 
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -1389,7 +1390,7 @@ public class Formatter implements Localized {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
         if (invalidElement == null) {
             String name;
-            final ReferenceIdentifier id = unformattable.getName();
+            final Identifier id = unformattable.getName();
             if (id == null || (name = id.getCode()) == null) {
                 name = getName(unformattable.getClass());
             }

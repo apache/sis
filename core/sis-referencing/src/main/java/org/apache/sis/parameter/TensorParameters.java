@@ -32,7 +32,7 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
-import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -138,10 +138,10 @@ public class TensorParameters<E> implements Serializable {
         final Integer defaultSize = 3;
         final ParameterDescriptor<Integer> numRow, numCol;
         final Map<String,Object> properties = new HashMap<String,Object>(4);
-        properties.put(ReferenceIdentifier.AUTHORITY_KEY, Citations.OGC);
-        properties.put(ReferenceIdentifier.CODE_KEY, "num_row");
+        properties.put(Identifier.AUTHORITY_KEY, Citations.OGC);
+        properties.put(Identifier.CODE_KEY, "num_row");
         numRow = new DefaultParameterDescriptor<Integer>(properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
-        properties.put(ReferenceIdentifier.CODE_KEY, "num_col");
+        properties.put(Identifier.CODE_KEY, "num_col");
         numCol = new DefaultParameterDescriptor<Integer>(properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
         WKT1 = new TensorParameters<Double>(Double.class, "elt_", "_", numRow, numCol);
     }
@@ -376,8 +376,8 @@ public class TensorParameters<E> implements Serializable {
             }
         }
         final Map<String,Object> properties = new HashMap<String,Object>(4);
-        properties.put(ReferenceIdentifier.CODE_KEY, indicesToName(indices));
-        properties.put(ReferenceIdentifier.AUTHORITY_KEY, dimensions[0].getName().getAuthority());
+        properties.put(Identifier.CODE_KEY, indicesToName(indices));
+        properties.put(Identifier.AUTHORITY_KEY, dimensions[0].getName().getAuthority());
         return new DefaultParameterDescriptor<E>(properties, 0, 1, elementType, null, null, isDiagonal ? one : zero);
     }
 

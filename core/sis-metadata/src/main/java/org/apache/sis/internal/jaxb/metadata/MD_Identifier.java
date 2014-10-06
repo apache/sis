@@ -18,10 +18,8 @@ package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
-
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceIdentifier;
-
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -34,7 +32,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
@@ -76,6 +74,14 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
     }
 
     /**
+     * Returns {@code true} if the identifier should be marshalled as a
+     * {@code RS_Identifier} instead than {@code MD_Identifier}.
+     */
+    private boolean isRS() {
+        return (metadata instanceof ReferenceIdentifier);
+    }
+
+    /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
      * inside the {@code <gmd:MD_Identifier>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
@@ -84,11 +90,7 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      */
     @XmlElementRef
     public DefaultIdentifier getElement() {
-        final Identifier metadata = this.metadata;
-        if (metadata instanceof ReferenceIdentifier) {
-            return null;
-        }
-        return DefaultIdentifier.castOrCopy(metadata);
+        return isRS() ? null : DefaultIdentifier.castOrCopy(metadata);
     }
 
     /**
@@ -109,11 +111,7 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      */
     @XmlElement(name = "RS_Identifier")
     public ImmutableIdentifier getReferenceIdentifier() {
-        final Identifier metadata = this.metadata;
-        if (metadata instanceof ReferenceIdentifier) {
-            return ImmutableIdentifier.castOrCopy((ReferenceIdentifier) metadata);
-        }
-        return null;
+        return isRS() ? ImmutableIdentifier.castOrCopy((ReferenceIdentifier) metadata) : null;
     }
 
     /**

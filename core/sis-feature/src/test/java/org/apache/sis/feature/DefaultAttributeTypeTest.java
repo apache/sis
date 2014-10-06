@@ -91,9 +91,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      * @return An attribute type for the name of the parliament in a capital.
      */
     public static DefaultAttributeType<String> parliament() {
-        return new DefaultAttributeType<String>(
-                singletonMap(DefaultAttributeType.NAME_KEY, "parliament"),
-                String.class, 1, 1, null);
+        return attribute("parliament");
     }
 
     /**
@@ -106,6 +104,15 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
         return new DefaultAttributeType<String>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "universities"),
                 String.class, 0, Integer.MAX_VALUE, null);
+    }
+
+    /**
+     * Creates a mandatory attribute type of type {@link String}.
+     * This is the kind of attribute created by the ShapeFile reader.
+     */
+    static DefaultAttributeType<String> attribute(final String name) {
+        return new DefaultAttributeType<String>(singletonMap(DefaultAttributeType.NAME_KEY, name),
+                String.class, 1, 1, null);
     }
 
     /**

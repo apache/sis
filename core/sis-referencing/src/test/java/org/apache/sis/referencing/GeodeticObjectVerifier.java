@@ -18,10 +18,10 @@ package org.apache.sis.referencing;
 
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -118,7 +118,7 @@ public final strictfp class GeodeticObjectVerifier {
      * <table class="sis">
      * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
-     * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain PrimeMeridian#getName() name}</td>
+     * <tr><td>{@linkplain Identifier#getCode() Code} of the {@linkplain PrimeMeridian#getName() name}</td>
      *     <td>{@code "Greenwich"}</td></tr>
      * <tr><td>{@linkplain PrimeMeridian#getGreenwichLongitude() Greenwich longitude}</td>
      *     <td>0</td></tr>
@@ -141,7 +141,7 @@ public final strictfp class GeodeticObjectVerifier {
      * <table class="sis">
      * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
-     * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain PrimeMeridian#getName() name}</td>
+     * <tr><td>{@linkplain Identifier#getCode() Code} of the {@linkplain PrimeMeridian#getName() name}</td>
      *     <td>{@code "Paris"}</td></tr>
      * <tr><td>{@linkplain PrimeMeridian#getGreenwichLongitude() Greenwich longitude}</td>
      *     <td>2.5969213</td></tr>
@@ -164,7 +164,7 @@ public final strictfp class GeodeticObjectVerifier {
      * <table class="sis">
      * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
-     * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain Ellipsoid#getName() name}</td>
+     * <tr><td>{@linkplain Identifier#getCode() Code} of the {@linkplain Ellipsoid#getName() name}</td>
      *     <td>{@code "WGS 84"}</td></tr>
      * <tr><td>{@linkplain Ellipsoid#getAxisUnit() Axis unit}</td>
      *     <td>{@link SI#METRE}</td></tr>
@@ -196,7 +196,7 @@ public final strictfp class GeodeticObjectVerifier {
      * <table class="sis">
      * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
-     * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
+     * <tr><td>{@linkplain Identifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
      *     <td>{@code "World Geodetic System 1984"}</td></tr>
      * <tr><td>{@linkplain GeodeticDatum#getDomainOfValidity() Domain of validity}</td>
      *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
@@ -224,7 +224,7 @@ public final strictfp class GeodeticObjectVerifier {
      * <table class="sis">
      * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
-     * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticCRS#getName() name}</td>
+     * <tr><td>{@linkplain Identifier#getCode() Code} of the {@linkplain GeodeticCRS#getName() name}</td>
      *     <td>{@code "WGS 84"}</td></tr>
      * <tr><td>{@linkplain GeodeticCRS#getDomainOfValidity() Domain of validity}</td>
      *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
@@ -256,7 +256,7 @@ public final strictfp class GeodeticObjectVerifier {
      * <table class="sis">
      * <caption>Verified properties</caption>
      * <tr><th>Property</th> <th>Expected value</th></tr>
-     * <tr><td>{@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
+     * <tr><td>{@linkplain Identifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
      *     <td>{@code "Mean Sea Level"}</td></tr>
      * <tr><td>{@linkplain GeodeticDatum#getDomainOfValidity() Domain of validity}</td>
      *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
@@ -280,7 +280,7 @@ public final strictfp class GeodeticObjectVerifier {
      * <tr><th>Property</th> <th colspan="2">Expected value</th></tr>
      * <tr><td>{@linkplain CartesianCS#getDimension() Dimension}</td>
      *     <td colspan="2">2</td></tr>
-     * <tr><td>Axes {@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
+     * <tr><td>Axes {@linkplain Identifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
      *     <td>{@code "Easting"}</td>
      *     <td>{@code "Northing"}</td></tr>
      * <tr><td>Axes {@linkplain CoordinateSystemAxis#getAbbreviation() abbreviation}</td>
@@ -329,7 +329,7 @@ public final strictfp class GeodeticObjectVerifier {
      * <tr><th>Property</th> <th colspan="2">Expected value</th></tr>
      * <tr><td>{@linkplain EllipsoidalCS#getDimension() Dimension}</td>
      *     <td colspan="2">2</td></tr>
-     * <tr><td>Axes {@linkplain ReferenceIdentifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
+     * <tr><td>Axes {@linkplain Identifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
      *     <td>{@code "Geodetic latitude"}</td>
      *     <td>{@code "Geodetic longitude"}</td></tr>
      * <tr><td>Axes {@linkplain CoordinateSystemAxis#getDirection() direction}</td>
