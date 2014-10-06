@@ -23,35 +23,35 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link SimpleReferenceIdentifier}.
+ * Tests {@link SimpleIdentifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-public final strictfp class SimpleReferenceIdentifierTest extends TestCase {
+public final strictfp class SimpleIdentifierTest extends TestCase {
     /**
-     * Tests {@link SimpleReferenceIdentifier#toString()}.
+     * Tests {@link SimpleIdentifier#toString()}.
      */
     @Test
     public void testToString() {
         final SimpleCitation authority = new SimpleCitation("EPSG");
-        assertEquals("SimpleReferenceIdentifier[“EPSG:4326”]", new SimpleReferenceIdentifier(authority, "4326").toString());
-        assertEquals("SimpleReferenceIdentifier[“EPSG”]",      new SimpleReferenceIdentifier(authority,  null ).toString());
-        assertEquals("SimpleReferenceIdentifier[“4326”]",      new SimpleReferenceIdentifier(null,      "4326").toString());
-        assertEquals("SimpleReferenceIdentifier[]",            new SimpleReferenceIdentifier(null,       null ).toString());
+        assertEquals("SimpleIdentifier[“EPSG:4326”]", new SimpleIdentifier(authority, "4326").toString());
+        assertEquals("SimpleIdentifier[“EPSG”]",      new SimpleIdentifier(authority,  null ).toString());
+        assertEquals("SimpleIdentifier[“4326”]",      new SimpleIdentifier(null,      "4326").toString());
+        assertEquals("SimpleIdentifier[]",            new SimpleIdentifier(null,       null ).toString());
     }
 
     /**
-     * Tests {@link SimpleReferenceIdentifier#toWKT()}.
+     * Tests {@link SimpleIdentifier#toWKT()}.
      */
     @Test
     public void testToWKT() {
         final SimpleCitation authority = new SimpleCitation("EPSG");
-        assertEquals("ID[\"EPSG\", \"4326\"]", new SimpleReferenceIdentifier(authority, "4326").toWKT());
-        assertEquals("ID[\"EPSG\", null]",     new SimpleReferenceIdentifier(authority,  null ).toWKT());
-        assertEquals("ID[null, \"4326\"]",     new SimpleReferenceIdentifier(null,      "4326").toWKT());
-        assertEquals("ID[null, null]",         new SimpleReferenceIdentifier(null,       null ).toWKT());
+        assertEquals("ID[\"EPSG\", \"4326\"]", new SimpleIdentifier(authority, "4326").toWKT());
+        assertEquals("ID[\"EPSG\", null]",     new SimpleIdentifier(authority,  null ).toWKT());
+        assertEquals("ID[null, \"4326\"]",     new SimpleIdentifier(null,      "4326").toWKT());
+        assertEquals("ID[null, null]",         new SimpleIdentifier(null,       null ).toWKT());
     }
 }

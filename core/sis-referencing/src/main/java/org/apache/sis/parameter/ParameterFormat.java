@@ -37,6 +37,7 @@ import javax.measure.unit.Unit;
 import org.opengis.parameter.*;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.OperationMethod;
@@ -390,7 +391,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         final boolean isSummary = contentLevel == ContentLevel.NAME_SUMMARY;
         final ParameterDescriptorGroup descriptor;
         final ParameterValueGroup      values;
-        final ReferenceIdentifier      name;
+        final Identifier               name;
         if (object instanceof ParameterValueGroup) {
             values     = (ParameterValueGroup) object;
             descriptor = values.getDescriptor();
@@ -748,7 +749,7 @@ public class ParameterFormat extends TabularFormat<Object> {
              */
             final Set<ReferenceIdentifier> identifiers = object.getIdentifiers();
             if (identifiers != null) { // Paranoiac check.
-                ReferenceIdentifier identifier = null;
+                Identifier identifier = null;
                 for (final ReferenceIdentifier candidate : identifiers) {
                     if (candidate != null) { // Paranoiac check.
                         if (isPreferredCodespace(candidate.getCodeSpace())) {

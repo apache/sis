@@ -39,7 +39,11 @@ public class FieldDescriptor {
 
 
     public String getName() {
-        return new String(this.FieldName);
+        int length = FieldName.length;
+        while (length != 0 && FieldName[length - 1] <= ' ') {
+            length--;
+        }
+        return new String(this.FieldName, 0, length);
     }
 
     public int getLength() {

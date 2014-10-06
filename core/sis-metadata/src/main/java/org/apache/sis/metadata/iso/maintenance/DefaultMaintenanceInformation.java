@@ -233,7 +233,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMaintenanceDates()} in order to enable inclusion
      *             of a {@link DateType} to describe the type of the date. The associated date type is
-     *             {@link DateType.valueOf("NEXT_UPDATE")}.
+     *             {@code DateType.valueOf("NEXT_UPDATE")}.
      */
     @Override
     @Deprecated

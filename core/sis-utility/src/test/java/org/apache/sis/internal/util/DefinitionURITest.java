@@ -17,7 +17,7 @@
 package org.apache.sis.internal.util;
 
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
+import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -147,11 +147,11 @@ public final strictfp class DefinitionURITest extends TestCase {
     }
 
     /**
-     * Tests {@link DefinitionURI#toURN(String, ReferenceIdentifier)}.
+     * Tests {@link DefinitionURI#format(String, ReferenceIdentifier)}.
      */
     @Test
     public void testToURN() {
-        final ReferenceIdentifier identifier = new SimpleReferenceIdentifier(new SimpleCitation("EPSG"), "4326");
+        final ReferenceIdentifier identifier = new SimpleIdentifier(new SimpleCitation("EPSG"), "4326");
         assertEquals("urn:ogc:def:crs:EPSG::4326", DefinitionURI.format("crs", identifier));
     }
 }

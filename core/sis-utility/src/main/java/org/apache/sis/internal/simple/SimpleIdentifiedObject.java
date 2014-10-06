@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
@@ -168,7 +169,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     @Override
     public final int hashCode() {
         int code = (int) serialVersionUID;
-        final ReferenceIdentifier name = getName();
+        final Identifier name = getName();
         if (name != null) {
             code ^= name.hashCode();
         }

@@ -28,7 +28,7 @@ import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
+import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Numbers;
@@ -62,7 +62,7 @@ import org.apache.sis.util.logging.Logging;
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
  * @see <a href="https://issues.apache.org/jira/browse/SIS-80">SIS-80</a>
  */
-final class PropertyInformation<E> extends SimpleReferenceIdentifier
+final class PropertyInformation<E> extends SimpleIdentifier
         implements ExtendedElementInformation, CheckedContainer<E>
 {
     /**

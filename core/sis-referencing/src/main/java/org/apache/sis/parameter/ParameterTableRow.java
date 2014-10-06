@@ -30,10 +30,11 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.FieldPosition;
 import javax.measure.unit.Unit;
+import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.opengis.util.NameSpace;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.measure.Range;
@@ -61,7 +62,7 @@ final class ParameterTableRow {
      * <p>Values can be of two kinds:</p>
      * <ul>
      *   <li>{@link String} for names or aliases.</li>
-     *   <li>{@link ReferenceIdentifier} for identifiers.</li>
+     *   <li>{@link Identifier} for identifiers.</li>
      * </ul>
      *
      * @see #addIdentifier(String, Object)
@@ -351,7 +352,7 @@ final class ParameterTableRow {
                 boolean hasIdentifiers = false;
                 while (it.hasNext()) {
                     final Object id = it.next();
-                    if (id instanceof ReferenceIdentifier) {
+                    if (id instanceof Identifier) {
                         out.append(hasIdentifiers ? ", " : " (");
                         writeColor(out, colors, ElementKind.IDENTIFIER);
                         out.append(toString(id));
@@ -376,8 +377,8 @@ final class ParameterTableRow {
      * Returns the string representation of the given parameter name.
      */
     private static String toString(Object parameter) {
-        if (parameter instanceof ReferenceIdentifier) {
-            parameter = ((ReferenceIdentifier) parameter).getCode();
+        if (parameter instanceof Identifier) {
+            parameter = ((Identifier) parameter).getCode();
         }
         return parameter.toString();
     }

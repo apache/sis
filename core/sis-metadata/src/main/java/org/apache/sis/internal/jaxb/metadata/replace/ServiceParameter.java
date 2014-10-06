@@ -26,6 +26,7 @@ import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -341,7 +342,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * Null-safe string representation of the given identifier, for comparison purpose.
      * We ignore codespace because they can not be represented in ISO 19139 XML documents.
      */
-    private static String toString(final ReferenceIdentifier identifier) {
+    private static String toString(final Identifier identifier) {
         return (identifier != null) ? identifier.toString() : null;
     }
 }
