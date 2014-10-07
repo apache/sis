@@ -254,7 +254,7 @@ public final class IdentifiedObjects extends Static {
      */
     public static Identifier getIdentifier(final IdentifiedObject object, final Citation authority) {
         if (object != null) {
-            final Iterator<Identifier> it = iterator(object.getIdentifiers());
+            final Iterator<? extends Identifier> it = iterator(object.getIdentifiers());
             if (it != null) while (it.hasNext()) {
                 final Identifier identifier = it.next();
                 if (identifier != null) { // Paranoiac check.
@@ -290,7 +290,7 @@ public final class IdentifiedObjects extends Static {
      */
     public static String getIdentifierOrName(final IdentifiedObject object) {
         if (object != null) {
-            final Iterator<Identifier> it = iterator(object.getIdentifiers());
+            final Iterator<? extends Identifier> it = iterator(object.getIdentifiers());
             if (it != null) while (it.hasNext()) {
                 final String code = toString(it.next());
                 if (code != null) { // Paranoiac check.
@@ -338,7 +338,7 @@ public final class IdentifiedObjects extends Static {
                     }
                 }
             }
-            final Iterator<Identifier> id = iterator(object.getIdentifiers());
+            final Iterator<? extends Identifier> id = iterator(object.getIdentifiers());
             if (id != null) while (id.hasNext()) {
                 identifier = id.next();
                 if (identifier != null) { // Paranoiac check.
