@@ -62,7 +62,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
      * </ul>
      */
     private static final Locale[] LOCALES = {
-            Locale.JAPANESE, Locale.CANADA, Locale.FRANCE, Locale.CANADA_FRENCH
+            Locale.ENGLISH, Locale.JAPANESE, Locale.CANADA, Locale.FRANCE, Locale.CANADA_FRENCH
     };
 
     /**
@@ -70,6 +70,9 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
      */
     private static final String XML =
             "<gmd:MD_Metadata xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+            "  <gmd:language>\n" +
+            "    <gmd:LanguageCode codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode\" codeListValue=\"eng\" codeSpace=\"eng\">English</gmd:LanguageCode>\n" +
+            "  </gmd:language>\n" +
             "  <gmd:locale>\n" +
             "    <gmd:PT_Locale>\n" +
             "      <gmd:languageCode>\n" +
@@ -117,7 +120,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
     @Test
     public void testMarshalling() throws JAXBException {
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setLocales(Arrays.asList(LOCALES));
+        metadata.setLanguages(Arrays.asList(LOCALES));
         assertXmlEquals(XML, marshal(metadata), "xlmns:*");
     }
 
@@ -129,6 +132,6 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
     @Test
     public void testUnmarshalling() throws JAXBException {
         final DefaultMetadata metadata = unmarshal(DefaultMetadata.class, XML);
-        assertArrayEquals(LOCALES, metadata.getLocales().toArray());
+        assertArrayEquals(LOCALES, metadata.getLanguages().toArray());
     }
 }

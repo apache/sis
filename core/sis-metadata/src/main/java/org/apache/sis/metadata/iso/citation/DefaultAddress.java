@@ -82,7 +82,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Address line for the location (as described in ISO 11180, Annex A).
      */
-    private Collection<String> deliveryPoints;
+    private Collection<InternationalString> deliveryPoints;
 
     /**
      * Address of the electronic mailbox of the responsible organization or individual.
@@ -107,7 +107,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     public DefaultAddress(final Address object) {
         super(object);
         if (object != null) {
-            deliveryPoints          = copyCollection(object.getDeliveryPoints(), String.class);
+            deliveryPoints          = copyCollection(object.getDeliveryPoints(), InternationalString.class);
             city                    = object.getCity();
             administrativeArea      = object.getAdministrativeArea();
             postalCode              = object.getPostalCode();
@@ -211,8 +211,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
      */
     @Override
     @XmlElement(name = "deliveryPoint")
-    public Collection<String> getDeliveryPoints() {
-        return deliveryPoints = nonNullCollection(deliveryPoints, String.class);
+    public Collection<InternationalString> getDeliveryPoints() {
+        return deliveryPoints = nonNullCollection(deliveryPoints, InternationalString.class);
     }
 
     /**
@@ -220,8 +220,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
      *
      * @param newValues The new delivery points, or {@code null} if none.
      */
-    public void setDeliveryPoints(final Collection<? extends String> newValues) {
-        deliveryPoints = writeCollection(newValues, deliveryPoints, String.class);
+    public void setDeliveryPoints(final Collection<? extends InternationalString> newValues) {
+        deliveryPoints = writeCollection(newValues, deliveryPoints, InternationalString.class);
     }
 
     /**
