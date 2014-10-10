@@ -18,7 +18,14 @@ package org.apache.sis.metadata.iso;
 
 import java.util.Date;
 import java.util.Locale;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.AbstractCollection;
+import java.util.Iterator;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlType;
@@ -26,27 +33,40 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.MetadataScope;
 import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.MetadataExtensionInformation;
 import org.opengis.metadata.PortrayalCatalogueReference;
 import org.opengis.metadata.acquisition.AcquisitionInformation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.citation.OnlineResource;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.util.InternationalString;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
+import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
+import org.apache.sis.metadata.iso.identification.AbstractIdentification;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.code.PT_Locale;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.xml.Namespaces;
-
-import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
-import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 
 /**
@@ -73,7 +93,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Metadata_Type", propOrder = {
@@ -108,69 +128,62 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5374952007292101340L;
+    private static final long serialVersionUID = -4935599812744534502L;
 
     /**
-     * Unique identifier for this metadata file, or {@code null} if none.
+     * Unique identifier for this metadata record, or {@code null} if none.
      */
-    private String fileIdentifier;
+    private Identifier metadataIdentifier;
 
     /**
-     * Language used for documenting metadata.
+     * Language(s) used for documenting metadata.
      */
-    private Locale language;
-
-    /**
-     * Information about an alternatively used localized character
-     * strings for linguistic extensions.
-     */
-    private Collection<Locale> locales;
+    private Collection<Locale> languages;
 
     /**
      * Full name of the character coding standard used for the metadata set.
      */
-    private Charset characterSet;
+    private Collection<Charset> characterSets;
 
     /**
-     * File identifier of the metadata to which this metadata is a subset (child).
+     * Identification of the parent metadata record.
      */
-    private String parentIdentifier;
+    private Citation parentMetadata;
 
     /**
      * Scope to which the metadata applies.
      */
-    private Collection<ScopeCode> hierarchyLevels;
-
-    /**
-     * Name of the hierarchy levels for which the metadata is provided.
-     */
-    private Collection<String> hierarchyLevelNames;
+    private Collection<MetadataScope> metadataScopes;
 
     /**
      * Parties responsible for the metadata information.
      */
-    private Collection<ResponsibleParty> contacts;
+    private Collection<Responsibility> contacts;
 
     /**
-     * Date that the metadata was created, in milliseconds elapsed since January 1st, 1970.
-     * If not defined, then then value is {@link Long#MIN_VALUE}.
+     * Date(s) associated with the metadata.
      */
-    private long dateStamp = Long.MIN_VALUE;
+    private Collection<CitationDate> dates;
 
     /**
-     * Name of the metadata standard (including profile name) used.
+     * Citation(s) for the standard(s) to which the metadata conform.
      */
-    private String metadataStandardName;
+    private Collection<Citation> metadataStandards;
 
     /**
-     * Version (profile) of the metadata standard used.
+     * Citation(s) for the profile(s) of the metadata standard to which the metadata conform.
      */
-    private String metadataStandardVersion;
+    private Collection<Citation> metadataProfiles;
 
     /**
-     * Uniformed Resource Identifier (URI) of the dataset to which the metadata applies.
+     * Reference(s) to alternative metadata or metadata in a non-ISO standard for the same resource.
      */
-    private String dataSetUri;
+    private Collection<Citation> alternativeMetadataReferences;
+
+    /**
+     * Online location(s) where the metadata is available.
+     */
+    private Collection<OnlineResource> metadataLinkages;
 
     /**
      * Digital representation of spatial information in the dataset.
@@ -201,7 +214,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Provides information about the distributor of and options for obtaining the resource(s).
      */
-    private Distribution distributionInfo;
+    private Collection<Distribution> distributionInfo;
 
     /**
      * Provides overall assessment of quality of a resource(s).
@@ -234,6 +247,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     private Collection<AcquisitionInformation> acquisitionInformation;
 
     /**
+     * Information about the provenance, sources and/or the production processes applied to the resource.
+     */
+    private Collection<Lineage> resourceLineages;
+
+    /**
      * Creates an initially empty metadata.
      */
     public DefaultMetadata() {
@@ -247,13 +265,15 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param identificationInfo Basic information about the resource
      *        to which the metadata applies.
      */
-    public DefaultMetadata(final ResponsibleParty contact,
-                           final Date             dateStamp,
-                           final Identification   identificationInfo)
+    public DefaultMetadata(final Responsibility contact,
+                           final Date           dateStamp,
+                           final Identification identificationInfo)
     {
-        this.contacts  = singleton(contact, ResponsibleParty.class);
-        this.dateStamp = toMilliseconds(dateStamp);
+        this.contacts  = singleton(contact, Responsibility.class);
         this.identificationInfo = singleton(identificationInfo, Identification.class);
+        if (dateStamp != null) {
+            dates = singleton(new DefaultCitationDate(dateStamp, DateType.CREATION), CitationDate.class);
+        }
     }
 
     /**
@@ -268,30 +288,30 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public DefaultMetadata(final Metadata object) {
         super(object);
         if (object != null) {
-            fileIdentifier            = object.getFileIdentifier();
-            language                  = object.getLanguage();
-            characterSet              = object.getCharacterSet();
-            parentIdentifier          = object.getParentIdentifier();
-            hierarchyLevels           = copyCollection(object.getHierarchyLevels(), ScopeCode.class);
-            hierarchyLevelNames       = copyCollection(object.getHierarchyLevelNames(), String.class);
-            contacts                  = copyCollection(object.getContacts(), ResponsibleParty.class);
-            dateStamp                 = toMilliseconds(object.getDateStamp());
-            metadataStandardName      = object.getMetadataStandardName();
-            metadataStandardVersion   = object.getMetadataStandardVersion();
-            dataSetUri                = object.getDataSetUri();
-            locales                   = copyCollection(object.getLocales(), Locale.class);
-            spatialRepresentationInfo = copyCollection(object.getSpatialRepresentationInfo(), SpatialRepresentation.class);
-            referenceSystemInfo       = copyCollection(object.getReferenceSystemInfo(), ReferenceSystem.class);
-            metadataExtensionInfo     = copyCollection(object.getMetadataExtensionInfo(), MetadataExtensionInformation.class);
-            identificationInfo        = copyCollection(object.getIdentificationInfo(), Identification.class);
-            contentInfo               = copyCollection(object.getContentInfo(), ContentInformation.class);
-            distributionInfo          = object.getDistributionInfo();
-            dataQualityInfo           = copyCollection(object.getDataQualityInfo(), DataQuality.class);
-            portrayalCatalogueInfo    = copyCollection(object.getPortrayalCatalogueInfo(), PortrayalCatalogueReference.class);
-            metadataConstraints       = copyCollection(object.getMetadataConstraints(), Constraints.class);
-            applicationSchemaInfo     = copyCollection(object.getApplicationSchemaInfo(), ApplicationSchemaInformation.class);
-            metadataMaintenance       = object.getMetadataMaintenance();
-            acquisitionInformation    = copyCollection(object.getAcquisitionInformation(), AcquisitionInformation.class);
+            metadataIdentifier            = object.getMetadataIdentifier();
+            parentMetadata                = object.getParentMetadata();
+            languages                     = copyCollection(object.getLanguages(),                     Locale.class);
+            characterSets                 = copyCollection(object.getCharacterSets(),                 Charset.class);
+            metadataScopes                = copyCollection(object.getMetadataScopes(),                MetadataScope.class);
+            contacts                      = copyCollection(object.getContacts(),                      Responsibility.class);
+            dates                         = copyCollection(object.getDates(),                         CitationDate.class);
+            metadataStandards             = copyCollection(object.getMetadataStandards(),             Citation.class);
+            metadataProfiles              = copyCollection(object.getMetadataProfiles(),              Citation.class);
+            alternativeMetadataReferences = copyCollection(object.getAlternativeMetadataReferences(), Citation.class);
+            metadataLinkages              = copyCollection(object.getMetadataLinkages(),              OnlineResource.class);
+            spatialRepresentationInfo     = copyCollection(object.getSpatialRepresentationInfo(),     SpatialRepresentation.class);
+            referenceSystemInfo           = copyCollection(object.getReferenceSystemInfo(),           ReferenceSystem.class);
+            metadataExtensionInfo         = copyCollection(object.getMetadataExtensionInfo(),         MetadataExtensionInformation.class);
+            identificationInfo            = copyCollection(object.getIdentificationInfo(),            Identification.class);
+            contentInfo                   = copyCollection(object.getContentInfo(),                   ContentInformation.class);
+            distributionInfo              = copyCollection(object.getDistributionInfo(),              Distribution.class);
+            dataQualityInfo               = copyCollection(object.getDataQualityInfo(),               DataQuality.class);
+            portrayalCatalogueInfo        = copyCollection(object.getPortrayalCatalogueInfo(),        PortrayalCatalogueReference.class);
+            metadataConstraints           = copyCollection(object.getMetadataConstraints(),           Constraints.class);
+            applicationSchemaInfo         = copyCollection(object.getApplicationSchemaInfo(),         ApplicationSchemaInformation.class);
+            metadataMaintenance           = object.getMetadataMaintenance();
+            acquisitionInformation        = copyCollection(object.getAcquisitionInformation(),        AcquisitionInformation.class);
+            resourceLineages              = copyCollection(object.getResourceLineages(),              Lineage.class);
         }
     }
 
@@ -321,156 +341,515 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Returns the unique identifier for this metadata file, or {@code null} if none.
+     * Returns a unique identifier for this metadata record.
+     *
+     * @return Unique identifier for this metadata record, or {@code null}.
+     *
+     * @since 0.5
+     */
+    @Override
+    public Identifier getMetadataIdentifier() {
+        return metadataIdentifier;
+    }
+
+    /**
+     * Sets the unique identifier for this metadata record.
+     *
+     * @param newValue The new identifier, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    public void setMetadataIdentifier(final Identifier newValue) {
+        checkWritePermission();
+        metadataIdentifier = newValue;
+    }
+
+    /**
+     * Returns the unique identifier for this metadata file.
      *
      * @return Unique identifier for this metadata file, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataIdentifier()}
+     *   in order to include the codespace attribute.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "fileIdentifier")
-    public String getFileIdentifier() {
-        return fileIdentifier;
+    public final String getFileIdentifier() {
+        final Identifier identifier = getMetadataIdentifier();
+        return (identifier != null) ? identifier.getCode() : null;
     }
 
     /**
-     * Sets the unique identifier for this metadata file, or {@code null} if none.
+     * Sets the unique identifier for this metadata file.
      *
-     * @param newValue The new identifier.
+     * @param newValue The new identifier, or {@code null} if none.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataIdentifier(Identifier)}
      */
-    public void setFileIdentifier(final String newValue) {
-        checkWritePermission();
-        fileIdentifier = newValue;
+    @Deprecated
+    public final void setFileIdentifier(final String newValue) {
+        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(getMetadataIdentifier());
+        if (identifier == null) {
+            identifier = new DefaultIdentifier();
+        }
+        identifier.setCode(newValue);
+        setMetadataIdentifier(identifier);
     }
 
     /**
-     * Returns the language used for documenting metadata. This {@code DefaultMetadata} object and
-     * its children will use that locale for marshalling {@link org.opengis.util.InternationalString}
-     * and {@link org.opengis.util.CodeList} instances in ISO 19139 compliant XML documents.
+     * Returns the language(s) used for documenting metadata.
+     * The first element in iteration order is the default language.
+     * All other elements, if any, are alternate language(s) used within the resource.
+     *
+     * <p>Unless an other locale has been specified with the {@link org.apache.sis.xml.XML#LOCALE} property,
+     * this {@code DefaultMetadata} instance and its children will use the first locale returned by this method
+     * for marshalling {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList} instances
+     * in ISO 19115-2 compliant XML documents.
+     *
+     * @return Language(s) used for documenting metadata.
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<Locale> getLanguages() {
+        return languages = nonNullCollection(languages, Locale.class);
+    }
+
+    /**
+     * Sets the language(s) used for documenting metadata.
+     * The first element in iteration order shall be the default language.
+     * All other elements, if any, are alternate language(s) used within the resource.
+     *
+     * @param newValues The new languages.
+     *
+     * @see org.apache.sis.xml.XML#LOCALE
+     *
+     * @since 0.5
+     */
+    public void setLanguages(final Collection<Locale> newValues) {
+        languages = writeCollection(newValues, languages, Locale.class);
+        // The "magik" applying this language to every children
+        // is performed by the 'beforeMarshal(Marshaller)' method.
+    }
+
+    /**
+     * Returns the default language used for documenting metadata.
      *
      * @return Language used for documenting metadata, or {@code null}.
+     *
+     * @deprecated As of GeoAPI 3.1, replaced by {@link #getLanguages()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "language")
-    public Locale getLanguage() {
-        return language;
+    public final Locale getLanguage() {
+        return first(languages);
+        // No warning if the collection contains more than one locale, because
+        // this is allowed by the "getLanguage() + getLocales()" contract.
     }
 
     /**
-     * Sets the language used for documenting metadata. This {@code DefaultMetadata} object and its
-     * children will use the given locale for marshalling {@link org.opengis.util.InternationalString}
-     * and {@link org.opengis.util.CodeList} instances in ISO 19139 compliant XML documents.
+     * Returns the first element of the given collection, or {@code null} if none.
+     * This method does not emit warning if more than one element is found.
+     * Consequently, this method should be used only when multi-occurrence is not ambiguous.
+     */
+    private static <T> T first(final Collection<T> values) {
+        if (values != null) {
+            final Iterator<T> it = values.iterator();
+            if (it.hasNext()) {
+                return it.next();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Sets the language used for documenting metadata.
+     * This method modifies the collection returned by {@link #getLanguages()} as below:
+     *
+     * <ul>
+     *   <li>If the languages collection is empty, then this method sets the collection to the given {@code newValue}.</li>
+     *   <li>Otherwise the first element in the languages collection is replaced by the given {@code newValue}.</li>
+     * </ul>
      *
      * @param newValue The new language.
      *
-     * @see org.apache.sis.xml.XML#LOCALE
+     * @deprecated As of GeoAPI 3.1, replaced by {@link #setLanguages(Collection)}.
      */
-    public void setLanguage(final Locale newValue) {
+    @Deprecated
+    public final void setLanguage(final Locale newValue) {
         checkWritePermission();
-        language = newValue;
-        // The "magik" applying this language to every children
-        // is performed by the 'beforeMarshal(Marshaller)' method.
+        setLanguages(setFirst(languages, newValue));
+    }
+
+    /**
+     * Sets the first element in the given collection to the given value.
+     * If the given collection is empty, the given value will be added to it.
+     */
+    private static <T> Collection<T> setFirst(Collection<T> values, final T newValue) {
+        if (values == null) {
+            return LegacyPropertyAdapter.asCollection(newValue);
+        }
+        if (newValue == null) {
+            final Iterator<T> it = values.iterator();
+            if (it.hasNext()) {
+                it.remove();
+            }
+        } else if (values.isEmpty()) {
+            values.add(newValue);
+        } else {
+            if (!(values instanceof List<?>)) {
+                values = new ArrayList<>(values);
+            }
+            ((List<T>) values).set(0, newValue);
+        }
+        return values;
     }
 
     /**
      * Provides information about an alternatively used localized character string for a linguistic extension.
      *
      * @return Alternatively used localized character string for a linguistic extension.
+     *
+     * @deprecated As of GeoAPI 3.1, replaced by {@link #getLanguages()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "locale")
     @XmlJavaTypeAdapter(PT_Locale.class)
-    public Collection<Locale> getLocales() {
-        return locales = nonNullCollection(locales, Locale.class);
+    public final Collection<Locale> getLocales() {
+        final Collection<Locale> languages = getLanguages();
+        if (languages == null) { // May happen at XML marshalling time.
+            return Collections.emptySet();
+        }
+        return new AbstractCollection<Locale>() {
+            @Override
+            public int size() {
+                return Math.max(0, languages.size() - 1);
+            }
+
+            @Override
+            public Iterator<Locale> iterator() {
+                final Iterator<Locale> it = languages.iterator();
+                if (it.hasNext()) it.next(); // Skip the first element.
+                return it;
+            }
+
+            @Override
+            public boolean add(final Locale newValue) {
+                return languages.add(newValue);
+            }
+        };
     }
 
     /**
      * Sets information about an alternatively used localized character string for a linguistic extension.
      *
      * @param newValues The new locales.
+     *
+     * @deprecated As of GeoAPI 3.1, replaced by {@link #setLanguages(Collection)}.
      */
-    public void setLocales(final Collection<? extends Locale> newValues) {
-        locales = writeCollection(newValues, locales, Locale.class);
+    @Deprecated
+    public final void setLocales(final Collection<? extends Locale> newValues) {
+        checkWritePermission();
+        Locale language = getLanguage();
+        final Collection<Locale> merged;
+        if (Containers.isNullOrEmpty(newValues)) {
+            merged = LegacyPropertyAdapter.asCollection(language);
+        } else {
+            merged = new ArrayList<>(newValues.size() + 1);
+            if (language == null) {
+                language = newValues.iterator().next();
+            }
+            merged.add(language);
+            merged.addAll(newValues);
+        }
+        setLanguages(merged);
+    }
+
+    /**
+     * Returns the character coding standard used for the metadata set.
+     * Instances can be obtained by a call to {@link Charset#forName(String)}.
+     *
+     * <div class="note"><b>Examples:</b>
+     * {@code UCS-2}, {@code UCS-4}, {@code UTF-7}, {@code UTF-8}, {@code UTF-16},
+     * {@code ISO-8859-1} (a.k.a. {@code ISO-LATIN-1}), {@code ISO-8859-2}, {@code ISO-8859-3}, {@code ISO-8859-4},
+     * {@code ISO-8859-5}, {@code ISO-8859-6}, {@code ISO-8859-7}, {@code ISO-8859-8}, {@code ISO-8859-9},
+     * {@code ISO-8859-10}, {@code ISO-8859-11}, {@code ISO-8859-12}, {@code ISO-8859-13}, {@code ISO-8859-14},
+     * {@code ISO-8859-15}, {@code ISO-8859-16},
+     * {@code JIS_X0201}, {@code Shift_JIS}, {@code EUC-JP}, {@code US-ASCII}, {@code EBCDIC}, {@code EUC-KR},
+     * {@code Big5}, {@code GB2312}.
+     * </div>
+     *
+     * @return Character coding standards used for the metadata.
+     *
+     * @see #getLanguages()
+     * @see org.opengis.metadata.identification.DataIdentification#getCharacterSets()
+     * @see Charset#forName(String)
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<Charset> getCharacterSets() {
+        return characterSets = nonNullCollection(characterSets, Charset.class);
+    }
+
+    /**
+     * Sets the character coding standard used for the metadata set.
+     *
+     * @param newValues The new character coding standards.
+     *
+     * @since 0.5
+     */
+    public void setCharacterSets(final Collection<Charset> newValues) {
+        characterSets = writeCollection(newValues, characterSets, Charset.class);
     }
 
     /**
      * Returns the character coding standard used for the metadata set.
      *
      * @return Character coding standard used for the metadata, or {@code null}.
+     *
+     * @deprecated As of GeoAPI 3.1, replaced by {@link #getCharacterSets()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "characterSet")
-    public Charset getCharacterSet()  {
-        return characterSet;
+    public final Charset getCharacterSet()  {
+        return LegacyPropertyAdapter.getSingleton(characterSets, Charset.class, null, DefaultMetadata.class, "getCharacterSet");
     }
 
     /**
      * Sets the character coding standard used for the metadata set.
      *
      * @param newValue The new character set.
+     *
+     * @deprecated As of GeoAPI 3.1, replaced by {@link #setCharacterSets(Collection)}.
      */
-    public void setCharacterSet(final Charset newValue) {
+    @Deprecated
+    public final void setCharacterSet(final Charset newValue) {
+        setCharacterSets(LegacyPropertyAdapter.asCollection(newValue));
+    }
+
+    /**
+     * Returns an identification of the parent metadata record.
+     * This is non-null if this metadata is a subset (child) of another metadata.
+     *
+     * @return Identification of the parent metadata record, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Override
+    public Citation getParentMetadata() {
+        return parentMetadata;
+    }
+
+    /**
+     * Sets an identification of the parent metadata record.
+     *
+     * @param newValue The new identification of the parent metadata record.
+     *
+     * @since 0.5
+     */
+    public void setParentMetadata(final Citation newValue) {
         checkWritePermission();
-        characterSet = newValue;
+        parentMetadata = newValue;
     }
 
     /**
      * Returns the file identifier of the metadata to which this metadata is a subset (child).
      *
      * @return Identifier of the metadata to which this metadata is a subset, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getParentMetadata()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "parentIdentifier")
-    public String getParentIdentifier() {
-        return parentIdentifier;
+    public final String getParentIdentifier() {
+        final Citation parentMetadata = getParentMetadata();
+        if (parentMetadata != null) {
+            final InternationalString title = parentMetadata.getTitle();
+            if (title != null) {
+                return title.toString();
+            }
+        }
+        return null;
     }
 
     /**
      * Sets the file identifier of the metadata to which this metadata is a subset (child).
      *
      * @param newValue The new parent identifier.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getParentMetadata()}.
      */
-    public void setParentIdentifier(final String newValue) {
+    @Deprecated
+    public final void setParentIdentifier(final String newValue) {
         checkWritePermission();
-        parentIdentifier = newValue;
+        DefaultCitation parentMetadata = DefaultCitation.castOrCopy(getParentMetadata());
+        if (parentMetadata == null) {
+            parentMetadata = new DefaultCitation();
+        }
+        parentMetadata.setTitle(new SimpleInternationalString(newValue));
+        setParentMetadata(parentMetadata);
+    }
+
+    /**
+     * Returns the scope or type of resource for which metadata is provided.
+     *
+     * @return Scope or type of resource for which metadata is provided.
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<MetadataScope> getMetadataScopes() {
+        return metadataScopes = nonNullCollection(metadataScopes, MetadataScope.class);
+    }
+
+    /**
+     * Sets the scope or type of resource for which metadata is provided.
+     *
+     * @param newValues The new scope or type of resource.
+     *
+     * @since 0.5
+     */
+    public void setMetadataScopes(final Collection<? extends MetadataScope> newValues) {
+        metadataScopes = writeCollection(newValues, metadataScopes, MetadataScope.class);
+    }
+
+    /**
+     * A specialization of {@link LegacyPropertyAdapter} which will try to merge the
+     * {@code "hierarchyLevel"} and {@code "hierarchyLevelName"} properties in the same
+     * {@link DefaultMetadataScope} instance.
+     */
+    private static abstract class ScopeAdapter<L> extends LegacyPropertyAdapter<L,MetadataScope> {
+        /**
+         * @param scopes Value of {@link DefaultMetadata#getMetadataScopes()}.
+         */
+        ScopeAdapter(final Collection<MetadataScope> scopes)  {
+            super(scopes);
+        }
+
+        /**
+         * Invoked (indirectly) by JAXB when adding a new scope code or scope name. This implementation searches
+         * for an existing {@link MetadataScope} instance with a free slot for the new value before to create a
+         * new {@link DefaultMetadataScope} instance.
+         */
+        @Override
+        public boolean add(final L newValue) {
+            final Iterator<MetadataScope> it = elements.iterator();
+            if (it.hasNext()) {
+                MetadataScope scope = it.next();
+                if (unwrap(scope) == null) {
+                    if (!(scope instanceof DefaultMetadataScope)) {
+                        scope = new DefaultMetadataScope(scope);
+                    }
+                    return update(scope, newValue);
+                }
+            }
+            return super.add(newValue);
+        }
     }
 
     /**
      * Returns the scope to which the metadata applies.
      *
      * @return Scope to which the metadata applies.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
+     *   followed by {@link DefaultMetadataScope#getResourceScope()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "hierarchyLevel")
-    public Collection<ScopeCode> getHierarchyLevels() {
-        return hierarchyLevels = nonNullCollection(hierarchyLevels, ScopeCode.class);
+    public final Collection<ScopeCode> getHierarchyLevels() {
+        return new ScopeAdapter<ScopeCode>(getMetadataScopes()) {
+            /** Stores a legacy value into the new kind of value. */
+            @Override protected MetadataScope wrap(final ScopeCode value) {
+                return new DefaultMetadataScope(value);
+            }
+
+            /** Extracts the legacy value from the new kind of value. */
+            @Override protected ScopeCode unwrap(final MetadataScope container) {
+                return container.getResourceScope();
+            }
+
+            /** Updates the legacy value in an existing instance of the new kind of value. */
+            @Override protected boolean update(final MetadataScope container, final ScopeCode value) {
+                if (container instanceof DefaultMetadataScope) {
+                    ((DefaultMetadataScope) container).setResourceScope(value);
+                    return true;
+                }
+                return false;
+            }
+        }.validOrNull();
     }
 
     /**
      * Sets the scope to which the metadata applies.
      *
      * @param newValues The new hierarchy levels.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
+     *   followed by {@link DefaultMetadataScope#setResourceScope(ScopeCode)}.
      */
-    public void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
-        hierarchyLevels = writeCollection(newValues, hierarchyLevels, ScopeCode.class);
+    @Deprecated
+    public final void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
+        checkWritePermission();
+        ((LegacyPropertyAdapter<ScopeCode,?>) getHierarchyLevels()).setValues(newValues);
     }
 
     /**
      * Returns the name of the hierarchy levels for which the metadata is provided.
      *
      * @return Hierarchy levels for which the metadata is provided.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
+     *   followed by {@link DefaultMetadataScope#getName()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "hierarchyLevelName")
-    public Collection<String> getHierarchyLevelNames() {
-        return hierarchyLevelNames = nonNullCollection(hierarchyLevelNames, String.class);
+    public final Collection<String> getHierarchyLevelNames() {
+        return new ScopeAdapter<String>(getMetadataScopes()) {
+            /** Stores a legacy value into the new kind of value. */
+            @Override protected MetadataScope wrap(final String value) {
+                final DefaultMetadataScope scope = new DefaultMetadataScope();
+                scope.setName(new SimpleInternationalString(value));
+                return scope;
+            }
+
+            /** Extracts the legacy value from the new kind of value. */
+            @Override protected String unwrap(final MetadataScope container) {
+                final InternationalString name = container.getName();
+                return (name != null) ? name.toString() : null;
+            }
+
+            /** Updates the legacy value in an existing instance of the new kind of value. */
+            @Override protected boolean update(final MetadataScope container, final String value) {
+                if (container instanceof DefaultMetadataScope) {
+                    ((DefaultMetadataScope) container).setName(new SimpleInternationalString(value));
+                    return true;
+                }
+                return false;
+            }
+        }.validOrNull();
     }
 
     /**
      * Sets the name of the hierarchy levels for which the metadata is provided.
      *
      * @param newValues The new hierarchy level names.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
+     *   followed by {@link DefaultMetadataScope#setName(InternationalString)}.
      */
-    public void setHierarchyLevelNames(final Collection<? extends String> newValues) {
-        hierarchyLevelNames = writeCollection(newValues, hierarchyLevelNames, String.class);
+    @Deprecated
+    public final void setHierarchyLevelNames(final Collection<? extends String> newValues) {
+        checkWritePermission();
+        ((LegacyPropertyAdapter<String,?>) getHierarchyLevelNames()).setValues(newValues);
     }
 
     /**
@@ -480,8 +859,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "contact", required = true)
-    public Collection<ResponsibleParty> getContacts() {
-        return contacts = nonNullCollection(contacts, ResponsibleParty.class);
+    public Collection<Responsibility> getContacts() {
+        return contacts = nonNullCollection(contacts, Responsibility.class);
     }
 
     /**
@@ -489,93 +868,367 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new contacts.
      */
-    public void setContacts(final Collection<? extends ResponsibleParty> newValues) {
+    public void setContacts(final Collection<? extends Responsibility> newValues) {
         checkWritePermission();
-        contacts = writeCollection(newValues, contacts, ResponsibleParty.class);
+        contacts = writeCollection(newValues, contacts, Responsibility.class);
+    }
+
+    /**
+     * Returns the date(s) associated with the metadata.
+     *
+     * @return Date(s) associated with the metadata.
+     *
+     * @see Citation#getDates()
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<CitationDate> getDates() {
+        return dates = nonNullCollection(dates, CitationDate.class);
+    }
+
+    /**
+     * Sets the date(s) associated with the metadata.
+     * The collection should contains at least an element for {@link DateType#CREATION}.
+     *
+     * @param newValues New dates associated with the metadata.
+     *
+     * @since 0.5
+     */
+    public void setDates(final Collection<? extends CitationDate> newValues) {
+        dates = writeCollection(newValues, dates, CitationDate.class);
     }
 
     /**
      * Returns the date that the metadata was created.
      *
      * @return Date that the metadata was created, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getDates()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "dateStamp", required = true)
-    public Date getDateStamp() {
-        return toDate(dateStamp);
+    public final Date getDateStamp() {
+        final Collection<CitationDate> dates = this.dates;
+        if (dates != null) {
+            for (final CitationDate date : dates) {
+                if (DateType.CREATION.equals(date.getDateType())) {
+                    return date.getDate();
+                }
+            }
+        }
+        return null;
     }
 
     /**
      * Sets the date that the metadata was created.
      *
      * @param newValue The new date stamp.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setDates(Collection)}.
      */
-    public void setDateStamp(final Date newValue) {
+    @Deprecated
+    public final void setDateStamp(final Date newValue) {
         checkWritePermission();
-        dateStamp = toMilliseconds(newValue);
+        Collection<CitationDate> dates = this.dates;
+        if (dates == null) {
+            if (newValue == null) {
+                return;
+            }
+            dates = new ArrayList<>(1);
+        } else {
+            final Iterator<CitationDate> it = dates.iterator();
+            while (it.hasNext()) {
+                final CitationDate date = it.next();
+                if (DateType.CREATION.equals(date.getDateType())) {
+                    if (newValue == null) {
+                        it.remove();
+                        return;
+                    }
+                    if (date instanceof DefaultCitationDate) {
+                        ((DefaultCitationDate) date).setDate(newValue);
+                        return;
+                    }
+                    it.remove();
+                    break;
+                }
+            }
+        }
+        dates.add(new DefaultCitationDate(newValue, DateType.CREATION));
+        setDates(dates);
+    }
+
+    /**
+     * Returns the citation(s) for the standard(s) to which the metadata conform.
+     *
+     * @return The standard(s) to which the metadata conform.
+     *
+     * @see #getMetadataProfiles()
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<Citation> getMetadataStandards() {
+        return metadataStandards = nonNullCollection(metadataStandards, Citation.class);
+    }
+
+    /**
+     * Sets the citation(s) for the standard(s) to which the metadata conform.
+     * Metadata standard citations should include an identifier.
+     *
+     * @param newValues The new standard(s) to which the metadata conform.
+     *
+     * @since 0.5
+     */
+    public void setMetadataStandards(final Collection<? extends Citation> newValues) {
+        metadataStandards = writeCollection(newValues, metadataStandards, Citation.class);
+    }
+
+    /**
+     * Returns the citation(s) for the profile(s) of the metadata standard to which the metadata conform.
+     *
+     * @return The profile(s) to which the metadata conform.
+     *
+     * @see #getMetadataStandards()
+     * @see #getMetadataExtensionInfo()
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<Citation> getMetadataProfiles() {
+        return metadataProfiles = nonNullCollection(metadataProfiles, Citation.class);
+    }
+
+    /**
+     * Set the citation(s) for the profile(s) of the metadata standard to which the metadata conform.
+     * Metadata profile standard citations should include an identifier.
+     *
+     * @param newValues The new profile(s) to which the metadata conform.
+     *
+     * @since 0.5
+     */
+    public void setMetadataProfiles(final Collection<? extends Citation> newValues) {
+        metadataProfiles = writeCollection(newValues, metadataProfiles, Citation.class);
+    }
+
+    /**
+     * Returns reference(s) to alternative metadata or metadata in a non-ISO standard for the same resource.
+     *
+     * @return Reference(s) to alternative metadata (e.g. Dublin core, FGDC).
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<Citation> getAlternativeMetadataReferences() {
+        return alternativeMetadataReferences = nonNullCollection(alternativeMetadataReferences, Citation.class);
+    }
+
+    /**
+     * Set reference(s) to alternative metadata or metadata in a non-ISO standard for the same resource.
+     *
+     * @param newValues The new reference(s) to alternative metadata (e.g. Dublin core, FGDC).
+     *
+     * @since 0.5
+     */
+    public void setAlternativeMetadataReferences(final Collection<? extends Citation> newValues) {
+        alternativeMetadataReferences = writeCollection(newValues, alternativeMetadataReferences, Citation.class);
+    }
+
+    /**
+     * Implementation of legacy {@link #getMetadataStandardName()} and {@link #getMetadataStandardVersion()} methods.
+     */
+    private String getMetadataStandard(final boolean version) {
+        final Citation standard = LegacyPropertyAdapter.getSingleton(metadataStandards,
+                Citation.class, null, DefaultMetadata.class, version ? "getMetadataStandardName" : "getMetadataStandardVersion");
+        if (standard != null) {
+            final InternationalString title = version ? standard.getEdition() : standard.getTitle();
+            if (title != null) {
+                return title.toString();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Implementation of legacy {@link #setMetadataStandardName(String)} and
+     * {@link #setMetadataStandardVersion(String)} methods.
+     */
+    private void setMetadataStandard(final boolean version, final String newValue) {
+        checkWritePermission();
+        final InternationalString i18n = (newValue != null) ? new SimpleInternationalString(newValue) : null;
+        final List<Citation> newValues = (metadataStandards != null)
+                ? new ArrayList<>(metadataStandards)
+                : new ArrayList<>(1);
+        DefaultCitation citation = newValues.isEmpty() ? null : DefaultCitation.castOrCopy(newValues.get(0));
+        if (citation == null) {
+            citation = new DefaultCitation();
+        }
+        if (version) {
+            citation.setEdition(i18n);
+        } else {
+            citation.setTitle(i18n);
+        }
+        if (newValues.isEmpty()) {
+            newValues.add(citation);
+        } else {
+            newValues.set(0, citation);
+        }
+        setMetadataStandards(newValues);
     }
 
     /**
      * Returns the name of the metadata standard (including profile name) used.
      *
      * @return Name of the metadata standard used, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
+     *   followed by {@link DefaultCitation#getTitle()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "metadataStandardName")
-    public String getMetadataStandardName() {
-        return metadataStandardName;
+    public final String getMetadataStandardName() {
+        return getMetadataStandard(false);
     }
 
     /**
      * Name of the metadata standard (including profile name) used.
      *
      * @param newValue The new metadata standard name.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
+     *   followed by {@link DefaultCitation#setTitle(InternationalString)}.
      */
-    public void setMetadataStandardName(final String newValue) {
-        checkWritePermission();
-        metadataStandardName = newValue;
+    @Deprecated
+    public final void setMetadataStandardName(final String newValue) {
+        setMetadataStandard(false, newValue);
     }
 
     /**
      * Returns the version (profile) of the metadata standard used.
      *
      * @return Version of the metadata standard used, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
+     *   followed by {@link DefaultCitation#getEdition()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "metadataStandardVersion")
-    public String getMetadataStandardVersion() {
-        return metadataStandardVersion;
+    public final String getMetadataStandardVersion() {
+        return getMetadataStandard(true);
     }
 
     /**
      * Sets the version (profile) of the metadata standard used.
      *
      * @param newValue The new metadata standard version.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
+     *   followed by {@link DefaultCitation#setEdition(InternationalString)}.
      */
-    public void setMetadataStandardVersion(final String newValue) {
-        checkWritePermission();
-        metadataStandardVersion = newValue;
+    @Deprecated
+    public final void setMetadataStandardVersion(final String newValue) {
+        setMetadataStandard(true, newValue);
+    }
+
+    /**
+     * Returns the online location(s) where the metadata is available.
+     *
+     * @return Online location(s) where the metadata is available.
+     *
+     * @since 0.5
+     */
+    @Override
+    public Collection<OnlineResource> getMetadataLinkages() {
+        return metadataLinkages = nonNullCollection(metadataLinkages, OnlineResource.class);
+    }
+
+    /**
+     * Sets the online location(s) where the metadata is available.
+     *
+     * @param newValues The new online location(s).
+     *
+     * @since 0.5
+     */
+    public void setMetadataLinkages(final Collection<? extends OnlineResource> newValues) {
+        metadataLinkages = writeCollection(newValues, metadataLinkages, OnlineResource.class);
     }
 
     /**
      * Provides the URI of the dataset to which the metadata applies.
      *
      * @return Uniformed Resource Identifier of the dataset, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getIdentificationInfo()} followed by
+     *    {@link DefaultDataIdentification#getCitation()} followed by {@link DefaultCitation#getOnlineResources()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "dataSetURI")
-    public String getDataSetUri() {
-        return dataSetUri;
+    public final String getDataSetUri() {
+        String linkage = null;
+        if (identificationInfo != null) {
+            for (final Identification identification : identificationInfo) {
+                final Citation citation = identification.getCitation();
+                if (citation != null) {
+                    final Collection<? extends OnlineResource> onlineResources = citation.getOnlineResources();
+                    if (onlineResources != null) {
+                        for (final OnlineResource link : onlineResources) {
+                            final URI uri = link.getLinkage();
+                            if (uri != null) {
+                                if (linkage == null) {
+                                    linkage = uri.toString();
+                                } else {
+                                    LegacyPropertyAdapter.warnIgnoredExtraneous(
+                                            OnlineResource.class, DefaultMetadata.class, "getDataSetUri");
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return linkage;
     }
 
     /**
      * Sets the URI of the dataset to which the metadata applies.
+     * This method sets the linkage of the first online resource in the citation of the first identification info.
      *
-     * @param newValue The new data set URI.
+     * @param  newValue The new data set URI.
+     * @throws URISyntaxException If the given value can not be parsed as a URI.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getIdentificationInfo()}
+     *    followed by {@link DefaultDataIdentification#getCitation()}
+     *    followed by {@link DefaultCitation#setOnlineResources(Collection)}.
      */
-    public void setDataSetUri(final String newValue) {
+    @Deprecated
+    public final void setDataSetUri(final String newValue) throws URISyntaxException {
+        final URI uri = new URI(newValue);
         checkWritePermission();
-        dataSetUri = newValue;
+        Collection<Identification> identificationInfo = this.identificationInfo;
+        AbstractIdentification firstId = AbstractIdentification.castOrCopy(first(identificationInfo));
+        if (firstId == null) {
+            firstId = new DefaultDataIdentification();
+        }
+        DefaultCitation citation = DefaultCitation.castOrCopy(firstId.getCitation());
+        if (citation == null) {
+            citation = new DefaultCitation();
+        }
+        Collection<OnlineResource> onlineResources = citation.getOnlineResources();
+        DefaultOnlineResource firstOnline = DefaultOnlineResource.castOrCopy(first(onlineResources));
+        if (firstOnline == null) {
+            firstOnline = new DefaultOnlineResource();
+        }
+        firstOnline.setLinkage(uri);
+        onlineResources = setFirst(onlineResources, firstOnline);
+        citation.setOnlineResources(onlineResources);
+        firstId.setCitation(citation);
+        identificationInfo = setFirst(identificationInfo, firstId);
+        setIdentificationInfo(identificationInfo);
     }
 
     /**
@@ -659,7 +1312,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Provides information about the feature catalogue and describes the coverage and
+     * Returns information about the feature catalogue and describes the coverage and
      * image data characteristics.
      *
      * @return The feature catalogue, coverage descriptions and image data characteristics.
@@ -681,28 +1334,27 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Provides information about the distributor of and options for obtaining the resource(s).
+     * Returns information about the distributor of and options for obtaining the resource(s).
      *
-     * @return The distributor of and options for obtaining the resource(s), or {@code null}.
+     * @return The distributor of and options for obtaining the resource(s).
      */
     @Override
     @XmlElement(name = "distributionInfo")
-    public Distribution getDistributionInfo() {
-        return distributionInfo;
+    public Collection<? extends Distribution> getDistributionInfo() {
+        return distributionInfo = nonNullCollection(distributionInfo, Distribution.class);
     }
 
     /**
-     * Provides information about the distributor of and options for obtaining the resource(s).
+     * Sets information about the distributor of and options for obtaining the resource(s).
      *
-     * @param newValue The new distribution info.
+     * @param newValues The new distribution info.
      */
-    public void setDistributionInfo(final Distribution newValue) {
-        checkWritePermission();
-        distributionInfo = newValue;
+    public void setDistributionInfo(final Collection<? extends Distribution> newValues) {
+        distributionInfo = writeCollection(newValues, distributionInfo, Distribution.class);
     }
 
     /**
-     * Provides overall assessment of quality of a resource(s).
+     * Returns overall assessment of quality of a resource(s).
      *
      * @return Overall assessment of quality of a resource(s).
      */
@@ -722,7 +1374,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Provides information about the catalogue of rules defined for the portrayal of a resource(s).
+     * Returns information about the catalogue of rules defined for the portrayal of a resource(s).
      *
      * @return The catalogue of rules defined for the portrayal of a resource(s).
      */
@@ -742,7 +1394,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Provides restrictions on the access and use of data.
+     * Returns restrictions on the access and use of data.
      *
      * @return Restrictions on the access and use of data.
      */
@@ -762,7 +1414,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Provides information about the conceptual schema of a dataset.
+     * Returns information about the conceptual schema of a dataset.
      *
      * @return The conceptual schema of a dataset.
      */
@@ -773,7 +1425,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Provides information about the conceptual schema of a dataset.
+     * Returns information about the conceptual schema of a dataset.
      *
      * @param newValues The new application schema info.
      */
@@ -782,7 +1434,27 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Provides information about the frequency of metadata updates, and the scope of those updates.
+     * Returns information about the acquisition of the data.
+     *
+     * @return The acquisition of data.
+     */
+    @Override
+    @XmlElement(name = "acquisitionInformation", namespace = Namespaces.GMI)
+    public Collection<AcquisitionInformation> getAcquisitionInformation() {
+        return acquisitionInformation = nonNullCollection(acquisitionInformation, AcquisitionInformation.class);
+    }
+
+    /**
+     * Sets information about the acquisition of the data.
+     *
+     * @param newValues The new acquisition information.
+     */
+    public void setAcquisitionInformation(final Collection<? extends AcquisitionInformation> newValues) {
+        acquisitionInformation = writeCollection(newValues, acquisitionInformation, AcquisitionInformation.class);
+    }
+
+    /**
+     * Returns information about the frequency of metadata updates, and the scope of those updates.
      *
      * @return The frequency of metadata updates and their scope, or {@code null}.
      */
@@ -803,23 +1475,26 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Provides information about the acquisition of the data.
+     * Returns information about the provenance, sources and/or the production processes applied to the resource.
      *
-     * @return The acquisition of data.
+     * @return Information about the provenance, sources and/or the production processes.
+     *
+     * @since 0.5
      */
     @Override
-    @XmlElement(name = "acquisitionInformation", namespace = Namespaces.GMI)
-    public Collection<AcquisitionInformation> getAcquisitionInformation() {
-        return acquisitionInformation = nonNullCollection(acquisitionInformation, AcquisitionInformation.class);
+    public Collection<Lineage> getResourceLineages() {
+        return resourceLineages = nonNullCollection(resourceLineages, Lineage.class);
     }
 
     /**
-     * Sets information about the acquisition of the data.
+     * Sets information about the provenance, sources and/or the production processes applied to the resource.
      *
-     * @param newValues The new acquisition information.
+     * @param newValues New information about the provenance, sources and/or the production processes.
+     *
+     * @since 0.5
      */
-    public void setAcquisitionInformation(final Collection<? extends AcquisitionInformation> newValues) {
-        acquisitionInformation = writeCollection(newValues, acquisitionInformation, AcquisitionInformation.class);
+    public void setResourceLineages(final Collection<? extends Lineage> newValues) {
+        resourceLineages = writeCollection(newValues, resourceLineages, Lineage.class);
     }
 
     /**
@@ -827,7 +1502,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * This method sets the locale to be used for XML marshalling to the metadata language.
      */
     private void beforeMarshal(final Marshaller marshaller) {
-        Context.push(language);
+        Context.push(first(languages));
     }
 
     /**

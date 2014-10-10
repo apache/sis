@@ -21,8 +21,11 @@ import java.util.List;
 import java.util.EnumSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
+import java.util.Currency;
 import java.util.NoSuchElementException;
 import java.lang.reflect.Modifier;
+import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.logging.Logging;
@@ -632,8 +635,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * versions may accept other types.
      *
      * <p>The default implementation returns <code>{@linkplain Set}.class</code> if the element type
-     * is assignable to {@link Enum} or {@link CodeList}, and <code>{@linkplain List}.class</code>
-     * otherwise. Subclasses can override this method for choosing different kind of collections.
+     * is assignable to {@link CodeList}, {@link Enum}, {@link String}, {@link Charset}, {@link Locale}
+     * or {@link Currency}, and <code>{@linkplain List}.class</code> otherwise.
+     * Subclasses can override this method for choosing different kind of collections.
      * <em>Note however that {@link Set} should be used only with immutable element types</em>,
      * for {@linkplain Object#hashCode() hash code} stability.</p>
      *
@@ -645,7 +649,12 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     @SuppressWarnings({"rawtypes","unchecked"})
     protected <E> Class<? extends Collection<E>> collectionType(final Class<E> elementType) {
         return (Class) (CodeList.class.isAssignableFrom(elementType) ||
-                            Enum.class.isAssignableFrom(elementType) ? Set.class : List.class);
+                            Enum.class.isAssignableFrom(elementType) ||
+                         Charset.class.isAssignableFrom(elementType) ||
+                          String.class ==               elementType  ||
+                          Locale.class ==               elementType  ||
+                        Currency.class ==               elementType
+                ? Set.class : List.class);
     }
 
     /**

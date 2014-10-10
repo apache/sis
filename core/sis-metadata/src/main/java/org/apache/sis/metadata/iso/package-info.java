@@ -34,6 +34,7 @@
  * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadata                     Metadata}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadataScope                Metadata scope}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference  Portrayal catalogue reference}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}<br>
@@ -45,6 +46,7 @@
  * {@code  └─} {@linkplain org.opengis.metadata.Obligation Obligation}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                     {@linkplain org.apache.sis.metadata.iso.DefaultMetadata                     Metadata}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.DefaultMetadataScope                Metadata scope}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference  Portrayal catalogue reference}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}<br>
@@ -82,7 +84,7 @@
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
