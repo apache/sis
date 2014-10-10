@@ -192,7 +192,10 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
 
     /**
      * Format in which the illustration is encoded.
-     * Examples: CGM, EPS, GIF, JPEG, PBM, PS, TIFF, XWD.
+     *
+     * <div class="note"><b>Example:</b>
+     * CGM, EPS, GIF, JPEG, PBM, PS, TIFF, XWD.
+     * </div>
      *
      * @return Format in which the illustration is encoded, or {@code null}.
      */
@@ -205,6 +208,8 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
 
     /**
      * Sets the format in which the illustration is encoded.
+     * Raster formats are encouraged to use one of the names returned by
+     * {@link javax.imageio.ImageIO#getReaderFormatNames()}.
      *
      * @param newValue The new file type.
      */

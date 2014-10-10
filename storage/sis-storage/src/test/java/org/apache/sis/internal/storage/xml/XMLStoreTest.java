@@ -101,7 +101,7 @@ public final strictfp class XMLStoreTest extends TestCase {
         } finally {
             store.close();
         }
-        final ResponsibleParty party  = getSingleton(metadata.getContacts());
+        final ResponsibleParty party  = (ResponsibleParty) getSingleton(metadata.getContacts());
         final OnlineResource resource = party.getContactInfo().getOnlineResource();
 
         assertEquals(Locale.ENGLISH,              metadata.getLanguage());

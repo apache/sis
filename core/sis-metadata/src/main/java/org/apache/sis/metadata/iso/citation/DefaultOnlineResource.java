@@ -80,7 +80,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Name of the online resources.
      */
-    private String name;
+    private InternationalString name;
 
     /**
      * Detailed text description of what the online resource is/does.
@@ -190,7 +190,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      */
     @Override
     @XmlElement(name = "name")
-    public String getName() {
+    public InternationalString getName() {
         return name;
     }
 
@@ -199,7 +199,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      *
      * @param newValue The new name, or {@code null} if none.
      */
-    public void setName(final String newValue) {
+    public void setName(final InternationalString newValue) {
         checkWritePermission();
         name = newValue;
     }

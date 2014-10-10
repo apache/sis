@@ -94,7 +94,7 @@ public final strictfp class ReferencingInMetadataTest extends XMLTestCase {
          *   </gmd:CI_ResponsibleParty>
          * </gmd:contact>
          */
-        final ResponsibleParty contact = getSingleton(metadata.getContacts());
+        final ResponsibleParty contact = (ResponsibleParty) getSingleton(metadata.getContacts());
         final OnlineResource onlineResource = contact.getContactInfo().getOnlineResource();
         assertNotNull("onlineResource", onlineResource);
         assertEquals("organisationName", "Apache SIS", contact.getOrganisationName().toString());
