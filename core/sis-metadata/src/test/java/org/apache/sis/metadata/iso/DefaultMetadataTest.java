@@ -120,6 +120,6 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
          * Verify warning message emitted during unmarshalling.
          */
         assertEquals("warning", "NullCollectionElement_1", resourceKey);
-        assertArrayEquals("warning", new String[] {"CheckedArrayList<ResponsibleParty>"}, parameters);
+        assertArrayEquals("warning", new String[] {"CheckedArrayList<Responsibility>"}, parameters);
     }
 }

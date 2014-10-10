@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 import java.nio.charset.Charset;
 import javax.xml.bind.JAXBException;
-import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.citation.Citation;
@@ -37,6 +36,8 @@ import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
 import org.opengis.temporal.Duration;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.xml.XML;
@@ -67,27 +68,27 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
     public void testProxy() throws JAXBException {
         /*
          * A trivial metadata implementation which return the method name
-         * for every attribute of type String.
+         * for every attribute of type InternationalString.
          */
         final InvocationHandler handler = (Object proxy, Method method, Object[] args) -> {
-            if (method.getReturnType() == String.class) {
-                return method.getName();
+            if (method.getReturnType() == InternationalString.class) {
+                return new SimpleInternationalString(method.getName());
             }
             return null;
         };
-        Metadata data = (Metadata) Proxy.newProxyInstance(getClass().getClassLoader(),
-                    new Class<?>[] { Metadata.class }, handler);
+        Citation data = (Citation) Proxy.newProxyInstance(getClass().getClassLoader(),
+                    new Class<?>[] { Citation.class }, handler);
         /*
          * Wrap the metadata in a DefaultMetadata, and ensure
          * we can marshall it without an exception being throw.
          */
-        data = new DefaultMetadata(data);
+        data = new DefaultCitation(data);
         final String xml = XML.marshal(data);
         /*
          * A few simple checks.
          */
-        assertTrue(xml.contains("getMetadataStandardName"));
-        assertTrue(xml.contains("getMetadataStandardVersion"));
+        assertTrue(xml.contains("title"));
+        assertTrue(xml.contains("edition"));
     }
 
     /**

@@ -61,7 +61,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.05)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public abstract strictfp class AnnotationsTestCase extends TestCase {
@@ -245,10 +245,11 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     /**
      * Returns the name of the XML element for the given UML element.
      *
-     * @param  uml The UML element.
+     * @param  type The GeoAPI interface which contains the property.
+     * @param  uml The UML element of a property in the {@code type} interface.
      * @return The corresponding XML element name.
      */
-    protected String getExpectedXmlElementName(final UML uml) {
+    protected String getExpectedXmlElementName(final Class<?> type, final UML uml) {
         return uml.identifier();
     }
 
@@ -564,7 +565,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                  * is because subclasses may choose to override the above test method.
                  */
                 if (uml != null) {
-                    assertEquals("Wrong @XmlElement.name().", getExpectedXmlElementName(uml), element.name());
+                    assertEquals("Wrong @XmlElement.name().", getExpectedXmlElementName(type, uml), element.name());
                     assertEquals("Wrong @XmlElement.required().", uml.obligation() == Obligation.MANDATORY, element.required());
                 }
                 /*
