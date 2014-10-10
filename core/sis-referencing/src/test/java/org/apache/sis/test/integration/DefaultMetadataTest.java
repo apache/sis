@@ -120,7 +120,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
                     new DefaultTelephone("+33 (0)2 xx.xx.xx.x4", TelephoneType.FACSIMILE)
             ));
             final DefaultAddress address = new DefaultAddress();
-            address.setDeliveryPoints(singleton("Brest institute"));
+            address.setDeliveryPoints(singleton(new SimpleInternationalString("Brest institute")));
             address.setCity(new SimpleInternationalString("Plouzane"));
             address.setPostalCode("29280");
             address.setCountry(country);
@@ -150,7 +150,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
                         new DefaultTelephone("+33 (0)4 xx.xx.xx.x8", TelephoneType.FACSIMILE)
                 ));
                 final DefaultAddress address = new DefaultAddress();
-                address.setDeliveryPoints(singleton("Oceanology institute"));
+                address.setDeliveryPoints(singleton(new SimpleInternationalString("Oceanology institute")));
                 address.setCity(new SimpleInternationalString("Marseille"));
                 address.setPostalCode("13288");
                 address.setCountry(country);
@@ -306,7 +306,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
             onlines.setProtocol("http");
             transfer.setOnLines(singleton(onlines));
             distributionInfo.setTransferOptions(singleton(transfer));
-            metadata.setDistributionInfo(distributionInfo);
+            metadata.setDistributionInfo(singleton(distributionInfo));
         }
         return metadata;
     }
