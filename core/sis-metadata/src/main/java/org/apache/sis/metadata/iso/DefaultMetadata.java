@@ -538,6 +538,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
             @Override
             public boolean add(final Locale newValue) {
+                if (languages.isEmpty()) {
+                    languages.add(newValue);
+                    // Add twice, since the first entry is assigned to the "language" legacy property.
+                }
                 return languages.add(newValue);
             }
         };
@@ -561,6 +565,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             merged = new ArrayList<>(newValues.size() + 1);
             if (language == null) {
                 language = newValues.iterator().next();
+                // Add twice, since the first entry is assigned to the "language" legacy property.
             }
             merged.add(language);
             merged.addAll(newValues);

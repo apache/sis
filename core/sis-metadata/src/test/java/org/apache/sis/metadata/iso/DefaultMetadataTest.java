@@ -16,6 +16,9 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.util.Locale;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.logging.LogRecord;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
@@ -45,7 +48,7 @@ import static org.apache.sis.test.Assert.*;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class DefaultMetadataTest extends XMLTestCase implements WarningListener<Object> {
@@ -121,5 +124,72 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
          */
         assertEquals("warning", "NullCollectionElement_1", resourceKey);
         assertArrayEquals("warning", new String[] {"CheckedArrayList<Responsibility>"}, parameters);
+    }
+
+    /**
+     * Tests {@link DefaultMetadata#getFileIdentifier()} and {@link DefaultMetadata#setFileIdentifier(String)}
+     * legacy methods. Those methods should delegate to newer methods.
+     *
+     * @since 0.5
+     */
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testFileIdentifier() {
+        final DefaultMetadata metadata = new DefaultMetadata();
+        assertNull("getFileIdentifier", metadata.getFileIdentifier());
+        metadata.setFileIdentifier("Apache SIS/Metadata test");
+        assertEquals("getMetadataIdentifier", "Apache SIS/Metadata test", metadata.getMetadataIdentifier().getCode());
+        assertEquals("getFileIdentifier",     "Apache SIS/Metadata test", metadata.getFileIdentifier());
+    }
+
+    /**
+     * Tests {@link DefaultMetadata#getLanguage()}, {@link DefaultMetadata#setLanguage(Locale)},
+     * {@link DefaultMetadata#getLocales()} and {@link DefaultMetadata#setLocales(Collection)}
+     * legacy methods. Those methods should delegate to newer methods.
+     *
+     * @since 0.5
+     */
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testLocales() {
+        final DefaultMetadata metadata = new DefaultMetadata();
+        assertNull("getLanguage", metadata.getLanguage());
+        /*
+         * Set the default language, which shall be the first entry in the collection.
+         * The "other locales" property shall be unmodified by the "language" one.
+         */
+        metadata.setLanguage(Locale.JAPANESE);
+        assertLanguagesEquals(metadata, Locale.JAPANESE);
+        /*
+         * Add other languages. They should appear as additional entries after the first one.
+         * The "language" property shall be unmodified by changes in the "other locales" one.
+         */
+        metadata.setLocales(Arrays.asList(Locale.FRENCH, Locale.ENGLISH));
+        assertLanguagesEquals(metadata, Locale.JAPANESE, Locale.FRENCH, Locale.ENGLISH);
+        /*
+         * Ensure that the "locales" list is modifiable, since JAXB writes directly in it.
+         */
+        metadata.getLocales().clear();
+        assertLanguagesEquals(metadata, Locale.JAPANESE);
+        final Collection<Locale> locales = metadata.getLocales();
+        assertTrue(locales.add(Locale.KOREAN));
+        assertTrue(locales.add(Locale.ENGLISH));
+        assertLanguagesEquals(metadata, Locale.JAPANESE, Locale.KOREAN, Locale.ENGLISH);
+        /*
+         * Changing again the default language shall not change the other locales.
+         */
+        metadata.setLanguage(Locale.GERMAN);
+        assertLanguagesEquals(metadata, Locale.GERMAN, Locale.KOREAN, Locale.ENGLISH);
+    }
+
+    /**
+     * Compares the {@link DefaultMetadata#getLanguages()}, {@link DefaultMetadata#getLanguage()} and
+     * {@link DefaultMetadata#getLocales()} values against the expected array.
+     */
+    @SuppressWarnings("deprecation")
+    private static void assertLanguagesEquals(final DefaultMetadata metadata, final Locale... expected) {
+        assertArrayEquals("getLanguages", expected,    metadata.getLanguages().toArray());
+        assertEquals     ("getLanguage",  expected[0], metadata.getLanguage());
+        assertArrayEquals("getLocales",   Arrays.copyOfRange(expected, 1, expected.length), metadata.getLocales().toArray());
     }
 }
