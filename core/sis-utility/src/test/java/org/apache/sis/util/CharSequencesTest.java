@@ -34,7 +34,7 @@ import static org.apache.sis.util.CharSequences.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn({
@@ -296,6 +296,16 @@ public final strictfp class CharSequencesTest extends TestCase {
     public void testUpperCaseToSentence() {
         assertEquals("Half down", upperCaseToSentence("HALF_DOWN").toString());
         assertNull(upperCaseToSentence(null));
+    }
+
+    /**
+     * Tests the {@link CharSequences#camelCaseToSentence(CharSequence)} method.
+     */
+    @Test
+    @DependsOnMethod("testCamelCaseToWords")
+    public void testCamelCaseToSentence() {
+        assertEquals("Default locale", camelCaseToSentence("defaultLocale").toString());
+        assertNull(camelCaseToSentence(null));
     }
 
     /**
