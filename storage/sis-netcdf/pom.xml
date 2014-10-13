@@ -114,7 +114,7 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
     </dependency>
     <dependency>
       <groupId>edu.ucar</groupId>
-      <artifactId>netcdf</artifactId>
+      <artifactId>cdm</artifactId>
       <optional>true</optional>
     </dependency>
 

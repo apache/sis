@@ -49,4 +49,9 @@ public final class StandardCharsets {
      * ISO/IEC 8859-1, Information technology - 8-bit single byte coded graphic character sets - Part 1 : Latin alphabet No.1.
      */
     public static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+
+    /**
+     * Seven-bit ASCII, a.k.a. ISO646-US.
+     */
+    public static final Charset US_ASCII = Charset.forName("US-ASCII");
 }

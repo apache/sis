@@ -47,7 +47,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @XmlRootElement(name = "MD_Metadata", namespace = Namespaces.GMD)
@@ -81,6 +81,7 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
+    @Deprecated
     public String getFileIdentifier() {
         return null;
     }
@@ -91,6 +92,7 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@link #language}
      */
     @Override
+    @Deprecated
     public Locale getLanguage() {
         return language;
     }
@@ -100,6 +102,17 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
+    @Deprecated
+    public Collection<Locale> getLocales() {
+        return null;
+    }
+
+    /**
+     * Undefined property.
+     * @return {@code null}.
+     */
+    @Override
+    @Deprecated
     public CharacterSet getCharacterSet() {
         return null;
     }
@@ -109,6 +122,7 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
+    @Deprecated
     public String getParentIdentifier() {
         return null;
     }
@@ -118,6 +132,7 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
+    @Deprecated
     public Collection<ScopeCode> getHierarchyLevels() {
         return null;
     }
@@ -127,6 +142,7 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
+    @Deprecated
     public Collection<String> getHierarchyLevelNames() {
         return null;
     }
@@ -145,6 +161,7 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
+    @Deprecated
     public Date getDateStamp() {
         return null;
     }
@@ -154,6 +171,7 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
+    @Deprecated
     public String getMetadataStandardName() {
         return null;
     }
@@ -163,6 +181,7 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
+    @Deprecated
     public String getMetadataStandardVersion() {
         return null;
     }
@@ -172,16 +191,8 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
+    @Deprecated
     public String getDataSetUri() {
-        return null;
-    }
-
-    /**
-     * Undefined property.
-     * @return {@code null}.
-     */
-    @Override
-    public Collection<Locale> getLocales() {
         return null;
     }
 

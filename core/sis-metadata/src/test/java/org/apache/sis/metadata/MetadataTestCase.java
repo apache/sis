@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Collection;
 import org.opengis.util.CodeList;
+import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
@@ -128,6 +129,11 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             return new Date(random.nextInt() * 1000L);
         }
         if (CodeList.class.isAssignableFrom(type)) try {
+            if (type == CharacterSet.class) {
+                // DefaultMetadata convert CharacterSet into Charset,
+                // but not all character sets are supported.
+                return CharacterSet.ISO_8859_1;
+            }
             final CodeList<?>[] codes = (CodeList<?>[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
             return codes[random.nextInt(codes.length)];
         } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
@@ -294,6 +300,8 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
     @SuppressWarnings("deprecation")
     private static boolean skipTest(final Class<?> implementation, final String method) {
         return implementation == org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription.class ||
+              (implementation == org.apache.sis.metadata.iso.DefaultMetadata.class &&
+               method.equals("getDataSetUri")) ||
               (implementation == org.apache.sis.metadata.iso.citation.DefaultContact.class &&
                method.equals("getPhone")) || // Deprecated method replaced by 'getPhones()'.
               (implementation == org.apache.sis.metadata.iso.lineage.DefaultSource.class &&

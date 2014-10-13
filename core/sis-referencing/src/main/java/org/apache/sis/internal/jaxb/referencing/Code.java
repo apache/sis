@@ -35,7 +35,7 @@ import static org.apache.sis.internal.metadata.ReferencingUtilities.toURNType;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.00)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @XmlType(name = "CodeType")

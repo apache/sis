@@ -250,10 +250,10 @@ class PropertyAccessor {
     /**
      * Creates a new property accessor for the specified metadata implementation.
      *
-     * @param  standard The standard which define the {@code type} interface.
-     * @param  type The interface implemented by the metadata class.
+     * @param  standard       The standard which define the {@code type} interface.
+     * @param  type           The interface implemented by the metadata class.
      * @param  implementation The class of metadata implementations, or {@code type} if none.
-     * @param  onlyUML {@code true} for taking only the getter methods having a {@link UML} annotation.
+     * @param  onlyUML        {@code true} for taking only the getter methods having a {@link UML} annotation.
      */
     PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation, final boolean onlyUML) {
         assert type.isAssignableFrom(implementation) : implementation;
