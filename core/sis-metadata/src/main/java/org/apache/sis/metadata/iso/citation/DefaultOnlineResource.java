@@ -188,6 +188,10 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Name of the online resource. Returns {@code null} if none.
      *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The return type may be changed from {@code String} to {@code InternationalString} in GeoAPI 4.0.
+     * </div>
+     *
      * @return Name of the online resource, or {@code null}.
      */
     @Override
@@ -198,6 +202,10 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Sets the name of the online resource.
+     *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The argument type may be changed from {@code String} to {@code InternationalString} in GeoAPI 4.0.
+     * </div>
      *
      * @param newValue The new name, or {@code null} if none.
      */

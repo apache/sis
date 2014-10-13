@@ -207,6 +207,11 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Returns the address line for the location (as described in ISO 11180, Annex A).
      *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The return type may be changed from {@code Collection<String>} to
+     * {@code Collection<? extends InternationalString>} in GeoAPI 4.0.
+     * </div>
+     *
      * @return Address line for the location.
      */
     @Override
@@ -217,6 +222,11 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Sets the address line for the location (as described in ISO 11180, Annex A).
+     *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The argument type may be changed from {@code Collection<String>} to
+     * {@code Collection<? extends InternationalString>} in GeoAPI 4.0.
+     * </div>
      *
      * @param newValues The new delivery points, or {@code null} if none.
      */

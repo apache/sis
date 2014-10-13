@@ -20,6 +20,7 @@ import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
+import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.MetadataTestCase;
 import org.apache.sis.metadata.iso.identification.DefaultCoupledResource;
@@ -40,7 +41,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
@@ -221,13 +222,16 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * @return {@inheritDoc}
      */
     @Override
-    protected String getExpectedXmlElementName(final UML uml) {
+    protected String getExpectedXmlElementName(final Class<?> type, final UML uml) {
         String name = uml.identifier();
         if (name.equals("distributedComputingPlatform")) {
             name = "DCP";
-        }
-        if (name.equals("stepDateTime")) {
+        } else if (name.equals("stepDateTime")) {
             name = "dateTime";
+        } else if (name.equals("defaultLocale+otherLocale") ||
+                   type == FeatureCatalogueDescription.class && name.equals("locale"))
+        {
+            name = "language";
         }
         return name;
     }
