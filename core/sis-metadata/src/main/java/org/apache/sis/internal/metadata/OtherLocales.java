@@ -193,6 +193,7 @@ public final class OtherLocales extends AbstractCollection<Locale> {
         if (newValue == null) {
             final Iterator<T> it = values.iterator();
             if (it.hasNext()) {
+                it.next();
                 it.remove();
             }
         } else if (values.isEmpty()) {
