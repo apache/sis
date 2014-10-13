@@ -21,8 +21,6 @@ import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -56,7 +54,6 @@ import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
@@ -64,6 +61,7 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.metadata.OtherLocales;
 import org.apache.sis.internal.jaxb.code.PT_Locale;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.xml.Namespaces;
@@ -444,24 +442,9 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     @XmlElement(name = "language")
     public final Locale getLanguage() {
-        return first(languages);
+        return OtherLocales.getFirst(languages);
         // No warning if the collection contains more than one locale, because
         // this is allowed by the "getLanguage() + getLocales()" contract.
-    }
-
-    /**
-     * Returns the first element of the given collection, or {@code null} if none.
-     * This method does not emit warning if more than one element is found.
-     * Consequently, this method should be used only when multi-occurrence is not ambiguous.
-     */
-    private static <T> T first(final Collection<T> values) {
-        if (values != null) {
-            final Iterator<T> it = values.iterator();
-            if (it.hasNext()) {
-                return it.next();
-            }
-        }
-        return null;
     }
 
     /**
@@ -480,31 +463,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     public final void setLanguage(final Locale newValue) {
         checkWritePermission();
-        setLanguages(setFirst(languages, newValue));
-    }
-
-    /**
-     * Sets the first element in the given collection to the given value.
-     * If the given collection is empty, the given value will be added to it.
-     */
-    private static <T> Collection<T> setFirst(Collection<T> values, final T newValue) {
-        if (values == null) {
-            return LegacyPropertyAdapter.asCollection(newValue);
-        }
-        if (newValue == null) {
-            final Iterator<T> it = values.iterator();
-            if (it.hasNext()) {
-                it.remove();
-            }
-        } else if (values.isEmpty()) {
-            values.add(newValue);
-        } else {
-            if (!(values instanceof List<?>)) {
-                values = new ArrayList<T>(values);
-            }
-            ((List<T>) values).set(0, newValue);
-        }
-        return values;
+        setLanguages(OtherLocales.setFirst(languages, newValue));
     }
 
     /**
@@ -519,28 +478,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlElement(name = "locale")
     @XmlJavaTypeAdapter(PT_Locale.class)
     public final Collection<Locale> getLocales() {
-        final Collection<Locale> languages = getLanguages();
-        if (languages == null) { // May happen at XML marshalling time.
-            return Collections.emptySet();
-        }
-        return new AbstractCollection<Locale>() {
-            @Override
-            public int size() {
-                return Math.max(0, languages.size() - 1);
-            }
-
-            @Override
-            public Iterator<Locale> iterator() {
-                final Iterator<Locale> it = languages.iterator();
-                if (it.hasNext()) it.next(); // Skip the first element.
-                return it;
-            }
-
-            @Override
-            public boolean add(final Locale newValue) {
-                return languages.add(newValue);
-            }
-        };
+        return OtherLocales.filter(getLanguages());
     }
 
     /**
@@ -553,19 +491,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     public final void setLocales(final Collection<? extends Locale> newValues) {
         checkWritePermission();
-        Locale language = getLanguage();
-        final Collection<Locale> merged;
-        if (Containers.isNullOrEmpty(newValues)) {
-            merged = LegacyPropertyAdapter.asCollection(language);
-        } else {
-            merged = new ArrayList<Locale>(newValues.size() + 1);
-            if (language == null) {
-                language = newValues.iterator().next();
-            }
-            merged.add(language);
-            merged.addAll(newValues);
-        }
-        setLanguages(merged);
+        setLanguages(OtherLocales.merge(getLanguage(), newValues));
     }
 
     /**
@@ -1210,7 +1136,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         final URI uri = new URI(newValue);
         checkWritePermission();
         Collection<Identification> identificationInfo = this.identificationInfo;
-        AbstractIdentification firstId = AbstractIdentification.castOrCopy(first(identificationInfo));
+        AbstractIdentification firstId = AbstractIdentification.castOrCopy(OtherLocales.getFirst(identificationInfo));
         if (firstId == null) {
             firstId = new DefaultDataIdentification();
         }
@@ -1219,15 +1145,15 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             citation = new DefaultCitation();
         }
         Collection<OnlineResource> onlineResources = citation.getOnlineResources();
-        DefaultOnlineResource firstOnline = DefaultOnlineResource.castOrCopy(first(onlineResources));
+        DefaultOnlineResource firstOnline = DefaultOnlineResource.castOrCopy(OtherLocales.getFirst(onlineResources));
         if (firstOnline == null) {
             firstOnline = new DefaultOnlineResource();
         }
         firstOnline.setLinkage(uri);
-        onlineResources = setFirst(onlineResources, firstOnline);
+        onlineResources = OtherLocales.setFirst(onlineResources, firstOnline);
         citation.setOnlineResources(onlineResources);
         firstId.setCitation(citation);
-        identificationInfo = setFirst(identificationInfo, firstId);
+        identificationInfo = OtherLocales.setFirst(identificationInfo, firstId);
         setIdentificationInfo(identificationInfo);
     }
 
@@ -1502,7 +1428,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * This method sets the locale to be used for XML marshalling to the metadata language.
      */
     private void beforeMarshal(final Marshaller marshaller) {
-        Context.push(first(languages));
+        Context.push(OtherLocales.getFirst(languages));
     }
 
     /**

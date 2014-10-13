@@ -16,9 +16,12 @@
  */
 package org.apache.sis.metadata;
 
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.NumberRange;
@@ -37,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
@@ -201,5 +204,22 @@ public final strictfp class SpecialCasesTest extends TestCase {
         final NumberRange<?> range = (NumberRange) domain;
         assertEquals(-180, range.getMinDouble(), STRICT);
         assertEquals(+180, range.getMaxDouble(), STRICT);
+    }
+
+    /**
+     * Verifies that the need for {@link SpecialCases#rename(String)} still apply.
+     * If this test fails, it does not necessarily means that the {@code rename} method is wrong.
+     * It may mean that the GeoAPI interface changed, in which case the {@code rename} method or
+     * this test should be adapted.
+     *
+     * @throws NoSuchMethodException If the methods for which {@code rename} were designed do not exists anymore.
+     */
+    @Test
+    public void testRename() throws NoSuchMethodException {
+        String identifier = Metadata.class.getMethod("getLanguages").getAnnotation(UML.class).identifier();
+        assertFalse(identifier, identifier.equals(SpecialCases.rename(Metadata.class, identifier)));
+
+        identifier = DataIdentification.class.getMethod("getLanguages").getAnnotation(UML.class).identifier();
+        assertFalse(identifier, identifier.equals(SpecialCases.rename(DataIdentification.class, identifier)));
     }
 }
