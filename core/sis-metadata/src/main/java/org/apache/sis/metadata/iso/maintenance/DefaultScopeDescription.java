@@ -298,11 +298,11 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * “<cite>Administrative area A — Road network</cite>” description.
      * </div>
      *
-     * @return Feature types to which the information applies.
-     *
      * {@section Conditions}
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
+     *
+     * @return Feature types to which the information applies.
      */
     @Override
     public Set<CharSequence> getFeatures() {
@@ -331,11 +331,11 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * “<cite>Administrative area A — Overhead clearance</cite>” description.
      * </div>
      *
-     * @return Attribute types to which the information applies.
-     *
      * {@section Conditions}
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
+     *
+     * @return Attribute types to which the information applies.
      */
     @Override
     public Set<CharSequence> getAttributes() {
@@ -364,11 +364,11 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * “<cite>Administrative area A — New bridge</cite>” description.
      * </div>
      *
-     * @return Feature instances to which the information applies.
-     *
      * {@section Conditions}
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
+     *
+     * @return Feature instances to which the information applies.
      */
     @Override
     public Set<CharSequence> getFeatureInstances() {
@@ -397,11 +397,11 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * “<cite>Administrative area A — New bridge — Overhead clearance</cite>” description.
      * </div>
      *
-     * @return Attribute instances to which the information applies.
-     *
      * {@section Conditions}
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
+     *
+     * @return Attribute instances to which the information applies.
      */
     @Override
     public Set<CharSequence> getAttributeInstances() {
