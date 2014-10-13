@@ -16,20 +16,33 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.util.Date;
 import java.util.Locale;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Collection;
 import java.util.logging.LogRecord;
+import java.net.URISyntaxException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
+import org.opengis.metadata.MetadataScope;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.date;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -51,6 +64,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.5
  * @module
  */
+@DependsOn(org.apache.sis.internal.metadata.OtherLocalesTest.class)
 public final strictfp class DefaultMetadataTest extends XMLTestCase implements WarningListener<Object> {
     /**
      * The resource key for the message of the warning that occurred while unmarshalling a XML fragment,
@@ -136,10 +150,10 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
     @SuppressWarnings("deprecation")
     public void testFileIdentifier() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        assertNull("getFileIdentifier", metadata.getFileIdentifier());
+        assertNull("fileIdentifier", metadata.getFileIdentifier());
         metadata.setFileIdentifier("Apache SIS/Metadata test");
-        assertEquals("getMetadataIdentifier", "Apache SIS/Metadata test", metadata.getMetadataIdentifier().getCode());
-        assertEquals("getFileIdentifier",     "Apache SIS/Metadata test", metadata.getFileIdentifier());
+        assertEquals("metadataIdentifier", "Apache SIS/Metadata test", metadata.getMetadataIdentifier().getCode());
+        assertEquals("fileIdentifier",     "Apache SIS/Metadata test", metadata.getFileIdentifier());
     }
 
     /**
@@ -153,7 +167,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
     @SuppressWarnings("deprecation")
     public void testLocales() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        assertNull("getLanguage", metadata.getLanguage());
+        assertNull("language", metadata.getLanguage());
         /*
          * Set the default language, which shall be the first entry in the collection.
          * The "other locales" property shall be unmodified by the "language" one.
@@ -188,8 +202,134 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
      */
     @SuppressWarnings("deprecation")
     private static void assertLanguagesEquals(final DefaultMetadata metadata, final Locale... expected) {
-        assertArrayEquals("getLanguages", expected,    metadata.getLanguages().toArray());
-        assertEquals     ("getLanguage",  expected[0], metadata.getLanguage());
-        assertArrayEquals("getLocales",   Arrays.copyOfRange(expected, 1, expected.length), metadata.getLocales().toArray());
+        assertArrayEquals("languages", expected,    metadata.getLanguages().toArray());
+        assertEquals     ("language",  expected[0], metadata.getLanguage());
+        assertArrayEquals("locales",   Arrays.copyOfRange(expected, 1, expected.length), metadata.getLocales().toArray());
+    }
+
+    /**
+     * Tests {@link DefaultMetadata#getParentIdentifier()} and {@link DefaultMetadata#setParentIdentifier(String)}
+     * methods.
+     */
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testParentIdentifier() {
+        final DefaultMetadata metadata = new DefaultMetadata();
+        assertNull("parentIdentifier", metadata.getParentIdentifier());
+        metadata.setParentIdentifier("ParentID");
+        assertEquals("parentIdentifier", "ParentID", metadata.getParentIdentifier());
+
+        DefaultCitation c = (DefaultCitation) metadata.getParentMetadata();
+        assertEquals("parentMetadata", "ParentID", c.getTitle().toString());
+        c.setTitle(new SimpleInternationalString("New parent"));
+        assertEquals("parentIdentifier", "New parent", metadata.getParentIdentifier());
+    }
+
+    /**
+     * Tests {@link DefaultMetadata#getHierarchyLevels()}, {@link DefaultMetadata#getHierarchyLevelNames()},
+     * {@link DefaultMetadata#setHierarchyLevel(Collection)} and {@link DefaultMetadata#setHierarchyLevelNames(Collection)}
+     * methods.
+     */
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testHierarchyLevels() {
+        final String[]    names  = new String[] {"Bridges", "Golden Gate Bridge"};
+        final ScopeCode[] levels = new ScopeCode[] {ScopeCode.FEATURE_TYPE, ScopeCode.FEATURE};
+        final DefaultMetadata metadata = new DefaultMetadata();
+        assertTrue("hierarchyLevelNames", metadata.getHierarchyLevelNames().isEmpty());
+        assertTrue("hierarchyLevels",     metadata.getHierarchyLevels().isEmpty());
+
+        metadata.setHierarchyLevelNames(Arrays.asList(names));
+        metadata.setHierarchyLevels(Arrays.asList(levels));
+        assertArrayEquals("hierarchyLevelNames", names,  metadata.getHierarchyLevelNames().toArray());
+        assertArrayEquals("hierarchyLevels",     levels, metadata.getHierarchyLevels().toArray());
+        /*
+         * The above deprecated methods shall have created MetadataScope object. Verify that.
+         */
+        final Collection<MetadataScope> scopes = metadata.getMetadataScopes();
+        final Iterator<MetadataScope> it = scopes.iterator();
+        MetadataScope scope = it.next();
+        assertEquals("metadataScopes[0].name", "Bridges", scope.getName().toString());
+        assertEquals("metadataScopes[0].resourceScope", ScopeCode.FEATURE_TYPE, scope.getResourceScope());
+        scope = it.next();
+        assertEquals("metadataScopes[1].name", "Golden Gate Bridge", scope.getName().toString());
+        assertEquals("metadataScopes[1].resourceScope", ScopeCode.FEATURE, scope.getResourceScope());
+        /*
+         * Changes in the MetadataScope object shall be relfected immediately on the scope collection.
+         * Verify that.
+         */
+        it.remove();
+        assertFalse(it.hasNext());
+        final DefaultMetadataScope c = new DefaultMetadataScope(levels[1] = ScopeCode.ATTRIBUTE_TYPE);
+        c.setName(new SimpleInternationalString(names[1] = "Clearance"));
+        assertTrue(scopes.add(c));
+        assertArrayEquals("hierarchyLevelNames", names,  metadata.getHierarchyLevelNames().toArray());
+        assertArrayEquals("hierarchyLevels",     levels, metadata.getHierarchyLevels().toArray());
+    }
+
+    /**
+     * Tests {@link DefaultMetadata#getDateStamp()} and {@link DefaultMetadata#setDateStamp(Date)} methods.
+     */
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testDateStamp() {
+        final DefaultMetadata metadata = new DefaultMetadata();
+        assertNull("dateStamp", metadata.getDateStamp());
+        /*
+         * Verifies that the deprecated method get its value from the CitationDate objects.
+         */
+        Date creation = date("2014-10-07 00:00:00");
+        final DefaultCitationDate[] dates = new DefaultCitationDate[] {
+                new DefaultCitationDate(date("2014-10-09 00:00:00"), DateType.LAST_UPDATE),
+                new DefaultCitationDate(creation, DateType.CREATION)
+        };
+        metadata.setDates(Arrays.asList(dates));
+        assertEquals("dateStamp", creation, metadata.getDateStamp());
+        /*
+         * Invoking the deprecated setters shall modify the CitationDate object
+         * associated to DateType.CREATION.
+         */
+        creation = date("2014-10-06 00:00:00");
+        metadata.setDateStamp(creation);
+        assertEquals("citationDates[1].date", creation, dates[1].getDate());
+        assertArrayEquals("dates", dates, metadata.getDates().toArray());
+    }
+
+    /**
+     * Tests {@link DefaultMetadata#getMetadataStandardName()}, {@link DefaultMetadata#getMetadataStandardVersion()},
+     * {@link DefaultMetadata#setMetadataStandardName(String)} and {@link DefaultMetadata#setMetadataStandardVersion(String)}
+     * methods.
+     */
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testMetadataStandard() {
+        final DefaultMetadata metadata = new DefaultMetadata();
+        assertNull("metadataStandardName",    metadata.getMetadataStandardName());
+        assertNull("metadataStandardVersion", metadata.getMetadataStandardVersion());
+
+        String name = "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data";
+        String version = "ISO 19115-2:2009(E)";
+        metadata.setMetadataStandardName(name);
+        metadata.setMetadataStandardVersion(version);
+        assertEquals("metadataStandardName",    name,    metadata.getMetadataStandardName());
+        assertEquals("metadataStandardVersion", version, metadata.getMetadataStandardVersion());
+        final Citation standard = getSingleton(metadata.getMetadataStandards());
+        assertEquals(name,    standard.getTitle()  .toString());
+        assertEquals(version, standard.getEdition().toString());
+    }
+
+    /**
+     * Tests {@link DefaultMetadata#getDataSetUri()}.
+     *
+     * @throws URISyntaxException Should not happen.
+     */
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testDataSetUri() throws URISyntaxException {
+        final DefaultMetadata metadata = new DefaultMetadata();
+        metadata.setDataSetUri("file:/tmp/myfile.txt");
+        assertEquals("file:/tmp/myfile.txt", metadata.getDataSetUri());
+        assertEquals("file:/tmp/myfile.txt", getSingleton(getSingleton(metadata.getIdentificationInfo())
+                .getCitation().getOnlineResources()).getLinkage().toString());
     }
 }
