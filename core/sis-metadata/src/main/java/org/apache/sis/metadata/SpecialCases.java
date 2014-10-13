@@ -16,8 +16,10 @@
  */
 package org.apache.sis.metadata;
 
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -31,7 +33,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 final class SpecialCases extends PropertyAccessor {
@@ -65,6 +67,23 @@ final class SpecialCases extends PropertyAccessor {
      */
     static boolean isSpecialCase(final Class<?> type) {
         return type == GeographicBoundingBox.class;
+    }
+
+    /**
+     * Other special cases: rename particular UML identifiers found in
+     * {@link org.opengis.metadata.identification.DataIdentification#getLanguages()} and
+     * {@link org.opengis.metadata.Metadata#getLanguages()}.
+     *
+     * @param  identifier The UML identifier.
+     * @return The identifier to use.
+     */
+    static String rename(final Class<?> type, String identifier) {
+        if ((type == Metadata.class || type == DataIdentification.class)
+                && identifier.equals("defaultLocale+otherLocale"))
+        {
+            identifier = "language";
+        }
+        return identifier;
     }
 
     /**

@@ -16,6 +16,10 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Locale;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.identification.KeywordType;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
@@ -29,8 +33,12 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
+
+// Branch-specific imports
+import org.apache.sis.internal.jdk7.StandardCharsets;
 
 
 /**
@@ -38,17 +46,22 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn({
-    org.apache.sis.metadata.PropertyAccessorTest.class, // For properties order
+    org.apache.sis.metadata.ValueMapTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
     org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
     DefaultKeywordsTest.class
 })
 public final strictfp class DefaultDataIdentificationTest extends TestCase {
+    /**
+     * The locales used in this test.
+     */
+    private static final Locale[] LOCALES = {Locale.US, Locale.ENGLISH};
+
     /**
      * Creates the instance to test.
      */
@@ -88,6 +101,9 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
          *  ├─Resource constraints
          *  │   └─Use limitation……………………………………………………… Freely available
          *  ├─Spatial representation type……………………………… Grid
+         *  ├─Language (1 of 2)………………………………………………………… en_US
+         *  ├─Language (2 of 2)………………………………………………………… en
+         *  ├─Character set…………………………………………………………………… US-ASCII
          *  └─Extent
          *      └─Geographic element
          *          ├─West bound longitude…………………………… 180°W
@@ -102,6 +118,8 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
         info.setDescriptiveKeywords(singleton(keywords));
         info.setResourceConstraints(singleton(new DefaultConstraints("Freely available")));
         info.setExtents(singleton(Extents.WORLD));
+        info.setLanguages(asList(LOCALES));
+        info.setCharacterSets(singleton(StandardCharsets.US_ASCII));
         return info;
     }
 
@@ -135,6 +153,9 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
                 "  ├─Resource constraints\n" +
                 "  │   └─Use limitation……………………………… Freely available\n" +
                 "  ├─Spatial representation type……… Grid\n" +
+                "  ├─Language (1 of 2)………………………………… en_US\n" +
+                "  ├─Language (2 of 2)………………………………… en\n" +
+                "  ├─Character set…………………………………………… US-ASCII\n" +
                 "  └─Extent\n" +
                 "      ├─Description……………………………………… World\n" +
                 "      └─Geographic element\n" +
@@ -144,5 +165,23 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
                 "          ├─North bound latitude…… 90°N\n" +
                 "          └─Extent type code……………… true\n",
             TestUtilities.formatNameAndValue(create().asTreeTable()));
+    }
+
+    /**
+     * Tests {@link DefaultDataIdentification#asMap()}, in particular on the {@code "language"} property.
+     * This property is handle in a special way since the declared UML identifier is
+     * {@code "defaultLocale+otherLocale"}.
+     */
+    @Test
+    public void testValueMap() {
+        final DefaultDataIdentification info = create();
+        final Map<String,Object> map = info.asMap();
+        assertEquals("abstract", "NCEP SST Global 5.0 x 2.5 degree model data", map.get("abstract").toString());
+        assertEquals("title", "Sea Surface Temperature Analysis Model", ((Citation) map.get("citation")).getTitle().toString());
+        assertEquals("spatialRepresentationType", singleton(SpatialRepresentationType.GRID), map.get("spatialRepresentationType"));
+        assertArrayEquals("language",                  LOCALES, ((Collection<?>) map.get("language")).toArray());
+        assertArrayEquals("languages",                 LOCALES, ((Collection<?>) map.get("languages")).toArray());
+        assertArrayEquals("getLanguages",              LOCALES, ((Collection<?>) map.get("getLanguages")).toArray());
+        assertArrayEquals("defaultLocale+otherLocale", LOCALES, ((Collection<?>) map.get("defaultLocale+otherLocale")).toArray());
     }
 }
