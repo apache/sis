@@ -18,26 +18,42 @@ package org.apache.sis.storage.shapefile;
 
 
 /**
- *
+ * Field descriptor.
  * @author  Travis L. Pinney
  * @since   0.4
  * @version 0.4
  * @module
  */
 public class FieldDescriptor {
-
+    /** Field name. */
     public byte[] FieldName = new byte[11];
+
+    /** Field type. */
     public DataType FieldType;
+
     public byte[] FieldAddress = new byte[4];
+
+    /** Field length. */
     public byte FieldLength;
+
+    /** Decimal count. */
     public byte FieldDecimalCount;
+
+    /** Reserved 2. */
     public byte[] DbasePlusLanReserved2 = new byte[2];
+
+    /** Work area id. */
     public byte WorkAreaID;
+
+    /** Reserved 3. */
     public byte[] DbasePlusLanReserved3 = new byte[2];
+
     public byte SetFields;
 
-
-
+    /**
+     * Return the field name.
+     * @return Field name.
+     */
     public String getName() {
         int length = FieldName.length;
         while (length != 0 && FieldName[length - 1] <= ' ') {
@@ -46,10 +62,17 @@ public class FieldDescriptor {
         return new String(this.FieldName, 0, length);
     }
 
+    /**
+     * Return the field length.
+     * @return field length.
+     */
     public int getLength() {
         return Byte.toUnsignedInt(this.FieldLength);
     }
 
+    /**
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
 

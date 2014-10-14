@@ -28,33 +28,72 @@ package org.apache.sis.storage.shapefile;
  * @see <a href="http://www.clicketyclick.dk/databases/xbase/format/data_types.html">Xbase Data Types</a>
  */
 public enum DataType {
+    /** Character (less than 254 characters). */
+    Character('C'),
 
-    Character('C'), // < 254 characters
-    Number('N'), // < 18 characters, can include sign and decimal
-    Logical('L'), // 3 way, ? Y,y,T,t  N,n,F,f
-    Date('D'), // YYYYMMDD
-    Memo('M'), // Pointer to ASCII text field
-    FloatingPoint('F'), // 20 digits
+    /** Number (less than 18 characters, can include sign and decimal). */
+    Number('N'),
+
+    /** Logical (3 way, ? Y,y,T,t  N,n,F,f). */
+    Logical('L'),
+
+    /** Date (YYYYMMDD format). */
+    Date('D'),
+
+    /** Memo (Pointer to ASCII text field). */
+    Memo('M'),
+
+    /** Floating point (20 digits). */
+    FloatingPoint('F'),
+
     // CharacterNameVariable("?"),  //1-254 Characters
-    Picture('P'), // Memo
-    Currency('Y'), // Foxpro
-    DateTime('T'), // 32 bit little-endian Julian date, 32 byte little endian milliseconds since midnight
-    Integer('I'), // 4 byte little endian
-    VariField('V'), // ???
-    Variant('X'), // ???
-    TimeStamp('@'), // see url
-    Double('O'), //
-    AutoIncrement('+'); // ???
 
+    /** Picture (memo). */
+    Picture('P'),
+
+    /** Currency (Foxpro). */
+    Currency('Y'),
+
+    /** Date time (32 bit little-endian Julian date, 32 byte little endian milliseconds since midnight). */
+    DateTime('T'),
+
+    /** Integer (4 byte little endian). */
+    Integer('I'),
+
+    /** Varifield (???). */
+    VariField('V'),
+
+    /** Variant (???). */
+    Variant('X'),
+
+    /** Time stamp (see url). */
+    TimeStamp('@'),
+
+    /** Double. */
+    Double('O'),
+
+    /** Auto increment. */
+    AutoIncrement('+');
+
+    /** Data type. */
     public final char datatype;
 
-    DataType(char datatype) {
-        this.datatype = datatype;
+    /**
+     * Construct a datatype.
+     * @param type Data type.
+     */
+    DataType(char type) {
+        this.datatype = type;
     }
 
-    public static DataType valueOfDataType(char datatype) {
+    /**
+     * Return the Datatype enum of a code.
+     * @param code Character code describing the dbf datatype.
+     * @return Datatype.
+     */
+    public static DataType valueOfDataType(char code) {
         for (DataType v : values()) {
-            if (v.datatype == datatype) {
+            if (v.datatype == code) {
                 return v;
             }
         }
