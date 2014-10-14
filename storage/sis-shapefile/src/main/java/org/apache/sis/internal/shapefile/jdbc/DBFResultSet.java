@@ -25,7 +25,6 @@ import java.sql.Date;
 import java.util.*;
 import java.util.logging.*;
 
-import org.apache.sis.storage.shapefile.*;
 
 /**
  * DBF ResultSet.

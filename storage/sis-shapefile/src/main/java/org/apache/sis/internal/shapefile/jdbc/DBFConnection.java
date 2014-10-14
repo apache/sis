@@ -61,8 +61,7 @@ public class DBFConnection extends AbstractConnection {
      * @param datafile Data file (.dbf extension).
      * @throws SQLException if the given file is invalid.
      */
-    DBFConnection(File datafile) throws SQLException
-    {
+    DBFConnection(File datafile) throws SQLException {
         Objects.requireNonNull(datafile, "the database file to connect to cannot be null.");
 
         // Check that file exists.
