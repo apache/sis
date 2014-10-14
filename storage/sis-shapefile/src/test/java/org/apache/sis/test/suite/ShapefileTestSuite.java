@@ -26,7 +26,6 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.storage.shapefile.ShapeFileTest.class,
-    org.apache.sis.storage.shapefile.CmdLineDriverTest.class
 })
 public final strictfp class ShapefileTestSuite extends TestSuite {
     /**

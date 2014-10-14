@@ -27,10 +27,11 @@ import static org.junit.Assert.*;
 
 
 /**
+ * Tests the {@link ShapeFile} class.
  *
  * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  */
 public final strictfp class ShapeFileTest extends TestCase {
