@@ -19,7 +19,10 @@
 /**
  * Shapefile.
  *
- * @author Travis L. Pinney
- * @author Marc Le Bihan
+ * @author  Travis L. Pinney
+ * @author  Marc Le Bihan
+ * @since   0.5
+ * @version 0.5
+ * @module
  */
 package org.apache.sis.storage.shapefile;

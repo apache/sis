@@ -23,8 +23,8 @@ package org.apache.sis.storage.shapefile;
  * when dealing with codepages, should first check if there is a .cpg file
  *
  * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  *
  * @see <a href="http://www.clicketyclick.dk/databases/xbase/format/dbf.html#DBF_NOTE_5_TARGET">Xbase Data file</a>

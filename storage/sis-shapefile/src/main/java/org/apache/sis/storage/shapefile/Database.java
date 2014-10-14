@@ -25,8 +25,13 @@ import org.opengis.feature.*;
 
 /**
  * Load a whole DBF file.
+ *
+ * @author  Travis L. Pinney
+ * @since   0.5
+ * @version 0.5
+ * @module
+ *
  * @see <a href="http://ulisse.elettra.trieste.it/services/doc/dbase/DBFstruct.htm" >Database structure</a>
- * @author Travis L. Pinney
  */
 public class Database implements AutoCloseable {
     /** Database filename. */

@@ -21,8 +21,8 @@ package org.apache.sis.storage.shapefile;
  * Provides a simple DataType class.
  *
  * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  *
  * @see <a href="http://www.clicketyclick.dk/databases/xbase/format/data_types.html">Xbase Data Types</a>

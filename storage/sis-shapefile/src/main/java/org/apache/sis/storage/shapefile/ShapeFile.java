@@ -40,8 +40,8 @@ import org.opengis.feature.Feature;
 /**
  * Provides a ShapeFile Reader.
  *
- * @author Travis L. Pinney
- * @since 0.5
+ * @author  Travis L. Pinney
+ * @since   0.5
  * @version 0.5
  * @module
  *

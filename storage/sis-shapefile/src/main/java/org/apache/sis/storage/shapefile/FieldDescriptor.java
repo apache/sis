@@ -19,9 +19,10 @@ package org.apache.sis.storage.shapefile;
 
 /**
  * Field descriptor.
+ *
  * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  */
 public class FieldDescriptor {
