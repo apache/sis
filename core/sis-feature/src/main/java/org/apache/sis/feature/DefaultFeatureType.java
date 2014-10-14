@@ -211,14 +211,56 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         super(identification);
         ArgumentChecks.ensureNonNull("properties", properties);
         this.isAbstract = isAbstract;
-        this.superTypes = (superTypes == null) ? Collections.<FeatureType>emptySet() :
-                          CollectionsExt.<FeatureType>immutableSet(true, superTypes);
+        if (superTypes == null) {
+            this.superTypes = Collections.emptySet();
+        } else {
+            this.superTypes = CollectionsExt.immutableSet(true, superTypes);
+            for (final FeatureType type : this.superTypes) {
+                if (type instanceof NamedFeatureType) {
+                    // Hierarchy of feature types can not be cyclic.
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, type.getName()));
+                }
+            }
+        }
         switch (properties.length) {
             case 0:  this.properties = Collections.emptyList(); break;
             case 1:  this.properties = Collections.singletonList(properties[0]); break;
             default: this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(properties, properties.length, PropertyType[].class)); break;
         }
         computeTransientFields();
+        /*
+         * Replace NamedFeatureType by the actual object.
+         *
+         * TODO: current implementation checks only for 'this'.
+         * We need to perform a more extensive check.
+         */
+        resolve(Collections.singletonMap(getName(), this));
+    }
+
+    /**
+     * If an associated feature type is a placeholder for a {@code FeatureType} to be defined later,
+     * replaces the placeholder by the actual instance if available. Otherwise do nothing.
+     *
+     * This method is needed only in case of cyclic graph, e.g. feature <var>A</var> has an association
+     * to feature <var>B</var> which has an association back to <var>A</var>. It may also be <var>A</var>
+     * having an association to itself, <i>etc.</i>
+     *
+     * @param  features The features by their name.
+     * @return {@code true} if the feature type is still unresolved after this method call.
+     */
+    final boolean resolve(final Map<GenericName,FeatureType> features) {
+        boolean incomplete = false;
+        for (final FeatureType type : superTypes) {
+            if (type instanceof DefaultFeatureType) {
+                incomplete |= ((DefaultFeatureType) type).resolve(features);
+            }
+        }
+        for (final PropertyType property : properties) {
+            if (property instanceof DefaultAssociationRole) {
+                incomplete |= ((DefaultAssociationRole) property).resolve(features);
+            }
+        }
+        return incomplete;
     }
 
     /**
