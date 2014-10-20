@@ -14,29 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.suite;
+package org.apache.sis.internal.shapefile.jdbc;
 
-import org.apache.sis.test.TestSuite;
-import org.junit.runners.Suite;
-import org.junit.BeforeClass;
+import java.sql.SQLNonTransientException;
 
 
 /**
- * All tests from the {@code sis-shapefile} module, in approximative dependency order.
+ * Thrown when the DBF file format seems to be invalid.
+ *
+ * @author  Marc Le Bihan
+ * @version 0.5
+ * @since   0.5
+ * @module
  */
-@Suite.SuiteClasses({
-    org.apache.sis.storage.shapefile.ShapeFileTest.class,
-    org.apache.sis.internal.shapefile.jdbc.ConnectionTest.class,
-    org.apache.sis.internal.shapefile.jdbc.ResultSetTest.class
-})
-public final strictfp class ShapefileTestSuite extends TestSuite {
+public class InvalidDbaseFileFormatException extends SQLNonTransientException {
+    /** Serial UID. */
+    private static final long serialVersionUID = 3924612615300490837L;
+
     /**
-     * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class, Class[])} for more information.
+     * Construct an exception.
+     * @param message Message of the exception.
      */
-    @BeforeClass
-    public static void verifyTestList() {
-        assertNoMissingTest(ShapefileTestSuite.class);
-        verifyTestList(ShapefileTestSuite.class);
+    public InvalidDbaseFileFormatException(String message) {
+        super(message);
+    }
+
+    /**
+     * Construct an exception.
+     * @param message Message of the exception.
+     * @param cause Root cause of the exception.
+     */
+    public InvalidDbaseFileFormatException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

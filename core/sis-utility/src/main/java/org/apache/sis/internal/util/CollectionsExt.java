@@ -447,6 +447,28 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns a more compact representation of the given map. This method is similar to
+     * {@link #unmodifiableOrCopy(Map)} except that it does not wrap the map in an unmodifiable
+     * view. The intend is to avoid one level of indirection for performance and memory reasons.
+     * This is okay only if the map is kept in a private field and never escape outside this class.
+     *
+     * @param  <K> The type of keys in the map.
+     * @param  <V> The type of values in the map.
+     * @param  map The map to compact, or {@code null}.
+     * @return A potentially compacted map, or {@code null} if the given map was null.
+     */
+    public static <K,V> Map<K,V> compact(final Map<K,V> map) {
+        if (map != null) {
+            switch (map.size()) {
+                case 0:  return Collections.emptyMap();
+                case 1:  final Map.Entry<K,V> entry = map.entrySet().iterator().next();
+                         return Collections.singletonMap(entry.getKey(), entry.getValue());
+            }
+        }
+        return map;
+    }
+
+    /**
      * Returns a snapshot of the given list. The returned list will not be affected by changes
      * in the given list after this method call. This method makes no guaranteed about whether
      * the returned list is modifiable or not.

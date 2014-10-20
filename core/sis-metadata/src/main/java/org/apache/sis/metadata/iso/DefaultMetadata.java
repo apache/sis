@@ -260,8 +260,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param contact   Party responsible for the metadata information.
      * @param dateStamp Date that the metadata was created.
-     * @param identificationInfo Basic information about the resource
-     *        to which the metadata applies.
+     * @param identificationInfo Basic information about the resource to which the metadata applies.
      */
     public DefaultMetadata(final Responsibility contact,
                            final Date           dateStamp,
@@ -542,7 +541,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "characterSet")
-    public final Charset getCharacterSet()  {
+    public final Charset getCharacterSet() {
         return LegacyPropertyAdapter.getSingleton(characterSets, Charset.class, null, DefaultMetadata.class, "getCharacterSet");
     }
 
@@ -646,40 +645,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * A specialization of {@link LegacyPropertyAdapter} which will try to merge the
-     * {@code "hierarchyLevel"} and {@code "hierarchyLevelName"} properties in the same
-     * {@link DefaultMetadataScope} instance.
-     */
-    private static abstract class ScopeAdapter<L> extends LegacyPropertyAdapter<L,MetadataScope> {
-        /**
-         * @param scopes Value of {@link DefaultMetadata#getMetadataScopes()}.
-         */
-        ScopeAdapter(final Collection<MetadataScope> scopes)  {
-            super(scopes);
-        }
-
-        /**
-         * Invoked (indirectly) by JAXB when adding a new scope code or scope name. This implementation searches
-         * for an existing {@link MetadataScope} instance with a free slot for the new value before to create a
-         * new {@link DefaultMetadataScope} instance.
-         */
-        @Override
-        public boolean add(final L newValue) {
-            final Iterator<MetadataScope> it = elements.iterator();
-            if (it.hasNext()) {
-                MetadataScope scope = it.next();
-                if (unwrap(scope) == null) {
-                    if (!(scope instanceof DefaultMetadataScope)) {
-                        scope = new DefaultMetadataScope(scope);
-                    }
-                    return update(scope, newValue);
-                }
-            }
-            return super.add(newValue);
-        }
-    }
-
-    /**
      * Returns the scope to which the metadata applies.
      *
      * @return Scope to which the metadata applies.
@@ -691,7 +656,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     @XmlElement(name = "hierarchyLevel")
     public final Collection<ScopeCode> getHierarchyLevels() {
-        return new ScopeAdapter<ScopeCode>(getMetadataScopes()) {
+        return new MetadataScopeAdapter<ScopeCode>(getMetadataScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected MetadataScope wrap(final ScopeCode value) {
                 return new DefaultMetadataScope(value);
@@ -739,7 +704,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     @XmlElement(name = "hierarchyLevelName")
     public final Collection<String> getHierarchyLevelNames() {
-        return new ScopeAdapter<String>(getMetadataScopes()) {
+        return new MetadataScopeAdapter<String>(getMetadataScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected MetadataScope wrap(final String value) {
                 final DefaultMetadataScope scope = new DefaultMetadataScope();
@@ -756,7 +721,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             /** Updates the legacy value in an existing instance of the new kind of value. */
             @Override protected boolean update(final MetadataScope container, final String value) {
                 if (container instanceof DefaultMetadataScope) {
-                    ((DefaultMetadataScope) container).setName(new SimpleInternationalString(value));
+                    ((DefaultMetadataScope) container).setName(value != null ? new SimpleInternationalString(value) : null);
                     return true;
                 }
                 return false;

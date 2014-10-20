@@ -236,7 +236,7 @@ header: for (int i=0; ; i++) {
                 final FeatureAssociationRole pt = (FeatureAssociationRole) propertyType;
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
-                valueType     = toString(pt.getValueType().getName());
+                valueType     = toString(DefaultAssociationRole.getValueTypeName(pt));
                 valueClass    = Feature.class;
             } else if (propertyType instanceof Operation) {
                 final IdentifiedType resultType = ((Operation) propertyType).getResult();

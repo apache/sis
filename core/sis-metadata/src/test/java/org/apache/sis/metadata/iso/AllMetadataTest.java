@@ -239,7 +239,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
         } else if (name.equals("stepDateTime")) {
             name = "dateTime";
         } else if (name.equals("defaultLocale+otherLocale") ||
-                   type == FeatureCatalogueDescription.class && name.equals("locale"))
+                type == FeatureCatalogueDescription.class && name.equals("locale"))
         {
             name = "language";
         }
