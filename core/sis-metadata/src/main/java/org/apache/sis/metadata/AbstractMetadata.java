@@ -144,7 +144,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      */
     @Override
     public boolean isEmpty() {
-        return Pruner.isEmpty(this, false);
+        return Pruner.isEmpty(this, true, false);
     }
 
     /**
@@ -155,7 +155,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * @throws UnmodifiableMetadataException If this metadata is not modifiable.
      */
     public void prune() {
-        Pruner.isEmpty(this, true);
+        Pruner.isEmpty(this, true, true);
     }
 
     /**

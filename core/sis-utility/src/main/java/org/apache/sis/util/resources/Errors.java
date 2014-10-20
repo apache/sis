@@ -848,6 +848,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnparsableStringForClass_3 = 125;
 
         /**
+         * Feature named “{0}” has not yet been resolved.
+         */
+        public static final short UnresolvedFeatureName_1 = 164;
+
+        /**
          * No format is specified for objects of class ‘{0}’.
          */
         public static final short UnspecifiedFormatForClass_1 = 126;

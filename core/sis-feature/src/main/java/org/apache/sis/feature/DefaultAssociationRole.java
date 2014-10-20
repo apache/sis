@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -65,7 +66,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *
      * @see #getValueType()
      */
-    private final FeatureType valueType;
+    private volatile FeatureType valueType;
 
     /**
      * The name of the property to use as a title for the associated feature, or an empty string if none.
@@ -77,7 +78,20 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     private volatile transient String titleProperty;
 
     /**
-     * Constructs an association role from the given properties. The properties map is given unchanged to
+     * {@code true} if we determined that the feature type name in this association has been resolved.
+     * A value of {@code true} means that {@link #valueType} is a resolved feature type. However a value
+     * of {@code false} only means that we are not sure, and that we should check again next time.
+     *
+     * <div class="note"><b>Note:</b>
+     * Strictly speaking, this field should be declared {@code volatile} since the names could be
+     * resolved late after construction, after the {@code DefaultAssociationRole} instance became
+     * used by different threads. However this is not the intended usage of deferred associations.
+     * </div>
+     */
+    private transient boolean isResolved;
+
+    /**
+     * Constructs an association to the given feature type. The properties map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      * The following table is a reminder of main (not all) recognized map entries:
      *
@@ -125,13 +139,141 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     }
 
     /**
+     * Constructs an association to a feature type of the given name.
+     * This constructor shall be used only when creating a cyclic graph of {@link DefaultFeatureType} instances.
+     *
+     * <div class="note"><b>Example:</b>
+     * A code first creates {@code FeatureType} <var>A</var>, then {@code FeatureType} <var>B</var>.
+     * It is easy to define an association from <var>B</var> to <var>A</var> since the later exists
+     * at <var>B</var> creation time. But if one wants to define also the converse association, i.e.
+     * from <var>A</var> to <var>B</var>, then it is not possible to create <var>A</var> with the
+     * {@linkplain #DefaultAssociationRole(Map, FeatureType, int, int) above constructor} since
+     * <var>B</var> does not yet exist. We can only give the <em>name</em> of <var>B</var> and
+     * let {@link DefaultFeatureType} substitutes that name by the actual instance when the later
+     * will be known.
+     * </div>
+     *
+     * @param identification The name and other information to be given to this association role.
+     * @param valueType      The name of the type of feature values.
+     * @param minimumOccurs  The minimum number of occurrences of the association within its containing entity.
+     * @param maximumOccurs  The maximum number of occurrences of the association within its containing entity,
+     *                       or {@link Integer#MAX_VALUE} if there is no restriction.
+     */
+    public DefaultAssociationRole(final Map<String,?> identification, final GenericName valueType,
+            final int minimumOccurs, final int maximumOccurs)
+    {
+        super(identification, minimumOccurs, maximumOccurs);
+        ensureNonNull("valueType", valueType);
+        this.valueType = new NamedFeatureType(valueType);
+    }
+
+    /**
+     * If the associated feature type is a placeholder for a {@code FeatureType} to be defined later,
+     * replaces the placeholder by the actual instance if available. Otherwise do nothing.
+     *
+     * This method is needed only in case of cyclic graph, e.g. feature <var>A</var> has an association
+     * to feature <var>B</var> which has an association back to <var>A</var>. It may also be <var>A</var>
+     * having an association to itself, <i>etc.</i>
+     *
+     * @param  creating The feature type in process of being constructed.
+     * @return {@code true} if this association references a resolved feature type after this method call.
+     */
+    final boolean resolve(final DefaultFeatureType creating) {
+        boolean resolved = isResolved;
+        if (!resolved) {
+            FeatureType type = valueType;
+            if (type instanceof NamedFeatureType) {
+                type = search(creating, type.getName());
+                if (type == null) {
+                    return false;
+                }
+                valueType = type;
+            }
+            isResolved = true; // Necessary for avoiding never-ending loop in case of cycle.
+            try {
+                resolved = creating.resolve(type);
+            } finally {
+                isResolved = resolved;
+            }
+        }
+        return resolved;
+    }
+
+    /**
+     * Searches in the given {@code feature} for a feature type of the given name.
+     *
+     * @param  feature The feature in which to search.
+     * @param  name The name of the feature to search.
+     * @return The feature of the given name, or {@code null} if none.
+     */
+    private static FeatureType search(final FeatureType feature, final GenericName name) {
+        if (name.equals(feature.getName())) {
+            return feature;
+        }
+        /*
+         * Search only in associations declared in the given feature, not in inherited associations.
+         * The inherited associations will be checked in a separated loop below if we did not found
+         * the request feature type in explicitly declared associations.
+         */
+        for (final PropertyType property : feature.getProperties(false)) {
+            if (property instanceof FeatureAssociationRole) {
+                final FeatureType valueType;
+                if (property instanceof DefaultAssociationRole) {
+                    valueType = ((DefaultAssociationRole) property).valueType;
+                    if (valueType instanceof NamedFeatureType) {
+                        continue; // Skip unresolved feature types.
+                    }
+                } else {
+                    valueType = ((FeatureAssociationRole) property).getValueType();
+                }
+                if (name.equals(valueType.getName())) {
+                    return valueType;
+                }
+            }
+        }
+        /*
+         * Search in inherited associations as a separated step, in order to include the overridden
+         * associations in the search. Overridden associations have the same association role name,
+         * but not necessarily the same feature type (may be a subtype). This is equivalent to
+         * "covariant return type" in the Java language.
+         */
+        for (FeatureType type : feature.getSuperTypes()) {
+            type = search(type, name);
+            if (type != null) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the type of feature values.
      *
      * @return The type of feature values.
+     * @throws IllegalStateException if the feature type has been specified
+     *         {@linkplain #DefaultAssociationRole(Map, GenericName, int, int) only by its name}
+     *         and not yet resolved.
      */
     @Override
     public final FeatureType getValueType() {
-        return valueType;
+        /*
+         * This method shall be final for consistency with other methods in this classes
+         * which use the 'valueType' field directly. Furthermore, this method is invoked
+         * (indirectly) by DefaultFeatureType constructors.
+         */
+        final FeatureType type = valueType;
+        if (type instanceof NamedFeatureType) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, getName()));
+        }
+        return type;
+    }
+
+    /**
+     * Returns the name of the feature type. This information is always available
+     * even when the name has not yet been {@linkplain #resolve resolved}.
+     */
+    static GenericName getValueTypeName(final FeatureAssociationRole role) {
+        return (role instanceof DefaultAssociationRole ? ((DefaultAssociationRole) role).valueType : role.getValueType()).getName();
     }
 
     /**
@@ -198,7 +340,12 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + valueType.hashCode();
+        /*
+         * Do not use the full 'valueType' object for computing hash code,
+         * because it may change before and after 'resolve' is invoked. In
+         * addition, this avoid infinite recursivity in case of cyclic graph.
+         */
+        return super.hashCode() + valueType.getName().hashCode();
     }
 
     /**
