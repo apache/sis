@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
@@ -128,6 +129,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * Strictly speaking, this field should be declared {@code volatile} since the names could
      * be resolved late after construction, after the {@code DefaultFeatureType} instance became
      * used by different threads. However this is not the intended usage of deferred associations.
+     * Furthermore a wrong value ({@code false} when it should be {@code true}) should only cause
+     * more computation than needed, without changing the result.
      * </div>
      */
     private transient boolean isResolved;
@@ -243,7 +246,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             default: this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(properties, properties.length, PropertyType[].class)); break;
         }
         computeTransientFields();
-        isResolved = resolve(this, isSimple);
+        isResolved = resolve(this, null, isSimple);
     }
 
     /**
@@ -419,10 +422,11 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * <p>{@code this} shall be the instance in process of being created, not other instance
      * (i.e. recursive method invocations are performed on the same {@code this} instance).</p>
      *
-     * @param  feature The feature type for which to resolve the properties.
+     * @param  feature  The feature type for which to resolve the properties.
+     * @param  previous Previous results, for avoiding never ending loop.
      * @return {@code true} if all names have been resolved.
      */
-    final boolean resolve(final FeatureType feature) {
+    private boolean resolve(final FeatureType feature, final Map<FeatureType,Boolean> previous) {
         /*
          * The isResolved field is used only as a cache for skipping completely the DefaultFeatureType instance if
          * we have determined that there is no unresolved name.  If the given argument is not a DefaultFeatureType
@@ -431,28 +435,52 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
          */
         if (feature instanceof DefaultFeatureType) {
             final DefaultFeatureType dt = (DefaultFeatureType) feature;
-            return dt.isResolved = resolve(feature, dt.isResolved);
+            return dt.isResolved = resolve(feature, previous, dt.isResolved);
         } else {
-            return resolve(feature, feature.isSimple());
+            return resolve(feature, previous, feature.isSimple());
         }
     }
 
     /**
-     * Implementation of {@link #resolve(FeatureType)}, also to be invoked from the constructor.
+     * Implementation of {@link #resolve(FeatureType, Map)}, also to be invoked from the constructor.
      *
      * @param  feature  The feature type for which to resolve the properties.
+     * @param  previous Previous results, for avoiding never ending loop. Initially {@code null}.
      * @param  resolved {@code true} if we already know that all names are resolved.
      * @return {@code true} if all names have been resolved.
      */
-    private boolean resolve(final FeatureType feature, boolean resolved) {
+    private boolean resolve(final FeatureType feature, Map<FeatureType,Boolean> previous, boolean resolved) {
         if (!resolved) {
             resolved = true;
             for (final FeatureType type : feature.getSuperTypes()) {
-                resolved &= resolve(type);
+                resolved &= resolve(type, previous);
             }
             for (final PropertyType property : feature.getProperties(false)) {
-                if (property instanceof DefaultAssociationRole) {
-                    resolved &= ((DefaultAssociationRole) property).resolve(this);
+                if (property instanceof FeatureAssociationRole) {
+                    if (property instanceof DefaultAssociationRole) {
+                        if (!((DefaultAssociationRole) property).resolve(this)) {
+                            resolved = false;
+                            continue;
+                        }
+                    }
+                    /*
+                     * Resolve recursively the associated features, with a check against infinite recursivity.
+                     * If we fall in a loop (for example A → B → C → A), conservatively returns 'false'. This
+                     * may not be the most accurate answer, but will not cause any more hurt than checking more
+                     * often than necessary.
+                     */
+                    final FeatureType valueType = ((FeatureAssociationRole) property).getValueType();
+                    if (valueType != this) {
+                        if (previous == null) {
+                            previous = new IdentityHashMap<>(8);
+                        }
+                        Boolean r = previous.put(valueType, Boolean.FALSE);
+                        if (r == null) {
+                            r = resolve(valueType, previous);
+                            previous.put(valueType, r);
+                        }
+                        resolved &= r;
+                    }
                 }
             }
         }
