@@ -17,6 +17,9 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
@@ -78,19 +81,6 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     private volatile transient String titleProperty;
 
     /**
-     * {@code true} if we determined that the feature type name in this association has been resolved.
-     * A value of {@code true} means that {@link #valueType} is a resolved feature type. However a value
-     * of {@code false} only means that we are not sure, and that we should check again next time.
-     *
-     * <div class="note"><b>Note:</b>
-     * Strictly speaking, this field should be declared {@code volatile} since the names could be
-     * resolved late after construction, after the {@code DefaultAssociationRole} instance became
-     * used by different threads. However this is not the intended usage of deferred associations.
-     * </div>
-     */
-    private transient boolean isResolved;
-
-    /**
      * Constructs an association to the given feature type. The properties map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      * The following table is a reminder of main (not all) recognized map entries:
@@ -140,18 +130,32 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
 
     /**
      * Constructs an association to a feature type of the given name.
-     * This constructor shall be used only when creating a cyclic graph of {@link DefaultFeatureType} instances.
+     * This constructor can be used when creating a cyclic graph of {@link DefaultFeatureType} instances.
+     * In such cases, at least one association needs to be created while its {@code FeatureType} is not yet available.
      *
      * <div class="note"><b>Example:</b>
-     * A code first creates {@code FeatureType} <var>A</var>, then {@code FeatureType} <var>B</var>.
-     * It is easy to define an association from <var>B</var> to <var>A</var> since the later exists
-     * at <var>B</var> creation time. But if one wants to define also the converse association, i.e.
-     * from <var>A</var> to <var>B</var>, then it is not possible to create <var>A</var> with the
-     * {@linkplain #DefaultAssociationRole(Map, FeatureType, int, int) above constructor} since
-     * <var>B</var> does not yet exist. We can only give the <em>name</em> of <var>B</var> and
-     * let {@link DefaultFeatureType} substitutes that name by the actual instance when the later
-     * will be known.
+     * The following establishes a bidirectional association between feature types <var>A</var> and <var>B</var>:
+     *
+     * {@preformat java
+     *   GenericName nameOfA = Names.createTypeName("Feature type A");
+     *   GenericName nameOfB = Names.createTypeName("Feature type B");
+     *   FeatureType typeA = new DefaultFeatureType(nameOfA, false, null,
+     *       new DefaultAssociationRole(Names.createLocalName("Association to B"), nameOfB),
+     *       // More properties if desired.
+     *   );
+     *   FeatureType typeB = new DefaultFeatureType(nameOfB, false, null,
+     *       new DefaultAssociationRole(Names.createLocalName("Association to A"), featureA),
+     *       // More properties if desired.
+     *   );
+     * }
+     *
+     * After the above code completed, the {@linkplain #getValueType() value type} of "<cite>association to B</cite>"
+     * has been automatically set to the {@code typeB} instance.
      * </div>
+     *
+     * Callers shall make sure that the feature types graph will not contain more than one feature of the given name.
+     * If more than one {@code FeatureType} instance of the given name is found at resolution time, the selected one
+     * is undetermined.
      *
      * @param identification The name and other information to be given to this association role.
      * @param valueType      The name of the type of feature values.
@@ -179,37 +183,50 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * @return {@code true} if this association references a resolved feature type after this method call.
      */
     final boolean resolve(final DefaultFeatureType creating) {
-        boolean resolved = isResolved;
-        if (!resolved) {
-            FeatureType type = valueType;
-            if (type instanceof NamedFeatureType) {
-                type = search(creating, type.getName());
+        FeatureType type = valueType;
+        if (type instanceof NamedFeatureType) {
+            final GenericName name = type.getName();
+            if (name.equals(creating.getName())) {
+                type = creating; // This is the most common case.
+            } else {
+                /*
+                 * The feature that we need to resolve is not the one we just created. Maybe we can find
+                 * this desired feature in an association of the 'creating' feature, instead than beeing
+                 * the 'creating' feature itself. This is a little bit unusual, but not illegal.
+                 */
+                final List<FeatureType> deferred = new ArrayList<>();
+                type = search(creating, name, deferred);
                 if (type == null) {
-                    return false;
+                    /*
+                     * Did not found the desired FeatureType in the 'creating' instance.
+                     * Try harder, by searching recursively in associations of associations.
+                     */
+                    if (deferred.isEmpty() || (type = deepSearch(deferred, name)) == null) {
+                        return false;
+                    }
                 }
-                valueType = type;
             }
-            isResolved = true; // Necessary for avoiding never-ending loop in case of cycle.
-            try {
-                resolved = creating.resolve(type);
-            } finally {
-                isResolved = resolved;
-            }
+            valueType = type;
         }
-        return resolved;
+        return true;
     }
 
     /**
-     * Searches in the given {@code feature} for a feature type of the given name.
+     * Searches in the given {@code feature} for an associated feature type of the given name.
+     * This method does not search recursively in the associations of the associated features.
+     * Such recursive search will be performed by {@link #deepSearch(List, GenericName)} only
+     * if we do not find the desired feature in the most direct way.
+     *
+     * <p>Current implementation does not check that there is no duplicated names.
+     * See {@link #deepSearch(List, GenericName)} for a rational.</p>
      *
      * @param  feature The feature in which to search.
      * @param  name The name of the feature to search.
+     * @param  deferred Where to store {@code FeatureType}s to be eventually used for a deep search.
      * @return The feature of the given name, or {@code null} if none.
      */
-    private static FeatureType search(final FeatureType feature, final GenericName name) {
-        if (name.equals(feature.getName())) {
-            return feature;
-        }
+    @SuppressWarnings("null")
+    private static FeatureType search(final FeatureType feature, final GenericName name, final List<FeatureType> deferred) {
         /*
          * Search only in associations declared in the given feature, not in inherited associations.
          * The inherited associations will be checked in a separated loop below if we did not found
@@ -229,6 +246,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
                 if (name.equals(valueType.getName())) {
                     return valueType;
                 }
+                deferred.add(valueType);
             }
         }
         /*
@@ -238,9 +256,42 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
          * "covariant return type" in the Java language.
          */
         for (FeatureType type : feature.getSuperTypes()) {
-            type = search(type, name);
+            if (name.equals(type.getName())) {
+                return type;
+            }
+            type = search(type, name, deferred);
             if (type != null) {
                 return type;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Potentially invoked after {@link #search(FeatureType, GenericName, List)} for searching
+     * in associations of associations.
+     *
+     * <p>Current implementation does not check that there is no duplicated names. Even if we did so,
+     * a graph of feature types may have no duplicated names at this time but some duplicated names
+     * later. We rather put a warning in {@link #DefaultAssociationRole(Map, GenericName, int, int)}
+     * javadoc.</p>
+     *
+     * @param  feature The feature in which to search.
+     * @param  name The name of the feature to search.
+     * @param  done The feature types collected by {@link #search(FeatureType, GenericName, List)}.
+     * @return The feature of the given name, or {@code null} if none.
+     */
+    private static FeatureType deepSearch(final List<FeatureType> deferred, final GenericName name) {
+        final Map<FeatureType,Boolean> done = new IdentityHashMap<>(8);
+        for (int i=0; i<deferred.size();) {
+            FeatureType valueType = deferred.get(i++);
+            if (done.put(valueType, Boolean.TRUE) == null) {
+                deferred.subList(0, i).clear(); // Discard previous value for making more room.
+                valueType = search(valueType, name, deferred);
+                if (valueType != null) {
+                    return valueType;
+                }
+                i = 0;
             }
         }
         return null;

@@ -50,6 +50,7 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
      *
      * @param cyclic {@code true} if in addition to the association from <var>A</var> to <var>B</var>,
      *        we also want an association from <var>B</var> to <var>A</var>, thus creating a cycle.
+     * @return The association to use for testing purpose.
      */
     static DefaultAssociationRole twinTown(final boolean cyclic) {
         final Map<String,?> properties = singletonMap(NAME_KEY, "twin town");
@@ -67,6 +68,7 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
      *
      * @param cyclic {@code true} if in addition to the association from <var>A</var> to <var>B</var>,
      *        we also want an association from <var>B</var> to <var>A</var>, thus creating a cycle.
+     * @return The association to use for testing purpose.
      */
     static DefaultFeatureType twinTownCity(final boolean cyclic) {
         final DefaultAssociationRole twinTown = twinTown(cyclic);
@@ -80,6 +82,7 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
      * @param name     The name as either a {@link String} or a {@link GenericName}.
      * @param parent   A feature type created by {@link DefaultFeatureTypeTest#city()}, or {@code null}.
      * @param property The association to an other feature.
+     * @return The feature type to use for testing purpose.
      */
     private static DefaultFeatureType createType(final Object name,
             final FeatureType parent, final FeatureAssociationRole... property)
@@ -147,29 +150,50 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
         final GenericName nameOfB = DefaultFactories.SIS_NAMES.createTypeName(null, "B");
         final GenericName nameOfC = DefaultFactories.SIS_NAMES.createTypeName(null, "C");
         final GenericName nameOfD = DefaultFactories.SIS_NAMES.createTypeName(null, "D");
-
+        /*
+         * Associations defined only by the FeatureType name.
+         */
         final DefaultAssociationRole toB = new DefaultAssociationRole(singletonMap(NAME_KEY, "toB"), nameOfB, 1, 1);
         final DefaultAssociationRole toC = new DefaultAssociationRole(singletonMap(NAME_KEY, "toC"), nameOfC, 1, 1);
         final DefaultAssociationRole toD = new DefaultAssociationRole(singletonMap(NAME_KEY, "toD"), nameOfD, 1, 1);
-        final DefaultFeatureType   typeA = createType(nameOfA, null, toB);
-        final DefaultFeatureType   typeB = createType(nameOfB, null, toC);
-        final DefaultFeatureType   typeC = createType(nameOfC, null, toD);
-
-        final DefaultAssociationRole toA = new DefaultAssociationRole(singletonMap(NAME_KEY, "toA"), typeA, 1, 1);
-        final DefaultFeatureType typeD = createType(nameOfD, null, toA, toB, toC, toD);
-
+        final DefaultFeatureType typeA = createType(nameOfA, null, toB);
+        final DefaultFeatureType typeB = createType(nameOfB, null, toC);
+        final DefaultFeatureType typeC = createType(nameOfC, null, toD);
+        /*
+         * Association defined with real FeatureType instance, except for an association to itself.
+         * Construction of this FeatureType shall cause the resolution of all above FeatureTypes.
+         */
+        final DefaultAssociationRole toAr = new DefaultAssociationRole(singletonMap(NAME_KEY, "toA"),         typeA, 1, 1);
+        final DefaultAssociationRole toBr = new DefaultAssociationRole(singletonMap(NAME_KEY, toB.getName()), typeB, 1, 1);
+        final DefaultAssociationRole toCr = new DefaultAssociationRole(singletonMap(NAME_KEY, toC.getName()), typeC, 1, 1);
+        final DefaultFeatureType typeD = createType(nameOfD, null, toAr, toBr, toCr, toD);
+        /*
+         * Verify the property given to the constructors. There is no reason for those properties
+         * to change as they are not the instances to be replaced by the name resolutions, but we
+         * verify them as a paranoiac check.
+         */
         assertSame("A.properties", toB, getSingleton(typeA.getProperties(false)));
         assertSame("B.properties", toC, getSingleton(typeB.getProperties(false)));
         assertSame("C.properties", toD, getSingleton(typeC.getProperties(false)));
-        assertSame("D.properties", toA, typeD.getProperty("toA"));
-        assertSame("D.properties", toB, typeD.getProperty("toB"));
-        assertSame("D.properties", toC, typeD.getProperty("toC"));
-        assertSame("D.properties", toD, typeD.getProperty("toD"));
-        assertSame("toA", typeA, toA.getValueType());
-//      assertSame("toB", typeB, toB.getValueType());
-//      assertSame("toC", typeC, toC.getValueType());
-        assertSame("toD", typeD, toD.getValueType());
-
+        assertSame("D.properties", toAr, typeD.getProperty("toA"));
+        assertSame("D.properties", toBr, typeD.getProperty("toB"));
+        assertSame("D.properties", toCr, typeD.getProperty("toC"));
+        assertSame("D.properties", toD,  typeD.getProperty("toD"));
+        /*
+         * CORE OF THIS TEST: verify that the values of toB, toC and toD have been replaced by the actual
+         * FeatureType instances. Also verify that as a result, toB.equals(toBr) and toC.equals(toCr).
+         */
+        assertSame("toA", typeA, toAr.getValueType());
+        assertSame("toB", typeB, toBr.getValueType());
+        assertSame("toB", typeB, toB .getValueType());
+        assertSame("toC", typeC, toCr.getValueType());
+        assertSame("toC", typeC, toC .getValueType());
+        assertSame("toD", typeD, toD .getValueType());
+        assertEquals("toB", toB, toBr);
+        assertEquals("toC", toC, toCr);
+        /*
+         * Other equality tests, mostly for verifying that we do not fall in an infinite loop here.
+         */
         assertFalse("equals", typeA.equals(typeD));
         assertFalse("equals", typeD.equals(typeA));
         assertFalse("equals", typeB.equals(typeC));
