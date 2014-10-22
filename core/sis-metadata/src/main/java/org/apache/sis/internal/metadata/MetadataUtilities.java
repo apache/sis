@@ -34,20 +34,10 @@ import static org.apache.sis.metadata.iso.ISOMetadata.LOGGER;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class MetadataUtilities extends Static {
-    /**
-     * The metadata standard name for ISO 19115-2.
-     */
-    public static final String STANDARD_NAME_2 = "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data";
-
-    /**
-     * The metadata standard version number for ISO 19115-2.
-     */
-    public static final String STANDARD_VERSION_2 = "ISO 19115-2:2009(E)";
-
     /**
      * Do not allow instantiation of this class.
      */

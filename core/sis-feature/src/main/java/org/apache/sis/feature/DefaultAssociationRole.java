@@ -137,8 +137,9 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * The following establishes a bidirectional association between feature types <var>A</var> and <var>B</var>:
      *
      * {@preformat java
-     *   GenericName nameOfA = Names.createTypeName("Feature type A");
-     *   GenericName nameOfB = Names.createTypeName("Feature type B");
+     *   String    namespace = "My model";
+     *   GenericName nameOfA = Names.createTypeName(namespace, ":", "Feature type A");
+     *   GenericName nameOfB = Names.createTypeName(namespace, ":", "Feature type B");
      *   FeatureType typeA = new DefaultFeatureType(nameOfA, false, null,
      *       new DefaultAssociationRole(Names.createLocalName("Association to B"), nameOfB),
      *       // More properties if desired.
