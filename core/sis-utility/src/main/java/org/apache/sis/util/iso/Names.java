@@ -182,7 +182,7 @@ public final class Names extends Static {
      * @param  namespace The namespace, or {@code null} for the global namespace.
      * @param  separator The separator between the namespace and the local part.
      * @param  localPart The name which is locale in the given namespace.
-     * @return A local name in the given namespace.
+     * @return A type name in the given namespace.
      */
     public static TypeName createTypeName(final CharSequence namespace, final String separator, final CharSequence localPart) {
         ensureNonNull("localPart", localPart);

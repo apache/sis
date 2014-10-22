@@ -85,9 +85,9 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
         assertMultilinesEquals(
             "Metadata\n" +
             "  ├─Contact\n" +
-            "  │   ├─Role…………………………………………………………………………………………… Point of contact\n" +
-            "  │   └─Party\n" +
-            "  │       └─Name………………………………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   ├─Party\n" +
+            "  │   │   └─Name………………………………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   └─Role…………………………………………………………………………………………… Point of contact\n" +
             "  ├─Spatial representation info\n" +
             "  │   ├─Number of dimensions………………………………………………… 3\n" +
             "  │   ├─Axis dimension properties (1 of 3)\n" +
@@ -112,14 +112,14 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   │   │   └─Authority\n" +
             "  │   │   │       └─Title………………………………………………………… edu.ucar.unidata\n" +
             "  │   │   └─Cited responsible party\n" +
-            "  │   │       ├─Role……………………………………………………………………… Originator\n" +
-            "  │   │       └─Party\n" +
-            "  │   │           └─Name…………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   │       ├─Party\n" +
+            "  │   │       │   └─Name…………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   │       └─Role……………………………………………………………………… Originator\n" +
             "  │   ├─Abstract………………………………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
             "  │   ├─Point of contact\n" +
-            "  │   │   ├─Role………………………………………………………………………………… Point of contact\n" +
-            "  │   │   └─Party\n" +
-            "  │   │       └─Name……………………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   │   ├─Party\n" +
+            "  │   │   │   └─Name……………………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   │   └─Role………………………………………………………………………………… Point of contact\n" +
             "  │   ├─Descriptive keywords\n" +
             "  │   │   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
             "  │   │   ├─Type………………………………………………………………………………… Theme\n" +
@@ -150,9 +150,11 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  ├─Metadata scope\n" +
             "  │   └─Resource scope………………………………………………………………… Dataset\n" +
             "  ├─Metadata identifier\n" +
-            "  │   └─Code…………………………………………………………………………………………… edu.ucar.unidata:NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
+            "  │   ├─Code…………………………………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
+            "  │   └─Authority\n" +
+            "  │       └─Title……………………………………………………………………………… edu.ucar.unidata\n" +
             "  └─Metadata standard\n" +
-            "      ├─Title………………………………………………………………………………………… ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data\n" +
+            "      ├─Title………………………………………………………………………………………… ISO 19115-2 Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
             "      └─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n", text);
     }
 }

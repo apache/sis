@@ -171,9 +171,9 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**
      * Emit a warning about extraneous ignored values.
      *
-     * @param  valueClass    The value class, used in case of warning only.
-     * @param  callerClass   The caller class, used in case of warning only.
-     * @param  callerMethod  The caller method, used in case of warning only.
+     * @param  valueClass    The value class (usually a GeoAPI interface).
+     * @param  callerClass   The caller class (usually an Apache SIS implementation of a GeoAPI interface).
+     * @param  callerMethod  The caller method (usually the name of a getter method).
      */
     public static void warnIgnoredExtraneous(final Class<?> valueClass,
             final Class<?> callerClass, final String callerMethod)
