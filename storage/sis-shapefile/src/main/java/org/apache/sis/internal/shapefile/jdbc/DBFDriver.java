@@ -16,10 +16,14 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
-import java.io.*;
 import java.sql.*;
-import java.util.*;
-import java.util.logging.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.logging.Logger;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.system.Modules;
+
 
 /**
  * Database driver for DBF 3.
@@ -31,48 +35,82 @@ import java.util.logging.*;
  */
 public class DBFDriver extends AbstractJDBC implements Driver {
     /**
-     * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
+     * Creates a new driver.
      */
-    @Override
-    public Connection connect(String url, @SuppressWarnings("unused") Properties info) throws SQLException {
-        return new DBFConnection(new File(url));
+    public DBFDriver() {
     }
 
     /**
-     * @see java.sql.Driver#acceptsURL(java.lang.String)
+     * Returns the JDBC interface implemented by this class.
+     * This is used for formatting error messages.
      */
     @Override
-    public boolean acceptsURL(@SuppressWarnings("unused") String url) {
-        return true;
+    final Class<?> getInterface() {
+        return Driver.class;
     }
 
     /**
-     * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
+     * Attempts to make a database connection to the given filename.
+     *
+     * @param  url  The path to a {@code .dbf} file.
+     * @param  info Ignored in current implementation.
+     * @return A connection to the given DBF file.
+     * @throws SQLException if this method can not create a connection to the given file.
      */
     @Override
-    public DriverPropertyInfo[] getPropertyInfo(@SuppressWarnings("unused") String url, @SuppressWarnings("unused") Properties info) {
-        return new DriverPropertyInfo[]{};
+    public Connection connect(final String url, @SuppressWarnings("unused") Properties info) throws SQLException {
+        ArgumentChecks.ensureNonNull("url", url);
+        try {
+            return new DBFConnection(new File(url));
+        } catch (IOException e) {
+            throw new SQLNonTransientConnectionException(Resources.format(
+                    Resources.Keys.InvalidDBFFormatDescriptor_2, url, e.getLocalizedMessage()));
+        }
     }
 
     /**
-     * @see java.sql.Driver#getMajorVersion()
+     * Returns {@code true} if this driver thinks that it can open the given URL.
+     */
+    @Override
+    public boolean acceptsURL(final String url) {
+        if (!url.endsWith(".dbf")) {
+            return false;
+        }
+        final File datafile = new File(url);
+        return datafile.isFile(); // Future version should check for magic number.
+    }
+
+    /**
+     * Gets information about the possible properties for this driver.
+     * The current version has none.
+     */
+    @Override
+    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) {
+        return new DriverPropertyInfo[0];
+    }
+
+    /**
+     * The major version number of this driver.
+     * This is set to the Apache SIS version.
      */
     @Override
     public int getMajorVersion() {
-        return 0;
+        return Modules.MAJOR_VERSION;
     }
 
     /**
-     * @see java.sql.Driver#getMinorVersion()
+     * The minor version number of this driver.
+     * This is set to the Apache SIS version.
      */
     @Override
     public int getMinorVersion() {
-        return 1;
+        return Modules.MINOR_VERSION;
     }
 
     /**
-     * This driver is currently not compliant. It has to succeed these tests first : <a href="http://www.oracle.com/technetwork/java/jdbctestsuite-1-3-1-140675.html">Compliance tests</a>
-     * @see java.sql.Driver#jdbcCompliant()
+     * This driver is currently not compliant.
+     * It has to succeed these tests first:
+     * <a href="http://www.oracle.com/technetwork/java/jdbctestsuite-1-3-1-140675.html">Compliance tests</a>.
      */
     @Override
     public boolean jdbcCompliant() {
@@ -80,10 +118,10 @@ public class DBFDriver extends AbstractJDBC implements Driver {
     }
 
     /**
-     * @see java.sql.Driver#getParentLogger()
+     * The logger used by this driver.
      */
     @Override
     public Logger getParentLogger() {
-        return getLogger();
+        return LOGGER;
     }
 }

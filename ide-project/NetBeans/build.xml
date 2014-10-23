@@ -36,6 +36,9 @@
       <fileset dir="${project.root}/core/sis-utility/target/generated-resources/org/apache/sis/util/resources">
         <include name="*.utf"/>
       </fileset>
+      <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources/org/apache/sis/internal/shapefile/jdbc">
+        <include name="*.utf"/>
+      </fileset>
     </copy>
 
     <!-- Following are classical properties resources files. -->
