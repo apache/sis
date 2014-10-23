@@ -165,6 +165,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DeadThread_1 = 15;
 
         /**
+         * The “{0}” file points to a directory instead of a regular file.
+         */
+        public static final short DirectoryNotExpected_1 = 165;
+
+        /**
          * Element “{0}” is duplicated.
          */
         public static final short DuplicatedElement_1 = 16;
@@ -228,6 +233,11 @@ public final class Errors extends IndexedResourceBundle {
          * The character string is too long.
          */
         public static final short ExcessiveStringSize = 153;
+
+        /**
+         * File “{0}” has not been found.
+         */
+        public static final short FileNotFound_1 = 166;
 
         /**
          * Attribute “{0}” is not allowed for an object of type ‘{1}’.
