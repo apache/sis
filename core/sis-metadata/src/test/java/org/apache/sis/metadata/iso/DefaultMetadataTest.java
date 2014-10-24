@@ -260,8 +260,9 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
          */
         it.remove();
         assertFalse(it.hasNext());
-        final DefaultMetadataScope c = new DefaultMetadataScope(levels[1] = ScopeCode.ATTRIBUTE_TYPE);
-        c.setName(new SimpleInternationalString(names[1] = "Clearance"));
+        final DefaultMetadataScope c = new DefaultMetadataScope(
+                levels[1] = ScopeCode.ATTRIBUTE_TYPE,
+                names [1] = "Clearance");
         assertTrue(scopes.add(c));
         assertArrayEquals("hierarchyLevelNames", names,  metadata.getHierarchyLevelNames().toArray());
         assertArrayEquals("hierarchyLevels",     levels, metadata.getHierarchyLevels().toArray());
