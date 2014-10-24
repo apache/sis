@@ -16,109 +16,92 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
-import org.apache.sis.storage.shapefile.Database;
-import static java.util.logging.Level.*;
-
-import java.io.*;
 import java.sql.*;
-import java.util.*;
-import java.util.logging.*;
+import java.io.File;
+import java.io.IOException;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.storage.shapefile.Database;
 
 
 /**
- * DBF Connection.
+ * Connection to a DBF database.
  *
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
  * @module
  */
-public class DBFConnection extends AbstractConnection {
-    /** Database file. */
-    private File m_dataFile;
-
-    /** Database file. */
-    private Database m_database;
+final class DBFConnection extends AbstractConnection {
+    /**
+     * The object to use for reading the database content.
+     */
+    final Database database;
 
     /**
-     * Return the binary representation of the database.
-     * @return Database.
+     * Constructs a connection to the given database.
+     *
+     * @param  datafile Data file ({@code .dbf} extension).
+     * @throws IOException if the given file is invalid.
      */
-    public Database getDatabase() {
-        return m_database;
-    }
-
-    /**
-     * Return the data part file of this Dbase.
-     * @return *.dbf part of the database.
-     */
-    public File getDataFile() {
-        return m_dataFile;
-    }
-
-    /**
-     * Construct a connection.
-     * @param datafile Data file (.dbf extension).
-     * @throws SQLException if the given file is invalid.
-     */
-    DBFConnection(File datafile) throws SQLException {
-        Objects.requireNonNull(datafile, "the database file to connect to cannot be null.");
-
+    DBFConnection(final File datafile) throws SQLException, IOException {
         // Check that file exists.
-        if (datafile.exists() == false)
-            throw(new SQLException(format(SEVERE, "excp.file_not_found", datafile.getAbsolutePath())));
-
-        // Check that its not a directory.
-        if (datafile.isDirectory())
-            throw(new SQLException(format(SEVERE, "excp.directory_not_expected", datafile.getAbsolutePath())));
-
-        m_dataFile = datafile;
-
-        try {
-            m_database = new Database(m_dataFile.getAbsolutePath());
-            m_database.loadDescriptor();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Bug : File existence has been checked before.");
-        } catch(IOException e) {
-            String message = format(Level.SEVERE, "excp.invalid_dbf_format_descriptor", datafile.getAbsolutePath(), e.getMessage());
-            throw new InvalidDbaseFileFormatException(message);
+        if (!datafile.exists()) {
+            throw new SQLException(Errors.format(Errors.Keys.FileNotFound_1, datafile.getAbsolutePath()));
         }
+        // Check that its not a directory.
+        if (datafile.isDirectory()) {
+            throw new SQLException(Errors.format(Errors.Keys.DirectoryNotExpected_1, datafile.getAbsolutePath()));
+        }
+        database = new Database(datafile.getAbsolutePath());
+        database.loadDescriptor();
     }
 
     /**
-     * @see java.sql.Connection#createStatement()
+     * Creates an object for sending SQL statements to the database.
      */
     @Override
-    public Statement createStatement() {
+    public Statement createStatement() throws SQLException {
+        assertNotClosed();
         return new DBFStatement(this);
     }
 
     /**
-     * @see java.sql.Connection#close()
+     * Closes the connection to the database.
      */
     @Override
     public void close() throws SQLException {
         try {
-            m_database.close();
-        } catch(IOException e) {
-            throw new SQLException(e.getMessage(), e);
+            database.close();
+        } catch (IOException e) {
+            throw new SQLException(e.getLocalizedMessage(), e);
         }
     }
 
     /**
-     * @see java.sql.Connection#isClosed()
+     * Returns {@code true} if this connection has been closed.
      */
     @Override
     public boolean isClosed() {
-        return m_database.isClosed();
+        return database.isClosed();
     }
 
     /**
-     * @see java.sql.Connection#isValid(int)
+     * Asserts that the connection is opened.
+     *
+     * @throws SQLException if the connection is closed.
+     */
+    final void assertNotClosed() throws SQLException {
+        if (isClosed()) {
+            throw new SQLNonTransientException(Resources.format(Resources.Keys.ClosedConnection));
+        }
+    }
+
+    /**
+     * Returns {@code true} if the connection has not been closed and is still valid.
+     * The timeout parameter is ignored and this method bases itself only on {@link #isClosed()} state.
      */
     @Override
     public boolean isValid(@SuppressWarnings("unused") int timeout) {
-        this.getLogger().log(WARNING, "Connection.isValid(..) timeout parameter is ignored and the function bases itself only on isClosed state.");
-        return isClosed() == false;
+        return !isClosed();
     }
 }

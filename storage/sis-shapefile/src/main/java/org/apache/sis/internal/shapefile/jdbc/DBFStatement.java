@@ -16,10 +16,9 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
-import static java.util.logging.Level.*;
-
 import java.sql.*;
-import java.util.*;
+import org.apache.sis.util.ArgumentChecks;
+
 
 /**
  * DBF Statement.
@@ -29,88 +28,91 @@ import java.util.*;
  * @since   0.5
  * @module
  */
-public class DBFStatement extends AbstractStatement {
-    /** Connection this statement is relying on. */
-    private DBFConnection m_parentConnection;
-
-    /** Indicate if the statement is currently closed. */
-    boolean m_closed;
+final class DBFStatement extends AbstractStatement {
+    /**
+     * Connection this statement is relying on.
+     */
+    final DBFConnection connection;
 
     /**
-     * Create a statement.
+     * The current result set, or {@code null} if none.
+     */
+    private DBFResultSet resultSet;
+
+    /**
+     * Indicates if the statement is currently closed.
+     */
+    private boolean isClosed;
+
+    /**
+     * Constructs a statement.
+     *
      * @param connection Connection associated to this statement.
      */
-    DBFStatement(DBFConnection connection) {
-        Objects.requireNonNull(connection, "The parent Connection of the ResulSet cannot be null.");
-
-        m_parentConnection = connection;
-        m_closed = false;
+    DBFStatement(final DBFConnection connection) {
+        this.connection = connection;
     }
 
     /**
-     * @see java.sql.Statement#executeQuery(java.lang.String)
+     * Returns the connection.
      */
     @Override
-    public ResultSet executeQuery(String sql) throws SQLException {
-        Objects.requireNonNull(sql, "The SQL query for executeQuery cannot be null.");
-
+    public Connection getConnection() throws SQLException {
         assertNotClosed();
-        return new DBFResultSet(this);
+        return connection;
     }
 
     /**
-     * @see java.sql.Statement#close()
+     * Executes the given SQL statement.
      */
     @Override
-    public void close() {
-        m_closed = true;
+    public ResultSet executeQuery(final String sql) throws SQLException {
+        ArgumentChecks.ensureNonNull("sql", sql);
+        assertNotClosed();
+        if (resultSet != null) {
+            resultSet.close();
+        }
+        return resultSet = new DBFResultSet(this);
     }
 
     /**
-     * @see java.sql.Statement#execute(java.lang.String)
-     */
-    @Override
-    public boolean execute(String sql) throws SQLException {
-        Objects.requireNonNull(sql, "The SQL query for execute cannot be null.");
-        return false;
-    }
-
-    /**
-     * @see java.sql.Statement#getResultSet()
+     * Returns the result set created by the last call to {@link #executeQuery(String)}.
      */
     @Override
     public ResultSet getResultSet() throws SQLException {
         assertNotClosed();
-        return new DBFResultSet(this);
+        return resultSet;
     }
 
-
     /**
-     * @see java.sql.Statement#getConnection()
+     * Closes this statement.
      */
     @Override
-    public Connection getConnection() throws SQLException {
-        if (m_parentConnection.isClosed())
-            throw new SQLException(this.format(SEVERE, "excp.closed_connection"));
-        else
-            return m_parentConnection;
+    public void close() {
+        if (resultSet != null) {
+            resultSet.close();
+        }
+        isClosed = true;
     }
 
     /**
-     * @see java.sql.Statement#isClosed()
+     * Returns {@code true} if this statement has been closed
+     * or if the underlying connection is closed.
      */
     @Override
     public boolean isClosed() {
-        assert(m_parentConnection != null);
-        return m_parentConnection.isClosed() || m_closed;
+        return isClosed || connection.isClosed();
     }
 
     /**
      * Asserts that the connection and the statement are together opened.
+     *
      * @throws SQLException if one of them is closed.
      */
-    private void assertNotClosed() throws SQLException {
-        if (isClosed())
-            throw new SQLException(this.format(SEVERE, "excp.closed_connection"));
+    final void assertNotClosed() throws SQLException {
+        connection.assertNotClosed();
+        if (isClosed) {
+            throw new SQLNonTransientException(Resources.format(Resources.Keys.ClosedStatement));
+        }
     }
 }
