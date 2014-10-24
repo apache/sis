@@ -24,7 +24,7 @@ import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.internal.jaxb.Schemas;
@@ -86,7 +86,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     @Test
     public void testDefaultURL() throws JAXBException {
         final String expected = getResponsiblePartyXML(Schemas.METADATA_ROOT);
-        final ResponsibleParty rp = (ResponsibleParty) XML.unmarshal(expected);
+        final Responsibility rp = (Responsibility) XML.unmarshal(expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());
         /*
          * Use the convenience method in order to avoid the effort of creating
@@ -104,7 +104,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     @Test
     public void testISO_URL() throws JAXBException {
         final String expected = getResponsiblePartyXML(Schemas.ISO_19139_ROOT);
-        final ResponsibleParty rp = (ResponsibleParty) XML.unmarshal(expected);
+        final Responsibility rp = (Responsibility) XML.unmarshal(expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());
 
         final MarshallerPool pool = getMarshallerPool();

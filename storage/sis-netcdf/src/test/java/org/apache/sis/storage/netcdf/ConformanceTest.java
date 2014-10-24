@@ -17,8 +17,6 @@
 package org.apache.sis.storage.netcdf;
 
 import java.util.Map;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.io.IOException;
 import ucar.nc2.NetcdfFile;
 import org.opengis.metadata.Metadata;
@@ -27,6 +25,7 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.wrapper.netcdf.NetcdfMetadataTest;
+import org.apache.sis.metadata.iso.DefaultMetadataScope;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.TestCase;
@@ -111,8 +110,11 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
         assertNull(expected.put("identificationInfo.citation.identifier.code", "crm_v1"));
         assertNull(expected.put("contentInfo.dimension.sequenceIdentifier",    "z"));
         super.testTHREDDS();
-        assertEquals("hierarchyLevel", new HashSet<>(Arrays.asList(ScopeCode.DATASET, ScopeCode.SERVICE)),
-                new HashSet<>(metadata.getHierarchyLevels()));
+        assertArrayEquals("metadataScopes", new DefaultMetadataScope[] {
+                new DefaultMetadataScope(ScopeCode.DATASET, null),
+                new DefaultMetadataScope(ScopeCode.SERVICE, "http://localhost:8080//thredds/wms/crm/crm_vol9.nc"),
+                new DefaultMetadataScope(ScopeCode.SERVICE, "http://localhost:8080//thredds/wcs/crm/crm_vol9.nc")},
+                metadata.getMetadataScopes().toArray());
         /*
          * In the SIS case, the Metadata/Contact and Metadata/Identification/PointOfContact
          * proprties are not just equals - they are expected to be the exact same instance.
@@ -138,7 +140,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     public void testNCEP() throws IOException {
         addCommonProperties(expectedProperties, true);
         super.testNCEP();
-        assertSame("hierarchyLevel", ScopeCode.DATASET, getSingleton(metadata.getHierarchyLevels()));
+        assertSame("metadataScope", ScopeCode.DATASET, getSingleton(metadata.getMetadataScopes()).getResourceScope());
         /*
          * In the SIS case, the Metadata/Contact and Metadata/Identification/PointOfContact
          * proprties are not just equals - they are expected to be the exact same instance.
@@ -166,7 +168,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     public void testLandsat() throws IOException {
         addCommonProperties(expectedProperties, false);
         super.testLandsat();
-        assertSame("hierarchyLevel", ScopeCode.DATASET, getSingleton(metadata.getHierarchyLevels()));
+        assertSame("metadataScope", ScopeCode.DATASET, getSingleton(metadata.getMetadataScopes()).getResourceScope());
 
         assertEmpty(expectedProperties);
         assertEmpty(actualProperties);
@@ -183,7 +185,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
         final Map<String,Object> expected = expectedProperties;
         addCommonProperties(expected, true);
         super.testCIP();
-        assertSame("hierarchyLevel", ScopeCode.DATASET, getSingleton(metadata.getHierarchyLevels()));
+        assertSame("metadataScope", ScopeCode.DATASET, getSingleton(metadata.getMetadataScopes()).getResourceScope());
         /*
          * In the SIS case, the Metadata/Contact and Metadata/Identification/PointOfContact
          * proprties are not just equals - they are expected to be the exact same instance.

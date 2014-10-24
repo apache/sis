@@ -659,7 +659,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         return new MetadataScopeAdapter<ScopeCode>(getMetadataScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected MetadataScope wrap(final ScopeCode value) {
-                return new DefaultMetadataScope(value);
+                return new DefaultMetadataScope(value, null);
             }
 
             /** Extracts the legacy value from the new kind of value. */
@@ -683,8 +683,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new hierarchy levels.
      *
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
-     *   followed by {@link DefaultMetadataScope#setResourceScope(ScopeCode)}.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataScopes(Collection)}
+     *   and {@link DefaultMetadataScope#setResourceScope(ScopeCode)}.
      */
     @Deprecated
     public final void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
@@ -707,9 +707,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         return new MetadataScopeAdapter<String>(getMetadataScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected MetadataScope wrap(final String value) {
-                final DefaultMetadataScope scope = new DefaultMetadataScope();
-                scope.setName(new SimpleInternationalString(value));
-                return scope;
+                return new DefaultMetadataScope(null, value);
             }
 
             /** Extracts the legacy value from the new kind of value. */
@@ -734,8 +732,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new hierarchy level names.
      *
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
-     *   followed by {@link DefaultMetadataScope#setName(InternationalString)}.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataScopes(Collection)}
+     *   and {@link DefaultMetadataScope#setName(InternationalString)}.
      */
     @Deprecated
     public final void setHierarchyLevelNames(final Collection<? extends String> newValues) {

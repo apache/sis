@@ -19,6 +19,7 @@ package org.apache.sis.test.mock;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Collection;
+import java.util.Collections;
 import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -102,12 +103,13 @@ public final strictfp class MetadataMock implements Metadata {
     }
 
     /**
-     * Undefined property.
-     * @return {@code null}.
+     * Returns {@link #language} in a singleton set or an empty set.
+     *
+     * @return {@link #language}
      */
     @Override
     public Collection<Locale> getLanguages() {
-        return null;
+        return (language != null) ? Collections.singleton(language) : Collections.emptySet();
     }
 
     /**

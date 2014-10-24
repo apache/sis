@@ -20,6 +20,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
+import java.io.StringWriter;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import javax.measure.unit.SI;
@@ -50,11 +52,12 @@ import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.XMLComparator;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -96,20 +99,23 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
 
     /**
      * Programmatically creates the metadata to marshall, or to compare against the unmarshalled metadata.
+     *
+     * @return The hard-coded representation of {@code "Metadata.xml"} content.
      */
     private DefaultMetadata createHardCoded() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setFileIdentifier("Apache SIS/Metadata test");
-        metadata.setLanguage(Locale.ENGLISH);
-        metadata.setCharacterSet(StandardCharsets.UTF_8);
-        metadata.setHierarchyLevels(singleton(ScopeCode.DATASET));
-        metadata.setHierarchyLevelNames(singleton("Common Data Index record"));
-        metadata.setDateStamp(TestUtilities.date("2009-01-01 04:00:00"));
+        metadata.setMetadataIdentifier(new DefaultIdentifier("Apache SIS/Metadata test"));
+        metadata.setLanguages(singleton(Locale.ENGLISH));
+        metadata.setCharacterSets(singleton(StandardCharsets.UTF_8));
+        metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, "Common Data Index record")));
+        metadata.setDates(singleton(new DefaultCitationDate(TestUtilities.date("2009-01-01 04:00:00"), DateType.CREATION)));
         /*
-         * Contact information for the author. The same party will be used
-         * for custodian and distributor, with only the role changed.
+         * Contact information for the author. The same party will be used for custodian and distributor,
+         * with only the role changed. Note that we need to create an instance of the deprecated class,
+         * because this is what will be unmarshalled from the XML document.
          */
-        final DefaultResponsibleParty author = new DefaultResponsibleParty(Role.AUTHOR);
+        @SuppressWarnings("deprecation")
+        final DefaultResponsibility author = new DefaultResponsibleParty(Role.AUTHOR);
         final Anchor country = new Anchor(URI.create("SDN:C320:2:FR"), "France"); // Non-public SIS class.
         {
             final DefaultOnlineResource online = new DefaultOnlineResource(URI.create("http://www.ifremer.fr/sismer/"));
@@ -141,7 +147,8 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
                     new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION),
                     new DefaultCitationDate(TestUtilities.date("1979-08-02 22:00:00"), DateType.CREATION)));
             {
-                final DefaultResponsibleParty originator = new DefaultResponsibleParty(Role.ORIGINATOR);
+                @SuppressWarnings("deprecation")
+                final DefaultResponsibility originator = new DefaultResponsibleParty(Role.ORIGINATOR);
                 final DefaultOnlineResource online = new DefaultOnlineResource(URI.create("http://www.com.univ-mrs.fr/LOB/"));
                 online.setProtocol("http");
                 final DefaultContact contact = new DefaultContact(online);
@@ -166,7 +173,8 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
                     Locale.ENGLISH,             // Language,
                     TopicCategory.OCEANS);      // Topic category
             {
-                final DefaultResponsibleParty custodian = new DefaultResponsibleParty(author);
+                @SuppressWarnings("deprecation")
+                final DefaultResponsibility custodian = new DefaultResponsibleParty(author);
                 custodian.setRole(Role.CUSTODIAN);
                 identification.setPointOfContacts(singleton(custodian));
             }
@@ -205,14 +213,15 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
              * Data indentification / Aggregate information.
              */
             {
-                final DefaultAggregateInformation aggregateInfo = new DefaultAggregateInformation();
+                @SuppressWarnings("deprecation")
+                final DefaultAssociatedResource aggregateInfo = new DefaultAggregateInformation();
                 final DefaultCitation name = new DefaultCitation("MEDIPROD VI");
                 name.setAlternateTitles(singleton(new SimpleInternationalString("90008411")));
                 name.setDates(singleton(new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION)));
-                aggregateInfo.setAggregateDataSetName(name);
+                aggregateInfo.setName(name);
                 aggregateInfo.setInitiativeType(InitiativeType.CAMPAIGN);
                 aggregateInfo.setAssociationType(AssociationType.LARGER_WORD_CITATION);
-                identification.setAggregationInfo(singleton(aggregateInfo));
+                identification.setAssociatedResources(singleton(aggregateInfo));
             }
             /*
              * Data indentification / Extent.
@@ -291,8 +300,9 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
          * Distribution information.
          */
         {
+            @SuppressWarnings("deprecation")
+            final DefaultResponsibility distributor = new DefaultResponsibleParty(author);
             final DefaultDistribution distributionInfo = new DefaultDistribution();
-            DefaultResponsibleParty distributor = new DefaultResponsibleParty(author);
             distributor.setRole(Role.DISTRIBUTOR);
             distributionInfo.setDistributors(singleton(new DefaultDistributor(distributor)));
             distributionInfo.setDistributionFormats(singleton(
@@ -313,6 +323,8 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
 
     /**
      * Returns the URL to the {@code "Metadata.xml"} file to use for this test.
+     *
+     * @return The URL to {@code "Metadata.xml"} test file.
      */
     private URL getResource() {
         return DefaultMetadataTest.class.getResource("Metadata.xml");
@@ -321,13 +333,52 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
     /**
      * Tests marshalling of a XML document.
      *
-     * @throws JAXBException If an error occurred during marshalling.
+     * @throws Exception If an error occurred during marshalling.
      */
     @Test
-    @Ignore("Need to investigate why anchors are lost at marshalling time.")
-    public void testMarshalling() throws JAXBException {
-        final String xml = marshal(createHardCoded());
-        assertXmlEquals(getResource(), xml, "xmlns:*", "xsi:schemaLocation");
+    public void testMarshalling() throws Exception {
+        final MarshallerPool pool   = getMarshallerPool();
+        final Marshaller     ms     = pool.acquireMarshaller();
+        final StringWriter   writer = new StringWriter(25000);
+        ms.marshal(createHardCoded(), writer);
+        pool.recycle(ms);
+        /*
+         * Apache SIS can marshal CharSequence as Anchor only if the property type is InternationalString.
+         * But the 'Metadata.hierarchyLevelName' and 'Identifier.code' properties are String, which we can
+         * not subclass. Concequently SIS currently marshals them as plain string. Replace those strings
+         * by the anchor version so we can compare the XML with the "Metadata.xml" file content.
+         */
+        final StringBuffer xml = writer.getBuffer();
+        replace(xml, "<gco:CharacterString>Common Data Index record</gco:CharacterString>",
+                     "<gmx:Anchor xlink:href=\"SDN:L231:3:CDI\">Common Data Index record</gmx:Anchor>");
+        replace(xml, "<gco:CharacterString>EPSG:4326</gco:CharacterString>",
+                     "<gmx:Anchor xlink:href=\"SDN:L101:2:4326\">EPSG:4326</gmx:Anchor>");
+        /*
+         * The <gmd:EX_TemporalExtent> block can not be marshalled yet, since it requires the sis-temporal module.
+         * We need to instruct the XML comparator to ignore this block during the comparison. We also ignore for
+         * now the "gml:id" attribute since SIS generates different values than the ones in oyr test XML file,
+         * and those values may change in future SIS version.
+         */
+        final XMLComparator comparator = new XMLComparator(getResource(), xml.toString());
+        comparator.ignoredNodes.add(Namespaces.GMD + ":temporalElement");
+        comparator.ignoredAttributes.add("http://www.w3.org/2000/xmlns:*");
+        comparator.ignoredAttributes.add(Namespaces.XSI + ":schemaLocation");
+        comparator.ignoredAttributes.add(Namespaces.GML + ":id");
+        comparator.ignoreComments = true;
+        comparator.compare();
+    }
+
+    /**
+     * Replaces the first occurrence of the given string by an other one.
+     *
+     * @param buffer    The buffer in which to perform the replacement.
+     * @param toSearch  The string to search.
+     * @param replaceBy The value to use as a replacement.
+     */
+    private static void replace(final StringBuffer buffer, final String toSearch, final String replaceBy) {
+        final int i = buffer.indexOf(toSearch);
+        assertTrue("String to replace not found.", i >= 0);
+        buffer.replace(i, i+toSearch.length(), replaceBy);
     }
 
     /**
