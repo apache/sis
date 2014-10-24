@@ -249,7 +249,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Sets the type of information represented by the cell value.
-     * This method stores the value in the {@linkplain #getAttributeGroups() attribute groups}.
+     * This method stores the value in the first writable {@linkplain #getAttributeGroups() attribute groups}.
      *
      * @param newValue The new content type.
      *
@@ -273,7 +273,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the information on the dimensions of the cell measurement value.
-     * This method fetches the values from the {@linkplain #getAttributeGroups() attribute groups}.
+     * This method fetches the values from the first {@linkplain #getAttributeGroups() attribute groups}.
      *
      * @return Dimensions of the cell measurement value.
      *

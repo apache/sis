@@ -303,6 +303,7 @@ public strictfp class XMLComparator {
     protected void compareNode(final Node expected, final Node actual) {
         if (expected == null || actual == null) {
             fail(formatErrorMessage(expected, actual));
+            return;
         }
         /*
          * Check text value for types:
@@ -469,6 +470,7 @@ public strictfp class XMLComparator {
      * @param expected The node having the expected attributes.
      * @param actual The node to compare.
      */
+    @SuppressWarnings("null")
     protected void compareAttributes(final Node expected, final Node actual) {
         final NamedNodeMap expectedAttributes = expected.getAttributes();
         final NamedNodeMap actualAttributes   = actual.getAttributes();
@@ -551,7 +553,8 @@ public strictfp class XMLComparator {
                  * Check if the fully qualified attribute name is one of the attributes to ignore.
                  * Typical example: "http://www.w3.org/2001/XMLSchema-instance:schemaLocation"
                  */
-                if (ignored.contains(buffer.append(':').append(name).toString())) {
+                buffer.append(':').append(name, name.indexOf(':') + 1, name.length());
+                if (ignored.contains(buffer.toString())) {
                     return true;
                 }
                 /*
@@ -747,6 +750,7 @@ public strictfp class XMLComparator {
      * @param node          The node to format.
      * @param lineSeparator The platform-specific line separator.
      */
+    @SuppressWarnings("null")
     private static void formatNode(final StringBuilder buffer, final Node node, final String lineSeparator) {
         if (node == null) {
             buffer.append("(no node)").append(lineSeparator);

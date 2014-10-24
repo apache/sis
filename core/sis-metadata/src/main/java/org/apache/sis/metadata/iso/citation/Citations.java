@@ -41,6 +41,10 @@ import org.apache.sis.util.CharSequences;
  * @module
  */
 public final class Citations extends Static {
+    /*
+     * NOTE: other constants are defined in org.apache.sis.internal.metadata.Standards.
+     */
+
     /**
      * The <a href="http://www.iso.org/">International Organization for Standardization</a>.
      *
@@ -161,7 +165,7 @@ public final class Citations extends Static {
     /**
      * List of citations declared in this class.
      */
-    private static final Citation[] AUTHORITIES = {
+    private static final Citation[] CITATIONS = {
         ISO, OGC, OGP, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, EPSG, ISBN, ISSN
     };
 
@@ -189,7 +193,7 @@ public final class Citations extends Static {
         if (title == null || ((title = CharSequences.trimWhitespaces(title)).isEmpty())) {
             return null;
         }
-        for (final Citation citation : AUTHORITIES) {
+        for (final Citation citation : CITATIONS) {
             if (titleMatches(citation, title)) {
                 return citation;
             }

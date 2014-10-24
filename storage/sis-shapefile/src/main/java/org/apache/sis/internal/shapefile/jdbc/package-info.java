@@ -14,27 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.shapefile;
-
-import java.io.IOException;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 
 /**
- * Unit test for simple App.
+ * Allows access to {@link org.apache.sis.storage.shapefile} storage through JDBC driver.
  *
- * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
+ * @author  Marc Le Bihan
+ * @version 0.5
+ * @since   0.5
  * @module
  */
-public final strictfp class CmdLineDriverTest extends TestCase {
-
-    @Test
-    public void testApp() throws IOException {
-        assertTrue( true );
-    }
-}
+package org.apache.sis.internal.shapefile.jdbc;

@@ -63,7 +63,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
      * Creates a feature for twin towns.
      */
     static AbstractFeature twinTown(final boolean isSparse) {
-        final DefaultFeatureType twinTown = DefaultAssociationRoleTest.twinTownCity();
+        final DefaultFeatureType twinTown = DefaultAssociationRoleTest.twinTownCity(false);
 
         final AbstractFeature leMans = isSparse ? new SparseFeature(twinTown) : new DenseFeature(twinTown);
         leMans.setPropertyValue("city", "Le Mans");
