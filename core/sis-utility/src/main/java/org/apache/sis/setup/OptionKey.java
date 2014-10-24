@@ -122,7 +122,7 @@ public class OptionKey<T> implements Serializable {
      *   <tr><td>{@code "READ"}</td>   <td>Open for reading data from the storage object.</td></tr>
      *   <tr><td>{@code "WRITE"}</td>  <td>Open for modifying existing data in the storage object.</td></tr>
      *   <tr><td>{@code "APPEND"}</td> <td>Open for appending new data in the storage object.</td></tr>
-     *   <tr><td>{@link "CREATE"}</td> <td>Creates a new storage object (file or database) if it does not exist.</td></tr>
+     *   <tr><td>{@code "CREATE"}</td> <td>Creates a new storage object (file or database) if it does not exist.</td></tr>
      * </table>
      *
      * {@section Differences between the JDK6 and JDK7 branches of SIS}
