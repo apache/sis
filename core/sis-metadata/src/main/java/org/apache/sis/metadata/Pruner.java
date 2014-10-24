@@ -57,8 +57,14 @@ final class Pruner {
      * Returns the metadata properties. When used for pruning empty values, the map needs to
      * include empty (but non-null) values in order to allow us to set them to {@code null}.
      */
-    private static Map<String, Object> asMap(final MetadataStandard standard, final Object metadata, final boolean prune) {
-        return standard.asValueMap(metadata, KeyNamePolicy.JAVABEANS_PROPERTY, prune ? NON_NULL : NON_EMPTY);
+    private static Map<String, Object> asMap(final MetadataStandard standard, final Object metadata,
+            final boolean mandatory, final boolean prune)
+    {
+        final PropertyAccessor accessor = standard.getAccessor(metadata.getClass(), mandatory);
+        if (accessor != null) {
+            return new ValueMap(metadata, accessor, KeyNamePolicy.JAVABEANS_PROPERTY, prune ? NON_NULL : NON_EMPTY);
+        }
+        return null;
     }
 
     /**
@@ -78,12 +84,16 @@ final class Pruner {
      * It creates a map of visited nodes when the iteration begin, and deletes that map when the
      * iteration ends.</p>
      *
-     * @param  metadata The metadata object.
-     * @param  prune {@code true} for deleting empty entries.
+     * @param  metadata  The metadata object.
+     * @param  mandatory {@code true} if we shall throw an exception if {@code metadata} is not of the expected class.
+     * @param  prune     {@code true} for deleting empty entries.
      * @return {@code true} if all metadata properties are null or empty.
      */
-    static boolean isEmpty(final AbstractMetadata metadata, final boolean prune) {
-        final Map<String,Object> properties = asMap(metadata.getStandard(), metadata, prune);
+    static boolean isEmpty(final AbstractMetadata metadata, final boolean mandatory, final boolean prune) {
+        final Map<String,Object> properties = asMap(metadata.getStandard(), metadata, mandatory, prune);
+        if (properties == null) {
+            return false; // For metadata of unknown class, conservatively assume non-empty.
+        }
         final Map<Object,Boolean> tested = MAPS.get();
         if (!tested.isEmpty()) {
             return isEmpty(properties, tested, prune);
@@ -165,7 +175,7 @@ final class Pruner {
                         } else if (!(element instanceof Enumerated)) {
                             final MetadataStandard standard = MetadataStandard.forClass(element.getClass());
                             if (standard != null) {
-                                isEmptyElement = isEmpty(asMap(standard, element, prune), tested, prune);
+                                isEmptyElement = isEmpty(asMap(standard, element, false, prune), tested, prune);
                                 if (!isEmptyElement && element instanceof Emptiable) {
                                     isEmptyElement = ((Emptiable) element).isEmpty();
                                 }

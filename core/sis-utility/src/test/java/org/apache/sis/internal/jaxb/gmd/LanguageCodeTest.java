@@ -36,6 +36,7 @@ import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -155,7 +156,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final String xml = getMetadataXML(LANGUAGE_CODE);
         final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.JAPANESE, metadata.getLanguage());
+        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLanguages()));
     }
 
     /**
@@ -178,7 +179,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final String xml = getMetadataXML(LANGUAGE_CODE_WITHOUT_ATTRIBUTE);
         final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.JAPANESE, metadata.getLanguage());
+        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLanguages()));
         pool.recycle(unmarshaller);
     }
 
@@ -219,7 +220,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final String xml = getMetadataXML(CHARACTER_STRING);
         final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.JAPANESE, metadata.getLanguage());
+        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLanguages()));
         pool.recycle(unmarshaller);
     }
 }

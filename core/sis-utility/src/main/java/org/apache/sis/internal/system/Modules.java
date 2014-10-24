@@ -24,7 +24,7 @@ package org.apache.sis.internal.system;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class Modules {
@@ -52,6 +52,20 @@ public final class Modules {
      * The {@value} module name.
      */
     public static final String NETCDF = "org.apache.sis.storage.netcdf";
+
+    /**
+     * The major version number of all Apache SIS modules.
+     *
+     * @see org.apache.sis.util.Version
+     */
+    public static final int MAJOR_VERSION = 0;
+
+    /**
+     * The minor version number of all Apache SIS modules.
+     *
+     * @see org.apache.sis.util.Version
+     */
+    public static final int MINOR_VERSION = 5;
 
     /**
      * Do not allows instantiation of this class.

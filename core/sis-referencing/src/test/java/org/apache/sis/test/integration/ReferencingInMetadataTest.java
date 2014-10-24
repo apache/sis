@@ -20,11 +20,7 @@ import java.net.URI;
 import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.OnLineFunction;
-import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.ResponsibleParty;
-import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.citation.*;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -83,10 +79,10 @@ public final strictfp class ReferencingInMetadataTest extends XMLTestCase {
     @Test
     public void testMetadataWithVerticalCRS() throws JAXBException {
         final Metadata metadata = unmarshalFile(Metadata.class, VERTICAL_CRS_XML);
-        assertEquals("fileIdentifier", "20090901",                     metadata.getFileIdentifier());
-        assertEquals("language",       Locale.ENGLISH,                 metadata.getLanguage());
-        assertEquals("characterSet",   StandardCharsets.UTF_8,         metadata.getCharacterSet());
-        assertEquals("dateStamp",      xmlDate("2014-01-04 00:00:00"), metadata.getDateStamp());
+        assertEquals("fileIdentifier", "20090901",                     metadata.getMetadataIdentifier().getCode());
+        assertEquals("language",       Locale.ENGLISH,                 getSingleton(metadata.getLanguages()));
+        assertEquals("characterSet",   StandardCharsets.UTF_8,         getSingleton(metadata.getCharacterSets()));
+        assertEquals("dateStamp",      xmlDate("2014-01-04 00:00:00"), getSingleton(metadata.getDates()).getDate());
         /*
          * <gmd:contact>
          *   <gmd:CI_ResponsibleParty>
@@ -94,10 +90,13 @@ public final strictfp class ReferencingInMetadataTest extends XMLTestCase {
          *   </gmd:CI_ResponsibleParty>
          * </gmd:contact>
          */
-        final ResponsibleParty contact = (ResponsibleParty) getSingleton(metadata.getContacts());
-        final OnlineResource onlineResource = contact.getContactInfo().getOnlineResource();
+        final Responsibility contact        = getSingleton(metadata   .getContacts());
+        final Party          party          = getSingleton(contact    .getParties());
+        final Contact        contactInfo    = getSingleton(party      .getContactInfo());
+        final OnlineResource onlineResource = getSingleton(contactInfo.getOnlineResources());
+        assertInstanceOf("party", Organisation.class, party);
         assertNotNull("onlineResource", onlineResource);
-        assertEquals("organisationName", "Apache SIS", contact.getOrganisationName().toString());
+        assertEquals("organisationName", "Apache SIS", party.getName().toString());
         assertEquals("linkage", URI.create("http://sis.apache.org"), onlineResource.getLinkage());
         assertEquals("function", OnLineFunction.INFORMATION, onlineResource.getFunction());
         assertEquals("role", Role.PRINCIPAL_INVESTIGATOR, contact.getRole());

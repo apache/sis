@@ -24,6 +24,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.metadata.ModifiableMetadata;
 
 
 /**
@@ -78,7 +79,10 @@ public class NetcdfStore extends DataStore {
     public Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
             final MetadataReader reader = new MetadataReader(decoder);
-            metadata = reader.read(); // Umodifiable object.
+            metadata = reader.read();
+            if (metadata instanceof ModifiableMetadata) {
+                ((ModifiableMetadata) metadata).freeze();
+            }
         } catch (IOException e) {
             throw new DataStoreException(e);
         }

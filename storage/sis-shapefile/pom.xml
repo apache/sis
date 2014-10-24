@@ -66,6 +66,22 @@ Read and write files in the Shapefile format.
        =========================================================== -->
   <build>
     <plugins>
+
+      <!-- Compile properties files into resources UTF files. -->
+      <plugin>
+        <groupId>org.apache.sis.core</groupId>
+        <artifactId>sis-build-helper</artifactId>
+        <version>${sis.plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile-resources</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Package as OSGi bundle -->
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>

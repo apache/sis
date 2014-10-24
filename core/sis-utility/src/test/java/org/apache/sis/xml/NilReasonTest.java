@@ -19,7 +19,7 @@ package org.apache.sis.xml;
 import java.net.URISyntaxException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
@@ -288,7 +288,7 @@ public final strictfp class NilReasonTest extends TestCase {
         assertTrue (c.equals(e2, ComparisonMode.DEBUG));
 
         // Following object should alway be different because it does not implement the same interface.
-        final ResponsibleParty r1 = NilReason.TEMPLATE.createNilObject(ResponsibleParty.class);
+        final Responsibility r1 = NilReason.TEMPLATE.createNilObject(Responsibility.class);
         assertFalse(c.equals(r1, ComparisonMode.STRICT));
         assertFalse(c.equals(r1, ComparisonMode.BY_CONTRACT));
         assertFalse(c.equals(r1, ComparisonMode.IGNORE_METADATA));

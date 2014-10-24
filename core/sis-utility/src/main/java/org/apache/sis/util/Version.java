@@ -20,6 +20,9 @@ import java.io.Serializable;
 import java.util.StringTokenizer;
 import org.apache.sis.util.resources.Errors;
 
+import static org.apache.sis.internal.system.Modules.MAJOR_VERSION;
+import static org.apache.sis.internal.system.Modules.MINOR_VERSION;
+
 
 /**
  * Holds a version number as a sequence of strings separated by either a dot or a dash.
@@ -57,7 +60,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     /**
      * The version of this Apache SIS distribution.
      */
-    public static final Version SIS = new Version("0.5-SNAPSHOT");
+    public static final Version SIS = new Version(MAJOR_VERSION + "." + MINOR_VERSION + "-SNAPSHOT");
 
     /**
      * A few commonly used version numbers. This list is based on SIS needs, e.g. in {@code DataStore}

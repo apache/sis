@@ -27,32 +27,57 @@ import static org.junit.Assert.*;
 
 
 /**
+ * Tests the {@link ShapeFile} class.
  *
  * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
+ * @since   0.5
+ * @version 0.5
  * @module
  */
 public final strictfp class ShapeFileTest extends TestCase {
-    private static String path(final String name) throws IOException, URISyntaxException {
+    /**
+     * Returns URI path to a resource.
+     * @param name Resource name.
+     * @return URI path.
+     * @throws URISyntaxException if the resource name is incorrect.
+     */
+    private static String path(final String name) throws URISyntaxException {
         return new File(ShapeFileTest.class.getResource(name).toURI()).getPath();
     }
 
+    /**
+     * Test polylines count.
+     * @throws URISyntaxException if the resource name is incorrect.
+     * @throws IOException if the shapefile cannot be found or an I/O error occurs.
+     * @throws DataStoreException if the shapefile has a structure problem.
+     */
     @Test
     public void testPolyineCount() throws URISyntaxException, IOException, DataStoreException {
         ShapeFile shp = new ShapeFile(path("SignedBikeRoute_4326_clipped.shp"));
-        assertEquals(shp.FeatureMap.size(), shp.FeatureCount);
+        assertEquals(shp.FeatureMap.size(), shp.getFeatureCount());
     }
 
-    @Test
-    public void testPolygonCount() throws URISyntaxException, IOException, DataStoreException {
+    /**
+     * Test polygon count.
+     * @throws URISyntaxException if the resource name is incorrect.
+     * @throws IOException if the shapefile cannot be found or an I/O error occurs.
+     * @throws DataStoreException if the shapefile has a structure problem.
+     */
+     @Test
+     public void testPolygonCount() throws URISyntaxException, IOException, DataStoreException {
         ShapeFile shp = new ShapeFile(path("ANC90Ply_4326.shp"));
-        assertEquals(shp.FeatureMap.size(), shp.FeatureCount);
+        assertEquals(shp.FeatureMap.size(), shp.getFeatureCount());
     }
 
-    @Test
-    public void testPointCount() throws URISyntaxException, IOException, DataStoreException {
+     /**
+      * Test point count.
+      * @throws URISyntaxException if the resource name is incorrect.
+      * @throws IOException if the shapefile cannot be found or an I/O error occurs.
+      * @throws DataStoreException if the shapefile has a structure problem.
+      */
+     @Test
+     public void testPointCount() throws URISyntaxException, IOException, DataStoreException {
         ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
-        assertEquals(shp.FeatureMap.size(), shp.FeatureCount);
+        assertEquals(shp.FeatureMap.size(), shp.getFeatureCount());
     }
 }
