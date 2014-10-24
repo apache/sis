@@ -26,8 +26,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.storage.shapefile.ShapeFileTest.class,
-    org.apache.sis.internal.shapefile.jdbc.ConnectionTest.class,
-    org.apache.sis.internal.shapefile.jdbc.ResultSetTest.class
+    org.apache.sis.internal.shapefile.jdbc.DBFResultSetTest.class
 })
 public final strictfp class ShapefileTestSuite extends TestSuite {
     /**

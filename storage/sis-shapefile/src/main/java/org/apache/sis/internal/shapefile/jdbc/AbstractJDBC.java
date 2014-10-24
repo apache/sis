@@ -16,11 +16,14 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
-import java.text.*;
-import java.util.*;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import java.sql.Wrapper;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLWarning;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -31,98 +34,96 @@ import java.sql.SQLFeatureNotSupportedException;
  * @since   0.5
  * @module
  */
-public abstract class AbstractJDBC {
-    /** Logger. */
-    private Logger logger = Logger.getLogger(getClass().getSimpleName());
+abstract class AbstractJDBC implements Wrapper {
+    /**
+     * The logger for JDBC operations. We use the {@code "org.apache.sis.storage.jdbc"} logger name instead than
+     * the package name because this package is internal and may move in any future SIS version. The logger name
+     * does not need to be the name of an existing package. The important thing is to not change it, because it
+     * can been seen as a kind of public API since user may want to control verbosity level by logger names.
+     */
+    static final Logger LOGGER = Logging.getLogger("org.apache.sis.storage.jdbc");
 
     /**
-     * Format a resource bundle message.
-     *
-     * @param classForResourceBundleName class from which ResourceBundle name will be extracted.
-     * @param key Message key.
-     * @param args Message arguments.
-     * @return Message.
+     * Constructs a new instance of a JDBC interface.
      */
-    final String format(Class<?> classForResourceBundleName, String key, Object... args) {
-        Objects.requireNonNull(classForResourceBundleName, "Class from with the ResourceBundle name is extracted cannot be null.");
-        Objects.requireNonNull(key, "Message key cannot be bull.");
-
-        ResourceBundle rsc = ResourceBundle.getBundle(classForResourceBundleName.getName());
-        MessageFormat format = new MessageFormat(rsc.getString(key));
-        return format.format(args);
+    AbstractJDBC() {
     }
 
     /**
-     * Format a resource bundle message.
+     * Returns the JDBC interface implemented by this class.
+     * This is used for formatting error messages.
      *
-     * @param key Message key.
-     * @param args Message arguments.
-     * @return Message.
+     * @return The JDBC interface implemented by this class.
      */
-    final String format(String key, Object... args) {
-        return format(getClass(), key, args);
+    abstract Class<?> getInterface();
+
+    /**
+     * Unsupported by default.
+     *
+     * @param  iface the type of the wrapped object.
+     * @return The wrapped object.
+     */
+    @Override
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        throw unsupportedOperation("unwrap");
     }
 
     /**
-     * Format a resource bundle message and before returning it, log it.
+     * Default to {@code false}, assuming that no non-standard features are handled.
      *
-     * @param logLevel Log Level.
-     * @param key Message key.
-     * @param args Message arguments.
-     * @return Message.
+     * @param  iface the type of the wrapped object.
+     * @return {@code true} if this instance is a wrapper for the given type of object.
      */
-    final String format(Level logLevel, String key, Object... args) {
-        String message = format(key, args);
-        logger.log(logLevel, message);
-        return(message);
+    @Override
+    public boolean isWrapperFor(Class<?> iface) {
+        return false;
     }
 
     /**
-     * Format a resource bundle message and before returning it, log it.
-     *
-     * @param classForResourceBundleName class from which ResourceBundle name will be extracted.
-     * @param logLevel Log Level.
-     * @param key Message key.
-     * @param args Message arguments.
-     * @return Message.
+     * Defaults to {@code null}.
      */
-    final String format(Level logLevel, Class<?> classForResourceBundleName, String key, Object... args) {
-        String message = format(classForResourceBundleName, key, args);
-        logger.log(logLevel, message);
-        return(message);
+    public SQLWarning getWarnings() {
+        return null;
     }
 
     /**
-     * Returns an unsupported operation exception.
-     *
-     * @param unhandledInterface Interface we cannot handle.
-     * @param methodOrWishedFeatureName The feature / call the caller attempted.
+     * Defaults to nothing, since there is no SQL warning.
      */
-    final SQLException unsupportedOperation(Class<?> unhandledInterface, String methodOrWishedFeatureName) {
-        Objects.requireNonNull(unhandledInterface, "The unhandled interface cannot be null.");
+    public void clearWarnings() {
+    }
 
-        String message = logUnsupportedOperation(Level.SEVERE, unhandledInterface, methodOrWishedFeatureName);
-        return new SQLFeatureNotSupportedException(message);
+    /**
+     * Returns an unsupported operation exception to be thrown.
+     *
+     * @param  methodOrWishedFeatureName The feature / call the caller attempted.
+     * @return The exception to throw.
+     */
+    final SQLException unsupportedOperation(final String methodOrWishedFeatureName) {
+        return new SQLFeatureNotSupportedException(Resources.format(Resources.Keys.UnsupportedDriverFeature_2,
+                getInterface(), methodOrWishedFeatureName));
     }
 
     /**
      * log an unsupported feature as a warning.
      *
-     * @param logLevel Log Level.
-     * @param unhandledInterface Interface we cannot handle.
-     * @param methodOrWishedFeatureName The feature / call the caller attempted.
-     * @return The message that has been logged.
+     * @param methodName The call the caller attempted.
      */
-    final String logUnsupportedOperation(Level logLevel, Class<?> unhandledInterface, String methodOrWishedFeatureName) {
-        Objects.requireNonNull(unhandledInterface, "The unhandled interface cannot be null.");
-        return format(logLevel, AbstractJDBC.class, "excp.unsupported_driver_feature", unhandledInterface.getClass(), methodOrWishedFeatureName);
+    final void logUnsupportedOperation(final String methodName) {
+        logWarning(methodName, Resources.Keys.UnsupportedDriverFeature_2, getInterface(), methodName);
     }
 
     /**
-     * Return the class logger.
-     * @return logger.
+     * Logs a warning with the given resource keys and arguments.
+     *
+     * @param methodName  The name of the method which is emitting the warning.
+     * @param resourceKey One of the {@link org.apache.sis.internal.shapefile.jdbc.Resources.Keys} values.
+     * @param arguments   Arguments to be given to {@link java.text.MessageFormat}, or {@code null} if none.
      */
-    public Logger getLogger() {
-        return logger;
+    final void logWarning(final String methodName, final short resourceKey, final Object... arguments) {
+        final LogRecord record = Resources.getResources(null).getLogRecord(Level.WARNING, resourceKey, arguments);
+        record.setSourceClassName(getClass().getCanonicalName());
+        record.setSourceMethodName(methodName);
+        record.setLoggerName(LOGGER.getName());
+        LOGGER.log(record);
     }
 }

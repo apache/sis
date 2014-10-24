@@ -16,67 +16,149 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
-import static java.util.logging.Level.*;
-
 import java.sql.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Collections;
+import java.util.concurrent.Executor;
+
 
 /**
- * This base class holds all the unimplemented feature of a Connection.
- * (In order to avoid having a Connection implementation of thousand lines and unreadable).
+ * This base class holds most of the unimplemented feature of a {@code Connection}.
+ * This is used in order to avoid having a Connection implementation of thousand lines and unreadable.
+ *
+ * <table class="sis">
+ *   <caption>Connection default values</caption>
+ *   <tr><th>Property</th>                           <th>Value</th></tr>
+ *   <tr><td>{@link #isReadOnly()}</td>              <td>{@code false}</td></tr>
+ *   <tr><td>{@link #getAutoCommit()}</td>           <td>{@code true}</td></tr>
+ *   <tr><td>{@link #getNetworkTimeout()}</td>       <td>0</td></tr>
+ *   <tr><td>{@link #getTransactionIsolation()}</td> <td>{@link #TRANSACTION_NONE}</td></tr>
+ *   <tr><td>{@link #getTypeMap()}</td>              <td>Empty map</td></tr>
+ *   <tr><td>{@link #nativeSQL(String)}</td>         <td>No change</td></tr>
+ *   <tr><td>{@link #getWarnings()}</td>             <td>{@code null}</td></tr>
+ *   <tr><td>{@link #clearWarnings()}</td>           <td>Ignored</td></tr>
+ * </table>
  *
  * @author  Marc Le Bihan
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
  * @module
  */
-abstract public class AbstractConnection extends AbstractJDBC implements Connection {
+@SuppressWarnings("unused")
+abstract class AbstractConnection extends AbstractJDBC implements Connection {
     /**
-     * @see java.sql.Wrapper#unwrap(java.lang.Class)
+     * Constructs a new {@code Connection} instance.
      */
-    @Override
-    public <T> T unwrap(@SuppressWarnings("unused") Class<T> iface) throws SQLException {
-        throw unsupportedOperation(Connection.class, "unwrap(..)");
+    AbstractConnection() {
     }
 
     /**
-     * No non-standard features are currently handled.
-     * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+     * Returns the JDBC interface implemented by this class.
+     * This is used for formatting error messages.
      */
     @Override
-    public boolean isWrapperFor(@SuppressWarnings("unused") Class<?> iface) {
-        return false;
+    final Class<?> getInterface() {
+        return Connection.class;
     }
 
     /**
-     * @see java.sql.Connection#prepareCall(java.lang.String)
+     * Unsupported by default.
      */
     @Override
-    public CallableStatement prepareCall(@SuppressWarnings("unused") String sql) throws SQLException {
-        throw unsupportedOperation(Connection.class, "prepareCall");
+    public DatabaseMetaData getMetaData() throws SQLException {
+        throw unsupportedOperation("getMetaData");
     }
 
     /**
-     * @see java.sql.Connection#nativeSQL(java.lang.String)
+     * Unsupported by default.
      */
     @Override
-    public String nativeSQL(String sql) {
-        return sql; // We do nothing at the moment.
+    public String getCatalog() throws SQLException {
+        throw unsupportedOperation("getCatalog");
     }
 
     /**
-     * Commit / rollback are currently ignored (autocommit = true).
-     * @see java.sql.Connection#setAutoCommit(boolean)
+     * Unsupported by default.
      */
     @Override
-    public void setAutoCommit(boolean autoCommit){
-        format(WARNING, "log.autocommit_ignored", autoCommit);
+    public void setCatalog(String catalog) {
+        logUnsupportedOperation("setCatalog");
     }
 
     /**
-     * Currently the autocommit state is not handled : always true.
-     * @see java.sql.Connection#getAutoCommit()
+     * Unsupported by default.
+     */
+    @Override
+    public String getSchema() throws SQLException {
+        throw unsupportedOperation("getSchema");
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public void setSchema(String schema) throws SQLException {
+        throw unsupportedOperation("setSchema");
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public Map<String, Class<?>> getTypeMap() {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public void setTypeMap(Map<String, Class<?>> map) {
+        if (!map.isEmpty()) {
+            throw new UnsupportedOperationException("setTypeMap");
+        }
+    }
+
+    /**
+     * Returns {@code true} by default, assuming a driver without write capabilities.
+     */
+    @Override
+    public boolean isReadOnly() {
+        return true;
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public void setReadOnly(boolean readOnly) {
+        if (!readOnly) {
+            throw new UnsupportedOperationException("setReadOnly");
+        }
+    }
+
+    /**
+     * Defaults to {@link #TRANSACTION_NONE}.
+     */
+    @Override
+    public int getTransactionIsolation() {
+        return TRANSACTION_NONE; // No guarantees of anything.
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public void setTransactionIsolation(int level) {
+        if (level != TRANSACTION_NONE) {
+            throw new UnsupportedOperationException("setTransactionIsolation");
+        }
+    }
+
+    /**
+     * Defaults to {@code true}, assuming that auto-commit state is not handled.
      */
     @Override
     public boolean getAutoCommit() {
@@ -84,357 +166,275 @@ abstract public class AbstractConnection extends AbstractJDBC implements Connect
     }
 
     /**
-     * @see java.sql.Connection#commit()
+     * Defaults to ignoring the commit / rollback.
+     * The auto-commit mode is assumed fixed to {@code true}.
+     */
+    @Override
+    public void setAutoCommit(boolean autoCommit) {
+        logWarning("setAutoCommit", Resources.Keys.AutoCommitIgnored_1, autoCommit);
+    }
+
+    /**
+     * Unsupported by default.
      */
     @Override
     public void commit() {
-        format(WARNING, "log.commit_rollback_ignored");
+        logWarning("commit", Resources.Keys.CommitRollbackIgnored, (Object[]) null);
     }
 
     /**
-     * @see java.sql.Connection#rollback()
+     * Unsupported by default.
      */
     @Override
     public void rollback() {
-        format(WARNING, "log.commit_rollback_ignored");
+        logWarning("commit", Resources.Keys.CommitRollbackIgnored, (Object[]) null);
     }
 
     /**
-     * @see java.sql.Connection#getMetaData()
+     * Unsupported by default.
      */
     @Override
-    public DatabaseMetaData getMetaData() throws SQLException {
-        throw unsupportedOperation(Connection.class, "getMetaData()");
+    public void rollback(Savepoint savepoint) throws SQLException {
+        throw unsupportedOperation("rollback");
     }
 
     /**
-     * @see java.sql.Connection#setReadOnly(boolean)
-     */
-    @Override
-    public void setReadOnly(@SuppressWarnings("unused") boolean readOnly) {
-        logUnsupportedOperation(WARNING, Connection.class, "setReadOnly(..)");
-    }
-
-    /**
-     * @see java.sql.Connection#isReadOnly()
-     */
-    @Override
-    public boolean isReadOnly() {
-        return false;
-    }
-
-    /**
-     * @see java.sql.Connection#setCatalog(java.lang.String)
-     */
-    @Override
-    public void setCatalog(@SuppressWarnings("unused") String catalog) {
-        logUnsupportedOperation(WARNING, Connection.class, "setCatalog(..)");
-    }
-
-    /**
-     * @see java.sql.Connection#getCatalog()
-     */
-    @Override
-    public String getCatalog() throws SQLException {
-        throw unsupportedOperation(Connection.class, "getCatalog()");
-    }
-
-    /**
-     * @see java.sql.Connection#setTransactionIsolation(int)
-     */
-    @Override
-    public void setTransactionIsolation(@SuppressWarnings("unused") int level) {
-        logUnsupportedOperation(WARNING, Connection.class, "transaction isolation");
-    }
-
-    /**
-     * @see java.sql.Connection#getTransactionIsolation()
-     */
-    @Override
-    public int getTransactionIsolation() {
-        return 0; // No guarantees of anything.
-    }
-
-    /**
-     * @see java.sql.Connection#getWarnings()
-     */
-    @Override
-    public SQLWarning getWarnings() {
-        logUnsupportedOperation(WARNING, Connection.class, "returning SQL warnings");
-        return null;
-    }
-
-    /**
-     * @see java.sql.Connection#clearWarnings()
-     */
-    @Override
-    public void clearWarnings() {
-        logUnsupportedOperation(WARNING, Connection.class, "clearing SQL warnings");
-    }
-
-    /**
-     * @see java.sql.Connection#prepareCall(java.lang.String, int, int)
-     */
-    @Override
-    public CallableStatement prepareCall(@SuppressWarnings("unused") String sql, @SuppressWarnings("unused") int resultSetType, @SuppressWarnings("unused") int resultSetConcurrency) throws SQLException {
-        throw unsupportedOperation(Connection.class, "stored procedures (prepareCall(..))");
-    }
-
-    /**
-     * @see java.sql.Connection#getTypeMap()
-     */
-    @Override
-    public Map<String, Class<?>> getTypeMap() {
-        logUnsupportedOperation(WARNING, Connection.class, "getTypeMap()");
-        return new HashMap<>();
-    }
-
-    /**
-     * @see java.sql.Connection#setTypeMap(java.util.Map)
-     */
-    @Override
-    public void setTypeMap(@SuppressWarnings("unused") Map<String, Class<?>> map) {
-        logUnsupportedOperation(WARNING, Connection.class, "setTypeMap(..)");
-    }
-
-    /**
-     * @see java.sql.Connection#prepareStatement(java.lang.String, int, int)
-     */
-    @Override
-    public PreparedStatement prepareStatement(@SuppressWarnings("unused") String sql, @SuppressWarnings("unused") int resultSetType, @SuppressWarnings("unused") int resultSetConcurrency) throws SQLException {
-        throw unsupportedOperation(Connection.class, "prepareStatement(String sql, int resultSetType, int resultSetConcurrency)");
-    }
-
-    /**
-     * @see java.sql.Connection#setHoldability(int)
-     */
-    @Override
-    public void setHoldability(@SuppressWarnings("unused") int holdability) {
-        logUnsupportedOperation(WARNING, Connection.class, "setHoldability(..)");
-    }
-
-    /**
-     * @see java.sql.Connection#getHoldability()
-     */
-    @Override
-    public int getHoldability() throws SQLException {
-        throw unsupportedOperation(Connection.class, "getHoldability()");
-    }
-
-    /**
-     * @see java.sql.Connection#setSavepoint()
+     * Unsupported by default.
      */
     @Override
     public Savepoint setSavepoint() throws SQLException {
-        throw unsupportedOperation(Connection.class, "setSavepoint()");
+        throw unsupportedOperation("setSavepoint");
     }
 
     /**
-     * @see java.sql.Connection#setSavepoint(java.lang.String)
+     * Unsupported by default.
      */
     @Override
-    public Savepoint setSavepoint(@SuppressWarnings("unused") String name) throws SQLException {
-        throw unsupportedOperation(Connection.class, "setSavepoint(..)");
+    public Savepoint setSavepoint(String name) throws SQLException {
+        throw unsupportedOperation("setSavepoint");
     }
 
     /**
-     * @see java.sql.Connection#rollback(java.sql.Savepoint)
+     * Unsupported by default.
      */
     @Override
-    public void rollback(@SuppressWarnings("unused") Savepoint savepoint) throws SQLException {
-        throw unsupportedOperation(Connection.class, "rollback(Savepoint)");
+    public void releaseSavepoint(Savepoint savepoint) throws SQLException {
+        throw unsupportedOperation("releaseSavepoint");
     }
 
     /**
-     * @see java.sql.Connection#releaseSavepoint(java.sql.Savepoint)
+     * Unsupported by default.
      */
     @Override
-    public void releaseSavepoint(@SuppressWarnings("unused") Savepoint savepoint) throws SQLException {
-        throw unsupportedOperation(Connection.class, "releaseSavepoint(Savepoint)");
+    public int getHoldability() throws SQLException {
+        throw unsupportedOperation("getHoldability");
     }
 
     /**
-     * @see java.sql.Connection#createStatement(int, int, int)
+     * Unsupported by default.
      */
     @Override
-    public Statement createStatement(@SuppressWarnings("unused") int resultSetType, @SuppressWarnings("unused") int resultSetConcurrency, @SuppressWarnings("unused") int resultSetHoldability) throws SQLException {
-        throw unsupportedOperation(Connection.class, "createStatement(int, int, int)");
+    public void setHoldability(int holdability) {
+        logUnsupportedOperation("setHoldability");
     }
 
     /**
-     * @see java.sql.Connection#prepareStatement(java.lang.String, int, int, int)
+     * Returns the given string unchanged by default.
      */
     @Override
-    public PreparedStatement prepareStatement(@SuppressWarnings("unused") String sql, @SuppressWarnings("unused") int resultSetType, @SuppressWarnings("unused") int resultSetConcurrency, @SuppressWarnings("unused") int resultSetHoldability) throws SQLException {
-        throw unsupportedOperation(Connection.class, "prepareStatement(String, int, int, int)");
+    public String nativeSQL(String sql) {
+        return sql; // We do nothing at the moment.
     }
 
     /**
-     * @see java.sql.Connection#prepareCall(java.lang.String, int, int, int)
+     * Unsupported by default.
      */
     @Override
-    public CallableStatement prepareCall(@SuppressWarnings("unused") String sql, @SuppressWarnings("unused") int resultSetType, @SuppressWarnings("unused") int resultSetConcurrency, @SuppressWarnings("unused") int resultSetHoldability) throws SQLException {
-        throw unsupportedOperation(Connection.class, "stored procedures (prepareCall(String, int, int, int))");
+    public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
+        throw unsupportedOperation("createStatement");
     }
 
     /**
-     * @see java.sql.Connection#prepareStatement(java.lang.String)
+     * Unsupported by default.
      */
     @Override
-    public PreparedStatement prepareStatement(@SuppressWarnings("unused") String sql) throws SQLException {
-        throw unsupportedOperation(Connection.class, "prepareStatement(String sql)");
+    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        throw unsupportedOperation("createStatement");
     }
 
     /**
-     * @see java.sql.Connection#prepareStatement(java.lang.String, int)
+     * Unsupported by default.
      */
     @Override
-    public PreparedStatement prepareStatement(@SuppressWarnings("unused") String sql, @SuppressWarnings("unused") int autoGeneratedKeys) throws SQLException {
-        throw unsupportedOperation(Connection.class, "prepareStatement with autogenerated keys (prepareStatement(String, int))");
+    public PreparedStatement prepareStatement(String sql) throws SQLException {
+        throw unsupportedOperation("prepareStatement");
     }
 
     /**
-     * @see java.sql.Connection#prepareStatement(java.lang.String, int[])
+     * Unsupported by default.
      */
     @Override
-    public PreparedStatement prepareStatement(@SuppressWarnings("unused") String sql, @SuppressWarnings("unused") int[] columnIndexes) throws SQLException {
-        throw unsupportedOperation(Connection.class, "prepareStatement with autogenerated keys (prepareStatement(String, int[]))");
+    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+        throw unsupportedOperation("prepareStatement");
     }
 
     /**
-     * @see java.sql.Connection#prepareStatement(java.lang.String, java.lang.String[])
+     * Unsupported by default.
      */
     @Override
-    public PreparedStatement prepareStatement(@SuppressWarnings("unused") String sql, @SuppressWarnings("unused") String[] columnNames) throws SQLException {
-        throw unsupportedOperation(Connection.class, "prepareStatement with autogenerated keys (prepareStatement(String, String[]))");
+    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        throw unsupportedOperation("prepareStatement");
     }
 
     /**
-     * @see java.sql.Connection#createClob()
+     * Unsupported by default.
+     */
+    @Override
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        throw unsupportedOperation("prepareCall");
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
+        throw unsupportedOperation("prepareStatement");
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
+        throw unsupportedOperation("prepareStatement");
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
+        throw unsupportedOperation("prepareStatement");
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public CallableStatement prepareCall(String sql) throws SQLException {
+        throw unsupportedOperation("prepareCall");
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+        throw unsupportedOperation("prepareCall");
+    }
+
+    /**
+     * Unsupported by default.
      */
     @Override
     public Clob createClob() throws SQLException {
-        throw unsupportedOperation(Connection.class, "createClob()");
+        throw unsupportedOperation("createClob");
     }
 
     /**
-     * @see java.sql.Connection#createBlob()
+     * Unsupported by default.
      */
     @Override
     public Blob createBlob() throws SQLException {
-        throw unsupportedOperation(Connection.class, "createBlob()");
+        throw unsupportedOperation("createBlob");
     }
 
     /**
-     * @see java.sql.Connection#createNClob()
+     * Unsupported by default.
      */
     @Override
     public NClob createNClob() throws SQLException {
-        throw unsupportedOperation(Connection.class, "createNClob()");
+        throw unsupportedOperation("createNClob");
     }
 
     /**
-     * @see java.sql.Connection#createSQLXML()
+     * Unsupported by default.
      */
     @Override
     public SQLXML createSQLXML() throws SQLException {
-        throw unsupportedOperation(Connection.class, "createSQLXML()");
+        throw unsupportedOperation("createSQLXML");
     }
 
     /**
-     * @see java.sql.Connection#setClientInfo(java.lang.String, java.lang.String)
+     * Unsupported by default.
      */
     @Override
-    public void setClientInfo(@SuppressWarnings("unused") String name, @SuppressWarnings("unused") String value) {
-        logUnsupportedOperation(WARNING, Connection.class, "setClientInfo(..)");
+    public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
+        throw unsupportedOperation("createArrayOf");
     }
 
     /**
-     * @see java.sql.Connection#setClientInfo(java.util.Properties)
+     * Unsupported by default.
      */
     @Override
-    public void setClientInfo(@SuppressWarnings("unused") Properties properties) {
-        logUnsupportedOperation(WARNING, Connection.class, "setClientInfo(Properties)");
+    public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
+        throw unsupportedOperation("createStruct");
     }
 
     /**
-     * @see java.sql.Connection#getClientInfo(java.lang.String)
+     * Unsupported by default.
      */
     @Override
-    public String getClientInfo(@SuppressWarnings("unused") String name) throws SQLException {
-        throw unsupportedOperation(Connection.class, "getClientInfo(String name)");
+    public String getClientInfo(String name) throws SQLException {
+        throw unsupportedOperation("getClientInfo");
     }
 
     /**
-     * @see java.sql.Connection#getClientInfo()
+     * Unsupported by default.
      */
     @Override
     public Properties getClientInfo() throws SQLException {
-        throw unsupportedOperation(Connection.class, "getClientInfo()");
+        throw unsupportedOperation("getClientInfo");
     }
 
     /**
-     * @see java.sql.Connection#createArrayOf(java.lang.String, java.lang.Object[])
+     * Unsupported by default.
      */
     @Override
-    public Array createArrayOf(@SuppressWarnings("unused") String typeName, @SuppressWarnings("unused") Object[] elements) throws SQLException {
-        throw unsupportedOperation(Connection.class, "createArrayOf(String typeName, Object[] elements)");
+    public void setClientInfo(String name, String value) {
+        logUnsupportedOperation("setClientInfo");
     }
 
     /**
-     * @see java.sql.Connection#createStruct(java.lang.String, java.lang.Object[])
+     * Unsupported by default.
      */
     @Override
-    public Struct createStruct(@SuppressWarnings("unused") String typeName, @SuppressWarnings("unused") Object[] attributes) throws SQLException {
-        throw unsupportedOperation(Connection.class, "createStruct(String typeName, Object[] attributes)");
+    public void setClientInfo(Properties properties) {
+        logUnsupportedOperation("setClientInfo");
     }
 
     /**
-     * @see java.sql.Connection#setSchema(java.lang.String)
-     */
-    @Override
-    public void setSchema(@SuppressWarnings("unused") String schema) throws SQLException {
-        throw unsupportedOperation(Connection.class, "setSchema(String schema)");
-    }
-
-    /**
-     * @see java.sql.Connection#getSchema()
-     */
-    @Override
-    public String getSchema() throws SQLException {
-        throw unsupportedOperation(Connection.class, "getSchema()");
-    }
-
-    /**
-     * @see java.sql.Connection#abort(java.util.concurrent.Executor)
-     */
-    @Override
-    public void abort(@SuppressWarnings("unused") Executor executor) throws SQLException {
-        throw unsupportedOperation(Connection.class, "abort(Executor executor)");
-    }
-
-    /**
-     * @see java.sql.Connection#setNetworkTimeout(java.util.concurrent.Executor, int)
-     */
-    @Override
-    public void setNetworkTimeout(@SuppressWarnings("unused") Executor executor, @SuppressWarnings("unused") int milliseconds) {
-        logUnsupportedOperation(WARNING, Connection.class, "setNetworkTimeout(Executor executor, int milliseconds)");
-    }
-
-    /**
-     * @see java.sql.Connection#getNetworkTimeout()
+     * Defaults to 0, which means there is no limit.
      */
     @Override
     public int getNetworkTimeout() {
-        logUnsupportedOperation(WARNING, Connection.class, "getNetworkTimeout()");
-        return 0;
+        return 0; // Means there is no limt.
     }
 
     /**
-     * @see java.sql.Connection#createStatement(int, int)
+     * Unsupported by default.
      */
     @Override
-    public Statement createStatement(@SuppressWarnings("unused") int resultSetType, @SuppressWarnings("unused") int resultSetConcurrency) throws SQLException {
-        throw unsupportedOperation(Connection.class, "createStatement(int resultSetType, int resultSetConcurrency)");
+    public void setNetworkTimeout(Executor executor, int milliseconds) {
+        logUnsupportedOperation("setNetworkTimeout");
+    }
+
+    /**
+     * Unsupported by default.
+     */
+    @Override
+    public void abort(Executor executor) throws SQLException {
+        throw unsupportedOperation("abort");
     }
 }

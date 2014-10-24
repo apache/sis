@@ -880,13 +880,11 @@ final class MetadataReader {
         if (creation != null) {
             metadata.setDates(singleton(new DefaultCitationDate(creation, DateType.CREATION)));
         }
-        metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET)));
+        metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, null)));
         for (final String service : SERVICES) {
             final String name = decoder.stringValue(service);
             if (name != null) {
-                final DefaultMetadataScope scope = new DefaultMetadataScope(ScopeCode.SERVICE);
-                scope.setName(new SimpleInternationalString(name));
-                metadata.getMetadataScopes().add(scope);
+                addIfAbsent(metadata.getMetadataScopes(), new DefaultMetadataScope(ScopeCode.SERVICE, name));
             }
         }
         /*
