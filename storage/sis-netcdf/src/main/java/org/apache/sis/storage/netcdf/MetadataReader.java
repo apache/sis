@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.io.IOException;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
@@ -47,10 +48,10 @@ import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.crs.VerticalCRS;
 
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.DefaultMetadataScope;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.extent.*;
 import org.apache.sis.metadata.iso.spatial.*;
@@ -66,7 +67,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.Standards;
 
 // The following dependency is used only for static final String constants.
 // Consequently the compiled class files should not have this dependency.
@@ -114,6 +115,11 @@ final class MetadataReader {
      * <p>REMINDER: if modified, update class javadoc too.</p>
      */
     private static final String[] SEARCH_PATH = {"NCISOMetadata", "CFMetadata", null, "THREDDSMetadata"};
+
+    /**
+     * Names of global attributes identifying services.
+     */
+    private static final String[] SERVICES = {"wms_service", "wcs_service"};
 
     /**
      * The string to use as a keyword separator. This separator is used for parsing the
@@ -190,6 +196,14 @@ final class MetadataReader {
     }
 
     /**
+     * Returns the first element of the given collection.
+     */
+    private static <T> T first(final Collection<T> collection) {
+        final Iterator<T> it = collection.iterator();
+        return it.hasNext() ? it.next() : null;
+    }
+
+    /**
      * Adds the given element in the given collection if the element is not already present in the collection.
      * We define this method because the metadata API uses collections while the SIS implementation uses lists.
      * The lists are usually very short (typically 0 or 1 element), so the call to {@link List#contains(Object)}
@@ -224,7 +238,7 @@ final class MetadataReader {
      * @param metadata  The value stored in the metadata object.
      * @param attribute The value parsed from the NetCDF file.
      */
-    private static boolean isDefined(final CharSequence metadata, final String attribute) {
+    private static boolean canShare(final CharSequence metadata, final String attribute) {
         return (attribute == null) || (metadata != null && metadata.toString().equals(attribute));
     }
 
@@ -235,7 +249,7 @@ final class MetadataReader {
      * @param metadata  The value stored in the metadata object.
      * @param attribute The value parsed from the NetCDF file.
      */
-    private static boolean isDefined(final Collection<String> metadata, final String attribute) {
+    private static boolean canShare(final Collection<String> metadata, final String attribute) {
         return (attribute == null) || metadata.contains(attribute);
     }
 
@@ -245,8 +259,8 @@ final class MetadataReader {
      * @param resource  The value stored in the metadata object.
      * @param url       The value parsed from the NetCDF file.
      */
-    private static boolean isDefined(final OnlineResource resource, final String url) {
-        return (url == null) || (resource != null && isDefined(resource.getLinkage().toString(), url));
+    private static boolean canShare(final OnlineResource resource, final String url) {
+        return (url == null) || (resource != null && canShare(resource.getLinkage().toString(), url));
     }
 
     /**
@@ -255,8 +269,8 @@ final class MetadataReader {
      * @param address  The value stored in the metadata object.
      * @param email    The value parsed from the NetCDF file.
      */
-    private static boolean isDefined(final Address address, final String email) {
-        return (email == null) || (address != null && isDefined(address.getElectronicMailAddresses(), email));
+    private static boolean canShare(final Address address, final String email) {
+        return (email == null) || (address != null && canShare(address.getElectronicMailAddresses(), email));
     }
 
     /**
@@ -306,31 +320,7 @@ final class MetadataReader {
     }
 
     /**
-     * Returns a globally unique identifier for the current NetCDF {@linkplain #decoder}.
-     * The default implementation builds the identifier from the following attributes:
-     *
-     * <ul>
-     *   <li>{@value #NAMING_AUTHORITY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
-     *   <li>{@value #IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found.</li>
-     * </ul>
-     *
-     * @return The globally unique identifier, or {@code null} if none.
-     * @throws IOException If an I/O operation was necessary but failed.
-     */
-    private Identifier getFileIdentifier() throws IOException {
-        String identifier = decoder.stringValue(IDENTIFIER);
-        if (identifier == null) {
-            identifier = decoder.getId();
-            if (identifier == null) {
-                return null;
-            }
-        }
-        final String namespace  = decoder.stringValue(NAMING_AUTHORITY);
-        return new DefaultIdentifier((namespace != null) ? new DefaultCitation(namespace) : null, identifier);
-    }
-
-    /**
-     * Creates a {@code ResponsibleParty} element if at least one of the name, email or URL attributes is defined.
+     * Creates a {@code Responsibility} element if at least one of the name, email or URL attributes is defined.
      * For more consistent results, the caller should restrict the {@linkplain Decoder#setSearchPath search path}
      * to a single group before invoking this method.
      *
@@ -360,49 +350,62 @@ final class MetadataReader {
         if (role == null) {
             role = isPointOfContact ? Role.POINT_OF_CONTACT : keys.DEFAULT_ROLE;
         }
-        ResponsibleParty party    = pointOfContact;
-        Contact          contact  = null;
-        Address          address  = null;
-        OnlineResource   resource = null;
-        if (party != null) {
-            contact = party.getContactInfo();
-            if (contact != null) {
-                address  = contact.getAddress();
-                resource = contact.getOnlineResource();
-            }
-            if (!isDefined(resource, url)) {
-                resource = null;
-                contact  = null; // Clear the parents all the way up to the root.
-                party    = null;
-            }
-            if (!isDefined(address, email)) {
-                address = null;
-                contact = null; // Clear the parents all the way up to the root.
-                party   = null;
-            }
-            if (party != null) {
-                if (!isDefined(party.getOrganisationName(), organisationName) ||
-                    !isDefined(party.getIndividualName(),   individualName))
-                {
-                    party = null;
+        /*
+         * Verify if we can share the existing 'pointOfContact' instance. This is often the case in practice.
+         * If we can not share the whole existing instance, we usually can share parts of it like the address.
+         */
+        ResponsibleParty responsibility = pointOfContact;
+        Contact          contact        = null;
+        Address          address        = null;
+        OnlineResource   resource       = null;
+        if (responsibility != null) {
+            { // Additional indentation for having the same level than SIS branches for GeoAPI snapshots (makes merges easier).
+                contact = responsibility.getContactInfo();
+                if (contact != null) {
+                    address  = contact.getAddress();
+                    resource = contact.getOnlineResource();
+                }
+                if (!canShare(resource, url)) {
+                    resource       = null;
+                    contact        = null; // Clear the parents all the way up to the root.
+                    responsibility = null;
+                }
+                if (!canShare(address, email)) {
+                    address        = null;
+                    contact        = null; // Clear the parents all the way up to the root.
+                    responsibility = null;
+                }
+                if (responsibility != null) {
+                    if (!canShare(responsibility.getOrganisationName(), organisationName) ||
+                        !canShare(responsibility.getIndividualName(),   individualName))
+                    {
+                        responsibility = null;
+                    }
                 }
             }
         }
-        if (party == null) {
+        /*
+         * If we can not share the exiting instance, we have to build a new one. If there is both
+         * an individual and organisation name, then the individual is considered a member of the
+         * organisation. This structure shall be kept consistent with the check in the above block.
+         */
+        if (responsibility == null) {
             if (contact == null) {
                 if (address  == null) address  = createAddress(email);
                 if (resource == null) resource = createOnlineResource(url);
                 contact = createContact(address, resource);
             }
             if (individualName != null || organisationName != null || contact != null) { // Do not test role.
-                final DefaultResponsibleParty np = new DefaultResponsibleParty(role);
-                np.setIndividualName(individualName);
-                np.setOrganisationName(toInternationalString(organisationName));
-                np.setContactInfo(contact);
-                party = np;
+                AbstractParty party = null;
+                if (individualName   != null) party = new DefaultIndividual(individualName, null, null);
+                if (organisationName != null) party = new DefaultOrganisation(organisationName, null, (DefaultIndividual) party, null);
+                if (party            == null) party = new AbstractParty(); // We don't know if this is an individual or an organisation.
+                if (contact          != null) party.setContactInfo(singleton(contact));
+                responsibility = new DefaultResponsibleParty(role);
+                ((DefaultResponsibleParty) responsibility).setParties(singleton(party));
             }
         }
-        return party;
+        return responsibility;
     }
 
     /**
@@ -436,10 +439,8 @@ final class MetadataReader {
         if (issued   != null) citation.getDates()  .add  (new DefaultCitationDate(issued,   DateType.PUBLICATION));
         if (pointOfContact != null) {
             // Same responsible party than the contact, except for the role.
-            final DefaultResponsibleParty np = new DefaultResponsibleParty(Role.ORIGINATOR);
-            np.setIndividualName  (pointOfContact.getIndividualName());
-            np.setOrganisationName(pointOfContact.getOrganisationName());
-            np.setContactInfo     (pointOfContact.getContactInfo());
+            final DefaultResponsibleParty np = new DefaultResponsibleParty(pointOfContact);
+            np.setRole(Role.ORIGINATOR);
             citation.setCitedResponsibleParties(singleton(np));
         }
         for (final String path : searchPath) {
@@ -736,6 +737,7 @@ final class MetadataReader {
             if (!variable.isCoverage(2)) {
                 continue;
             }
+            DefaultAttributeGroup group = null;
             /*
              * Instantiate a CoverageDescription for each distinct set of NetCDF dimensions
              * (e.g. longitude,latitude,time). This separation is based on the fact that a
@@ -755,8 +757,14 @@ final class MetadataReader {
                     content = new DefaultCoverageDescription();
                 }
                 contents.put(dimensions, content);
+            } else {
+                group = first(content.getAttributeGroups());
             }
-            content.getDimensions().add(createSampleDimension(variable));
+            if (group == null) {
+                group = new DefaultAttributeGroup();
+                content.setAttributeGroups(singleton(group));
+            }
+            group.getAttributes().add(createSampleDimension(variable));
             final Object[] names    = variable.getAttributeValues(FLAG_NAMES,    false);
             final Object[] meanings = variable.getAttributeValues(FLAG_MEANINGS, false);
             final Object[] masks    = variable.getAttributeValues(FLAG_MASKS,    true);
@@ -795,7 +803,7 @@ final class MetadataReader {
         }
         String description = variable.getDescription();
         if (description != null && !(description = description.trim()).isEmpty() && !description.equals(name)) {
-            band.setDescriptor(toInternationalString(description));
+            band.setDescription(toInternationalString(description));
         }
 //TODO: Can't store the units, because the Band interface restricts it to length.
 //      We need the SampleDimension interface proposed in ISO 19115 revision draft.
@@ -832,37 +840,53 @@ final class MetadataReader {
     }
 
     /**
+     * Returns a globally unique identifier for the current NetCDF {@linkplain #decoder}.
+     * The default implementation builds the identifier from the following attributes:
+     *
+     * <ul>
+     *   <li>{@value #NAMING_AUTHORITY} used as the {@linkplain Identifier#getAuthority() authority}.</li>
+     *   <li>{@value #IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found.</li>
+     * </ul>
+     *
+     * @return The globally unique identifier, or {@code null} if none.
+     * @throws IOException If an I/O operation was necessary but failed.
+     */
+    private Identifier getFileIdentifier() throws IOException {
+        String identifier = decoder.stringValue(IDENTIFIER);
+        if (identifier == null) {
+            identifier = decoder.getId();
+            if (identifier == null) {
+                return null;
+            }
+        }
+        final String namespace  = decoder.stringValue(NAMING_AUTHORITY);
+        return new DefaultIdentifier((namespace != null) ? new DefaultCitation(namespace) : null, identifier);
+    }
+
+    /**
      * Creates an ISO {@code Metadata} object from the information found in the NetCDF file.
-     * The returned metadata will be unmodifiable in order to allow the caller to cache it.
      *
      * @return The ISO metadata object.
      * @throws IOException If an I/O operation was necessary but failed.
      */
     public Metadata read() throws IOException {
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setMetadataStandardName(MetadataUtilities.STANDARD_NAME_2);
-        metadata.setMetadataStandardVersion(MetadataUtilities.STANDARD_VERSION_2);
+        metadata.setMetadataStandards(singleton(Standards.ISO_19115_2));
         final Identifier identifier = getFileIdentifier();
-        if (identifier != null) {
-            String code = identifier.getCode();
-            final Citation authority = identifier.getAuthority();
-            if (authority != null) {
-                final InternationalString title = authority.getTitle();
-                if (title != null) {
-                    code = title.toString() + DefaultNameSpace.DEFAULT_SEPARATOR + code;
-                }
-            }
-            metadata.setFileIdentifier(code);
+        metadata.setMetadataIdentifier(identifier);
+        final Date creation = decoder.dateValue(METADATA_CREATION);
+        if (creation != null) {
+            metadata.setDates(singleton(new DefaultCitationDate(creation, DateType.CREATION)));
         }
-        metadata.setDateStamp(decoder.dateValue(METADATA_CREATION));
-        metadata.setHierarchyLevels(singleton(ScopeCode.DATASET));
-        final String wms = decoder.stringValue("wms_service");
-        final String wcs = decoder.stringValue("wcs_service");
-        if (wms != null || wcs != null) {
-            metadata.getHierarchyLevels().add(ScopeCode.SERVICE);
+        metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, null)));
+        for (final String service : SERVICES) {
+            final String name = decoder.stringValue(service);
+            if (name != null) {
+                addIfAbsent(metadata.getMetadataScopes(), new DefaultMetadataScope(ScopeCode.SERVICE, name));
+            }
         }
         /*
-         * Add the ResponsibleParty which is declared in global attributes, or in
+         * Add the responsible party which is declared in global attributes, or in
          * the THREDDS attributes if no information was found in global attributes.
          */
         for (final String path : searchPath) {
@@ -883,17 +907,18 @@ final class MetadataReader {
         DefaultDistribution distribution   = null;
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            final ResponsibleParty party = createResponsibleParty(PUBLISHER, false);
-            if (party != null) {
+            final ResponsibleParty r = createResponsibleParty(PUBLISHER, false);
+            if (r != null) {
                 if (distribution == null) {
                     distribution = new DefaultDistribution();
                     metadata.setDistributionInfo(distribution);
                 }
-                final DefaultDistributor distributor = new DefaultDistributor(party);
+                final DefaultDistributor distributor = new DefaultDistributor(r);
                 // TODO: There is some transfert option, etc. that we could set there.
                 // See UnidataDD2MI.xsl for options for OPeNDAP, THREDDS, etc.
                 addIfAbsent(distribution.getDistributors(), distributor);
-                publisher = addIfNonNull(publisher, toInternationalString(party.getIndividualName()));
+                publisher = addIfNonNull(publisher, r.getOrganisationName());
+                publisher = addIfNonNull(publisher, toInternationalString(r.getIndividualName()));
             }
             // Also add history.
             final String history = decoder.stringValue(HISTORY);
@@ -923,7 +948,6 @@ final class MetadataReader {
                 metadata.getSpatialRepresentationInfo().add(createSpatialRepresentationInfo(cs));
             }
         }
-        metadata.freeze();
         return metadata;
     }
 }

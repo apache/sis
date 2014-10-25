@@ -42,6 +42,11 @@
         <include name="*.utf"/>
       </fileset>
     </copy>
+    <copy todir="${build.classes.dir}/org/apache/sis/internal/shapefile/jdbc">
+      <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources/org/apache/sis/internal/shapefile/jdbc">
+        <include name="*.utf"/>
+      </fileset>
+    </copy>
 
     <!-- Following are classical properties resources files. -->
     <copy todir="${build.classes.dir}">

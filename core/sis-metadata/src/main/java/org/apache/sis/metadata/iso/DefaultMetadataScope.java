@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.apache.sis.util.iso.Types;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -87,9 +88,11 @@ public class DefaultMetadataScope extends ISOMetadata {
      * Constructs a metadata scope initialized to the given value.
      *
      * @param resourceScope code for the scope.
+     * @param name Description of the scope, or {@code null} if none.
      */
-    public DefaultMetadataScope(final ScopeCode resourceScope) {
+    public DefaultMetadataScope(final ScopeCode resourceScope, final CharSequence name) {
         this.resourceScope = resourceScope;
+        this.name = Types.toInternationalString(name);
     }
 
     /**

@@ -19,11 +19,9 @@ package org.apache.sis.metadata.iso;
 import java.util.Date;
 import java.util.Locale;
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.ConcurrentModificationException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -57,6 +55,7 @@ import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
@@ -262,8 +261,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param contact   Party responsible for the metadata information.
      * @param dateStamp Date that the metadata was created.
-     * @param identificationInfo Basic information about the resource
-     *        to which the metadata applies.
+     * @param identificationInfo Basic information about the resource to which the metadata applies.
      */
     public DefaultMetadata(final ResponsibleParty contact,
                            final Date             dateStamp,
@@ -409,9 +407,13 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public final void setFileIdentifier(final String newValue) {
         DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(getMetadataIdentifier());
         if (identifier == null) {
+            if (newValue == null) return;
             identifier = new DefaultIdentifier();
         }
         identifier.setCode(newValue);
+        if (newValue == null && (identifier instanceof AbstractMetadata) && ((AbstractMetadata) identifier).isEmpty()) {
+            identifier = null;
+        }
         setMetadataIdentifier(identifier);
     }
 
@@ -692,37 +694,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * A specialization of {@link LegacyPropertyAdapter} which will try to merge the
-     * {@code "hierarchyLevel"} and {@code "hierarchyLevelName"} properties in the same
-     * {@link DefaultMetadataScope} instance.
-     */
-    private static abstract class ScopeAdapter<L> extends LegacyPropertyAdapter<L,DefaultMetadataScope> {
-        /**
-         * @param scopes Value of {@link DefaultMetadata#getMetadataScopes()}.
-         */
-        ScopeAdapter(final Collection<DefaultMetadataScope> scopes) {
-            super(scopes);
-        }
-
-        /**
-         * Invoked (indirectly) by JAXB when adding a new scope code or scope name. This implementation searches
-         * for an existing {@link MetadataScope} instance with a free slot for the new value before to create a
-         * new {@link DefaultMetadataScope} instance.
-         */
-        @Override
-        public boolean add(final L newValue) {
-            final Iterator<DefaultMetadataScope> it = elements.iterator();
-            if (it.hasNext()) {
-                DefaultMetadataScope scope = it.next();
-                if (unwrap(scope) == null) {
-                    return update(scope, newValue);
-                }
-            }
-            return super.add(newValue);
-        }
-    }
-
-    /**
      * Returns the scope to which the metadata applies.
      *
      * @return Scope to which the metadata applies.
@@ -734,10 +705,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     @XmlElement(name = "hierarchyLevel")
     public final Collection<ScopeCode> getHierarchyLevels() {
-        return new ScopeAdapter<ScopeCode>(getMetadataScopes()) {
+        return new MetadataScopeAdapter<ScopeCode>(getMetadataScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected DefaultMetadataScope wrap(final ScopeCode value) {
-                return new DefaultMetadataScope(value);
+                return new DefaultMetadataScope(value, null);
             }
 
             /** Extracts the legacy value from the new kind of value. */
@@ -758,8 +729,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new hierarchy levels.
      *
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
-     *   followed by {@link DefaultMetadataScope#setResourceScope(ScopeCode)}.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataScopes(Collection)}
+     *   and {@link DefaultMetadataScope#setResourceScope(ScopeCode)}.
      */
     @Deprecated
     public final void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
@@ -779,12 +750,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     @XmlElement(name = "hierarchyLevelName")
     public final Collection<String> getHierarchyLevelNames() {
-        return new ScopeAdapter<String>(getMetadataScopes()) {
+        return new MetadataScopeAdapter<String>(getMetadataScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected DefaultMetadataScope wrap(final String value) {
-                final DefaultMetadataScope scope = new DefaultMetadataScope();
-                scope.setName(new SimpleInternationalString(value));
-                return scope;
+                return new DefaultMetadataScope(null, value);
             }
 
             /** Extracts the legacy value from the new kind of value. */
@@ -806,8 +775,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new hierarchy level names.
      *
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
-     *   followed by {@link DefaultMetadataScope#setName(InternationalString)}.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataScopes(Collection)}
+     *   and {@link DefaultMetadataScope#setName(InternationalString)}.
      */
     @Deprecated
     public final void setHierarchyLevelNames(final Collection<? extends String> newValues) {
