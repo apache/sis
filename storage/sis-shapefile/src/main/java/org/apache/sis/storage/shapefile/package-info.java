@@ -14,31 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.shapefile;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Arrays;
-import java.util.Map;
-import com.esri.core.geometry.Point;
-import com.esri.core.geometry.Polyline;
-import com.esri.core.geometry.OperatorFactory;
-import com.esri.core.geometry.OperatorExportToWkt;
-import com.esri.core.geometry.Operator;
-
 
 /**
+ * Shapefile.
  *
  * @author  Travis L. Pinney
- * @since   0.4
- * @version 0.4
+ * @author  Marc Le Bihan
+ * @since   0.5
+ * @version 0.5
  * @module
  */
-public class CmdLineDriver {
-    public static void main( String[] args ) throws IOException {
-
-        // code will eventually added here to deal with the command line...
-
-    }
-}
+package org.apache.sis.storage.shapefile;

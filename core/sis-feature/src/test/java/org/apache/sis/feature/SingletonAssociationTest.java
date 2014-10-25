@@ -47,7 +47,7 @@ public final strictfp class SingletonAssociationTest extends TestCase {
         final AbstractFeature twinTown = DefaultFeatureTypeTest.city().newInstance();
         twinTown.setPropertyValue("city", "Le Mans");
         twinTown.setPropertyValue("population", 143240); // In 2011.
-        final AbstractAssociation association = new SingletonAssociation(DefaultAssociationRoleTest.twinTown());
+        final AbstractAssociation association = new SingletonAssociation(DefaultAssociationRoleTest.twinTown(false));
         association.setValue(twinTown);
         return association;
     }

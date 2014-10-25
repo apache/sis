@@ -18,6 +18,7 @@ package org.apache.sis.util.resources;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.maven.model.Resource;
@@ -27,6 +28,9 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.Scanner;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
+import static org.apache.sis.util.resources.IndexedResourceCompiler.JAVA_EXT;
+import static org.apache.sis.util.resources.IndexedResourceCompiler.PROPERTIES_EXT;
+
 
 /**
  * Compiles the international resources that are found in the module from which this mojo is invoked.
@@ -35,7 +39,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Olivier Nouguier (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @goal compile-resources
@@ -96,6 +100,12 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     private File javaDirectoryFile;
 
     /**
+     * Constructs a new resource compiler MOJO.
+     */
+    public ResourceCompilerMojo() {
+    }
+
+    /**
      * Executes the mojo.
      *
      * @throws MojoExecutionException if the plugin execution failed.
@@ -146,8 +156,8 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     }
 
     /**
-     * Recursively scans the directories for a sub-package named "resources",
-     * then invokes the resource compiler for that directory.
+     * Recursively scans the directories and find all Java classes having a property files of the same name.
+     * Then invokes the resource compiler for those files.
      */
     private int processAllResourceDirectories(final File directory) throws ResourceCompilerException {
         int errors = 0;
@@ -155,14 +165,16 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
         if (subdirs != null) { // Appears to be sometime null with auto-generated sub-directories.
             for (final File subdir : subdirs) {
                 if (subdir.isDirectory()) {
-                    if (subdir.getName().equals("resources")) {
-                        final File[] resourcesToProcess = subdir.listFiles(this);
-                        if (resourcesToProcess != null && resourcesToProcess.length != 0) {
+                    File[] resourcesToProcess = subdir.listFiles(this);
+                    int count = filterLanguages(resourcesToProcess);
+                    if (count != 0) {
+                        count = toJavaSourceFiles(resourcesToProcess, count);
+                        if (count != 0) {
+                            resourcesToProcess = Arrays.copyOf(resourcesToProcess, count);
                             errors += new Compiler(resourcesToProcess).run();
                         }
-                    } else {
-                        errors += processAllResourceDirectories(subdir);
                     }
+                    errors += processAllResourceDirectories(subdir);
                 }
             }
         }
@@ -170,22 +182,84 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     }
 
     /**
-     * Returns {@code true} if the given file is the source code for a resources bundle.
-     * This method returns {@code true} if the given file is a Java source file and if a
-     * properties file of the same name exists.
+     * Accepts all {@code "*.properties"} files.
      *
      * @param directory The directory.
      * @param name The file name.
      * @return {@code true} if the given file is a property file.
      */
     @Override
-    public final boolean accept(final File directory, String name) {
-        if (!name.endsWith(IndexedResourceCompiler.JAVA_EXT)) {
-            return false;
+    public final boolean accept(final File directory, final String name) {
+        return name.endsWith(PROPERTIES_EXT);
+    }
+
+    /**
+     * Retains only the properties files which seems to be about internationalized resources.
+     * For example if the given array contains the following files:
+     * <ul>
+     *   <li>{@code "Errors.properties"}</li>
+     *   <li>{@code "Errors_en.properties"}</li>
+     *   <li>{@code "Errors_fr.properties"}</li>
+     *   <li>{@code "Messages.properties"}</li>
+     *   <li>{@code "Messages_en.properties"}</li>
+     *   <li>{@code "Messages_fr.properties"}</li>
+     *   <li>{@code "NotAnInternationalResource.properties"}</li>
+     * </ul>
+     *
+     * Then this method will retain the following files:
+     * <ul>
+     *   <li>{@code "Errors.properties"}</li>
+     *   <li>{@code "Messages.properties"}</li>
+     * </ul>
+     *
+     * @param  resourcesToProcess The files to filter. This array will be overwritten in-place.
+     * @return Number of valid elements in the {@code resourcesToProcess} after this method completion.
+     */
+    static int filterLanguages(final File[] resourcesToProcess) {
+        int count = 0;
+        if (resourcesToProcess != null) {
+            Arrays.sort(resourcesToProcess);
+            for (int i=0; i<resourcesToProcess.length;) {
+                final File file = resourcesToProcess[i];
+                String name = file.getName();
+                name = name.substring(0, name.length() - PROPERTIES_EXT.length()) + '_';
+                final int fileIndex = i;
+                while (++i < resourcesToProcess.length) {
+                    if (!resourcesToProcess[i].getName().startsWith(name)) {
+                        break;
+                    }
+                }
+                // Accepts the property file only if we found at least one language.
+                // Example: "Messages.properties" and "Messages_en.properties".
+                if (i - fileIndex >= 2) {
+                    resourcesToProcess[count++] = file;
+                }
+            }
         }
-        name = name.substring(0, name.length() - IndexedResourceCompiler.JAVA_EXT.length());
-        name += IndexedResourceCompiler.PROPERTIES_EXT;
-        return new File(directory, name).isFile();
+        return count;
+    }
+
+    /**
+     * Converts the given property files into Java source file, provided that the later exists.
+     * The given array is overwritten in place.
+     *
+     * @param  resourcesToProcess The filtered resource files, as returned by {@link #filterLanguages(File[])}.
+     * @param  count Number of valid elements in {@code resourcesToProcess}.
+     * @return Number of valid elements after this method completion.
+     */
+    private static int toJavaSourceFiles(final File[] resourcesToProcess, final int count) {
+        int n = 0;
+        for (int i=0; i<count; i++) {
+            File file = resourcesToProcess[i];
+            String name = file.getName();
+            name = name.substring(0, name.length() - PROPERTIES_EXT.length());
+            name += JAVA_EXT;
+            file = new File(file.getParentFile(), name);
+            if (file.isFile()) {
+                resourcesToProcess[n++] = file;
+            }
+        }
+        return n;
     }
 
     /**

@@ -204,7 +204,7 @@ header: for (int i=0; ; i++) {
                 final DefaultAssociationRole pt = (DefaultAssociationRole) propertyType;
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
-                valueType     = toString(pt.getValueType().getName());
+                valueType     = toString(DefaultAssociationRole.getValueTypeName(pt));
                 valueClass    = AbstractFeature.class;
             } else if (propertyType instanceof DefaultOperation) {
                 final AbstractIdentifiedType resultType = ((DefaultOperation) propertyType).getResult();

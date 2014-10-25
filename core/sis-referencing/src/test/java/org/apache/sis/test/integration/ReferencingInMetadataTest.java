@@ -20,11 +20,7 @@ import java.net.URI;
 import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.OnLineFunction;
-import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.ResponsibleParty;
-import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.citation.*;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -92,7 +88,7 @@ public final strictfp class ReferencingInMetadataTest extends XMLTestCase {
          *   </gmd:CI_ResponsibleParty>
          * </gmd:contact>
          */
-        final ResponsibleParty contact = (ResponsibleParty) getSingleton(metadata.getContacts());
+        final ResponsibleParty contact = getSingleton(metadata.getContacts());
         final OnlineResource onlineResource = contact.getContactInfo().getOnlineResource();
         assertNotNull("onlineResource", onlineResource);
         assertEquals("organisationName", "Apache SIS", contact.getOrganisationName().toString());

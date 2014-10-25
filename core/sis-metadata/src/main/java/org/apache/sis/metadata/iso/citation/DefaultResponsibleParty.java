@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 
 /**
@@ -129,26 +130,60 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     }
 
     /**
-     * Returns the name of the first party of the given type, or {@code null} if none.
+     * Returns the name or the position of the first individual. If no individual is found in the list of parties,
+     * then this method will search in the list of organization members. The later structure is used by our NetCDF
+     * reader.
+     *
+     * @param  position {@code true} for returning the position name instead than individual name.
+     * @return The name or position of the first individual, or {@code null}.
+     *
+     * @see #getIndividualName()
+     * @see #getPositionName()
      */
-    private InternationalString getName(final Class<? extends AbstractParty> type, final boolean position) {
+    private InternationalString getIndividual(final boolean position) {
         final Collection<AbstractParty> parties = getParties();
-        if (parties != null) { // May be null on marshalling.
+        InternationalString name = getName(parties, DefaultIndividual.class, position);
+        if (name == null && parties != null) {
             for (final AbstractParty party : parties) {
-                if (type.isInstance(party)) {
-                    final InternationalString name;
-                    if (position) {
-                        name = ((DefaultIndividual) party).getPositionName();
-                    } else {
-                        name = party.getName();
-                    }
+                if (party instanceof DefaultOrganisation) {
+                    name = getName(((DefaultOrganisation) party).getIndividual(), DefaultIndividual.class, position);
                     if (name != null) {
-                        return name;
+                        break;
                     }
                 }
             }
         }
-        return null;
+        return name;
+    }
+
+    /**
+     * Returns the name of the first party of the given type, or {@code null} if none.
+     *
+     * @param  position {@code true} for returning the position name instead than individual name.
+     * @return The name or position of the first individual, or {@code null}.
+     *
+     * @see #getOrganisationName()
+     * @see #getIndividualName()
+     * @see #getPositionName()
+     */
+    private static InternationalString getName(final Collection<? extends AbstractParty> parties,
+            final Class<? extends AbstractParty> type, final boolean position)
+    {
+        InternationalString name = null;
+        if (parties != null) { // May be null on marshalling.
+            for (final AbstractParty party : parties) {
+                if (type.isInstance(party)) {
+                    if (name != null) {
+                        LegacyPropertyAdapter.warnIgnoredExtraneous(type, DefaultResponsibleParty.class,
+                                position ? "getPositionName" : (type == DefaultIndividual.class)
+                                         ? "getIndividualName" : "getOrganisationName");
+                        break;
+                    }
+                    name = position ? ((DefaultIndividual) party).getPositionName() : party.getName();
+                }
+            }
+        }
+        return name;
     }
 
     /**
@@ -181,8 +216,9 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * Only one of {@code individualName}, {@link #getOrganisationName() organisationName}
      * and {@link #getPositionName() positionName} shall be provided.
      *
-     * <p>This implementation returns the first non-null name of an {@link Individual}
-     * in the collection of {@linkplain #getParties() parties}.</p>
+     * <p>This implementation returns the name of the first {@link Individual} found in the collection of
+     * {@linkplain #getParties() parties}. If no individual is found in the parties, then this method fallbacks
+     * on the first {@linkplain Organisation#getIndividual() organisation member}.</p>
      *
      * @return Name, surname, given name and title of the responsible person, or {@code null}.
      *
@@ -192,7 +228,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Deprecated
     @XmlElement(name = "individualName")
     public String getIndividualName() {
-        final InternationalString name = getName(DefaultIndividual.class, false);
+        final InternationalString name = getIndividual(false);
         return (name != null) ? name.toString() : null;
     }
 
@@ -220,8 +256,8 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * {@link #getIndividualName() individualName}, {@code organisationName}
      * and {@link #getPositionName() positionName} shall be provided.
      *
-     * <p>This implementation returns the first non-null name of an {@link Organisation}
-     * in the collection of {@linkplain #getParties() parties}.</p>
+     * <p>This implementation returns the name of the first {@link Organisation}
+     * found in the collection of {@linkplain #getParties() parties}.</p>
      *
      * @return Name of the responsible organization, or {@code null}.
      *
@@ -231,7 +267,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Deprecated
     @XmlElement(name = "organisationName")
     public InternationalString getOrganisationName() {
-        return getName(DefaultOrganisation.class, false);
+        return getName(getParties(), DefaultOrganisation.class, false);
     }
 
     /**
@@ -258,8 +294,9 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * {@link #getIndividualName() individualName}, {@link #getOrganisationName() organisationName}
      * and {@code positionName} shall be provided.
      *
-     * <p>This implementation returns the first non-null position name of an {@link Individual}
-     * in the collection of {@linkplain #getParties() parties}.</p>
+     * <p>This implementation returns the position of the first {@link Individual} found in the collection of
+     * {@linkplain #getParties() parties}. If no individual is found in the parties, then this method fallbacks
+     * on the first {@linkplain Organisation#getIndividual() organisation member}.</p>
      *
      * @return Role or position of the responsible person, or {@code null}
      *
@@ -269,7 +306,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @Deprecated
     @XmlElement(name = "positionName")
     public InternationalString getPositionName() {
-        return getName(DefaultIndividual.class, true);
+        return getIndividual(true);
     }
 
     /**

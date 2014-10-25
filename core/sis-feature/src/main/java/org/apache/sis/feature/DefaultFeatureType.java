@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
@@ -87,7 +88,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *
  * @see AbstractFeature
  */
-public class DefaultFeatureType extends AbstractIdentifiedType {
+public class DefaultFeatureType extends AbstractIdentifiedType implements FeatureType {
     /**
      * For cross-version compatibility.
      */
@@ -102,7 +103,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
 
     /**
      * {@code true} if this feature type contains only attributes constrained to the [1 … 1] cardinality,
-     * or operations.
+     * or operations. The feature type shall not contains associations.
      *
      * @see #isSimple()
      */
@@ -113,6 +114,23 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * {@code false} if we expect most properties to be specified.
      */
     private transient boolean isSparse;
+
+    /**
+     * {@code true} if we determined that this feature type does not have, directly or indirectly,
+     * any unresolved name (i.e. a {@link DefaultAssociationRole#valueType} specified only be the
+     * feature type name instead than its actual instance). A value of {@code true} means that all
+     * names have been resolved. However a value of {@code false} only means that we are not sure,
+     * and that {@link #resolve(FeatureType)} should check again.
+     *
+     * <div class="note"><b>Note:</b>
+     * Strictly speaking, this field should be declared {@code volatile} since the names could
+     * be resolved late after construction, after the {@code DefaultFeatureType} instance became
+     * used by different threads. However this is not the intended usage of deferred associations.
+     * Furthermore a wrong value ({@code false} when it should be {@code true}) should only cause
+     * more computation than needed, without changing the result.
+     * </div>
+     */
+    private transient boolean isResolved;
 
     /**
      * The direct parents of this feature type, or an empty set if none.
@@ -214,14 +232,24 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         super(identification);
         ArgumentChecks.ensureNonNull("properties", properties);
         this.isAbstract = isAbstract;
-        this.superTypes = (superTypes == null) ? Collections.<DefaultFeatureType>emptySet() :
-                          CollectionsExt.<DefaultFeatureType>immutableSet(true, superTypes);
+        if (superTypes == null) {
+            this.superTypes = Collections.emptySet();
+        } else {
+            this.superTypes = CollectionsExt.immutableSet(true, superTypes);
+            for (final FeatureType type : this.superTypes) {
+                if (type instanceof NamedFeatureType) {
+                    // Hierarchy of feature types can not be cyclic.
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, type.getName()));
+                }
+            }
+        }
         switch (properties.length) {
             case 0:  this.properties = Collections.emptyList(); break;
             case 1:  this.properties = Collections.singletonList(properties[0]); break;
             default: this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(properties, properties.length, AbstractIdentifiedType[].class)); break;
         }
         computeTransientFields();
+        isResolved = resolve(this, null, isSimple);
     }
 
     /**
@@ -243,10 +271,11 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         computeTransientFields();
+        isResolved = isSimple; // Conservative value. The 'resolve' method will compute a more accurate value if needed.
     }
 
     /**
-     * Computes all transient fields ({@link #assignableTo}, {@link #byName}, {@link #indices}, {@link #isSimple}).
+     * Computes transient fields ({@link #assignableTo}, {@link #byName}, {@link #indices}, {@link #isSimple}).
      *
      * <p>As a side effect, this method checks for missing or duplicated names.</p>
      *
@@ -257,9 +286,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         byName       = new LinkedHashMap<String,AbstractIdentifiedType>(capacity);
         indices      = new LinkedHashMap<String,Integer>(capacity);
         assignableTo = new HashSet<GenericName>(4);
-        assignableTo.add(getName());
+        assignableTo.add(super.getName());
         scanPropertiesFrom(this);
-        byName        = compact(byName);
+        byName        = CollectionsExt.compact(byName);
         assignableTo  = CollectionsExt.unmodifiableOrCopy(assignableTo);
         allProperties = byName.values();
         if (byName instanceof HashMap<?,?>) {
@@ -294,7 +323,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
                 }
             }
         }
-        indices = compact(indices);
+        indices = CollectionsExt.compact(indices);
         /*
          * Rational for choosing whether the feature is sparse: By default, java.util.HashMap implementation creates
          * an internal array of length 16 (see HashMap.DEFAULT_INITIAL_CAPACITY).  In addition, the HashMap instance
@@ -309,25 +338,15 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
     }
 
     /**
-     * Returns a more compact representation of the given map. This method is similar to
-     * {@link CollectionsExt#unmodifiableOrCopy(Map)}, except that it does not wrap the
-     * map in an unmodifiable view. The intend is to avoid one level of indirection for
-     * performance and memory reasons (keeping in mind that we will have lot of features).
-     * This is okay if we guaranteed that the map does not escape outside this class.
-     */
-    private static <K,V> Map<K,V> compact(final Map<K,V> map) {
-        switch (map.size()) {
-            case 0:  return Collections.emptyMap();
-            case 1:  final Map.Entry<K,V> entry = map.entrySet().iterator().next();
-                     return Collections.singletonMap(entry.getKey(), entry.getValue());
-            default: return map;
-        }
-    }
-
-    /**
      * Fills the {@link #byName} map using the non-transient information in the given {@code source}.
      * This method invokes itself recursively in order to use the information provided in super-types.
      * This method also performs an opportunist verification of argument validity.
+     *
+     * <p>{@code this} shall be the instance in process of being created, not any other instance
+     * (i.e. recursive method invocations are performed on the same {@code this} instance).</p>
+     *
+     * @param  source The feature from which to get properties.
+     * @throws IllegalArgumentException if two properties have the same name.
      */
     private void scanPropertiesFrom(final DefaultFeatureType source) {
         for (final DefaultFeatureType parent : source.getSuperTypes()) {
@@ -376,6 +395,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * Returns the string representation of the given name, making sure that the name is non-null
      * and the string non-empty. This method is used for checking argument validity.
      *
+     * <p>{@code this} shall be the instance in process of being created, not any other instance.</p>
+     *
      * @param name   The name for which to get the string representation.
      * @param source The feature which contains the property (typically {@code this}).
      * @param index  Index of the property having the given name.
@@ -395,6 +416,73 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
         }
         throw new IllegalArgumentException(Errors.format(key,
                 b.append("properties[").append(index).append("].name").toString()));
+    }
+
+    /**
+     * If an associated feature type is a placeholder for a {@code FeatureType} to be defined later,
+     * replaces the placeholder by the actual instance if available. Otherwise do nothing.
+     *
+     * <p>This method is needed only in case of cyclic graph, e.g. feature <var>A</var> has an association
+     * to feature <var>B</var> which has an association back to <var>A</var>. It may also be <var>A</var>
+     * having an association to itself, <i>etc.</i></p>
+     *
+     * <p>{@code this} shall be the instance in process of being created, not other instance
+     * (i.e. recursive method invocations are performed on the same {@code this} instance).</p>
+     *
+     * @param  feature  The feature type for which to resolve the properties.
+     * @param  previous Previous results, for avoiding never ending loop.
+     * @return {@code true} if all names have been resolved.
+     */
+    private boolean resolve(final DefaultFeatureType feature, final Map<FeatureType,Boolean> previous) {
+        /*
+         * The isResolved field is used only as a cache for skipping completely the DefaultFeatureType instance if
+         * we have determined that there is no unresolved name.
+         */
+        return feature.isResolved = resolve(feature, previous, feature.isResolved);
+    }
+
+    /**
+     * Implementation of {@link #resolve(FeatureType, Map)}, also to be invoked from the constructor.
+     *
+     * @param  feature  The feature type for which to resolve the properties.
+     * @param  previous Previous results, for avoiding never ending loop. Initially {@code null}.
+     * @param  resolved {@code true} if we already know that all names are resolved.
+     * @return {@code true} if all names have been resolved.
+     */
+    private boolean resolve(final DefaultFeatureType feature, Map<FeatureType,Boolean> previous, boolean resolved) {
+        if (!resolved) {
+            resolved = true;
+            for (final DefaultFeatureType type : feature.getSuperTypes()) {
+                resolved &= resolve(type, previous);
+            }
+            for (final AbstractIdentifiedType property : feature.getProperties(false)) {
+                if (property instanceof DefaultAssociationRole) {
+                    if (!((DefaultAssociationRole) property).resolve(this)) {
+                        resolved = false;
+                        continue;
+                    }
+                    /*
+                     * Resolve recursively the associated features, with a check against infinite recursivity.
+                     * If we fall in a loop (for example A → B → C → A), conservatively returns 'false'. This
+                     * may not be the most accurate answer, but will not cause any more hurt than checking more
+                     * often than necessary.
+                     */
+                    final DefaultFeatureType valueType = ((DefaultAssociationRole) property).getValueType();
+                    if (valueType != this) {
+                        if (previous == null) {
+                            previous = new IdentityHashMap<FeatureType,Boolean>(8);
+                        }
+                        Boolean r = previous.put(valueType, Boolean.FALSE);
+                        if (r == null) {
+                            r = resolve(valueType, previous);
+                            previous.put(valueType, r);
+                        }
+                        resolved &= r;
+                    }
+                }
+            }
+        }
+        return resolved;
     }
 
 
@@ -421,7 +509,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
 
     /**
      * Returns {@code true} if this feature type contains only attributes constrained to the [1 … 1] cardinality,
-     * or operations. Such feature types can be handled as a {@link org.opengis.util.Record}s.
+     * or operations (no feature association).
+     * Such feature types can be handled as a {@linkplain org.apache.sis.util.iso.DefaultRecord records}.
      *
      * @return {@code true} if this feature type contains only simple attributes or operations.
      */
@@ -546,9 +635,15 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * The type of list elements will be changed to {@code FeatureType} if and when such interface
      * will be defined in GeoAPI.</div>
      *
+     * <div class="note"><b>Note for subclasses:</b>
+     * this method is final because it is invoked (indirectly) by constructors, and invoking a user-overrideable
+     * method at construction time is not recommended. Furthermore, many Apache SIS methods need guarantees about
+     * the stability of this collection.
+     * </div>
+     *
      * @return The parents of this feature type, or an empty set if none.
      */
-    public Set<DefaultFeatureType> getSuperTypes() {
+    public final Set<DefaultFeatureType> getSuperTypes() {
         return superTypes;
     }
 
@@ -562,12 +657,18 @@ public class DefaultFeatureType extends AbstractIdentifiedType {
      * The type of list elements will be changed to {@code PropertyType} if and when such interface
      * will be defined in GeoAPI.</div>
      *
+     * <div class="note"><b>Note for subclasses:</b>
+     * this method is final because it is invoked (indirectly) by constructors, and invoking a user-overrideable
+     * method at construction time is not recommended. Furthermore, many Apache SIS methods need guarantees about
+     * the stability of this collection.
+     * </div>
+     *
      * @param  includeSuperTypes {@code true} for including the properties inherited from the super-types,
      *         or {@code false} for returning only the properties defined explicitely in this type.
      * @return Feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
-    public Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
+    public final Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
         return includeSuperTypes ? allProperties : properties;
     }
 
