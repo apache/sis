@@ -55,6 +55,7 @@ import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
@@ -388,9 +389,13 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public final void setFileIdentifier(final String newValue) {
         DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(getMetadataIdentifier());
         if (identifier == null) {
+            if (newValue == null) return;
             identifier = new DefaultIdentifier();
         }
         identifier.setCode(newValue);
+        if (newValue == null && (identifier instanceof AbstractMetadata) && ((AbstractMetadata) identifier).isEmpty()) {
+            identifier = null;
+        }
         setMetadataIdentifier(identifier);
     }
 
