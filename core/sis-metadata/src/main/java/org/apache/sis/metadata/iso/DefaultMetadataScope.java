@@ -20,9 +20,9 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.iso.Types;
 import org.opengis.metadata.MetadataScope;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.apache.sis.util.iso.Types;
 
 
 /**
