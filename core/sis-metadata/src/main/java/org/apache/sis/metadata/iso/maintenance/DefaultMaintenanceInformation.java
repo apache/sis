@@ -17,7 +17,9 @@
 package org.apache.sis.metadata.iso.maintenance;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -227,9 +229,10 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @Deprecated
     @XmlElement(name = "dateOfNextUpdate")
-    public final Date getDateOfNextUpdate() {
-        if (maintenanceDates != null) {
-            for (final CitationDate date : maintenanceDates) {
+    public Date getDateOfNextUpdate() {
+        final Collection<CitationDate> dates = getMaintenanceDates();
+        if (dates != null) { // May be null on XML marshalling.
+            for (final CitationDate date : dates) {
                 if (DateType.NEXT_UPDATE.equals(date.getDateType())) {
                     return date.getDate();
                 }
@@ -245,18 +248,32 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @param newValue The new date of next update.
      */
     @Deprecated
-    public final void setDateOfNextUpdate(final Date newValue) {
+    public void setDateOfNextUpdate(final Date newValue) {
         checkWritePermission();
-        if (newValue != null) {
-            if (maintenanceDates != null) {
-                for (final CitationDate date : maintenanceDates) {
-                    if (date instanceof DefaultCitationDate && DateType.NEXT_UPDATE.equals(date.getDateType())) {
+        Collection<CitationDate> dates = maintenanceDates;
+        if (dates != null) {
+            final Iterator<CitationDate> it = dates.iterator();
+            while (it.hasNext()) {
+                final CitationDate date = it.next();
+                if (DateType.NEXT_UPDATE.equals(date.getDateType())) {
+                    if (newValue == null) {
+                        it.remove();
+                        return;
+                    } else if (date instanceof DefaultCitationDate) {
                         ((DefaultCitationDate) date).setDate(newValue);
                         return;
                     }
                 }
             }
-            getMaintenanceDates().add(new DefaultCitationDate(newValue, DateType.NEXT_UPDATE));
+        }
+        if (newValue != null) {
+            final CitationDate date = new DefaultCitationDate(newValue, DateType.NEXT_UPDATE);
+            if (dates != null) {
+                dates.add(date);
+            } else {
+                dates = Collections.singleton(date);
+            }
+            setMaintenanceDates(dates);
         }
     }
 
@@ -350,7 +367,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMaintenanceScopes(Collection)}.
      */
     @Deprecated
-    public final void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
+    public void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
         checkWritePermission();
         ((LegacyPropertyAdapter<ScopeCode,?>) getUpdateScopes()).setValues(newValues);
     }
@@ -403,7 +420,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMaintenanceScopes(Collection)}.
      */
     @Deprecated
-    public final void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
+    public void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
         checkWritePermission();
         ((LegacyPropertyAdapter<ScopeDescription,?>) getUpdateScopeDescriptions()).setValues(newValues);
     }

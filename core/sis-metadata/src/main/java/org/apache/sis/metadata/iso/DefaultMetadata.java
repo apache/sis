@@ -55,6 +55,7 @@ import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
@@ -337,6 +338,14 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         return new DefaultMetadata(object);
     }
 
+    /*
+     * Note about deprecated methods implementation: as a general guideline in our metadata implementation,
+     * the deprecated getter methods invoke only the non-deprecated getter replacement, and the deprecated
+     * setter methods invoke only the non-deprecated setter replacement (unless the invoked methods are final).
+     * This means that if a deprecated setter methods need the old value, it will read the field directly.
+     * The intend is to avoid surprising code paths for user who override some methods.
+     */
+
     /**
      * Returns a unique identifier for this metadata record.
      *
@@ -372,7 +381,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "fileIdentifier")
-    public final String getFileIdentifier() {
+    public String getFileIdentifier() {
         final Identifier identifier = getMetadataIdentifier();
         return (identifier != null) ? identifier.getCode() : null;
     }
@@ -385,12 +394,16 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataIdentifier(Identifier)}
      */
     @Deprecated
-    public final void setFileIdentifier(final String newValue) {
-        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(getMetadataIdentifier());
+    public void setFileIdentifier(final String newValue) {
+        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(metadataIdentifier); // See "Note about deprecated methods implementation"
         if (identifier == null) {
+            if (newValue == null) return;
             identifier = new DefaultIdentifier();
         }
         identifier.setCode(newValue);
+        if (newValue == null && (identifier instanceof AbstractMetadata) && ((AbstractMetadata) identifier).isEmpty()) {
+            identifier = null;
+        }
         setMetadataIdentifier(identifier);
     }
 
@@ -440,8 +453,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "language")
-    public final Locale getLanguage() {
-        return OtherLocales.getFirst(languages);
+    public Locale getLanguage() {
+        return OtherLocales.getFirst(getLanguages());
         // No warning if the collection contains more than one locale, because
         // this is allowed by the "getLanguage() + getLocales()" contract.
     }
@@ -460,9 +473,9 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of GeoAPI 3.1, replaced by {@link #setLanguages(Collection)}.
      */
     @Deprecated
-    public final void setLanguage(final Locale newValue) {
+    public void setLanguage(final Locale newValue) {
         checkWritePermission();
-        setLanguages(OtherLocales.setFirst(languages, newValue));
+        setLanguages(OtherLocales.setFirst(languages, newValue)); // See "Note about deprecated methods implementation"
     }
 
     /**
@@ -476,7 +489,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     @XmlElement(name = "locale")
     @XmlJavaTypeAdapter(PT_Locale.class)
-    public final Collection<Locale> getLocales() {
+    public Collection<Locale> getLocales() {
         return OtherLocales.filter(getLanguages());
     }
 
@@ -488,9 +501,9 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of GeoAPI 3.1, replaced by {@link #setLanguages(Collection)}.
      */
     @Deprecated
-    public final void setLocales(final Collection<? extends Locale> newValues) {
+    public void setLocales(final Collection<? extends Locale> newValues) {
         checkWritePermission();
-        setLanguages(OtherLocales.merge(getLanguage(), newValues));
+        setLanguages(OtherLocales.merge(OtherLocales.getFirst(languages), newValues)); // See "Note about deprecated methods implementation"
     }
 
     /**
@@ -541,8 +554,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "characterSet")
-    public final Charset getCharacterSet() {
-        return LegacyPropertyAdapter.getSingleton(characterSets, Charset.class, null, DefaultMetadata.class, "getCharacterSet");
+    public Charset getCharacterSet() {
+        return LegacyPropertyAdapter.getSingleton(getCharacterSets(), Charset.class, null, DefaultMetadata.class, "getCharacterSet");
     }
 
     /**
@@ -553,7 +566,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of GeoAPI 3.1, replaced by {@link #setCharacterSets(Collection)}.
      */
     @Deprecated
-    public final void setCharacterSet(final Charset newValue) {
+    public void setCharacterSet(final Charset newValue) {
         setCharacterSets(LegacyPropertyAdapter.asCollection(newValue));
     }
 
@@ -592,7 +605,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "parentIdentifier")
-    public final String getParentIdentifier() {
+    public String getParentIdentifier() {
         final Citation parentMetadata = getParentMetadata();
         if (parentMetadata != null) {
             final InternationalString title = parentMetadata.getTitle();
@@ -611,14 +624,14 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of ISO 19115:2014, replaced by {@link #getParentMetadata()}.
      */
     @Deprecated
-    public final void setParentIdentifier(final String newValue) {
+    public void setParentIdentifier(final String newValue) {
         checkWritePermission();
-        DefaultCitation parentMetadata = DefaultCitation.castOrCopy(getParentMetadata());
-        if (parentMetadata == null) {
-            parentMetadata = new DefaultCitation();
+        DefaultCitation parent = DefaultCitation.castOrCopy(parentMetadata); // See "Note about deprecated methods implementation"
+        if (parent == null) {
+            parent = new DefaultCitation();
         }
-        parentMetadata.setTitle(new SimpleInternationalString(newValue));
-        setParentMetadata(parentMetadata);
+        parent.setTitle(new SimpleInternationalString(newValue));
+        setParentMetadata(parent);
     }
 
     /**
@@ -687,7 +700,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *   and {@link DefaultMetadataScope#setResourceScope(ScopeCode)}.
      */
     @Deprecated
-    public final void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
+    public void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
         checkWritePermission();
         ((LegacyPropertyAdapter<ScopeCode,?>) getHierarchyLevels()).setValues(newValues);
     }
@@ -736,7 +749,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *   and {@link DefaultMetadataScope#setName(InternationalString)}.
      */
     @Deprecated
-    public final void setHierarchyLevelNames(final Collection<? extends String> newValues) {
+    public void setHierarchyLevelNames(final Collection<? extends String> newValues) {
         checkWritePermission();
         ((LegacyPropertyAdapter<String,?>) getHierarchyLevelNames()).setValues(newValues);
     }
@@ -798,8 +811,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "dateStamp", required = true)
-    public final Date getDateStamp() {
-        final Collection<CitationDate> dates = this.dates;
+    public Date getDateStamp() {
+        final Collection<CitationDate> dates = getDates();
         if (dates != null) {
             for (final CitationDate date : dates) {
                 if (DateType.CREATION.equals(date.getDateType())) {
@@ -818,16 +831,16 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of ISO 19115:2014, replaced by {@link #setDates(Collection)}.
      */
     @Deprecated
-    public final void setDateStamp(final Date newValue) {
+    public void setDateStamp(final Date newValue) {
         checkWritePermission();
-        Collection<CitationDate> dates = this.dates;
-        if (dates == null) {
+        Collection<CitationDate> newValues = dates; // See "Note about deprecated methods implementation"
+        if (newValues == null) {
             if (newValue == null) {
                 return;
             }
-            dates = new ArrayList<>(1);
+            newValues = new ArrayList<>(1);
         } else {
-            final Iterator<CitationDate> it = dates.iterator();
+            final Iterator<CitationDate> it = newValues.iterator();
             while (it.hasNext()) {
                 final CitationDate date = it.next();
                 if (DateType.CREATION.equals(date.getDateType())) {
@@ -844,8 +857,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
                 }
             }
         }
-        dates.add(new DefaultCitationDate(newValue, DateType.CREATION));
-        setDates(dates);
+        newValues.add(new DefaultCitationDate(newValue, DateType.CREATION));
+        setDates(newValues);
     }
 
     /**
@@ -928,7 +941,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Implementation of legacy {@link #getMetadataStandardName()} and {@link #getMetadataStandardVersion()} methods.
      */
     private String getMetadataStandard(final boolean version) {
-        final Citation standard = LegacyPropertyAdapter.getSingleton(metadataStandards,
+        final Citation standard = LegacyPropertyAdapter.getSingleton(getMetadataStandards(),
                 Citation.class, null, DefaultMetadata.class, version ? "getMetadataStandardName" : "getMetadataStandardVersion");
         if (standard != null) {
             final InternationalString title = version ? standard.getEdition() : standard.getTitle();
@@ -977,7 +990,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "metadataStandardName")
-    public final String getMetadataStandardName() {
+    public String getMetadataStandardName() {
         return getMetadataStandard(false);
     }
 
@@ -990,7 +1003,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *   followed by {@link DefaultCitation#setTitle(InternationalString)}.
      */
     @Deprecated
-    public final void setMetadataStandardName(final String newValue) {
+    public void setMetadataStandardName(final String newValue) {
         setMetadataStandard(false, newValue);
     }
 
@@ -1005,7 +1018,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "metadataStandardVersion")
-    public final String getMetadataStandardVersion() {
+    public String getMetadataStandardVersion() {
         return getMetadataStandard(true);
     }
 
@@ -1018,7 +1031,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *   followed by {@link DefaultCitation#setEdition(InternationalString)}.
      */
     @Deprecated
-    public final void setMetadataStandardVersion(final String newValue) {
+    public void setMetadataStandardVersion(final String newValue) {
         setMetadataStandard(true, newValue);
     }
 
@@ -1056,10 +1069,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "dataSetURI")
-    public final String getDataSetUri() {
+    public String getDataSetUri() {
         String linkage = null;
-        if (identificationInfo != null) {
-            for (final Identification identification : identificationInfo) {
+        final Collection<Identification> info = getIdentificationInfo();
+        if (info != null) {
+            for (final Identification identification : info) {
                 final Citation citation = identification.getCitation();
                 if (citation != null) {
                     final Collection<? extends OnlineResource> onlineResources = citation.getOnlineResources();
@@ -1095,11 +1109,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *    followed by {@link DefaultCitation#setOnlineResources(Collection)}.
      */
     @Deprecated
-    public final void setDataSetUri(final String newValue) throws URISyntaxException {
+    public void setDataSetUri(final String newValue) throws URISyntaxException {
         final URI uri = new URI(newValue);
         checkWritePermission();
-        Collection<Identification> identificationInfo = this.identificationInfo;
-        AbstractIdentification firstId = AbstractIdentification.castOrCopy(OtherLocales.getFirst(identificationInfo));
+        Collection<Identification> info = identificationInfo; // See "Note about deprecated methods implementation"
+        AbstractIdentification firstId = AbstractIdentification.castOrCopy(OtherLocales.getFirst(info));
         if (firstId == null) {
             firstId = new DefaultDataIdentification();
         }
@@ -1116,8 +1130,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         onlineResources = OtherLocales.setFirst(onlineResources, firstOnline);
         citation.setOnlineResources(onlineResources);
         firstId.setCitation(citation);
-        identificationInfo = OtherLocales.setFirst(identificationInfo, firstId);
-        setIdentificationInfo(identificationInfo);
+        info = OtherLocales.setFirst(info, firstId);
+        setIdentificationInfo(info);
     }
 
     /**

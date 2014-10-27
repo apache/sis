@@ -46,9 +46,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  */
 @XmlType(name = "EX_GeographicDescription_Type")
 @XmlRootElement(name = "EX_GeographicDescription")
-public class DefaultGeographicDescription extends AbstractGeographicExtent
-        implements GeographicDescription
-{
+public class DefaultGeographicDescription extends AbstractGeographicExtent implements GeographicDescription {
     /**
      * Serial number for inter-operability with different versions.
      */

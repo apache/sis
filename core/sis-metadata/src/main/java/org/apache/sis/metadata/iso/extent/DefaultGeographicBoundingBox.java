@@ -111,9 +111,7 @@ import java.util.Objects;
     "northBoundLatitude"
 })
 @XmlRootElement(name = "EX_GeographicBoundingBox")
-public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
-        implements GeographicBoundingBox
-{
+public class DefaultGeographicBoundingBox extends AbstractGeographicExtent implements GeographicBoundingBox {
     /**
      * Serial number for inter-operability with different versions.
      */
