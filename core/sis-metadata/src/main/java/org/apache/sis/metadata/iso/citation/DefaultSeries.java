@@ -152,6 +152,11 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Returns information identifying the issue of the series.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return Information identifying the issue of the series, or {@code null}.
      */
     @Override
@@ -163,6 +168,11 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Sets information identifying the issue of the series.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValue The new issue identification, or {@code null} if none.
      */
     public void setIssueIdentification(final String newValue) {
@@ -172,6 +182,11 @@ public class DefaultSeries extends ISOMetadata implements Series {
 
     /**
      * Returns details on which pages of the publication the article was published.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
      *
      * @return Details on which pages of the publication the article was published, or {@code null}.
      */
@@ -183,6 +198,11 @@ public class DefaultSeries extends ISOMetadata implements Series {
 
     /**
      * Sets details on which pages of the publication the article was published.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValue The new page, or {@code null} if none.
      */

@@ -579,7 +579,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "characterSet")
-    public final CharacterSet getCharacterSet() {
+    public CharacterSet getCharacterSet() {
         final Charset cs = LegacyPropertyAdapter.getSingleton(getCharacterSets(),
                 Charset.class, null, DefaultMetadata.class, "getCharacterSet");
         if (cs == null) {
@@ -599,19 +599,12 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the character coding standard used for the metadata set.
      *
-     * <div class="warning"><b>Upcoming API change — JDK integration</b><br>
-     * As of ISO 19115:2014, {@code CharacterSet} is replaced by a reference to the
-     * <a href="http://www.iana.org/assignments/character-sets">IANA Character Set register</a>,
-     * which is represented in Java by {@link Charset}.
-     * This change may be applied in GeoAPI 4.0.
-     * </div>
-     *
      * @param newValue The new character set.
      *
      * @deprecated As of GeoAPI 3.1, replaced by {@link #setCharacterSets(Collection)}.
      */
     @Deprecated
-    public final void setCharacterSet(final CharacterSet newValue) {
+    public void setCharacterSet(final CharacterSet newValue) {
         setCharacterSets(LegacyPropertyAdapter.asCollection((newValue != null) ? newValue.toCharset() : null));
     }
 
