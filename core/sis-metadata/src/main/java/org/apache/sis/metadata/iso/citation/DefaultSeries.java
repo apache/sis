@@ -40,7 +40,7 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "CI_Series_Type", propOrder = {
@@ -53,7 +53,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7061644572814855051L;
+    private static final long serialVersionUID = -1584743260325409070L;
 
     /**
      * Name of the series, or aggregate dataset, of which the dataset is a part.
@@ -63,12 +63,12 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Information identifying the issue of the series.
      */
-    private String issueIdentification;
+    private InternationalString issueIdentification;
 
     /**
      * Details on which pages of the publication the article was published.
      */
-    private String page;
+    private InternationalString page;
 
     /**
      * Constructs a default series.
@@ -156,7 +156,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      */
     @Override
     @XmlElement(name = "issueIdentification")
-    public String getIssueIdentification() {
+    public InternationalString getIssueIdentification() {
         return issueIdentification;
     }
 
@@ -165,7 +165,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      *
      * @param newValue The new issue identification, or {@code null} if none.
      */
-    public void setIssueIdentification(final String newValue) {
+    public void setIssueIdentification(final InternationalString newValue) {
         checkWritePermission();
         issueIdentification = newValue;
     }
@@ -177,7 +177,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      */
     @Override
     @XmlElement(name = "page")
-    public String getPage() {
+    public InternationalString getPage() {
         return page;
     }
 
@@ -186,7 +186,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      *
      * @param newValue The new page, or {@code null} if none.
      */
-    public void setPage(final String newValue) {
+    public void setPage(final InternationalString newValue) {
         checkWritePermission();
         page = newValue;
     }
