@@ -286,7 +286,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @deprecated As of ISO 19115:2014, replaced by {@link #setFeatureTypeInfo(Collection)}.
      */
     @Deprecated
-    public final void setFeatureTypes(final Collection<? extends GenericName> newValues) {
+    public void setFeatureTypes(final Collection<? extends GenericName> newValues) {
         checkWritePermission();
         ((LegacyPropertyAdapter<GenericName,?>) getFeatureTypes()).setValues(newValues);
     }
