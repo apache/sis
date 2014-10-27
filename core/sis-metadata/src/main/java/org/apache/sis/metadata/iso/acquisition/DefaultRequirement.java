@@ -27,7 +27,7 @@ import org.opengis.metadata.acquisition.Priority;
 import org.opengis.metadata.acquisition.RequestedDate;
 import org.opengis.metadata.acquisition.Requirement;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
@@ -78,12 +78,12 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Origin of requirement.
      */
-    private Collection<ResponsibleParty> requestors;
+    private Collection<Responsibility> requestors;
 
     /**
      * Person(s), or body(ies), to receive results of requirement.
      */
-    private Collection<ResponsibleParty> recipients;
+    private Collection<Responsibility> recipients;
 
     /**
      * Relative ordered importance, or urgency, of the requirement.
@@ -126,8 +126,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
         if (object != null) {
             citation       = object.getCitation();
             identifiers    = singleton(object.getIdentifier(), Identifier.class);
-            requestors     = copyCollection(object.getRequestors(), ResponsibleParty.class);
-            recipients     = copyCollection(object.getRecipients(), ResponsibleParty.class);
+            requestors     = copyCollection(object.getRequestors(), Responsibility.class);
+            recipients     = copyCollection(object.getRecipients(), Responsibility.class);
             priority       = object.getPriority();
             requestedDate  = object.getRequestedDate();
             expiryDate     = toMilliseconds(object.getExpiryDate());
@@ -211,8 +211,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      */
     @Override
     @XmlElement(name = "requestor", required = true)
-    public Collection<ResponsibleParty> getRequestors() {
-        return requestors = nonNullCollection(requestors, ResponsibleParty.class);
+    public Collection<Responsibility> getRequestors() {
+        return requestors = nonNullCollection(requestors, Responsibility.class);
     }
 
     /**
@@ -220,8 +220,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param newValues The new requestors values.
      */
-    public void setRequestors(final Collection<? extends ResponsibleParty> newValues) {
-        requestors = writeCollection(newValues, requestors, ResponsibleParty.class);
+    public void setRequestors(final Collection<? extends Responsibility> newValues) {
+        requestors = writeCollection(newValues, requestors, Responsibility.class);
     }
 
     /**
@@ -231,8 +231,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      */
     @Override
     @XmlElement(name = "recipient", required = true)
-    public Collection<ResponsibleParty> getRecipients() {
-        return recipients = nonNullCollection(recipients, ResponsibleParty.class);
+    public Collection<Responsibility> getRecipients() {
+        return recipients = nonNullCollection(recipients, Responsibility.class);
     }
 
     /**
@@ -240,8 +240,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param newValues The new recipients values.
      */
-    public void setRecipients(final Collection<? extends ResponsibleParty> newValues) {
-        recipients = writeCollection(newValues, recipients, ResponsibleParty.class);
+    public void setRecipients(final Collection<? extends Responsibility> newValues) {
+        recipients = writeCollection(newValues, recipients, Responsibility.class);
     }
 
     /**
