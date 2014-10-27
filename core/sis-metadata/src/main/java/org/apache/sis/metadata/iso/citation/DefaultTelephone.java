@@ -277,7 +277,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *             with {@link TelephoneType#VOICE}.
      */
     @Deprecated
-    public final void setVoices(final Collection<? extends String> newValues) {
+    public void setVoices(final Collection<? extends String> newValues) {
         ((LegacyTelephones) getVoices()).setValues(newValues);
     }
 
@@ -309,7 +309,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *             with {@link TelephoneType#FACSIMILE}.
      */
     @Deprecated
-    public final void setFacsimiles(final Collection<? extends String> newValues) {
+    public void setFacsimiles(final Collection<? extends String> newValues) {
         ((LegacyTelephones) getFacsimiles()).setValues(newValues);
     }
 }
