@@ -251,6 +251,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * Returns information about the availability of the service.
      *
      * @return Information about the availability of the service, or {@code null} if none.
+     *
+     * @since 0.5
      */
 /// @XmlElement(name = "accessProperties", namespace = Namespaces.SRV)
     @UML(identifier="accessProperties", obligation=OPTIONAL, specification=ISO_19115)
@@ -263,6 +265,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * Sets information about the availability of the service.
      *
      * @param newValue The new information about the availability of the service.
+     *
+     * @since 0.5
      */
     public void setAccessProperties(final StandardOrderProcess newValue) {
         checkWritePermission();
@@ -334,6 +338,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * Returns the reference(s) to the resource on which the service operates.
      *
      * @return Reference(s) to the resource on which the service operates.
+     *
+     * @since 0.5
      */
 /// @XmlElement(name = "operatedDataset", namespace = Namespaces.SRV)
     @UML(identifier="operatedDataset", obligation=OPTIONAL, specification=ISO_19115)
@@ -345,6 +351,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * Sets the reference(s) to the resource on which the service operates.
      *
      * @param newValues The new reference(s) to the resource on which the service operates.
+     *
+     * @since 0.5
      */
     public void setOperatedDatasets(final Collection<? extends Citation> newValues) {
         operatedDatasets = writeCollection(newValues, operatedDatasets, Citation.class);
@@ -354,6 +362,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * Returns the profile(s) to which the service adheres.
      *
      * @return Profile(s) to which the service adheres.
+     *
+     * @since 0.5
      */
 /// @XmlElement(name = "profile", namespace = Namespaces.SRV)
     @UML(identifier="profile", obligation=OPTIONAL, specification=ISO_19115)
@@ -374,6 +384,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * Returns the standard(s) to which the service adheres.
      *
      * @return Standard(s) to which the service adheres.
+     *
+     * @since 0.5
      */
 /// @XmlElement(name = "serviceStandard", namespace = Namespaces.SRV)
     @UML(identifier="serviceStandard", obligation=OPTIONAL, specification=ISO_19115)
@@ -385,6 +397,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * Sets the standard(s) to which the service adheres.
      *
      * @param newValues The new standard(s) to which the service adheres.
+     *
+     * @since 0.5
      */
     public void setServiceStandards(final Collection<? extends Citation> newValues) {
         serviceStandards = writeCollection(newValues, serviceStandards, Citation.class);
@@ -449,6 +463,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * </div>
      *
      * @return Information about the chain applied by the service.
+     *
+     * @since 0.5
      */
 /// @XmlElement(name = "containsChain", namespace = Namespaces.SRV)
     @UML(identifier="containsChain", obligation=OPTIONAL, specification=ISO_19115)
@@ -465,6 +481,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * </div>
      *
      * @param newValues The new information about the chain applied by the service.
+     *
+     * @since 0.5
      */
     public void setContainsChain(final Collection<? extends DefaultOperationChainMetadata>  newValues) {
         containsChain = writeCollection(newValues, containsChain, DefaultOperationChainMetadata.class);

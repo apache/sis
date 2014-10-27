@@ -194,7 +194,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      */
     @Override
     @Deprecated
-    public final Extent getExtent() {
+    public Extent getExtent() {
         return LegacyPropertyAdapter.getSingleton(getExtents(), Extent.class, null, DefaultScope.class, "getExtent");
     }
 
@@ -207,7 +207,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      * @deprecated As of ISO 19115:2014, replaced by {@link #setExtents(Collection)}.
      */
     @Deprecated
-    public final void setExtent(final Extent newValue) {
+    public void setExtent(final Extent newValue) {
         setExtents(LegacyPropertyAdapter.asCollection(newValue));
     }
 

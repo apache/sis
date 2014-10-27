@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.io.File;
 import java.net.URL;
 import java.net.URISyntaxException;
@@ -40,7 +41,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.16)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @RunWith(Suite.class)
@@ -53,6 +54,11 @@ public abstract strictfp class TestSuite {
         TestCase.class,
         org.opengis.test.TestCase.class
     };
+
+    /**
+     * Expected suffix in name of test classes.
+     */
+    private static final String CLASSNAME_SUFFIX = "Test";
 
     /**
      * {@code true} for disabling the search for missing tests. This is necessary
@@ -119,6 +125,12 @@ public abstract strictfp class TestSuite {
             assertTrue(declared.removeAll(tests));
             fail("Classes defined twice in " + suite.getSimpleName() + ": " + declared);
         }
+        // Ignore classes that are not really test, like "APIVerifier".
+        for (final Iterator<Class<?>> it=tests.iterator(); it.hasNext();) {
+            if (!it.next().getName().endsWith(CLASSNAME_SUFFIX)) {
+                it.remove();
+            }
+        }
         removeExistingTests(loader, root, new StringBuilder(120).append(root.getName()), tests);
         if (!tests.isEmpty()) {
             fail("Classes not found. Are they defined in an other module? " + tests);
@@ -141,7 +153,7 @@ public abstract strictfp class TestSuite {
                     if (file.isDirectory()) {
                         removeExistingTests(loader, file, path, tests);
                     } else {
-                        if (name.endsWith("Test.class")) {
+                        if (name.endsWith(CLASSNAME_SUFFIX + ".class")) {
                             path.setLength(path.length() - 6); // Remove trailing ".class"
                             final String classname = path.toString();
                             final Class<?> test;

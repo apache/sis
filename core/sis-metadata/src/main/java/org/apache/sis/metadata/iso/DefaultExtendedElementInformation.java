@@ -87,6 +87,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     /**
      * Short form suitable for use in an implementation method such as XML or SGML.
      */
+    @Deprecated
     private String shortName;
 
     /**
@@ -94,6 +95,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Non-null only if the {@linkplain #getDataType() data type}
      * is {@linkplain Datatype#CODE_LIST_ELEMENT code list element}.
      */
+    @Deprecated
     private Integer domainCode;
 
     /**
@@ -506,9 +508,9 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     }
 
     /**
-     * Reason for creating the extended element.
+     * Returns the reason for creating the extended element.
      *
-     * @return Reason for creating the extended element.
+     * @return Reason for creating the extended element, or {@code null}.
      *
      * @since 0.5
      */

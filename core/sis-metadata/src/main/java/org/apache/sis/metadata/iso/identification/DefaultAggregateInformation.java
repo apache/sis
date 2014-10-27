@@ -238,6 +238,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *
      * @deprecated As of ISO 19115:2014, replaced by an identifier of {@link #getAggregateDataSetName()}.
      */
+    @Deprecated
     public void setAggregateDataSetIdentifier(final Identifier newValue) {
         checkWritePermission();
         Citation name = getAggregateDataSetName();

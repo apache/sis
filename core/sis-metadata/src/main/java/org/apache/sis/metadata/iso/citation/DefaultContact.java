@@ -226,9 +226,10 @@ public class DefaultContact extends ISOMetadata implements Contact {
     @Override
     @Deprecated
     @XmlElement(name = "phone")
-    public final Telephone getPhone() {
+    public Telephone getPhone() {
         Telephone phone = null;
-        if (phones != null) {
+        final Collection<Telephone> phones = getPhones();
+        if (phones != null) { // May be null on marshalling.
             TelephoneType ignored = null;
             for (final Telephone c : phones) {
                 if (c instanceof DefaultTelephone) {
@@ -259,7 +260,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @deprecated As of ISO 19115:2014, replaced by {@link #setPhones(Collection)}.
      */
     @Deprecated
-    public final void setPhone(Telephone newValue) {
+    public void setPhone(Telephone newValue) {
         Collection<Telephone> newValues = null;
         if (newValue != null) {
             if (newValue instanceof DefaultTelephone) {
@@ -311,8 +312,8 @@ public class DefaultContact extends ISOMetadata implements Contact {
     @Override
     @Deprecated
     @XmlElement(name = "address")
-    public final Address getAddress() {
-        return LegacyPropertyAdapter.getSingleton(addresses, Address.class, null, DefaultContact.class, "getAddress");
+    public Address getAddress() {
+        return LegacyPropertyAdapter.getSingleton(getAddresses(), Address.class, null, DefaultContact.class, "getAddress");
     }
 
     /**
@@ -324,7 +325,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @deprecated As of ISO 19115:2014, replaced by {@link #setAddresses(Collection)}.
      */
     @Deprecated
-    public final void setAddress(final Address newValue) {
+    public void setAddress(final Address newValue) {
         setAddresses(LegacyPropertyAdapter.asCollection(newValue));
     }
 
@@ -363,7 +364,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     @Deprecated
     @XmlElement(name = "onlineResource")
     public OnlineResource getOnlineResource() {
-        return LegacyPropertyAdapter.getSingleton(onlineResources, OnlineResource.class, null, DefaultContact.class, "getOnlineResource");
+        return LegacyPropertyAdapter.getSingleton(getOnlineResources(), OnlineResource.class, null, DefaultContact.class, "getOnlineResource");
     }
 
     /**

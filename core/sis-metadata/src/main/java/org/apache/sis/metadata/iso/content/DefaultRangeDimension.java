@@ -196,7 +196,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     @Override
     @Deprecated
     @XmlElement(name = "descriptor")
-    public final InternationalString getDescriptor() {
+    public InternationalString getDescriptor() {
         return getDescription();
     }
 
@@ -209,7 +209,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * @deprecated As of ISO 19115:2014, renamed {@link #setDescription(InternationalString)}.
      */
     @Deprecated
-    public final void setDescriptor(final InternationalString newValue) {
+    public void setDescriptor(final InternationalString newValue) {
         setDescription(newValue);
     }
 

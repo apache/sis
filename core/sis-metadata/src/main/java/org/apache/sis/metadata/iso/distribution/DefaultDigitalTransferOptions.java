@@ -258,8 +258,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     @Override
     @Deprecated
     @XmlElement(name = "offLine")
-    public final Medium getOffLine() {
-        return LegacyPropertyAdapter.getSingleton(offLines, Medium.class, null, DefaultDigitalTransferOptions.class, "getOffLine");
+    public Medium getOffLine() {
+        return LegacyPropertyAdapter.getSingleton(getOffLines(), Medium.class, null, DefaultDigitalTransferOptions.class, "getOffLine");
     }
 
     /**
