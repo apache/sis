@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -28,6 +29,9 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.metadata.ReferencingServices;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -165,6 +169,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * @since 0.5
      */
     @XmlElement(name = "verticalExtent")
+    @UML(identifier="verticalExtent", obligation=OPTIONAL, specification=ISO_19115)
     public VerticalExtent getVerticalExtent() {
         return verticalExtent;
     }
