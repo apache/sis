@@ -38,6 +38,7 @@ import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Distribution;
+import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -148,7 +149,7 @@ public final strictfp class MetadataMock implements Metadata {
      */
     @Override
     @Deprecated
-    public Charset getCharacterSet() {
+    public CharacterSet getCharacterSet() {
         return null;
     }
 
