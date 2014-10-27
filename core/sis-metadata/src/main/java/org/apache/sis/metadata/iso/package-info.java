@@ -102,6 +102,7 @@
     @XmlJavaTypeAdapter(DQ_DataQuality.class),
     @XmlJavaTypeAdapter(MD_ApplicationSchemaInformation.class),
     @XmlJavaTypeAdapter(MD_CharacterSetCode.class),
+    @XmlJavaTypeAdapter(LegacyCharacterSet.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_DatatypeCode.class),

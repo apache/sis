@@ -46,6 +46,7 @@ import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Distribution;
+import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -554,8 +555,21 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @Deprecated
     @XmlElement(name = "characterSet")
-    public Charset getCharacterSet() {
-        return LegacyPropertyAdapter.getSingleton(getCharacterSets(), Charset.class, null, DefaultMetadata.class, "getCharacterSet");
+    public CharacterSet getCharacterSet() {
+        final Charset cs = LegacyPropertyAdapter.getSingleton(getCharacterSets(),
+                Charset.class, null, DefaultMetadata.class, "getCharacterSet");
+        if (cs == null) {
+            return null;
+        }
+        final String name = cs.name();
+        for (final CharacterSet candidate : CharacterSet.values()) {
+            for (final String n : candidate.names()) {
+                if (name.equals(n)) {
+                    return candidate;
+                }
+            }
+        }
+        return CharacterSet.valueOf(name);
     }
 
     /**
@@ -566,8 +580,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of GeoAPI 3.1, replaced by {@link #setCharacterSets(Collection)}.
      */
     @Deprecated
-    public void setCharacterSet(final Charset newValue) {
-        setCharacterSets(LegacyPropertyAdapter.asCollection(newValue));
+    public void setCharacterSet(final CharacterSet newValue) {
+        setCharacterSets(LegacyPropertyAdapter.asCollection((newValue != null) ? newValue.toCharset() : null));
     }
 
     /**
