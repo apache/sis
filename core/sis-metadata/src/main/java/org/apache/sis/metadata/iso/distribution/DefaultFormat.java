@@ -32,6 +32,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
+import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -358,6 +359,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * @since 0.5
      */
 /// @XmlElement(name = "medium")
+    @UML(identifier="medium", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Medium> getMedia() {
         return media = nonNullCollection(media, Medium.class);
     }
