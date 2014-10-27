@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -34,6 +35,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
@@ -302,6 +305,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @since 0.5
      */
 /// @XmlElement(name = "reference")
+    @UML(identifier="reference", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getReferences() {
         return references = nonNullCollection(references, Citation.class);
     }
@@ -325,6 +329,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @since 0.5
      */
 /// @XmlElement(name = "scope")
+    @UML(identifier="scope", obligation=OPTIONAL, specification=ISO_19115)
     public Scope getScope() {
         return scope;
     }

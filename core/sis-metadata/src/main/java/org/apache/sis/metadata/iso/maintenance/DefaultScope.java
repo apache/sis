@@ -20,12 +20,16 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -164,6 +168,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      * @since 0.5
      */
     @XmlElement(name = "extent")
+    @UML(identifier="extent", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Extent> getExtents() {
         return extents = nonNullCollection(extents, Extent.class);
     }

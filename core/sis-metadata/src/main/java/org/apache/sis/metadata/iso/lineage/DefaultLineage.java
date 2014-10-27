@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Scope;
@@ -29,6 +30,9 @@ import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -182,6 +186,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * @since 0.5
      */
 /// @XmlElement(name = "scope")
+    @UML(identifier="scope", obligation=OPTIONAL, specification=ISO_19115)
     public Scope getScope() {
         return scope;
     }
@@ -206,6 +211,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * @since 0.5
      */
 /// @XmlElement(name = "additionalDocumentation")
+    @UML(identifier="additionalDocumentation", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getAdditionalDocumentation() {
         return additionalDocumentation = nonNullCollection(additionalDocumentation, Citation.class);
     }

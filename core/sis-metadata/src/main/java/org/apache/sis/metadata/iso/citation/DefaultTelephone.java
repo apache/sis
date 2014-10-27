@@ -22,9 +22,14 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -156,6 +161,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @since 0.5
      */
 /// @XmlElement(name = "number", required = true)
+    @UML(identifier="number", obligation=MANDATORY, specification=ISO_19115)
     public String getNumber() {
         return number;
     }
@@ -186,6 +192,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @since 0.5
      */
 /// @XmlElement(name = "numberType")
+    @UML(identifier="numberType", obligation=OPTIONAL, specification=ISO_19115)
     public Object getNumberType() {
         return (numberType != null) ? numberType.name() : null;
     }

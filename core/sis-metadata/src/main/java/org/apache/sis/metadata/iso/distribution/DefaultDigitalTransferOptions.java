@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.temporal.PeriodDuration;
 import org.opengis.metadata.citation.OnlineResource;
@@ -30,6 +31,9 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.ArgumentChecks;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -228,6 +232,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @since 0.5
      */
+    @UML(identifier="offLine", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Medium> getOffLines() {
         return offLines = nonNullCollection(offLines, Medium.class);
     }
@@ -276,6 +281,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @since 0.5
      */
+    @UML(identifier="transferFrequency", obligation=OPTIONAL, specification=ISO_19115)
     public PeriodDuration getTransferFrequency() {
         return transferFrequency;
     }
@@ -299,6 +305,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @since 0.5
      */
+    @UML(identifier="distributionFormat", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Format> getDistributionFormats() {
         return distributionFormats = nonNullCollection(distributionFormats, Format.class);
     }

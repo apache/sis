@@ -22,12 +22,16 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.BandDefinition;
 import org.opengis.metadata.content.PolarizationOrientation;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.measure.ValueRange;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -191,6 +195,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     @ValueRange(minimum = 0)
 /// @XmlElement(name = "boundMin")
+    @UML(identifier="boundMin", obligation=OPTIONAL, specification=ISO_19115)
     public Double getBoundMin() {
         return boundMin;
     }
@@ -218,6 +223,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     @ValueRange(minimum = 0)
 /// @XmlElement(name = "boundMax")
+    @UML(identifier="boundMax", obligation=OPTIONAL, specification=ISO_19115)
     public Double getBoundMax() {
         return boundMax;
     }
@@ -242,6 +248,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @since 0.5
      */
 /// @XmlElement(name = "boundUnits")
+    @UML(identifier="boundUnits", obligation=OPTIONAL, specification=ISO_19115)
     public Unit<Length> getBoundUnits() {
         return boundUnits;
     }

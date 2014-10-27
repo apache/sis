@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.Datatype;
 import org.opengis.metadata.Obligation;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -28,6 +29,10 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -504,18 +509,44 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Reason for creating the extended element.
      *
      * @return Reason for creating the extended element.
+     *
+     * @since 0.5
+     */
+    @UML(identifier="rationale", obligation=OPTIONAL, specification=ISO_19115)
+    public InternationalString getRationale() {
+        return LegacyPropertyAdapter.getSingleton(rationales, InternationalString.class, null,
+                DefaultExtendedElementInformation.class, "getRationale");
+    }
+
+    /**
+     * Sets the reason for creating the extended element.
+     *
+     * @param newValue The new rationale.
+     *
+     * @since 0.5
+     */
+    public void setRationale(final InternationalString newValue) {
+        rationales = writeCollection(LegacyPropertyAdapter.asCollection(newValue), rationales, InternationalString.class);
+    }
+
+    /**
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getRationale()}.
+     *
+     * @return Reason for creating the extended element.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "rationale")
     public Collection<InternationalString> getRationales() {
         return rationales = nonNullCollection(rationales, InternationalString.class);
     }
 
     /**
-     * Sets the reason for creating the extended element.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setRationale(InternationalString)}.
      *
      * @param newValues The new rationales.
      */
+    @Deprecated
     public void setRationales(final Collection<? extends InternationalString> newValues) {
         rationales = writeCollection(newValues, rationales, InternationalString.class);
     }

@@ -22,6 +22,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
@@ -31,6 +32,9 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -173,6 +177,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @since 0.5
      */
+    @UML(identifier="phone", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Telephone> getPhones() {
         return phones = nonNullCollection(phones, Telephone.class);
     }
@@ -279,6 +284,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @since 0.5
      */
+    @UML(identifier="address", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Address> getAddresses() {
         return addresses = nonNullCollection(addresses, Address.class);
     }
@@ -329,6 +335,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @since 0.5
      */
+    @UML(identifier="onlineResource", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<OnlineResource> getOnlineResources() {
         return onlineResources = nonNullCollection(onlineResources, OnlineResource.class);
     }
@@ -423,6 +430,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @since 0.5
      */
 /// @XmlElement(name = "contactType")
+    @UML(identifier="contactType", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getContactType() {
         return contactType;
     }

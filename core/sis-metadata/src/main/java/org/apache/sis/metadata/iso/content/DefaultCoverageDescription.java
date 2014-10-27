@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.content;
 
 import java.util.Collection;
+import org.opengis.annotation.UML;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
@@ -30,6 +31,8 @@ import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -175,6 +178,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @since 0.5
      */
 /// @XmlElement(name = "processingLevelCode")
+    @UML(identifier="processingLevelCode", obligation=OPTIONAL, specification=ISO_19115)
     public Identifier getProcessingLevelCode() {
         return processingLevelCode;
     }
@@ -204,6 +208,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @since 0.5
      */
 /// @XmlElement(name = "attributeGroup")
+    @UML(identifier="attributeGroup", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<DefaultAttributeGroup> getAttributeGroups() {
         return attributeGroups = nonNullCollection(attributeGroups, DefaultAttributeGroup.class);
     }

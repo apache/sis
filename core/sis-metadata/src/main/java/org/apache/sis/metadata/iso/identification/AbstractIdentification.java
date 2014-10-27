@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -42,6 +43,10 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -431,6 +436,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     @XmlElement(name = "spatialRepresentationType")
+    @UML(identifier="spatialRepresentationType", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {
         return spatialRepresentationTypes = nonNullCollection(spatialRepresentationTypes, SpatialRepresentationType.class);
     }
@@ -455,6 +461,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     @XmlElement(name = "spatialResolution")
+    @UML(identifier="spatialResolution", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Resolution> getSpatialResolutions() {
         return spatialResolutions = nonNullCollection(spatialResolutions, Resolution.class);
     }
@@ -478,6 +485,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
 /// @XmlElement(name = "topicCategory")
+    @UML(identifier="topicCategory", obligation=CONDITIONAL, specification=ISO_19115)
     public Collection<TopicCategory> getTopicCategories()  {
         return topicCategories = nonNullCollection(topicCategories, TopicCategory.class);
     }
@@ -501,6 +509,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
 /// @XmlElement(name = "extent")
+    @UML(identifier="extent", obligation=CONDITIONAL, specification=ISO_19115)
     public Collection<Extent> getExtents() {
         return extents = nonNullCollection(extents, Extent.class);
     }
@@ -524,6 +533,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
 /// @XmlElement(name = "additionalDocumentation")
+    @UML(identifier="additionalDocumentation", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getAdditionalDocumentations() {
         return additionalDocumentations = nonNullCollection(additionalDocumentations, Citation.class);
     }
@@ -547,6 +557,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
 /// @XmlElement(name = "processingLevel")
+    @UML(identifier="processingLevel", obligation=OPTIONAL, specification=ISO_19115)
     public Identifier getProcessingLevel() {
         return processingLevel;
     }
