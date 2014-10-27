@@ -20,12 +20,16 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.jaxb.gco.GO_Measure;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -230,6 +234,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * @since 0.5
      */
 /// @XmlElement(name = "dimensionTitle")
+    @UML(identifier="dimensionTitle", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getDimensionTitle() {
         return dimensionTitle;
     }
@@ -254,6 +259,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * @since 0.5
      */
 /// @XmlElement(name = "dimensionDescription")
+    @UML(identifier="dimensionDescription", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getDimensionDescription() {
         return dimensionDescription;
     }

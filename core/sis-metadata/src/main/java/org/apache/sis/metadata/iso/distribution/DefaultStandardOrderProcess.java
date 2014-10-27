@@ -20,12 +20,15 @@ import java.util.Date;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.opengis.annotation.UML;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
@@ -245,6 +248,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * @see org.apache.sis.util.iso.DefaultRecord#getRecordType()
      */
 /// @XmlElement(name = "orderOptionType")
+    @UML(identifier="orderOptionType", obligation=OPTIONAL, specification=ISO_19115)
     public RecordType getOrderOptionType() {
         return orderOptionType;
     }
@@ -273,6 +277,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *       orders, otherwise this method would need to be a factory rather than a getter.
      */
 /// @XmlElement(name = "orderOptions")
+    @UML(identifier="orderOptions", obligation=OPTIONAL, specification=ISO_19115)
     public Record getOrderOptions() {
         return orderOptions;
     }

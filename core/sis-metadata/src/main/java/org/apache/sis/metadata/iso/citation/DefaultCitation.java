@@ -21,6 +21,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -37,6 +38,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifierMap;
 
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
@@ -660,6 +663,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @since 0.5
      */
 /// @XmlElement(name = "onlineResource")
+    @UML(identifier="onlineResource", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<OnlineResource> getOnlineResources() {
         return onlineResources = nonNullCollection(onlineResources, OnlineResource.class);
     }
@@ -683,6 +687,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @since 0.5
      */
 /// @XmlElement(name = "graphic")
+    @UML(identifier="graphic", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<BrowseGraphic> getGraphics() {
         return graphics = nonNullCollection(graphics, BrowseGraphic.class);
     }

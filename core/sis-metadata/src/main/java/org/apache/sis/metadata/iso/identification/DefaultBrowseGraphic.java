@@ -22,12 +22,16 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.gmx.MimeFileTypeAdapter;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -228,6 +232,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @since 0.5
      */
 /// @XmlElement(name = "imageConstraints")
+    @UML(identifier="imageContraints", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Constraints> getImageConstraints() {
         return imageConstraints = nonNullCollection(imageConstraints, Constraints.class);
     }
@@ -251,6 +256,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @since 0.5
      */
 /// @XmlElement(name = "linkage")
+    @UML(identifier="linkage", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<OnlineResource> getLinkages() {
         return linkages = nonNullCollection(linkages, OnlineResource.class);
     }

@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -37,6 +38,10 @@ import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -223,6 +228,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @since 0.5
      */
 /// @XmlElement(name = "sourceSpatialResolution")
+    @UML(identifier="sourceSpatialResolution", obligation=OPTIONAL, specification=ISO_19115)
     public Resolution getSourceSpatialResolution() {
         return sourceSpatialResolution;
     }
@@ -328,6 +334,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @since 0.5
      */
 /// @XmlElement(name = "sourceMetadata")
+    @UML(identifier="sourceMetadata", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getSourceMetadata() {
         return sourceMetadata = nonNullCollection(sourceMetadata, Citation.class);
     }
@@ -352,6 +359,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @since 0.5
      */
 /// @XmlElement(name = "scope")
+    @UML(identifier="scope", obligation=CONDITIONAL, specification=ISO_19115)
     public Scope getScope() {
         return scope;
     }

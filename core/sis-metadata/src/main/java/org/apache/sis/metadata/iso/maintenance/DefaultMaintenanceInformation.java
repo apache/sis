@@ -21,6 +21,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -34,6 +35,9 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -210,6 +214,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @since 0.5
      */
 /// @XmlElement(name = "maintenanceDate", required = true)
+    @UML(identifier="maintenanceDate", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<CitationDate> getMaintenanceDates() {
         return maintenanceDates = nonNullCollection(maintenanceDates, CitationDate.class);
     }
@@ -300,6 +305,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @since 0.5
      */
 /// @XmlElement(name = "maintenanceScope")
+    @UML(identifier="maintenanceScope", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Scope> getMaintenanceScopes() {
         return maintenanceScopes = nonNullCollection(maintenanceScopes, Scope.class);
     }

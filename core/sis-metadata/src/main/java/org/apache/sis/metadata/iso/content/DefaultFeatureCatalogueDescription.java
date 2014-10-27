@@ -21,10 +21,14 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -220,6 +224,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @since 0.5
      */
+    @UML(identifier="featureTypes", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<DefaultFeatureTypeInfo> getFeatureTypeInfo() {
         return featureTypes = nonNullCollection(featureTypes, DefaultFeatureTypeInfo.class);
     }

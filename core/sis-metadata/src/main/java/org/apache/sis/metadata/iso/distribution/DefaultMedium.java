@@ -16,13 +16,12 @@
  */
 package org.apache.sis.metadata.iso.distribution;
 
-import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.Iterator;
 import javax.measure.unit.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.distribution.Medium;
@@ -32,6 +31,9 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -177,23 +179,48 @@ public class DefaultMedium extends ISOMetadata implements Medium {
 
     /**
      * Returns the density at which the data is recorded.
-     * The numbers shall be greater than zero.
+     * The number shall be greater than zero.
+     *
+     * @return Density at which the data is recorded, or {@code null}.
+     *
+     * @since 0.5
+     */
+    @ValueRange(minimum = 0, isMinIncluded = false)
+    @UML(identifier="density", obligation=OPTIONAL, specification=ISO_19115)
+    public Double getDensity() {
+        return LegacyPropertyAdapter.getSingleton(densities, Double.class, null, DefaultMedium.class, "getDensity");
+    }
+
+    /**
+     * Sets density at which the data is recorded.
+     * The number shall be greater than zero.
+     *
+     * @param newValue The new density.
+     *
+     * @since 0.5
+     */
+    public void setDensity(final Double newValue) {
+        densities = writeCollection(LegacyPropertyAdapter.asCollection(newValue), densities, Double.class);
+    }
+
+    /**
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getDensity()}.
      *
      * @return Density at which the data is recorded, or {@code null}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "density")
-    @ValueRange(minimum=0, isMinIncluded=false)
     public Collection<Double> getDensities() {
         return densities = nonNullCollection(densities, Double.class);
     }
 
     /**
-     * Sets density at which the data is recorded.
-     * The numbers shall be greater than zero.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setDensity(Double)}.
      *
      * @param newValues The new densities.
      */
+    @Deprecated
     public void setDensities(final Collection<? extends Double> newValues) {
         densities = writeCollection(newValues, densities, Double.class);
     }
@@ -290,6 +317,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @since 0.5
      */
 /// @XmlElement(name = "identifier")
+    @UML(identifier="identifier", obligation=OPTIONAL, specification=ISO_19115)
     public Identifier getIdentifier() {
         return NonMarshalledAuthority.getMarshallable(identifiers);
     }

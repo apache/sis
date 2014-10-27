@@ -21,6 +21,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -28,6 +29,8 @@ import org.opengis.metadata.identification.Usage;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
@@ -275,6 +278,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @since 0.5
      */
 /// @XmlElement(name = "response")
+    @UML(identifier="response", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<? extends InternationalString> getResponses() {
         return responses = nonNullCollection(responses, InternationalString.class);
     }
@@ -298,6 +302,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @since 0.5
      */
 /// @XmlElement(name = "additionalDocumentation")
+    @UML(identifier="additionalDocumentation", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getAdditionalDocumentation() {
         return additionalDocumentation = nonNullCollection(additionalDocumentation, Citation.class);
     }
@@ -322,6 +327,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @since 0.5
      */
 /// @XmlElement(name = "identifiedIssues")
+    @UML(identifier="identifiedIssues", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<? extends Citation> getIdentifiedIssues() {
         return identifiedIssues = nonNullCollection(identifiedIssues, Citation.class);
     }

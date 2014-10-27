@@ -21,12 +21,16 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.MemberName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.Band;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -164,6 +168,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * @since 0.5
      */
 /// @XmlElement(name = "description")
+    @UML(identifier="description", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getDescription() {
         return description;
     }
@@ -217,6 +222,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * @since 0.5
      */
 /// @XmlElement(name = "name")
+    @UML(identifier="name", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Identifier> getNames() {
         return names = nonNullCollection(names, Identifier.class);
     }

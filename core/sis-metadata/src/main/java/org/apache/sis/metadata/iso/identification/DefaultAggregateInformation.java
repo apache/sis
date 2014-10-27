@@ -22,6 +22,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AggregateInformation;
@@ -29,6 +30,9 @@ import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -154,6 +158,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      * @since 0.5
      */
 /// @XmlElement(name = "name")
+    @UML(identifier="name", obligation=CONDITIONAL, specification=ISO_19115)
     public Citation getName() {
         return name;
     }
@@ -311,6 +316,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      * @since 0.5
      */
 /// @XmlElement(name = "metadataReference")
+    @UML(identifier="metadataReference", obligation=CONDITIONAL, specification=ISO_19115)
     public Citation getMetadataReference() {
         return metadataReference;
     }

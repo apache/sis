@@ -20,12 +20,16 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.KeywordType;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -224,6 +228,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      *
      * @since 0.5
      */
+    @UML(identifier="keywordClass", obligation=OPTIONAL, specification=ISO_19115)
     public Object getKeywordClass() {
         return keywordClass;
     }

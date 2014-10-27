@@ -20,10 +20,14 @@ import java.net.URI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -322,6 +326,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      *
      * @since 0.5
      */
+    @UML(identifier="protocolRequest", obligation=OPTIONAL, specification=ISO_19115)
     public String getProtocolRequest() {
         return protocolRequest;
     }

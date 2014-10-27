@@ -19,10 +19,14 @@ package org.apache.sis.metadata.iso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -231,6 +235,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @since 0.5
      */
+    @UML(identifier="codeSpace", obligation=OPTIONAL, specification=ISO_19115)
     public String getCodeSpace() {
         return codeSpace;
     }
@@ -255,6 +260,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @return The version, or {@code null} if not available.
      */
+    @UML(identifier="version", obligation=OPTIONAL, specification=ISO_19115)
     public String getVersion() {
         return version;
     }
@@ -276,6 +282,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @since 0.5
      */
+    @UML(identifier="description", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getDescription() {
         return description;
     }

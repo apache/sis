@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.ApplicationSchemaInformation;
@@ -66,6 +67,11 @@ import org.apache.sis.internal.metadata.OtherLocales;
 import org.apache.sis.internal.jaxb.code.PT_Locale;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.xml.Namespaces;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -364,6 +370,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="metadataIdentifier", obligation=OPTIONAL, specification=ISO_19115)
     public Identifier getMetadataIdentifier() {
         return metadataIdentifier;
     }
@@ -431,6 +438,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="defaultLocale+otherLocale", obligation=CONDITIONAL, specification=ISO_19115)
     public Collection<Locale> getLanguages() {
         return languages = nonNullCollection(languages, Locale.class);
     }
@@ -537,6 +545,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="characterSet", obligation=CONDITIONAL, specification=ISO_19115) // Actually from ISO 19115:2003
     public Collection<Charset> getCharacterSets() {
         return characterSets = nonNullCollection(characterSets, Charset.class);
     }
@@ -606,6 +615,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="parentMetadata", obligation=CONDITIONAL, specification=ISO_19115)
     public Citation getParentMetadata() {
         return parentMetadata;
     }
@@ -673,6 +683,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="metadataScope", obligation=CONDITIONAL, specification=ISO_19115)
     public Collection<DefaultMetadataScope> getMetadataScopes() {
         return metadataScopes = nonNullCollection(metadataScopes, DefaultMetadataScope.class);
     }
@@ -819,6 +830,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="dateInfo", obligation=MANDATORY, specification=ISO_19115)
     public Collection<CitationDate> getDates() {
         return dates = nonNullCollection(dates, CitationDate.class);
     }
@@ -904,6 +916,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="metadataStandard", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getMetadataStandards() {
         return metadataStandards = nonNullCollection(metadataStandards, Citation.class);
     }
@@ -930,6 +943,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="metadataProfile", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getMetadataProfiles() {
         return metadataProfiles = nonNullCollection(metadataProfiles, Citation.class);
     }
@@ -953,6 +967,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="alternativeMetadataReference", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getAlternativeMetadataReferences() {
         return alternativeMetadataReferences = nonNullCollection(alternativeMetadataReferences, Citation.class);
     }
@@ -1073,6 +1088,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="metadataLinkage", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<OnlineResource> getMetadataLinkages() {
         return metadataLinkages = nonNullCollection(metadataLinkages, OnlineResource.class);
     }
@@ -1424,6 +1440,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
+    @UML(identifier="resourceLineage", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Lineage> getResourceLineages() {
         return resourceLineages = nonNullCollection(resourceLineages, Lineage.class);
     }

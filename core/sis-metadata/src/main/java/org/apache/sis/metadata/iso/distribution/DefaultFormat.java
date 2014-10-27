@@ -21,6 +21,7 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
@@ -30,6 +31,9 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
+
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -173,6 +177,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * @since 0.5
      */
 /// @XmlElement(name = "formatSpecificationCitation", required = true)
+    @UML(identifier="formatSpecificationCitation", obligation=MANDATORY, specification=ISO_19115)
     public Citation getFormatSpecificationCitation() {
         return formatSpecificationCitation;
     }

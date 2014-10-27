@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.opengis.metadata.identification.Resolution;
@@ -28,6 +29,9 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
+
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -263,6 +267,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @since 0.5
      */
+    @UML(identifier="vertical", obligation=CONDITIONAL, specification=ISO_19115)
     @ValueRange(minimum=0, isMinIncluded=false)
     public Double getVertical() {
         return (property == VERTICAL) ? (Double) value : null;
@@ -290,6 +295,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @since 0.5
      */
+    @UML(identifier="angularDistance", obligation=CONDITIONAL, specification=ISO_19115)
     @ValueRange(minimum=0, isMinIncluded=false)
     public Double getAngularDistance() {
         return (property == ANGULAR) ? (Double) value : null;
@@ -317,6 +323,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @since 0.5
      */
+    @UML(identifier="levelOfDetail", obligation=CONDITIONAL, specification=ISO_19115)
     public InternationalString getLevelOfDetail() {
         return (property == TEXT) ? (InternationalString) value : null;
     }

@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.BrowseGraphic;
@@ -31,6 +32,9 @@ import org.opengis.metadata.quality.Scope;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -210,6 +214,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
 /// @XmlElement(name = "constraintApplicationScope")
+    @UML(identifier="constraintApplicationScope", obligation=OPTIONAL, specification=ISO_19115)
     public Scope getConstraintApplicationScope() {
         return constraintApplicationScope;
     }
@@ -234,6 +239,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
 /// @XmlElement(name = "graphic")
+    @UML(identifier="graphic", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<BrowseGraphic> getGraphics() {
         return graphics = nonNullCollection(graphics, BrowseGraphic.class);
     }
@@ -258,6 +264,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
 /// @XmlElement(name = "reference")
+    @UML(identifier="reference", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getReferences() {
         return references = nonNullCollection(references, Citation.class);
     }
@@ -286,6 +293,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
 /// @XmlElement(name = "releasability")
+    @UML(identifier="releasability", obligation=OPTIONAL, specification=ISO_19115)
     public DefaultReleasability getReleasability() {
         return releasability;
     }
@@ -320,6 +328,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
 /// @XmlElement(name = "responsibleParty")
+    @UML(identifier="responsibleParty", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<DefaultResponsibility> getResponsibleParties() {
         return responsibleParties = nonNullCollection(responsibleParties, DefaultResponsibility.class);
     }
