@@ -207,6 +207,11 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Returns the origin of requirement.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return Origin of requirement.
      */
     @Override
@@ -218,6 +223,11 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Sets the origin of requirement.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValues The new requestors values.
      */
     public void setRequestors(final Collection<? extends ResponsibleParty> newValues) {
@@ -226,6 +236,11 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the person(s), or body(ies), to receive results of requirement.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
      *
      * @return Person(s), or body(ies), to receive results.
      */
@@ -237,6 +252,11 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Sets the Person(s), or body(ies), to receive results of requirement.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValues The new recipients values.
      */
