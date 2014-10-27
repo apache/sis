@@ -31,6 +31,9 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.BiConsumer;
+
 
 /**
  * Description of the computer language construct that specifies the representation
@@ -185,15 +188,24 @@ public class DefaultFormat extends ISOMetadata implements Format {
     }
 
     /**
-     * Returns the {@link #formatSpecificationCitation} as a SIS implementation.
+     * Sets the specification title or version.
      */
-    private DefaultCitation getWritableCitation() {
-        Citation citation = getFormatSpecificationCitation();
-        if (!(citation instanceof DefaultCitation)) {
-            citation = new DefaultCitation(citation);
+    private <T> void setFormatSpecificationCitation(final BiConsumer<DefaultCitation,T> setter, final T value) {
+        Citation citation = formatSpecificationCitation;
+        if (citation != null || value != null) {
+            if (!(citation instanceof DefaultCitation)) {
+                citation = new DefaultCitation(citation);
+            }
+            setter.accept((DefaultCitation) citation, value);
+            if (value == null && ((DefaultCitation) citation).isEmpty()) {
+                citation = null;
+            }
+        }
+        // Invoke the non-deprecated setter method only if the reference changed,
+        // for consistency with other deprecated setter methods in metadata module.
+        if (citation != formatSpecificationCitation) {
             setFormatSpecificationCitation(citation);
         }
-        return (DefaultCitation) citation;
     }
 
     /**
@@ -224,7 +236,11 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Deprecated
     public void setSpecification(final InternationalString newValue) {
         checkWritePermission();
-        getWritableCitation().setTitle(newValue);
+        setFormatSpecificationCitation(new BiConsumer<DefaultCitation,InternationalString>() {
+            @Override public void accept(DefaultCitation citation, InternationalString value) {
+                citation.setTitle(value);
+            }
+        }, newValue);
     }
 
     /**
@@ -239,7 +255,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Override
     @Deprecated
     @XmlElement(name = "name", required = true)
-    public final InternationalString getName() {
+    public InternationalString getName() {
         final Citation citation = getFormatSpecificationCitation();
         if (citation != null) {
             return LegacyPropertyAdapter.getSingleton(citation.getAlternateTitles(),
@@ -260,7 +276,11 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Deprecated
     public void setName(final InternationalString newValue) {
         checkWritePermission();
-        getWritableCitation().setAlternateTitles(LegacyPropertyAdapter.asCollection(newValue));
+        setFormatSpecificationCitation(new BiConsumer<DefaultCitation,InternationalString>() {
+            @Override public void accept(DefaultCitation citation, InternationalString value) {
+                citation.setAlternateTitles(LegacyPropertyAdapter.asCollection(value));
+            }
+        }, newValue);
     }
 
     /**
@@ -292,7 +312,11 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @Deprecated
     public void setVersion(final InternationalString newValue) {
         checkWritePermission();
-        getWritableCitation().setEdition(newValue);
+        setFormatSpecificationCitation(new BiConsumer<DefaultCitation,InternationalString>() {
+            @Override public void accept(DefaultCitation citation, InternationalString value) {
+                citation.setEdition(value);
+            }
+        }, newValue);
     }
 
     /**

@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.content;
 
 import java.util.Collection;
+import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
@@ -226,10 +227,11 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Override
     @Deprecated
     @XmlElement(name = "contentType", required = true)
-    public final CoverageContentType getContentType() {
+    public CoverageContentType getContentType() {
         CoverageContentType type = null;
-        if (attributeGroups != null) {
-            for (final AttributeGroup g : attributeGroups) {
+        final Collection<AttributeGroup> groups = getAttributeGroups();
+        if (groups != null) { // May be null on marshalling.
+            for (final AttributeGroup g : groups) {
                 final Collection<? extends CoverageContentType> contentTypes = g.getContentTypes();
                 if (contentTypes != null) { // May be null on marshalling.
                     for (final CoverageContentType t : contentTypes) {
@@ -256,19 +258,26 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#setContentTypes(Collection)}.
      */
     @Deprecated
-    public final void setContentType(final CoverageContentType newValue) {
+    public void setContentType(final CoverageContentType newValue) {
         checkWritePermission();
         final Collection<CoverageContentType> newValues = LegacyPropertyAdapter.asCollection(newValue);
-        final Collection<AttributeGroup> groups = getAttributeGroups();
-        for (final AttributeGroup group : groups) {
-            if (group instanceof DefaultAttributeGroup) {
-                ((DefaultAttributeGroup) group).setContentTypes(newValues);
-                return;
+        Collection<AttributeGroup> groups = attributeGroups;
+        if (groups != null) {
+            for (final AttributeGroup group : groups) {
+                if (group instanceof DefaultAttributeGroup) {
+                    ((DefaultAttributeGroup) group).setContentTypes(newValues);
+                    return;
+                }
             }
         }
         final DefaultAttributeGroup group = new DefaultAttributeGroup();
         group.setContentTypes(newValues);
-        groups.add(group);
+        if (groups != null) {
+            groups.add(group);
+        } else {
+            groups = Collections.<AttributeGroup>singleton(group);
+        }
+        setAttributeGroups(groups);
     }
 
     /**
@@ -317,7 +326,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#setGroupAttributes(Collection)}.
      */
     @Deprecated
-    public final void setDimensions(final Collection<? extends RangeDimension> newValues) {
+    public void setDimensions(final Collection<? extends RangeDimension> newValues) {
         checkWritePermission();
         ((LegacyPropertyAdapter<RangeDimension,?>) getDimensions()).setValues(newValues);
     }
