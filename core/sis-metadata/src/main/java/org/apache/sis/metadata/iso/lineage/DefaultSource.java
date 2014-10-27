@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.lineage;
 
 import java.util.Collection;
+import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -247,7 +248,7 @@ public class DefaultSource extends ISOMetadata implements Source {
     @Override
     @Deprecated
     @XmlElement(name = "scaleDenominator")
-    public final RepresentativeFraction getScaleDenominator() {
+    public RepresentativeFraction getScaleDenominator() {
         final Resolution resolution = getSourceSpatialResolution();
         return (resolution != null) ? resolution.getEquivalentScale() : null;
     }
@@ -262,13 +263,21 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultResolution#setEquivalentScale(RepresentativeFraction)}.
      */
     @Deprecated
-    public final void setScaleDenominator(final RepresentativeFraction newValue)  {
+    public void setScaleDenominator(final RepresentativeFraction newValue)  {
         checkWritePermission();
-        Resolution resolution = getSourceSpatialResolution();
-        if (resolution instanceof DefaultResolution) {
-            ((DefaultResolution) resolution).setEquivalentScale(newValue);
-        } else if (newValue != null) {
-            setSourceSpatialResolution(new DefaultResolution(newValue));
+        Resolution resolution = null;
+        if (newValue != null) {
+            resolution = sourceSpatialResolution;
+            if (resolution instanceof DefaultResolution) {
+                ((DefaultResolution) resolution).setEquivalentScale(newValue);
+            } else {
+                resolution = new DefaultResolution(newValue);
+            }
+        }
+        // Invoke the non-deprecated setter method only if the reference changed,
+        // for consistency with other deprecated setter methods in metadata module.
+        if (resolution != sourceSpatialResolution) {
+            setSourceSpatialResolution(resolution);
         }
     }
 
@@ -377,11 +386,15 @@ public class DefaultSource extends ISOMetadata implements Source {
     @Override
     @Deprecated
     @XmlElement(name = "sourceExtent")
-    public final Collection<Extent> getSourceExtents() {
+    public Collection<Extent> getSourceExtents() {
         Scope scope = getScope();
         if (!(scope instanceof DefaultScope)) {
-            scope = new DefaultScope(scope);
-            setScope(scope);
+            if (isModifiable()) {
+                scope = new DefaultScope(scope);
+                this.scope = scope;
+            } else {
+                return Collections.unmodifiableCollection(scope.getExtents());
+            }
         }
         return ((DefaultScope) scope).getExtents();
     }
@@ -395,8 +408,9 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#setExtent(Extent)}.
      */
     @Deprecated
-    public final void setSourceExtents(final Collection<? extends Extent> newValues) {
-        Scope scope = getScope();
+    public void setSourceExtents(final Collection<? extends Extent> newValues) {
+        checkWritePermission();
+        Scope scope = this.scope;
         if (!(scope instanceof DefaultScope)) {
             scope = new DefaultScope(scope);
             setScope(scope);
