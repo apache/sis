@@ -24,7 +24,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.acquisition.Platform;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.citation.Responsibility;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
@@ -75,7 +75,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Organization responsible for building, launch, or operation of the platform.
      */
-    private Collection<ResponsibleParty> sponsors;
+    private Collection<Responsibility> sponsors;
 
     /**
      * Instrument(s) mounted on a platform.
@@ -103,7 +103,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
             citation    = object.getCitation();
             identifiers = singleton(object.getIdentifier(), Identifier.class);
             description = object.getDescription();
-            sponsors    = copyCollection(object.getSponsors(), ResponsibleParty.class);
+            sponsors    = copyCollection(object.getSponsors(), Responsibility.class);
             instruments = copyCollection(object.getInstruments(), Instrument.class);
         }
     }
@@ -204,8 +204,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      */
     @Override
     @XmlElement(name = "sponsor")
-    public Collection<ResponsibleParty> getSponsors() {
-        return sponsors = nonNullCollection(sponsors, ResponsibleParty.class);
+    public Collection<Responsibility> getSponsors() {
+        return sponsors = nonNullCollection(sponsors, Responsibility.class);
     }
 
     /**
@@ -213,8 +213,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      *
      * @param newValues The new sponsors values;
      */
-    public void setSponsors(final Collection<? extends ResponsibleParty> newValues) {
-        sponsors = writeCollection(newValues, sponsors, ResponsibleParty.class);
+    public void setSponsors(final Collection<? extends Responsibility> newValues) {
+        sponsors = writeCollection(newValues, sponsors, Responsibility.class);
     }
 
     /**
