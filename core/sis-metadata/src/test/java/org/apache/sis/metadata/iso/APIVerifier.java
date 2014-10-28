@@ -16,13 +16,17 @@
  */
 package org.apache.sis.metadata.iso;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.test.TestCase;
@@ -32,11 +36,14 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.JDK7;
+
 
 /**
  * Verifies the API changes caused by the ISO 19115:2003 to ISO 19115:2014 upgrade.
- * This class compares the presence of {@link Deprecated} and {@link UML} annotations
- * against a the content of an automatically generated {@code api-changes.properties} file.
+ * This class compares the presence of {@link Deprecated} and {@link UML} annotations against the content of an
+ * {@linkplain #listAPIChanges(File, File, Appendable) automatically generated} {@code api-changes.properties} file.
  * The intend is to ensure that we did not forgot an annotation or put the wrong one.
  *
  * <p>The content of the {@code api-changes.properties} files is typically empty on Apache SIS
@@ -131,6 +138,107 @@ public final strictfp class APIVerifier extends TestCase {
                 }
             }
             assertTrue(classChanges.isEmpty());
+        }
+    }
+
+    /**
+     * Generates the content of the {@code api-changes.properties} file, except for the comments.
+     * This method can be invoked by the {@code sis-metadata} module maintainer when the Apache SIS
+     * API diverges from the GeoAPI interfaces.
+     *
+     * <p>This method also opportunistically lists method signature changes if some are found.
+     * This is is for information purpose and shall not be included in the {@code api-changes.properties} file.</p>
+     *
+     * @param  releasedJAR Path to the JAR file of the GeoAPI interfaces implemented by the stable version of Apache SIS.
+     * @param  snapshotJAR Path to the JAR file of the GeoAPI interfaces that we would implement if it was released.
+     * @param  out Where to write the API differences between {@code releasedJAR} and {@code snapshotJAR}.
+     * @throws ReflectiveOperationException if an error occurred while processing the JAR file content.
+     * @throws IOException if an error occurred while reading the JAR files or writing to {@code out}.
+     */
+    public static void listAPIChanges(final File releasedJAR, final File snapshotJAR, final Appendable out)
+            throws Exception
+    {
+        final String lineSeparator = JDK7.lineSeparator();
+        final Map<String,Boolean> methodChanges = new TreeMap<String,Boolean>();
+        final List<String> incompatibleChanges = new ArrayList<String>();
+        final ClassLoader parent = APIVerifier.class.getClassLoader();
+        final JarFile newJARContent = new JarFile(snapshotJAR);
+        final URLClassLoader oldAPI = new URLClassLoader(new URL[] {releasedJAR.toURI().toURL()}, parent);
+        final URLClassLoader newAPI = new URLClassLoader(new URL[] {snapshotJAR.toURI().toURL()}, parent);
+        try {
+            final Class<? extends Annotation> newUML = Class.forName("org.opengis.annotation.UML", false, newAPI).asSubclass(Annotation.class);
+            final Method newIdentifier = newUML.getMethod("identifier", (Class[]) null);
+            final Enumeration<JarEntry> entries = newJARContent.entries();
+            while (entries.hasMoreElements()) {
+                String className = entries.nextElement().getName();
+                if (className.endsWith(".class")) {
+                    className = className.substring(0, className.length() - 6).replace('/', '.');
+                    final Class<?> newClass = Class.forName(className, false, newAPI);
+                    if (!newClass.isInterface() || !Modifier.isPublic(newClass.getModifiers())) {
+                        continue;
+                    }
+                    final Class<?> oldClass;
+                    try {
+                        oldClass = Class.forName(className, false, oldAPI);
+                    } catch (ClassNotFoundException e) {
+                        // New class that did not existed in previous release. Ignore.
+                        continue;
+                    }
+                    methodChanges.clear();
+                    for (final Method newMethod : newClass.getDeclaredMethods()) {
+                        if (!Modifier.isPublic(newMethod.getModifiers())) {
+                            continue;
+                        }
+                        final String methodName = newMethod.getName();
+                        final Class<?>[] parameterTypes = newMethod.getParameterTypes();
+                        Method oldMethod;
+                        try {
+                            oldMethod = oldClass.getDeclaredMethod(methodName, parameterTypes);
+                        } catch (NoSuchMethodException e) {
+                            oldMethod = null;
+                        }
+                        if (oldMethod != null) {
+                            final String oldType = oldMethod.getGenericReturnType().toString();
+                            final String newType = newMethod.getGenericReturnType().toString();
+                            if (!newType.equals(oldType)) {
+                                incompatibleChanges.add(className + '.' + methodName + lineSeparator
+                                        + "    (old) " + oldType + lineSeparator
+                                        + "    (new) " + newType + lineSeparator);
+                            }
+                        }
+                        if (parameterTypes.length == 0) {
+                            if (newMethod.isAnnotationPresent(Deprecated.class)) {
+                                methodChanges.put(methodName, Boolean.FALSE);
+                            } else {
+                                final Object uml = newMethod.getAnnotation(newUML);
+                                if (uml != null && oldMethod == null) {
+                                    methodChanges.put(methodName + ':' + newIdentifier.invoke(uml, (Object[]) null), Boolean.TRUE);
+                                }
+                            }
+                        }
+                    }
+                    if (!methodChanges.isEmpty()) {
+                        out.append(className);
+                        char separator = '=';
+                        for (final Map.Entry<String,Boolean> entry : methodChanges.entrySet()) {
+                            out.append(separator).append(entry.getValue() ? '+' : '-').append(entry.getKey());
+                            separator = ' ';
+                        }
+                        out.append(lineSeparator);
+                    }
+                }
+            }
+        } finally {
+            newJARContent.close();
+        }
+        if (!incompatibleChanges.isEmpty()) {
+            out.append(lineSeparator)
+               .append("═════════════════════════════").append(lineSeparator)
+               .append("Incompatible changes detected").append(lineSeparator)
+               .append("═════════════════════════════").append(lineSeparator);
+            for (final String m : incompatibleChanges) {
+                out.append(m);
+            }
         }
     }
 }
