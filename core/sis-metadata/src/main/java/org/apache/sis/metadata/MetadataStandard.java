@@ -102,6 +102,18 @@ public class MetadataStandard implements Serializable {
     private static final long serialVersionUID = 7549790450195184843L;
 
     /**
+     * {@code true} if implementations can alter the API defined in the interfaces by
+     * adding or removing properties. If {@code true}, then {@link PropertyAccessor}
+     * will check for {@link Deprecated} and {@link org.opengis.annotation.UML}
+     * annotations in the implementation classes in addition to the interfaces.
+     *
+     * <p>A value of {@code true} is useful when Apache SIS implements a newer standard
+     * than GeoAPI, but have a slight performance cost at construction time. Performance
+     * after construction should be the same.</p>
+     */
+    static final boolean IMPLEMENTATION_CAN_ALTER_API = false;
+
+    /**
      * Metadata instances defined in this class. The current implementation does not yet
      * contains the user-defined instances. However this may be something we will need to
      * do in the future.
@@ -175,7 +187,7 @@ public class MetadataStandard implements Serializable {
     private final MetadataStandard[] dependencies;
 
     /**
-     * Accessors for the specified implementations.
+     * Accessors for the specified implementation classes.
      * The only legal value types are:
      *
      * <ul>
@@ -311,7 +323,7 @@ public class MetadataStandard implements Serializable {
      */
     final PropertyAccessor getAccessor(final Class<?> implementation, final boolean mandatory) {
         /*
-         * Check for accessors created by previous call to this method.
+         * Check for accessors created by previous calls to this method.
          * Values are added to this cache but never cleared.
          */
         final Object value = accessors.get(implementation);
@@ -362,14 +374,7 @@ public class MetadataStandard implements Serializable {
             if (SpecialCases.isSpecialCase(type)) {
                 accessor = new SpecialCases(citation, type, implementation);
             } else {
-                /*
-                 * If "multi-value returns" was allowed in the Java language, the 'onlyUML' boolean would
-                 * be returned by 'findInterface(Class)' method when it falls in the special case for the
-                 * UML annotation on implementation class. But since we do not have multi-values, we have
-                 * to infer it from our knownledge of how 'findInterface(Class)' is implemented.
-                 */
-                final boolean onlyUML = (type == implementation && !type.isInterface());
-                accessor = new PropertyAccessor(citation, type, implementation, onlyUML);
+                accessor = new PropertyAccessor(citation, type, implementation);
             }
             return accessor;
         });
@@ -469,7 +474,7 @@ public class MetadataStandard implements Serializable {
                     }
                     // Found more than one interface; we don't know which one to pick.
                     // Returns 'null' for now; the caller will thrown an exception.
-                } else if (isPendingAPI(type)) {
+                } else if (IMPLEMENTATION_CAN_ALTER_API && isPendingAPI(type)) {
                     /*
                      * Found no interface. According to our method contract we should return null.
                      * However we make an exception if the implementation class has a UML annotation.
