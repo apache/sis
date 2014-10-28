@@ -84,13 +84,19 @@ final class PropertyComparator implements Comparator<Method> {
     private final Map<Object,Integer> order;
 
     /**
+     * The implementation class, or the interface is the implementation class is unknown.
+     */
+    private final Class<?> implementation;
+
+    /**
      * Creates a new comparator for the given implementation class.
      *
-     * @param implementation The implementation class, or {@code null} if unknown.
+     * @param implementation The implementation class, or the interface if the implementation class is unknown.
      */
     PropertyComparator(Class<?> implementation) {
+        this.implementation = implementation;
         order = new HashMap<Object,Integer>();
-        while (implementation != null) {
+        do {
             final XmlType xml = implementation.getAnnotation(XmlType.class);
             if (xml != null) {
                 final String[] propOrder = xml.propOrder();
@@ -108,7 +114,37 @@ final class PropertyComparator implements Comparator<Method> {
                 }
             }
             implementation = implementation.getSuperclass();
+        } while (implementation != null);
+    }
+
+    /**
+     * Returns {@code true} if the given method is deprecated, either in the interface that declare the method
+     * or in the implementation class. A method may be deprecated in the implementation but not in the interface
+     * when the implementation has been updated for a new standard, while the interface is still reflecting the
+     * old standard.
+     *
+     * @param  implementation The implementation class, or the interface is the implementation class is unknown.
+     * @param  method The method to check for deprecation.
+     * @return {@code true} if the method is deprecated.
+     */
+    static boolean isDeprecated(final Class<?> implementation, Method method) {
+        if (!MetadataStandard.IMPLEMENTATION_CAN_ALTER_API) {
+            return method.isAnnotationPresent(Deprecated.class);
         }
+        if (method.isAnnotationPresent(Deprecated.class)) {
+            return true;
+        }
+        if (method.getDeclaringClass() == implementation) {
+            return false;
+        }
+        try {
+            method = implementation.getMethod(method.getName(), (Class[]) null);
+        } catch (NoSuchMethodException e) {
+            // Should never happen since the implementation is supposed to implement
+            // the interface that declare the method given in argument.
+            throw new AssertionError(e);
+        }
+        return method.isAnnotationPresent(Deprecated.class);
     }
 
     /**
@@ -116,8 +152,8 @@ final class PropertyComparator implements Comparator<Method> {
      */
     @Override
     public int compare(final Method m1, final Method m2) {
-        final boolean deprecated = m1.isAnnotationPresent(Deprecated.class);
-        if (deprecated != m2.isAnnotationPresent(Deprecated.class)) {
+        final boolean deprecated = isDeprecated(implementation, m1);
+        if (deprecated != isDeprecated(implementation, m2)) {
             return deprecated ? +1 : -1;
         }
         int c = indexOf(m2) - indexOf(m1); // indexOf(…) are sorted in descending order.

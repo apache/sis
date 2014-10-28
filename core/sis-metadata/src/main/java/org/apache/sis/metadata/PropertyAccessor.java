@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Collection;
 import java.lang.reflect.Method;
@@ -86,19 +85,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @module
  */
 class PropertyAccessor {
-    /**
-     * Getters shared between many instances of this class. Two different implementations
-     * may share the same getters but different setters.
-     *
-     * <div class="note"><b>Implementation note:</b>
-     * In the particular case of {@code Class} keys, {@code IdentityHashMap} and {@code HashMap} have identical
-     * behavior since {@code Class} is final and does not override the {@code equals(Object)} and {@code hashCode()}
-     * methods. The {@code IdentityHashMap} Javadoc claims that it is faster than the regular {@code HashMap}.
-     * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
-     * implementation doesn't need the chain of objects created by {@code HashMap}.</div>
-     */
-    private static final Map<Class<?>, Method[]> SHARED_GETTERS = new IdentityHashMap<Class<?>, Method[]>();
-
     /**
      * Enumeration constants for the {@code mode} argument in the
      * {@link #count(Object, ValueExistencePolicy, int)} method.
@@ -253,14 +239,13 @@ class PropertyAccessor {
      * @param  standard       The standard which define the {@code type} interface.
      * @param  type           The interface implemented by the metadata class.
      * @param  implementation The class of metadata implementations, or {@code type} if none.
-     * @param  onlyUML        {@code true} for taking only the getter methods having a {@link UML} annotation.
      */
-    PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation, final boolean onlyUML) {
+    PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation) {
         assert type.isAssignableFrom(implementation) : implementation;
         this.standard       = standard;
         this.type           = type;
         this.implementation = implementation;
-        this.getters        = getGetters(type, implementation, onlyUML);
+        this.getters        = getGetters(type, implementation);
         int allCount = getters.length;
         int standardCount = allCount;
         if (allCount != 0 && getters[allCount-1] == EXTRA_GETTER) {
@@ -415,70 +400,82 @@ class PropertyAccessor {
      * since it may be shared among many instances of {@code PropertyAccessor}.
      *
      * @param  type The metadata interface.
-     * @param  implementation The class of metadata implementations.
-     * @param  onlyUML {@code true} for taking only the getter methods having a {@link UML} annotation.
+     * @param  implementation The class of metadata implementations, or {@code type} if none.
      * @return The getters declared in the given interface (never {@code null}).
      */
-    private static Method[] getGetters(final Class<?> type, final Class<?> implementation, final boolean onlyUML) {
-        synchronized (SHARED_GETTERS) {
-            Method[] getters = SHARED_GETTERS.get(type);
-            if (getters == null) {
-                getters = type.getMethods();
-                // Following is similar in purpose to the PropertyAccessor.mapping field,
-                // but index values are different because of the call to Arrays.sort(...).
-                final Map<String,Integer> mapping = new HashMap<String,Integer>(hashMapCapacity(getters.length));
-                boolean hasExtraGetter = false;
-                int count = 0;
-                for (final Method candidate : getters) {
-                    if (Classes.isPossibleGetter(candidate) && (!onlyUML || candidate.isAnnotationPresent(UML.class))) {
-                        final String name = candidate.getName();
-                        if (name.startsWith(SET)) { // Paranoiac check.
-                            continue;
+    private static Method[] getGetters(final Class<?> type, final Class<?> implementation) {
+        /*
+         * Indices map is used for choosing what to do in case of name collision.
+         */
+        Method[] getters = (MetadataStandard.IMPLEMENTATION_CAN_ALTER_API ? implementation : type).getMethods();
+        final Map<String,Integer> indices = new HashMap<String,Integer>(hashMapCapacity(getters.length));
+        boolean hasExtraGetter = false;
+        int count = 0;
+        for (Method candidate : getters) {
+            if (Classes.isPossibleGetter(candidate)) {
+                final String name = candidate.getName();
+                if (name.startsWith(SET)) { // Paranoiac check.
+                    continue;
+                }
+                /*
+                 * The candidate method should be declared in the interface. If not, then we require it to have
+                 * a @UML annotation. The later case happen when the Apache SIS implementation contains methods
+                 * for a new international standard not yet reflected in the GeoAPI interfaces.
+                 */
+                if (true /*MetadataStandard.IMPLEMENTATION_CAN_ALTER_API*/) {
+                    if (type == implementation) {
+                        if (!type.isInterface() && !candidate.isAnnotationPresent(UML.class)) {
+                            continue; // @UML considered optional only for interfaces.
                         }
-                        /*
-                         * At this point, we are ready to accept the method. Before doing so,
-                         * check if the method override an other method defined in a parent
-                         * class with a covariant return type. The JVM considers such cases
-                         * as two different methods, while from a Java developer point of
-                         * view this is the same method (GEOTK-205).
-                         */
-                        final Integer pi = mapping.put(name, count);
-                        if (pi != null) {
-                            final Class<?> pt = getters[pi].getReturnType();
-                            final Class<?> ct = candidate  .getReturnType();
-                            if (ct.isAssignableFrom(pt)) {
-                                continue; // Previous type was more accurate.
-                            }
-                            if (pt.isAssignableFrom(ct)) {
-                                getters[pi] = candidate;
-                                continue;
-                            }
-                            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
-                                    Classes.getShortName(type) + '.' + name, ct, pt));
-                        }
-                        getters[count++] = candidate;
-                        if (!hasExtraGetter) {
-                            hasExtraGetter = name.equals(EXTRA_GETTER.getName());
+                    } else if (false) try { // Temporarily disabled.
+                        candidate = type.getMethod(name, (Class[]) null);
+                    } catch (NoSuchMethodException e) {
+                        if (!candidate.isAnnotationPresent(UML.class)) {
+                            continue; // Not a method from an interface, and no @UML in implementation.
                         }
                     }
                 }
                 /*
-                 * Sort the standard methods before to add the extra methods (if any) in order to
-                 * keep the extra methods last. The code checking for the extra methods require
-                 * them to be last.
+                 * At this point, we are ready to accept the method. Before doing so,
+                 * check if the method override an other method defined in a parent
+                 * class with a covariant return type. The JVM considers such cases
+                 * as two different methods, while from a Java developer point of
+                 * view this is the same method (GEOTK-205).
                  */
-                Arrays.sort(getters, 0, count, new PropertyComparator(implementation));
-                if (!hasExtraGetter) {
-                    if (getters.length == count) {
-                        getters = Arrays.copyOf(getters, count+1);
+                final Integer pi = indices.put(name, count);
+                if (pi != null) {
+                    final Class<?> pt = getters[pi].getReturnType();
+                    final Class<?> ct = candidate  .getReturnType();
+                    if (ct.isAssignableFrom(pt)) {
+                        continue; // Previous type was more accurate.
                     }
-                    getters[count++] = EXTRA_GETTER;
+                    if (pt.isAssignableFrom(ct)) {
+                        getters[pi] = candidate;
+                        continue;
+                    }
+                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
+                            Classes.getShortName(type) + '.' + name, ct, pt));
                 }
-                getters = ArraysExt.resize(getters, count);
-                SHARED_GETTERS.put(type, getters);
+                getters[count++] = candidate;
+                if (!hasExtraGetter) {
+                    hasExtraGetter = name.equals(EXTRA_GETTER.getName());
+                }
             }
-            return getters;
         }
+        /*
+         * Sort the standard methods before to add the extra methods (if any) in order to
+         * keep the extra methods last. The code checking for the extra methods require
+         * them to be last.
+         */
+        Arrays.sort(getters, 0, count, new PropertyComparator(implementation));
+        if (!hasExtraGetter) {
+            if (getters.length == count) {
+                getters = Arrays.copyOf(getters, count+1);
+            }
+            getters[count++] = EXTRA_GETTER;
+        }
+        getters = ArraysExt.resize(getters, count);
+        return getters;
     }
 
     /**
@@ -614,10 +611,13 @@ class PropertyAccessor {
     }
 
     /**
-     * Returns {@code true} if the property at the given index is deprecated.
+     * Returns {@code true} if the property at the given index is deprecated, either in the interface that
+     * declare the method or in the implementation class. A method may be deprecated in the implementation
+     * but not in the interface when the implementation has been updated for a new standard
+     * while the interface is still reflecting the old standard.
      */
     private boolean isDeprecated(final int index) {
-        return getters[index].isAnnotationPresent(Deprecated.class);
+        return PropertyComparator.isDeprecated(implementation, getters[index]);
     }
 
     /**
