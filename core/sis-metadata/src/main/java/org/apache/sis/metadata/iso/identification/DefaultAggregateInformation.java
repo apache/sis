@@ -22,17 +22,12 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AggregateInformation;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.ISOMetadata;
-
-import static org.opengis.annotation.Obligation.CONDITIONAL;
-import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -44,8 +39,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * <div class="warning"><b>Upcoming API change — renaming</b><br>
  * As of ISO 19115:2014, {@code AggregateInformation} has been renamed {@code AssociatedResource}.
- * This class will be renamed accordingly when GeoAPI will provide the {@code AssociatedResource} interface
- * (tentatively in GeoAPI 3.1 or 4.0).
+ * This class will be replaced by {@link DefaultAssociatedResource} when GeoAPI will provide the
+ * {@code AssociatedResource} interface (tentatively in GeoAPI 3.1 or 4.0).
  * </div>
  *
  * {@section Limitations}
@@ -70,36 +65,25 @@ import static org.opengis.annotation.Specification.ISO_19115;
     "initiativeType"
 })
 @XmlRootElement(name = "MD_AggregateInformation")
-public class DefaultAggregateInformation extends ISOMetadata implements AggregateInformation {
+public class DefaultAggregateInformation extends DefaultAssociatedResource implements AggregateInformation {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = -803259032236939135L;
-
-    /**
-     * Citation information about the associated resource.
-     */
-    private Citation name;
-
-    /**
-     * Type of relation between the resources.
-     */
-    private AssociationType associationType;
-
-    /**
-     * Type of initiative under which the associated resource was produced.
-     */
-    private InitiativeType initiativeType;
-
-    /**
-     * Reference to the metadata of the associated resource.
-     */
-    private Citation metadataReference;
+    private static final long serialVersionUID = -8769840909779188495L;
 
     /**
      * Constructs an initially empty Aggregate dataset information.
      */
     public DefaultAggregateInformation() {
+    }
+
+    /**
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     *
+     * @param object The metadata to copy values from.
+     */
+    DefaultAggregateInformation(final DefaultAssociatedResource object) {
+        super(object);
     }
 
     /**
@@ -112,16 +96,10 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      * @see #castOrCopy(AggregateInformation)
      */
     public DefaultAggregateInformation(final AggregateInformation object) {
-        if (object != null) {
-            this.associationType   = object.getAssociationType();
-            this.initiativeType    = object.getInitiativeType();
-            if (object instanceof DefaultAggregateInformation) {
-                this.name              = ((DefaultAggregateInformation) object).getName();
-                this.metadataReference = ((DefaultAggregateInformation) object).getMetadataReference();
-            } else {
-                setAggregateDataSetName(object.getAggregateDataSetName());
-                setAggregateDataSetIdentifier(object.getAggregateDataSetIdentifier());
-            }
+        super(object);
+        if (object != null && !(object instanceof DefaultAssociatedResource)) {
+            setAggregateDataSetName(object.getAggregateDataSetName());
+            setAggregateDataSetIdentifier(object.getAggregateDataSetIdentifier());
         }
     }
 
@@ -148,31 +126,6 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
             return (DefaultAggregateInformation) object;
         }
         return new DefaultAggregateInformation(object);
-    }
-
-    /**
-     * Returns citation information about the associated resource, or {@code null} if none.
-     *
-     * @return Citation information about the associated resource, or {@code null} if none.
-     *
-     * @since 0.5
-     */
-/// @XmlElement(name = "name")
-    @UML(identifier="name", obligation=CONDITIONAL, specification=ISO_19115)
-    public Citation getName() {
-        return name;
-    }
-
-    /**
-     * Sets citation information about the associated resource.
-     *
-     * @param newValue The new citation information, or {@code null}.
-     *
-     * @since 0.5
-     */
-    public void setName(final Citation newValue) {
-        checkWritePermission();
-        name = newValue;
     }
 
     /**
@@ -275,7 +228,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
     @Override
     @XmlElement(name = "associationType", required = true)
     public AssociationType getAssociationType() {
-        return associationType;
+        return super.getAssociationType();
     }
 
     /**
@@ -283,9 +236,9 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *
      * @param newValue The new type of relation.
      */
+    @Override
     public void setAssociationType(final AssociationType newValue) {
-        checkWritePermission();
-        associationType = newValue;
+        super.setAssociationType(newValue);
     }
 
     /**
@@ -296,7 +249,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
     @Override
     @XmlElement(name = "initiativeType")
     public InitiativeType getInitiativeType() {
-        return initiativeType;
+        return super.getInitiativeType();
     }
 
     /**
@@ -304,33 +257,8 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *
      * @param newValue The new type of initiative.
      */
+    @Override
     public void setInitiativeType(final InitiativeType newValue) {
-        checkWritePermission();
-        initiativeType = newValue;
-    }
-
-    /**
-     * Return a reference to the metadata of the associated resource, or {@code null} if none.
-     *
-     * @return Reference to the metadata of the associated resource, or {@code null} if none.
-     *
-     * @since 0.5
-     */
-/// @XmlElement(name = "metadataReference")
-    @UML(identifier="metadataReference", obligation=CONDITIONAL, specification=ISO_19115)
-    public Citation getMetadataReference() {
-        return metadataReference;
-    }
-
-    /**
-     * Sets the reference to the metadata of the associated resource.
-     *
-     * @param newValue The new reference to the metadata.
-     *
-     * @since 0.5
-     */
-    public void setMetadataReference(final Citation newValue) {
-        checkWritePermission();
-        metadataReference = newValue;
+        super.setInitiativeType(newValue);
     }
 }

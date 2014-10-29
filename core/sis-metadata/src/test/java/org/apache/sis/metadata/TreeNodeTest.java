@@ -178,14 +178,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               "Alternate title (2 of 2)",
               "Edition",
               "Cited responsible party (1 of 2)",
-                "Organisation name",
                 "Role",
+                "Party",
+                  "Name",
               "Cited responsible party (2 of 2)",
-                "Individual name",
-                "Contact info",
-                  "Address",
-                    "Electronic mail address",
                 "Role",
+                "Party",
+                  "Name",
+                  "Contact info",
+                    "Address",
+                      "Electronic mail address",
               "Presentation form (1 of 2)",
               "Presentation form (2 of 2)",
               "Other citation details");
@@ -208,14 +210,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               "alternateTitle",
               "edition",
               "citedResponsibleParty",
-                "organisationName",
                 "role",
+                "party",
+                  "name",
               "citedResponsibleParty",
-                "individualName",
-                "contactInfo",
-                  "address",
-                    "electronicMailAddress",
                 "role",
+                "party",
+                  "name",
+                  "contactInfo",
+                    "address",
+                      "electronicMailAddress",
               "presentationForm",
               "presentationForm",
               "otherCitationDetails");
@@ -237,14 +241,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               ONE,          // alternateTitle
               null,         // edition
               ZERO,         // citedResponsibleParty
-                null,       // organisationName
                 null,       // role
+                ZERO,       // party (organisation)
+                  null,     // name
               ONE,          // citedResponsibleParty
-                null,       // individualName
-                null,       // contactInfo
-                  null,     // address
-                    ZERO,   // electronicMailAddress
                 null,       // role
+                ZERO,       // party (individual)
+                  null,     // name
+                  ZERO,     // contactInfo
+                    ZERO,   // address
+                      ZERO, // electronicMailAddress
               ZERO,         // presentationForm
               ONE,          // presentationForm
               null);        // otherCitationDetails
@@ -264,14 +270,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               InternationalString.class,
               InternationalString.class,
               ResponsibleParty.class,
-                InternationalString.class,
                 Role.class,
+                AbstractParty.class,
+                  InternationalString.class,
               ResponsibleParty.class,
-                String.class,
-                Contact.class,
-                  Address.class,
-                    String.class,
                 Role.class,
+                AbstractParty.class,
+                  InternationalString.class,
+                  Contact.class,
+                    Address.class,
+                      String.class,
               PresentationForm.class,
               PresentationForm.class,
               InternationalString.class);
@@ -291,14 +299,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               "Second alternate title",
               "Some edition",
               null, // ResponsibleParty
-                "Some organisation",
                 Role.DISTRIBUTOR,
+                null, // Party (organisation)
+                  "Some organisation",
               null, // ResponsibleParty
-                "Some person of contact",
-                null, // Contact
-                  null, // Address
-                    "Some email",
                 Role.POINT_OF_CONTACT,
+                null, // Party (individual)
+                  "Some person of contact",
+                  null, // Contact
+                    null, // Address
+                      "Some email",
               PresentationForm.MAP_DIGITAL,
               PresentationForm.MAP_HARDCOPY,
               "Some other details");

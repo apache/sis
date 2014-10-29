@@ -16,6 +16,8 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -41,6 +43,7 @@ import org.opengis.metadata.identification.ServiceIdentification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
@@ -94,7 +97,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = -6512101909569333306L;
+    private static final long serialVersionUID = 157053637951213015L;
 
     /**
      * Citation for the resource(s).
@@ -191,7 +194,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides aggregate dataset information.
      */
-    private Collection<AggregateInformation> aggregationInfo;
+    private Collection<DefaultAssociatedResource> associatedResources;
 
     /**
      * Constructs an initially empty identification.
@@ -234,7 +237,6 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
             descriptiveKeywords        = copyCollection(object.getDescriptiveKeywords(), Keywords.class);
             resourceSpecificUsages     = copyCollection(object.getResourceSpecificUsages(), Usage.class);
             resourceConstraints        = copyCollection(object.getResourceConstraints(), Constraints.class);
-            aggregationInfo            = copyCollection(object.getAggregationInfo(), AggregateInformation.class);
             if (object instanceof AbstractIdentification) {
                 final AbstractIdentification c = (AbstractIdentification) object;
                 spatialRepresentationTypes = copyCollection(c.getSpatialRepresentationTypes(), SpatialRepresentationType.class);
@@ -243,6 +245,9 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
                 extents                    = copyCollection(c.getExtents(), Extent.class);
                 additionalDocumentations   = copyCollection(c.getAdditionalDocumentations(), Citation.class);
                 processingLevel            = c.getProcessingLevel();
+                associatedResources        = copyCollection(c.getAssociatedResources(), DefaultAssociatedResource.class);
+            } else {
+                setAggregationInfo(object.getAggregationInfo());
             }
         }
     }
@@ -699,32 +704,89 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides associated resource information.
      *
-     * <div class="warning"><b>Upcoming API change — renaming</b><br>
-     * As of ISO 19115:2014, {@code AggregateInformation} has been renamed {@code AssociatedResource}.
-     * This method will be renamed accordingly when GeoAPI will provide the {@code getAssociatedResources()} method
-     * (tentatively in GeoAPI 3.1 or 4.0).
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code AssociatedResource} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
      * @return Associated resource information.
+     *
+     * @since 0.5
      */
-    @Override
-    @XmlElement(name = "aggregationInfo")
-    public Collection<AggregateInformation> getAggregationInfo() {
-        return aggregationInfo = nonNullCollection(aggregationInfo, AggregateInformation.class);
+/// @XmlElement(name = "associatedResource")
+    @UML(identifier="associatedResource", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<DefaultAssociatedResource> getAssociatedResources() {
+        return associatedResources = nonNullCollection(associatedResources, DefaultAssociatedResource.class);
     }
 
     /**
      * Sets associated resource information.
      *
-     * <div class="warning"><b>Upcoming API change — renaming</b><br>
-     * As of ISO 19115:2014, {@code AggregateInformation} has been renamed {@code AssociatedResource}.
-     * This method will be renamed accordingly when GeoAPI will provide the {@code getAssociatedResources()} method
-     * (tentatively in GeoAPI 3.1 or 4.0).
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code AssociatedResource} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
      * @param newValues The new associated resources.
+     *
+     * @since 0.5
      */
+    public void setAssociatedResources(final Collection<? extends DefaultAssociatedResource> newValues) {
+        associatedResources = writeCollection(newValues, associatedResources, DefaultAssociatedResource.class);
+    }
+
+    /**
+     * Provides aggregate dataset information.
+     *
+     * @return Aggregate dataset information.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getAssociatedResources()}.
+     */
+    @Override
+    @Deprecated
+    @XmlElement(name = "aggregationInfo")
+    public Collection<AggregateInformation> getAggregationInfo() {
+        return new LegacyPropertyAdapter<AggregateInformation,DefaultAssociatedResource>(getAssociatedResources()) {
+            @Override protected DefaultAssociatedResource wrap(final AggregateInformation value) {
+                return DefaultAssociatedResource.castOrCopy(value);
+            }
+
+            @Override protected AggregateInformation unwrap(final DefaultAssociatedResource container) {
+                if (container instanceof AggregateInformation) {
+                    return (AggregateInformation) container;
+                } else {
+                    return new DefaultAggregateInformation(container);
+                }
+            }
+
+            @Override protected boolean update(final DefaultAssociatedResource container, final AggregateInformation value) {
+                return container == value;
+            }
+        }.validOrNull();
+    }
+
+    /**
+     * Sets aggregate dataset information.
+     *
+     * @param newValues The new aggregation info.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setAssociatedResources(Collection)}.
+     */
+    @Deprecated
     public void setAggregationInfo(final Collection<? extends AggregateInformation> newValues) {
-        aggregationInfo = writeCollection(newValues, aggregationInfo, AggregateInformation.class);
+        checkWritePermission();
+        /*
+         * We can not invoke getAggregationInfo().setValues(newValues) because this method
+         * is invoked by the constructor, which is itself invoked at JAXB marshalling time,
+         * in which case getAggregationInfo() may return null.
+         */
+        List<DefaultAssociatedResource> r = null;
+        if (newValues != null) {
+            r = new ArrayList<DefaultAssociatedResource>(newValues.size());
+            for (final AggregateInformation value : newValues) {
+                r.add(DefaultAssociatedResource.castOrCopy(value));
+            }
+        }
+        setAssociatedResources(r);
     }
 }

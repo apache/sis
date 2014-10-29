@@ -116,7 +116,7 @@ public class MetadataStandard implements Serializable {
      * than GeoAPI, but have a slight performance cost at construction time. Performance
      * after construction should be the same.</p>
      */
-    static final boolean IMPLEMENTATION_CAN_ALTER_API = false;
+    static final boolean IMPLEMENTATION_CAN_ALTER_API = true;
 
     /**
      * Metadata instances defined in this class. The current implementation does not yet
@@ -482,7 +482,7 @@ public class MetadataStandard implements Serializable {
                     }
                     // Found more than one interface; we don't know which one to pick.
                     // Returns 'null' for now; the caller will thrown an exception.
-                } else if (isPendingAPI(type)) {
+                } else if (IMPLEMENTATION_CAN_ALTER_API && isPendingAPI(type)) {
                     /*
                      * Found no interface. According to our method contract we should return null.
                      * However we make an exception if the implementation class has a UML annotation.

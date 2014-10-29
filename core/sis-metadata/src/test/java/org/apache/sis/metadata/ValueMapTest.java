@@ -171,7 +171,9 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<String,Object>("identifiers",             citation.getIdentifiers()),
             new SimpleEntry<String,Object>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<String,Object>("presentationForms",       emptySet()),
-            new SimpleEntry<String,Object>("ISBN",                    "9782505004509")
+            new SimpleEntry<String,Object>("ISBN",                    "9782505004509"),
+            new SimpleEntry<String,Object>("graphics",                emptyList()),
+            new SimpleEntry<String,Object>("onlineResources",         emptyList())
         }, all.entrySet().toArray());
     }
 
@@ -199,7 +201,9 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<String,Object>("identifiers",             citation.getIdentifiers()),
             new SimpleEntry<String,Object>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<String,Object>("presentationForms",       emptySet()),
-            new SimpleEntry<String,Object>("ISBN",                    "9782505004509")
+            new SimpleEntry<String,Object>("ISBN",                    "9782505004509"),
+            new SimpleEntry<String,Object>("graphics",                emptyList()),
+            new SimpleEntry<String,Object>("onlineResources",         emptyList())
         }, all.entrySet().toArray());
     }
 
@@ -228,9 +232,11 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<String,Object>("presentationForms",       emptySet()),
             new SimpleEntry<String,Object>("series",                  null),
             new SimpleEntry<String,Object>("otherCitationDetails",    null),
-            new SimpleEntry<String,Object>("collectiveTitle",         null),
+//          new SimpleEntry<String,Object>("collectiveTitle",         null),  -- deprecated as of ISO 19115:2014.
             new SimpleEntry<String,Object>("ISBN",                    "9782505004509"),
-            new SimpleEntry<String,Object>("ISSN",                    null)
+            new SimpleEntry<String,Object>("ISSN",                    null),
+            new SimpleEntry<String,Object>("graphics",                emptyList()),
+            new SimpleEntry<String,Object>("onlineResources",         emptyList())
         }, all.entrySet().toArray());
     }
 
