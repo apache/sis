@@ -422,12 +422,12 @@ class PropertyAccessor {
                  * a @UML annotation. The later case happen when the Apache SIS implementation contains methods
                  * for a new international standard not yet reflected in the GeoAPI interfaces.
                  */
-                if (true /*MetadataStandard.IMPLEMENTATION_CAN_ALTER_API*/) {
+                if (MetadataStandard.IMPLEMENTATION_CAN_ALTER_API) {
                     if (type == implementation) {
                         if (!type.isInterface() && !candidate.isAnnotationPresent(UML.class)) {
                             continue; // @UML considered optional only for interfaces.
                         }
-                    } else if (false) try { // Temporarily disabled.
+                    } else try {
                         candidate = type.getMethod(name, (Class[]) null);
                     } catch (NoSuchMethodException e) {
                         if (!candidate.isAnnotationPresent(UML.class)) {

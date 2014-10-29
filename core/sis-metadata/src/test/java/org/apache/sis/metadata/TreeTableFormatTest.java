@@ -17,6 +17,7 @@
 package org.apache.sis.metadata;
 
 import java.util.Arrays;
+import java.util.Collections;
 import javax.measure.unit.SI;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.PresentationForm;
@@ -120,10 +121,12 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "  │   └─Authority\n" +
             "  │       └─Title………………………………………………… ISBN\n" +
             "  ├─Cited responsible party (1 of 2)\n" +
-            "  │   ├─Individual name………………………………… Testsuya Toyoda\n" +
-            "  │   └─Role……………………………………………………………… Author\n" +
+            "  │   ├─Role……………………………………………………………… Author\n" +
+            "  │   └─Party\n" +
+            "  │       └─Name…………………………………………………… Testsuya Toyoda\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   └─Individual name………………………………… A japanese author\n" +
+            "  │   └─Party\n" +
+            "  │       └─Name…………………………………………………… A japanese author\n" +
             "  ├─Presentation form (1 of 2)……………… Document hardcopy\n" +
             "  ├─Presentation form (2 of 2)……………… Image hardcopy\n" +
             "  └─ISBN………………………………………………………………………… 9782505004509\n", text);
@@ -168,14 +171,16 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final String text = format.format(image.asTreeTable());
         assertMultilinesEquals(
             "Image description\n" +
-            "  ├─Dimension (1 of 2)\n" +
-            "  │   ├─Max value…………… 0.26\n" +
-            "  │   ├─Min value…………… 0.25\n" +
-            "  │   └─Units……………………… cm\n" +
-            "  └─Dimension (2 of 2)\n" +
-            "      ├─Max value…………… 0.29\n" +
-            "      ├─Min value…………… 0.28\n" +
-            "      └─Units……………………… cm\n", text);
+            "  ├─Attribute group (1 of 2)\n" +
+            "  │   └─Attribute\n" +
+            "  │       ├─Max value………………… 0.26\n" +
+            "  │       ├─Min value………………… 0.25\n" +
+            "  │       └─Units…………………………… cm\n" +
+            "  └─Attribute group (2 of 2)\n" +
+            "      └─Attribute\n" +
+            "          ├─Max value………………… 0.29\n" +
+            "          ├─Min value………………… 0.28\n" +
+            "          └─Units…………………………… cm\n", text);
     }
 
     /**
@@ -192,7 +197,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
                 new SimpleInternationalString("Kiwi")));
 
         final DefaultDataIdentification identification = new DefaultDataIdentification();
-        identification.setDescriptiveKeywords(singleton(keywords));
+        identification.setDescriptiveKeywords(Collections.singleton(keywords));
         identification.setTopicCategories(Arrays.asList(
                 TopicCategory.HEALTH,
                 TopicCategory.valueOf("OCEANS"), // Existing category

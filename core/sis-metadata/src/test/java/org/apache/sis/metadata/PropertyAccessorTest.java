@@ -29,6 +29,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.distribution.Format;
@@ -54,6 +55,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
+import org.apache.sis.metadata.iso.identification.AbstractIdentification;
+import org.apache.sis.metadata.iso.identification.DefaultAssociatedResource;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -178,9 +181,11 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Citation.class, "getPresentationForms",       "presentationForms",       "presentationForm",      "Presentation forms",         PresentationForm[].class,
             Citation.class, "getSeries",                  "series",                  "series",                "Series",                     Series.class,
             Citation.class, "getOtherCitationDetails",    "otherCitationDetails",    "otherCitationDetails",  "Other citation details",     InternationalString.class,
-            Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,
+//          Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,   -- deprecated as of ISO 19115:2014
             Citation.class, "getISBN",                    "ISBN",                    "ISBN",                  "ISBN",                       String.class,
-            Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class);
+            Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class,
+     DefaultCitation.class, "getGraphics",                "graphics",                "graphic",               "Graphics",                   BrowseGraphic[].class,
+     DefaultCitation.class, "getOnlineResources",         "onlineResources",         "onlineResource",        "Online resources",           OnlineResource[].class);
     }
 
     /**
@@ -209,7 +214,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Identification.class, "getDescriptiveKeywords",        "descriptiveKeywords",        "descriptiveKeywords",       "Descriptive keywords",         Keywords[].class,
             Identification.class, "getResourceSpecificUsages",     "resourceSpecificUsages",     "resourceSpecificUsage",     "Resource specific usages",     Usage[].class,
             Identification.class, "getResourceConstraints",        "resourceConstraints",        "resourceConstraints",       "Resource constraints",         Constraints[].class,
-            Identification.class, "getAggregationInfo",            "aggregationInfo",            "aggregationInfo",           "Aggregation info",             AggregateInformation[].class,
         DataIdentification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
         DataIdentification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
         DataIdentification.class, "getLanguages",                  "languages",                  "language",                  "Languages",                    Locale[].class,
@@ -217,7 +221,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         DataIdentification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
         DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
         DataIdentification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
-        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class);
+        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class,
+    AbstractIdentification.class, "getAdditionalDocumentations",   "additionalDocumentations",   "additionalDocumentation",   "Additional documentations",    Citation[].class,
+    AbstractIdentification.class, "getAssociatedResources",        "associatedResources",        "associatedResource",        "Associated resources",         DefaultAssociatedResource[].class,
+    AbstractIdentification.class, "getProcessingLevel",            "processingLevel",            "processingLevel",           "Processing level",             Identifier.class);
     }
 
     /**
@@ -640,6 +647,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     public void testToString() {
         final PropertyAccessor accessor = createPropertyAccessor();
-        assertEquals("PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
+        assertEquals("PropertyAccessor[14 getters (+1 ext.) & 15 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
     }
 }

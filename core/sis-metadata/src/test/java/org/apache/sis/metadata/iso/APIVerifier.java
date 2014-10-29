@@ -137,7 +137,8 @@ public final strictfp class APIVerifier extends TestCase {
                     assertFalse("Expected no @UML annotation", method.isAnnotationPresent(UML.class));
                 }
             }
-            assertTrue(classChanges.isEmpty());
+            // May still be non-empty if some methods were defined in parent classes.
+            classChanges.clear();
         }
     }
 
