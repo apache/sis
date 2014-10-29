@@ -106,7 +106,6 @@
     @XmlJavaTypeAdapter(CI_Party.class),
     @XmlJavaTypeAdapter(CI_PresentationFormCode.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
-    @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(CI_RoleCode.class),
     @XmlJavaTypeAdapter(CI_Series.class),
     @XmlJavaTypeAdapter(CI_Telephone.class),

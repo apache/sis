@@ -48,7 +48,7 @@ import static java.util.AbstractMap.SimpleEntry;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)

@@ -19,7 +19,6 @@ package org.apache.sis.internal.metadata;
 import java.util.Collection;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 
 
 /**
@@ -38,6 +37,5 @@ public final class MetadataTypes extends TypeRegistration {
     @Override
     public void getTypes(final Collection<Class<?>> addTo) {
         addTo.add(DefaultMetadata.class);
-        addTo.add(DefaultResponsibleParty.class);
     }
 }
