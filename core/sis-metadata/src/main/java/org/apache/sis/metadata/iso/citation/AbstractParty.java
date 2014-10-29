@@ -17,9 +17,10 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.util.Collection;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Contact;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -63,6 +64,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
     "contactInfo"
 })
 @XmlRootElement(name = "CI_Party")
+@XmlSeeAlso({
+    DefaultIndividual.class,
+    DefaultOrganisation.class
+})
 @UML(identifier="CI_Party", specification=ISO_19115)
 public class AbstractParty extends ISOMetadata {
     /**

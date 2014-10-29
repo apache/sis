@@ -47,7 +47,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see MetadataStandardTest#testValueMap()

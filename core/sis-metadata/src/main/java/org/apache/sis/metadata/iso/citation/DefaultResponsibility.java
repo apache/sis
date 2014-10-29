@@ -17,9 +17,10 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.util.Collection;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -64,6 +65,9 @@ import static org.opengis.annotation.Specification.ISO_19115;
 /// "parties"
 })
 @XmlRootElement(name = "CI_Responsibility")
+@XmlSeeAlso({
+    DefaultResponsibleParty.class
+})
 @UML(identifier="CI_Responsibility", specification=ISO_19115)
 public class DefaultResponsibility extends ISOMetadata {
     /**
