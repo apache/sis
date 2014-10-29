@@ -36,7 +36,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(TreeNodeTest.class)
