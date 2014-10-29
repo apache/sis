@@ -648,17 +648,13 @@ class PropertyAccessor {
             final Class<?> elementType = elementTypes[index];
             final String   name        = name(index, KeyNamePolicy.UML_IDENTIFIER);
             final Method   getter      = getters[index];
-            ValueRange range = null;
-            if (implementation != type) {
-                final int e = Numbers.getEnumConstant(elementType);
-                if (e >= Numbers.BYTE && e <= Numbers.DOUBLE) try {
-                    range = implementation.getMethod(getter.getName(), (Class<?>[]) null)
-                            .getAnnotation(ValueRange.class);
-                } catch (NoSuchMethodException error) {
-                    // Should never happen, since the implementation class
-                    // implements the interface where the getter come from.
-                    throw new AssertionError(error);
-                }
+            final ValueRange range;
+            try {
+                range = implementation.getMethod(getter.getName(), (Class<?>[]) null).getAnnotation(ValueRange.class);
+            } catch (NoSuchMethodException error) {
+                // Should never happen, since the implementation class
+                // implements the interface where the getter come from.
+                throw new AssertionError(error);
             }
             information = new PropertyInformation<>(standard, name, getter, elementType, range);
             informations[index] = information;
