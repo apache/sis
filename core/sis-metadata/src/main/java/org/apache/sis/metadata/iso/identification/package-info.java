@@ -110,7 +110,6 @@
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
-    @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(DCPList.class),
     @XmlJavaTypeAdapter(DS_AssociationTypeCode.class),
     @XmlJavaTypeAdapter(DS_InitiativeTypeCode.class),
