@@ -61,6 +61,7 @@ import org.junit.BeforeClass;
 
     // ISO implementations.
     org.apache.sis.metadata.iso.citation.DefaultContactTest.class,
+    org.apache.sis.metadata.iso.citation.DefaultResponsibilityTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
     org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,
