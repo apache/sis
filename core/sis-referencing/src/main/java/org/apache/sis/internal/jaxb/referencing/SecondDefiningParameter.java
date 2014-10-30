@@ -131,7 +131,7 @@ public final class SecondDefiningParameter {
      */
     public void setInverseFlattening(final Measure measure) {
         if (measure.setUnit(Unit.ONE)) {
-            Context.warningOccured(Context.current(), SecondDefiningParameter.class, "setInverseFlattening",
+            Context.warningOccured(Context.current(), Context.LOGGER, SecondDefiningParameter.class, "setInverseFlattening",
                     Errors.class, Errors.Keys.IncompatiblePropertyValue_1, "uom");
         }
         this.measure = measure;

@@ -119,8 +119,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
                      * TemporalPrimitive as the source class, since it is the closest we can get
                      * to a public API.
                      */
-                    Context.warningOccured(context, TemporalPrimitive.class, "setTimePeriod",
-                            Errors.class, Errors.Keys.IllegalRange_2, begin, end);
+                    Context.warningOccured(context, Context.LOGGER, TemporalPrimitive.class,
+                            "setTimePeriod", Errors.class, Errors.Keys.IllegalRange_2, begin, end);
                 } else try {
                     metadata = TemporalUtilities.createPeriod(begin, end);
                     period.copyIdTo(metadata);

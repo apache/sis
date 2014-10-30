@@ -116,7 +116,7 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
      */
     @XmlAnyElement(lax = true)
     public Object getElement() {
-        Context.warningOccured(Context.current(), SC_VerticalCRS.class, "getElement",
+        Context.warningOccured(Context.current(), Context.LOGGER, SC_VerticalCRS.class, "getElement",
                 Errors.class, Errors.Keys.MissingRequiredModule_1, "sis-referencing");
         return null;
     }
