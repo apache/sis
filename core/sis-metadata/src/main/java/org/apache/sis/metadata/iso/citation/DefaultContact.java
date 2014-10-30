@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.annotation.UML;
+import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
@@ -32,6 +33,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
@@ -230,11 +232,12 @@ public class DefaultContact extends ISOMetadata implements Contact {
         Telephone phone = null;
         final Collection<Telephone> phones = getPhones();
         if (phones != null) { // May be null on marshalling.
-            TelephoneType ignored = null;
+            CodeList<?> ignored = null;
             for (final Telephone c : phones) {
                 if (c instanceof DefaultTelephone) {
-                    final TelephoneType type = ((DefaultTelephone) c).numberType;
-                    if (TelephoneType.VOICE.equals(type) || TelephoneType.FACSIMILE.equals(type)) {
+                    String name;
+                    final CodeList<?> type = ((DefaultTelephone) c).numberType;
+                    if (type != null && ("VOICE".equals(name = type.name()) || "FACSIMILE".equals(name))) {
                         if (phone == null) {
                             phone = c;
                         }
@@ -245,7 +248,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
             }
             if (ignored != null) {
                 Context.warningOccured(Context.current(), DefaultContact.class, "getPhone",
-                        Messages.class, Messages.Keys.IgnoredPropertyAssociatedTo_1, ignored.toString());
+                        Messages.class, Messages.Keys.IgnoredPropertyAssociatedTo_1, ignored);
             }
         }
         return phone;
@@ -268,10 +271,10 @@ public class DefaultContact extends ISOMetadata implements Contact {
             } else {
                 newValues = new ArrayList<Telephone>(4);
                 for (String number : newValue.getVoices()) {
-                    newValues.add(new DefaultTelephone(number, TelephoneType.VOICE));
+                    newValues.add(new DefaultTelephone(number, UnsupportedCodeList.VOICE));
                 }
                 for (String number : newValue.getFacsimiles()) {
-                    newValues.add(new DefaultTelephone(number, TelephoneType.FACSIMILE));
+                    newValues.add(new DefaultTelephone(number, UnsupportedCodeList.FACSIMILE));
                 }
             }
         }

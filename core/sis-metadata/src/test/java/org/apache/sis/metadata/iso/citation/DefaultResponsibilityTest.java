@@ -41,7 +41,6 @@ public final strictfp class DefaultResponsibilityTest extends XMLTestCase {
      * @throws JAXBException if an error occurred during the marshalling.
      */
     @Test
-    @org.junit.Ignore("Need investigation")
     public void testLegacyMarshalling() throws JAXBException {
         final DefaultIndividual  party = new DefaultIndividual("An author", null, null);
         final DefaultResponsibleParty r = new DefaultResponsibleParty(Role.AUTHOR);
@@ -57,7 +56,7 @@ public final strictfp class DefaultResponsibilityTest extends XMLTestCase {
                 "        <gco:CharacterString>An author</gco:CharacterString>\n" +
                 "      </gmd:individualName>\n" +
                 "      <gmd:role>\n" +
-                "        <gmd:CI_RoleCode codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"author\" codeSpace=\"eng\">Author</gmd:CI_RoleCode>\n" +
+                "        <gmd:CI_RoleCode codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"author\">Author</gmd:CI_RoleCode>\n" +
                 "      </gmd:role>\n" +
                 "    </gmd:CI_ResponsibleParty>\n" +
                 "  </gmd:citedResponsibleParty>\n" +

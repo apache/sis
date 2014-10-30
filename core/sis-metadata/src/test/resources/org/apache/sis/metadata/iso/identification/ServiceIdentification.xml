@@ -76,9 +76,6 @@
               </gco:TypeName>
             </gco:attributeType>
           </srv:name>
-          <srv:direction>
-            <srv:SV_ParameterDirection>in</srv:SV_ParameterDirection>
-          </srv:direction>
           <srv:optionality>
             <gco:CharacterString>Optional</gco:CharacterString>
           </srv:optionality>

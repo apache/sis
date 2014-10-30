@@ -66,6 +66,7 @@ import static java.util.Collections.singletonMap;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.StandardCharsets;
+import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 
 
 /**
@@ -105,7 +106,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
     private static DefaultTelephone telephone(final String number, final String type) {
         final DefaultTelephone tel = new DefaultTelephone();
         tel.setNumber(number);
-        tel.setNumberType(type);
+        tel.setNumberType(UnsupportedCodeList.valueOf(type));
         return tel;
     }
 

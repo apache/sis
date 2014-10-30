@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.logging.LogRecord;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.XMLTestCase;
@@ -91,10 +92,10 @@ public final strictfp class DefaultContactTest extends XMLTestCase implements Wa
     @SuppressWarnings("deprecation")
     public void testSetPhones() {
         init();
-        final DefaultTelephone   tel1 = new DefaultTelephone("00.01", TelephoneType.SMS);
-        final DefaultTelephone   tel2 = new DefaultTelephone("00.02", TelephoneType.VOICE);
-        final DefaultTelephone   tel3 = new DefaultTelephone("00.03", TelephoneType.FACSIMILE);
-        final DefaultTelephone   tel4 = new DefaultTelephone("00.04", TelephoneType.VOICE);
+        final DefaultTelephone   tel1 = new DefaultTelephone("00.01", UnsupportedCodeList.valueOf("SMS"));
+        final DefaultTelephone   tel2 = new DefaultTelephone("00.02", UnsupportedCodeList.VOICE);
+        final DefaultTelephone   tel3 = new DefaultTelephone("00.03", UnsupportedCodeList.FACSIMILE);
+        final DefaultTelephone   tel4 = new DefaultTelephone("00.04", UnsupportedCodeList.VOICE);
         final DefaultTelephone[] tels = new DefaultTelephone[] {tel1, tel2, tel3, tel4};
         final DefaultContact  contact = new DefaultContact();
         contact.setPhones(Arrays.asList(tel1, tel2, tel3, tel4));
@@ -134,7 +135,6 @@ public final strictfp class DefaultContactTest extends XMLTestCase implements Wa
      */
     @Test
     @DependsOnMethod("testSetPhones")
-    @org.junit.Ignore("Pending completion of ISO 19115:2014 upgrade.")
     public void testSetPhone() {
         testSetPhone(false);
     }
@@ -145,7 +145,6 @@ public final strictfp class DefaultContactTest extends XMLTestCase implements Wa
      */
     @Test
     @DependsOnMethod("testSetPhones")
-    @org.junit.Ignore("Pending completion of ISO 19115:2014 upgrade.")
     public void testSetNonSISPhone() {
         testSetPhone(true);
     }
@@ -179,9 +178,9 @@ public final strictfp class DefaultContactTest extends XMLTestCase implements Wa
         contact.setPhone(view);
         verifyLegacyLists(view);
         assertArrayEquals("getPhones", new DefaultTelephone[] {
-                new DefaultTelephone("00.02", TelephoneType.VOICE),
-                new DefaultTelephone("00.04", TelephoneType.VOICE),
-                new DefaultTelephone("00.03", TelephoneType.FACSIMILE)
+                new DefaultTelephone("00.02", UnsupportedCodeList.VOICE),
+                new DefaultTelephone("00.04", UnsupportedCodeList.VOICE),
+                new DefaultTelephone("00.03", UnsupportedCodeList.FACSIMILE)
             }, contact.getPhones().toArray());
     }
 }

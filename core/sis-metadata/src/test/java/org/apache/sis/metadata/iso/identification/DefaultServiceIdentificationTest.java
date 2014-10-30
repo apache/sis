@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
@@ -58,7 +59,7 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
                 "A dummy service for testing purpose.");                // abstract
         id.setServiceTypeVersions(singleton("1.0"));
         id.setCoupledResources(singleton(resource));
-        id.setCouplingType("LOOSE");
+        id.setCouplingType(UnsupportedCodeList.valueOf("LOOSE"));
         id.setContainsOperations(singleton(resource.getOperation()));
         return id;
     }
@@ -69,7 +70,6 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      * @throws JAXBException If an error occurred during the during marshalling process.
      */
     @Test
-    @org.junit.Ignore("Pending completion of ISO 19115:2014 upgrade.")
     public void testMarshal() throws JAXBException {
         assertMarshalEqualsFile(XML_FILE, create(), "xlmns:*", "xsi:schemaLocation");
     }
@@ -83,7 +83,6 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      * @throws JAXBException If an error occurred during the during unmarshalling process.
      */
     @Test
-    @org.junit.Ignore("Pending completion of ISO 19115:2014 upgrade.")
     public void testUnmarshal() throws JAXBException {
         assertTrue(create().equals(unmarshalFile(DefaultServiceIdentification.class, XML_FILE), ComparisonMode.DEBUG));
     }

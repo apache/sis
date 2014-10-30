@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.identification;
 import org.opengis.util.ScopedName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
+import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameterTest;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
@@ -46,7 +47,7 @@ public final strictfp class DefaultCoupledResourceTest extends TestCase {
     static DefaultCoupledResource create() {
         final DefaultOperationMetadata operation = new DefaultOperationMetadata();
         operation.setOperationName("Get Map");
-        operation.setDistributedComputingPlatforms(singleton("WEB_SERVICES"));
+        operation.setDistributedComputingPlatforms(singleton(UnsupportedCodeList.valueOf("WEB_SERVICES")));
         operation.setParameters(singleton((ParameterDescriptor<?>) ServiceParameterTest.create()));
         operation.setConnectPoints(singleton(NilReason.MISSING.createNilObject(OnlineResource.class)));
 

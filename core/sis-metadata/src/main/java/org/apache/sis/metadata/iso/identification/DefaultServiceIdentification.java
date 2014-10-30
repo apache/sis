@@ -21,12 +21,15 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.annotation.UML;
+import org.opengis.util.CodeList;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.opengis.metadata.identification.ServiceIdentification;
+import org.apache.sis.internal.jaxb.code.SV_CouplingType;
 import org.apache.sis.xml.Namespaces;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
@@ -94,7 +97,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Type of coupling between service and associated data (if exist).
      */
-    private Object couplingType;
+    private CodeList<?> couplingType;
 
     /**
      * Further description of the data coupling in the case of tightly coupled services.
@@ -283,9 +286,10 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return Type of coupling between service and associated data, or {@code null} if none.
      */
+    @XmlJavaTypeAdapter(SV_CouplingType.class)
     @XmlElement(name = "couplingType", namespace = Namespaces.SRV)
     @UML(identifier="couplingType", obligation=CONDITIONAL, specification=ISO_19115)
-    public Object getCouplingType() {
+    public CodeList<?> getCouplingType() {
         return couplingType;
     }
 
@@ -293,13 +297,37 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * Sets the type of coupling between service and associated data.
      *
      * <div class="warning"><b>Upcoming API change — specialization</b><br>
-     * The argument type will be changed to the {@code CouplingType} code list
-     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * The argument type will be changed to the {@code CouplingType} code list when GeoAPI will provide it
+     * (tentatively in GeoAPI 3.1). In the meantime, users can define their own code list class as below:
+     *
+     * {@preformat java
+     *   final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
+     *       private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
+     *
+     *       // Need to declare at least one code list element.
+     *       public static final UnsupportedCodeList MY_CODE_LIST = new UnsupportedCodeList("MY_CODE_LIST");
+     *
+     *       private UnsupportedCodeList(String name) {
+     *           super(name, VALUES);
+     *       }
+     *
+     *       public static UnsupportedCodeList valueOf(String code) {
+     *           return valueOf(UnsupportedCodeList.class, code);
+     *       }
+     *
+     *       &#64;Override
+     *       public UnsupportedCodeList[] family() {
+     *           synchronized (VALUES) {
+     *               return VALUES.toArray(new UnsupportedCodeList[VALUES.size()]);
+     *           }
+     *       }
+     *   }
+     * }
      * </div>
      *
      * @param newValue The new type of coupling between service and associated data.
      */
-    public void setCouplingType(final Object newValue) {
+    public void setCouplingType(final CodeList<?> newValue) {
         checkWritePermission();
         couplingType = newValue;
     }
