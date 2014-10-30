@@ -22,9 +22,11 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
@@ -85,7 +87,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     /**
      * Type of telephone number.
      */
-    TelephoneType numberType;
+    CodeList<?> numberType;
 
     /**
      * Constructs a default telephone.
@@ -101,7 +103,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @since 0.5
      */
-    DefaultTelephone(final String number, final TelephoneType numberType) {
+    DefaultTelephone(final String number, final CodeList<?> numberType) {
         this.number     = number;
         this.numberType = numberType;
     }
@@ -193,8 +195,8 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      */
 /// @XmlElement(name = "numberType")
     @UML(identifier="numberType", obligation=OPTIONAL, specification=ISO_19115)
-    public Object getNumberType() {
-        return (numberType != null) ? numberType.name() : null;
+    public CodeList<?> getNumberType() {
+        return numberType;
     }
 
     /**
@@ -202,17 +204,41 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * If non-null, the type can only be {@code "VOICE"}, {@code "FACSIMILE"} or {@code "SMS"}.
      *
      * <div class="warning"><b>Upcoming API change — specialization</b><br>
-     * The argument type will be changed to the {@code TelephoneType} code list
-     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * The argument type will be changed to the {@code TelephoneType} code list when GeoAPI will provide it
+     * (tentatively in GeoAPI 3.1). In the meantime, users can define their own code list class as below:
+     *
+     * {@preformat java
+     *   final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
+     *       private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
+     *
+     *       // Need to declare at least one code list element.
+     *       public static final UnsupportedCodeList MY_CODE_LIST = new UnsupportedCodeList("MY_CODE_LIST");
+     *
+     *       private UnsupportedCodeList(String name) {
+     *           super(name, VALUES);
+     *       }
+     *
+     *       public static UnsupportedCodeList valueOf(String code) {
+     *           return valueOf(UnsupportedCodeList.class, code);
+     *       }
+     *
+     *       &#64;Override
+     *       public UnsupportedCodeList[] family() {
+     *           synchronized (VALUES) {
+     *               return VALUES.toArray(new UnsupportedCodeList[VALUES.size()]);
+     *           }
+     *       }
+     *   }
+     * }
      * </div>
      *
      * @param newValue The new type of telephone number.
      *
      * @since 0.5
      */
-    public void setNumberType(final Object newValue) {
+    public void setNumberType(final CodeList<?> newValue) {
         checkWritePermission();
-        numberType = (newValue != null) ? TelephoneType.valueOf(newValue.toString()) : null;
+        numberType = newValue;
     }
 
     /**
@@ -284,7 +310,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     @Deprecated
     @XmlElement(name = "voice")
     public final Collection<String> getVoices() {
-        return new LegacyTelephones(getOwner(), TelephoneType.VOICE);
+        return new LegacyTelephones(getOwner(), UnsupportedCodeList.VOICE);
     }
 
     /**
@@ -316,7 +342,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     @Deprecated
     @XmlElement(name = "facsimile")
     public final Collection<String> getFacsimiles() {
-        return new LegacyTelephones(getOwner(), TelephoneType.FACSIMILE);
+        return new LegacyTelephones(getOwner(), UnsupportedCodeList.FACSIMILE);
     }
 
     /**

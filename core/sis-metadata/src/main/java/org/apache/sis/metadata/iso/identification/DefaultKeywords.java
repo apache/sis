@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -82,7 +83,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * User-defined categorization of groups of keywords that extend or are orthogonal
      * to the standardized {@linkplain #getType() keyword type} codes.
      */
-    private Object keywordClass;
+    private CodeList<?> keywordClass;
 
     /**
      * Constructs an initially empty keywords.
@@ -229,7 +230,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * @since 0.5
      */
     @UML(identifier="keywordClass", obligation=OPTIONAL, specification=ISO_19115)
-    public Object getKeywordClass() {
+    public CodeList<?> getKeywordClass() {
         return keywordClass;
     }
 
@@ -237,15 +238,39 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * Sets the user-defined categorization of groups of keywords.
      *
      * <div class="warning"><b>Upcoming API change — specialization</b><br>
-     * The element type will be changed to the {@code KeywordClass} code list
-     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * The argument type will be changed to the {@code KeywordClass} code list when GeoAPI will provide it
+     * (tentatively in GeoAPI 3.1). In the meantime, users can define their own code list class as below:
+     *
+     * {@preformat java
+     *   final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
+     *       private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
+     *
+     *       // Need to declare at least one code list element.
+     *       public static final UnsupportedCodeList MY_CODE_LIST = new UnsupportedCodeList("MY_CODE_LIST");
+     *
+     *       private UnsupportedCodeList(String name) {
+     *           super(name, VALUES);
+     *       }
+     *
+     *       public static UnsupportedCodeList valueOf(String code) {
+     *           return valueOf(UnsupportedCodeList.class, code);
+     *       }
+     *
+     *       &#64;Override
+     *       public UnsupportedCodeList[] family() {
+     *           synchronized (VALUES) {
+     *               return VALUES.toArray(new UnsupportedCodeList[VALUES.size()]);
+     *           }
+     *       }
+     *   }
+     * }
      * </div>
      *
      * @param newValue New user-defined categorization of groups of keywords.
      *
      * @since 0.5
      */
-    public void setKeywordClass(final Object newValue) {
+    public void setKeywordClass(final CodeList<?> newValue) {
         checkWritePermission();
         keywordClass = newValue;
     }

@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.Collection;
 import java.util.Iterator;
+import org.opengis.util.CodeList;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
@@ -35,14 +36,14 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
     /**
      * The type of telephone number.
-     * Either {@link TelephoneType#VOICE} or {@link TelephoneType#FACSIMILE}.
+     * Either {@link UnsupportedCodeList#VOICE} or {@link UnsupportedCodeList#FACSIMILE}.
      */
-    private final TelephoneType type;
+    private final CodeList<?> type;
 
     /**
      * Wraps the given telephone list for the given type.
      */
-    LegacyTelephones(final Collection<Telephone> telephones, final TelephoneType type) {
+    LegacyTelephones(final Collection<Telephone> telephones, final CodeList<?> type) {
         super(telephones);
         this.type = type;
     }
@@ -60,8 +61,13 @@ final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
      */
     @Override
     protected String unwrap(final Telephone container) {
-        if (container instanceof DefaultTelephone && type.equals(((DefaultTelephone) container).numberType)) {
-            return ((DefaultTelephone) container).getNumber();
+        if (container instanceof DefaultTelephone) {
+            final CodeList<?> ct = ((DefaultTelephone) container).numberType;
+            if (ct != null) {
+                if (type.name().equals(ct.name())) {
+                    return ((DefaultTelephone) container).getNumber();
+                }
+            }
         }
         return null;
     }
@@ -72,8 +78,8 @@ final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
     @Override
     protected boolean update(final Telephone container, final String value) {
         if (container instanceof DefaultTelephone) {
-            final TelephoneType ct = ((DefaultTelephone) container).numberType;
-            if (ct == null || ct.equals(type)) {
+            final CodeList<?> ct = ((DefaultTelephone) container).numberType;
+            if (ct == null || type.name().equals(ct.name())) {
                 if (ct == null) {
                     ((DefaultTelephone) container).numberType = type;
                 }

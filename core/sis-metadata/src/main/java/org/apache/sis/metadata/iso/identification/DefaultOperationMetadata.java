@@ -21,6 +21,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.opengis.metadata.citation.OnlineResource;
@@ -28,7 +29,9 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.xml.Namespaces;
 
 // Branch-specific imports
+import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
+import org.apache.sis.internal.jaxb.code.DCPList;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
@@ -85,7 +88,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Distributed computing platforms on which the operation has been implemented.
      */
-    private Collection<Object> distributedComputingPlatforms;
+    private Collection<CodeList<?>> distributedComputingPlatforms;
 
     /**
      * Free text description of the intent of the operation and the results of the operation.
@@ -132,7 +135,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
         super(object);
         if (object != null) {
             this.operationName                 = object.getOperationName();
-            this.distributedComputingPlatforms = copyCollection(object.getDistributedComputingPlatforms(), Object.class);
+            this.distributedComputingPlatforms = copyCollection(object.getDistributedComputingPlatforms(), (Class) CodeList.class);
             this.operationDescription          = object.getOperationDescription();
             this.invocationName                = object.getInvocationName();
             this.connectPoints                 = copyCollection(object.getConnectPoints(), OnlineResource.class);
@@ -172,19 +175,49 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *
      * @return Distributed computing platforms on which the operation has been implemented.
      */
+    @XmlJavaTypeAdapter(DCPList.class)
     @XmlElement(name = "DCP", namespace = Namespaces.SRV, required = true)
     @UML(identifier="distributedComputingPlatform", obligation=MANDATORY, specification=ISO_19115)
-    public Collection<Object> getDistributedComputingPlatforms() {
-        return distributedComputingPlatforms = nonNullCollection(distributedComputingPlatforms, Object.class);
+    public Collection<CodeList<?>> getDistributedComputingPlatforms() {
+        return distributedComputingPlatforms = nonNullCollection(distributedComputingPlatforms, (Class) CodeList.class);
     }
 
     /**
      * Sets the distributed computing platforms on which the operation has been implemented.
      *
+     * <div class="warning"><b>Upcoming API change — specialization</b><br>
+     * The element type will be changed to the {@code DistributedComputingPlatform} code list when GeoAPI will provide
+     * it (tentatively in GeoAPI 3.1). In the meantime, users can define their own code list class as below:
+     *
+     * {@preformat java
+     *   final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
+     *       private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
+     *
+     *       // Need to declare at least one code list element.
+     *       public static final UnsupportedCodeList MY_CODE_LIST = new UnsupportedCodeList("MY_CODE_LIST");
+     *
+     *       private UnsupportedCodeList(String name) {
+     *           super(name, VALUES);
+     *       }
+     *
+     *       public static UnsupportedCodeList valueOf(String code) {
+     *           return valueOf(UnsupportedCodeList.class, code);
+     *       }
+     *
+     *       &#64;Override
+     *       public UnsupportedCodeList[] family() {
+     *           synchronized (VALUES) {
+     *               return VALUES.toArray(new UnsupportedCodeList[VALUES.size()]);
+     *           }
+     *       }
+     *   }
+     * }
+     * </div>
+     *
      * @param newValues The new distributed computing platforms on which the operation has been implemented.
      */
-    public void setDistributedComputingPlatforms(final Collection<?> newValues) {
-        distributedComputingPlatforms = writeCollection(newValues, distributedComputingPlatforms, Object.class);
+    public void setDistributedComputingPlatforms(final Collection<? extends CodeList<?>> newValues) {
+        distributedComputingPlatforms = writeCollection(newValues, distributedComputingPlatforms, (Class) CodeList.class);
     }
 
     /**

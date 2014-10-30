@@ -1,0 +1,33 @@
+Suggestions for the Javadoc of methods having a CodeList<?> return type
+(replace "NewCodeList" and "3.1" by appropriate values):
+
+     *
+     * <div class="warning"><b>Upcoming API change — specialization</b><br>
+     * The argument type will be changed to the {@code NewCodeList} code list when GeoAPI will provide it
+     * (tentatively in GeoAPI 3.1). In the meantime, users can define their own code list class as below:
+     *
+     * {@preformat java
+     *   final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
+     *       private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
+     *
+     *       // Need to declare at least one code list element.
+     *       public static final UnsupportedCodeList MY_CODE_LIST = new UnsupportedCodeList("MY_CODE_LIST");
+     *
+     *       private UnsupportedCodeList(String name) {
+     *           super(name, VALUES);
+     *       }
+     *
+     *       public static UnsupportedCodeList valueOf(String code) {
+     *           return valueOf(UnsupportedCodeList.class, code);
+     *       }
+     *
+     *       &#64;Override
+     *       public UnsupportedCodeList[] family() {
+     *           synchronized (VALUES) {
+     *               return VALUES.toArray(new UnsupportedCodeList[VALUES.size()]);
+     *           }
+     *       }
+     *   }
+     * }
+     * </div>
+     *

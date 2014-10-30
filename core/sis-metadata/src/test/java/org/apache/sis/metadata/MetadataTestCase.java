@@ -134,6 +134,9 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                 // but not all character sets are supported.
                 return CharacterSet.ISO_8859_1;
             }
+            if (type == CodeList.class) {
+                return null;
+            }
             final CodeList<?>[] codes = (CodeList<?>[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
             return codes[random.nextInt(codes.length)];
         } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
