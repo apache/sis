@@ -25,7 +25,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.ExcludedSet;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Messages;
 
@@ -248,8 +248,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      */
     private void warningOnOverwrite(final byte code) {
         if (value != null && property != code) {
-            MetadataUtilities.warning(DefaultScopeDescription.class, SETTERS[code-1],
-                    Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
+            Context.warningOccured(Context.current(), LOGGER, DefaultScopeDescription.class, SETTERS[code-1],
+                    Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
         }
     }
 

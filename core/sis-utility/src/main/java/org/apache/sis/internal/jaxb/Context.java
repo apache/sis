@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Exceptions;
@@ -46,7 +47,7 @@ import org.apache.sis.xml.ReferenceResolver;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class Context extends MarshalContext {
@@ -90,6 +91,13 @@ public final class Context extends MarshalContext {
      * not contain any value when no (un)marshalling is in progress.
      */
     private static final ThreadLocal<Context> CURRENT = new ThreadLocal<>();
+
+    /**
+     * The logger to use for warnings that are specific to XML.
+     *
+     * @see org.apache.sis.metadata.iso.ISOMetadata#LOGGER
+     */
+    public static final Logger LOGGER = Logging.getLogger("org.apache.sis.xml");
 
     /**
      * Various boolean attributes determines by the above static constants.
@@ -381,31 +389,59 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Sends the given warning to the warning listener if there is one, or logs the warning otherwise.
-     * In the later case, this method logs to the logger specified by {@link LogRecord#getLoggerName()}
-     * if defined, or to the {@code "org.apache.sis.xml"} logger otherwise.
+     * Sends a warning to the warning listener if there is one, or logs the warning otherwise.
+     * In the later case, this method logs to the given logger.
      *
-     * @param context The current context, or {@code null} if none.
-     * @param warning The warning.
+     * <p>If the given {@code resources} is {@code null}, then this method will build the log
+     * message from the {@code exception}.</p>
+     *
+     * @param context   The current context, or {@code null} if none.
+     * @param logger    The logger where to send the warning.
+     * @param level     The logging level.
+     * @param classe    The class to declare as the warning source.
+     * @param method    The name of the method to declare as the warning source.
+     * @param exception The exception thrown, or {@code null} if none.
+     * @param resources Either {@code Errors.class}, {@code Messages.class} or {@code null} for the exception message.
+     * @param key       The resource keys as one of the constants defined in the {@code Keys} inner class.
+     * @param arguments The arguments to be given to {@code MessageFormat} for formatting the log message.
+     *
+     * @since 0.5
      */
-    public static void warningOccured(final Context context, final LogRecord warning) {
-        String logger = warning.getLoggerName();
-        if (logger == null) {
-            warning.setLoggerName(logger = "org.apache.sis.xml");
+    public static void warningOccured(final Context context, final Logger logger,
+            final Level level, final Class<?> classe, final String method, final Throwable exception,
+            final Class<? extends IndexedResourceBundle> resources, final short key, final Object... arguments)
+    {
+        final Locale locale = (context != null) ? context.getLocale() : null;
+        final LogRecord record;
+        if (resources != null) {
+            final IndexedResourceBundle bundle;
+            if (resources == Errors.class) {
+                bundle = Errors.getResources(locale);
+            } else if (resources == Messages.class) {
+                bundle = Messages.getResources(locale);
+            } else {
+                throw new IllegalArgumentException(String.valueOf(resources));
+            }
+            record = bundle.getLogRecord(level, key, arguments);
+        } else {
+            record = new LogRecord(level, Exceptions.formatChainedMessages(locale, null, exception));
         }
+        record.setSourceClassName(classe.getCanonicalName());
+        record.setSourceMethodName(method);
+        record.setLoggerName(logger.getName());
         if (context != null) {
             final WarningListener<?> warningListener = context.warningListener;
             if (warningListener != null) {
-                warningListener.warningOccured(null, warning);
+                record.setThrown(exception);
+                warningListener.warningOccured(null, record);
                 return;
             }
         }
         /*
-         * Log the warning without stack-trace, since this method shall be used only for non-fatal warnings
-         * and we want to avoid polluting the logs.
+         * Log the warning without stack-trace, since this method shall be used
+         * only for non-fatal warnings and we want to avoid polluting the logs.
          */
-        warning.setThrown(null);
-        Logging.getLogger(logger).log(warning);
+        logger.log(record);
     }
 
     /**
@@ -413,28 +449,20 @@ public final class Context extends MarshalContext {
      * resources. The message will be logged at {@link Level#WARNING}.
      *
      * @param context   The current context, or {@code null} if none.
+     * @param logger    The logger where to send the warning.
      * @param classe    The class to declare as the warning source.
      * @param method    The name of the method to declare as the warning source.
      * @param resources Either {@code Errors.class} or {@code Messages.class}.
      * @param key       The resource keys as one of the constants defined in the {@code Keys} inner class.
      * @param arguments The arguments to be given to {@code MessageFormat} for formatting the log message.
+     *
+     * @since 0.5
      */
-    public static void warningOccured(final Context context, final Class<?> classe, final String method,
+    public static void warningOccured(final Context context, final Logger logger,
+            final Class<?> classe, final String method,
             final Class<? extends IndexedResourceBundle> resources, final short key, final Object... arguments)
     {
-        final Locale locale = context != null ? context.getLocale() : null;
-        final IndexedResourceBundle bundle;
-        if (resources == Errors.class) {
-            bundle = Errors.getResources(locale);
-        } else if (resources == Messages.class) {
-            bundle = Messages.getResources(locale);
-        } else {
-            throw new IllegalArgumentException(String.valueOf(resources));
-        }
-        final LogRecord warning = bundle.getLogRecord(Level.WARNING, key, arguments);
-        warning.setSourceClassName(classe.getCanonicalName());
-        warning.setSourceMethodName(method);
-        warningOccured(context, warning);
+        warningOccured(context, logger, Level.WARNING, classe, method, null, resources, key, arguments);
     }
 
     /**
@@ -450,12 +478,8 @@ public final class Context extends MarshalContext {
     public static void warningOccured(final Context context, final Class<?> classe,
             final String method, final Exception cause, final boolean warning)
     {
-        final LogRecord record = new LogRecord(warning ? Level.WARNING : Level.FINE,
-                Exceptions.formatChainedMessages(context != null ? context.getLocale() : null, null, cause));
-        record.setSourceClassName(classe.getCanonicalName());
-        record.setSourceMethodName(method);
-        record.setThrown(cause);
-        warningOccured(context, record);
+        warningOccured(context, LOGGER, warning ? Level.WARNING : Level.FINE, classe, method, cause,
+                null, (short) 0, (Object[]) null);
     }
 
     /**

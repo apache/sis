@@ -23,8 +23,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.opengis.metadata.identification.Resolution;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_Distance;
-import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
@@ -199,8 +199,8 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
             if (newValue == null) {
                 return; // Do not erase the other property.
             }
-            MetadataUtilities.warning(DefaultResolution.class, SETTERS[code-1],
-                    Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
+            Context.warningOccured(Context.current(), LOGGER, DefaultResolution.class, SETTERS[code-1],
+                    Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
         }
         value = newValue;
         property = code;

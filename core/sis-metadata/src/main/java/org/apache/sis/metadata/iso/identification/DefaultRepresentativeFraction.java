@@ -112,7 +112,6 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     public DefaultRepresentativeFraction(final RepresentativeFraction object) throws IllegalArgumentException {
         if (object != null) {
             denominator = object.getDenominator();
-            ArgumentChecks.ensurePositive("object", denominator);
         }
     }
 

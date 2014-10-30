@@ -509,7 +509,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @param value The invalid value.
      */
     private static void outOfRange(final String name, final Double value) {
-        Context.warningOccured(Context.current(), DefaultCoordinateSystemAxis.class, name,
+        Context.warningOccured(Context.current(), Context.LOGGER, DefaultCoordinateSystemAxis.class, name,
                 Errors.class, Errors.Keys.InconsistentAttribute_2, name, value);
     }
 

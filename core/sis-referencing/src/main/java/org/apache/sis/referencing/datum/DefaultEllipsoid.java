@@ -579,7 +579,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      */
     private static void warnDuplicated(final String element) {
          // We cheat a bit for the "unmarshal" method name since there is not such method...
-        Context.warningOccured(Context.current(), DefaultEllipsoid.class, "unmarshal",
+        Context.warningOccured(Context.current(), Context.LOGGER, DefaultEllipsoid.class, "unmarshal",
                 Errors.class, Errors.Keys.DuplicatedElement_1, element);
     }
 
