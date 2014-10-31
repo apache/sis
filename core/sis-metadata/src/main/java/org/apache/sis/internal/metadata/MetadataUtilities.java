@@ -89,6 +89,17 @@ public final class MetadataUtilities extends Static {
      * or (in some case) zero. This method logs a warning if we are in process of (un)marshalling a XML document,
      * or throw an exception otherwise.
      *
+     * <p><b>When to use:</b></p>
+     * <ul>
+     *   <li>This method is for setter methods that may be invoked by JAXB. Constructors or methods ignored
+     *       by JAXB should use the simpler {@link org.apache.sis.util.ArgumentChecks} class instead.</li>
+     *   <li>This method should be invoked only when ignoring the warning will not cause information lost.
+     *       The stored metadata value may be invalid, but not lost.</li>
+     * </ul>
+     * <div class="note"><b>Note:</b> the later point is the reason why problems during XML (un)marshalling
+     * are only warnings for this method, while they are errors by default for
+     * {@link org.apache.sis.xml.ValueConverter} (the later can not store the value in case of error).</div>
+     *
      * @param  classe   The caller class.
      * @param  property The property name. Method name will be inferred by the usual Java bean convention.
      * @param  strict   {@code true} if the value was expected to be strictly positive, or {@code false} if 0 is accepted.
@@ -108,6 +119,17 @@ public final class MetadataUtilities extends Static {
     /**
      * Convenience method invoked when an argument is outside the expected range of values. This method logs
      * a warning if we are in process of (un)marshalling a XML document, or throw an exception otherwise.
+     *
+     * <p><b>When to use:</b></p>
+     * <ul>
+     *   <li>This method is for setter methods that may be invoked by JAXB. Constructors or methods ignored
+     *       by JAXB should use the simpler {@link org.apache.sis.util.ArgumentChecks} class instead.</li>
+     *   <li>This method should be invoked only when ignoring the warning will not cause information lost.
+     *       The stored metadata value may be invalid, but not lost.</li>
+     * </ul>
+     * <div class="note"><b>Note:</b> the later point is the reason why problems during XML (un)marshalling
+     * are only warnings for this method, while they are errors by default for
+     * {@link org.apache.sis.xml.ValueConverter} (the later can not store the value in case of error).</div>
      *
      * @param  classe   The caller class.
      * @param  property The property name. Method name will be inferred by the usual Java bean convention.
