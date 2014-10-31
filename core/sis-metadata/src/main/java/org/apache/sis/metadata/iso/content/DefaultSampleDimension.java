@@ -27,6 +27,8 @@ import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.apache.sis.measure.ValueRange;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
 
 /**
  * The characteristic of each dimension (layer) included in the resource.
@@ -135,6 +137,13 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(SampleDimension)
@@ -185,6 +194,22 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
             return (DefaultSampleDimension) object;
         }
         return new DefaultSampleDimension(object);
+    }
+
+    /**
+     * Ensures that the given property value is positive.
+     *
+     * @param property Name of the property to check.
+     * @param strict   {@code false} is zero is a legal value.
+     * @param newValue The property value to verify.
+     * @throws IllegalArgumentException if the given value is negative and the problem has not been logged.
+     */
+    private static void ensurePositive(final String property, final boolean strict, final Integer newValue)
+            throws IllegalArgumentException
+    {
+        if (newValue != null && !(strict ? newValue > 0 : newValue >= 0)) {
+            warnNonPositiveArgument(DefaultSampleDimension.class, property, strict, newValue);
+        }
     }
 
     /**
@@ -256,6 +281,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @return The number of values used in a thematic classification resource, or {@code null} if none.
      */
     @Override
+    @ValueRange(minimum = 0)
 /// @XmlElement(name = "numberOfValues")
     public Integer getNumberOfValues() {
         return numberOfValues;
@@ -264,11 +290,13 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the number of values used in a thematic classification resource.
      *
-     * @param newValues The new number of values used in a thematic classification resource.
+     * @param newValue The new number of values used in a thematic classification resource.
+     * @throws IllegalArgumentException if the given value is negative.
      */
-    public void setNumberOfValues(final Integer newValues) {
+    public void setNumberOfValues(final Integer newValue) {
         checkWritePermission();
-        numberOfValues = newValues;
+        ensurePositive("numberOfValues", false, newValue);
+        numberOfValues = newValue;
     }
 
     /**
@@ -374,9 +402,11 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * for the value in each band of each pixel.
      *
      * @param newValue The new maximum number of significant bits.
+     * @throws IllegalArgumentException if the given value is zero or negative.
      */
     public void setBitsPerValue(final Integer newValue) {
         checkWritePermission();
+        ensurePositive("bitsPerValue", true, newValue);
         bitsPerValue = newValue;
     }
 
