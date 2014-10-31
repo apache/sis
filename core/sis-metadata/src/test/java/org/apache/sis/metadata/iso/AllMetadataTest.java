@@ -148,6 +148,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.identification.Identification.class,
             org.opengis.metadata.identification.InitiativeType.class,
             org.opengis.metadata.identification.Keywords.class,
+            org.opengis.metadata.identification.KeywordClass.class,
             org.opengis.metadata.identification.KeywordType.class,
             org.opengis.metadata.identification.Progress.class,
             org.opengis.metadata.identification.OperationChainMetadata.class,
