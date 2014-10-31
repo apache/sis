@@ -36,7 +36,7 @@ import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -262,7 +262,9 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Invoked by JAXB for setting the Greenwich longitude and its unit of measurement.
      */
     private void setGreenwichMeasure(final Measure measure) {
-        if (measure != null && canSetProperty("greenwichLongitude", greenwichLongitude != 0 || angularUnit != null)) {
+        if (measure != null && canSetProperty(DefaultPrimeMeridian.class,
+                "setGreenwichMeasure", "greenwichLongitude", greenwichLongitude != 0 || angularUnit != null))
+        {
             greenwichLongitude = measure.value;
             angularUnit = measure.getUnit(Angle.class);
             if (angularUnit == null) {

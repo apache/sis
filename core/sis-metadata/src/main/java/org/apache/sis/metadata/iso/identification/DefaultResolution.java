@@ -29,6 +29,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
 
 /**
  * Level of detail expressed as a scale factor or a ground distance.
@@ -53,7 +55,7 @@ import org.apache.sis.util.resources.Messages;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see AbstractIdentification#getSpatialResolutions()
@@ -135,6 +137,13 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * {@linkplain #getAngularDistance() angular distance} and {@linkplain #getLevelOfDetail() level of detail}
      * are specified, then the first of those values is taken and the other values are silently discarded.</p>
      *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Resolution)
@@ -184,6 +193,19 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
             return (DefaultResolution) object;
         }
         return new DefaultResolution(object);
+    }
+
+    /**
+     * Ensures that the given property is greater than zero.
+     *
+     * @param  property The name of the property to verify.
+     * @param  value The property value, or {@code null}.
+     * @throws IllegalArgumentException if the property is zero or negative and the problem has not been logged.
+     */
+    private static void ensurePositive(final String property, final Double value) throws IllegalArgumentException {
+        if (value != null && !(value > 0)) { // Use '!' for catching NaN.
+            warnNonPositiveArgument(DefaultResolution.class, property, true, value);
+        }
     }
 
     /**
@@ -250,9 +272,11 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance.
+     * @param newValue The new distance, or {@code null}.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setDistance(final Double newValue) {
+        ensurePositive("distance", newValue);
         setProperty(DISTANCE, newValue);
     }
 
@@ -276,11 +300,13 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance.
+     * @param newValue The new distance, or {@code null}.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @since 0.5
      */
     public void setVertical(final Double newValue) {
+        ensurePositive("vertical", newValue);
         setProperty(VERTICAL, newValue);
     }
 
@@ -304,11 +330,13 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance.
+     * @param newValue The new distance, or {@code null}.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @since 0.5
      */
     public void setAngularDistance(final Double newValue) {
+        ensurePositive("angular", newValue);
         setProperty(ANGULAR, newValue);
     }
 

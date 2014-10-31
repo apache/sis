@@ -23,7 +23,8 @@ import org.opengis.metadata.acquisition.EnvironmentalRecord;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.util.ArgumentChecks;
+
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnOutOfRangeArgument;
 
 
 /**
@@ -41,7 +42,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MI_EnvironmentalRecord_Type", propOrder = {
@@ -87,6 +88,13 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
+     *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
      *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
@@ -163,12 +171,13 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Sets the maximum relative humidity along the flight pass during the photo flight.
      *
-     * @param newValue The new maximum relative humidity.
+     * @param newValue The new maximum relative humidity, or {@code null}.
+     * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setMaxRelativeHumidity(final Double newValue) {
         checkWritePermission();
-        if (newValue != null) {
-            ArgumentChecks.ensureBetween("maxRelativeHumidity", 0, 100, newValue);
+        if (newValue != null && !(newValue >= 0 && newValue <= 100)) { // Use '!' for catching NaN.
+            warnOutOfRangeArgument(DefaultEnvironmentalRecord.class, "maxRelativeHumidity", 0, 100, newValue);
         }
         maxRelativeHumidity = newValue;
     }

@@ -33,6 +33,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -579,7 +580,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      */
     private static void warnDuplicated(final String element) {
          // We cheat a bit for the "unmarshal" method name since there is not such method...
-        Context.warningOccured(Context.current(), Context.LOGGER, DefaultEllipsoid.class, "unmarshal",
+        Context.warningOccured(Context.current(), ReferencingUtilities.LOGGER, DefaultEllipsoid.class, "unmarshal",
                 Errors.class, Errors.Keys.DuplicatedElement_1, element);
     }
 
