@@ -19,6 +19,7 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlTransient;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -72,7 +73,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see MetadataStandard
@@ -144,7 +145,21 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      */
     @Override
     public boolean isEmpty() {
-        return Pruner.isEmpty(this, true, false);
+        /*
+         * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+         * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+         * for all unused properties. Users should not see behavioral difference, except if they override
+         * some getters with an implementation invoking other getters. However in such cases, users would
+         * have been exposed to null values at XML marshalling time anyway.
+         */
+        final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+        try {
+            return Pruner.isEmpty(this, true, false);
+        } finally {
+            if (!allowNull) {
+                Semaphores.clear(Semaphores.NULL_COLLECTION);
+            }
+        }
     }
 
     /**
@@ -155,7 +170,15 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * @throws UnmodifiableMetadataException If this metadata is not modifiable.
      */
     public void prune() {
-        Pruner.isEmpty(this, true, true);
+        // See comment in 'isEmpty()' about NULL_COLLECTION semaphore purpose.
+        final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+        try {
+            Pruner.isEmpty(this, true, true);
+        } finally {
+            if (!allowNull) {
+                Semaphores.clear(Semaphores.NULL_COLLECTION);
+            }
+        }
     }
 
     /**

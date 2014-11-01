@@ -23,6 +23,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.Measure;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -131,7 +132,8 @@ public final class SecondDefiningParameter {
      */
     public void setInverseFlattening(final Measure measure) {
         if (measure.setUnit(Unit.ONE)) {
-            Context.warningOccured(Context.current(), SecondDefiningParameter.class, "setInverseFlattening",
+            Context.warningOccured(Context.current(), ReferencingUtilities.LOGGER,
+                    SecondDefiningParameter.class, "setInverseFlattening",
                     Errors.class, Errors.Keys.IncompatiblePropertyValue_1, "uom");
         }
         this.measure = measure;

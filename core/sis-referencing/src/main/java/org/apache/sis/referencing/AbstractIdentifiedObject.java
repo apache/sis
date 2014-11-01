@@ -61,7 +61,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
-import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
@@ -509,7 +509,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private void setIdentifier(final Code identifier) {
         if (identifier != null) {
             final Identifier id = identifier.getIdentifier();
-            if (id != null && canSetProperty("identifier", identifiers != null)) {
+            if (id != null && canSetProperty(AbstractIdentifiedObject.class,
+                    "setIdentifier", "identifier", identifiers != null))
+            {
                 identifiers = Collections.singleton(id);
             }
         }

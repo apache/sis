@@ -23,11 +23,13 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.opengis.metadata.identification.Resolution;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_Distance;
-import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
+
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
 
 
 /**
@@ -53,7 +55,7 @@ import org.apache.sis.util.resources.Messages;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see AbstractIdentification#getSpatialResolutions()
@@ -135,6 +137,13 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * {@linkplain #getAngularDistance() angular distance} and {@linkplain #getLevelOfDetail() level of detail}
      * are specified, then the first of those values is taken and the other values are silently discarded.</p>
      *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Resolution)
@@ -187,6 +196,19 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     }
 
     /**
+     * Ensures that the given property is greater than zero.
+     *
+     * @param  property The name of the property to verify.
+     * @param  value The property value, or {@code null}.
+     * @throws IllegalArgumentException if the property is zero or negative and the problem has not been logged.
+     */
+    private static void ensurePositive(final String property, final Double value) throws IllegalArgumentException {
+        if (value != null && !(value > 0)) { // Use '!' for catching NaN.
+            warnNonPositiveArgument(DefaultResolution.class, property, true, value);
+        }
+    }
+
+    /**
      * Sets the properties identified by the {@code code} argument, if non-null.
      * This discards any other properties.
      *
@@ -199,8 +221,8 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
             if (newValue == null) {
                 return; // Do not erase the other property.
             }
-            MetadataUtilities.warning(DefaultResolution.class, SETTERS[code-1],
-                    Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
+            Context.warningOccured(Context.current(), LOGGER, DefaultResolution.class, SETTERS[code-1],
+                    Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
         }
         value = newValue;
         property = code;
@@ -250,9 +272,11 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance.
+     * @param newValue The new distance, or {@code null}.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setDistance(final Double newValue) {
+        ensurePositive("distance", newValue);
         setProperty(DISTANCE, newValue);
     }
 
@@ -276,11 +300,13 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance.
+     * @param newValue The new distance, or {@code null}.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @since 0.5
      */
     public void setVertical(final Double newValue) {
+        ensurePositive("vertical", newValue);
         setProperty(VERTICAL, newValue);
     }
 
@@ -304,11 +330,13 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance.
+     * @param newValue The new distance, or {@code null}.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @since 0.5
      */
     public void setAngularDistance(final Double newValue) {
+        ensurePositive("angular", newValue);
         setProperty(ANGULAR, newValue);
     }
 

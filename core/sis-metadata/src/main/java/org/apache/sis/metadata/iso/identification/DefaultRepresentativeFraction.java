@@ -29,6 +29,7 @@ import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
 import org.apache.sis.internal.jaxb.gco.GO_Integer64;
 import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
@@ -37,6 +38,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
 
 
 /**
@@ -60,7 +62,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see DefaultResolution#getEquivalentScale()
@@ -96,9 +98,9 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Creates a new representative fraction from the specified denominator.
      *
      * @param  denominator The denominator as a positive number, or 0 if unspecified.
-     * @throws IllegalArgumentException If the given value is not a positive number or zero.
+     * @throws IllegalArgumentException If the given value is negative.
      */
-    public DefaultRepresentativeFraction(final long denominator) throws IllegalArgumentException {
+    public DefaultRepresentativeFraction(final long denominator) {
         ArgumentChecks.ensurePositive("denominator", denominator);
         this.denominator = denominator;
     }
@@ -106,13 +108,18 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Constructs a new representative fraction initialized to the value of the given object.
      *
-     * @param  object The metadata to copy values from, or {@code null} if none.
-     * @throws IllegalArgumentException If the denominator of the given source is negative.
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
      */
-    public DefaultRepresentativeFraction(final RepresentativeFraction object) throws IllegalArgumentException {
+    public DefaultRepresentativeFraction(final RepresentativeFraction object) {
         if (object != null) {
             denominator = object.getDenominator();
-            ArgumentChecks.ensurePositive("object", denominator);
         }
     }
 
@@ -139,6 +146,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * @return The denominator.
      */
     @Override
+    @ValueRange(minimum = 0)
     @XmlJavaTypeAdapter(value = GO_Integer64.class, type = long.class)
     @XmlElement(name = "denominator", required = true)
     public long getDenominator() {
@@ -149,26 +157,35 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Sets the denominator value.
      *
      * @param  denominator The new denominator value, or 0 if none.
-     * @throws IllegalArgumentException If the given value is not a positive number or zero.
+     * @throws IllegalArgumentException if the given value is negative.
      */
-    public void setDenominator(final long denominator) throws IllegalArgumentException {
-        ArgumentChecks.ensurePositive("denominator", denominator);
+    public void setDenominator(final long denominator) {
+        if (denominator < 0) {
+            warnNonPositiveArgument(DefaultRepresentativeFraction.class, "denominator", false, denominator);
+        }
         this.denominator = denominator;
     }
 
     /**
-     * Sets the denominator from a scale in the [-1 … +1] range.
+     * Sets the denominator from a scale in the (0 … 1] range.
      * The denominator is computed by {@code round(1 / scale)}.
      *
-     * @param  scale The scale as a number between -1 and +1 inclusive, or NaN.
+     * <p>The equivalent of a {@code getScale()} method is {@link #doubleValue()}.</p>
+     *
+     * @param  scale The scale as a number between 0 exclusive and 1 inclusive, or NaN.
      * @throws IllegalArgumentException if the given scale is our of range.
      */
-    public void setScale(final double scale) throws IllegalArgumentException {
-        if (Math.abs(scale) > 1) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.ValueOutOfRange_4, "scale", -1, +1, scale));
+    public void setScale(final double scale) {
+        /*
+         * For the following argument check, we do not need to use a Metadatautility method because
+         * 'setScale' is never invoked at (un)marshalling time. Note also that we accept NaN values
+         * since round(NaN) == 0, which is the desired value.
+         */
+        if (scale <= 0 || scale > 1) {
+            throw new IllegalArgumentException((scale <= 0)
+                    ? Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, "scale", scale)
+                    : Errors.format(Errors.Keys.ValueOutOfRange_4, "scale", 0, 1, scale));
         }
-        // round(NaN) == 0, which is the desired value.
         setDenominator(Math.round(1.0 / scale));
     }
 

@@ -138,7 +138,7 @@ public class GO_CharacterString {
                 property  = type;
                 noset     = true;
             }
-            Context.warningOccured(Context.current(), getClass(), "setText", Messages.class,
+            Context.warningOccured(Context.current(), Context.LOGGER, getClass(), "setText", Messages.class,
                     Messages.Keys.DiscardedExclusiveProperty_2, nameOf(discarded), nameOf(property));
             if (noset) {
                 return;

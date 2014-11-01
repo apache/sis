@@ -48,6 +48,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.internal.metadata.ReferencingUtilities;
 
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.NEGATIVE_INFINITY;
@@ -55,7 +56,6 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
-import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
@@ -457,7 +457,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Invoked by JAXB at unmarshalling time for setting the minimum value.
      */
     private void setMinimum(final Double value) {
-        if (value != null && canSetProperty("minimumValue", minimumValue != NEGATIVE_INFINITY)) {
+        if (value != null && ReferencingUtilities.canSetProperty(DefaultCoordinateSystemAxis.class,
+                "setMinimum", "minimumValue", minimumValue != NEGATIVE_INFINITY))
+        {
             final double min = value; // Apply unboxing.
             if (min < maximumValue) {
                 minimumValue = min;
@@ -491,7 +493,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Invoked by JAXB at unmarshalling time for setting the maximum value.
      */
     private void setMaximum(final Double value) {
-        if (value != null && canSetProperty("maximumValue", maximumValue != POSITIVE_INFINITY)) {
+        if (value != null && ReferencingUtilities.canSetProperty(DefaultCoordinateSystemAxis.class,
+                "setMaximum", "maximumValue", maximumValue != POSITIVE_INFINITY))
+        {
             final double max = value; // Apply unboxing.
             if (max > minimumValue) {
                 maximumValue = max;
@@ -509,7 +513,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @param value The invalid value.
      */
     private static void outOfRange(final String name, final Double value) {
-        Context.warningOccured(Context.current(), DefaultCoordinateSystemAxis.class, name,
+        Context.warningOccured(Context.current(), ReferencingUtilities.LOGGER, DefaultCoordinateSystemAxis.class, name,
                 Errors.class, Errors.Keys.InconsistentAttribute_2, name, value);
     }
 
