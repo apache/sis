@@ -32,7 +32,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.internal.referencing.Semaphores;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;

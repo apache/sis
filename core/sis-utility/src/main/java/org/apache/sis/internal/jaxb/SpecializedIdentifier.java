@@ -21,7 +21,6 @@ import java.net.URISyntaxException;
 import java.util.UUID;
 import java.io.Serializable;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
@@ -152,12 +151,8 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * @param cause   The exception that occurred during the parsing process.
      */
     static void parseFailure(final Context context, final String value, final Class<?> type, final Exception cause) {
-        final Messages resources = Messages.getResources(context != null ? context.getLocale() : null);
-        final LogRecord record = resources.getLogRecord(Level.WARNING, Messages.Keys.UnparsableValueStoredAsText_2, type, value);
-        record.setSourceClassName(IdentifierMap.class.getCanonicalName());
-        record.setSourceMethodName("put");
-        record.setThrown(cause);
-        Context.warningOccured(context, record);
+        Context.warningOccured(context, Context.LOGGER, Level.WARNING, IdentifierMap.class, "put", cause,
+                Messages.class, Messages.Keys.UnparsableValueStoredAsText_2, type, value);
     }
 
     /**

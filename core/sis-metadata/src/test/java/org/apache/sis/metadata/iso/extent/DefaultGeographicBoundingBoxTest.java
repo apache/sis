@@ -16,7 +16,10 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
+import java.util.Map;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -30,7 +33,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
@@ -393,5 +396,30 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
         } else {
             b1.intersect(b2);
         }
+    }
+
+    /**
+     * Tests {@link DefaultGeographicBoundingBox#asMap()}. The longitude and latitude values are
+     * expected to be represented by {@link Longitude} and {@link Latitude} objects respectively.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testAsMap() {
+        final Map<String, Object> map = new DefaultGeographicBoundingBox(-40, 50, -20, 45).asMap();
+        assertArrayEquals(new String[] {
+            "westBoundLongitude",
+            "eastBoundLongitude",
+            "southBoundLatitude",
+            "northBoundLatitude",
+            "inclusion"
+        }, map.keySet().toArray());
+        assertArrayEquals(new Object[] {
+            new Longitude(-40),
+            new Longitude(+50),
+            new Latitude (-20),
+            new Latitude (+45),
+            Boolean.TRUE
+        }, map.values().toArray());
     }
 }
