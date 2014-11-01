@@ -29,6 +29,7 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
@@ -84,6 +85,11 @@ public final class Context extends MarshalContext {
      * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
     public static final int SUBSTITUTE_MIMETYPE = 16;
+
+    /**
+     * Bit where to store whether {@link #finish()} shall invoke {@code Semaphores.clear(Semaphores.NULL_COLLECTION)}.
+     */
+    private static final int CLEAR_SEMAPHORE = 32;
 
     /**
      * The thread-local context. Elements are created in the constructor, and removed in a
@@ -186,6 +192,11 @@ public final class Context extends MarshalContext {
         this.warningListener = warningListener;
         previous = current();
         CURRENT.set(this);
+        if ((bitMasks & MARSHALLING) != 0) {
+            if (!Semaphores.queryAndSet(Semaphores.NULL_COLLECTION)) {
+                this.bitMasks |= CLEAR_SEMAPHORE;
+            }
+        }
     }
 
     /**
@@ -260,23 +271,6 @@ public final class Context extends MarshalContext {
      */
     public static Context current() {
         return CURRENT.get();
-    }
-
-    /**
-     * Returns {@code true} if XML marshalling is under progress.
-     * This convenience method is implemented by:
-     *
-     * {@preformat java
-     *     return isFlagSet(current(), MARSHALLING);
-     * }
-     *
-     * Callers should use the {@link #isFlagSet(Context, int)} method instead if the
-     * {@code Context} instance is known, for avoiding a call to {@link #current()}.
-     *
-     * @return {@code true} if XML marshalling is under progress.
-     */
-    public static boolean isMarshalling() {
-        return isFlagSet(current(), MARSHALLING);
     }
 
     /**
@@ -524,6 +518,9 @@ public final class Context extends MarshalContext {
      * Invoked in a {@code finally} block when a unmarshalling process is finished.
      */
     public final void finish() {
+        if ((bitMasks & CLEAR_SEMAPHORE) != 0) {
+            Semaphores.clear(Semaphores.NULL_COLLECTION);
+        }
         if (previous != null) {
             CURRENT.set(previous);
         } else {

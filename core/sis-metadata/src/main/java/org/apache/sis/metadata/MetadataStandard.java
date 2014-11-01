@@ -37,6 +37,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
 
@@ -896,10 +897,23 @@ public class MetadataStandard implements Serializable {
          */
         final ObjectPair pair = new ObjectPair(metadata1, metadata2);
         final Set<ObjectPair> inProgress = ObjectPair.CURRENT.get();
-        if (inProgress.add(pair)) try {
-            return accessor.equals(metadata1, metadata2, mode);
-        } finally {
-            inProgress.remove(pair);
+        if (inProgress.add(pair)) {
+            /*
+             * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+             * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+             * for all unused properties. Users should not see behavioral difference, except if they override
+             * some getters with an implementation invoking other getters. However in such cases, users would
+             * have been exposed to null values at XML marshalling time anyway.
+             */
+            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+            try {
+                return accessor.equals(metadata1, metadata2, mode);
+            } finally {
+                inProgress.remove(pair);
+                if (!allowNull) {
+                    Semaphores.clear(Semaphores.NULL_COLLECTION);
+                }
+            }
         } else {
             /*
              * If we get here, a cycle has been found. Returns 'true' in order to allow the caller to continue
@@ -926,16 +940,23 @@ public class MetadataStandard implements Serializable {
     public int hashCode(final Object metadata) throws ClassCastException {
         if (metadata != null) {
             final Map<Object,Object> inProgress = RecursivityGuard.HASH_CODES.get();
-            if (inProgress.put(metadata, Boolean.TRUE) == null) try {
-                return getAccessor(metadata.getClass(), true).hashCode(metadata);
-            } finally {
-                inProgress.remove(metadata);
+            if (inProgress.put(metadata, Boolean.TRUE) == null) {
+                // See comment in 'equals(…) about NULL_COLLECTION semaphore purpose.
+                final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+                try {
+                    return getAccessor(metadata.getClass(), true).hashCode(metadata);
+                } finally {
+                    inProgress.remove(metadata);
+                    if (!allowNull) {
+                        Semaphores.clear(Semaphores.NULL_COLLECTION);
+                    }
+                }
             }
             /*
              * If we get there, a cycle has been found. We can not compute a hash code value for that metadata.
              * However it should not be a problem since this metadata is part of a bigger metadata object, and
              * that enclosing object has other properties for computing its hash code. We just need the result
-             * to be consistent, we should be the case if properties ordering is always the same.
+             * to be consistent, wich should be the case if properties ordering is always the same.
              */
         }
         return 0;
