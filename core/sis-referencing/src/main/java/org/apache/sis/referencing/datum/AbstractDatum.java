@@ -35,7 +35,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
-import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
@@ -306,7 +306,9 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Invoked by JAXB only at unmarshalling time.
      */
     private void setRealizationEpoch(final Date value) {
-        if (value != null && canSetProperty("realizationEpoch", realizationEpoch != Long.MIN_VALUE)) {
+        if (value != null && canSetProperty(AbstractDatum.class,
+                "setRealizationEpoch", "realizationEpoch", realizationEpoch != Long.MIN_VALUE))
+        {
             realizationEpoch = value.getTime();
         }
     }

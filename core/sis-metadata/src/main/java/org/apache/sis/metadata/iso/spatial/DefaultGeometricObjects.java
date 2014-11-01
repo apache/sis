@@ -24,6 +24,8 @@ import org.opengis.metadata.spatial.GeometricObjectType;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
 
 /**
  * Number of objects, listed by geometric object type, used in the dataset.
@@ -41,7 +43,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_GeometricObjects_Type", propOrder = {
@@ -85,6 +87,13 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
+     *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
      *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
@@ -159,10 +168,14 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
     /**
      * Sets the total number of the point or vector object type occurring in the dataset.
      *
-     * @param newValue The geometric object count.
+     * @param newValue The geometric object count, or {@code null}.
+     * @throws IllegalArgumentException if the given value is zero or negative.
      */
     public void setGeometricObjectCount(final Integer newValue) {
         checkWritePermission();
+        if (newValue != null && newValue <= 0) {
+            warnNonPositiveArgument(DefaultGeometricObjects.class, "geometricObjectCount", true, newValue);
+        }
         geometricObjectCount = newValue;
     }
 }

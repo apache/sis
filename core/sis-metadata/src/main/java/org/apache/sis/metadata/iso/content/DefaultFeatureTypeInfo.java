@@ -22,7 +22,8 @@ import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.GenericName;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.util.ArgumentChecks;
+
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -99,6 +100,13 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
      * @param object The metadata to copy values from, or {@code null} if none.
      */
     public DefaultFeatureTypeInfo(final DefaultFeatureTypeInfo object) {
@@ -150,10 +158,10 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
      * @param newValue the new number of occurrence.
      * @throws IllegalArgumentException if the given value is negative.
      */
-    public void setFeatureInstanceCount(final Integer newValue) throws IllegalArgumentException {
+    public void setFeatureInstanceCount(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null) {
-            ArgumentChecks.ensurePositive("featureInstanceCount", newValue);
+        if (newValue != null && newValue < 0) {
+            warnNonPositiveArgument(DefaultFeatureTypeInfo.class, "featureInstanceCount", true, newValue);
         }
         featureInstanceCount = newValue;
     }

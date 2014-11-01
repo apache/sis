@@ -38,11 +38,11 @@ import org.opengis.metadata.quality.LogicalConsistency;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 
 
 /**
@@ -517,7 +517,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     @Override
     @XmlElement(name = "dateTime")
     public Collection<Date> getDates() {
-        if (isMarshalling()) {
+        if (Semaphores.query(Semaphores.NULL_COLLECTION)) {
             return isNullOrEmpty(dates) ? null : dates;
         }
         if (dates == null) {

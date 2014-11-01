@@ -366,7 +366,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testSet")
-    @org.junit.Ignore("Pending completion of ISO 19115:2014 upgrade.")
     public void testSetDeprecated() {
         final PropertyAccessor accessor = new PropertyAccessor(HardCodedCitations.ISO_19115,
                 CoverageDescription.class, DefaultCoverageDescription.class);

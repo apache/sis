@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.internal.system;
 
 
 /**
- * Semaphores that need to be shared across different referencing packages. Each thread has its own set of semaphores.
+ * Thread-local booleans that need to be shared across different packages. Each thread has its own set of booleans.
  * The {@link #clear(int)} method <strong>must</strong> be invoked after the {@link #queryAndSet(int)} method in a
  * {@code try ... finally} block.
  *
@@ -36,14 +36,21 @@ public final class Semaphores {
      * {@code AbstractDerivedCRS} objects contain a {@code conversionFromBase} field, which contains a
      * {@code DefaultConversion.targetCRS} field referencing back the {@code AbstractDerivedCRS} object.
      */
-    public static final int COMPARING = 1;
+    public static final byte COMPARING = 1;
 
     /**
      * A flag to indicate that {@link org.apache.sis.referencing.operation.DefaultSingleOperation}
      * is querying {@code org.apache.sis.referencing.operation.transform.ConcatenatedTransform} in
      * the intend to format WKT (normally a {@code "PROJCS"} element).
      */
-    public static final int PROJCS = 2;
+    public static final byte PROJCS = 2;
+
+    /**
+     * A flag to indicate that empty collections should be returned as {@code null}. Returning null
+     * collections is not a recommended practice, but is useful in some situations like marshalling
+     * a XML document with JAXB, when we want to omit empty XML blocks.
+     */
+    public static final byte NULL_COLLECTION = 4;
 
     /**
      * The flags per running thread.
@@ -53,7 +60,7 @@ public final class Semaphores {
     /**
      * The bit flags.
      */
-    private int flags;
+    private byte flags;
 
     /**
      * For internal use only.
@@ -64,10 +71,10 @@ public final class Semaphores {
     /**
      * Returns {@code true} if the given flag is set.
      *
-     * @param  flag One of {@link #COMPARING} or {@link #PROJCS} constants.
+     * @param flag One of {@link #COMPARING}, {@link #PROJCS} or other constants.
      * @return {@code true} if the given flag is set.
      */
-    public static boolean query(final int flag) {
+    public static boolean query(final byte flag) {
         final Semaphores s = FLAGS.get();
         return (s != null) && (s.flags & flag) != 0;
     }
@@ -75,10 +82,10 @@ public final class Semaphores {
     /**
      * Sets the given flag.
      *
-     * @param  flag One of {@link #COMPARING} or {@link #PROJCS} constants.
+     * @param flag One of {@link #COMPARING}, {@link #PROJCS} or other constants.
      * @return {@code true} if the given flag was already set.
      */
-    public static boolean queryAndSet(final int flag) {
+    public static boolean queryAndSet(final byte flag) {
         Semaphores s = FLAGS.get();
         if (s == null) {
             s = new Semaphores();
@@ -92,9 +99,9 @@ public final class Semaphores {
     /**
      * Clears the given flag.
      *
-     * @param flag One of {@link #COMPARING} or {@link #PROJCS} constants.
+     * @param flag One of {@link #COMPARING}, {@link #PROJCS} or other constants.
      */
-    public static void clear(final int flag) {
+    public static void clear(final byte flag) {
         final Semaphores s = FLAGS.get();
         if (s != null) {
             s.flags &= ~flag;

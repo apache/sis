@@ -27,7 +27,11 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.jaxb.gco.GO_Measure;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.util.ArgumentChecks;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
+// Branch-specific imports
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -102,10 +106,12 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Creates a dimension initialized to the given type and size.
      *
-     * @param dimensionName The name of the axis, or {@code null} if none, or {@code null} if none.
-     * @param dimensionSize The number of elements along the axis, or {@code null} if none.
+     * @param  dimensionName The name of the axis, or {@code null} if none, or {@code null} if none.
+     * @param  dimensionSize The number of elements along the axis, or {@code null} if none.
+     * @throws IllegalArgumentException if {@code dimensionSize} is negative.
      */
     public DefaultDimension(final DimensionNameType dimensionName, final int dimensionSize) {
+        ArgumentChecks.ensurePositive("dimensionSize", dimensionSize);
         this.dimensionName = dimensionName;
         this.dimensionSize = dimensionSize;
     }
@@ -114,6 +120,13 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
+     *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
      *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
@@ -184,7 +197,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * @return Number of elements along the axis, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "dimensionSize", required = true)
     public Integer getDimensionSize() {
         return dimensionSize;
@@ -193,10 +206,14 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Sets the number of elements along the axis.
      *
-     * @param newValue The new dimension size.
+     * @param newValue The new dimension size, or {@code null}.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public void setDimensionSize(final Integer newValue) {
         checkWritePermission();
+        if (newValue != null && newValue < 0) {
+            warnNonPositiveArgument(DefaultDimension.class, "dimensionSize", false, newValue);
+        }
         dimensionSize = newValue;
     }
 
@@ -216,10 +233,14 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Sets the degree of detail in the grid dataset.
      *
-     * @param newValue The new resolution.
+     * @param newValue The new resolution, or {@code null}.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setResolution(final Double newValue) {
         checkWritePermission();
+        if (newValue != null && !(newValue > 0)) { // Use '!' for catching NaN.
+            warnNonPositiveArgument(DefaultDimension.class, "dimensionSize", true, newValue);
+        }
         resolution = newValue;
     }
 

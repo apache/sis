@@ -30,6 +30,9 @@ import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.measure.ValueRange;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
+// Branch-specific imports
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -136,6 +139,13 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Band)
@@ -185,6 +195,22 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     }
 
     /**
+     * Ensures that the given property value is positive.
+     *
+     * @param property Name of the property to check.
+     * @param strict   {@code false} is zero is a legal value.
+     * @param newValue The property value to verify.
+     * @throws IllegalArgumentException if the given value is negative and the problem has not been logged.
+     */
+    private static void ensurePositive(final String property, final boolean strict, final Double newValue)
+            throws IllegalArgumentException
+    {
+        if (newValue != null && !(strict ? newValue > 0 : newValue >= 0)) { // Use '!' for catching NaN.
+            warnNonPositiveArgument(DefaultBand.class, property, strict, newValue);
+        }
+    }
+
+    /**
      * Returns the shortest wavelength that the sensor is capable of collecting within a designated band.
      * The units of measurement is given by {@link #getBoundUnit()}.
      *
@@ -203,12 +229,14 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the shortest wavelength that the sensor is capable of collecting within a designated band.
      *
-     * @param newValue The new shortest wavelength.
+     * @param newValue The new shortest wavelength, or {@code null}.
+     * @throws IllegalArgumentException if the given value is negative.
      *
      * @since 0.5
      */
     public void setBoundMin(final Double newValue) {
         checkWritePermission();
+        ensurePositive("boundMin", false, newValue);
         boundMin = newValue;
     }
 
@@ -231,12 +259,14 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the longest wavelength that the sensor is capable of collecting within a designated band.
      *
-     * @param newValue The new longest wavelength.
+     * @param newValue The new longest wavelength, or {@code null}.
+     * @throws IllegalArgumentException if the given value is negative.
      *
      * @since 0.5
      */
     public void setBoundMax(final Double newValue) {
         checkWritePermission();
+        ensurePositive("boundMax", false, newValue);
         boundMax = newValue;
     }
 
@@ -333,10 +363,12 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the wavelength at which the response is the highest.
      *
-     * @param newValue The new peak response.
+     * @param newValue The new peak response, or {@code null}.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public void setPeakResponse(final Double newValue) {
         checkWritePermission();
+        ensurePositive("peakResponse", false, newValue);
         peakResponse = newValue;
     }
 
@@ -377,6 +409,9 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     public void setToneGradation(final Integer newValue) {
         checkWritePermission();
+        if (newValue != null && newValue < 0) {
+            warnNonPositiveArgument(DefaultBand.class, "toneGradation", false, newValue);
+        }
         toneGradation = newValue;
     }
 
@@ -432,9 +467,11 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * as specified in instrument design.
      *
      * @param newValue The new nominal spatial resolution.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public void setNominalSpatialResolution(final Double newValue) {
         checkWritePermission();
+        ensurePositive("nominalSpatialResolution", true, newValue);
         nominalSpatialResolution = newValue;
     }
 
