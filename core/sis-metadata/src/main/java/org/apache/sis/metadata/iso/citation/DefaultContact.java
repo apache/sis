@@ -232,7 +232,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
                 }
             }
             if (ignored != null) {
-                Context.warningOccured(Context.current(), DefaultContact.class, "getPhone",
+                Context.warningOccured(Context.current(), LOGGER, DefaultContact.class, "getPhone",
                         Messages.class, Messages.Keys.IgnoredPropertyAssociatedTo_1, ignored.toString());
             }
         }

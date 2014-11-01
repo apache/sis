@@ -33,7 +33,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -232,7 +232,9 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * Invoked by JAXB only at unmarshalling time.
      */
     private void setOrigin(final Date value) {
-        if (value != null && canSetProperty("origin", origin != Long.MIN_VALUE)) {
+        if (value != null && canSetProperty(DefaultTemporalDatum.class,
+                "setOrigin", "origin", origin != Long.MIN_VALUE))
+        {
             origin = value.getTime();
         }
     }

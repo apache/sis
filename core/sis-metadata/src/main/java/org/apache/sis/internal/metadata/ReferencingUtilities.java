@@ -17,6 +17,7 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Collection;
+import java.util.logging.Logger;
 import javax.measure.unit.Unit;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
@@ -27,6 +28,9 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -38,10 +42,15 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class ReferencingUtilities extends Static {
+    /**
+     * The logger to use for messages related to the {@code sis-referencing} module.
+     */
+    public static final Logger LOGGER = Logging.getLogger("org.apache.sis.referencing");
+
     /**
      * Subtypes of {@link IdentifiedObject} for which a URN type is defined.
      * For each interface at index <var>i</var>, the URN type is {@code URN_TYPES[i]}.
@@ -215,5 +224,40 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return sameContent;
+    }
+
+    /**
+     * Ensures that the given argument value is {@code false}. This method is invoked by private setter methods,
+     * which are themselves invoked by JAXB at unmarshalling time. Invoking this method from those setter methods
+     * serves two purposes:
+     *
+     * <ul>
+     *   <li>Make sure that a singleton property is not defined twice in the XML document.</li>
+     *   <li>Protect ourselves against changes in immutable objects outside unmarshalling. It should
+     *       not be necessary since the setter methods shall not be public, but we are paranoiac.</li>
+     *   <li>Be a central point where we can trace all setter methods, in case we want to improve
+     *       warning or error messages in future SIS versions.</li>
+     * </ul>
+     *
+     * @param  classe    The caller class, used only in case of warning message to log.
+     * @param  method    The caller method, used only in case of warning message to log.
+     * @param  name      The property name, used only in case of error message to format.
+     * @param  isDefined Whether the property in the caller object is current defined.
+     * @return {@code true} if the caller can set the property.
+     * @throws IllegalStateException If {@code isDefined} is {@code true} and we are not unmarshalling an object.
+     */
+    public static boolean canSetProperty(final Class<?> classe, final String method,
+            final String name, final boolean isDefined) throws IllegalStateException
+    {
+        if (!isDefined) {
+            return true;
+        }
+        final Context context = Context.current();
+        if (context != null) {
+            Context.warningOccured(context, LOGGER, classe, method, Errors.class, Errors.Keys.ElementAlreadyPresent_1, name);
+            return false;
+        } else {
+            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));
+        }
     }
 }

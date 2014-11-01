@@ -27,7 +27,7 @@ import org.opengis.metadata.spatial.Georectified;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.geometry.primitive.Point;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.xml.Namespaces;
 
@@ -211,8 +211,8 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
             booleans |= CHECK_POINT_MASK;
         } else {
             if (checkPointDescription != null && (booleans & CHECK_POINT_MASK) != 0) {
-                MetadataUtilities.warning(DefaultGeorectified.class, "setCheckPointAvailable",
-                        Messages.Keys.PropertyHiddenBy_2, "checkPointDescription", "checkPointAvailability");
+                Context.warningOccured(Context.current(), LOGGER, DefaultGeorectified.class, "setCheckPointAvailable",
+                        Messages.class, Messages.Keys.PropertyHiddenBy_2, "checkPointDescription", "checkPointAvailability");
             }
             booleans &= ~CHECK_POINT_MASK;
         }

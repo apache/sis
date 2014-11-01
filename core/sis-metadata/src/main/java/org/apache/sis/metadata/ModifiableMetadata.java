@@ -33,9 +33,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.internal.util.CheckedHashSet;
 import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.internal.system.Semaphores;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 
 
 /**
@@ -83,7 +83,7 @@ import static org.apache.sis.internal.jaxb.Context.isMarshalling;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @XmlTransient
@@ -221,12 +221,23 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     public void freeze() {
         if (isModifiable()) {
             ModifiableMetadata success = null;
+            /*
+             * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+             * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+             * for all unused properties. Users should not see behavioral difference, except if they override
+             * some getters with an implementation invoking other getters. However in such cases, users would
+             * have been exposed to null values at XML marshalling time anyway.
+             */
+            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
             try {
                 unmodifiable = FREEZING;
                 getStandard().freeze(this);
                 success = this;
             } finally {
                 unmodifiable = success;
+                if (!allowNull) {
+                    Semaphores.clear(Semaphores.NULL_COLLECTION);
+                }
             }
         }
     }
@@ -510,6 +521,17 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
+     * Returns {@code true} if empty collection should be returned as {@code null} value.
+     * This is usually not a behavior that we allow in public API. However this behavior
+     * is sometime desired internally, for example when marshalling with JAXB or when
+     * performing a {@code equals}, {@code isEmpty} or {@code prune} operation
+     * (for avoiding creating unnecessary collections).
+     */
+    private static boolean emptyCollectionAsNull() {
+        return Semaphores.query(Semaphores.NULL_COLLECTION);
+    }
+
+    /**
      * Returns the specified list, or a new one if {@code c} is null.
      * This is a convenience method for implementation of {@code getFoo()} methods.
      *
@@ -520,9 +542,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      */
     protected final <E> List<E> nonNullList(final List<E> c, final Class<E> elementType) {
         if (c != null) {
-            return c.isEmpty() && isMarshalling() ? null : c;
+            return c.isEmpty() && emptyCollectionAsNull() ? null : c;
         }
-        if (isMarshalling()) {
+        if (emptyCollectionAsNull()) {
             return null;
         }
         if (isModifiable()) {
@@ -549,9 +571,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      */
     protected final <E> Set<E> nonNullSet(final Set<E> c, final Class<E> elementType) {
         if (c != null) {
-            return c.isEmpty() && isMarshalling() ? null : c;
+            return c.isEmpty() && emptyCollectionAsNull() ? null : c;
         }
-        if (isMarshalling()) {
+        if (emptyCollectionAsNull()) {
             return null;
         }
         if (isModifiable()) {
@@ -580,9 +602,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     protected final <E> Collection<E> nonNullCollection(final Collection<E> c, final Class<E> elementType) {
         if (c != null) {
             assert collectionType(elementType).isInstance(c);
-            return c.isEmpty() && isMarshalling() ? null : c;
+            return c.isEmpty() && emptyCollectionAsNull() ? null : c;
         }
-        if (isMarshalling()) {
+        if (emptyCollectionAsNull()) {
             return null;
         }
         final boolean isModifiable = isModifiable();

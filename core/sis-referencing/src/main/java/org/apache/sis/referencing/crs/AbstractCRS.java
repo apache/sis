@@ -39,7 +39,7 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
-import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -312,7 +312,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @throws IllegalStateException If the coordinate system has already been set.
      */
     final void setCoordinateSystem(final String name, final CoordinateSystem cs) {
-        if (cs != null && canSetProperty(name, coordinateSystem != null)) {
+        if (cs != null && canSetProperty(AbstractCRS.class, "setCoordinateSystem", name, coordinateSystem != null)) {
             coordinateSystem = cs;
         }
     }

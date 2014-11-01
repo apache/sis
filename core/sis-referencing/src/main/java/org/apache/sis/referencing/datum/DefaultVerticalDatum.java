@@ -32,7 +32,7 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.metadata.MetadataUtilities.canSetProperty;
+import static org.apache.sis.internal.metadata.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -263,7 +263,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Invoked by JAXB only. The vertical datum type is set only if it has not already been specified.
      */
     private void setTypeElement(final VerticalDatumType t) {
-        if (t != null && canSetProperty("verticalDatumType", type != null)) {
+        if (t != null && canSetProperty(DefaultVerticalDatum.class, "setTypeElement", "verticalDatumType", type != null)) {
             type = t;
         }
     }

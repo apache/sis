@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import org.apache.sis.metadata.AbstractMetadata;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.ArgumentChecks;
@@ -178,7 +179,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     public static void warnIgnoredExtraneous(final Class<?> valueClass,
             final Class<?> callerClass, final String callerMethod)
     {
-        Context.warningOccured(Context.current(), callerClass, callerMethod,
+        Context.warningOccured(Context.current(), ISOMetadata.LOGGER, callerClass, callerMethod,
                 Messages.class, Messages.Keys.IgnoredPropertiesAfterFirst_1, valueClass);
     }
 
