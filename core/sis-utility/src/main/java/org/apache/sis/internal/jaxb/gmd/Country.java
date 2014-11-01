@@ -148,7 +148,7 @@ public final class Country extends GO_CharacterString {
                     if (++i == code.length() || code.charAt(i) == '_') {
                         code = new StringBuilder().append(code, 0, i).append(c).append(code, i, length).toString();
                     } else if (!c.equals(CharSequences.token(code, i))) {
-                        Context.warningOccured(context, caller, "unmarshal", Errors.class,
+                        Context.warningOccured(context, Context.LOGGER, caller, "unmarshal", Errors.class,
                                 Errors.Keys.IncompatiblePropertyValue_1, "country");
                     }
                 }

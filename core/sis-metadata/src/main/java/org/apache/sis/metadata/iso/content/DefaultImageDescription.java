@@ -25,6 +25,9 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.ImagingCondition;
 import org.apache.sis.measure.ValueRange;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnOutOfRangeArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
 
 /**
  * Information about an image's suitability for use.
@@ -42,7 +45,7 @@ import org.apache.sis.measure.ValueRange;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_ImageDescription_Type", propOrder = {
@@ -141,6 +144,13 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether
+     * a value is out of range). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ImageDescription)
@@ -188,6 +198,26 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
+     * Ensures that the given argument is either null or between the given minimum and maximum values.
+     *
+     * @param property Name of the property to check.
+     * @param min      The minimal legal value.
+     * @param max      The maximal legal value.
+     * @param newValue The value given by the user.
+     * @throws IllegalArgumentException if the given value is out of range and the problem has not been logged.
+     */
+    private static void ensureInRange(final String property, final double min, final double max, final Double newValue)
+            throws IllegalArgumentException
+    {
+        if (newValue != null) {
+            final double v = newValue;
+            if (!(v >= min && v <= max)) { // Use '!' for catching NaN.
+                warnOutOfRangeArgument(DefaultImageDescription.class, property, min, max, v);
+            }
+        }
+    }
+
+    /**
      * Returns the illumination elevation measured in degrees clockwise from the target plane at
      * intersection of the optical line of sight with the Earth's surface.
      * For images from a scanning device, refer to the centre pixel of the image.
@@ -208,10 +238,12 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * intersection of the optical line of sight with the Earth's surface. For images from a
      * scanning device, refer to the centre pixel of the image.
      *
-     * @param newValue The new illumination elevation angle.
+     * @param newValue The new illumination elevation angle, or {@code null}.
+     * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setIlluminationElevationAngle(final Double newValue) {
         checkWritePermission();
+        ensureInRange("illuminationElevationAngle", -90, +90, newValue);
         illuminationElevationAngle = newValue;
     }
 
@@ -232,10 +264,12 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * Sets the illumination azimuth measured in degrees clockwise from true north at the time the
      * image is taken. For images from a scanning device, refer to the centre pixel of the image.
      *
-     * @param newValue The new illumination azimuth angle.
+     * @param newValue The new illumination azimuth angle, or {@code null}.
+     * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setIlluminationAzimuthAngle(final Double newValue) {
         checkWritePermission();
+        ensureInRange("illuminationAzimuthAngle", 0, 360, newValue);
         illuminationAzimuthAngle = newValue;
     }
 
@@ -296,10 +330,12 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Sets the area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
      *
-     * @param newValue The new cloud cover percentage.
+     * @param newValue The new cloud cover percentage, or {@code null}.
+     * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setCloudCoverPercentage(final Double newValue) {
         checkWritePermission();
+        ensureInRange("cloudCoverPercentage", 0, 100, newValue);
         cloudCoverPercentage = newValue;
     }
 
@@ -344,9 +380,13 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * Sets the count of the number the number of lossy compression cycles performed on the image.
      *
      * @param newValue The new compression generation quantity.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public void setCompressionGenerationQuantity(final Integer newValue) {
         checkWritePermission();
+        if (newValue != null && newValue < 0) {
+            warnNonPositiveArgument(DefaultImageDescription.class, "compressionGenerationQuantity", false, newValue);
+        }
         compressionGenerationQuantity = newValue;
     }
 

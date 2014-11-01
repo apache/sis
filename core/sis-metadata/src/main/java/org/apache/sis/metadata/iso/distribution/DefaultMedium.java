@@ -32,6 +32,9 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
+// Branch-specific imports
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -111,6 +114,13 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
+     *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
      *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
@@ -196,10 +206,15 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * The number shall be greater than zero.
      *
      * @param newValue The new density.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @since 0.5
      */
     public void setDensity(final Double newValue) {
+        checkWritePermission();
+        if (newValue != null && !(newValue > 0)) { // Use '!' for catching NaN.
+            warnNonPositiveArgument(DefaultMedium.class, "density", true, newValue);
+        }
         densities = writeCollection(LegacyPropertyAdapter.asCollection(newValue), densities, Double.class);
     }
 
@@ -261,10 +276,14 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Sets the number of items in the media identified.
      *
-     * @param newValue The new volumes.
+     * @param newValue The new volumes, or {@code null}.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public void setVolumes(final Integer newValue) {
         checkWritePermission();
+        if (newValue != null && newValue < 0) {
+            warnNonPositiveArgument(DefaultMedium.class, "volumes", false, newValue);
+        }
         volumes = newValue;
     }
 

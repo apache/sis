@@ -206,7 +206,7 @@ public final class Measure {
      * @param methodName The name of the method invoking this method.
      */
     public static void missingUOM(final Class<?> caller, final String methodName) {
-        Context.warningOccured(Context.current(), caller, methodName,
+        Context.warningOccured(Context.current(), Context.LOGGER, caller, methodName,
                 Errors.class, Errors.Keys.MandatoryAttribute_2, "uom", "Measure");
     }
 }

@@ -27,10 +27,12 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
+// Branch-specific imports
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -197,6 +199,13 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
+     *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
      *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
@@ -429,13 +438,13 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     /**
      * Sets the maximum occurrence of the extended element.
      *
-     * @param newValue The new maximum occurrence.
+     * @param newValue The new maximum occurrence, or {@code null}.
      * @throws IllegalArgumentException if the given value is negative.
      */
-    public void setMaximumOccurrence(final Integer newValue) throws IllegalArgumentException {
+    public void setMaximumOccurrence(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null) {
-            ArgumentChecks.ensurePositive("maximumOccurrence", newValue);
+        if (newValue != null && newValue < 0) {
+            warnNonPositiveArgument(DefaultExtendedElementInformation.class, "maximumOccurrence", false, newValue);
         }
         maximumOccurrence = newValue;
     }

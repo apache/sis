@@ -160,7 +160,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
         }
         final Context context = Context.current();
         if (context != null) {
-            Context.warningOccured(context, collection.getClass(), "add", Errors.class, key, arguments);
+            Context.warningOccured(context, Context.LOGGER, collection.getClass(), "add", Errors.class, key, arguments);
             return null;
         } else {
             return Errors.format(key, arguments);
