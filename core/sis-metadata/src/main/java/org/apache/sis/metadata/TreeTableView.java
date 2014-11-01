@@ -29,6 +29,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.LocalizedStaticObject;
+import org.apache.sis.internal.system.Semaphores;
 
 
 /**
@@ -45,7 +46,7 @@ import org.apache.sis.internal.system.LocalizedStaticObject;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 final class TreeTableView implements TreeTable, Serializable {
@@ -137,7 +138,21 @@ final class TreeTableView implements TreeTable, Serializable {
                 f.setColumns(TableColumn.NAME, TableColumn.VALUE);
                 format = f;
             }
-            return format.format(this);
+            /*
+             * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+             * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+             * for all unused properties. Users should not see behavioral difference, except if they override
+             * some getters with an implementation invoking other getters. However in such cases, users would
+             * have been exposed to null values at XML marshalling time anyway.
+             */
+            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+            try {
+                return format.format(this);
+            } finally {
+                if (!allowNull) {
+                    Semaphores.clear(Semaphores.NULL_COLLECTION);
+                }
+            }
         }
     }
 

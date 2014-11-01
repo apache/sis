@@ -185,7 +185,7 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * @return The identifiers to marshal, or {@code null} if none.
      */
     public static Collection<Identifier> excludeOnMarshalling(Collection<Identifier> identifiers) {
-        if (identifiers != null && Context.isMarshalling()) {
+        if (identifiers != null && Context.isFlagSet(Context.current(), Context.MARSHALLING)) {
             int count = identifiers.size();
             if (count != 0) {
                 final Identifier[] copy = identifiers.toArray(new Identifier[count]);

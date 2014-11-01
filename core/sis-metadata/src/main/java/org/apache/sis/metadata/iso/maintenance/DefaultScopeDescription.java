@@ -26,10 +26,10 @@ import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.ExcludedSet;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Messages;
 
-import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 
@@ -210,7 +210,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
             if (property == code) {
                 return cast(value);
             } else if (!(value instanceof Set) || !((Set<?>) value).isEmpty()) {
-                return isMarshalling() ? null : new ExcludedSet<>(NAMES[code-1], NAMES[property-1]);
+                return Semaphores.query(Semaphores.NULL_COLLECTION)
+                       ? null : new ExcludedSet<>(NAMES[code-1], NAMES[property-1]);
             }
         }
         // Unconditionally create a new set, because the
