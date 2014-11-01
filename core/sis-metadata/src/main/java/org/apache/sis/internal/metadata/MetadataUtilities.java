@@ -17,16 +17,13 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
-
-import static org.apache.sis.metadata.iso.ISOMetadata.LOGGER;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -88,45 +85,87 @@ public final class MetadataUtilities extends Static {
     }
 
     /**
-     * Ensures that the given argument value is {@code false}. This method is invoked by private setter methods,
-     * which are themselves invoked by JAXB at unmarshalling time. Invoking this method from those setter methods
-     * serves two purposes:
+     * Convenience method invoked when an argument was expected to be positive, but the user gave a negative value
+     * or (in some case) zero. This method logs a warning if we are in process of (un)marshalling a XML document,
+     * or throw an exception otherwise.
      *
+     * <p><b>When to use:</b></p>
      * <ul>
-     *   <li>Make sure that a singleton property is not defined twice in the XML document.</li>
-     *   <li>Protect ourselves against changes in immutable objects outside unmarshalling. It should
-     *       not be necessary since the setter methods shall not be public, but we are paranoiac.</li>
-     *   <li>Be a central point where we can trace all setter methods, in case we want to improve
-     *       warning or error messages in future SIS versions.</li>
+     *   <li>This method is for setter methods that may be invoked by JAXB. Constructors or methods ignored
+     *       by JAXB should use the simpler {@link org.apache.sis.util.ArgumentChecks} class instead.</li>
+     *   <li>This method should be invoked only when ignoring the warning will not cause information lost.
+     *       The stored metadata value may be invalid, but not lost.</li>
      * </ul>
+     * <div class="note"><b>Note:</b> the later point is the reason why problems during XML (un)marshalling
+     * are only warnings for this method, while they are errors by default for
+     * {@link org.apache.sis.xml.ValueConverter} (the later can not store the value in case of error).</div>
      *
-     * @param  name The property name, used only in case of error message to format.
-     * @param  isDefined Whether the property in the caller object is current defined.
-     * @return {@code true} if the caller can set the property.
-     * @throws IllegalStateException If {@code isDefined} is {@code true}.
+     * @param  classe   The caller class.
+     * @param  property The property name. Method name will be inferred by the usual Java bean convention.
+     * @param  strict   {@code true} if the value was expected to be strictly positive, or {@code false} if 0 is accepted.
+     * @param  value    The invalid argument value.
+     * @throws IllegalArgumentException if we are not (un)marshalling a XML document.
      */
-    public static boolean canSetProperty(final String name, final boolean isDefined) throws IllegalStateException {
-        if (isDefined) {
-            // Future SIS version could log a warning instead if a unmarshalling is in progress.
-            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));
+    public static void warnNonPositiveArgument(final Class<?> classe, final String property, final boolean strict,
+            final Number value) throws IllegalArgumentException
+    {
+        final String msg = logOrFormat(classe, property,
+                strict ? Errors.Keys.ValueNotGreaterThanZero_2 : Errors.Keys.NegativeArgument_2, property, value);
+        if (msg != null) {
+            throw new IllegalArgumentException(msg);
         }
-        return true;
     }
 
     /**
-     * Convenience method for logging a warning to the {@code ISOMetadata} logger.
-     * The message will be produced using the {@link Messages} resources bundle.
+     * Convenience method invoked when an argument is outside the expected range of values. This method logs
+     * a warning if we are in process of (un)marshalling a XML document, or throw an exception otherwise.
      *
-     * @param  caller    The public class which is invoking this method.
-     * @param  method    The public method which is invoking this method.
-     * @param  key       The key from the message resource bundle to use for creating a message.
-     * @param  arguments The arguments to be used together with the key for building the message.
+     * <p><b>When to use:</b></p>
+     * <ul>
+     *   <li>This method is for setter methods that may be invoked by JAXB. Constructors or methods ignored
+     *       by JAXB should use the simpler {@link org.apache.sis.util.ArgumentChecks} class instead.</li>
+     *   <li>This method should be invoked only when ignoring the warning will not cause information lost.
+     *       The stored metadata value may be invalid, but not lost.</li>
+     * </ul>
+     * <div class="note"><b>Note:</b> the later point is the reason why problems during XML (un)marshalling
+     * are only warnings for this method, while they are errors by default for
+     * {@link org.apache.sis.xml.ValueConverter} (the later can not store the value in case of error).</div>
+     *
+     * @param  classe   The caller class.
+     * @param  property The property name. Method name will be inferred by the usual Java bean convention.
+     * @param  minimum  The minimal legal value.
+     * @param  maximum  The maximal legal value.
+     * @param  value    The invalid argument value.
+     * @throws IllegalArgumentException if we are not (un)marshalling a XML document.
      */
-    public static void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
-        final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, key, arguments);
-        record.setSourceClassName(caller.getCanonicalName());
-        record.setSourceMethodName(method);
-        record.setLoggerName(LOGGER.getName());
-        LOGGER.log(record);
+    public static void warnOutOfRangeArgument(final Class<?> classe, final String property,
+            final Number minimum, final Number maximum, final Number value) throws IllegalArgumentException
+    {
+        final String msg = logOrFormat(classe, property, Errors.Keys.ValueOutOfRange_4, property, minimum, maximum, value);
+        if (msg != null) {
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
+    /**
+     * Formats an error message and logs it is we are (un)marshalling a document, or return the message otherwise.
+     * In the later case, it is caller's responsibility to use the message for throwing an exception.
+     *
+     * @param  classe    The caller class, used only in case of warning message to log.
+     * @param  property  The property name. Method name will be inferred by the usual Java bean convention.
+     * @param  key       A {@code Errors.Keys} value.
+     * @param  arguments The argument to use for formatting the error message.
+     * @return {@code null} if the message has been logged, or the message to put in an exception otherwise.
+     */
+    private static String logOrFormat(final Class<?> classe, final String property, final short key, final Object... arguments) {
+        final Context context = Context.current();
+        if (context == null) {
+            return Errors.format(key, arguments);
+        } else {
+            final StringBuilder buffer = new StringBuilder(property.length() + 3).append("set").append(property);
+            buffer.setCharAt(3, Character.toUpperCase(buffer.charAt(3)));
+            Context.warningOccured(context, ISOMetadata.LOGGER, classe, buffer.toString(), Errors.class, key, arguments);
+            return null;
+        }
     }
 }

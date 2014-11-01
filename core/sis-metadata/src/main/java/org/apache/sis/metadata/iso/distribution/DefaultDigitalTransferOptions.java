@@ -29,7 +29,8 @@ import org.opengis.metadata.distribution.Medium;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.util.ArgumentChecks;
+
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
 
 
 /**
@@ -105,6 +106,13 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
+     *
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
      *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
@@ -185,13 +193,13 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * Sets an estimated size of a unit in the specified transfer format, expressed in megabytes.
      * The transfer shall be greater than zero.
      *
-     * @param newValue The new transfer size.
-     * @throws IllegalArgumentException if the given value is negative.
+     * @param newValue The new transfer size, or {@code null}.
+     * @throws IllegalArgumentException if the given value is NaN or negative.
      */
-    public void setTransferSize(final Double newValue) throws IllegalArgumentException {
+    public void setTransferSize(final Double newValue) {
         checkWritePermission();
-        if (newValue != null) {
-            ArgumentChecks.ensurePositive("transferSize", newValue);
+        if (newValue != null && !(newValue >= 0)) { // Use '!' for catching NaN.
+            warnNonPositiveArgument(DefaultDigitalTransferOptions.class, "transferSize", true, newValue);
         }
         transferSize = newValue;
     }

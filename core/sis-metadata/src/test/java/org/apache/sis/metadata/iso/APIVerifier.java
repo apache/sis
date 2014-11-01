@@ -149,20 +149,22 @@ public final strictfp class APIVerifier extends TestCase {
      *
      * @param  releasedJAR Path to the JAR file of the GeoAPI interfaces implemented by the stable version of Apache SIS.
      * @param  snapshotJAR Path to the JAR file of the GeoAPI interfaces that we would implement if it was released.
+     * @param  unitsJAR    Path to the JAR file containing the {@code Unit} class. This is a GeoAPI dependency.
      * @param  out Where to write the API differences between {@code releasedJAR} and {@code snapshotJAR}.
      * @throws ReflectiveOperationException if an error occurred while processing the JAR file content.
      * @throws IOException if an error occurred while reading the JAR files or writing to {@code out}.
      */
-    public static void listAPIChanges(final File releasedJAR, final File snapshotJAR, final Appendable out)
-            throws ReflectiveOperationException, IOException
+    public static void listAPIChanges(final File releasedJAR, final File snapshotJAR, final File unitsJAR,
+            final Appendable out) throws ReflectiveOperationException, IOException
     {
         final String lineSeparator = System.lineSeparator();
         final Map<String,Boolean> methodChanges = new TreeMap<>();
         final List<String> incompatibleChanges = new ArrayList<>();
-        final ClassLoader parent = APIVerifier.class.getClassLoader();
+        final ClassLoader parent = APIVerifier.class.getClassLoader().getParent();
+        final URL dependency = unitsJAR.toURI().toURL();
         try (final JarFile newJARContent = new JarFile(snapshotJAR);
-             final URLClassLoader oldAPI = new URLClassLoader(new URL[] {releasedJAR.toURI().toURL()}, parent);
-             final URLClassLoader newAPI = new URLClassLoader(new URL[] {snapshotJAR.toURI().toURL()}, parent))
+             final URLClassLoader oldAPI = new URLClassLoader(new URL[] {releasedJAR.toURI().toURL(), dependency}, parent);
+             final URLClassLoader newAPI = new URLClassLoader(new URL[] {snapshotJAR.toURI().toURL(), dependency}, parent))
         {
             final Class<? extends Annotation> newUML = Class.forName("org.opengis.annotation.UML", false, newAPI).asSubclass(Annotation.class);
             final Method newIdentifier = newUML.getMethod("identifier", (Class[]) null);

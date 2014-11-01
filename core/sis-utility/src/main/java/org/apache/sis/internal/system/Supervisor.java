@@ -151,6 +151,8 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
 
     /**
      * Returns the operations impact, which is {@code INFO}.
+     *
+     * @return {@code INFO}.
      */
     @Override
     protected int getImpact(final MBeanOperationInfo info) {
@@ -159,6 +161,8 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
 
     /**
      * Returns the localized description for this MBean.
+     *
+     * @return A localized description.
      */
     @Override
     protected String getDescription(final MBeanInfo info) {
@@ -167,6 +171,8 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
 
     /**
      * Returns the localized description for the given constructor, attribute or operation.
+     *
+     * @return A localized description for the given attribute or operation.
      */
     @Override
     protected String getDescription(final MBeanFeatureInfo info) {
@@ -179,6 +185,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      * @param info     The constructor.
      * @param param    The constructor parameter.
      * @param sequence The parameter number (0 for the first parameter, 1 for the second, etc.)
+     * @return A localized description for the specified constructor parameter.
      */
     @Override
     protected String getDescription(MBeanConstructorInfo info, MBeanParameterInfo param, int sequence) {
@@ -191,6 +198,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      * @param info     The constructor.
      * @param param    The constructor parameter.
      * @param sequence The parameter number (0 for the first parameter, 1 for the second, etc.)
+     * @return The name of the specified constructor parameter.
      */
     @Override
     protected String getParameterName(MBeanConstructorInfo info, MBeanParameterInfo param, int sequence) {
