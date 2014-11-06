@@ -26,6 +26,8 @@ import java.io.OutputStreamWriter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FilenameFilter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import com.sun.javadoc.RootDoc;
@@ -86,7 +88,10 @@ public final class Doclet extends HtmlDoclet {
             copyStylesheet(input, output);
             copyResources(input.getParentFile(), output);
         } catch (IOException e) {
-            root.printError(e.toString());
+            final StringWriter buffer = new StringWriter();
+            final PrintWriter p = new PrintWriter(buffer);
+            e.printStackTrace(p);
+            root.printError(buffer.toString());
             return false;
         }
         return status;
