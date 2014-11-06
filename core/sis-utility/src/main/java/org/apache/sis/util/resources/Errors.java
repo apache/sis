@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import javax.annotation.Generated;
 import org.opengis.util.InternationalString;
 
 
@@ -48,9 +49,9 @@ public final class Errors extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.3 (derived from geotk-2.2)
-     * @version 0.3
      * @module
      */
+    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
