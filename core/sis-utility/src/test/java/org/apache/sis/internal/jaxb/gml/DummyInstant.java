@@ -29,6 +29,7 @@ import org.opengis.temporal.TemporalPosition;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.temporal.TemporalGeometricPrimitive;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 
 
 /**
@@ -37,10 +38,11 @@ import org.opengis.util.InternationalString;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.20)
- * @version 0.3
+ * @version 0.5
  * @module
  */
-final class DummyInstant implements Instant, Position {
+@SuppressWarnings("serial")
+final class DummyInstant extends SimpleIdentifiedObject implements Instant, Position {
     /**
      * The time, in milliseconds elapsed since January 1st, 1970.
      */
