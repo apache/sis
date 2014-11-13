@@ -51,7 +51,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @see DefaultAssociationRole
  */
-public abstract class AbstractAssociation extends Field<Feature> implements FeatureAssociation, Serializable {
+public abstract class AbstractAssociation extends Field<Feature> implements FeatureAssociation, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -232,5 +232,20 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
                 return it.next().getPropertyValue(pt);
             }
         });
+    }
+
+    /**
+     * Returns a copy of this association.
+     * The default implementation returns a <em>shallow</em> copy:
+     * the association {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * However subclasses may choose to do otherwise.
+     *
+     * @return A clone of this association.
+     * @throws CloneNotSupportedException if this association can not be cloned.
+     *         The default implementation never throw this exception. However subclasses may throw it.
+     */
+    @Override
+    public AbstractAssociation clone() throws CloneNotSupportedException {
+        return (AbstractAssociation) super.clone();
     }
 }
