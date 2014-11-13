@@ -43,7 +43,7 @@ import org.opengis.feature.AttributeType;
  *
  * @see DefaultAttributeType
  */
-final class SingletonAttribute<V> extends AbstractAttribute<V> implements Cloneable {
+final class SingletonAttribute<V> extends AbstractAttribute<V> {
     /**
      * For cross-version compatibility.
      */
@@ -97,23 +97,6 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> implements Clonea
     @Override
     public void setValue(final V value) {
         this.value = value;
-    }
-
-    /**
-     * Returns a copy of this attribute.
-     * The default implementation returns a <em>shallow</em> copy:
-     * the attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
-     * However subclasses may choose to do otherwise.
-     *
-     * @return A clone of this attribute.
-     * @throws CloneNotSupportedException if this attribute can not be cloned.
-     *         The default implementation never throw this exception. However subclasses may throw it,
-     *         for example on attempt to clone the attribute value.
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public SingletonAttribute<V> clone() throws CloneNotSupportedException {
-        return (SingletonAttribute<V>) super.clone();
     }
 
     /**

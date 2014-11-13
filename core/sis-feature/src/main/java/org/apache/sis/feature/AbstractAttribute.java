@@ -59,7 +59,7 @@ import org.opengis.feature.AttributeType;
  *
  * @see DefaultAttributeType
  */
-public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Serializable {
+public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -275,5 +275,22 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     @Override
     public String toString() {
         return FieldType.toString("Attribute", type, Classes.getShortName(type.getValueClass()), getValues().iterator());
+    }
+
+    /**
+     * Returns a copy of this attribute.
+     * The default implementation returns a <em>shallow</em> copy:
+     * the attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * However subclasses may choose to do otherwise.
+     *
+     * @return A clone of this attribute.
+     * @throws CloneNotSupportedException if this attribute can not be cloned.
+     *         The default implementation never throw this exception. However subclasses may throw it,
+     *         for example on attempt to clone the attribute value.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public AbstractAttribute<V> clone() throws CloneNotSupportedException {
+        return (AbstractAttribute<V>) super.clone();
     }
 }
