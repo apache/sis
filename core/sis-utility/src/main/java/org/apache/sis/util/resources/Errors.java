@@ -81,6 +81,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotAddToExclusiveSet_2 = 0;
 
         /**
+         * Can not assign “{1}” to “{0}”.
+         */
+        public static final short CanNotAssign_2 = 167;
+
+        /**
          * Can not compute the derivative.
          */
         public static final short CanNotComputeDerivative = 1;

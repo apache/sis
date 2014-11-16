@@ -98,4 +98,15 @@ public final strictfp class CharacteristicTypeMapTest extends TestCase {
                 new SimpleEntry<>("units",    units)
             }, characteristics.entrySet().toArray());
     }
+
+    /**
+     * Tests the reconstruction of {@link CharacteristicTypeMap} after serialization.
+     */
+    @Test
+    public void testSerialization() {
+        final DefaultAttributeType<Float> temperature  = temperature();
+        final DefaultAttributeType<Float> unserialized = assertSerializedEquals(temperature);
+        assertNotSame(temperature, unserialized);
+        assertSame(temperature.characteristics(), unserialized.characteristics());
+    }
 }
