@@ -550,7 +550,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
                 buffer.append(", ");
             }
             SpecializedIdentifier.format(buffer, entry.getKey(), entry.getValue());
-	}
+        }
         return buffer.append('}').toString();
     }
 }
