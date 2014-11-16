@@ -34,12 +34,16 @@ import org.opengis.feature.AttributeType;
 
 /**
  * An instance of an {@linkplain DefaultAttributeType attribute type} containing the value of an attribute in a feature.
- * {@code Attribute} holds two main information:
+ * {@code Attribute} holds three main information:
  *
  * <ul>
- *   <li>A reference to an {@linkplain DefaultAttributeType attribute type}
+ *   <li>A {@linkplain #getType() reference to an attribute type}
  *       which define the base Java type and domain of valid values.</li>
- *   <li>A value, which may be a singleton ([0 … 1] cardinality) or multi-valued ([0 … ∞] cardinality).</li>
+ *   <li>One or more {@linkplain #getValues() values}, which may be a singleton ([0 … 1] cardinality)
+ *       or multi-valued ([0 … ∞] cardinality).</li>
+ *   <li>Optional {@linkplain #characteristics() characteristics} about the attribute
+ *       (e.g. a <var>temperature</var> attribute may have a characteristic holding the measurement <var>accuracy</var>).
+ *       Characteristics are often, but not necessarily, constant for all attributes of the same type in a dataset.</li>
  * </ul>
  *
  * {@section Limitations}
@@ -212,8 +216,8 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * as shown in the <cite>Reading a characteristic</cite> section below.</p>
      *
      * <div class="note"><b>Rational:</b>
-     * Very often, all attributes of a given type in the same file have the same characteristics.
-     * For example it is very common that all temperature measurements in a file have the same accuracy,
+     * Very often, all attributes of a given type in the same dataset have the same characteristics.
+     * For example it is very common that all temperature measurements in a dataset have the same accuracy,
      * and setting a different accuracy for a single measurement is relatively rare.
      * Consequently, {@code characteristics.isEmpty()} is a convenient way to check that an attribute have
      * all the "standard" characteristics and need no special processing.</div>

@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import org.opengis.util.GenericName;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Cloner;
@@ -27,6 +28,7 @@ import org.apache.sis.internal.util.AbstractMapEntry;
 
 // Branch-dependent imports
 import org.opengis.feature.Attribute;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -178,6 +180,25 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
     }
 
     /**
+     * Ensures that the given attribute type is the instance that we expect at the given index.
+     * If the given instance is not the expected one, then an {@link IllegalArgumentException}
+     * will be thrown with an error message formatted using the name of expected and given types.
+     *
+     * @param index Index of the expected attribute type.
+     * @param type  The actual attribute type.
+     */
+    private void verifyAttributeType(final int index, final AttributeType<?> type) {
+        final AttributeType<?> expected = types.characterizedBy[index];
+        if (expected != type) {
+            final GenericName en = expected.getName();
+            final GenericName an = type.getName();
+            throw new IllegalArgumentException(String.valueOf(en).equals(String.valueOf(an))
+                    ? Errors.format(Errors.Keys.MismatchedPropertyType_1, en)
+                    : Errors.format(Errors.Keys.CanNotAssign_2, en.push(source.getName()), an));
+        }
+    }
+
+    /**
      * Sets the attribute characteristic for the given name.
      *
      * @param  key The name of the characteristic to set.
@@ -187,9 +208,7 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
     public Attribute<?> put(final String key, final Attribute<?> value) {
         final int index = indexOf(key);
         ArgumentChecks.ensureNonNull("value", value);
-        if (!types.characterizedBy[index].equals(value.getType())) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, key));
-        }
+        verifyAttributeType(index, value.getType());
         if (characterizedBy == null) {
             characterizedBy = new Attribute<?>[types.characterizedBy.length];
         }
@@ -230,11 +249,8 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
     @Override
     protected boolean addValue(final Attribute<?> value) {
         ArgumentChecks.ensureNonNull("value", value);
-        final String key = value.getName().toString();
-        final int index = indexOf(key);
-        if (!types.characterizedBy[index].equals(value.getType())) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, key));
-        }
+        final int index = indexOf(value.getName().toString());
+        verifyAttributeType(index, value.getType());
         if (characterizedBy == null) {
             characterizedBy = new Attribute<?>[types.characterizedBy.length];
         }
@@ -245,7 +261,8 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
         } else if (previous.equals(value)) {
             return false;
         } else {
-            throw new IllegalStateException(Errors.format(Errors.Keys.PropertyAlreadyExists_2, source.getName(), key));
+            throw new IllegalStateException(Errors.format(
+                    Errors.Keys.PropertyAlreadyExists_2, source.getName(), value.getName()));
         }
     }
 
@@ -254,6 +271,9 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
      */
     @Override
     protected Iterator<Map.Entry<String, Attribute<?>>> entryIterator() {
+        if (characterizedBy == null) {
+            return null;
+        }
         return new Iterator<Map.Entry<String, Attribute<?>>>() {
             /** Index of the next element to return in the iteration. */
             private int index;
@@ -333,9 +353,7 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
         @Override
         public Attribute<?> setValue(final Attribute<?> value) {
             ArgumentChecks.ensureNonNull("value", value);
-            if (!types.characterizedBy[index].equals(value.getType())) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, getKey()));
-            }
+            verifyAttributeType(index, value.getType());
             final Attribute<?> previous = this.value;
             characterizedBy[index] = value;
             this.value = value;

@@ -63,9 +63,9 @@ import org.opengis.feature.AttributeType;
  * An {@code Attribute} can be characterized by other attributes. For example an attribute that carries a measurement
  * (e.g. air temperature) may have another attribute that holds the measurement accuracy (e.g. ±0.1°C).
  * The accuracy value is often constant for all instances of that attribute
- * (e.g. for all temperature measurements in the same file), but this is not mandatory.
+ * (e.g. for all temperature measurements in the same dataset), but this is not mandatory.
  * Such accuracy could be stored as an ordinary, independent, attribute (like an other column in a table),
- * but storing accuracy as a <cite>characteristic</cite> of the measurement attribute instead
+ * but storing accuracy as a {@linkplain #characteristics() characteristic} of the measurement attribute instead
  * provides the following advantages:
  *
  * <ul>
@@ -285,7 +285,7 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      *
      * <div class="note"><b>Example:</b>
      * An attribute that carries a measurement (e.g. air temperature) may have another attribute that holds the
-     * measurement accuracy. The accuracy is often constant for all measurements in a file, but not necessarily.
+     * measurement accuracy. The accuracy is often constant for all measurements in a dataset, but not necessarily.
      * If the accuracy is a constant, then the characteristics {@linkplain #getDefaultValue() default value}
      * shall hold that constant.
      * </div>
