@@ -17,14 +17,14 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.HashMap;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import org.apache.sis.internal.util.AbstractMap;
+import org.apache.sis.internal.util.AbstractMapEntry;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
@@ -53,16 +53,24 @@ import org.opengis.feature.AttributeType;
  */
 final class CharacteristicTypeMap extends AbstractMap<String,AttributeType<?>> {
     /**
+     * For sharing the same {@code CharacteristicTypeMap} instances among the attribute types
+     * having the same characteristics.
+     */
+    @SuppressWarnings("unchecked")
+    private static final WeakValueHashMap<AttributeType<?>[],CharacteristicTypeMap> SHARED =
+            new WeakValueHashMap<>((Class) AttributeType[].class);
+
+    /*
+     * This class has intentionally no reference to the AttributeType for which we are providing characteristics.
+     * This allows us to use the same CharacteristicTypeMap instance for various attribute types having the same
+     * characteristic (e.g. many measurements may have an "accuracy" characteristic).
+     */
+
+    /**
      * Characteristics of an other attribute type (the {@code source} attribute given to the constructor).
      * This array shall not be modified.
      */
     final AttributeType<?>[] characterizedBy;
-
-    /**
-     * Name of the {@code characterizedBy} attribute types, used only during iteration over map entries.
-     * This array shall not be modified.
-     */
-    final String[] names;
 
     /**
      * The names of attribute types listed in the {@link #characterizedBy} array,
@@ -71,22 +79,46 @@ final class CharacteristicTypeMap extends AbstractMap<String,AttributeType<?>> {
     final Map<String,Integer> indices;
 
     /**
+     * Creates a new map or return an existing map for the given attribute characteristics.
+     *
+     * <p>This method does not clone the {@code characterizedBy} array. If that array
+     * is a user-provided argument, then cloning that array is caller responsibility.</p>
+     *
+     * @param  source The attribute which is characterized by {@code characterizedBy}.
+     * @param  characterizedBy Characteristics of {@code source}. Should not be empty.
+     * @return A map for this given characteristics.
+     * @throws IllegalArgumentException if two characteristics have the same name.
+     */
+    static CharacteristicTypeMap create(final AttributeType<?> source, final AttributeType<?>[] characterizedBy) {
+        CharacteristicTypeMap map;
+        synchronized (SHARED) {
+            map = SHARED.get(characterizedBy);
+            if (map == null) {
+                map = new CharacteristicTypeMap(source, characterizedBy);
+                SHARED.put(characterizedBy, map);
+            }
+        }
+        return map;
+    }
+
+    /**
      * Creates a new map for the given attribute characteristics.
+     *
+     * <p>This constructor does not clone the {@code characterizedBy} array. If that array
+     * is a user-provided argument, then cloning that array is caller responsibility.</p>
      *
      * @param  source The attribute which is characterized by {@code characterizedBy}.
      * @param  characterizedBy Characteristics of {@code source}. Should not be empty.
      * @throws IllegalArgumentException if two characteristics have the same name.
      */
-    CharacteristicTypeMap(final AttributeType<?> source, final AttributeType<?>[] characterizedBy) {
-        this.characterizedBy = characterizedBy.clone();
-        names = new String[characterizedBy.length];
+    private CharacteristicTypeMap(final AttributeType<?> source, final AttributeType<?>[] characterizedBy) {
+        this.characterizedBy = characterizedBy;
         int index = 0;
         final Map<String,Integer> indices = new HashMap<>(Containers.hashMapCapacity(characterizedBy.length));
         for (int i=0; i<characterizedBy.length; i++) {
             final AttributeType<?> attribute = characterizedBy[i];
             ensureNonNullElement("characterizedBy", i, attribute);
             final String name = AbstractIdentifiedType.toString(attribute.getName(), source, "characterizedBy", i);
-            names[index] = name;
             if (indices.put(name, index++) != null) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, name));
             }
@@ -133,59 +165,55 @@ final class CharacteristicTypeMap extends AbstractMap<String,AttributeType<?>> {
     }
 
     /**
-     * Returns the set of entries in this map.
+     * Returns an iterator over the entries.
+     * This is not the iterator returned by public API like {@code Map.entrySet().iterator()}.
      */
     @Override
-    public Set<Entry<String, AttributeType<?>>> entrySet() {
-        return new Entries();
+    protected Iterator<Entry<String, AttributeType<?>>> entryIterator() {
+        return new Iter();
     }
 
     /**
-     * The set of entries in the {@link CharacteristicTypeMap}.
+     * Iterator over the {@link CharacteristicTypeMap} entries. The entries returned by this method are always
+     * {@code this} (in order to avoid temporary objects creation), which is sufficient for {@link AbstractMap}
+     * needs. This is not the iterator returned by public API like {@code Map.entrySet().iterator()}.
      */
-    private final class Entries extends AbstractSet<Entry<String,AttributeType<?>>> {
-        /** Creates a new set of entries. */
-        Entries() {
-        }
-
-        /** Returns the number of entries. */
-        @Override
-        public int size() {
-            return CharacteristicTypeMap.this.size();
-        }
-
-        /** Returns an iterator over the entries. */
-        @Override
-        public Iterator<Entry<String, AttributeType<?>>> iterator() {
-            return new Iter();
-        }
-    }
-
-    /**
-     * Iterator over the {@link CharacteristicTypeMap} entries.
-     */
-    private final class Iter implements Iterator<Entry<String, AttributeType<?>>> {
+    private final class Iter extends AbstractMapEntry<String, AttributeType<?>>
+            implements Iterator<Entry<String, AttributeType<?>>>
+    {
         /** Index of the next element to return in the iteration. */
         private int index;
+
+        /** Value of current entry. */
+        private AttributeType<?> value;
 
         /** Creates a new iterator. */
         Iter() {
         }
 
         /** Returns {@code true} if there is more entries in the iteration. */
-        @Override
-        public boolean hasNext() {
+        @Override public boolean hasNext() {
             return index < characterizedBy.length;
         }
 
         /** Creates and return the next entry. */
-        @Override
-        public Entry<String, AttributeType<?>> next() {
+        @Override public Entry<String, AttributeType<?>> next() {
             if (hasNext()) {
-                return new SimpleImmutableEntry<>(names[index], characterizedBy[index++]);
+                value = characterizedBy[index++];
+                return this;
             } else {
                 throw new NoSuchElementException();
             }
+        }
+
+        /** Returns the attribute characteristic name. */
+        @Override public String getKey() {
+            return value.getName().toString();
+        }
+
+        /** Returns the attribute characteristic contained in this entry. */
+        @Override public AttributeType<?> getValue() {
+            return value;
         }
     }
 }
