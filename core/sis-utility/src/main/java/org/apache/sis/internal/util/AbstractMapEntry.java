@@ -17,8 +17,9 @@
 package org.apache.sis.internal.util;
 
 import java.util.Map;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -41,6 +42,20 @@ public abstract class AbstractMapEntry<K,V> implements Map.Entry<K,V> {
      * For subclasses constructors.
      */
     protected AbstractMapEntry() {
+    }
+
+    /**
+     * Sets the value corresponding to this entry (optional operation).
+     * The default implementation throws {@code UnsupportedOperationException}
+     * for the convenience of unmodifiable map implementations.
+     *
+     * @param  value The new value to be stored in this entry.
+     * @return The previous value (may be {@code null}).
+     * @throws UnsupportedOperationException if this entry is unmodifiable.
+     */
+    @Override
+    public V setValue(final V value) {
+        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, Map.Entry.class));
     }
 
     /**
@@ -76,8 +91,17 @@ public abstract class AbstractMapEntry<K,V> implements Map.Entry<K,V> {
     @Debug
     @Override
     public String toString() {
-        String value = String.valueOf(getValue());
-        value = value.substring(0, CharSequences.indexOfLineStart(value, 1, 0));
-        return String.valueOf(getKey()) + '=' + value;
+        return String.valueOf(getKey()) + '=' + firstLine(getValue());
+    }
+
+    /**
+     * Returns only the first line of the string representation of the given value.
+     *
+     * @param  value The value for which to get a string representation.
+     * @return The first line of the string representation of the given value.
+     */
+    static String firstLine(final Object value) {
+        String s = String.valueOf(value);
+        return s.substring(0, CharSequences.indexOfLineStart(s, 1, 0));
     }
 }
