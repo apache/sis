@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.feature.DefaultAttributeTypeTest.class,
+    org.apache.sis.feature.CharacteristicTypeMapTest.class,
     org.apache.sis.feature.DefaultFeatureTypeTest.class,
     org.apache.sis.feature.PropertySingletonTest.class,
     org.apache.sis.feature.SingletonAttributeTest.class,

@@ -183,7 +183,7 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
         this.valueClass      = valueClass;
         this.defaultValue    = Numerics.cached(defaultValue);
         if (characterizedBy != null && characterizedBy.length != 0) {
-            characteristics = new CharacteristicTypeMap(this, characterizedBy);
+            characteristics = CharacteristicTypeMap.create(this, characterizedBy.clone());
         }
     }
 
@@ -210,7 +210,7 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
         try {
             final AttributeType<?>[] characterizedBy = (AttributeType<?>[]) in.readObject();
             if (characterizedBy != null) {
-                characteristics = new CharacteristicTypeMap(this, characterizedBy);
+                characteristics = CharacteristicTypeMap.create(this, characterizedBy);
             }
         } catch (RuntimeException e) { // At least ClassCastException, NullPointerException and IllegalArgumentException.
             throw (IOException) new InvalidObjectException(e.getMessage()).initCause(e);
@@ -291,6 +291,8 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      * </div>
      *
      * @return Other attribute types that describes this attribute type, or an empty set if none.
+     *
+     * @see AbstractAttribute#characteristics()
      */
     public Map<String,AttributeType<?>> characteristics() {
         return (characteristics != null) ? characteristics : Collections.emptyMap();

@@ -16,7 +16,9 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Map;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
@@ -69,6 +71,13 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
     final AttributeType<V> type;
+
+    /**
+     * Other attributes that describes this attribute, or {@code null} if not yet created.
+     *
+     * @see #characteristics()
+     */
+    private transient Map<String,Attribute<?>> characteristics;
 
     /**
      * Creates a new attribute of the given type.
@@ -192,6 +201,95 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     }
 
     /**
+     * Other attributes that describes this attribute. For example if this attribute carries a measurement,
+     * then a characteristic of this attribute could be the measurement accuracy.
+     * See "<cite>Attribute characterization</cite>" in {@link DefaultAttributeType} Javadoc for more information.
+     *
+     * <p>The map returned by this method contains only the characteristics explicitely defined for this attribute.
+     * If the map contains no characteristic for a given name, a {@linkplain DefaultAttributeType#getDefaultValue()
+     * default value} may still exist.
+     * In such cases, callers may also need to inspect the {@link DefaultAttributeType#characteristics()}
+     * as shown in the <cite>Reading a characteristic</cite> section below.</p>
+     *
+     * <div class="note"><b>Rational:</b>
+     * Very often, all attributes of a given type in the same file have the same characteristics.
+     * For example it is very common that all temperature measurements in a file have the same accuracy,
+     * and setting a different accuracy for a single measurement is relatively rare.
+     * Consequently, {@code characteristics.isEmpty()} is a convenient way to check that an attribute have
+     * all the "standard" characteristics and need no special processing.</div>
+     *
+     * {@section Reading a characteristic}
+     * If an attribute is known to be a measurement with a characteristic named "accuracy" of type {@link Float},
+     * then the accuracy value could be read as below:
+     *
+     * {@preformat java
+     *     Float getAccuracy(Attribute<?> measurement) {
+     *         Attribute<?> accuracy = measurement.characteristics().get("accuracy");
+     *         if (accuracy != null) {
+     *             return (Float) accuracy.getValue(); // Value may be null.
+     *         } else {
+     *             return (Float) measurement.getType().characteristics().get("accuracy").getDefaultValue();
+     *             // A more sophisticated implementation would probably cache the default value somewhere.
+     *         }
+     *     }
+     * }
+     *
+     * {@section Adding a characteristic}
+     * A new characteristic can be added in the map in three different ways:
+     * <ol>
+     *   <li>Putting the (<var>name</var>, <var>characteristic</var>) pair explicitely.
+     *     If an older characteristic existed for that name, it will be replaced.
+     *     Example:
+     *
+     *     {@preformat java
+     *       Attribute<?> accuracy = ...; // To be created by the caller.
+     *       characteristics.put("accuracy", accuracy);
+     *     }</li>
+     *
+     *   <li>Adding the new characteristic to the {@linkplain Map#values() values} collection.
+     *     The name is inferred automatically from the characteristic type.
+     *     If an older characteristic existed for the same name, an {@link IllegalStateException} will be thrown.
+     *     Example:
+     *
+     *     {@preformat java
+     *       Attribute<?> accuracy = ...; // To be created by the caller.
+     *       characteristics.values().add(accuracy);
+     *     }</li>
+     *
+     *   <li>Adding the characteristic name to the {@linkplain Map#keySet() key set}.
+     *     If no characteristic existed for that name, a default one will be created.
+     *     Example:
+     *
+     *     {@preformat java
+     *       characteristics.keySet().add("accuracy"); // Ensure that an entry will exist for that name.
+     *       Attribute<?> accuracy = characteristics.get("accuracy");
+     *       Features.cast(accuracy, Float.class).setValue(...); // Set new accuracy value here as a float.
+     *     }</li>
+     * </ol>
+     *
+     * @return Other attribute types that describes this attribute type, or an empty set if none.
+     *
+     * @see DefaultAttributeType#characteristics()
+     */
+    public Map<String,Attribute<?>> characteristics() {
+        if (characteristics == null) {
+            if (type instanceof DefaultAttributeType<?>) {
+                Map<String, AttributeType<?>> map = ((DefaultAttributeType<?>) type).characteristics();
+                if (map.isEmpty()) {
+                    characteristics = Collections.emptyMap();
+                } else {
+                    if (!(map instanceof CharacteristicTypeMap)) {
+                        final Collection<AttributeType<?>> types = map.values();
+                        map = CharacteristicTypeMap.create(type, types.toArray(new AttributeType<?>[types.size()]));
+                    }
+                    characteristics = new CharacteristicMap(this, (CharacteristicTypeMap) map);
+                }
+            }
+        }
+        return characteristics;
+    }
+
+    /**
      * Evaluates the quality of this attribute at this method invocation time. The data quality reports
      * may include information about whether the attribute value mets the constraints defined by the
      * {@linkplain DefaultAttributeType attribute type}, or any other criterion at implementation choice.
@@ -280,17 +378,22 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Returns a copy of this attribute.
      * The default implementation returns a <em>shallow</em> copy:
-     * the attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * the attribute {@linkplain #getValue() value} and {@linkplain #characteristics() characteristics}
+     * are <strong>not</strong> cloned.
      * However subclasses may choose to do otherwise.
      *
      * @return A clone of this attribute.
-     * @throws CloneNotSupportedException if this attribute can not be cloned.
-     *         The default implementation never throw this exception. However subclasses may throw it,
-     *         for example on attempt to clone the attribute value.
+     * @throws CloneNotSupportedException if this attribute, the {@linkplain #getValue() value}
+     *         or one of its {@linkplain #characteristics() characteristics} can not be cloned.
      */
     @Override
     @SuppressWarnings("unchecked")
     public AbstractAttribute<V> clone() throws CloneNotSupportedException {
-        return (AbstractAttribute<V>) super.clone();
+        final AbstractAttribute<V> clone = (AbstractAttribute<V>) super.clone();
+        final Map<String,Attribute<?>> c = clone.characteristics;
+        if (c instanceof CharacteristicMap) {
+            clone.characteristics = ((CharacteristicMap) c).clone();
+        }
+        return clone;
     }
 }
