@@ -25,7 +25,7 @@ import org.opengis.feature.AttributeType;
 
 
 /**
- * Static methods working on features.
+ * Static methods working on features or attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5

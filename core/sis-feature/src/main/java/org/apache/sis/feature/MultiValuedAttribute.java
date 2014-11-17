@@ -171,7 +171,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
      */
     @Override
     public int hashCode() {
-        return type.hashCode() + values.hashCode();
+        return type.hashCode() + values.hashCode() + characteristicsReadOnly().hashCode();
     }
 
     /**
@@ -186,7 +186,8 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
         }
         if (obj instanceof MultiValuedAttribute<?>) {
             final MultiValuedAttribute<?> that = (MultiValuedAttribute<?>) obj;
-            return type.equals(that.type) && values.equals(that.values);
+            return type.equals(that.type) && values.equals(that.values) &&
+                   characteristicsReadOnly().equals(that.characteristicsReadOnly());
         }
         return false;
     }

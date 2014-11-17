@@ -32,6 +32,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 
 
@@ -296,6 +297,17 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      */
     public Map<String,AttributeType<?>> characteristics() {
         return (characteristics != null) ? characteristics : Collections.emptyMap();
+    }
+
+    /**
+     * Creates a new attribute instance of this type initialized to the {@linkplain #getDefaultValue() default value}.
+     *
+     * @return A new attribute instance.
+     *
+     * @see AbstractAttribute#create(AttributeType)
+     */
+    public Attribute<V> newInstance() {
+        return AbstractAttribute.create(this);
     }
 
     /**

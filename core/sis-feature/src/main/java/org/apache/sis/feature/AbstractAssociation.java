@@ -34,6 +34,7 @@ import org.opengis.feature.FeatureAssociationRole;
 
 /**
  * An instance of an {@linkplain DefaultAssociationRole feature association role} containing the associated feature.
+ * {@code AbstractAssociation} can be instantiated by calls to {@link DefaultAssociationRole#newInstance()}.
  *
  * {@section Limitations}
  * <ul>
@@ -49,7 +50,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * @version 0.5
  * @module
  *
- * @see DefaultAssociationRole
+ * @see DefaultAssociationRole#newInstance()
  */
 public abstract class AbstractAssociation extends Field<Feature> implements FeatureAssociation, Cloneable, Serializable {
     /**
@@ -78,6 +79,8 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      *
      * @param  role Information about the association.
      * @return The new association.
+     *
+     * @see DefaultAssociationRole#newInstance()
      */
     public static AbstractAssociation create(final FeatureAssociationRole role) {
         ArgumentChecks.ensureNonNull("role", role);
@@ -231,7 +234,7 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
             @Override public Object next() {
                 return it.next().getPropertyValue(pt);
             }
-        });
+        }).toString();
     }
 
     /**

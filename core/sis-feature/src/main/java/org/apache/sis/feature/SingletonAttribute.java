@@ -106,7 +106,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> {
      */
     @Override
     public int hashCode() {
-        return type.hashCode() + Objects.hashCode(value);
+        return type.hashCode() + Objects.hashCode(value) + characteristicsReadOnly().hashCode();
     }
 
     /**
@@ -121,7 +121,8 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> {
         }
         if (obj instanceof SingletonAttribute<?>) {
             final SingletonAttribute<?> that = (SingletonAttribute<?>) obj;
-            return type.equals(that.type) && Objects.equals(value, that.value);
+            return type.equals(that.type) && Objects.equals(value, that.value) &&
+                   characteristicsReadOnly().equals(that.characteristicsReadOnly());
         }
         return false;
     }
