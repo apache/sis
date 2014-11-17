@@ -17,9 +17,14 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.InvalidObjectException;
+import java.io.IOException;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -46,6 +51,8 @@ import org.opengis.feature.AttributeType;
  *       Characteristics are often, but not necessarily, constant for all attributes of the same type in a dataset.</li>
  * </ul>
  *
+ * {@code AbstractAttribute} can be instantiated by calls to {@link DefaultAttributeType#newInstance()}.
+ *
  * {@section Limitations}
  * <ul>
  *   <li><b>Multi-threading:</b> {@code AbstractAttribute} instances are <strong>not</strong> thread-safe.
@@ -63,7 +70,7 @@ import org.opengis.feature.AttributeType;
  * @version 0.5
  * @module
  *
- * @see DefaultAttributeType
+ * @see DefaultAttributeType#newInstance()
  */
 public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Cloneable, Serializable {
     /**
@@ -78,6 +85,14 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
 
     /**
      * Other attributes that describes this attribute, or {@code null} if not yet created.
+     *
+     * <div class="note"><b>Design note:</b>
+     * We could question if it is a good idea to put this field here, given that this field add a slight cost
+     * to all attribute implementations while only a small fraction of them will want attribute characteristics.
+     * Since attributes may exist in a very large amount, that question may be significant.
+     * However {@link AbstractFeature} tries hard to not create {@code Attribute} instances at all (it tries to
+     * store only their value instead), so we presume that peoples who ask for {@code Attribute} instances are
+     * willing to accept their cost.</div>
      *
      * @see #characteristics()
      */
@@ -101,6 +116,8 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * @param  <V>  The type of attribute values.
      * @param  type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      * @return The new attribute.
+     *
+     * @see DefaultAttributeType#newInstance()
      */
     public static <V> AbstractAttribute<V> create(final AttributeType<V> type) {
         ArgumentChecks.ensureNonNull("type", type);
@@ -123,6 +140,43 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
         return isSingleton(type.getMaximumOccurs())
                ? new SingletonAttribute<>(type, value)
                : new MultiValuedAttribute<>(type, value);
+    }
+
+    /**
+     * Invoked on serialization for saving the {@link #characteristics} field.
+     *
+     * @param  out The output stream where to serialize this attribute.
+     * @throws IOException If an I/O error occurred while writing.
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        final Attribute<?>[] characterizedBy;
+        if (characteristics instanceof CharacteristicMap) {
+            characterizedBy = characteristics.values().toArray(new Attribute<?>[characteristics.size()]);
+        } else {
+            characterizedBy = null;
+        }
+        out.writeObject(characterizedBy);
+    }
+
+    /**
+     * Invoked on deserialization for restoring the {@link #characteristics} field.
+     *
+     * @param  in The input stream from which to deserialize an attribute.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        try {
+            final Attribute<?>[] characterizedBy = (Attribute<?>[]) in.readObject();
+            if (characterizedBy != null) {
+                characteristics = newCharacteristicsMap();
+                characteristics.values().addAll(Arrays.asList(characterizedBy));
+            }
+        } catch (RuntimeException e) { // At least ClassCastException, NullPointerException, IllegalArgumentException and IllegalStateException.
+            throw (IOException) new InvalidObjectException(e.getMessage()).initCause(e);
+        }
     }
 
     /**
@@ -277,20 +331,37 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      */
     public Map<String,Attribute<?>> characteristics() {
         if (characteristics == null) {
-            if (type instanceof DefaultAttributeType<?>) {
-                Map<String, AttributeType<?>> map = ((DefaultAttributeType<?>) type).characteristics();
-                if (map.isEmpty()) {
-                    characteristics = Collections.emptyMap();
-                } else {
-                    if (!(map instanceof CharacteristicTypeMap)) {
-                        final Collection<AttributeType<?>> types = map.values();
-                        map = CharacteristicTypeMap.create(type, types.toArray(new AttributeType<?>[types.size()]));
-                    }
-                    characteristics = new CharacteristicMap(this, (CharacteristicTypeMap) map);
-                }
-            }
+            characteristics = newCharacteristicsMap();
         }
         return characteristics;
+    }
+
+    /**
+     * Creates an initially empty map of characteristics for this attribute.
+     * This method does not store the new map in the {@link #characteristics} field;
+     * it is caller responsibility to do so if desired.
+     */
+    private Map<String,Attribute<?>> newCharacteristicsMap() {
+        if (type instanceof DefaultAttributeType<?>) {
+            Map<String, AttributeType<?>> map = ((DefaultAttributeType<?>) type).characteristics();
+            if (!map.isEmpty()) {
+                if (!(map instanceof CharacteristicTypeMap)) {
+                    final Collection<AttributeType<?>> types = map.values();
+                    map = CharacteristicTypeMap.create(type, types.toArray(new AttributeType<?>[types.size()]));
+                }
+                return new CharacteristicMap(this, (CharacteristicTypeMap) map);
+            }
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Returns the characteristics, or an empty map if the characteristics have not yet been built.
+     * Contrarily to {@link #characteristics()}, this method does not create the map. This method
+     * is suitable when then caller only wants to read the map and does not plan to write anything.
+     */
+    final Map<String,Attribute<?>> characteristicsReadOnly() {
+        return (characteristics != null) ? characteristics : Collections.emptyMap();
     }
 
     /**
@@ -370,13 +441,29 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Returns a string representation of this attribute.
      * The returned string is for debugging purpose and may change in any future SIS version.
+     * The current implementation is like below:
+     *
+     * {@preformat text
+     *     Attribute[“temperature” : Float] = {20.3, 17.8, 21.1}
+     *     └─ characteristics: units=°C, accuracy=0.1
+     * }
      *
      * @return A string representation of this attribute for debugging purpose.
      */
     @Debug
     @Override
     public String toString() {
-        return FieldType.toString("Attribute", type, Classes.getShortName(type.getValueClass()), getValues().iterator());
+        final StringBuilder buffer = FieldType.toString("Attribute", type,
+                Classes.getShortName(type.getValueClass()), getValues().iterator());
+        if (characteristics != null && !characteristics.isEmpty()) {
+            buffer.append(System.lineSeparator());
+            String separator = "└─ characteristics: ";
+            for (final Map.Entry<String,Attribute<?>> entry : characteristics.entrySet()) {
+                buffer.append(separator).append(entry.getKey()).append('=').append(entry.getValue().getValue());
+                separator = ", ";
+            }
+        }
+        return buffer.toString();
     }
 
     /**

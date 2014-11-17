@@ -189,7 +189,7 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
      */
     private void verifyAttributeType(final int index, final AttributeType<?> type) {
         final AttributeType<?> expected = types.characterizedBy[index];
-        if (expected != type) {
+        if (!expected.equals(type)) {
             final GenericName en = expected.getName();
             final GenericName an = type.getName();
             throw new IllegalArgumentException(String.valueOf(en).equals(String.valueOf(an))
