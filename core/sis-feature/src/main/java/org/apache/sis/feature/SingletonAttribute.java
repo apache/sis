@@ -42,7 +42,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @see DefaultAttributeType
  */
-final class SingletonAttribute<V> extends AbstractAttribute<V> implements Cloneable {
+final class SingletonAttribute<V> extends AbstractAttribute<V> {
     /**
      * For cross-version compatibility.
      */
@@ -99,30 +99,13 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> implements Clonea
     }
 
     /**
-     * Returns a copy of this attribute.
-     * The default implementation returns a <em>shallow</em> copy:
-     * the attribute {@linkplain #getValue() value} is <strong>not</strong> cloned.
-     * However subclasses may choose to do otherwise.
-     *
-     * @return A clone of this attribute.
-     * @throws CloneNotSupportedException if this attribute can not be cloned.
-     *         The default implementation never throw this exception. However subclasses may throw it,
-     *         for example on attempt to clone the attribute value.
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public SingletonAttribute<V> clone() throws CloneNotSupportedException {
-        return (SingletonAttribute<V>) super.clone();
-    }
-
-    /**
      * Returns a hash code value for this attribute.
      *
      * @return A hash code value.
      */
     @Override
     public int hashCode() {
-        return type.hashCode() + Objects.hashCode(value);
+        return type.hashCode() + Objects.hashCode(value) + characteristicsReadOnly().hashCode();
     }
 
     /**
@@ -137,7 +120,8 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> implements Clonea
         }
         if (obj instanceof SingletonAttribute<?>) {
             final SingletonAttribute<?> that = (SingletonAttribute<?>) obj;
-            return type.equals(that.type) && Objects.equals(value, that.value);
+            return type.equals(that.type) && Objects.equals(value, that.value) &&
+                   characteristicsReadOnly().equals(that.characteristicsReadOnly());
         }
         return false;
     }

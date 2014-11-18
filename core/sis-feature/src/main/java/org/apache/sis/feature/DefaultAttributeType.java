@@ -17,6 +17,11 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import java.util.Collections;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+import java.io.InvalidObjectException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
@@ -37,7 +42,9 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * <div class="note"><b>Note:</b>
  * Compared to the Java language, {@code AttributeType} is equivalent to {@link java.lang.reflect.Field}
- * while {@code FeatureType} is equivalent to {@link Class}.</div>
+ * while {@code FeatureType} is equivalent to {@link Class}.
+ * Attribute characterization (discussed below) is similar to {@link java.lang.annotation.Annotation}.
+ * </div>
  *
  * <div class="warning"><b>Warning:</b>
  * This class is expected to implement a GeoAPI {@code AttributeType} interface in a future version.
@@ -55,6 +62,28 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <tr><td>Building owner</td>      <td>{@link org.opengis.metadata.citation.ResponsibleParty}</td></tr>
  *   <tr><td>Horizontal accuracy</td> <td>{@link org.opengis.metadata.quality.PositionalAccuracy}</td></tr>
  * </table>
+ *
+ * {@section Attribute characterization}
+ * An {@code Attribute} can be characterized by other attributes. For example an attribute that carries a measurement
+ * (e.g. air temperature) may have another attribute that holds the measurement accuracy (e.g. ±0.1°C).
+ * The accuracy value is often constant for all instances of that attribute
+ * (e.g. for all temperature measurements in the same dataset), but this is not mandatory.
+ * Such accuracy could be stored as an ordinary, independent, attribute (like an other column in a table),
+ * but storing accuracy as a {@linkplain #characteristics() characteristic} of the measurement attribute instead
+ * provides the following advantages:
+ *
+ * <ul>
+ *   <li>The same characteristic name (e.g. “accuracy”) can be used for different attributes
+ *       (e.g. “temperature”, “humidity”, <i>etc.</i>) since all characteristics are local to their attribute.</li>
+ *   <li>A reference to an attribute gives also access to its characteristics. For example any method expecting
+ *       an {@code Attribute} argument, when given a measurement, can also get its accuracy in same time.</li>
+ *   <li>In the common case of a {@linkplain DefaultFeatureType#isSimple() simple feature} with characteristics
+ *       that are constants, declaring them as attribute characteristics allows to specify the constants only once.</li>
+ * </ul>
+ *
+ * Constant values of characteristics are given by their {@linkplain #getDefaultValue() default value}.
+ * It is still possible for any specific {@code Attribute} instance to specify their own value,
+ * but {@linkplain DefaultFeatureType#isSimple() simple feature} usually don't do that.
  *
  * {@section Immutability and thread safety}
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
@@ -79,7 +108,7 @@ public class DefaultAttributeType<V> extends FieldType {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 8215784957556648553L;
+    private static final long serialVersionUID = -817024213677735239L;
 
     /**
      * The class that describe the type of attribute values.
@@ -94,6 +123,14 @@ public class DefaultAttributeType<V> extends FieldType {
      * @see #getDefaultValue()
      */
     private final V defaultValue;
+
+    /**
+     * Other attribute types that describes this attribute type, or {@code null} if none.
+     * This is used for attributes of attribute (e.g. accuracy of a position).
+     *
+     * @see #characteristics()
+     */
+    private transient CharacteristicTypeMap characteristics;
 
     /**
      * Constructs an attribute type from the given properties. The identification map is given unchanged to
@@ -129,21 +166,59 @@ public class DefaultAttributeType<V> extends FieldType {
      *   </tr>
      * </table>
      *
-     * @param identification The name and other information to be given to this attribute type.
-     * @param valueClass     The type of attribute values.
-     * @param minimumOccurs  The minimum number of occurrences of the attribute within its containing entity.
-     * @param maximumOccurs  The maximum number of occurrences of the attribute within its containing entity,
-     *                       or {@link Integer#MAX_VALUE} if there is no restriction.
-     * @param defaultValue   The default value for the attribute, or {@code null} if none.
+     * @param identification  The name and other information to be given to this attribute type.
+     * @param valueClass      The type of attribute values.
+     * @param minimumOccurs   The minimum number of occurrences of the attribute within its containing entity.
+     * @param maximumOccurs   The maximum number of occurrences of the attribute within its containing entity,
+     *                        or {@link Integer#MAX_VALUE} if there is no restriction.
+     * @param defaultValue    The default value for the attribute, or {@code null} if none.
+     * @param characterizedBy Other attribute types that describes this attribute type (can be {@code null} for none).
+     *                        For example if this new {@code DefaultAttributeType} describes a measurement,
+     *                        then {@code characterizedBy} could holds the measurement accuracy.
+     *                        See "<cite>Attribute characterization</cite>" in class Javadoc for more information.
      */
     public DefaultAttributeType(final Map<String,?> identification, final Class<V> valueClass,
-            final int minimumOccurs, final int maximumOccurs, final V defaultValue)
+            final int minimumOccurs, final int maximumOccurs, final V defaultValue,
+            final DefaultAttributeType<?>... characterizedBy)
     {
         super(identification, minimumOccurs, maximumOccurs);
         ensureNonNull("valueClass",   valueClass);
         ensureCanCast("defaultValue", valueClass, defaultValue);
-        this.valueClass   = valueClass;
-        this.defaultValue = Numerics.cached(defaultValue);
+        this.valueClass      = valueClass;
+        this.defaultValue    = Numerics.cached(defaultValue);
+        if (characterizedBy != null && characterizedBy.length != 0) {
+            characteristics = CharacteristicTypeMap.create(this, characterizedBy.clone());
+        }
+    }
+
+    /**
+     * Invoked on serialization for saving the {@link #characteristics} field.
+     *
+     * @param  out The output stream where to serialize this attribute type.
+     * @throws IOException If an I/O error occurred while writing.
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeObject(characteristics != null ? characteristics.characterizedBy : null);
+    }
+
+    /**
+     * Invoked on deserialization for restoring the {@link #characteristics} field.
+     *
+     * @param  in The input stream from which to deserialize an attribute type.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        try {
+            final DefaultAttributeType<?>[] characterizedBy = (DefaultAttributeType<?>[]) in.readObject();
+            if (characterizedBy != null) {
+                characteristics = CharacteristicTypeMap.create(this, characterizedBy);
+            }
+        } catch (RuntimeException e) { // At least ClassCastException, NullPointerException and IllegalArgumentException.
+            throw (IOException) new InvalidObjectException(e.getMessage()).initCause(e);
+        }
     }
 
     /**
@@ -207,13 +282,44 @@ public class DefaultAttributeType<V> extends FieldType {
     }
 
     /**
+     * Other attribute types that describes this attribute type.
+     * See "<cite>Attribute characterization</cite>" in class Javadoc for more information.
+     *
+     * <div class="note"><b>Example:</b>
+     * An attribute that carries a measurement (e.g. air temperature) may have another attribute that holds the
+     * measurement accuracy. The accuracy is often constant for all measurements in a dataset, but not necessarily.
+     * If the accuracy is a constant, then the characteristics {@linkplain #getDefaultValue() default value}
+     * shall hold that constant.
+     * </div>
+     *
+     * @return Other attribute types that describes this attribute type, or an empty set if none.
+     *
+     * @see AbstractAttribute#characteristics()
+     */
+    public Map<String,DefaultAttributeType<?>> characteristics() {
+        return (characteristics != null) ? characteristics : Collections.<String,DefaultAttributeType<?>>emptyMap();
+    }
+
+    /**
+     * Creates a new attribute instance of this type initialized to the {@linkplain #getDefaultValue() default value}.
+     *
+     * @return A new attribute instance.
+     *
+     * @see AbstractAttribute#create(DefaultAttributeType)
+     */
+    public AbstractAttribute<V> newInstance() {
+        return AbstractAttribute.create(this);
+    }
+
+    /**
      * Returns a hash code value for this attribute type.
      *
      * @return {@inheritDoc}
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + valueClass.hashCode() + Objects.hashCode(defaultValue);
+        return super.hashCode() + valueClass.hashCode() + Objects.hashCode(defaultValue)
+               + Objects.hashCode(characteristics);
     }
 
     /**
@@ -229,7 +335,8 @@ public class DefaultAttributeType<V> extends FieldType {
         if (super.equals(obj)) {
             final DefaultAttributeType<?> that = (DefaultAttributeType<?>) obj;
             return valueClass == that.valueClass &&
-                   Objects.equals(defaultValue, that.defaultValue);
+                   Objects.equals(defaultValue, that.defaultValue) &&
+                   Objects.equals(characteristics, that.characteristics);
         }
         return false;
     }

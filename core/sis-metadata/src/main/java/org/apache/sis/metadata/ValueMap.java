@@ -20,14 +20,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Debug;
+import org.apache.sis.internal.util.AbstractMapEntry;
 
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -181,7 +177,7 @@ final class ValueMap extends PropertyMap<Object> {
      * @version 0.3
      * @module
      */
-    final class Property implements Map.Entry<String,Object> {
+    final class Property extends AbstractMapEntry<String,Object> {
         /**
          * The property index.
          */
@@ -228,41 +224,6 @@ final class ValueMap extends PropertyMap<Object> {
         @Override
         public Object setValue(final Object value) {
             return accessor.set(index, metadata, value, RETURN_PREVIOUS);
-        }
-
-        /**
-         * Compares the specified object with this entry for equality.
-         * Criterion are specified by the {@link Map.Entry} contract.
-         */
-        @Override
-        public boolean equals(final Object object) {
-            if (object instanceof Map.Entry<?,?>) {
-                final Map.Entry<?,?> entry = (Map.Entry<?,?>) object;
-                return Objects.equals(getKey(),   entry.getKey()) &&
-                       Objects.equals(getValue(), entry.getValue());
-            }
-            return false;
-        }
-
-        /**
-         * Returns the hash code value for this map entry. The
-         * formula is specified by the {@link Map.Entry} contract.
-         */
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(getKey()) ^ Objects.hashCode(getValue());
-        }
-
-        /**
-         * Returns a string representation of this entry.
-         * This method is mostly for debugging purpose.
-         */
-        @Debug
-        @Override
-        public String toString() {
-            String value = String.valueOf(getValue());
-            value = value.substring(0, CharSequences.indexOfLineStart(value, 1, 0));
-            return getKey() + '=' + value;
         }
     }
 

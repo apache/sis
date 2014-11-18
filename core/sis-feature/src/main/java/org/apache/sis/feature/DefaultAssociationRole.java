@@ -382,6 +382,17 @@ public class DefaultAssociationRole extends FieldType {
     }
 
     /**
+     * Creates a new association instance of this role.
+     *
+     * @return A new association instance.
+     *
+     * @see AbstractAssociation#create(FeatureAssociationRole)
+     */
+    public AbstractAssociation newInstance() {
+        return AbstractAssociation.create(this);
+    }
+
+    /**
      * Returns a hash code value for this association role.
      *
      * @return {@inheritDoc}

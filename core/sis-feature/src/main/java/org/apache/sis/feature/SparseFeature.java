@@ -102,7 +102,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
         if (valuesKind != PROPERTIES) {
             if (!properties.isEmpty()) { // The map is typically empty when this method is first invoked.
                 if (valuesKind != VALUES) {
-                    throw new CorruptedObjectException(String.valueOf(getName()));
+                    throw new CorruptedObjectException(getName());
                 }
                 valuesKind = CORRUPTED;
                 for (final Map.Entry<String, Object> entry : properties.entrySet()) {
@@ -182,7 +182,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
             } else if (valuesKind == PROPERTIES) {
                 throw unsupportedPropertyType(((Property) element).getName());
             } else {
-                throw new CorruptedObjectException(String.valueOf(getName()));
+                throw new CorruptedObjectException(getName());
             }
         } else if (properties.containsKey(name)) {
             return null; // Null has been explicitely set.
@@ -222,7 +222,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
         } else if (valuesKind == PROPERTIES) {
             setPropertyValue(getPropertyInstance(name), value);
         } else {
-            throw new CorruptedObjectException(String.valueOf(getName()));
+            throw new CorruptedObjectException(getName());
         }
     }
 
