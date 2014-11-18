@@ -18,6 +18,7 @@ package org.apache.sis.internal.simple;
 
 import java.io.Serializable;
 import org.opengis.util.Type;
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -151,6 +152,14 @@ public final class SimpleAttributeType<V> implements AttributeType<V>, Type, Ser
     @Override
     public InternationalString getDescription() {
         return null;
+    }
+
+    /**
+     * Unsupported operation.
+     */
+    @Override
+    public Attribute<V> newInstance() {
+        throw new UnsupportedOperationException();
     }
 
     /**

@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.util.GenericName;
@@ -114,6 +115,14 @@ final class NamedFeatureType implements FeatureType, Serializable {
     @Override
     public boolean isAssignableFrom(final FeatureType type) {
         return (type instanceof NamedFeatureType);
+    }
+
+    /**
+     * Unsupported operation, since the feature has not yet been resolved.
+     */
+    @Override
+    public Feature newInstance() throws IllegalStateException {
+        throw new IllegalStateException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, getName()));
     }
 
     /**
