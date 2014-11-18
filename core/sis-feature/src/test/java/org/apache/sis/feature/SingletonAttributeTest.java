@@ -157,7 +157,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
     @DependsOnMethod("testEquals")
     public void testClone() throws CloneNotSupportedException {
         final SingletonAttribute<Integer> a1 = population();
-        final SingletonAttribute<Integer> a2 = a1.clone();
+        final  AbstractAttribute<Integer> a2 = a1.clone();
         assertNotSame(a1, a2);
         testEquals(a1, a2);
     }

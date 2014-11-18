@@ -17,13 +17,8 @@
 package org.apache.sis.referencing;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.HashMap;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
@@ -32,6 +27,7 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.metadata.quality.PositionalAccuracy;
+import org.apache.sis.internal.util.AbstractMap;
 
 
 /**
@@ -220,14 +216,6 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     }
 
     /**
-     * Returns true if this map contains a mapping for the specified key.
-     */
-    @Override
-    public boolean containsKey(final Object key) {
-        return get(key) != null;
-    }
-
-    /**
      * Returns the value to which this map maps the specified key.
      * Returns {@code null} if the map contains no mapping for this key.
      */
@@ -238,93 +226,50 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     }
 
     /**
-     * Returns a set view of the mappings contained in this map.
+     * Iterates over the {@link #KEYS}, returning only the entry having a non-null value.
      */
     @Override
-    public Set<Entry<String,Object>> entrySet() {
-        return new EntrySet();
-    }
+    protected EntryIterator<String,Object> entryIterator() {
+        return new EntryIterator<String,Object>() {
+            /**
+             * Index of the next element to inspect.
+             */
+            private int nextIndex;
 
-    /**
-     * The view returned by {@link #entrySet()}.
-     */
-    private final class EntrySet extends AbstractSet<Entry<String,Object>> {
-        /** Creates a new instance. */
-        EntrySet() {
-        }
+            /**
+             * Index of the value to be returned by {@link #next()}, or {@code null} if not yet computed.
+             */
+            private Object value;
 
-        /** Delegates to the enclosing map. */
-        @Override
-        public boolean isEmpty() {
-            return Properties.this.isEmpty();
-        }
-
-        /** Delegates to the enclosing map. */
-        @Override
-        public int size() {
-            return Properties.this.size();
-        }
-
-        /** Iterates over the {@link #KEYS}, returning only the entry having a non-null value. */
-        @Override
-        public Iterator<Entry<String, Object>> iterator() {
-            return new Iter();
-        }
-    }
-
-    /**
-     * The iterator returned by {@link EntrySet#iterator()}.
-     */
-    private final class Iter implements Iterator<Entry<String,Object>> {
-        /**
-         * Index of the next element to return.
-         */
-        private int nextIndex;
-
-        /**
-         * Index of the value to be returned by {@link #next()}, or {@code null} if not yet computed.
-         */
-        private Object value;
-
-        /**
-         * Creates a new iterator.
-         */
-        Iter() {
-        }
-
-        /**
-         * Returns {@code true} if there is a value to return.
-         */
-        @Override
-        public boolean hasNext() {
-            while (value == null) {
-                if (nextIndex == KEYS.length) {
-                    return false;
+            /**
+             * Returns {@code true} if there is a value to return.
+             */
+            @Override
+            protected boolean next() {
+                while (nextIndex < KEYS.length) {
+                    value = getAt(nextIndex++);
+                    if (value != null) {
+                        return true;
+                    }
                 }
-                value = getAt(nextIndex++);
+                return false;
             }
-            return true;
-        }
 
-        /**
-         * Returns the next element.
-         */
-        @Override
-        public Entry<String, Object> next() {
-            if (hasNext()) {
-                final Entry<String, Object> entry = new SimpleImmutableEntry<>(KEYS[nextIndex-1], value);
-                value = null; // For forcing the next call to 'hasNext()' to increment 'nextIndex'.
-                return entry;
+            /**
+             * Returns the key at the current position.
+             */
+            @Override
+            protected String getKey() {
+                return KEYS[nextIndex - 1];
             }
-            throw new NoSuchElementException();
-        }
 
-        /**
-         * Unsupported operation, since this map is read-only.
-         */
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
+            /**
+             * Returns the value at the current position.
+             */
+            @Override
+            protected Object getValue() {
+                return value;
+            }
+        };
     }
 }

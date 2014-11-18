@@ -288,4 +288,28 @@ public class AbstractIdentifiedType implements IdentifiedType, Serializable {
         }
         return false;
     }
+
+    /**
+     * Returns the string representation of the given name, making sure that the name is non-null
+     * and the string non-empty. This method is used for checking argument validity.
+     *
+     * @param name      The name for which to get the string representation.
+     * @param container The feature or attribute which contains the named characteristics.
+     * @param argument  The name of the argument ({@code "properties"} or {@code "characterizedBy"}).
+     * @param index     Index of the characteristics having the given name.
+     * @throws IllegalArgumentException if the given name is null or have an empty string representation.
+     */
+    static String toString(final GenericName name, final IdentifiedType container, final String argument, final int index) {
+        short key = Errors.Keys.MissingValueForProperty_1;
+        if (name != null) {
+            final String s = name.toString();
+            if (!s.isEmpty()) {
+                return s;
+            }
+            key = Errors.Keys.EmptyProperty_1;
+        }
+        final StringBuilder b = new StringBuilder(40).append("Type[“").append(container.getName()).append("”].")
+                .append(argument).append('[').append(index).append("].name");
+        throw new IllegalArgumentException(Errors.format(key, b.toString()));
+    }
 }

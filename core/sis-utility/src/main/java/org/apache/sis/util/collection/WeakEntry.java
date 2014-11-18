@@ -95,9 +95,10 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
      */
     static <E> int count(final WeakEntry<E>[] table) {
         int n = 0;
-        for (int i=0; i<table.length; i++) {
-            for (WeakEntry<E> e=table[i]; e!=null; e=e.next) {
+        for (WeakEntry<E> e : table) {
+            while (e != null) {
                 n++;
+                e = e.next;
             }
         }
         return n;
@@ -159,8 +160,8 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
         final Class<?> entryType = oldTable.getClass().getComponentType();
         @SuppressWarnings("unchecked")
         final WeakEntry<E>[] table = (WeakEntry<E>[]) Array.newInstance(entryType, capacity);
-        for (int i=0; i<oldTable.length; i++) {
-            for (WeakEntry<E> next=oldTable[i]; next!=null;) {
+        for (WeakEntry<E> next : oldTable) {
+            while (next != null) {
                 final WeakEntry<E> e = next;
                 next = next.next; // We keep 'next' right now because its value will change.
                 final int index = e.hash % table.length;

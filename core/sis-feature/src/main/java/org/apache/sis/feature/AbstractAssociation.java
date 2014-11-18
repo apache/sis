@@ -34,6 +34,7 @@ import org.opengis.feature.FeatureAssociationRole;
 
 /**
  * An instance of an {@linkplain DefaultAssociationRole feature association role} containing the associated feature.
+ * {@code AbstractAssociation} can be instantiated by calls to {@link DefaultAssociationRole#newInstance()}.
  *
  * {@section Limitations}
  * <ul>
@@ -49,9 +50,9 @@ import org.opengis.feature.FeatureAssociationRole;
  * @version 0.5
  * @module
  *
- * @see DefaultAssociationRole
+ * @see DefaultAssociationRole#newInstance()
  */
-public abstract class AbstractAssociation extends Field<Feature> implements FeatureAssociation, Serializable {
+public abstract class AbstractAssociation extends Field<Feature> implements FeatureAssociation, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -78,6 +79,8 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      *
      * @param  role Information about the association.
      * @return The new association.
+     *
+     * @see DefaultAssociationRole#newInstance()
      */
     public static AbstractAssociation create(final FeatureAssociationRole role) {
         ArgumentChecks.ensureNonNull("role", role);
@@ -236,6 +239,21 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
             public void remove() {
                 throw new UnsupportedOperationException();
             }
-        });
+        }).toString();
+    }
+
+    /**
+     * Returns a copy of this association.
+     * The default implementation returns a <em>shallow</em> copy:
+     * the association {@linkplain #getValue() value} is <strong>not</strong> cloned.
+     * However subclasses may choose to do otherwise.
+     *
+     * @return A clone of this association.
+     * @throws CloneNotSupportedException if this association can not be cloned.
+     *         The default implementation never throw this exception. However subclasses may throw it.
+     */
+    @Override
+    public AbstractAssociation clone() throws CloneNotSupportedException {
+        return (AbstractAssociation) super.clone();
     }
 }
