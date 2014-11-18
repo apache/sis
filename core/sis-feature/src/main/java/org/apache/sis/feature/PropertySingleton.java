@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature;
 
+import java.util.List;
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -183,6 +184,37 @@ final class PropertySingleton<V> extends AbstractList<V> {
     public Object[] toArray() {
         final V element = property.getValue();
         return (element == null) ? new Object[0] : new Object[] {element};
+    }
+
+    /**
+     * Same contract than {@link AbstractList}, just slightly more efficient for this particular class.
+     */
+    @Override
+    public int hashCode() {
+        final V element = property.getValue();
+        final int hashCode = (element != null) ? 31 + element.hashCode() : 1;
+        assert hashCode == super.hashCode() : hashCode;
+        return hashCode;
+    }
+
+    /**
+     * Same contract than {@link AbstractList}, just slightly more efficient for this particular class.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other instanceof List<?>) {
+            final V element = property.getValue();
+            if (element == null) {
+                return ((List<?>) other).isEmpty();
+            } else {
+                final Iterator<?> it = ((List<?>) other).iterator();
+                return it.hasNext() && element.equals(it.next()) && !it.hasNext();
+            }
+        }
+        return false;
     }
 
     /**

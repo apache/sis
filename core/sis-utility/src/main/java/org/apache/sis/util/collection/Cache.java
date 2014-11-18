@@ -187,7 +187,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * A view over the entries in the cache.
      */
-    private transient Set<Entry<K,V>> entries;
+    private volatile transient Set<Entry<K,V>> entries;
 
     /**
      * Creates a new cache with a default initial capacity and cost limit of 100.

@@ -31,6 +31,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.FeatureAssociationRole;
 
 
@@ -383,6 +384,17 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     @Override
     public final int getMaximumOccurs() {
         return super.getMaximumOccurs();
+    }
+
+    /**
+     * Creates a new association instance of this role.
+     *
+     * @return A new association instance.
+     *
+     * @see AbstractAssociation#create(FeatureAssociationRole)
+     */
+    public FeatureAssociation newInstance() {
+        return AbstractAssociation.create(this);
     }
 
     /**

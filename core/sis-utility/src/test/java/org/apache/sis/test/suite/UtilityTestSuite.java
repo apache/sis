@@ -75,6 +75,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.collection.TreeTablesTest.class,
     org.apache.sis.util.collection.CodeListSetTest.class,
     org.apache.sis.internal.util.CollectionsExtTest.class,
+    org.apache.sis.internal.util.AbstractMapTest.class,
 
     // GeoAPI most basic types.
     org.apache.sis.internal.util.DefinitionURITest.class,
