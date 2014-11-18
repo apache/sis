@@ -32,6 +32,8 @@ import static org.apache.sis.test.Assert.*;
 
 /**
  * Tests {@link DefaultAttributeType}.
+ * This class does not test {@link DefaultAttributeType#characteristics()}.
+ * Characteristics are tested by {@link CharacteristicTypeMapTest} instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5

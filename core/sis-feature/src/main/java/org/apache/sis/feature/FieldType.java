@@ -160,7 +160,7 @@ abstract class FieldType extends AbstractIdentifiedType implements PropertyType 
      * @param valueType The name of value class (attribute), or the feature type name (association).
      * @param values    The actual values.
      */
-    static String toString(final String className, final PropertyType type, final Object valueType, final Iterator<?> values) {
+    static StringBuilder toString(final String className, final PropertyType type, final Object valueType, final Iterator<?> values) {
         final StringBuilder buffer = toString(className, type, valueType);
         if (values.hasNext()) {
             final Object value = values.next();
@@ -178,6 +178,6 @@ abstract class FieldType extends AbstractIdentifiedType implements PropertyType 
                 buffer.append('}');
             }
         }
-        return buffer.toString();
+        return buffer;
     }
 }

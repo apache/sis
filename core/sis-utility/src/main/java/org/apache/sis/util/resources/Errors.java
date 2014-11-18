@@ -81,6 +81,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotAddToExclusiveSet_2 = 0;
 
         /**
+         * Can not assign “{1}” to “{0}”.
+         */
+        public static final short CanNotAssign_2 = 167;
+
+        /**
          * Can not compute the derivative.
          */
         public static final short CanNotComputeDerivative = 1;
@@ -176,7 +181,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DuplicatedElement_1 = 16;
 
         /**
-         * Identifier “{0}” is duplicated.
+         * Name or identifier “{0}” is used more than once.
          */
         public static final short DuplicatedIdentifier_1 = 17;
 
@@ -679,7 +684,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ParameterNotFound_2 = 147;
 
         /**
-         * Property “{1}” is already exists in “{0}”.
+         * Property “{1}” already exists in “{0}”.
          */
         public static final short PropertyAlreadyExists_2 = 156;
 

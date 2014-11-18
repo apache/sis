@@ -16,8 +16,15 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Map;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.Serializable;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.InvalidObjectException;
+import java.io.IOException;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -32,13 +39,19 @@ import org.opengis.feature.AttributeType;
 
 /**
  * An instance of an {@linkplain DefaultAttributeType attribute type} containing the value of an attribute in a feature.
- * {@code Attribute} holds two main information:
+ * {@code Attribute} holds three main information:
  *
  * <ul>
- *   <li>A reference to an {@linkplain DefaultAttributeType attribute type}
+ *   <li>A {@linkplain #getType() reference to an attribute type}
  *       which define the base Java type and domain of valid values.</li>
- *   <li>A value, which may be a singleton ([0 … 1] cardinality) or multi-valued ([0 … ∞] cardinality).</li>
+ *   <li>One or more {@linkplain #getValues() values}, which may be a singleton ([0 … 1] cardinality)
+ *       or multi-valued ([0 … ∞] cardinality).</li>
+ *   <li>Optional {@linkplain #characteristics() characteristics} about the attribute
+ *       (e.g. a <var>temperature</var> attribute may have a characteristic holding the measurement <var>accuracy</var>).
+ *       Characteristics are often, but not necessarily, constant for all attributes of the same type in a dataset.</li>
  * </ul>
+ *
+ * {@code AbstractAttribute} can be instantiated by calls to {@link DefaultAttributeType#newInstance()}.
  *
  * {@section Limitations}
  * <ul>
@@ -57,9 +70,9 @@ import org.opengis.feature.AttributeType;
  * @version 0.5
  * @module
  *
- * @see DefaultAttributeType
+ * @see DefaultAttributeType#newInstance()
  */
-public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Serializable {
+public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -69,6 +82,21 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
     final AttributeType<V> type;
+
+    /**
+     * Other attributes that describes this attribute, or {@code null} if not yet created.
+     *
+     * <div class="note"><b>Design note:</b>
+     * We could question if it is a good idea to put this field here, given that this field add a slight cost
+     * to all attribute implementations while only a small fraction of them will want attribute characteristics.
+     * Since attributes may exist in a very large amount, that question may be significant.
+     * However {@link AbstractFeature} tries hard to not create {@code Attribute} instances at all (it tries to
+     * store only their value instead), so we presume that peoples who ask for {@code Attribute} instances are
+     * willing to accept their cost.</div>
+     *
+     * @see #characteristics()
+     */
+    private transient Map<String,Attribute<?>> characteristics;
 
     /**
      * Creates a new attribute of the given type.
@@ -88,6 +116,8 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * @param  <V>  The type of attribute values.
      * @param  type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      * @return The new attribute.
+     *
+     * @see DefaultAttributeType#newInstance()
      */
     public static <V> AbstractAttribute<V> create(final AttributeType<V> type) {
         ArgumentChecks.ensureNonNull("type", type);
@@ -110,6 +140,43 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
         return isSingleton(type.getMaximumOccurs())
                ? new SingletonAttribute<>(type, value)
                : new MultiValuedAttribute<>(type, value);
+    }
+
+    /**
+     * Invoked on serialization for saving the {@link #characteristics} field.
+     *
+     * @param  out The output stream where to serialize this attribute.
+     * @throws IOException If an I/O error occurred while writing.
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        final Attribute<?>[] characterizedBy;
+        if (characteristics instanceof CharacteristicMap) {
+            characterizedBy = characteristics.values().toArray(new Attribute<?>[characteristics.size()]);
+        } else {
+            characterizedBy = null;
+        }
+        out.writeObject(characterizedBy);
+    }
+
+    /**
+     * Invoked on deserialization for restoring the {@link #characteristics} field.
+     *
+     * @param  in The input stream from which to deserialize an attribute.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        try {
+            final Attribute<?>[] characterizedBy = (Attribute<?>[]) in.readObject();
+            if (characterizedBy != null) {
+                characteristics = newCharacteristicsMap();
+                characteristics.values().addAll(Arrays.asList(characterizedBy));
+            }
+        } catch (RuntimeException e) { // At least ClassCastException, NullPointerException, IllegalArgumentException and IllegalStateException.
+            throw (IOException) new InvalidObjectException(e.getMessage()).initCause(e);
+        }
     }
 
     /**
@@ -192,6 +259,112 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     }
 
     /**
+     * Other attributes that describes this attribute. For example if this attribute carries a measurement,
+     * then a characteristic of this attribute could be the measurement accuracy.
+     * See "<cite>Attribute characterization</cite>" in {@link DefaultAttributeType} Javadoc for more information.
+     *
+     * <p>The map returned by this method contains only the characteristics explicitely defined for this attribute.
+     * If the map contains no characteristic for a given name, a {@linkplain DefaultAttributeType#getDefaultValue()
+     * default value} may still exist.
+     * In such cases, callers may also need to inspect the {@link DefaultAttributeType#characteristics()}
+     * as shown in the <cite>Reading a characteristic</cite> section below.</p>
+     *
+     * <div class="note"><b>Rational:</b>
+     * Very often, all attributes of a given type in the same dataset have the same characteristics.
+     * For example it is very common that all temperature measurements in a dataset have the same accuracy,
+     * and setting a different accuracy for a single measurement is relatively rare.
+     * Consequently, {@code characteristics.isEmpty()} is a convenient way to check that an attribute have
+     * all the "standard" characteristics and need no special processing.</div>
+     *
+     * {@section Reading a characteristic}
+     * If an attribute is known to be a measurement with a characteristic named "accuracy" of type {@link Float},
+     * then the accuracy value could be read as below:
+     *
+     * {@preformat java
+     *     Float getAccuracy(Attribute<?> measurement) {
+     *         Attribute<?> accuracy = measurement.characteristics().get("accuracy");
+     *         if (accuracy != null) {
+     *             return (Float) accuracy.getValue(); // Value may be null.
+     *         } else {
+     *             return (Float) measurement.getType().characteristics().get("accuracy").getDefaultValue();
+     *             // A more sophisticated implementation would probably cache the default value somewhere.
+     *         }
+     *     }
+     * }
+     *
+     * {@section Adding a characteristic}
+     * A new characteristic can be added in the map in three different ways:
+     * <ol>
+     *   <li>Putting the (<var>name</var>, <var>characteristic</var>) pair explicitely.
+     *     If an older characteristic existed for that name, it will be replaced.
+     *     Example:
+     *
+     *     {@preformat java
+     *       Attribute<?> accuracy = ...; // To be created by the caller.
+     *       characteristics.put("accuracy", accuracy);
+     *     }</li>
+     *
+     *   <li>Adding the new characteristic to the {@linkplain Map#values() values} collection.
+     *     The name is inferred automatically from the characteristic type.
+     *     If an older characteristic existed for the same name, an {@link IllegalStateException} will be thrown.
+     *     Example:
+     *
+     *     {@preformat java
+     *       Attribute<?> accuracy = ...; // To be created by the caller.
+     *       characteristics.values().add(accuracy);
+     *     }</li>
+     *
+     *   <li>Adding the characteristic name to the {@linkplain Map#keySet() key set}.
+     *     If no characteristic existed for that name, a default one will be created.
+     *     Example:
+     *
+     *     {@preformat java
+     *       characteristics.keySet().add("accuracy"); // Ensure that an entry will exist for that name.
+     *       Attribute<?> accuracy = characteristics.get("accuracy");
+     *       Features.cast(accuracy, Float.class).setValue(...); // Set new accuracy value here as a float.
+     *     }</li>
+     * </ol>
+     *
+     * @return Other attribute types that describes this attribute type, or an empty set if none.
+     *
+     * @see DefaultAttributeType#characteristics()
+     */
+    public Map<String,Attribute<?>> characteristics() {
+        if (characteristics == null) {
+            characteristics = newCharacteristicsMap();
+        }
+        return characteristics;
+    }
+
+    /**
+     * Creates an initially empty map of characteristics for this attribute.
+     * This method does not store the new map in the {@link #characteristics} field;
+     * it is caller responsibility to do so if desired.
+     */
+    private Map<String,Attribute<?>> newCharacteristicsMap() {
+        if (type instanceof DefaultAttributeType<?>) {
+            Map<String, AttributeType<?>> map = ((DefaultAttributeType<?>) type).characteristics();
+            if (!map.isEmpty()) {
+                if (!(map instanceof CharacteristicTypeMap)) {
+                    final Collection<AttributeType<?>> types = map.values();
+                    map = CharacteristicTypeMap.create(type, types.toArray(new AttributeType<?>[types.size()]));
+                }
+                return new CharacteristicMap(this, (CharacteristicTypeMap) map);
+            }
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Returns the characteristics, or an empty map if the characteristics have not yet been built.
+     * Contrarily to {@link #characteristics()}, this method does not create the map. This method
+     * is suitable when then caller only wants to read the map and does not plan to write anything.
+     */
+    final Map<String,Attribute<?>> characteristicsReadOnly() {
+        return (characteristics != null) ? characteristics : Collections.<String,Attribute<?>>emptyMap();
+    }
+
+    /**
      * Evaluates the quality of this attribute at this method invocation time. The data quality reports
      * may include information about whether the attribute value mets the constraints defined by the
      * {@linkplain DefaultAttributeType attribute type}, or any other criterion at implementation choice.
@@ -268,12 +441,50 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Returns a string representation of this attribute.
      * The returned string is for debugging purpose and may change in any future SIS version.
+     * The current implementation is like below:
+     *
+     * {@preformat text
+     *     Attribute[“temperature” : Float] = {20.3, 17.8, 21.1}
+     *     └─ characteristics: units=°C, accuracy=0.1
+     * }
      *
      * @return A string representation of this attribute for debugging purpose.
      */
     @Debug
     @Override
     public String toString() {
-        return FieldType.toString("Attribute", type, Classes.getShortName(type.getValueClass()), getValues().iterator());
+        final StringBuilder buffer = FieldType.toString("Attribute", type,
+                Classes.getShortName(type.getValueClass()), getValues().iterator());
+        if (characteristics != null && !characteristics.isEmpty()) {
+            buffer.append(System.lineSeparator());
+            String separator = "└─ characteristics: ";
+            for (final Map.Entry<String,Attribute<?>> entry : characteristics.entrySet()) {
+                buffer.append(separator).append(entry.getKey()).append('=').append(entry.getValue().getValue());
+                separator = ", ";
+            }
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Returns a copy of this attribute.
+     * The default implementation returns a <em>shallow</em> copy:
+     * the attribute {@linkplain #getValue() value} and {@linkplain #characteristics() characteristics}
+     * are <strong>not</strong> cloned.
+     * However subclasses may choose to do otherwise.
+     *
+     * @return A clone of this attribute.
+     * @throws CloneNotSupportedException if this attribute, the {@linkplain #getValue() value}
+     *         or one of its {@linkplain #characteristics() characteristics} can not be cloned.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public AbstractAttribute<V> clone() throws CloneNotSupportedException {
+        final AbstractAttribute<V> clone = (AbstractAttribute<V>) super.clone();
+        final Map<String,Attribute<?>> c = clone.characteristics;
+        if (c instanceof CharacteristicMap) {
+            clone.characteristics = ((CharacteristicMap) c).clone();
+        }
+        return clone;
     }
 }

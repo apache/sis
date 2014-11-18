@@ -31,6 +31,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.AbstractMapEntry;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -199,7 +200,7 @@ public class DefaultRecord implements Record, Serializable {
      * Operations on this entry delegate to {@link DefaultRecord#locate(MemberName)}
      * and {@link DefaultRecord#set(MemberName, Object)} methods.
      */
-    private final class Entry implements Map.Entry<MemberName,Object> {
+    private final class Entry extends AbstractMapEntry<MemberName,Object> {
         /** Index of the record member represented by this entry. */
         private final int index;
 
