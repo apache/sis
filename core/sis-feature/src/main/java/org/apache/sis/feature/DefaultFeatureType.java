@@ -354,7 +354,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         int index = -1;
         for (final PropertyType property : source.getProperties(false)) {
             ArgumentChecks.ensureNonNullElement("properties", ++index, property);
-            final String name = toString(property.getName(), source, index);
+            final String name = toString(property.getName(), source, "properties", index);
             final PropertyType previous = byName.put(name, property);
             if (previous != null) {
                 if (!isAssignableIgnoreName(previous, property)) {
@@ -382,33 +382,6 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             }
         }
         return null;
-    }
-
-    /**
-     * Returns the string representation of the given name, making sure that the name is non-null
-     * and the string non-empty. This method is used for checking argument validity.
-     *
-     * <p>{@code this} shall be the instance in process of being created, not any other instance.</p>
-     *
-     * @param name   The name for which to get the string representation.
-     * @param source The feature which contains the property (typically {@code this}).
-     * @param index  Index of the property having the given name.
-     */
-    private String toString(final GenericName name, final FeatureType source, final int index) {
-        short key = Errors.Keys.MissingValueForProperty_1;
-        if (name != null) {
-            final String s = name.toString();
-            if (!s.isEmpty()) {
-                return s;
-            }
-            key = Errors.Keys.EmptyProperty_1;
-        }
-        final StringBuilder b = new StringBuilder(30);
-        if (source != this) {
-            b.append(source.getName()).append('.');
-        }
-        throw new IllegalArgumentException(Errors.format(key,
-                b.append("properties[").append(index).append("].name").toString()));
     }
 
     /**

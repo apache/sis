@@ -293,22 +293,17 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
 
     /**
      * Checks if this {@code WeakValueHashMap} is valid. This method counts the number of elements
-     * and compares it to {@link #count}. If the check fails, the number of elements is corrected
-     * (if we didn't, an {@link AssertionError} would be thrown for every operations after the first
-     * error, which make debugging more difficult). The set is otherwise unchanged, which should
-     * help to get similar behavior as if assertions hasn't been turned on.
+     * and compares it to {@link #count}. This method is invoked in assertions only.
      */
     @Debug
     final boolean isValid() {
-        assert Thread.holdsLock(this);
-        assert count <= upperCapacityThreshold(table.length);
-        final int n = count(table);
-        if (n != count) {
-            count = n;
-            return false;
-        } else {
-            return true;
+        if (!Thread.holdsLock(this)) {
+            throw new AssertionError();
         }
+        if (count > upperCapacityThreshold(table.length)) {
+            throw new AssertionError(count);
+        }
+        return count(table) == count;
     }
 
     /**
@@ -520,12 +515,13 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
                 final Map.Entry<K,V>[] elements = new Map.Entry[size()];
                 int index = 0;
                 final Entry[] table = WeakValueHashMap.this.table;
-                for (int i=0; i<table.length; i++) {
-                    for (Entry el=table[i]; el!=null; el=(Entry) el.next) {
+                for (Entry el : table) {
+                    while (el != null) {
                         final Map.Entry<K,V> entry = new SimpleEntry<K,V>(el);
                         if (entry.getValue() != null) {
                             elements[index++] = entry;
                         }
+                        el= (Entry) el.next;
                     }
                 }
                 return ArraysExt.resize(elements, index);

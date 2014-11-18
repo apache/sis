@@ -49,7 +49,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @see DefaultAssociationRole
  */
-final class MultiValuedAssociation extends AbstractAssociation implements Cloneable {
+final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * For cross-version compatibility.
      */
@@ -144,14 +144,11 @@ final class MultiValuedAssociation extends AbstractAssociation implements Clonea
 
     /**
      * Returns a copy of this association.
-     * The default implementation returns a <em>shallow</em> copy:
+     * This implementation returns a <em>shallow</em> copy:
      * the association {@linkplain #getValues() values} are <strong>not</strong> cloned.
-     * However subclasses may choose to do otherwise.
      *
      * @return A clone of this association.
      * @throws CloneNotSupportedException if this association can not be cloned.
-     *         The default implementation never throw this exception. However subclasses may throw it,
-     *         for example on attempt to clone the association values.
      */
     @Override
     @SuppressWarnings("unchecked")
