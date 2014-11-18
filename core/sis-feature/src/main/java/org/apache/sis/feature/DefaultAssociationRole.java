@@ -393,6 +393,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *
      * @see AbstractAssociation#create(FeatureAssociationRole)
      */
+    @Override
     public FeatureAssociation newInstance() {
         return AbstractAssociation.create(this);
     }
