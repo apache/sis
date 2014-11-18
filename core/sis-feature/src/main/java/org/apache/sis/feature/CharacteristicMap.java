@@ -17,8 +17,6 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -187,7 +185,7 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
      * @param index Index of the expected attribute type.
      * @param type  The actual attribute type.
      */
-    private void verifyAttributeType(final int index, final AttributeType<?> type) {
+    final void verifyAttributeType(final int index, final AttributeType<?> type) {
         final AttributeType<?> expected = types.characterizedBy[index];
         if (!expected.equals(type)) {
             final GenericName en = expected.getName();
@@ -270,51 +268,45 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
      * Returns an iterator over the entries.
      */
     @Override
-    protected Iterator<Map.Entry<String, Attribute<?>>> entryIterator() {
+    protected EntryIterator<String, Attribute<?>> entryIterator() {
         if (characterizedBy == null) {
             return null;
         }
-        return new Iterator<Map.Entry<String, Attribute<?>>>() {
-            /** Index of the next element to return in the iteration. */
-            private int index;
+        return new EntryIterator<String, Attribute<?>>() {
+            /** Index of the current element to return in the iteration. */
+            private int index = -1;
 
-            /** The next element to return, or {@code null} if we reached the end of iteration. */
-            private Attribute<?> next;
-
-            /** Index of the element returned by the last call to {@link #next()}, or -1 if none. */
-            private int previous = -1;
+            /** The element to return, or {@code null} if we reached the end of iteration. */
+            private Attribute<?> value;
 
             /** Returns {@code true} if there is more entries in the iteration. */
-            @Override
-            public boolean hasNext() {
-                while (index < characterizedBy.length) {
-                    next = characterizedBy[index];
-                    if (next != null) return true;
-                    index++;
+            @Override protected boolean next() {
+                while (++index < characterizedBy.length) {
+                    value = characterizedBy[index];
+                    if (value != null) return true;
                 }
-                next = null;
+                value = null;
                 return false;
             }
 
+            /** Returns the name of the attribute characteristic. */
+            @Override protected String getKey() {
+                return value.getType().getName().toString();
+            }
+
+            /** Returns the attribute characteristic (never {@code null}). */
+            @Override protected Attribute<?> getValue() {
+                return value;
+            }
+
             /** Creates and return the next entry. */
-            @Override
-            public Map.Entry<String, Attribute<?>> next() {
-                if (hasNext()) {
-                    return new Entry(previous = index++, next);
-                } else {
-                    throw new NoSuchElementException();
-                }
+            @Override protected Map.Entry<String, Attribute<?>> getEntry() {
+                return new Entry(index, value);
             }
 
             /** Removes the last element returned by {@link #next()}. */
-            @Override
-            public void remove() {
-                if (previous >= 0) {
-                    characterizedBy[previous] = null;
-                    previous = -1;
-                } else {
-                    throw new IllegalStateException();
-                }
+            @Override protected void remove() {
+                characterizedBy[index] = null;
             }
         };
     }
@@ -338,20 +330,17 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
         }
 
         /** Returns the name of the attribute characteristic. */
-        @Override
-        public String getKey() {
+        @Override public String getKey() {
             return value.getType().getName().toString();
         }
 
         /** Returns the attribute characteristic (never {@code null}). */
-        @Override
-        public Attribute<?> getValue() {
+        @Override public Attribute<?> getValue() {
             return value;
         }
 
         /** Sets the attribute characteristic. */
-        @Override
-        public Attribute<?> setValue(final Attribute<?> value) {
+        @Override public Attribute<?> setValue(final Attribute<?> value) {
             ArgumentChecks.ensureNonNull("value", value);
             verifyAttributeType(index, value.getType());
             final Attribute<?> previous = this.value;

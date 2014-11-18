@@ -284,15 +284,49 @@ public final strictfp class CharacteristicMapTest extends TestCase {
     }
 
     /**
+     * Sets the accuracy characteristic in the given attribute.
+     *
+     * @param temperature The attribute where to set the accuracy.
+     * @param isFirstTime {@code true} if the accuracy value is set for the first time.
+     * @param value       The new accuracy value.
+     */
+    private static void setAccuracy(final AbstractAttribute<Float> temperature, final boolean isFirstTime, final float value) {
+        assertEquals("keySet.add", isFirstTime, temperature.characteristics().keySet().add("accuracy"));
+        final Attribute<Float> accuracy = Features.cast(temperature.characteristics().get("accuracy"), Float.class);
+        accuracy.setValue(value);
+    }
+
+    /**
+     * Tests {@link CharacteristicMap#equals(Object)} and (opportunistically) {@link CharacteristicMap#clone()}
+     */
+    @Test
+    @DependsOnMethod("testAddKey")
+    public void testEquals() {
+        final AbstractAttribute<Float> t1 = temperature();
+        final AbstractAttribute<Float> t2 = temperature();
+        assertEquals("equals",   t1, t2);
+        assertEquals("hashCode", t1.hashCode(), t2.hashCode());
+        setAccuracy(t1, true, 0.2f);
+        assertFalse("equals",   t1.equals(t2));
+        assertFalse("equals",   t2.equals(t1));
+        assertFalse("hashCode", t1.hashCode() == t2.hashCode());
+        setAccuracy(t2, true, 0.3f);
+        assertFalse("equals",   t1.equals(t2));
+        assertFalse("equals",   t2.equals(t1));
+        assertFalse("hashCode", t1.hashCode() == t2.hashCode());
+        setAccuracy(t1, false, 0.3f);
+        assertEquals("equals",   t1, t2);
+        assertEquals("hashCode", t1.hashCode(), t2.hashCode());
+    }
+
+    /**
      * Tests the reconstruction of {@link CharacteristicTypeMap} after serialization.
      */
     @Test
-    @DependsOnMethod("testAddValue") // Implementation of readObject use values().addAll(...).
+    @DependsOnMethod({"testEquals", "testAddValue"}) // Implementation of readObject use values().addAll(...).
     public void testSerialization() {
         final AbstractAttribute<Float> temperature = temperature();
-        assertTrue(temperature.characteristics().keySet().add("accuracy"));
-        final Attribute<Float> accuracy = Features.cast(temperature.characteristics().get("accuracy"), Float.class);
-        accuracy.setValue(0.2f);
+        setAccuracy(temperature, true, 0.2f);
 
         final AbstractAttribute<Float> unserialized = assertSerializedEquals(temperature);
         assertNotSame(temperature, unserialized);
