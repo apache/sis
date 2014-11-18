@@ -18,10 +18,7 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import org.apache.sis.internal.util.AbstractMap;
-import org.apache.sis.internal.util.AbstractMapEntry;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakValueHashMap;
@@ -169,51 +166,41 @@ final class CharacteristicTypeMap extends AbstractMap<String,AttributeType<?>> {
      * This is not the iterator returned by public API like {@code Map.entrySet().iterator()}.
      */
     @Override
-    protected Iterator<Entry<String, AttributeType<?>>> entryIterator() {
-        return new Iter();
-    }
+    protected EntryIterator<String, AttributeType<?>> entryIterator() {
+        return new EntryIterator<String, AttributeType<?>>() {
+            /** Index of the next element to return in the iteration. */
+            private int index;
 
-    /**
-     * Iterator over the {@link CharacteristicTypeMap} entries. The entries returned by this method are always
-     * {@code this} (in order to avoid temporary objects creation), which is sufficient for {@link AbstractMap}
-     * needs. This is not the iterator returned by public API like {@code Map.entrySet().iterator()}.
-     */
-    private final class Iter extends AbstractMapEntry<String, AttributeType<?>>
-            implements Iterator<Entry<String, AttributeType<?>>>
-    {
-        /** Index of the next element to return in the iteration. */
-        private int index;
+            /** Value of current entry. */
+            private AttributeType<?> value;
 
-        /** Value of current entry. */
-        private AttributeType<?> value;
-
-        /** Creates a new iterator. */
-        Iter() {
-        }
-
-        /** Returns {@code true} if there is more entries in the iteration. */
-        @Override public boolean hasNext() {
-            return index < characterizedBy.length;
-        }
-
-        /** Creates and return the next entry. */
-        @Override public Entry<String, AttributeType<?>> next() {
-            if (hasNext()) {
-                value = characterizedBy[index++];
-                return this;
-            } else {
-                throw new NoSuchElementException();
+            /**
+             * Returns {@code true} if there is more entries in the iteration.
+             */
+            @Override
+            protected boolean next() {
+                if (index < characterizedBy.length) {
+                    value = characterizedBy[index++];
+                    return true;
+                }
+                return false;
             }
-        }
 
-        /** Returns the attribute characteristic name. */
-        @Override public String getKey() {
-            return value.getName().toString();
-        }
+            /**
+             * Returns the attribute characteristic name.
+             */
+            @Override
+            protected String getKey() {
+                return value.getName().toString();
+            }
 
-        /** Returns the attribute characteristic contained in this entry. */
-        @Override public AttributeType<?> getValue() {
-            return value;
-        }
+            /**
+             * Returns the attribute characteristic contained in this entry.
+             */
+            @Override
+            protected AttributeType<?> getValue() {
+                return value;
+            }
+        };
     }
 }
