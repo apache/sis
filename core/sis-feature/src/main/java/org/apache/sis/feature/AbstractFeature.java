@@ -381,7 +381,7 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Verifies if the given properties can be assigned to this feature.
+     * Verifies if the given property can be assigned to this feature.
      *
      * @param name Shall be {@code property.getName().toString()}.
      * @param property The property to verify.
@@ -396,7 +396,9 @@ public abstract class AbstractFeature implements Serializable {
             throw illegalPropertyType(base.getName(), property.getClass());
         }
         if (pt != base) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, name));
+            throw new IllegalArgumentException(base == null
+                    ? Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name)
+                    : Errors.format(Errors.Keys.MismatchedPropertyType_1, name));
         }
     }
 

@@ -140,7 +140,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
     @DependsOnMethod("testEquals")
     public void testClone() throws CloneNotSupportedException {
         final MultiValuedAttribute<Integer> a1 = population();
-        final MultiValuedAttribute<Integer> a2 = a1.clone();
+        final    AbstractAttribute<Integer> a2 = a1.clone();
         assertNotSame(a1, a2);
         SingletonAttributeTest.testEquals(a1, a2);
     }

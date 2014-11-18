@@ -39,7 +39,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @see DefaultAssociationRole
  */
-final class SingletonAssociation extends AbstractAssociation implements Cloneable {
+final class SingletonAssociation extends AbstractAssociation {
     /**
      * For cross-version compatibility.
      */
@@ -97,21 +97,6 @@ final class SingletonAssociation extends AbstractAssociation implements Cloneabl
             ensureValid(role.getValueType(), value.getType());
         }
         this.value = value;
-    }
-
-    /**
-     * Returns a copy of this association.
-     * The default implementation returns a <em>shallow</em> copy:
-     * the association {@linkplain #getValue() value} is <strong>not</strong> cloned.
-     * However subclasses may choose to do otherwise.
-     *
-     * @return A clone of this association.
-     * @throws CloneNotSupportedException if this association can not be cloned.
-     *         The default implementation never throw this exception. However subclasses may throw it.
-     */
-    @Override
-    public SingletonAssociation clone() throws CloneNotSupportedException {
-        return (SingletonAssociation) super.clone();
     }
 
     /**

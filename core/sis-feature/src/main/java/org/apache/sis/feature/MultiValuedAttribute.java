@@ -47,7 +47,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see DefaultAttributeType
  */
-final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Cloneable {
+final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
     /**
      * For cross-version compatibility.
      */
@@ -147,18 +147,15 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
 
     /**
      * Returns a copy of this attribute.
-     * The default implementation returns a <em>shallow</em> copy:
+     * This implementation returns a <em>shallow</em> copy:
      * the attribute {@linkplain #getValues() values} are <strong>not</strong> cloned.
-     * However subclasses may choose to do otherwise.
      *
      * @return A clone of this attribute.
      * @throws CloneNotSupportedException if this attribute can not be cloned.
-     *         The default implementation never throw this exception. However subclasses may throw it,
-     *         for example on attempt to clone the attribute values.
      */
     @Override
     @SuppressWarnings("unchecked")
-    public MultiValuedAttribute<V> clone() throws CloneNotSupportedException {
+    public AbstractAttribute<V> clone() throws CloneNotSupportedException {
         final MultiValuedAttribute<V> clone = (MultiValuedAttribute<V>) super.clone();
         clone.values = (CheckedArrayList<V>) clone.values.clone();
         return clone;
@@ -171,7 +168,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
      */
     @Override
     public int hashCode() {
-        return type.hashCode() + values.hashCode();
+        return type.hashCode() + values.hashCode() + characteristicsReadOnly().hashCode();
     }
 
     /**
@@ -186,7 +183,8 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
         }
         if (obj instanceof MultiValuedAttribute<?>) {
             final MultiValuedAttribute<?> that = (MultiValuedAttribute<?>) obj;
-            return type.equals(that.type) && values.equals(that.values);
+            return type.equals(that.type) && values.equals(that.values) &&
+                   characteristicsReadOnly().equals(that.characteristicsReadOnly());
         }
         return false;
     }
