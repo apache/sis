@@ -306,6 +306,7 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      *
      * @see AbstractAttribute#create(AttributeType)
      */
+    @Override
     public Attribute<V> newInstance() {
         return AbstractAttribute.create(this);
     }

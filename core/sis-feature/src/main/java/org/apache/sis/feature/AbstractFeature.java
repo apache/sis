@@ -194,9 +194,9 @@ public abstract class AbstractFeature implements Feature, Serializable {
     final Property createProperty(final String name) throws IllegalArgumentException {
         final PropertyType pt = type.getProperty(name);
         if (pt instanceof AttributeType<?>) {
-            return AbstractAttribute.create((AttributeType<?>) pt);
+            return ((AttributeType<?>) pt).newInstance();
         } else if (pt instanceof FeatureAssociationRole) {
-            return AbstractAssociation.create((FeatureAssociationRole) pt);
+            return ((FeatureAssociationRole) pt).newInstance();
         } else {
             throw unsupportedPropertyType(pt.getName());
         }

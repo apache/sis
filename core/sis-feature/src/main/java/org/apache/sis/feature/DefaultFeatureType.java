@@ -682,6 +682,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * @return A new feature instance.
      * @throws IllegalStateException if this feature type {@linkplain #isAbstract() is abstract}.
      */
+    @Override
     public Feature newInstance() throws IllegalStateException {
         if (isAbstract) {
             throw new IllegalStateException(Errors.format(Errors.Keys.AbstractType_1, getName()));
