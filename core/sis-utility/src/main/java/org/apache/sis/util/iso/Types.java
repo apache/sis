@@ -512,10 +512,9 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the code of the given type that matches the given name, or optionally returns a new
-     * one if none match it. This method performs the same work than the GeoAPI {@code valueOf(…)}
-     * method, except that this method is more tolerant on string comparisons when looking for an
-     * existing code:
+     * Returns the enumeration value of the given type that matches the given name, or {@code null} if none.
+     * This method is similar to the standard {@code Enum.valueOf(…)} method, except that this method is more
+     * tolerant on string comparisons:
      *
      * <ul>
      *   <li>Name comparisons are case-insensitive.</li>
@@ -523,8 +522,64 @@ public final class Types extends Static {
      *       Spaces and punctuation characters like {@code '_'} and {@code '-'} are ignored.</li>
      * </ul>
      *
-     * If no match is found, then a new code is created only if the {@code canCreate} argument is
-     * {@code true}. Otherwise this method returns {@code null}.
+     * If there is no match, this method returns {@code null} — it does not thrown an exception,
+     * unless the given class is not an enumeration.
+     *
+     * @param <T>      The compile-time type given as the {@code enumType} parameter.
+     * @param enumType The type of enumeration.
+     * @param name     The name of the enumeration value to obtain, or {@code null}.
+     * @return A value matching the given name, or {@code null} if the name is null
+     *         or if no matching enumeration is found.
+     *
+     * @see Enum#valueOf(Class, String)
+     *
+     * @since 0.5
+     */
+    public static <T extends Enum<T>> T forEnumName(final Class<T> enumType, String name) {
+        name = CharSequences.trimWhitespaces(name);
+        if (name != null && !name.isEmpty()) try {
+            return Enum.valueOf(enumType, name);
+        } catch (IllegalArgumentException e) {
+            final Enum<?>[] values;
+            try {
+                values = (Enum<?>[]) enumType.getMethod("values", (Class[]) null).invoke((Object[]) null);
+            } catch (ReflectiveOperationException | ClassCastException r) {
+                // Should never happen, except if 'enumType' is not an Enum.
+                e.addSuppressed(r);
+                throw e;
+            }
+            if (values instanceof Enumerated[]) {
+                for (final Enumerated code : (Enumerated[]) values) {
+                    for (final String candidate : code.names()) {
+                        if (CodeListFilter.accept(candidate, name)) {
+                            return enumType.cast(code);
+                        }
+                    }
+                }
+            } else {
+                for (final Enum<?> code : values) {
+                    if (CodeListFilter.accept(code.name(), name)) {
+                        return enumType.cast(code);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the code of the given type that matches the given name, or optionally returns a new one if none
+     * match the name. This method performs the same work than the GeoAPI {@code CodeList.valueOf(…)} method,
+     * except that this method is more tolerant on string comparisons when looking for an existing code:
+     *
+     * <ul>
+     *   <li>Name comparisons are case-insensitive.</li>
+     *   <li>Only {@linkplain Character#isLetterOrDigit(int) letter and digit} characters are compared.
+     *       Spaces and punctuation characters like {@code '_'} and {@code '-'} are ignored.</li>
+     * </ul>
+     *
+     * If no match is found, then a new code is created only if the {@code canCreate} argument is {@code true}.
+     * Otherwise this method returns {@code null}.
      *
      * @param <T>        The compile-time type given as the {@code codeType} parameter.
      * @param codeType   The type of code list.

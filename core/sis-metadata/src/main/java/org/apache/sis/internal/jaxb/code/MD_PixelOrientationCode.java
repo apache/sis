@@ -18,8 +18,7 @@ package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.PixelOrientation;
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
 
 
 /**
@@ -29,12 +28,16 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
  *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.5
  * @module
  */
-public final class MD_PixelOrientationCode
-        extends CodeListAdapter<MD_PixelOrientationCode, PixelOrientation>
-{
+public final class MD_PixelOrientationCode extends EnumAdapter<MD_PixelOrientationCode, PixelOrientation> {
+    /**
+     * The enumeration value.
+     */
+    @XmlElement(name = "MD_PixelOrientationCode")
+    private String value;
+
     /**
      * Empty constructor for JAXB only.
      */
@@ -42,57 +45,29 @@ public final class MD_PixelOrientationCode
     }
 
     /**
-     * Creates a new adapter for the given proxy.
-     */
-    private MD_PixelOrientationCode(final CodeListProxy proxy) {
-        super(proxy);
-    }
-
-    /**
-     * {@inheritDoc}
+     * Returns the wrapped value.
      *
-     * @return The wrapper for the code list value.
+     * @param wrapper The wrapper.
+     * @return The wrapped value.
      */
     @Override
-    protected MD_PixelOrientationCode wrap(CodeListProxy proxy) {
-        return new MD_PixelOrientationCode(proxy);
+    public final PixelOrientation unmarshal(final MD_PixelOrientationCode wrapper) {
+        return PixelOrientation.valueOf(name(wrapper.value));
     }
 
     /**
-     * {@inheritDoc}
+     * Wraps the given value.
      *
-     * @return The code list class.
+     * @param  e The value to wrap.
+     * @return The wrapped value.
      */
     @Override
-    protected Class<PixelOrientation> getCodeListClass() {
-        return PixelOrientation.class;
-    }
-
-    /**
-     * Returns {@code true} since this code list is actually an enum.
-     */
-    @Override
-    protected boolean isEnum() {
-        return true;
-    }
-
-    /**
-     * Invoked by JAXB on marshalling.
-     *
-     * @return The value to be marshalled.
-     */
-    @Override
-    @XmlElement(name = "MD_PixelOrientationCode")
-    public CodeListProxy getElement() {
-        return proxy;
-    }
-
-    /**
-     * Invoked by JAXB on unmarshalling.
-     *
-     * @param proxy The unmarshalled value.
-     */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public final MD_PixelOrientationCode marshal(final PixelOrientation e) {
+        if (e == null) {
+            return null;
+        }
+        final MD_PixelOrientationCode wrapper = new MD_PixelOrientationCode();
+        wrapper.value = value(e);
+        return wrapper;
     }
 }

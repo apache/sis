@@ -804,9 +804,9 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnknownCommand_1 = 113;
 
         /**
-         * Unknown enumeration value: {0}.
+         * “{1}” is not a known or supported value for the ‘{0}’ enumeration.
          */
-        public static final short UnknownEnumValue_1 = 114;
+        public static final short UnknownEnumValue_2 = 114;
 
         /**
          * Format of “{0}” is not recognized.

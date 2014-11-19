@@ -21,7 +21,8 @@ import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Collection;
-import org.opengis.metadata.spatial.PixelOrientation;
+import java.lang.annotation.ElementType;
+import org.opengis.metadata.citation.OnLineFunction;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.test.DependsOn;
@@ -39,7 +40,7 @@ import static org.apache.sis.internal.converter.SystemRegistry.INSTANCE;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(ConverterRegistryTest.class)
@@ -64,10 +65,27 @@ public final strictfp class SystemRegistryTest extends TestCase {
      */
     @Test
     public void testStringCodeList() {
-        final ObjectConverter<String, PixelOrientation> c1 = INSTANCE.findExact(String.class, PixelOrientation.class);
-        final ObjectConverter<PixelOrientation, String> c2 = INSTANCE.findExact(PixelOrientation.class, String.class);
-        assertInstanceOf("PixelOrientation ← String", StringConverter.CodeList.class, c1);
-        assertInstanceOf("String ← PixelOrientation", ObjectToString.CodeList.class,  c2);
+        final ObjectConverter<String, OnLineFunction> c1 = INSTANCE.findExact(String.class, OnLineFunction.class);
+        final ObjectConverter<OnLineFunction, String> c2 = INSTANCE.findExact(OnLineFunction.class, String.class);
+        assertInstanceOf("OnLineFunction ← String", StringConverter.CodeList.class, c1);
+        assertInstanceOf("String ← OnLineFunction", ObjectToString.CodeList.class,  c2);
+        assertSame("inverse()", c2, c1.inverse());
+        assertSame("inverse()", c1, c2.inverse());
+        assertSame(c1, assertSerializedEquals(c1));
+        assertSame(c2, assertSerializedEquals(c2));
+    }
+
+    /**
+     * Tests the creation of an enum converter.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testStringEnum() {
+        final ObjectConverter<String, ElementType> c1 = INSTANCE.findExact(String.class, ElementType.class);
+        final ObjectConverter<ElementType, String> c2 = INSTANCE.findExact(ElementType.class, String.class);
+        assertInstanceOf("ElementType ← String", StringConverter.Enum.class, c1);
+        assertInstanceOf("String ← ElementType", ObjectToString.Enum.class,  c2);
         assertSame("inverse()", c2, c1.inverse());
         assertSame("inverse()", c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));

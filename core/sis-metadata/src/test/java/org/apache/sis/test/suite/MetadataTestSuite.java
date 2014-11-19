@@ -51,6 +51,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.AbstractMetadataTest.class,
 
     // XML marshalling.
+    org.apache.sis.internal.jaxb.code.EnumMarshallingTest.class,
     org.apache.sis.internal.jaxb.code.CodeListMarshallingTest.class,
     org.apache.sis.internal.jaxb.code.PT_LocaleTest.class,
     org.apache.sis.xml.FreeTextMarshallingTest.class,
