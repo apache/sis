@@ -540,12 +540,8 @@ public final class Types extends Static {
         if (name != null && !name.isEmpty()) try {
             return Enum.valueOf(enumType, name);
         } catch (IllegalArgumentException e) {
-            final Enum<?>[] values;
-            try {
-                values = (Enum<?>[]) enumType.getMethod("values", (Class[]) null).invoke((Object[]) null);
-            } catch (ReflectiveOperationException | ClassCastException r) {
-                // Should never happen, except if 'enumType' is not an Enum.
-                e.addSuppressed(r);
+            final T[] values = enumType.getEnumConstants();
+            if (values == null) {
                 throw e;
             }
             if (values instanceof Enumerated[]) {
