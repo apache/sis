@@ -17,11 +17,9 @@
 package org.apache.sis.metadata;
 
 import java.util.Arrays;
-import java.util.Collections;
 import javax.measure.unit.SI;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
@@ -32,7 +30,6 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
-import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
 import org.apache.sis.test.DependsOn;
@@ -180,34 +177,29 @@ public final strictfp class TreeTableFormatTest extends TestCase {
 
     /**
      * Tests the formatting of a {@link DefaultDataIdentification} object with custom code list elements
-     * Note that adding enumeration values is normally not allowed, so a future version of this test may
-     * need to change the code type.
      */
     @Test
     public void testTreeWithCustomElements() {
-        final DefaultKeywords keywords = new DefaultKeywords();
-        keywords.setKeywords(Arrays.asList(
+        final DefaultCitation citation = new DefaultCitation();
+        citation.setAlternateTitles(Arrays.asList(
                 new SimpleInternationalString("Apple"),
                 new SimpleInternationalString("Orange"),
                 new SimpleInternationalString("Kiwi")));
 
-        final DefaultDataIdentification identification = new DefaultDataIdentification();
-        identification.setDescriptiveKeywords(Collections.singleton(keywords));
-        identification.setTopicCategories(Arrays.asList(
-                TopicCategory.HEALTH,
-                TopicCategory.valueOf("OCEANS"), // Existing category
-                TopicCategory.valueOf("test"))); // Custom category
+        citation.setPresentationForms(Arrays.asList(
+                PresentationForm.IMAGE_DIGITAL,
+                PresentationForm.valueOf("AUDIO_DIGITAL"),  // Existing form
+                PresentationForm.valueOf("test")));         // Custom form
 
-        final String text = format.format(identification.asTreeTable());
+        final String text = format.format(citation.asTreeTable());
         assertMultilinesEquals(
-            "Data identification\n" +
-            "  ├─Descriptive keywords\n" +
-            "  │   ├─Keyword (1 of 3)…………… Apple\n" +
-            "  │   ├─Keyword (2 of 3)…………… Orange\n" +
-            "  │   └─Keyword (3 of 3)…………… Kiwi\n" +
-            "  ├─Topic category (1 of 3)…… Health\n" +
-            "  ├─Topic category (2 of 3)…… Oceans\n" +
-            "  └─Topic category (3 of 3)…… Test\n",
+            "Citation\n" +
+            "  ├─Alternate title (1 of 3)………… Apple\n" +
+            "  ├─Alternate title (2 of 3)………… Orange\n" +
+            "  ├─Alternate title (3 of 3)………… Kiwi\n" +
+            "  ├─Presentation form (1 of 3)…… Image digital\n" +
+            "  ├─Presentation form (2 of 3)…… Audio digital\n" +
+            "  └─Presentation form (3 of 3)…… Test\n",
             text);
     }
 }

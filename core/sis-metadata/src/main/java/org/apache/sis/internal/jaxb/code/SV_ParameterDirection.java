@@ -40,6 +40,12 @@ public final class SV_ParameterDirection extends EnumAdapter<SV_ParameterDirecti
     private String value;
 
     /**
+     * Empty constructor for JAXB only.
+     */
+    public SV_ParameterDirection() {
+    }
+
+    /**
      * Returns the wrapped value.
      *
      * @param wrapper The wrapper.

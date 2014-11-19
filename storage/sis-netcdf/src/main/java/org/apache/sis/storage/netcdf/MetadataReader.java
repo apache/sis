@@ -47,6 +47,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.crs.VerticalCRS;
 
+import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -67,6 +68,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.Standards;
+import org.apache.sis.util.resources.Errors;
 
 // The following dependency is used only for static final String constants.
 // Consequently the compiled class files should not have this dependency.
@@ -103,7 +105,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.20)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 final class MetadataReader {
@@ -185,10 +187,63 @@ final class MetadataReader {
     }
 
     /**
+     * Invoked when a non-fatal exception occurred while reading metadata.
+     * This method will send a record to the registered listeners if any,
+     * or will log the record otherwise.
+     */
+    private void warning(final Exception e) {
+        decoder.listeners.warning(null, e);
+    }
+
+    /**
+     * Reads the attribute value for the given name, then trims the leading and trailing spaces.
+     * If the value is null, empty or contains only spaces, then this method returns {@code null}.
+     */
+    private String stringValue(final String name) throws IOException {
+        String value = decoder.stringValue(name);
+        if (value != null) {
+            value = value.trim();
+            if (value.isEmpty()) {
+                value = null;
+            }
+        }
+        return value;
+    }
+
+    /**
      * Returns the given string as an {@code InternationalString} if non-null, or {@code null} otherwise.
+     * This method does not trim leading or trailing spaces, since this is often already done by the caller.
      */
     private static InternationalString toInternationalString(final String value) {
         return (value != null) ? new SimpleInternationalString(value) : null;
+    }
+
+    /**
+     * Returns the enumeration constant for the given name, or {@code null} if the given name is not recognized.
+     * In the later case, this method emits a warning.
+     */
+    private <T extends Enum<T>> T forEnumName(final Class<T> enumType, final String name) {
+        final T code = Types.forEnumName(enumType, name);
+        if (code == null && name != null) {
+            decoder.listeners.warning(Errors.format(Errors.Keys.UnknownEnumValue_2, enumType, name), null);
+        }
+        return code;
+    }
+
+    /**
+     * Returns the code value for the given name, or {@code null} if the given name is not recognized.
+     * In the later case, this method emits a warning.
+     */
+    private <T extends CodeList<T>> T forCodeName(final Class<T> codeType, final String name) {
+        final T code = Types.forCodeName(codeType, name, false);
+        if (code == null && name != null) {
+            /*
+             * CodeLists are not enums, but using the error message for enums is not completly wrong since
+             * if we did not allowed CodeList to create new elements, then we are using it like an enum.
+             */
+            decoder.listeners.warning(Errors.format(Errors.Keys.UnknownEnumValue_2, codeType, name), null);
+        }
+        return code;
     }
 
     /**
@@ -285,7 +340,7 @@ final class MetadataReader {
             resource.setFunction(OnLineFunction.INFORMATION);
             return resource;
         } catch (URISyntaxException e) {
-            decoder.listeners.warning(null, e);
+            warning(e);
         }
         return null;
     }
@@ -335,14 +390,14 @@ final class MetadataReader {
     private Responsibility createResponsibleParty(final Responsible keys, final boolean isPointOfContact)
             throws IOException
     {
-        final String individualName   = decoder.stringValue(keys.NAME);
-        final String organisationName = decoder.stringValue(keys.INSTITUTION);
-        final String email            = decoder.stringValue(keys.EMAIL);
-        final String url              = decoder.stringValue(keys.URL);
+        final String individualName   = stringValue(keys.NAME);
+        final String organisationName = stringValue(keys.INSTITUTION);
+        final String email            = stringValue(keys.EMAIL);
+        final String url              = stringValue(keys.URL);
         if (individualName == null && organisationName == null && email == null && url == null) {
             return null;
         }
-        Role role = Types.forCodeName(Role.class, decoder.stringValue(keys.ROLE), true);
+        Role role = forCodeName(Role.class, stringValue(keys.ROLE));
         if (role == null) {
             role = isPointOfContact ? Role.POINT_OF_CONTACT : keys.DEFAULT_ROLE;
         }
@@ -417,11 +472,11 @@ final class MetadataReader {
      * @throws IOException If an I/O operation was necessary but failed.
      */
     private Citation createCitation(final Identifier identifier) throws IOException {
-        String title = decoder.stringValue(TITLE);
+        String title = stringValue(TITLE);
         if (title == null) {
-            title = decoder.stringValue("full_name"); // THREDDS attribute documented in TITLE javadoc.
+            title = stringValue("full_name"); // THREDDS attribute documented in TITLE javadoc.
             if (title == null) {
-                title = decoder.stringValue("name"); // THREDDS attribute documented in TITLE javadoc.
+                title = stringValue("name"); // THREDDS attribute documented in TITLE javadoc.
                 if (title == null) {
                     title = decoder.getTitle();
                 }
@@ -430,7 +485,7 @@ final class MetadataReader {
         final Date   creation   = decoder.dateValue(DATE_CREATED);
         final Date   modified   = decoder.dateValue(DATE_MODIFIED);
         final Date   issued     = decoder.dateValue(DATE_ISSUED);
-        final String references = decoder.stringValue(REFERENCES);
+        final String references =       stringValue(REFERENCES);
         final DefaultCitation citation = new DefaultCitation(title);
         if (identifier != null) {
             citation.setIdentifiers(singleton(identifier));
@@ -453,7 +508,7 @@ final class MetadataReader {
         }
         decoder.setSearchPath(searchPath);
         if (references != null) {
-            citation.setOtherCitationDetails(singleton(toInternationalString(references)));
+            citation.setOtherCitationDetails(singleton(new SimpleInternationalString(references)));
         }
         return citation.isEmpty() ? null : citation;
     }
@@ -477,21 +532,21 @@ final class MetadataReader {
             decoder.setSearchPath(path);
             final Keywords standard = createKeywords(KeywordType.THEME, true);
             final Keywords keywords = createKeywords(KeywordType.THEME, false);
-            final String   topic    = decoder.stringValue(TOPIC_CATEGORY);
-            final String   type     = decoder.stringValue(DATA_TYPE);
-            final String   credits  = decoder.stringValue(ACKNOWLEDGMENT);
-            final String   license  = decoder.stringValue(LICENSE);
-            final String   access   = decoder.stringValue(ACCESS_CONSTRAINT);
+            final String   topic    = stringValue(TOPIC_CATEGORY);
+            final String   type     = stringValue(DATA_TYPE);
+            final String   credits  = stringValue(ACKNOWLEDGMENT);
+            final String   license  = stringValue(LICENSE);
+            final String   access   = stringValue(ACCESS_CONSTRAINT);
             final Extent   extent   = hasExtent ? null : createExtent();
             if (standard!=null || keywords!=null || topic != null || type!=null || credits!=null || license!=null || access!= null || extent!=null) {
                 if (identification == null) {
                     identification = new DefaultDataIdentification();
                 }
-                if (topic    != null) addIfAbsent(identification.getTopicCategories(), Types.forCodeName(TopicCategory.class, topic, true));
-                if (type     != null) addIfAbsent(identification.getSpatialRepresentationTypes(), Types.forCodeName(SpatialRepresentationType.class, type, true));
+                if (topic    != null) addIfAbsent(identification.getTopicCategories(), forEnumName(TopicCategory.class, topic));
+                if (type     != null) addIfAbsent(identification.getSpatialRepresentationTypes(), forCodeName(SpatialRepresentationType.class, type));
                 if (standard != null) addIfAbsent(identification.getDescriptiveKeywords(), standard);
                 if (keywords != null) addIfAbsent(identification.getDescriptiveKeywords(), keywords);
-                if (credits  != null) addIfAbsent(identification.getCredits(), Types.toInternationalString(credits));
+                if (credits  != null) addIfAbsent(identification.getCredits(), new SimpleInternationalString(credits));
                 if (license  != null) addIfAbsent(identification.getResourceConstraints(), constraints = new DefaultLegalConstraints(license));
                 if (access   != null) {
                     for (String keyword : access.split(KEYWORD_SEPARATOR)) {
@@ -500,7 +555,7 @@ final class MetadataReader {
                             if (constraints == null) {
                                 identification.getResourceConstraints().add(constraints = new DefaultLegalConstraints());
                             }
-                            addIfAbsent(constraints.getAccessConstraints(), Types.forCodeName(Restriction.class, keyword, true));
+                            addIfAbsent(constraints.getAccessConstraints(), forCodeName(Restriction.class, keyword));
                         }
                     }
                 }
@@ -512,12 +567,12 @@ final class MetadataReader {
                     hasExtent = true;
                 }
             }
-            project = addIfNonNull(project, toInternationalString(decoder.stringValue(PROJECT)));
+            project = addIfNonNull(project, toInternationalString(stringValue(PROJECT)));
         }
         decoder.setSearchPath(searchPath);
         final Citation citation = createCitation(identifier);
-        final String   summary  = decoder.stringValue(SUMMARY);
-        final String   purpose  = decoder.stringValue(PURPOSE);
+        final String   summary  = stringValue(SUMMARY);
+        final String   purpose  = stringValue(PURPOSE);
         if (identification == null) {
             if (citation==null && summary==null && purpose==null && project==null && publisher==null && pointOfContact==null) {
                 return null;
@@ -530,22 +585,22 @@ final class MetadataReader {
         if (pointOfContact != null) {
             identification.setPointOfContacts(singleton(pointOfContact));
         }
-        addKeywords(identification, project,   "project"); // Not necessarily the same string than PROJECT.
-        addKeywords(identification, publisher, "dataCenter");
-        identification.setSupplementalInformation(toInternationalString(decoder.stringValue(COMMENT)));
+        addKeywords(identification, project,   KeywordType.PROJECT);
+        addKeywords(identification, publisher, KeywordType.DATACENTRE);
+        identification.setSupplementalInformation(toInternationalString(stringValue(COMMENT)));
         return identification;
     }
 
     /**
      * Adds the given keywords to the given identification info if the given set is non-null.
      */
-    private static void addKeywords(final DefaultDataIdentification addTo,
-            final Set<InternationalString> words, final String type)
+    private void addKeywords(final DefaultDataIdentification addTo,
+            final Set<InternationalString> words, final KeywordType type)
     {
         if (words != null) {
             final DefaultKeywords keywords = new DefaultKeywords();
             keywords.setKeywords(words);
-            keywords.setType(Types.forCodeName(KeywordType.class, type, true));
+            keywords.setType(type);
             addTo.getDescriptiveKeywords().add(keywords);
         }
     }
@@ -558,7 +613,7 @@ final class MetadataReader {
      * @throws IOException If an I/O operation was necessary but failed.
      */
     private Keywords createKeywords(final KeywordType type, final boolean standard) throws IOException {
-        final String list = decoder.stringValue(standard ? STANDARD_NAME : KEYWORDS);
+        final String list = stringValue(standard ? STANDARD_NAME : KEYWORDS);
         DefaultKeywords keywords = null;
         if (list != null) {
             final Set<InternationalString> words = new LinkedHashSet<>();
@@ -572,7 +627,7 @@ final class MetadataReader {
                 keywords = new DefaultKeywords();
                 keywords.setKeywords(words);
                 keywords.setType(type);
-                final String vocabulary = decoder.stringValue(standard ? STANDARD_NAME_VOCABULARY : VOCABULARY);
+                final String vocabulary = stringValue(standard ? STANDARD_NAME_VOCABULARY : VOCABULARY);
                 if (vocabulary != null) {
                     keywords.setThesaurusName(new DefaultCitation(vocabulary));
                 }
@@ -642,7 +697,7 @@ final class MetadataReader {
             final UnitConverter c = getConverterTo(decoder.unitValue(VERTICAL.UNITS), SI.METRE);
             double min = valueOf(zmin, c);
             double max = valueOf(zmax, c);
-            if (CF.POSITIVE_DOWN.equals(decoder.stringValue(VERTICAL.POSITIVE))) {
+            if (CF.POSITIVE_DOWN.equals(stringValue(VERTICAL.POSITIVE))) {
                 final double tmp = min;
                 min = -max;
                 max = -tmp;
@@ -662,7 +717,7 @@ final class MetadataReader {
             final Number tmin = decoder.numericValue(TIME.MINIMUM);
             final Number tmax = decoder.numericValue(TIME.MAXIMUM);
             if (tmin != null || tmax != null) {
-                final String symbol = decoder.stringValue(TIME.UNITS);
+                final String symbol = stringValue(TIME.UNITS);
                 if (symbol != null) {
                     final Date[] dates = decoder.numberToDate(symbol, tmin, tmax);
                     startTime = dates[0];
@@ -683,12 +738,12 @@ final class MetadataReader {
             }
             extent.setTemporalElements(singleton(t));
         } catch (UnsupportedOperationException e) {
-            decoder.listeners.warning(null, e);
+            warning(e);
         }
         /*
          * Add the geographic identifier, if present.
          */
-        final String identifier = decoder.stringValue(GEOGRAPHIC_IDENTIFIER);
+        final String identifier = stringValue(GEOGRAPHIC_IDENTIFIER);
         if (identifier != null) {
             if (extent == null) {
                 extent = new DefaultExtent();
@@ -706,7 +761,7 @@ final class MetadataReader {
         if (source != null) try {
             return source.getConverterToAny(target);
         } catch (ConversionException e) {
-            decoder.listeners.warning(null, e);
+            warning(e);
         }
         return null;
     }
@@ -734,7 +789,7 @@ final class MetadataReader {
      */
     private Collection<DefaultCoverageDescription> createContentInfo() throws IOException {
         final Map<List<String>, DefaultCoverageDescription> contents = new HashMap<>(4);
-        final String processingLevel = decoder.stringValue(PROCESSING_LEVEL);
+        final String processingLevel = stringValue(PROCESSING_LEVEL);
         for (final Variable variable : decoder.getVariables()) {
             if (!variable.isCoverage(2)) {
                 continue;
@@ -805,7 +860,7 @@ final class MetadataReader {
         }
         String description = variable.getDescription();
         if (description != null && !(description = description.trim()).isEmpty() && !description.equals(name)) {
-            band.setDescription(toInternationalString(description));
+            band.setDescription(new SimpleInternationalString(description));
         }
 //TODO: Can't store the units, because the Band interface restricts it to length.
 //      We need the SampleDimension interface proposed in ISO 19115 revision draft.
@@ -832,8 +887,8 @@ final class MetadataReader {
     {
         if (name != null && meaning != null) {
             final DefaultRangeElementDescription element = new DefaultRangeElementDescription();
-            element.setName(toInternationalString(name));
-            element.setDefinition(toInternationalString(meaning));
+            element.setName(new SimpleInternationalString(name));
+            element.setDefinition(new SimpleInternationalString(meaning));
             // TODO: create a record from values (and possibly from the masks).
             //       if (pixel & mask == value) then we have that range element.
             return element;
@@ -854,14 +909,14 @@ final class MetadataReader {
      * @throws IOException If an I/O operation was necessary but failed.
      */
     private Identifier getFileIdentifier() throws IOException {
-        String identifier = decoder.stringValue(IDENTIFIER);
+        String identifier = stringValue(IDENTIFIER);
         if (identifier == null) {
             identifier = decoder.getId();
             if (identifier == null) {
                 return null;
             }
         }
-        final String namespace  = decoder.stringValue(NAMING_AUTHORITY);
+        final String namespace = stringValue(NAMING_AUTHORITY);
         return new DefaultIdentifier((namespace != null) ? new DefaultCitation(namespace) : null, identifier);
     }
 
@@ -882,7 +937,7 @@ final class MetadataReader {
         }
         metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, null)));
         for (final String service : SERVICES) {
-            final String name = decoder.stringValue(service);
+            final String name = stringValue(service);
             if (name != null) {
                 addIfAbsent(metadata.getMetadataScopes(), new DefaultMetadataScope(ScopeCode.SERVICE, name));
             }
@@ -924,7 +979,7 @@ final class MetadataReader {
                 }
             }
             // Also add history.
-            final String history = decoder.stringValue(HISTORY);
+            final String history = stringValue(HISTORY);
             if (history != null) {
                 final DefaultDataQuality quality = new DefaultDataQuality();
                 final DefaultLineage lineage = new DefaultLineage();
