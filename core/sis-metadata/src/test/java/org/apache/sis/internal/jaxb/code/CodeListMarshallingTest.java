@@ -25,13 +25,12 @@ import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.Responsibility;
-import org.opengis.metadata.identification.TopicCategory;
-import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
+import org.opengis.metadata.citation.PresentationForm;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
@@ -44,7 +43,7 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-3.17)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-121">GEOTK-121</a>
@@ -154,17 +153,23 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testExtraCodes() throws JAXBException {
-        final DefaultDataIdentification id = new DefaultDataIdentification();
-        id.setTopicCategories(Arrays.asList(
-                TopicCategory.valueOf("oceans"), // New code
-                TopicCategory.valueOf("OCEANS"), // Existing code with UML id="oceans"
-                TopicCategory.valueOf("test"))); // New code
+        final DefaultCitation id = new DefaultCitation();
+        id.setPresentationForms(Arrays.asList(
+                PresentationForm.valueOf("IMAGE_DIGITAL"), // Existing code with UML id="imageDigital"
+                PresentationForm.valueOf("test")));        // New code
 
         final String xml = marshal(id);
 
-        // "OCEANS" is marshalled as "oceans" because is contains a UML id, which is lower-case.
-        assertEquals(2, CharSequences.count(xml, "<gmd:MD_TopicCategoryCode>oceans</gmd:MD_TopicCategoryCode>"));
-        assertEquals(0, CharSequences.count(xml, "<gmd:MD_TopicCategoryCode>OCEANS</gmd:MD_TopicCategoryCode>"));
-        assertEquals(1, CharSequences.count(xml, "<gmd:MD_TopicCategoryCode>test</gmd:MD_TopicCategoryCode>"));
+        // "IMAGE_DIGITAL" is marshalled as "imageDigital" because is contains a UML id, which is lower-case.
+        assertXmlEquals(
+                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+                "  <gmd:presentationForm>\n" +
+                "    <gmd:CI_PresentationFormCode codeListValue=\"imageDigital\">Image digital</gmd:CI_PresentationFormCode>\n" +
+                "  </gmd:presentationForm>\n" +
+                "  <gmd:presentationForm>\n" +
+                "    <gmd:CI_PresentationFormCode codeListValue=\"test\">Test</gmd:CI_PresentationFormCode>\n" +
+                "  </gmd:presentationForm>\n" +
+                "</gmd:CI_Citation>\n",
+                xml, "xmlns:*", "codeList", "codeSpace");
     }
 }

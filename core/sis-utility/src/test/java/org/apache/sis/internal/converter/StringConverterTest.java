@@ -25,10 +25,11 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
+import java.lang.annotation.ElementType;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.spatial.PixelOrientation;
+import org.opengis.metadata.citation.OnLineFunction;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
@@ -51,7 +52,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(org.apache.sis.measure.AngleTest.class)
@@ -308,8 +309,21 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testCodeList() {
-        final ObjectConverter<String, PixelOrientation> c = new StringConverter.CodeList<>(PixelOrientation.class);
-        runInvertibleConversion(c, "LOWER_RIGHT", PixelOrientation.LOWER_RIGHT);
+        final ObjectConverter<String, OnLineFunction> c = new StringConverter.CodeList<>(OnLineFunction.class);
+        runInvertibleConversion(c, "OFFLINE_ACCESS", OnLineFunction.OFFLINE_ACCESS);
+        tryUnconvertibleValue(c);
+        assertSerializedEquals(c);
+    }
+
+    /**
+     * Tests conversions to {@link java.lang.Enum}.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testEnum() {
+        final ObjectConverter<String, ElementType> c = new StringConverter.Enum<>(ElementType.class);
+        runInvertibleConversion(c, "PACKAGE", ElementType.PACKAGE);
         tryUnconvertibleValue(c);
         assertSerializedEquals(c);
     }

@@ -21,14 +21,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Locale;
+import java.lang.annotation.ElementType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.content.ImagingCondition;
-import org.opengis.parameter.ParameterDirection;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.parameter.ParameterDirection;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -102,6 +103,36 @@ public final strictfp class TypesTest extends TestCase {
         assertEquals(Citation     .class, Types.forStandardName("CI_Citation")); // Value should be cached.
         assertEquals(AxisDirection.class, Types.forStandardName("CS_AxisDirection"));
         assertNull  (                     Types.forStandardName("MD_Dummy"));
+    }
+
+    /**
+     * Tests the {@link Types#forEnumName(Class, String)} method with an enumeration from the JDK.
+     * Such enumerations do not implement the {@link org.opengis.util.Enumerated} interface.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testForStandardEnumName() {
+        assertSame(ElementType.LOCAL_VARIABLE, Types.forEnumName(ElementType.class, "LOCAL_VARIABLE"));
+        assertSame(ElementType.LOCAL_VARIABLE, Types.forEnumName(ElementType.class, "LOCALVARIABLE"));
+        assertSame(ElementType.LOCAL_VARIABLE, Types.forEnumName(ElementType.class, "local variable"));
+        assertSame(ElementType.LOCAL_VARIABLE, Types.forEnumName(ElementType.class, "local-variable"));
+        assertNull(Types.forEnumName(ElementType.class, "variable"));
+    }
+
+    /**
+     * Tests the {@link Types#forEnumName(Class, String)} method with an enumeration from GeoAPI.
+     * Such enumerations implement the {@link org.opengis.util.Enumerated} interface.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testForGeoapiEnumName() {
+        assertSame(ParameterDirection.IN_OUT, Types.forEnumName(ParameterDirection.class, "IN_OUT"));
+        assertSame(ParameterDirection.IN_OUT, Types.forEnumName(ParameterDirection.class, "INOUT"));
+        assertSame(ParameterDirection.IN_OUT, Types.forEnumName(ParameterDirection.class, "in out"));
+        assertSame(ParameterDirection.IN_OUT, Types.forEnumName(ParameterDirection.class, "in/out"));
+        assertNull(Types.forEnumName(ParameterDirection.class, "out/in"));
     }
 
     /**
