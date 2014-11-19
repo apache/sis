@@ -140,6 +140,9 @@ public final class SystemRegistry extends ConverterRegistry {
      *       We do not register every code lists in advance because there is too
      *       many of them, and a generic code is available for all of them.</li>
      * </ul>
+     *
+     * @return A newly generated converter from the specified source class to the target class,
+     *         or {@code null} if none.
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -181,12 +184,16 @@ public final class SystemRegistry extends ConverterRegistry {
                     targetClass, find(String.class, targetClass));
         }
         /*
-         * From String to CodeList.
+         * From String to CodeList or Enum.
          */
         if (sourceClass == String.class) {
             if (CodeList.class.isAssignableFrom(targetClass)) {
                 return (ObjectConverter<S,T>) new StringConverter.CodeList( // More checks in JDK7 branch.
                         targetClass.asSubclass(CodeList.class));
+            }
+            if (targetClass.isEnum()) {
+                return (ObjectConverter<S,T>) new StringConverter.Enum( // More checks in JDK7 branch.
+                        targetClass.asSubclass(Enum.class));
             }
         }
         /*

@@ -125,4 +125,31 @@ class ObjectToString<S> extends SystemConverter<S,String> {
             return (source != null) ? source.name() : null;
         }
     }
+
+
+    /**
+     * Specialized instance for {@link java.lang.Enum}.
+     * This class invokes {@link java.lang.Enum#name()} instead than {@code toString()}.
+     *
+     * @see org.apache.sis.internal.converter.StringConverter.Enum
+     */
+    static final class Enum<S extends java.lang.Enum<S>> extends ObjectToString<S> {
+        private static final long serialVersionUID = 5391817175838307542L;
+
+        /** Creates a new converter from the given type of enum to strings. */
+        Enum(final Class<S> sourceClass, final SystemConverter<String, S> inverse) {
+            super(sourceClass, inverse);
+        }
+
+        /** Function is bijective, because no duplicated enum name shall exist. */
+        @Override public Set<FunctionProperty> properties() {
+            return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE,
+                    FunctionProperty.INVERTIBLE);
+        }
+
+        /** Returns the name of the given code list element. */
+        @Override public String apply(final S source) {
+            return (source != null) ? source.name() : null;
+        }
+    }
 }

@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.metadata.spatial.PixelOrientation;
+import org.opengis.metadata.citation.OnLineFunction;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.util.iso.LargeCodeList;
@@ -69,11 +69,11 @@ public final strictfp class CodeListSetTest extends TestCase {
      * the same ordinal value than {@link AxisDirection#NORTH}, so we can detect if the
      * {@code SortedSet} confuses the code list types.
      */
-    private CodeListSet<PixelOrientation> createOtherKind() {
+    private CodeListSet<OnLineFunction> createOtherKind() {
         // For the validity of the tests, ordinal value must be the same.
-        assertEquals(NORTH.ordinal(), PixelOrientation.LOWER_LEFT.ordinal());
-        final CodeListSet<PixelOrientation> c = new CodeListSet<PixelOrientation>(PixelOrientation.class);
-        assertTrue(c.add(PixelOrientation.LOWER_LEFT));
+        assertEquals(NORTH.ordinal(), OnLineFunction.INFORMATION.ordinal());
+        final CodeListSet<OnLineFunction> c = new CodeListSet<OnLineFunction>(OnLineFunction.class);
+        assertTrue(c.add(OnLineFunction.INFORMATION));
         return c;
     }
 
@@ -115,7 +115,7 @@ public final strictfp class CodeListSetTest extends TestCase {
 
         assertFalse("Should be null-safe.", c.contains(null));
         assertFalse("Code list of other kind should not be included.",
-                c.contains(PixelOrientation.LOWER_LEFT));
+                c.contains(OnLineFunction.INFORMATION));
     }
 
     /**
@@ -127,7 +127,7 @@ public final strictfp class CodeListSetTest extends TestCase {
         final CodeListSet<AxisDirection> c = create(4);
         assertFalse("Should be null-safe.", c.remove(null));
         assertFalse("Code list of other kind should not be included.",
-                c.remove(PixelOrientation.LOWER_LEFT));
+                c.remove(OnLineFunction.INFORMATION));
 
         assertTrue ("NORTH",  c.remove  (NORTH));
         assertFalse("SOUTH",  c.remove  (SOUTH));

@@ -44,7 +44,7 @@ import org.apache.sis.internal.jaxb.Context;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueType,BoundType>,
@@ -96,17 +96,14 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
 
     /**
      * Substitutes the adapter value read from an XML stream by the object which will
-     * contains the value. JAXB calls automatically this method at unmarshalling time.
+     * contain the value. JAXB calls automatically this method at unmarshalling time.
      *
      * @param  adapter The adapter for this metadata value.
      * @return A code list which represents the metadata value.
      */
     @Override
     public final BoundType unmarshal(final ValueType adapter) {
-        if (adapter == null) {
-            return null;
-        }
-        return Types.forCodeName(getCodeListClass(), adapter.proxy.identifier(), true);
+        return (adapter != null) ? Types.forCodeName(getCodeListClass(), adapter.proxy.identifier(), true) : null;
     }
 
     /**
@@ -118,33 +115,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      */
     @Override
     public final ValueType marshal(final BoundType value) {
-        if (value == null) {
-            return null;
-        }
-        final CodeListProxy p;
-        if (isEnum()) {
-            // To be removed after GEO-199 resolution.
-            p = new CodeListProxy();
-            p.value = Types.getCodeName(value);
-        } else {
-            p = new CodeListProxy(Context.current(), value);
-        }
-        return wrap(p);
-    }
-
-    /**
-     * Returns {@code true} if this code list is actually an enum. The default implementation
-     * returns {@code false} in every cases, since there is very few enums in ISO 19115.
-     *
-     * @return {@code true} if this code list is actually an enum.
-     *
-     * @todo Remove this method after we refactored enum wrappers as {@link EnumAdapter} subclasses
-     *       instead of {@code CodeListAdapter}. This requires the resolution of GEO-199 first.
-     *
-     * @see <a href="http://jira.codehaus.org/browse/GEO-199">GEO-199</a>
-     */
-    protected boolean isEnum() {
-        return false;
+        return (value != null) ? wrap(new CodeListProxy(Context.current(), value)) : null;
     }
 
     /**
