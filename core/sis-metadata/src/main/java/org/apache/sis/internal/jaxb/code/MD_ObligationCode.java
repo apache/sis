@@ -16,9 +16,9 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import org.opengis.metadata.Obligation;
-import org.apache.sis.util.iso.Types;
+import javax.xml.bind.annotation.XmlElement;
+import org.opengis.annotation.Obligation;
+import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
 
 
 /**
@@ -28,32 +28,46 @@ import org.apache.sis.util.iso.Types;
  *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.5
  * @module
  */
-public final class MD_ObligationCode extends XmlAdapter<String, Obligation> {
+public final class MD_ObligationCode extends EnumAdapter<MD_ObligationCode, Obligation> {
     /**
-     * Returns the obligation enumeration for the given name.
-     *
-     * @param value The obligation name.
-     * @return The obligation enumeration for the given name.
+     * The enumeration value.
      */
-    @Override
-    public Obligation unmarshal(String value) {
-        return Types.forCodeName(Obligation.class, value, true);
+    @XmlElement(name = "MD_ObligationCode")
+    private String value;
+
+    /**
+     * Empty constructor for JAXB only.
+     */
+    public MD_ObligationCode() {
     }
 
     /**
-     * Returns the name of the given obligation.
+     * Returns the wrapped value.
      *
-     * @param value The obligation enumeration.
-     * @return The name of the given obligation.
+     * @param wrapper The wrapper.
+     * @return The wrapped value.
      */
     @Override
-    public String marshal(final Obligation value) {
-        if (value == null) {
+    public final Obligation unmarshal(final MD_ObligationCode wrapper) {
+        return Obligation.valueOf(name(wrapper.value));
+    }
+
+    /**
+     * Wraps the given value.
+     *
+     * @param  e The value to wrap.
+     * @return The wrapped value.
+     */
+    @Override
+    public final MD_ObligationCode marshal(final Obligation e) {
+        if (e == null) {
             return null;
         }
-        return value.name();
+        final MD_ObligationCode wrapper = new MD_ObligationCode();
+        wrapper.value = value(e);
+        return wrapper;
     }
 }
