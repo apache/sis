@@ -18,8 +18,8 @@ package org.apache.sis.metadata;
 
 import java.util.Locale;
 import org.opengis.util.InternationalString;
+import org.opengis.annotation.Obligation;
 import org.opengis.metadata.Datatype;
-import org.opengis.metadata.Obligation;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
