@@ -60,6 +60,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     @SuppressWarnings("deprecation")
     public AllMetadataTest() {
         super(MetadataStandard.ISO_19115,
+            org.opengis.annotation.Obligation.class,
             org.opengis.metadata.ApplicationSchemaInformation.class,
             org.opengis.metadata.Datatype.class,
             org.opengis.metadata.ExtendedElementInformation.class,
@@ -68,7 +69,6 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.Metadata.class,
             org.opengis.metadata.MetadataExtensionInformation.class,
             org.opengis.metadata.MetadataScope.class,
-//          org.opengis.metadata.Obligation.class, // Excluded CodeList because it doesn't use the usual kind of adapter.
             org.opengis.metadata.PortrayalCatalogueReference.class,
             org.opengis.metadata.acquisition.AcquisitionInformation.class,
             org.opengis.metadata.acquisition.Context.class,
