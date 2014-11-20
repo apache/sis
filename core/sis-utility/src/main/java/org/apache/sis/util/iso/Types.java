@@ -432,16 +432,22 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns all known values for the given type of code list.
+     * Returns all known values for the given type of code list or enumeration.
      * Note that the size of the returned array may growth between different invocations of this method,
      * since users can add their own codes to an existing list.
      *
+     * {@note This method works with both <code>Enum</code> and <code>CodeList</code>. However if the type
+     *        is known to be an <code>Enum</code>, then the standard <code>Class.getEnumConstants()</code>
+     *        method is more efficient.}
+     *
      * @param <T> The compile-time type given as the {@code codeType} parameter.
-     * @param codeType The type of code list.
-     * @return The list of values for the given code list, or an empty array if none.
+     * @param codeType The type of code list or enumeration.
+     * @return The list of values for the given code list or enumeration, or an empty array if none.
+     *
+     * @see Class#getEnumConstants()
      */
     @SuppressWarnings("unchecked")
-    public static <T extends CodeList<?>> T[] getCodeValues(final Class<T> codeType) {
+    public static <T extends Enumerated> T[] getCodeValues(final Class<T> codeType) {
         Object values;
         try {
             values = codeType.getMethod("values", (Class<?>[]) null).invoke(null, (Object[]) null);
@@ -540,12 +546,8 @@ public final class Types extends Static {
         if (name != null && !name.isEmpty()) try {
             return Enum.valueOf(enumType, name);
         } catch (IllegalArgumentException e) {
-            final Enum<?>[] values;
-            try {
-                values = (Enum<?>[]) enumType.getMethod("values", (Class[]) null).invoke((Object[]) null);
-            } catch (ReflectiveOperationException | ClassCastException r) {
-                // Should never happen, except if 'enumType' is not an Enum.
-                e.addSuppressed(r);
+            final T[] values = enumType.getEnumConstants();
+            if (values == null) {
                 throw e;
             }
             if (values instanceof Enumerated[]) {
