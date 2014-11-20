@@ -190,9 +190,9 @@ public abstract class AbstractFeature implements Serializable {
     final Property createProperty(final String name) throws IllegalArgumentException {
         final AbstractIdentifiedType pt = type.getProperty(name);
         if (pt instanceof DefaultAttributeType<?>) {
-            return AbstractAttribute.create((DefaultAttributeType<?>) pt);
+            return ((DefaultAttributeType<?>) pt).newInstance();
         } else if (pt instanceof DefaultAssociationRole) {
-            return AbstractAssociation.create((DefaultAssociationRole) pt);
+            return ((DefaultAssociationRole) pt).newInstance();
         } else {
             throw unsupportedPropertyType(pt.getName());
         }

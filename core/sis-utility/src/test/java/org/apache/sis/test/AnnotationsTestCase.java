@@ -18,6 +18,7 @@ package org.apache.sis.test;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlType;
@@ -71,7 +72,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     private static final String DEFAULT = "##default";
 
     /**
-     * The GeoAPI interfaces or {@link CodeList} types to test.
+     * The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
     protected final Class<?>[] types;
 
@@ -92,7 +93,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     /**
      * Creates a new test suite for the given types.
      *
-     * @param types The GeoAPI interfaces or {@link CodeList} types to test.
+     * @param types The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
     protected AnnotationsTestCase(final Class<?>... types) {
         this.types = types;
@@ -104,7 +105,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * interface is the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class.
      *
      * @param  <T>  The type represented by the {@code type} argument.
-     * @param  type The GeoAPI interface (never a {@link CodeList} type).
+     * @param  type The GeoAPI interface (never a {@link CodeList} or {@link Enum} type).
      * @return The SIS implementation for the given interface.
      */
     protected abstract <T> Class<? extends T> getImplementation(Class<T> type);
@@ -143,7 +144,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * <p>In SIS implementation, most wrappers are also {@link javax.xml.bind.annotation.adapters.XmlAdapter}.
      * But this is not a requirement.</p>
      *
-     * @param  type The GeoAPI interface or {@link CodeList} type.
+     * @param  type The GeoAPI interface, {@link CodeList} or {@link Enum} type.
      * @return The wrapper for the given type, or {@code null} if none.
      * @throws ClassNotFoundException If a wrapper was expected but not found.
      */
@@ -167,7 +168,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * Returns the value of {@link #getWrapperFor(Class)} for the given class, or for a parent
      * of the given class if {@code getWrapperFor(Class)} threw {@code ClassNotFoundException}.
      *
-     * @param  type The GeoAPI interface or {@link CodeList} type.
+     * @param  type The GeoAPI interface, {@link CodeList} or {@link Enum} type.
      * @return The wrapper for the given type. {@link WrapperClass#type} is {@code null} if
      *         no wrapper has been found.
      * @throws ClassNotFoundException If a wrapper was expected but not found in the
@@ -217,7 +218,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * <p>The prefix for the given namespace will be fetched by
      * {@link Namespaces#getPreferredPrefix(String, String)}.</p>
      *
-     * @param  impl The implementation class or {@link CodeList} type.
+     * @param  impl The implementation class, {@link CodeList} or {@link Enum} type.
      * @param  specification The specification that define the type, or {@code null} if unspecified.
      * @return The expected namespace.
      * @throws IllegalArgumentException If the given specification is unknown to this method.
@@ -616,22 +617,34 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
              * and verify that exactly one of @XmlElement or @XmlElementRef annotation is declared.
              */
             testingClass = wrapper.type.getCanonicalName();
-            final Method getter, setter;
-            try {
-                getter = wrapper.type.getMethod("getElement", (Class<?>[]) null);
-                setter = wrapper.type.getMethod("setElement", getter.getReturnType());
-            } catch (NoSuchMethodException e) {
-                fail(e.toString());
-                continue;
+            final XmlElement element;
+            if (type.isEnum()) {
+                final Field field;
+                try {
+                    field = wrapper.type.getDeclaredField("value");
+                } catch (NoSuchFieldException e) {
+                    fail(e.toString());
+                    continue;
+                }
+                element = field.getAnnotation(XmlElement.class);
+            } else {
+                final Method getter, setter;
+                try {
+                    getter = wrapper.type.getMethod("getElement", (Class<?>[]) null);
+                    setter = wrapper.type.getMethod("setElement", getter.getReturnType());
+                } catch (NoSuchMethodException e) {
+                    fail(e.toString());
+                    continue;
+                }
+                assertEquals("The setter method must be declared in the same class than the " +
+                             "getter method - not in a parent class, to avoid issues with JAXB.",
+                             getter.getDeclaringClass(), setter.getDeclaringClass());
+                assertEquals("The setter parameter type shall be the same than the getter return type.",
+                             getter.getReturnType(), getSingleton(setter.getParameterTypes()));
+                element = getter.getAnnotation(XmlElement.class);
+                assertEquals("Expected @XmlElement XOR @XmlElementRef.", (element == null),
+                             getter.isAnnotationPresent(XmlElementRef.class));
             }
-            assertEquals("The setter method must be declared in the same class than the " +
-                         "getter method - not in a parent class, to avoid issues with JAXB.",
-                         getter.getDeclaringClass(), setter.getDeclaringClass());
-            assertEquals("The setter parameter type shall be the same than the getter return type.",
-                         getter.getReturnType(), getSingleton(setter.getParameterTypes()));
-            final XmlElement element = getter.getAnnotation(XmlElement.class);
-            assertEquals("Expected @XmlElement XOR @XmlElementRef.", (element == null),
-                         getter.isAnnotationPresent(XmlElementRef.class));
             /*
              * If the annotation is @XmlElement, ensure that XmlElement.name() is equals to
              * the UML identifier. Then verify that the

@@ -61,11 +61,20 @@ final class CodeListFilter implements CodeList.Filter {
      */
     @Override
     public boolean accept(final CodeList<?> code) {
-        for (final String name : code.names()) {
-            if (CharSequences.equalsFiltered(name, codename, Filter.LETTERS_AND_DIGITS, true)) {
+        for (final String candidate : code.names()) {
+            if (accept(candidate, codename)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Returns {@code true} if the given names matches the name we are looking for.
+     * This is defined in a separated method in order to ensure that all code paths
+     * use the same criterion.
+     */
+    static boolean accept(final String candidate, final String codename) {
+        return CharSequences.equalsFiltered(candidate, codename, Filter.LETTERS_AND_DIGITS, true);
     }
 }

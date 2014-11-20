@@ -226,7 +226,7 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
             characterizedBy = new AbstractAttribute<?>[types.characterizedBy.length];
         }
         if (characterizedBy[index] == null) {
-            characterizedBy[index] = AbstractAttribute.create(types.characterizedBy[index]);
+            characterizedBy[index] = types.characterizedBy[index].newInstance();
             return true;
         }
         return false;

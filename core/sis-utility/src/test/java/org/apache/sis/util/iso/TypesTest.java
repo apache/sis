@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Locale;
+import java.lang.annotation.ElementType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Citation;
@@ -101,6 +102,21 @@ public final strictfp class TypesTest extends TestCase {
         assertEquals(Citation     .class, Types.forStandardName("CI_Citation")); // Value should be cached.
         assertEquals(AxisDirection.class, Types.forStandardName("CS_AxisDirection"));
         assertNull  (                     Types.forStandardName("MD_Dummy"));
+    }
+
+    /**
+     * Tests the {@link Types#forEnumName(Class, String)} method with an enumeration from the JDK.
+     * Such enumerations do not implement the {@link org.opengis.util.Enumerated} interface.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testForStandardEnumName() {
+        assertSame(ElementType.LOCAL_VARIABLE, Types.forEnumName(ElementType.class, "LOCAL_VARIABLE"));
+        assertSame(ElementType.LOCAL_VARIABLE, Types.forEnumName(ElementType.class, "LOCALVARIABLE"));
+        assertSame(ElementType.LOCAL_VARIABLE, Types.forEnumName(ElementType.class, "local variable"));
+        assertSame(ElementType.LOCAL_VARIABLE, Types.forEnumName(ElementType.class, "local-variable"));
+        assertNull(Types.forEnumName(ElementType.class, "variable"));
     }
 
     /**

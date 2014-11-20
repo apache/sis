@@ -873,7 +873,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                 return implementsSameInterface(object);
             }
             default: {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownEnumValue_1, mode));
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.UnknownEnumValue_2, ComparisonMode.class, mode));
             }
         }
     }
