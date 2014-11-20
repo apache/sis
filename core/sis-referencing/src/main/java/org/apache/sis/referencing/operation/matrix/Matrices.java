@@ -850,7 +850,8 @@ public final class Matrices extends Static {
             case IGNORE_METADATA: return equals(m1, m2, 0, false);
             case DEBUG:           // Fall through
             case APPROXIMATIVE:   return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
-            default: throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownEnumValue_1, mode));
+            default: throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.UnknownEnumValue_2, ComparisonMode.class, mode));
         }
     }
 

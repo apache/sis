@@ -96,17 +96,14 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
 
     /**
      * Substitutes the adapter value read from an XML stream by the object which will
-     * contains the value. JAXB calls automatically this method at unmarshalling time.
+     * contain the value. JAXB calls automatically this method at unmarshalling time.
      *
      * @param  adapter The adapter for this metadata value.
      * @return A code list which represents the metadata value.
      */
     @Override
     public final BoundType unmarshal(final ValueType adapter) {
-        if (adapter == null) {
-            return null;
-        }
-        return Types.forCodeName(getCodeListClass(), adapter.proxy.identifier(), true);
+        return (adapter != null) ? Types.forCodeName(getCodeListClass(), adapter.proxy.identifier(), true) : null;
     }
 
     /**

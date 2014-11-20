@@ -341,7 +341,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         }
 
         /** Converts the given string to the target type of this converter. */
-        @Override T doConvert(String source) {
+        @Override T doConvert(final String source) {
             final T code = Types.forCodeName(targetClass, source, false);
             if (code == null) {
                 throw new UnconvertibleObjectException(formatErrorMessage(source));
@@ -352,6 +352,38 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         /** Invoked by the constructor for creating the inverse converter. */
         @Override ObjectConverter<T, String> createInverse() {
             return new ObjectToString.CodeList<T>(targetClass, this);
+        }
+    }
+
+    /**
+     * Converter from {@link String} to {@link java.lang.Enum}.
+     * This converter is particular in that it requires the target class in argument
+     * to the constructor.
+     *
+     * <p>Instances of this class are created by
+     * {@link SystemRegistry#createConverter(Class, Class)}.</p>
+     */
+    static final class Enum<T extends java.lang.Enum<T>> extends StringConverter<T> {
+        /** For cross-version compatibility on serialization. */
+        private static final long serialVersionUID = -4124617013044304640L;
+
+        /** Creates a new converter for the given enumeration. */
+        Enum(final Class<T> targetClass) {
+            super(targetClass);
+        }
+
+        /** Converts the given string to the target type of this converter. */
+        @Override T doConvert(final String source) {
+            final T code = Types.forEnumName(targetClass, source);
+            if (code == null) {
+                throw new UnconvertibleObjectException(formatErrorMessage(source));
+            }
+            return code;
+        }
+
+        /** Invoked by the constructor for creating the inverse converter. */
+        @Override ObjectConverter<T, String> createInverse() {
+            return new ObjectToString.Enum<T>(targetClass, this);
         }
     }
 }

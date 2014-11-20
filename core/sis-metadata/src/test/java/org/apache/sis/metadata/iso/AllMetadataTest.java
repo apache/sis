@@ -66,7 +66,6 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.Identifier.class,
             org.opengis.metadata.Metadata.class,
             org.opengis.metadata.MetadataExtensionInformation.class,
-//          org.opengis.metadata.Obligation.class, // Excluded CodeList because it doesn't use the usual kind of adapter.
             org.opengis.metadata.PortrayalCatalogueReference.class,
             org.opengis.metadata.acquisition.AcquisitionInformation.class,
             org.opengis.metadata.acquisition.Context.class,

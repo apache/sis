@@ -65,7 +65,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      * Creates a new test suite for the given types.
      *
      * @param standard The standard implemented by the metadata objects to test.
-     * @param types The GeoAPI interfaces or {@link CodeList} types to test.
+     * @param types The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
     protected MetadataTestCase(final MetadataStandard standard, final Class<?>... types) {
         super(types);
@@ -79,7 +79,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      */
     @Override
     protected <T> Class<? extends T> getImplementation(final Class<T> type) {
-        assertTrue(standard.isMetadata(type));
+        assertTrue(type.getName(), standard.isMetadata(type));
         final Class<? extends T> impl = standard.getImplementation(type);
         assertNotNull(type.getName(), impl);
         return impl;
@@ -102,8 +102,8 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
 
     /**
      * Returns a dummy value of the given type. The default implementation returns values for
-     * {@link CharSequence}, {@link Number}, {@link Date}, {@link Locale}, {@link CodeList}
-     * and types in the {@link #types} list.
+     * {@link CharSequence}, {@link Number}, {@link Date}, {@link Locale}, {@link CodeList},
+     * {@link Enum} and types in the {@link #types} list.
      *
      * <p>The returned value may be of an other type than the given one if the
      * {@code PropertyAccessor} converter method know how to convert that type.</p>
@@ -137,7 +137,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             if (type == CodeList.class) {
                 return null;
             }
-            final CodeList<?>[] codes = (CodeList<?>[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
+            final CodeList[] codes = (CodeList[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
             return codes[random.nextInt(codes.length)];
         } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
             fail(e.toString());
