@@ -215,7 +215,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Identification.class, "getResourceConstraints",        "resourceConstraints",        "resourceConstraints",       "Resource constraints",         Constraints[].class,
             Identification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
             Identification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
-        DataIdentification.class, "getLanguages",                  "languages",                  "defaultLocale+otherLocale", "Languages",                    Locale[].class,
+        DataIdentification.class, "getLanguages",                  "languages",                  "language",                  "Languages",                    Locale[].class,
         DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               Charset[].class,
             Identification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
         DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
