@@ -324,7 +324,7 @@ class TreeNode implements Node {
          */
         @Override
         CharSequence getName() {
-            return CharSequences.camelCaseToSentence(SpecialCases.rename(accessor.type, getIdentifier())).toString();
+            return CharSequences.camelCaseToSentence(getIdentifier()).toString();
         }
 
         /**
