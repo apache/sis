@@ -283,12 +283,7 @@ class PropertyAccessor {
             addMappingWithLowerCase(names[i] = toPropertyName(name, base), index);
             final UML annotation = getter.getAnnotation(UML.class);
             if (annotation != null) {
-                final String identifier = annotation.identifier().intern();
-                addMappingWithLowerCase(identifier, index);
-                final String alt = SpecialCases.rename(type, annotation.identifier().intern());
-                if (alt != identifier) { // Identity comparison is okay here.
-                    addMappingWithLowerCase(alt, index);
-                }
+                addMappingWithLowerCase(annotation.identifier().intern(), index);
             }
             /*
              * Now try to infer the setter from the getter. We replace the "get" prefix by

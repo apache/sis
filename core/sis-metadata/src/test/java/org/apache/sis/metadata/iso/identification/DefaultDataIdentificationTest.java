@@ -167,8 +167,7 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
 
     /**
      * Tests {@link DefaultDataIdentification#asMap()}, in particular on the {@code "language"} property.
-     * This property is handle in a special way since the declared UML identifier is
-     * {@code "defaultLocale+otherLocale"}.
+     * This property still use the UML identifier of ISO 19115:2003.
      */
     @Test
     public void testValueMap() {
@@ -177,9 +176,8 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
         assertEquals("abstract", "NCEP SST Global 5.0 x 2.5 degree model data", map.get("abstract").toString());
         assertEquals("title", "Sea Surface Temperature Analysis Model", ((Citation) map.get("citation")).getTitle().toString());
         assertEquals("spatialRepresentationType", singleton(SpatialRepresentationType.GRID), map.get("spatialRepresentationType"));
-        assertArrayEquals("language",                  LOCALES, ((Collection<?>) map.get("language")).toArray());
-        assertArrayEquals("languages",                 LOCALES, ((Collection<?>) map.get("languages")).toArray());
-        assertArrayEquals("getLanguages",              LOCALES, ((Collection<?>) map.get("getLanguages")).toArray());
-        assertArrayEquals("defaultLocale+otherLocale", LOCALES, ((Collection<?>) map.get("defaultLocale+otherLocale")).toArray());
+        assertArrayEquals("language",     LOCALES, ((Collection<?>) map.get("language")).toArray());
+        assertArrayEquals("languages",    LOCALES, ((Collection<?>) map.get("languages")).toArray());
+        assertArrayEquals("getLanguages", LOCALES, ((Collection<?>) map.get("getLanguages")).toArray());
     }
 }
