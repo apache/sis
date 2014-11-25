@@ -16,18 +16,13 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
-import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.MetadataTestCase;
-import org.apache.sis.metadata.iso.identification.DefaultCoupledResource;
-import org.apache.sis.metadata.iso.identification.DefaultOperationChainMetadata;
-import org.apache.sis.metadata.iso.identification.DefaultOperationMetadata;
-import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
-import org.apache.sis.metadata.iso.identification.DefaultServiceIdentification;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.Namespaces;
 import org.junit.Rule;
@@ -221,31 +216,20 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * @return {@inheritDoc}
      */
     @Override
-    protected String getExpectedXmlElementName(final Class<?> type, final UML uml) {
-        String name = uml.identifier();
-        if (name.equals("distributedComputingPlatform")) {
-            name = "DCP";
-        } else if (name.equals("stepDateTime")) {
-            name = "dateTime";
-        } else if (name.equals("defaultLocale+otherLocale") ||
-                type == FeatureCatalogueDescription.class && name.equals("locale"))
-        {
-            name = "language";
-        }
-        return name;
-    }
-
-    /**
-     * Returns the name of the XML element for the given UML element.
-     * This method checks for the special cases which are known to have different UML and XML names.
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    protected String getExpectedXmlRootElementName(final UML uml) {
-        String name = uml.identifier();
-        if (name.equals("MD_Scope")) {  // ISO 19115:2014
-            name = "DQ_Scope";          // ISO 19115:2003
+    protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
+        String name = super.getExpectedXmlElementName(enclosing, uml);
+        /*switch (name)*/ {
+            if (name.equals("MD_Scope")) {      // ISO 19115:2014
+                name = "DQ_Scope";  // ISO 19115:2003
+            } else if (name.equals("distributedComputingPlatform")) {
+                name = "DCP";
+            } else if (name.equals("stepDateTime")) {
+                name = "dateTime";
+            } else if (name.equals("locale")) {
+                if (enclosing == org.opengis.metadata.content.FeatureCatalogueDescription.class) {
+                    name = "language";
+                }
+            }
         }
         return name;
     }
@@ -259,10 +243,10 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      */
     @Override
     protected String getExpectedNamespace(final Class<?> impl, final Specification specification) {
-        if (impl == DefaultCoupledResource.class ||
-            impl == DefaultOperationChainMetadata.class ||
-            impl == DefaultOperationMetadata.class ||
-            impl == DefaultServiceIdentification.class)
+        if (impl == org.apache.sis.metadata.iso.identification.DefaultCoupledResource.class ||
+            impl == org.apache.sis.metadata.iso.identification.DefaultOperationChainMetadata.class ||
+            impl == org.apache.sis.metadata.iso.identification.DefaultOperationMetadata.class ||
+            impl == org.apache.sis.metadata.iso.identification.DefaultServiceIdentification.class)
         {
             assertEquals(Specification.ISO_19115, specification);
             return Namespaces.SRV;
@@ -331,13 +315,30 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     }
 
     /**
+     * Returns {@code true} if the given method is a non-standard extension.
+     * If {@code true}, then {@code method} does not need to have UML annotation.
+     *
+     * @param method The method to verify.
+     * @return {@code true} if the given method is an extension, or {@code false} otherwise.
+     *
+     * @since 0.5
+     */
+    @Override
+    protected boolean isExtension(final Method method) {
+        if (org.opengis.metadata.distribution.StandardOrderProcess.class.isAssignableFrom(method.getDeclaringClass())) {
+            return method.getName().equals("getCurrency");
+        }
+        return super.isExtension(method);
+    }
+
+    /**
      * Return {@code false} for the Apache SIS properties which are known to have no setter methods.
      *
      * @return {@inheritDoc}
      */
     @Override
     protected boolean isWritable(final Class<?> impl, final String property) {
-        if (DefaultRepresentativeFraction.class.isAssignableFrom(impl)) {
+        if (org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction.class.isAssignableFrom(impl)) {
             if (property.equals("doubleValue")) {
                 return false;
             }

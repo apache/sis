@@ -21,6 +21,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -471,6 +472,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the class of information that does not fall into the other categories to which the information applies.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@link InternationalString} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-221">GEO-221</a> for more information.</div>
+     *
      * @return Class of information that does not fall into the other categories, or {@code null}.
      */
     @Override
@@ -486,6 +491,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * {@section Effect on other properties}
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@link InternationalString} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-221">GEO-221</a> for more information.</div>
      *
      * @param newValue Other class of information.
      */

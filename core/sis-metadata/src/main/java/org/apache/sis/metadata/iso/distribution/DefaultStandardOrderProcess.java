@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.distribution;
 
+import java.util.Currency;
 import java.util.Date;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -71,6 +72,11 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Include monetary units (as specified in ISO 4217).
      */
     private InternationalString fees;
+
+    /**
+     * The {@link #fees} currency, or {@code null} if unknown or unspecified.
+     */
+    private Currency currency;
 
     /**
      * Date and time when the dataset will be available,
@@ -155,8 +161,11 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Returns fees and terms for retrieving the resource.
      * Include monetary units (as specified in ISO 4217).
+     * The monetary units may also be available with {@link #getCurrency()}.
      *
      * @return Fees and terms for retrieving the resource, or {@code null}.
+     *
+     * @see #getCurrency()
      */
     @Override
     @XmlElement(name = "fees")
@@ -169,10 +178,47 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Include monetary units (as specified in ISO 4217).
      *
      * @param newValue The new fees.
+     *
+     * @see #setCurrency(Currency)
      */
     public void setFees(final InternationalString newValue) {
         checkWritePermission();
         fees = newValue;
+    }
+
+    /**
+     * Returns the monetary units of the {@link #getFees() fees} (as specified in ISO 4217).
+     *
+     * <p><b>Constraints:</b><br>
+     * For ISO 19115 compatibility reasons, this method is <strong>not</strong> required to return
+     * a non-null value even if the text returned by {@link #getFees()} contains a currency units.
+     * However if this method returns a non-null value, then that value is required to be consistent
+     * with the fees text.</p>
+     *
+     * @return The fees monetary units, or {@code null} if none or unknown.
+     *
+     * @since 0.5
+     *
+     * @see #getFees()
+     */
+    public Currency getCurrency() {
+        return currency;
+    }
+
+    /**
+     * Sets the monetary units of the {@link #getFees() fees} (as specified in ISO 4217).
+     * Callers should ensure that the given currency is consistent with the currency
+     * in the {@linkplain #getFees() fees} text.
+     *
+     * @param newValue The new currency.
+     *
+     * @since 0.5
+     *
+     * @see #setFees(InternationalString)
+     */
+    public void setCurrency(final Currency newValue) {
+        checkWritePermission();
+        currency = newValue;
     }
 
     /**
