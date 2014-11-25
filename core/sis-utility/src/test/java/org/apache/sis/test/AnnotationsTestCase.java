@@ -236,22 +236,22 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
 
     /**
      * Returns the name of the XML element for the given UML element.
+     * This method is invoked in two situations:
      *
-     * @param  uml The UML element.
-     * @return The corresponding XML element name.
-     */
-    protected String getExpectedXmlRootElementName(final UML uml) {
-        return uml.identifier();
-    }
-
-    /**
-     * Returns the name of the XML element for the given UML element.
+     * <ul>
+     *   <li>For the root XML element name of an interface, in which case {@code enclosing} is {@code null}.</li>
+     *   <li>For the XML element name of a property (field or method) defined by an interface,
+     *       in which case {@code enclosing} is the interface containing the property.</li>
+     * </ul>
      *
-     * @param  type The GeoAPI interface which contains the property.
-     * @param  uml The UML element of a property in the {@code type} interface.
-     * @return The corresponding XML element name.
+     * The default implementation returns {@link UML#identifier()}. Subclasses shall override this method
+     * when mismatches are known to exist between the UML and XML element names.
+     *
+     * @param  enclosing The GeoAPI interface which contains the property, or {@code null} if none.
+     * @param  uml The UML element for which to get the corresponding XML element name.
+     * @return The XML element name for the given UML element.
      */
-    protected String getExpectedXmlElementName(final Class<?> type, final UML uml) {
+    protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
         return uml.identifier();
     }
 
@@ -385,6 +385,19 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     }
 
     /**
+     * Returns {@code true} if the given method is a non-standard extension.
+     * If {@code true}, then {@code method} does not need to have UML annotation.
+     *
+     * @param method The method to verify.
+     * @return {@code true} if the given method is an extension, or {@code false} otherwise.
+     *
+     * @since 0.5
+     */
+    protected boolean isExtension(final Method method) {
+        return false;
+    }
+
+    /**
      * Tests the annotations on every GeoAPI interfaces and code lists in the {@link #types} array.
      * More specifically this method tests that:
      *
@@ -405,7 +418,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
             if (!Enumerated.class.isAssignableFrom(type)) {
                 for (final Method method : type.getDeclaredMethods()) {
                     testingMethod = method.getName();
-                    if (!isIgnored(method)) {
+                    if (!isIgnored(method) && !isExtension(method)) {
                         uml = method.getAnnotation(UML.class);
                         if (!method.isAnnotationPresent(Deprecated.class)) {
                             assertNotNull("Missing @UML annotation.", uml);
@@ -495,7 +508,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
             assertNotNull("Missing @XmlRootElement annotation.", root);
             final UML uml = type.getAnnotation(UML.class);
             if (uml != null) {
-                assertEquals("Wrong @XmlRootElement.name().", getExpectedXmlRootElementName(uml), root.name());
+                assertEquals("Wrong @XmlRootElement.name().", getExpectedXmlElementName(null, uml), root.name());
             }
             /*
              * Check that the namespace is the expected one (according subclass)
