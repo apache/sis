@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.metadata.content.Band;
@@ -124,10 +125,21 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     private Double offset;
 
     /**
+     * Type of transfer function to be used when scaling a physical value for a given element.
+     */
+    private TransferFunctionType transferFunctionType;
+
+    /**
      * Maximum number of significant bits in the uncompressed representation
      * for the value in each band of each pixel.
      */
     private Integer bitsPerValue;
+
+    /**
+     * Smallest distance between which separate points can be distinguished, as specified in
+     * instrument design.
+     */
+    private Double nominalSpatialResolution;
 
     /**
      * Type of other attribute description.
@@ -173,17 +185,19 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * Initializes this sample dimension to the values of the given object.
      */
     private void init(final DefaultSampleDimension object) {
-        minValue          = object.getMinValue();
-        maxValue          = object.getMaxValue();
-        meanValue         = object.getMeanValue();
-        numberOfValues    = object.getNumberOfValues();
-        standardDeviation = object.getStandardDeviation();
-        units             = object.getUnits();
-        scaleFactor       = object.getScaleFactor();
-        offset            = object.getOffset();
-        bitsPerValue      = object.getBitsPerValue();
-        otherPropertyType = object.getOtherPropertyType();
-        otherProperty     = object.getOtherProperty();
+        minValue                 = object.getMinValue();
+        maxValue                 = object.getMaxValue();
+        meanValue                = object.getMeanValue();
+        numberOfValues           = object.getNumberOfValues();
+        standardDeviation        = object.getStandardDeviation();
+        units                    = object.getUnits();
+        scaleFactor              = object.getScaleFactor();
+        offset                   = object.getOffset();
+        transferFunctionType     = object.getTransferFunctionType();
+        bitsPerValue             = object.getBitsPerValue();
+        nominalSpatialResolution = object.getNominalSpatialResolution();
+        otherPropertyType        = object.getOtherPropertyType();
+        otherProperty            = object.getOtherProperty();
     }
 
     /**
@@ -213,10 +227,10 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * @param newValue The property value to verify.
      * @throws IllegalArgumentException if the given value is negative and the problem has not been logged.
      */
-    private static void ensurePositive(final String property, final boolean strict, final Integer newValue)
+    static void ensurePositive(final String property, final boolean strict, final Number newValue)
             throws IllegalArgumentException
     {
-        if (newValue != null && !(strict ? newValue > 0 : newValue >= 0)) {
+        if (newValue != null && !(strict ? newValue.doubleValue() > 0 : newValue.doubleValue() >= 0)) { // Use '!' for catching NaN.
             warnNonPositiveArgument(DefaultSampleDimension.class, property, strict, newValue);
         }
     }
@@ -393,6 +407,25 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     }
 
     /**
+     * Returns type of transfer function to be used when scaling a physical value for a given element.
+     *
+     * @return Type of transfer function, or {@code null}.
+     */
+    public TransferFunctionType getTransferFunctionType() {
+        return transferFunctionType;
+    }
+
+    /**
+     * Sets the type of transfer function to be used when scaling a physical value for a given element.
+     *
+     * @param newValue The new transfer function value.
+     */
+    public void setTransferFunctionType(final TransferFunctionType newValue) {
+        checkWritePermission();
+        transferFunctionType = newValue;
+    }
+
+    /**
      * Returns the maximum number of significant bits in the uncompressed representation
      * for the value in each band of each pixel.
      *
@@ -417,6 +450,30 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
         checkWritePermission();
         ensurePositive("bitsPerValue", true, newValue);
         bitsPerValue = newValue;
+    }
+
+    /**
+     * Returns the smallest distance between which separate points can be distinguished,
+     * as specified in instrument design.
+     *
+     * @return Smallest distance between which separate points can be distinguished, or {@code null}.
+     */
+    @ValueRange(minimum = 0, isMinIncluded = false)
+    public Double getNominalSpatialResolution() {
+        return nominalSpatialResolution;
+    }
+
+    /**
+     * Sets the smallest distance between which separate points can be distinguished,
+     * as specified in instrument design.
+     *
+     * @param newValue The new nominal spatial resolution.
+     * @throws IllegalArgumentException if the given value is negative.
+     */
+    public void setNominalSpatialResolution(final Double newValue) {
+        checkWritePermission();
+        ensurePositive("nominalSpatialResolution", true, newValue);
+        nominalSpatialResolution = newValue;
     }
 
     /**

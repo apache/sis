@@ -169,8 +169,7 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
 
     /**
      * Tests {@link DefaultDataIdentification#asMap()}, in particular on the {@code "language"} property.
-     * This property is handle in a special way since the declared UML identifier is
-     * {@code "defaultLocale+otherLocale"}.
+     * This property still use the UML identifier of ISO 19115:2003.
      */
     @Test
     public void testValueMap() {

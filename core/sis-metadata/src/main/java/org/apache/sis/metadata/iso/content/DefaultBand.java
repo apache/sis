@@ -108,17 +108,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     private Integer toneGradation;
 
     /**
-     * Smallest distance between which separate points can be distinguished, as specified in
-     * instrument design.
-     */
-    private Double nominalSpatialResolution;
-
-    /**
-     * Type of transfer function to be used when scaling a physical value for a given element.
-     */
-    private TransferFunctionType transferFunctionType;
-
-    /**
      * Polarization of the radiation transmitted.
      */
     private PolarizationOrientation transmittedPolarization;
@@ -162,8 +151,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
             peakResponse             = object.getPeakResponse();
             toneGradation            = object.getToneGradation();
             bandBoundaryDefinition   = object.getBandBoundaryDefinition();
-            nominalSpatialResolution = object.getNominalSpatialResolution();
-            transferFunctionType     = object.getTransferFunctionType();
             transmittedPolarization  = object.getTransmittedPolarization();
             detectedPolarization     = object.getDetectedPolarization();
         }
@@ -192,22 +179,6 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
             return (DefaultBand) object;
         }
         return new DefaultBand(object);
-    }
-
-    /**
-     * Ensures that the given property value is positive.
-     *
-     * @param property Name of the property to check.
-     * @param strict   {@code false} is zero is a legal value.
-     * @param newValue The property value to verify.
-     * @throws IllegalArgumentException if the given value is negative and the problem has not been logged.
-     */
-    private static void ensurePositive(final String property, final boolean strict, final Double newValue)
-            throws IllegalArgumentException
-    {
-        if (newValue != null && !(strict ? newValue > 0 : newValue >= 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultBand.class, property, strict, newValue);
-        }
     }
 
     /**
@@ -450,50 +421,37 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     }
 
     /**
-     * Returns the smallest distance between which separate points can be distinguished,
-     * as specified in instrument design.
-     *
-     * @return Smallest distance between which separate points can be distinguished, or {@code null}.
+     * {@inheritDoc}
      */
     @Override
-    @ValueRange(minimum = 0, isMinIncluded = false)
     @XmlElement(name = "nominalSpatialResolution", namespace = Namespaces.GMI)
     public Double getNominalSpatialResolution() {
-        return nominalSpatialResolution;
+        return super.getNominalSpatialResolution();
     }
 
     /**
-     * Sets the smallest distance between which separate points can be distinguished,
-     * as specified in instrument design.
-     *
-     * @param newValue The new nominal spatial resolution.
-     * @throws IllegalArgumentException if the given value is negative.
+     * {@inheritDoc}
      */
+    @Override
     public void setNominalSpatialResolution(final Double newValue) {
-        checkWritePermission();
-        ensurePositive("nominalSpatialResolution", true, newValue);
-        nominalSpatialResolution = newValue;
+        super.setNominalSpatialResolution(newValue);
     }
 
     /**
-     * Returns type of transfer function to be used when scaling a physical value for a given element.
-     *
-     * @return Type of transfer function, or {@code null}.
+     * {@inheritDoc}
      */
     @Override
     @XmlElement(name = "transferFunctionType", namespace = Namespaces.GMI)
     public TransferFunctionType getTransferFunctionType() {
-        return transferFunctionType;
+        return super.getTransferFunctionType();
     }
 
     /**
-     * Sets the type of transfer function to be used when scaling a physical value for a given element.
-     *
-     * @param newValue The new transfer function value.
+     * {@inheritDoc}
      */
+    @Override
     public void setTransferFunctionType(final TransferFunctionType newValue) {
-        checkWritePermission();
-        transferFunctionType = newValue;
+        super.setTransferFunctionType(newValue);
     }
 
     /**
