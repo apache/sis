@@ -385,6 +385,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * {@inheritDoc}
      */
     @Override
+    @ValueRange(minimum = 0, isMinIncluded = false)
     @XmlElement(name = "nominalSpatialResolution", namespace = Namespaces.GMI)
     public Double getNominalSpatialResolution() {
         return super.getNominalSpatialResolution();
