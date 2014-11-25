@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.maintenance;
 
 import org.apache.sis.metadata.iso.LoggingWatcher;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.test.TestCase;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public final strictfp class DefaultScopeDescriptionTest extends TestCase {
@@ -61,12 +62,12 @@ public final strictfp class DefaultScopeDescriptionTest extends TestCase {
         assertEquals("dataset", "A dataset", metadata.getDataset());
 
         listener.maximumLogCount = 1;
-        metadata.setOther("Other value");
-        assertEquals("other", "Other value", metadata.getOther());
+        metadata.setOther(new SimpleInternationalString("Other value"));
+        assertEquals("other", "Other value", String.valueOf(metadata.getOther()));
         assertNull("dataset", metadata.getDataset());
 
         metadata.setDataset(null); // Expected to be a no-op.
-        assertEquals("other", "Other value", metadata.getOther());
+        assertEquals("other", "Other value", String.valueOf(metadata.getOther()));
         assertNull("dataset", metadata.getDataset());
 
         metadata.setOther(null);
