@@ -21,6 +21,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -104,12 +105,12 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The value, as one of the following types:
      *
      * <ul>
-     *   <li>{@code Set<CharSequence>} for the {@code features} property</li>
-     *   <li>{@code Set<CharSequence>} for the {@code attributes} property</li>
-     *   <li>{@code Set<CharSequence>} for the {@code featureInstances} property</li>
-     *   <li>{@code Set<CharSequence>} for the {@code attributeInstances} property</li>
-     *   <li>{@code String} for the {@code dataset} property</li>
-     *   <li>{@code String} for the {@code other} property</li>
+     *   <li>{@code Set<CharSequence>}   for the {@code features} property</li>
+     *   <li>{@code Set<CharSequence>}   for the {@code attributes} property</li>
+     *   <li>{@code Set<CharSequence>}   for the {@code featureInstances} property</li>
+     *   <li>{@code Set<CharSequence>}   for the {@code attributeInstances} property</li>
+     *   <li>{@code String}              for the {@code dataset} property</li>
+     *   <li>{@code InternationalString} for the {@code other} property</li>
      * </ul>
      */
     private Object value;
@@ -429,8 +430,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      */
     @Override
     @XmlElement(name = "other")
-    public String getOther() {
-        return (property == OTHER) ? (String) value : null;
+    public InternationalString getOther() {
+        return (property == OTHER) ? (InternationalString) value : null;
     }
 
     /**
@@ -443,7 +444,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValue Other class of information.
      */
-    public void setOther(final String newValue) {
+    public void setOther(final InternationalString newValue) {
         checkWritePermission();
         if (newValue != null || property == OTHER) {
             warningOnOverwrite(OTHER);
