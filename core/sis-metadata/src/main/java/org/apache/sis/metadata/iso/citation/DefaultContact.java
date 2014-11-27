@@ -86,7 +86,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Time period (including time zone) when individuals can contact the organization or individual.
      */
-    private InternationalString hoursOfService;
+    private Collection<InternationalString> hoursOfService;
 
     /**
      * Supplemental instructions on how or when to contact the individual or organization.
@@ -129,7 +129,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
             phones              = copyCollection(object.getPhones(), Telephone.class);
             addresses           = copyCollection(object.getAddresses(), Address.class);
             onlineResources     = copyCollection(object.getOnlineResources(), OnlineResource.class);
-            hoursOfService      = object.getHoursOfService();
+            hoursOfService      = copyCollection(object.getHoursOfService(), InternationalString.class);
             contactInstructions = object.getContactInstructions();
             contactType         = object.getContactType();
         }
@@ -371,22 +371,21 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Returns the time period (including time zone) when individuals can contact the organization or individual.
      *
-     * @return Time period when individuals can contact the organization or individual, or {@code null}.
+     * @return Time period when individuals can contact the organization or individual.
      */
     @Override
     @XmlElement(name = "hoursOfService")
-    public InternationalString getHoursOfService() {
-        return hoursOfService;
+    public Collection<InternationalString> getHoursOfService() {
+        return hoursOfService = nonNullCollection(hoursOfService, InternationalString.class);
     }
 
     /**
      * Sets time period (including time zone) when individuals can contact the organization or individual.
      *
-     * @param newValue The new hours of service, or {@code null} if none.
+     * @param newValues The new hours of service.
      */
-    public void setHoursOfService(final InternationalString newValue) {
-        checkWritePermission();
-        hoursOfService = newValue;
+    public void setHoursOfService(final Collection<? extends InternationalString> newValues) {
+        hoursOfService = writeCollection(newValues, hoursOfService, InternationalString.class);
     }
 
     /**
