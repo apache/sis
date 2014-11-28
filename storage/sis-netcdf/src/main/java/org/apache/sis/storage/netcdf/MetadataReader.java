@@ -586,7 +586,7 @@ final class MetadataReader {
             identification.setPointOfContacts(singleton(pointOfContact));
         }
         addKeywords(identification, project,   KeywordType.PROJECT);
-        addKeywords(identification, publisher, KeywordType.DATACENTRE);
+        addKeywords(identification, publisher, KeywordType.DATA_CENTRE);
         identification.setSupplementalInformation(toInternationalString(stringValue(COMMENT)));
         return identification;
     }
