@@ -16,13 +16,13 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
+import java.io.*;
 import java.sql.*;
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.logging.Logger;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.system.Modules;
+import java.util.*;
+import java.util.logging.*;
+
+import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
+import org.apache.sis.internal.system.*;
 
 
 /**
@@ -39,13 +39,21 @@ public class DBFDriver extends AbstractJDBC implements Driver {
      */
     public DBFDriver() {
     }
+    
+    /**
+     * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+     */
+    @Override
+    public boolean isWrapperFor(Class<?> iface) {
+        return iface.isAssignableFrom(getInterface());
+    }
 
     /**
      * Returns the JDBC interface implemented by this class.
      * This is used for formatting error messages.
      */
     @Override
-    final Class<?> getInterface() {
+    final protected Class<?> getInterface() {
         return Driver.class;
     }
 
@@ -59,13 +67,8 @@ public class DBFDriver extends AbstractJDBC implements Driver {
      */
     @Override
     public Connection connect(final String url, @SuppressWarnings("unused") Properties info) throws SQLException {
-        ArgumentChecks.ensureNonNull("url", url);
-        try {
-            return new DBFConnection(new File(url));
-        } catch (IOException e) {
-            throw new SQLNonTransientConnectionException(Resources.format(
-                    Resources.Keys.InvalidDBFFormatDescriptor_2, url, e.getLocalizedMessage()));
-        }
+        Objects.requireNonNull(url, "the DBase3 url cannot be null");
+        return new DBFConnection(new File(url));
     }
 
     /**
@@ -76,6 +79,7 @@ public class DBFDriver extends AbstractJDBC implements Driver {
         if (!url.endsWith(".dbf")) {
             return false;
         }
+        
         final File datafile = new File(url);
         return datafile.isFile(); // Future version should check for magic number.
     }
@@ -122,6 +126,6 @@ public class DBFDriver extends AbstractJDBC implements Driver {
      */
     @Override
     public Logger getParentLogger() {
-        return LOGGER;
+        return super.getLogger();
     }
 }

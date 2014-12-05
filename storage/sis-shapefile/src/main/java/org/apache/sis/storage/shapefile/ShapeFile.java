@@ -107,40 +107,47 @@ public class ShapeFile {
         StringBuilder b = new StringBuilder(shpfile);
         b.replace(shpfile.length() - 3, shpfile.length(), "dbf");
 
-        dbf = new Database(b.toString());
-
-        try (FileInputStream fis = new FileInputStream(shpfile); FileChannel fc = fis.getChannel();) {
-            int fsize = (int) fc.size();
-            MappedByteBuffer rf = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
-
-            this.FileCode = rf.getInt();
-            rf.getInt();
-            rf.getInt();
-            rf.getInt();
-            rf.getInt();
-            rf.getInt();
-            this.FileLength = rf.getInt() * 2;
-
-            rf.order(ByteOrder.LITTLE_ENDIAN);
-            this.Version = rf.getInt();
-            this.ShapeType = ShapeTypeEnum.get(rf.getInt());
-            this.xmin = rf.getDouble();
-            this.ymin = rf.getDouble();
-            this.xmax = rf.getDouble();
-            this.ymax = rf.getDouble();
-            this.zmin = rf.getDouble();
-            this.zmax = rf.getDouble();
-            this.mmin = rf.getDouble();
-            this.mmax = rf.getDouble();
-            rf.order(ByteOrder.BIG_ENDIAN);
-
-            dbf.loadDescriptor();
-            final DefaultFeatureType featureType = getFeatureType(shpfile);
-
-            dbf.getByteBuffer().get(); // should be 0d for field terminator
-            loadFeatures(featureType, rf);
-        } finally {
-            dbf.close();
+        try {
+            dbf = new Database(b.toString());
+    
+            try(FileInputStream fis = new FileInputStream(shpfile); FileChannel fc = fis.getChannel();) {
+                int fsize = (int) fc.size();
+                MappedByteBuffer rf = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
+    
+                this.FileCode = rf.getInt();
+                rf.getInt();
+                rf.getInt();
+                rf.getInt();
+                rf.getInt();
+                rf.getInt();
+                this.FileLength = rf.getInt() * 2;
+    
+                rf.order(ByteOrder.LITTLE_ENDIAN);
+                this.Version = rf.getInt();
+                this.ShapeType = ShapeTypeEnum.get(rf.getInt());
+                this.xmin = rf.getDouble();
+                this.ymin = rf.getDouble();
+                this.xmax = rf.getDouble();
+                this.ymax = rf.getDouble();
+                this.zmin = rf.getDouble();
+                this.zmax = rf.getDouble();
+                this.mmin = rf.getDouble();
+                this.mmax = rf.getDouble();
+                rf.order(ByteOrder.BIG_ENDIAN);
+    
+                final DefaultFeatureType featureType = getFeatureType(shpfile);
+    
+                //dbf.getByteBuffer().get(); // should be 0d for field terminator
+                loadFeatures(featureType, rf);
+            } 
+            finally {
+                dbf.close();
+            }
+        }
+        catch(InvalidDbaseFileFormatException e) {
+            // Eventually, gather this low level trouble in a more generic exception, to avoid caller to catch hundred of different technical exceptions :
+            // at this level, we won't attempt to resolve or find a work around to the problems the DBF had.
+            throw new DataStoreException(e.getMessage(), e);
         }
     }
 
