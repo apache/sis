@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.shapefile;
 
+import org.apache.sis.util.logging.AbstractAutoChecker;
+
 
 /**
  * Field descriptor.
@@ -25,13 +27,14 @@ package org.apache.sis.storage.shapefile;
  * @version 0.5
  * @module
  */
-public class FieldDescriptor {
+public class FieldDescriptor extends AbstractAutoChecker {
     /** Field name. */
     public byte[] FieldName = new byte[11];
 
     /** Field type. */
     public DataType FieldType;
 
+    /** Field address (Field data address (address is set in memory; not useful on disk). */
     public byte[] FieldAddress = new byte[4];
 
     /** Field length. */
@@ -50,6 +53,22 @@ public class FieldDescriptor {
     public byte[] DbasePlusLanReserved3 = new byte[2];
 
     public byte SetFields;
+    
+    /**
+     * Returns the decimal count of that field.
+     * @return Decimal count.
+     */
+    public int getDecimalCount() {
+        return Byte.toUnsignedInt(this.FieldDecimalCount);
+    }
+    
+    /**
+     * Returns the field length.
+     * @return field length.
+     */
+    public int getLength() {
+        return Byte.toUnsignedInt(this.FieldLength);
+    }
 
     /**
      * Return the field name.
@@ -64,32 +83,24 @@ public class FieldDescriptor {
     }
 
     /**
-     * Return the field length.
-     * @return field length.
+     * Return the field data type.
+     * @return Data type.
      */
-    public int getLength() {
-        return Byte.toUnsignedInt(this.FieldLength);
+    public DataType getType() {
+        return(FieldType);
     }
-
+    
     /**
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
-
-        StringBuilder s = new StringBuilder();
-        String lineSeparator = System.getProperty("line.separator", "\n");
-
-        s.append("FieldName : ").append(new String(FieldName)).append(lineSeparator);
-        s.append("FieldType : ").append(FieldType).append(lineSeparator);
-        s.append("FieldAddress :").append(FieldAddress).append(lineSeparator);
-        s.append("FieldLength : ").append(FieldLength).append(lineSeparator);
-        s.append("FieldDecimalCount: ").append(FieldDecimalCount).append(lineSeparator);
-        s.append("DbasePlusLanReserved2: ").append(DbasePlusLanReserved2 + "\n");
-        s.append("WorkAreaID: ").append(WorkAreaID).append(lineSeparator);
-        s.append("DbasePlusLanReserved3: ").append(DbasePlusLanReserved3).append(lineSeparator);
-        s.append("SetFields: ").append(SetFields).append(lineSeparator);
-
-        return s.toString();
+        String text = format("toString", getName(), FieldType, FieldLength, FieldDecimalCount);
+        return text;
+        
+        // s.append("DbasePlusLanReserved2: ").append(DbasePlusLanReserved2 + "\n");
+        // s.append("WorkAreaID: ").append(WorkAreaID).append(lineSeparator);
+        // s.append("DbasePlusLanReserved3: ").append(DbasePlusLanReserved3).append(lineSeparator);
+        // s.append("SetFields: ").append(SetFields).append(lineSeparator);
     }
 }
