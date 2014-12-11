@@ -952,7 +952,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                     changed = true;
                 } else {
                     throw new IllegalStateException(Errors.format(Errors.Keys.IllegalOrdinateRange_3,
-                            (axis != null) ? axis.getName() : i, lower, upper));
+                            lower, upper, (axis != null) ? axis.getName() : i));
                 }
             }
         }
