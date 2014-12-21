@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  */
 abstract public class AbstractAutoChecker {
     /** Logger. */
-    private Logger logger = Logger.getLogger(getClass().getSimpleName());
+    private Logger logger = Logging.getLogger(getClass().getSimpleName());
 
     /**
      * Format a resource bundle message.

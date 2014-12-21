@@ -27,7 +27,7 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
  * @version 0.5
  * @module
  */
-public class FieldDescriptor extends AbstractAutoChecker {
+ public class FieldDescriptor extends AbstractAutoChecker {
     /** Field name. */
     public byte[] FieldName = new byte[11];
 
@@ -97,10 +97,5 @@ public class FieldDescriptor extends AbstractAutoChecker {
     public String toString() {
         String text = format("toString", getName(), FieldType, FieldLength, FieldDecimalCount);
         return text;
-        
-        // s.append("DbasePlusLanReserved2: ").append(DbasePlusLanReserved2 + "\n");
-        // s.append("WorkAreaID: ").append(WorkAreaID).append(lineSeparator);
-        // s.append("DbasePlusLanReserved3: ").append(DbasePlusLanReserved3).append(lineSeparator);
-        // s.append("SetFields: ").append(SetFields).append(lineSeparator);
     }
 }
