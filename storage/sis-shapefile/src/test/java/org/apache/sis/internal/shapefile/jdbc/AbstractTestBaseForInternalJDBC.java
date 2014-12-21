@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import org.apache.sis.storage.shapefile.Database;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.logging.Logging;
 import org.junit.Before;
 
 /**
@@ -22,7 +23,7 @@ import org.junit.Before;
  */
 abstract public class AbstractTestBaseForInternalJDBC extends TestCase {
     /** Logger. */
-    protected Logger log = Logger.getLogger(getClass().getName());
+    protected Logger log = Logging.getLogger(getClass().getName());
     
     /** The database file to use for testing purpose.  */
     protected File dbfFile;
