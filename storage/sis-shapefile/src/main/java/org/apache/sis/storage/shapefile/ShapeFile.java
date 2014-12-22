@@ -164,7 +164,7 @@ public class ShapeFile {
      * @return Feature count.
      */
     public int getFeatureCount() {
-        return this.dbf.getRecordCount();
+        return this.dbf.getRowCount();
     }
 
     /**
@@ -182,7 +182,7 @@ public class ShapeFile {
      * @throws DataStoreException if a validation problem occurs.
      */
     private void loadFeatures(DefaultFeatureType featureType, MappedByteBuffer rf) throws DataStoreException {
-        for (Integer i = 0; i < this.dbf.getRecordCount(); i++) {
+        for (Integer i = 0; i < this.dbf.getRowCount(); i++) {
             // insert points into some type of list
             int RecordNumber = rf.getInt();
             @SuppressWarnings("unused")

@@ -133,7 +133,7 @@ class MappedByteReader extends AbstractByteReader {
             df.get(this.dbaseLastUpdate);
     
             df.order(ByteOrder.LITTLE_ENDIAN);
-            this.recordCount = df.getInt();
+            this.rowCount = df.getInt();
             this.dbaseHeaderBytes = df.getShort();
             this.dbaseRecordBytes = df.getShort();
             df.order(ByteOrder.BIG_ENDIAN);

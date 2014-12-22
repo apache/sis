@@ -56,7 +56,7 @@ interface ByteReader {
      * Returns the record count.
      * @return Record count.
      */
-    public int getRecordCount();
+    public int getRowCount();
 
     /**
      * Returns the current record number.

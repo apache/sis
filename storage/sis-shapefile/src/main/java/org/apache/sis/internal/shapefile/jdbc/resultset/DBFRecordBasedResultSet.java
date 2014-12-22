@@ -393,7 +393,7 @@ public class DBFRecordBasedResultSet extends AbstractResultSet {
         assertNotClosed();
 
         // Check that we aren't at the end of the Database file.
-        final int remaining = getDatabase().getRecordCount() - getDatabase().getRowNum();
+        final int remaining = getDatabase().getRowCount() - getDatabase().getRowNum();
         
         if (remaining <= 0) {
             throw new SQLNoResultException(format(Level.SEVERE, "excp.no_more_results", m_sql, getDatabase().getFile().getName()), m_sql, getDatabase().getFile());
@@ -417,13 +417,13 @@ public class DBFRecordBasedResultSet extends AbstractResultSet {
     private boolean nextRecordMatchingConditions() throws SQLInvalidStatementException, SQLIllegalParameterException, SQLNoSuchFieldException, SQLUnsupportedParsingFeatureException, SQLConnectionClosedException, SQLNotNumericException, SQLNotDateException {
         boolean recordMatchesConditions = false;
         
-        while(getDatabase().getRecordCount() - getDatabase().getRowNum() > 0 && recordMatchesConditions == false) {
+        while(getDatabase().getRowCount() - getDatabase().getRowNum() > 0 && recordMatchesConditions == false) {
             m_record = getDatabase().readNextRowAsObjects();
             recordMatchesConditions = m_singleConditionOfWhereClause == null || m_singleConditionOfWhereClause.isVerified(this);
         }
         
         return recordMatchesConditions && 
-               (getDatabase().getRecordCount() - getDatabase().getRowNum() > 0); // Beware of the end of database !
+               (getDatabase().getRowCount() - getDatabase().getRowNum() > 0); // Beware of the end of database !
     }
     
     /**
