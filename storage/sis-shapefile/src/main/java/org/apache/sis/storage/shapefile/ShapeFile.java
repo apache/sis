@@ -53,46 +53,46 @@ public class ShapeFile {
     private static final String GEOMETRY_NAME = "geometry";
 
     /** File code. */
-    public int FileCode; // big
+    private int fileCode; // big
 
     /** File length. */
-    public int FileLength; // big // The value for file length is the total length of the file in 16-bit words
+    private int fileLength; // big // The value for file length is the total length of the file in 16-bit words
 
     /** File version. */
-    public int Version; // little
+    private int version; // little
 
     /** Shapefile type. */
-    public ShapeTypeEnum ShapeType; // little
+    private ShapeTypeEnum shapeType; // little
 
     /** X Min. */
-    public double xmin; // little
+    private double xmin; // little
 
     /** Y Min. */
-    public double ymin; // little
+    private double ymin; // little
 
     /** X Max. */
-    public double xmax; // little
+    private double xmax; // little
 
     /** Y Max. */
-    public double ymax; // little
+    private double ymax; // little
 
     /** Z Min. */
-    public double zmin; // little
+    private double zmin; // little
 
     /** Z Max. */
-    public double zmax; // little
+    private double zmax; // little
 
     /** M Min. */
-    public double mmin; // little
+    private double mmin; // little
 
     /** M Max. */
-    public double mmax; // little
+    private double mmax; // little
 
     /** Underlying databasefile content. */
     private Database dbf;
 
     /** Features existing in the shapefile. */
-    public Map<Integer, Feature> FeatureMap = new HashMap<>();
+    private Map<Integer, Feature> featureMap = new HashMap<>();
 
     /**
      * Construct a Shapefile from a file.
@@ -114,17 +114,17 @@ public class ShapeFile {
                 int fsize = (int) fc.size();
                 MappedByteBuffer rf = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
     
-                this.FileCode = rf.getInt();
+                this.fileCode = rf.getInt();
                 rf.getInt();
                 rf.getInt();
                 rf.getInt();
                 rf.getInt();
                 rf.getInt();
-                this.FileLength = rf.getInt() * 2;
+                this.fileLength = rf.getInt() * 2;
     
                 rf.order(ByteOrder.LITTLE_ENDIAN);
-                this.Version = rf.getInt();
-                this.ShapeType = ShapeTypeEnum.get(rf.getInt());
+                this.version = rf.getInt();
+                this.shapeType = ShapeTypeEnum.get(rf.getInt());
                 this.xmin = rf.getDouble();
                 this.ymin = rf.getDouble();
                 this.xmax = rf.getDouble();
@@ -167,6 +167,14 @@ public class ShapeFile {
         return this.dbf.getRecordCount();
     }
 
+    /**
+     * Returns the feature Map.
+     * @return Feature Map.
+     */
+    public Map<Integer, Feature> getFeatureMap() {
+        return this.featureMap;
+    }
+    
     /**
      * Load the features of a shapefile.
      * @param featureType Features descriptor.
@@ -211,7 +219,7 @@ public class ShapeFile {
 
             dbf.loadRowIntoFeature(f);
 
-            this.FeatureMap.put(RecordNumber, f);
+            this.featureMap.put(RecordNumber, f);
         }
     }
 
@@ -340,10 +348,10 @@ public class ShapeFile {
         StringBuilder s = new StringBuilder();
         String lineSeparator = System.getProperty("line.separator", "\n");
 
-        s.append("FileCode: ").append(FileCode).append(lineSeparator);
-        s.append("FileLength: ").append(FileLength).append(lineSeparator);
-        s.append("Version: ").append(Version).append(lineSeparator);
-        s.append("ShapeType: ").append(ShapeType).append(lineSeparator);
+        s.append("FileCode: ").append(fileCode).append(lineSeparator);
+        s.append("FileLength: ").append(fileLength).append(lineSeparator);
+        s.append("Version: ").append(version).append(lineSeparator);
+        s.append("ShapeType: ").append(shapeType).append(lineSeparator);
         s.append("xmin: ").append(xmin).append(lineSeparator);
         s.append("ymin: ").append(ymin).append(lineSeparator);
         s.append("xmax: ").append(xmax).append(lineSeparator);

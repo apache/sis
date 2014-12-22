@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.sis.util.logging.AbstractAutoChecker;
@@ -64,8 +64,9 @@ public class Database extends AbstractAutoChecker implements AutoCloseable {
 
     /**
      * @see java.lang.AutoCloseable#close()
+     * @deprecated Will be removed in next API versions.
      */
-    @Override
+    @Override @Deprecated
     public void close() throws IOException {
         binaryReader.close();
         isClosed = true;
@@ -91,7 +92,7 @@ public class Database extends AbstractAutoChecker implements AutoCloseable {
      * Return the fields descriptor.
      * @return Field descriptor.
      */
-    public ArrayList<FieldDescriptor> getFieldsDescriptor() {
+    public List<FieldDescriptor> getFieldsDescriptor() {
         return binaryReader.getFieldsDescriptors();
     }
 
@@ -114,7 +115,9 @@ public class Database extends AbstractAutoChecker implements AutoCloseable {
     /**
      * Determines if the database is closed.
      * @return true if it is closed.
+     * @deprecated Will be removed in next API versions.
      */
+    @Deprecated
     public boolean isClosed() {
         return isClosed;
     }
@@ -122,14 +125,19 @@ public class Database extends AbstractAutoChecker implements AutoCloseable {
     /**
      * Load a row into a feature.
      * @param feature Feature to fill.
+     * @deprecated Will be removed in next API versions.
      */
+    @Deprecated 
     public void loadRowIntoFeature(Feature feature) {
         binaryReader.loadRowIntoFeature(feature);
     }
+    
     /**
      * Read the next row as a set of objects.
      * @return Map of field name / object value.
+     * @deprecated Will be removed in next API versions.
      */
+    @Deprecated 
     public HashMap<String, Object> readNextRowAsObjects() {
         return binaryReader.readNextRowAsObjects();
     }
