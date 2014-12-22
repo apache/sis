@@ -80,7 +80,7 @@ abstract class AbstractByteReader extends AbstractAutoChecker implements ByteRea
     protected byte dbaseVersion;
 
     /** Number of records in the table. */
-    protected int recordCount;
+    protected int rowCount;
     
     /** Database charset. */
     protected Charset charset;
@@ -122,8 +122,8 @@ abstract class AbstractByteReader extends AbstractAutoChecker implements ByteRea
      * Returns the record count.
      * @return Record count.
      */
-    @Override public int getRecordCount() {
-        return recordCount;
+    @Override public int getRowCount() {
+        return rowCount;
     }
     
     /**

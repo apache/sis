@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.apache.sis.util.logging.AbstractAutoChecker;
@@ -81,11 +81,11 @@ public class Database extends AbstractAutoChecker implements AutoCloseable {
     }
     
     /**
-     * Return the record count of the database file.
-     * @return Record count.
+     * Return the row count of the database file.
+     * @return row count.
      */
-    public int getRecordCount() {
-        return binaryReader.getRecordCount();
+    public int getRowCount() {
+        return binaryReader.getRowCount();
     }
 
     /**
@@ -138,7 +138,7 @@ public class Database extends AbstractAutoChecker implements AutoCloseable {
      * @deprecated Will be removed in next API versions.
      */
     @Deprecated 
-    public HashMap<String, Object> readNextRowAsObjects() {
+    public Map<String, Object> readNextRowAsObjects() {
         return binaryReader.readNextRowAsObjects();
     }
     
