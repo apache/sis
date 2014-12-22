@@ -36,10 +36,10 @@ abstract class AbstractByteReader extends AbstractAutoChecker implements ByteRea
     protected String dbfFile;
 
     /** Number of bytes in the header. */
-    protected short DbaseHeaderBytes;
+    protected short dbaseHeaderBytes;
 
     /** Number of bytes in the record. */
-    protected short DbaseRecordBytes;
+    protected short dbaseRecordBytes;
     
     /** Reserved (dBASE IV) Filled with 00h. */
     protected byte[] reservedFiller1 = new byte[2];
@@ -77,7 +77,7 @@ abstract class AbstractByteReader extends AbstractAutoChecker implements ByteRea
     protected byte descriptorTerminator;
 
     /** Valid dBASE III PLUS table file (03h without a memo .DBT file; 83h with a memo). */
-    protected byte DbaseVersion;
+    protected byte dbaseVersion;
 
     /** Number of records in the table. */
     protected int recordCount;
@@ -86,7 +86,7 @@ abstract class AbstractByteReader extends AbstractAutoChecker implements ByteRea
     protected Charset charset;
 
     /** Date of last update; in YYMMDD format. */
-    protected byte[] DbaseLastUpdate = new byte[3];
+    protected byte[] dbaseLastUpdate = new byte[3];
 
     /** Fields descriptor. */
     protected FieldsDescriptors fieldsDescriptors = new FieldsDescriptors();
@@ -115,7 +115,7 @@ abstract class AbstractByteReader extends AbstractAutoChecker implements ByteRea
      * @return Date of the last update.
      */
     @Override public Date getDateOfLastUpdate() {
-        return toDate(DbaseLastUpdate);
+        return toDate(dbaseLastUpdate);
     }
 
     /**

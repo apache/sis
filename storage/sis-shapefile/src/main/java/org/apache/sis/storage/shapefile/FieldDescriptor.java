@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.shapefile;
 
+import java.nio.MappedByteBuffer;
+
 import org.apache.sis.util.logging.AbstractAutoChecker;
 
 
@@ -29,37 +31,37 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
  */
  public class FieldDescriptor extends AbstractAutoChecker {
     /** Field name. */
-    public byte[] FieldName = new byte[11];
+    private byte[] fieldName = new byte[11];
 
     /** Field type. */
-    public DataType FieldType;
+    private DataType fieldType;
 
     /** Field address (Field data address (address is set in memory; not useful on disk). */
-    public byte[] FieldAddress = new byte[4];
+    private byte[] fieldAddress = new byte[4];
 
     /** Field length. */
-    public byte FieldLength;
+    private byte fieldLength;
 
     /** Decimal count. */
-    public byte FieldDecimalCount;
+    private byte fieldDecimalCount;
 
     /** Reserved 2. */
-    public byte[] DbasePlusLanReserved2 = new byte[2];
+    private byte[] dbasePlusLanReserved2 = new byte[2];
 
     /** Work area id. */
-    public byte WorkAreaID;
+    private byte workAreaID;
 
     /** Reserved 3. */
-    public byte[] DbasePlusLanReserved3 = new byte[2];
+    private byte[] dbasePlusLanReserved3 = new byte[2];
 
-    public byte SetFields;
+    private byte SetFields;
     
     /**
      * Returns the decimal count of that field.
      * @return Decimal count.
      */
     public int getDecimalCount() {
-        return Byte.toUnsignedInt(this.FieldDecimalCount);
+        return Byte.toUnsignedInt(this.fieldDecimalCount);
     }
     
     /**
@@ -67,7 +69,7 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
      * @return field length.
      */
     public int getLength() {
-        return Byte.toUnsignedInt(this.FieldLength);
+        return Byte.toUnsignedInt(this.fieldLength);
     }
 
     /**
@@ -75,11 +77,11 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
      * @return Field name.
      */
     public String getName() {
-        int length = FieldName.length;
-        while (length != 0 && FieldName[length - 1] <= ' ') {
+        int length = fieldName.length;
+        while (length != 0 && fieldName[length - 1] <= ' ') {
             length--;
         }
-        return new String(this.FieldName, 0, length);
+        return new String(this.fieldName, 0, length);
     }
 
     /**
@@ -87,7 +89,47 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
      * @return Data type.
      */
     public DataType getType() {
-        return(FieldType);
+        return(fieldType);
+    }
+
+    /**
+     * Create a field descriptor from the current position of the binary stream.
+     * @param df ByteBuffer.
+     * @return FieldDescriptor or null if there is no more available.
+     */
+    static FieldDescriptor toFieldDescriptor(MappedByteBuffer df) {
+        FieldDescriptor fd = new FieldDescriptor();
+
+        // Field name.
+        df.get(fd.fieldName);
+
+        // Field type.
+        char dt = (char) df.get();
+        fd.fieldType = DataType.valueOfDataType(dt);
+
+        // Field address.
+        df.get(fd.fieldAddress);
+
+        // Length and scale.
+        fd.fieldLength = df.get();
+        fd.fieldDecimalCount = df.get();
+
+        df.getShort(); // reserved
+
+        df.get(fd.dbasePlusLanReserved2);
+
+        // Work area id.
+        fd.workAreaID = df.get();
+
+        df.get(fd.dbasePlusLanReserved3);
+
+        // Fields.
+        fd.SetFields = df.get();
+
+        byte[] data = new byte[6];
+        df.get(data); // reserved
+
+        return fd;
     }
     
     /**
@@ -95,7 +137,7 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
      */
     @Override
     public String toString() {
-        String text = format("toString", getName(), FieldType, FieldLength, FieldDecimalCount);
+        String text = format("toString", getName(), fieldType, fieldLength, fieldDecimalCount);
         return text;
     }
 }

@@ -129,13 +129,13 @@ class MappedByteReader extends AbstractByteReader {
             int fsize = (int) fc.size();
             df = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
     
-            this.DbaseVersion = df.get();
-            df.get(this.DbaseLastUpdate);
+            this.dbaseVersion = df.get();
+            df.get(this.dbaseLastUpdate);
     
             df.order(ByteOrder.LITTLE_ENDIAN);
             this.recordCount = df.getInt();
-            this.DbaseHeaderBytes = df.getShort();
-            this.DbaseRecordBytes = df.getShort();
+            this.dbaseHeaderBytes = df.getShort();
+            this.dbaseRecordBytes = df.getShort();
             df.order(ByteOrder.BIG_ENDIAN);
             
             df.get(reservedFiller1);
@@ -151,8 +151,8 @@ class MappedByteReader extends AbstractByteReader {
             
             df.get(reservedFiller2); 
     
-            while(df.position() < this.DbaseHeaderBytes - 1) {
-                FieldDescriptor fd = toFieldDescriptor();
+            while(df.position() < this.dbaseHeaderBytes - 1) {
+                FieldDescriptor fd = FieldDescriptor.toFieldDescriptor(df);
                 this.fieldsDescriptors.add(fd);
                 // loop until you hit the 0Dh field terminator
             }
@@ -173,48 +173,5 @@ class MappedByteReader extends AbstractByteReader {
             String message = format(Level.SEVERE, "excp.filedescriptor_problem", new File(dbfFile).getAbsolutePath(), e.getMessage());
             throw new InvalidDbaseFileFormatException(message);
         }
-    }
-
-    /**
-     * Create a field descriptor from the current position of the binary stream.
-     * @return FieldDescriptor or null if there is no more available.
-     */
-    private FieldDescriptor toFieldDescriptor() {
-        // If there is no more field description available, return null.
-        if (df.position() >= this.DbaseHeaderBytes - 1)
-            return null;
-
-        FieldDescriptor fd = new FieldDescriptor();
-
-        // Field name.
-        df.get(fd.FieldName);
-
-        // Field type.
-        char dt = (char) df.get();
-        fd.FieldType = DataType.valueOfDataType(dt);
-
-        // Field address.
-        df.get(fd.FieldAddress);
-
-        // Length and scale.
-        fd.FieldLength = df.get();
-        fd.FieldDecimalCount = df.get();
-
-        df.getShort(); // reserved
-
-        df.get(fd.DbasePlusLanReserved2);
-
-        // Work area id.
-        fd.WorkAreaID = df.get();
-
-        df.get(fd.DbasePlusLanReserved3);
-
-        // Fields.
-        fd.SetFields = df.get();
-
-        byte[] data = new byte[6];
-        df.get(data); // reserved
-
-        return fd;
     }
 }

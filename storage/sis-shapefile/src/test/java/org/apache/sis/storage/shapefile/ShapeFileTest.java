@@ -54,7 +54,7 @@ public final strictfp class ShapeFileTest extends TestCase {
     @Test
     public void testPolyineCount() throws URISyntaxException, IOException, DataStoreException {
         ShapeFile shp = new ShapeFile(path("SignedBikeRoute_4326_clipped.shp"));
-        assertEquals(shp.FeatureMap.size(), shp.getFeatureCount());
+        assertEquals(shp.getFeatureMap().size(), shp.getFeatureCount());
     }
 
     /**
@@ -66,7 +66,7 @@ public final strictfp class ShapeFileTest extends TestCase {
      @Test
      public void testPolygonCount() throws URISyntaxException, IOException, DataStoreException {
         ShapeFile shp = new ShapeFile(path("ANC90Ply_4326.shp"));
-        assertEquals(shp.FeatureMap.size(), shp.getFeatureCount());
+        assertEquals(shp.getFeatureMap().size(), shp.getFeatureCount());
     }
 
      /**
@@ -78,6 +78,6 @@ public final strictfp class ShapeFileTest extends TestCase {
      @Test
      public void testPointCount() throws URISyntaxException, IOException, DataStoreException {
         ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
-        assertEquals(shp.FeatureMap.size(), shp.getFeatureCount());
+        assertEquals(shp.getFeatureMap().size(), shp.getFeatureCount());
     }
 }
