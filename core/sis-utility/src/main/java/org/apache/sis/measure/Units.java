@@ -55,7 +55,7 @@ public final class Units extends Static {
      * Suffix at even index are for axes having the standard geometric direction,
      * while suffix at odd index are for axes having the reverse direction.
      */
-    private static final String[] DEGREE_SUFFIXES = {"east", "west", "north", "south"};
+    private static final String[] CARDINAL_DIRECTIONS = {"east", "west", "north", "south"};
 
     /**
      * Do not allows instantiation of this class.
@@ -374,15 +374,21 @@ public final class Units extends Static {
          * Those suffixes are ignored.
          */
         if (uom.regionMatches(true, 0, "deg", 0, 3)) {
-            if (length == 3) {
-                return NonSI.DEGREE_ANGLE; // Exactly "deg"
+            switch (length) {
+                case 3: return NonSI.DEGREE_ANGLE; // Exactly "deg"
+                case 4: {
+                    if (uom.charAt(3) == 'K') {
+                        return SI.KELVIN; // Exactly "degK".
+                    }
+                    break;
+                }
             }
             String prefix = uom;
             boolean isTemperature = false;
             final int s = Math.max(uom.lastIndexOf(' '), uom.lastIndexOf('_'));
             if (s >= 1) {
                 final String suffix = (String) trimWhitespaces(uom, s+1, length);
-                if (ArraysExt.containsIgnoreCase(DEGREE_SUFFIXES, suffix) || (isTemperature = isCelsius(suffix))) {
+                if (ArraysExt.containsIgnoreCase(CARDINAL_DIRECTIONS, suffix) || (isTemperature = isCelsius(suffix))) {
                     prefix = (String) trimWhitespaces(uom, 0, s); // Remove the suffix only if we recognized it.
                 }
             }
