@@ -28,7 +28,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public abstract class Variable {
@@ -66,6 +66,13 @@ public abstract class Variable {
      * @return The description of this variable, or {@code null}.
      */
     public abstract String getDescription();
+
+    /**
+     * Returns the unit of measurement as a string, or {@code null} if none.
+     *
+     * @return The unit of measurement, or {@code null}.
+     */
+    public abstract String getUnitsString();
 
     /**
      * Returns the variable data type, as a primitive type if possible.
