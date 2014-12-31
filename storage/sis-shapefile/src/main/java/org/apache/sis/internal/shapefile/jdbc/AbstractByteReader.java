@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.shapefile;
+package org.apache.sis.internal.shapefile.jdbc;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -88,9 +88,6 @@ abstract class AbstractByteReader extends AbstractAutoChecker implements ByteRea
     /** Date of last update; in YYMMDD format. */
     protected byte[] dbaseLastUpdate = new byte[3];
 
-    /** Fields descriptor. */
-    protected FieldsDescriptors fieldsDescriptors = new FieldsDescriptors();
-
     /** Current row rumber. */
     protected int rowNum;
     
@@ -100,14 +97,6 @@ abstract class AbstractByteReader extends AbstractAutoChecker implements ByteRea
      */
     @Override public Charset getCharset() {
         return charset;
-    }
-
-    /**
-     * Returns the fields descriptors.
-     * @return Fields descriptors.
-     */
-    @Override public FieldsDescriptors getFieldsDescriptors() {
-        return fieldsDescriptors;
     }
     
     /**
@@ -164,13 +153,13 @@ abstract class AbstractByteReader extends AbstractAutoChecker implements ByteRea
         
         // If the code page is invalid, the database itself has chances to be invalid too.
         if (dbfCodePage.equals("invalid")) {
-            String message = format(Level.SEVERE, "excp.illegal_codepage", codePageBinaryValue, new File(dbfFile).getAbsolutePath());
+            String message = format(Level.WARNING, "excp.illegal_codepage", codePageBinaryValue, new File(dbfFile).getAbsolutePath());
             throw new InvalidDbaseFileFormatException(message);
         }
         
         // If the code page cannot find a match for a more recent Charset, we wont be able to handle this DBF.
         if (dbfCodePage.equals("unsupported")) {
-            String message = format(Level.SEVERE, "excp.unsupported_codepage", dbfCodePage, new File(dbfFile).getAbsolutePath());
+            String message = format(Level.WARNING, "excp.unsupported_codepage", dbfCodePage, new File(dbfFile).getAbsolutePath());
             throw new UnsupportedCharsetException(message);
         }
         
@@ -179,7 +168,7 @@ abstract class AbstractByteReader extends AbstractAutoChecker implements ByteRea
         }
         catch(IllegalArgumentException e) {
             // If this happens here, it means that we have selected a wrong charset. We have a bug.
-            String message = format(Level.SEVERE, "assert.wrong_charset_selection", dbfCodePage, new File(dbfFile).getAbsolutePath());
+            String message = format(Level.WARNING, "assert.wrong_charset_selection", dbfCodePage, new File(dbfFile).getAbsolutePath());
             throw new RuntimeException(message);
         }
     }

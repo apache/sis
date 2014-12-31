@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.shapefile;
+package org.apache.sis.internal.shapefile.jdbc;
 
 
 /**
@@ -27,7 +27,7 @@ package org.apache.sis.storage.shapefile;
  *
  * @see <a href="http://www.clicketyclick.dk/databases/xbase/format/data_types.html">Xbase Data Types</a>
  */
-public enum DataType {
+public enum DBaseDataType {
     /** Character (less than 254 characters). */
     Character('C'),
 
@@ -82,7 +82,7 @@ public enum DataType {
      * Construct a datatype.
      * @param type Data type.
      */
-    DataType(char type) {
+    DBaseDataType(char type) {
         this.datatype = type;
     }
 
@@ -91,8 +91,8 @@ public enum DataType {
      * @param code Character code describing the dbf datatype.
      * @return Datatype.
      */
-    public static DataType valueOfDataType(char code) {
-        for (DataType v : values()) {
+    public static DBaseDataType valueOfDataType(char code) {
+        for (DBaseDataType v : values()) {
             if (v.datatype == code) {
                 return v;
             }

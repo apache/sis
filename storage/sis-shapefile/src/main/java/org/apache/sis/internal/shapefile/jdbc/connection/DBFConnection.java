@@ -17,18 +17,19 @@
 package org.apache.sis.internal.shapefile.jdbc.connection;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.sql.*;
-import java.util.HashSet;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+import org.apache.sis.internal.shapefile.jdbc.ByteReader;
+import org.apache.sis.internal.shapefile.jdbc.FieldDescriptor;
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.metadata.DBFDatabaseMetaData;
+import org.apache.sis.internal.shapefile.jdbc.resultset.*;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
-import org.apache.sis.storage.shapefile.Database;
 
 
 /**
@@ -40,34 +41,34 @@ import org.apache.sis.storage.shapefile.Database;
  */
 public class DBFConnection extends AbstractConnection {
     /** The object to use for reading the database content. */
-    final Database database;
+    final File databaseFile;
     
     /** Opened statement. */
     private HashSet<DBFStatement> m_openedStatements = new HashSet<>(); 
-
+    
+    /** ByteReader. */
+    private ByteReader m_byteReader;
+    
     /**
      * Constructs a connection to the given database.
      * @param datafile Data file ({@code .dbf} extension).
+     * @param byteReader Byte reader to use for reading binary content.
      * @throws SQLException if the Database file cannot be found or is not a file. 
      */
-    public DBFConnection(final File datafile) throws SQLException {
+    public DBFConnection(final File datafile, ByteReader byteReader) throws SQLException {
         // Check that file exists.
         if (!datafile.exists()) {
-            throw new SQLException(format(Level.SEVERE, "excp.file_not_found", datafile.getAbsolutePath()));
+            throw new SQLException(format(Level.WARNING, "excp.file_not_found", datafile.getAbsolutePath()));
         }
         
         // Check that its not a directory.
         if (datafile.isDirectory()) {
-            throw new SQLException(format(Level.SEVERE, "excp.directory_not_expected", datafile.getAbsolutePath()));
+            throw new SQLException(format(Level.WARNING, "excp.directory_not_expected", datafile.getAbsolutePath()));
         }
         
-        try {
-           database = new Database(datafile.getAbsolutePath());
-           format(Level.FINE, "log.database_connection_opened", database.getFile().getAbsolutePath(), database.getFieldsDescriptor());
-        }
-        catch(FileNotFoundException e) {
-           throw(new SQLException(e.getMessage(), e));
-        }
+       databaseFile = datafile;
+       m_byteReader = byteReader;
+       format(Level.FINE, "log.database_connection_opened", databaseFile.getAbsolutePath(), "FIXME : column desc.");
     }
 
     /**
@@ -85,17 +86,18 @@ public class DBFConnection extends AbstractConnection {
                 format(Level.WARNING, "log.statements_left_opened", m_openedStatements.size(), m_openedStatements.stream().map(DBFStatement::toString).collect(Collectors.joining(", ")));  
             }
             
-            database.close();
+            m_byteReader.close();
         } catch (IOException e) {
-            throw new SQLClosingIOFailureException(format(e.getLocalizedMessage(), e), null, database.getFile());
+            throw new SQLClosingIOFailureException(format(e.getLocalizedMessage(), e), null, getFile());
         }
     }
 
     /**
      * Creates an object for sending SQL statements to the database.
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
     @Override
-    public Statement createStatement() throws SQLException {
+    public Statement createStatement() throws SQLConnectionClosedException {
         assertNotClosed();
         
         DBFStatement stmt = new DBFStatement(this);
@@ -110,15 +112,24 @@ public class DBFConnection extends AbstractConnection {
     public String getCatalog() {
         return null; // DBase 3 offers no catalog.
     }
-
+    
     /**
-     * Returns the binary representation of the database.
-     * @return Database.
+     * Returns the charset.
+     * @return Charset.
      */
-    public Database getDatabase() {
-        return database;
+    public Charset getCharset() {
+        return m_byteReader.getCharset();
     }
 
+    /**
+     * Returns the database File.
+     * @return File.
+     */
+    @Override
+    public File getFile() {
+        return databaseFile;
+    }
+    
     /**
      * Returns the JDBC interface implemented by this class.
      * This is used for formatting error messages.
@@ -141,7 +152,7 @@ public class DBFConnection extends AbstractConnection {
      */
     @Override
     public boolean isClosed() {
-        return database.isClosed();
+        return m_byteReader.isClosed();
     }
 
     /**
@@ -168,7 +179,7 @@ public class DBFConnection extends AbstractConnection {
     public void assertNotClosed() throws SQLConnectionClosedException {
         // If closed throw an exception specifying the name if the DBF that is closed. 
         if (isClosed()) {
-            throw new SQLConnectionClosedException(format(Level.SEVERE, "excp.closed_connection", database.getFile().getName()), null, database.getFile());
+            throw new SQLConnectionClosedException(format(Level.WARNING, "excp.closed_connection", getFile().getName()), null, getFile());
         }
     }
     
@@ -185,10 +196,135 @@ public class DBFConnection extends AbstractConnection {
     }
     
     /**
+     * Returns the column index for the given column name.
+     * The default implementation of all methods expecting a column label will invoke this method.
+     * @param columnLabel The name of the column.
+     * @param sql For information, the SQL statement that is attempted.
+     * @return The index of the given column name : first column is 1.
+     * @throws SQLNoSuchFieldException if there is no field with this name in the query.
+     */
+    public int findColumn(String columnLabel, String sql) throws SQLNoSuchFieldException {
+        return m_byteReader.findColumn(columnLabel, sql);
+    }
+
+    /**
+     * Returns the column count of the table of the database.
+     * @return Column count.
+     */
+    public int getColumnCount() {
+        return m_byteReader.getColumnCount();
+    }
+
+    /**
+     * Get a field description.
+     * @param columnLabel Column label.
+     * @param sql SQL Statement.
+     * @return ResultSet with current row set on the wished field.
+     * @throws SQLConnectionClosedException if the connection is closed.
+     * @throws SQLNoSuchFieldException if no column with that name exists.
+     */
+    public ResultSet getFieldDesc(String columnLabel, String sql) throws SQLConnectionClosedException, SQLNoSuchFieldException {
+        Objects.requireNonNull(columnLabel, "The column name cannot be null.");
+        
+        DBFBuiltInMemoryResultSetForColumnsListing rs = (DBFBuiltInMemoryResultSetForColumnsListing)((DBFDatabaseMetaData)getMetaData()).getColumns(null, null, null, null);
+        
+        try {
+            while(rs.next()) {
+                try {
+                    if (rs.getString("COLUMN_NAME").equalsIgnoreCase(columnLabel)) {
+                        return rs;
+                    } 
+                }
+                catch(SQLNoSuchFieldException e) {
+                    // if it is the COLUMN_NAME column that has not been found in the desc ResultSet, we have an internal error.
+                    rs.close();
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            }
+        }
+        catch(SQLNoResultException e) {
+            // if we run out of bound of the ResultSet, the boolean returned by next() has not been checked well, and it's an internal error.
+            rs.close();
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        
+        // But if we are here, we have not found the column with this name, and we have to throw an SQLNoSuchFieldException exception ourselves.
+        String message = format("excp.no_such_column_in_resultset", columnLabel, sql, getFile().getName());
+        throw new SQLNoSuchFieldException(message, sql, getFile(), columnLabel);
+    }
+
+    /**
+     * Get a field description.
+     * @param column Column index.
+     * @param sql SQL Statement.
+     * @return ResultSet with current row set on the wished field.
+     * @throws SQLConnectionClosedException if the connection is closed.
+     * @throws SQLIllegalColumnIndexException if the column index is out of bounds.
+     */
+    public ResultSet getFieldDesc(int column, String sql) throws SQLConnectionClosedException, SQLIllegalColumnIndexException {
+        DBFBuiltInMemoryResultSetForColumnsListing rs = (DBFBuiltInMemoryResultSetForColumnsListing)((DBFDatabaseMetaData)getMetaData()).getColumns(null, null, null, null);
+        
+        if (column <= 0 || column > getColumnCount()) {
+            rs.close();
+            String message = format("excp.illegal_column_index_metadata", column, getColumnCount());
+            throw new SQLIllegalColumnIndexException(message, sql, getFile(), column);
+        }
+        
+        // TODO Implements ResultSet:absolute(int) instead.
+        for(int index=1; index < column; index ++) {
+            try {
+                rs.next();
+            }
+            catch(SQLNoResultException e) {
+                // We encounter an internal API error in this case.
+                rs.close();
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        
+        return rs;
+    }
+    
+    /**
+     * Returns the fields descriptors in their binary format.
+     * @return Fields descriptors.
+     */
+    public List<FieldDescriptor> getFieldsDescriptors() {
+        return m_byteReader.getFieldsDescriptors();
+    }
+
+    /**
+     * Return a field name.
+     * @param columnIndex Column index.
+     * @param sql For information, the SQL statement that is attempted.
+     * @return Field Name.
+     * @throws SQLIllegalColumnIndexException if the index is out of bounds.
+     */
+    public String getFieldName(int columnIndex, String sql) throws SQLIllegalColumnIndexException {
+        return m_byteReader.getFieldName(columnIndex, sql);
+    }
+
+    /**
+     * Checks if a next row is available. Warning : it may be a deleted one.
+     * @return true if a next row is available.
+     */
+    public boolean nextRowAvailable() {
+        return m_byteReader.nextRowAvailable();        
+    }
+
+    /**
+     * Read the next row as a set of objects.
+     * @return Map of field name / object value.
+     */
+    public Map<String, Object> readNextRowAsObjects() {
+        return m_byteReader.readNextRowAsObjects();
+    }
+    
+    /**
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
-        return format("toString", database.getFile().getAbsolutePath(), isClosed() == false);
+        return format("toString", databaseFile.getAbsolutePath(), isClosed() == false);
     }
 }

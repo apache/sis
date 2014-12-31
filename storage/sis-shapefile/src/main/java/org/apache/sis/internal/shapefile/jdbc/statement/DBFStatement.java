@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.shapefile.jdbc.statement;
 
+import java.io.File;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.HashSet;
@@ -28,7 +29,6 @@ import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.resultset.AbstractResultSet;
 import org.apache.sis.internal.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
 import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
-import org.apache.sis.storage.shapefile.Database;
 
 
 /**
@@ -68,6 +68,15 @@ public class DBFStatement extends AbstractStatement {
     public Connection getConnection() throws SQLConnectionClosedException {
         assertNotClosed();
         return connection;
+    }
+    
+    /**
+     * Returns the Database File.
+     * @return Database File.
+     */
+    @Override
+    public File getFile() {
+        return connection.getFile();
     }
     
     /**
@@ -146,7 +155,7 @@ public class DBFStatement extends AbstractStatement {
         if (currentResultSet != null) {
             // Inform that this ResultSet could have been closed but that we are handling this :
             // Some developpers may expect their ResultSet should have been closed before in their program.
-            format(Level.INFO, "log.closing_underlying_resultset", currentResultSet);
+            format(Level.FINE, "log.closing_underlying_resultset", currentResultSet);
             currentResultSet.close();
             
             currentResultSet = null;
@@ -170,15 +179,6 @@ public class DBFStatement extends AbstractStatement {
     public boolean isClosed() {
         return isClosed || connection.isClosed();
     }
-    
-    /**
-     * Returns the binary representation of the database.
-     * This function shall not check the closed state of this connection, as it can be used in exception messages descriptions.
-     * @return Database.
-     */
-    public Database getDatabase() {
-        return connection.getDatabase();
-    }
 
     /**
      * Asserts that the connection and the statement are together opened.
@@ -189,7 +189,7 @@ public class DBFStatement extends AbstractStatement {
         
         // Then, this statement shouldn't be closed too.
         if (isClosed) {
-            throw new SQLConnectionClosedException(format("excp.closed_statement", connection.getDatabase().getFile().getName()), null, connection.getDatabase().getFile());
+            throw new SQLConnectionClosedException(format(Level.WARNING, "excp.closed_statement", connection.getFile().getName()), null, connection.getFile());
         }
     }
     

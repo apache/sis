@@ -28,8 +28,8 @@ public class ConditionalClauseResolver extends AbstractClauseResolver
 {
     /**
      * Construct a where clause resolver.
-     * @param comparand1 The first comparand that might be a primitive or a FieldDescriptor.
-     * @param comparand2 The second comparand that might be a primitive or a FieldDescriptor.
+     * @param comparand1 The first comparand that might be a primitive or a Field.
+     * @param comparand2 The second comparand that might be a primitive or a Field.
      * @param operator The operator to apply.
      */
     public ConditionalClauseResolver(Object comparand1, Object comparand2, String operator) {

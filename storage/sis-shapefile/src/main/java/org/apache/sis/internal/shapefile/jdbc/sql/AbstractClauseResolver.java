@@ -20,9 +20,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-import org.apache.sis.internal.shapefile.jdbc.*;
+import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.resultset.*;
-import org.apache.sis.storage.shapefile.FieldDescriptor;
 import org.apache.sis.util.logging.AbstractAutoChecker;
 
 /**
@@ -41,8 +40,8 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
     
     /**
      * Construct a where clause resolver.
-     * @param comparand1 The first comparand that might be a primitive or a FieldDescriptor.
-     * @param comparand2 The second comparand that might be a primitive or a FieldDescriptor.
+     * @param comparand1 The first comparand that might be a primitive or a Field.
+     * @param comparand2 The second comparand that might be a primitive or a Field.
      * @param operator The operator to apply.
      */
     public AbstractClauseResolver(Object comparand1, Object comparand2, String operator) {
@@ -130,8 +129,8 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
                 return compare(rs) <= 0;
                 
             default :
-                 String message = format(Level.SEVERE, "excp.invalid_statement_operator", getOperator(), rs.getSQL());
-                 throw new SQLInvalidStatementException(message, rs.getSQL(), rs.getDatabase().getFile());
+                 String message = format(Level.WARNING, "excp.invalid_statement_operator", getOperator(), rs.getSQL());
+                 throw new SQLInvalidStatementException(message, rs.getSQL(), rs.getFile());
         }
     }
     
@@ -267,13 +266,13 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
         
         // If one of the comparands doesn't belong to java.lang.Comparable, our driver is taken short.
         if (comparable1 == null) {
-            String message = format(Level.SEVERE, "excp.uncomparable_type", value1, value1.getClass().getName(), rs.getSQL());
-            throw new SQLUnsupportedParsingFeatureException(message, rs.getSQL(), rs.getDatabase().getFile());
+            String message = format(Level.WARNING, "excp.uncomparable_type", value1, value1.getClass().getName(), rs.getSQL());
+            throw new SQLUnsupportedParsingFeatureException(message, rs.getSQL(), rs.getFile());
         }
         
         if (comparable2 == null) {
-            String message = format(Level.SEVERE, "excp.uncomparable_type", value2, value2.getClass().getName(), rs.getSQL());
-            throw new SQLUnsupportedParsingFeatureException(message, rs.getSQL(), rs.getDatabase().getFile());
+            String message = format(Level.WARNING, "excp.uncomparable_type", value2, value2.getClass().getName(), rs.getSQL());
+            throw new SQLUnsupportedParsingFeatureException(message, rs.getSQL(), rs.getFile());
         }
 
         return comparable1.compareTo(comparable2);
@@ -310,8 +309,8 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
         
         if (wannaBeLiteral) {
             if (wannaBeLiteral && uncompleteLiteral) {
-                String message = format(Level.SEVERE, "excp.illegal_parameter_where", text, rs.getSQL());
-                throw new SQLIllegalParameterException(message, rs.getSQL(), rs.getDatabase().getFile(), "literal", text);
+                String message = format(Level.WARNING, "excp.illegal_parameter_where", text, rs.getSQL());
+                throw new SQLIllegalParameterException(message, rs.getSQL(), rs.getFile(), "literal", text);
             }
             
             assert(text.indexOf("'") == 0 && text.indexOf("'") < text.lastIndexOf("'") && text.lastIndexOf("'") == text.length()-1 && text.length() >= 2) : "The litteral string is not enclosed into '...'"; 
@@ -320,9 +319,10 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
             return literal;
         }
         else {
-            // The string designs a field name, return it.
-            FieldDescriptor field = rs.getDatabase().getFieldsDescriptor().get(rs.findColumn(text)-1); // Columns indexes start at 1. 
-            return valueOf(rs, field);
+            // The string designs a field name, return its value.
+            try(DBFBuiltInMemoryResultSetForColumnsListing field = (DBFBuiltInMemoryResultSetForColumnsListing)rs.getFieldDesc(text, rs.getSQL())) {
+                return valueOf(rs, field);
+            }
         }
     }
     
@@ -337,52 +337,55 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
      * @throws SQLUnsupportedParsingFeatureException if our implementation of the driver still not handle this data type.
      * @throws SQLNotDateException if the value of a date field is not a date.
      */
-    private Object valueOf(DBFRecordBasedResultSet rs, FieldDescriptor field) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException, SQLUnsupportedParsingFeatureException, SQLNotDateException {
-        switch(field.getType()) {
-            case AutoIncrement:
-                return rs.getInt(field.getName());
+    private Object valueOf(DBFRecordBasedResultSet rs, DBFBuiltInMemoryResultSetForColumnsListing field) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException, SQLUnsupportedParsingFeatureException, SQLNotDateException {
+        String columnName = field.getString("COLUMN_NAME");
+        
+        switch(field.getString("TYPE_NAME")) {
+            case "AUTO_INCREMENT":
+                return rs.getInt(columnName);
                 
-            case Character:
-                return rs.getString(field.getName());
+            case "CHAR":
+                return rs.getString(columnName);
                 
-            case Date:
-                return rs.getDate(field.getName());
+            case "INTEGER":
+                return rs.getInt(columnName);
                 
-            case Double:
-                return rs.getDouble(field.getName());
+            case "DATE":
+                return rs.getDate(columnName);
                 
-            case FloatingPoint:
-                return rs.getFloat(field.getName());
+            case "DOUBLE":
+                return rs.getDouble(columnName);
                 
-            case Integer:
-                return rs.getInt(field.getName());
+            case "FLOAT":
+                return rs.getFloat(columnName);
                 
-            case Number:
+                
+            case "DECIMAL": {
                 // Choose Integer or Long type, if no decimal and that the field is not to big.
-                if (field.getDecimalCount() == 0 && field.getLength() <= 18)
-                {
-                    if (field.getLength() <= 9)
-                        return rs.getInt(field.getName());
+                if (field.getInt("DECIMAL_DIGITS") == 0 && field.getInt("COLUMN_SIZE") <= 18) {
+                    if (field.getInt("COLUMN_SIZE") <= 9)
+                        return rs.getInt(columnName);
                     else
-                        return rs.getLong(field.getName());
+                        return rs.getLong(columnName);
                 }
                 
-                return rs.getDouble(field.getName());
-
-            // Unhandled types.
-            case Currency:
-            case DateTime:
-            case Logical:
-            case Memo:
-            case Picture:
-            case TimeStamp:
-            case Variant:
-            case VariField:
-                String message = format(Level.SEVERE, "excp.unparsable_field_type", field.getName(), field.getType(), rs.getSQL());
-                throw new SQLUnsupportedParsingFeatureException(message, rs.getSQL(), rs.getDatabase().getFile());
+                return rs.getDouble(columnName);
+            }
+                
+            case "BOOLEAN":
+            case "CURRENCY":
+            case "DATETIME":
+            case "TIMESTAMP":
+            case "MEMO":
+            case "PICTURE":
+            case "VARIFIELD":
+            case "VARIANT":
+            case "UNKNOWN":
+                String message = format(Level.WARNING, "excp.unparsable_field_type", columnName, field.getString("TYPE_NAME"), rs.getSQL());
+                throw new SQLUnsupportedParsingFeatureException(message, rs.getSQL(), rs.getFile());
                 
             default:
-                throw new RuntimeException(format("assert.unknown_field_type", field.getType()));
+                throw new RuntimeException(format(Level.WARNING, "assert.unknown_field_type", field.getString("TYPE_NAME")));
         }
     }
 }

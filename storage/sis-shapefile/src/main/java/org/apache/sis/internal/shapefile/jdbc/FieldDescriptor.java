@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.shapefile;
+package org.apache.sis.internal.shapefile.jdbc;
 
 import java.nio.MappedByteBuffer;
 
@@ -29,12 +29,12 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
  * @version 0.5
  * @module
  */
- public class FieldDescriptor extends AbstractAutoChecker {
+public class FieldDescriptor extends AbstractAutoChecker {
     /** Field name. */
     private byte[] fieldName = new byte[11];
 
     /** Field type. */
-    private DataType fieldType;
+    private DBaseDataType fieldType;
 
     /** Field address (Field data address (address is set in memory; not useful on disk). */
     private byte[] fieldAddress = new byte[4];
@@ -49,13 +49,51 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
     private byte[] dbasePlusLanReserved2 = new byte[2];
 
     /** Work area id. */
+    @SuppressWarnings("unused") // Kept in case of later ALTER TABLE sql calls.
     private byte workAreaID;
 
     /** Reserved 3. */
     private byte[] dbasePlusLanReserved3 = new byte[2];
 
-    private byte SetFields;
-    
+    /** Undocumented use. */
+    @SuppressWarnings("unused") // Kept in case of later ALTER TABLE sql calls.
+    private byte setFields;
+
+    /**
+     * Create a field descriptor from the current position of the binary stream.
+     * @param byteBuffer ByteBuffer.
+     */
+    public FieldDescriptor(MappedByteBuffer byteBuffer) {
+        // Field name.
+        byteBuffer.get(fieldName);
+
+        // Field type.
+        char dt = (char)byteBuffer.get();
+        fieldType = DBaseDataType.valueOfDataType(dt);
+
+        // Field address.
+        byteBuffer.get(fieldAddress);
+
+        // Length and scale.
+        fieldLength = byteBuffer.get();
+        fieldDecimalCount = byteBuffer.get();
+
+        byteBuffer.getShort(); // reserved
+
+        byteBuffer.get(dbasePlusLanReserved2);
+
+        // Work area id.
+        workAreaID = byteBuffer.get();
+
+        byteBuffer.get(dbasePlusLanReserved3);
+
+        // Fields.
+        setFields = byteBuffer.get();
+
+        byte[] data = new byte[6];
+        byteBuffer.get(data); // reserved
+    }
+
     /**
      * Returns the decimal count of that field.
      * @return Decimal count.
@@ -88,48 +126,8 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
      * Return the field data type.
      * @return Data type.
      */
-    public DataType getType() {
+    public DBaseDataType getType() {
         return(fieldType);
-    }
-
-    /**
-     * Create a field descriptor from the current position of the binary stream.
-     * @param df ByteBuffer.
-     * @return FieldDescriptor or null if there is no more available.
-     */
-    static FieldDescriptor toFieldDescriptor(MappedByteBuffer df) {
-        FieldDescriptor fd = new FieldDescriptor();
-
-        // Field name.
-        df.get(fd.fieldName);
-
-        // Field type.
-        char dt = (char) df.get();
-        fd.fieldType = DataType.valueOfDataType(dt);
-
-        // Field address.
-        df.get(fd.fieldAddress);
-
-        // Length and scale.
-        fd.fieldLength = df.get();
-        fd.fieldDecimalCount = df.get();
-
-        df.getShort(); // reserved
-
-        df.get(fd.dbasePlusLanReserved2);
-
-        // Work area id.
-        fd.workAreaID = df.get();
-
-        df.get(fd.dbasePlusLanReserved3);
-
-        // Fields.
-        fd.SetFields = df.get();
-
-        byte[] data = new byte[6];
-        df.get(data); // reserved
-
-        return fd;
     }
     
     /**

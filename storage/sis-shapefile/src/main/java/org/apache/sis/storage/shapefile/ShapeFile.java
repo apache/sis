@@ -88,9 +88,6 @@ public class ShapeFile {
     /** M Max. */
     private double mmax; // little
 
-    /** Underlying databasefile content. */
-    private Database dbf;
-
     /** Features existing in the shapefile. */
     private Map<Integer, Feature> featureMap = new HashMap<>();
 
@@ -104,68 +101,50 @@ public class ShapeFile {
         Objects.requireNonNull(shpfile, "The shapefile to load cannot be null.");
 
         // Deduct database file name.
-        StringBuilder b = new StringBuilder(shpfile);
-        b.replace(shpfile.length() - 3, shpfile.length(), "dbf");
+        StringBuilder dbfFileName = new StringBuilder(shpfile);
+        dbfFileName.replace(shpfile.length() - 3, shpfile.length(), "dbf");
 
-        try {
-            dbf = new Database(b.toString());
-    
-            try(FileInputStream fis = new FileInputStream(shpfile); FileChannel fc = fis.getChannel();) {
-                int fsize = (int) fc.size();
-                MappedByteBuffer rf = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
-    
-                this.fileCode = rf.getInt();
-                rf.getInt();
-                rf.getInt();
-                rf.getInt();
-                rf.getInt();
-                rf.getInt();
-                this.fileLength = rf.getInt() * 2;
-    
-                rf.order(ByteOrder.LITTLE_ENDIAN);
-                this.version = rf.getInt();
-                this.shapeType = ShapeTypeEnum.get(rf.getInt());
-                this.xmin = rf.getDouble();
-                this.ymin = rf.getDouble();
-                this.xmax = rf.getDouble();
-                this.ymax = rf.getDouble();
-                this.zmin = rf.getDouble();
-                this.zmax = rf.getDouble();
-                this.mmin = rf.getDouble();
-                this.mmax = rf.getDouble();
-                rf.order(ByteOrder.BIG_ENDIAN);
-    
-                final DefaultFeatureType featureType = getFeatureType(shpfile);
-    
-                //dbf.getByteBuffer().get(); // should be 0d for field terminator
-                loadFeatures(featureType, rf);
-            } 
-            finally {
-                dbf.close();
-            }
-        }
-        catch(InvalidDbaseFileFormatException e) {
-            // Eventually, gather this low level trouble in a more generic exception, to avoid caller to catch hundred of different technical exceptions :
-            // at this level, we won't attempt to resolve or find a work around to the problems the DBF had.
-            throw new DataStoreException(e.getMessage(), e);
-        }
-    }
+        try(FileInputStream fis = new FileInputStream(shpfile); FileChannel fc = fis.getChannel();) {
+            int fsize = (int) fc.size();
+            MappedByteBuffer rf = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
 
-    /**
-     * Returns the underlying database file.
-     * @return Underlying database file.
-     */
-    public Database getDatabase() {
-        return this.dbf;
+            this.fileCode = rf.getInt();
+            rf.getInt();
+            rf.getInt();
+            rf.getInt();
+            rf.getInt();
+            rf.getInt();
+            this.fileLength = rf.getInt() * 2;
+
+            rf.order(ByteOrder.LITTLE_ENDIAN);
+            this.version = rf.getInt();
+            this.shapeType = ShapeTypeEnum.get(rf.getInt());
+            this.xmin = rf.getDouble();
+            this.ymin = rf.getDouble();
+            this.xmax = rf.getDouble();
+            this.ymax = rf.getDouble();
+            this.zmin = rf.getDouble();
+            this.zmax = rf.getDouble();
+            this.mmin = rf.getDouble();
+            this.mmax = rf.getDouble();
+            rf.order(ByteOrder.BIG_ENDIAN);
+
+            //final DefaultFeatureType featureType = getFeatureType(shpfile);
+
+            //dbf.getByteBuffer().get(); // should be 0d for field terminator
+            //loadFeatures(featureType, rf);
+        } 
     }
 
     /**
      * Returns the feature count of the shapefile.
      * @return Feature count.
      */
+    /*
     public int getFeatureCount() {
-        return this.dbf.getRowCount();
+        return this.getRowCount();
     }
+    */
 
     /**
      * Returns the feature Map.
@@ -181,8 +160,9 @@ public class ShapeFile {
      * @param rf byte buffer mapper.
      * @throws DataStoreException if a validation problem occurs.
      */
+    /*
     private void loadFeatures(DefaultFeatureType featureType, MappedByteBuffer rf) throws DataStoreException {
-        for (Integer i = 0; i < this.dbf.getRowCount(); i++) {
+        for (Integer i = 0; i < getRowCount(); i++) {
             // insert points into some type of list
             int RecordNumber = rf.getInt();
             @SuppressWarnings("unused")
@@ -217,11 +197,12 @@ public class ShapeFile {
             rf.order(ByteOrder.BIG_ENDIAN);
             // read in each Record and Populate the Feature
 
-            dbf.loadRowIntoFeature(f);
+            loadRowIntoFeature(f);
 
             this.featureMap.put(RecordNumber, f);
         }
     }
+    */
 
     /**
      * Load point feature.
@@ -318,16 +299,17 @@ public class ShapeFile {
      * @param name Name of the field.
      * @return The feature type.
      */
+    /*
     private DefaultFeatureType getFeatureType(final String name) {
         Objects.requireNonNull(name, "The feature name cannot be null.");
 
-        final int n = dbf.getFieldsDescriptor().size();
+        final int n = getFieldsDescriptor().size();
         final DefaultAttributeType<?>[] attributes = new DefaultAttributeType<?>[n + 1];
         final Map<String, Object> properties = new HashMap<>(4);
 
         // Load data field.
         for (int i = 0; i < n; i++) {
-            properties.put(DefaultAttributeType.NAME_KEY, dbf.getFieldsDescriptor().get(i).getName());
+            properties.put(DefaultAttributeType.NAME_KEY, getFieldsDescriptor().get(i).getName());
             attributes[i] = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
         }
 
@@ -339,6 +321,7 @@ public class ShapeFile {
         properties.put(DefaultAttributeType.NAME_KEY, name);
         return new DefaultFeatureType(properties, false, null, attributes);
     }
+    */
 
     /**
      * @see java.lang.Object#toString()
@@ -361,7 +344,6 @@ public class ShapeFile {
         s.append("mmin: ").append(mmin).append(lineSeparator);
         s.append("mmax: ").append(mmax).append(lineSeparator);
         s.append("------------------------").append(lineSeparator);
-        s.append(dbf.toString());
 
         return s.toString();
     }

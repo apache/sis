@@ -65,7 +65,7 @@ public class DBFBuiltInMemoryResultSetForTablesTypesListing extends AbstractBuil
         logStep("next");        
         
         if (m_index > 1) {
-            throw new SQLNoResultException(format(Level.SEVERE, "excp.only_one_table_type_handled"), "Driver manager asks for table types listing", getDatabase().getFile());
+            throw new SQLNoResultException(format(Level.WARNING, "excp.only_one_table_type_handled"), "Driver manager asks for table types listing", getFile());
         }
 
         m_index ++;

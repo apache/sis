@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.shapefile.jdbc.resultset;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -27,9 +28,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
+import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
-import org.apache.sis.storage.shapefile.Database;
-import org.apache.sis.storage.shapefile.FieldDescriptor;
 
 /**
  * Common implemented features of all ResultSets : those based on a record, but also those returning results forged in memory. 
@@ -76,7 +76,7 @@ abstract public class AbstractResultSet extends AbstractUnimplementedFeaturesOfR
         m_statement.assertNotClosed();
         
         if (m_isClosed) {
-            throw new SQLConnectionClosedException(format(Level.SEVERE, "excp.closed_resultset", m_sql, getDatabase().getFile().getName()), m_sql, getDatabase().getFile());
+            throw new SQLConnectionClosedException(format(Level.WARNING, "excp.closed_resultset", m_sql, getFile().getName()), m_sql, getFile());
         }
     }
 
@@ -106,25 +106,13 @@ abstract public class AbstractResultSet extends AbstractUnimplementedFeaturesOfR
      * @param columnLabel The name of the column.
      * @return The index of the given column name : first column is 1.
      * @throws SQLNoSuchFieldException if there is no field with this name in the query.
+     * @throws SQLConnectionClosedException if the connection is closed. 
      */
-    @Override
-    public int findColumn(String columnLabel) throws SQLNoSuchFieldException {
-        // If the column name is null, no search is needed.
-        if (columnLabel == null) {
-            String message = format("excp.no_such_column_in_resultset", columnLabel, m_sql, getDatabase().getFile().getName());
-            throw new SQLNoSuchFieldException(message, m_sql, getDatabase().getFile(), columnLabel);
-        }
-        
-        // Search the field among the fields descriptors.
-        for(int index=0; index < getDatabase().getFieldsDescriptor().size(); index ++) {
-            if (getDatabase().getFieldsDescriptor().get(index).getName().equals(columnLabel)) {
-                return index + 1;
-            }
-        }
-
-        // If we are here, we haven't found our field. Throw an exception.
-        String message = format("excp.no_such_column_in_resultset", columnLabel, m_sql, getDatabase().getFile().getName());
-        throw new SQLNoSuchFieldException(message, m_sql, getDatabase().getFile(), columnLabel);
+    @Override 
+    @SuppressWarnings("resource") // The connection is only used to get the column index.
+    public int findColumn(String columnLabel) throws SQLNoSuchFieldException, SQLConnectionClosedException {
+        DBFConnection cnt = (DBFConnection)m_statement.getConnection();
+        return cnt.findColumn(columnLabel, getSQL());
     }
 
     /**
@@ -207,15 +195,6 @@ abstract public class AbstractResultSet extends AbstractUnimplementedFeaturesOfR
     public int getConcurrency() throws SQLException {
         return getStatement().getResultSetConcurrency();
     }
-    
-    /**
-     * Return the underlying database binary representation.
-     * This function shall not check the closed state of this connection, as it can be used in exception messages descriptions.
-     * @return Database.
-     */
-    public Database getDatabase() {
-        return(m_statement.getDatabase());
-    }
 
     /**
      * Defaults to the index-based version of this method.
@@ -240,6 +219,29 @@ abstract public class AbstractResultSet extends AbstractUnimplementedFeaturesOfR
     @Override
     public int getFetchSize() throws SQLException {
         return getStatement().getFetchSize();
+    }
+
+    /**
+     * Return a field name.
+     * @param columnIndex Column index.
+     * @param sql For information, the SQL statement that is attempted.
+     * @return Field Name.
+     * @throws SQLIllegalColumnIndexException if the index is out of bounds.
+     * @throws SQLConnectionClosedException if the connection is closed.
+     */
+    @SuppressWarnings("resource") // Only use the current connection to get the field name. 
+    public String getFieldName(int columnIndex, String sql) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
+        DBFConnection cnt = (DBFConnection)m_statement.getConnection();
+        return cnt.getFieldName(columnIndex, sql);
+    }
+
+    /**
+     * Returns the Database File.
+     * @return Database File.
+     */
+    @Override 
+    public File getFile() {
+        return m_statement.getFile();
     }
 
     /**
@@ -928,30 +930,29 @@ abstract public class AbstractResultSet extends AbstractUnimplementedFeaturesOfR
     public boolean wasNull() {
         return m_wasNull;
     }
-
+    
     /**
-     * Returns the field descriptor of a given ResultSet column index.
-     * @param columnIndex Column index, first column is 1, second is 2, etc.
-     * @return Field Descriptor.
-     * @throws SQLIllegalColumnIndexException if the index is out of bounds.
+     * Get a field description.
+     * @param columnLabel Column label.
+     * @param sql SQL Statement.
+     * @return ResultSet with current row set on the wished field.
+     * @throws SQLConnectionClosedException if the connection is closed.
+     * @throws SQLNoSuchFieldException if no column with that name exists.
      */
-    protected FieldDescriptor getField(int columnIndex) throws SQLIllegalColumnIndexException {
-        if (columnIndex < 1 || columnIndex > getDatabase().getFieldsDescriptor().size()) {
-            String message = format("excp.illegal_column_index", columnIndex, getDatabase().getFieldsDescriptor().size());
-            throw new SQLIllegalColumnIndexException(message, m_sql, getDatabase().getFile(), columnIndex);
-        }
-        
-        return getDatabase().getFieldsDescriptor().get(columnIndex-1);
+    public ResultSet getFieldDesc(String columnLabel, String sql) throws SQLConnectionClosedException, SQLNoSuchFieldException {
+        return ((DBFConnection)((DBFStatement)getStatement()).getConnection()).getFieldDesc(columnLabel, sql);
     }
 
     /**
-     * Returns the field descriptor of a given ResultSet column index.
-     * @param columnName Column name.
-     * @return Field Descriptor.
-     * @throws SQLNoSuchFieldException if there is no field with this name in the query.
+     * Get a field description.
+     * @param column Column index.
+     * @param sql SQL Statement.
+     * @return ResultSet with current row set on the wished field.
+     * @throws SQLConnectionClosedException if the connection is closed.
+     * @throws SQLIllegalColumnIndexException if the column index is out of bounds.
      */
-    protected FieldDescriptor getField(String columnName) throws SQLNoSuchFieldException {
-        return getDatabase().getFieldsDescriptor().get(findColumn(columnName)-1);
+    public ResultSet getFieldDesc(int column, String sql) throws SQLConnectionClosedException, SQLIllegalColumnIndexException {
+        return ((DBFConnection)((DBFStatement)getStatement()).getConnection()).getFieldDesc(column, sql);
     }
 
     /**
