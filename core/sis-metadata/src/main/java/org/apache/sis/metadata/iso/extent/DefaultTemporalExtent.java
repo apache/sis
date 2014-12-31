@@ -218,9 +218,9 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     }
 
     /**
-     * Sets this temporal extent to values inferred from the specified envelope. The envelope can
-     * be multi-dimensional, in which case the {@linkplain Envelope#getCoordinateReferenceSystem()
-     * envelope CRS} must have a temporal component.
+     * Sets this temporal extent to values inferred from the specified envelope.
+     * The given envelope must have a {@linkplain Envelope#getCoordinateReferenceSystem() CRS},
+     * and at least one dimension of that CRS shall be assignable to a property of this extent.
      *
      * <p><b>Note:</b> This method is available only if the {@code sis-referencing} module is
      * available on the classpath.</p>
