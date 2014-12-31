@@ -149,7 +149,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
      */
     @Override
     public void setAutoCommit(boolean autoCommit) {
-        format(Level.WARNING, "log.auto_commit_ignored", autoCommit);
+        format(Level.FINE, "log.auto_commit_ignored", autoCommit);
     }
 
     /**
@@ -157,7 +157,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
      */
     @Override
     public void commit() {
-        format(Level.WARNING, "log.commit_rollback_ignored");
+        format(Level.FINE, "log.commit_rollback_ignored");
     }
 
     /**
@@ -165,7 +165,7 @@ abstract class AbstractConnection extends AbstractJDBC implements Connection {
      */
     @Override
     public void rollback() {
-        format(Level.WARNING, "log.commit_rollback_ignored");
+        format(Level.FINE, "log.commit_rollback_ignored");
     }
 
     /**

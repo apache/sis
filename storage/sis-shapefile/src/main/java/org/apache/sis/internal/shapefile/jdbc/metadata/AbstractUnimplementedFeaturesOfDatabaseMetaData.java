@@ -31,13 +31,6 @@ public abstract class AbstractUnimplementedFeaturesOfDatabaseMetaData extends Ab
     }
 
     /**
-     * @see java.sql.DatabaseMetaData#getColumns(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-     */
-    @Override public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
-        throw unsupportedOperation("getColumns", catalog, schemaPattern, tableNamePattern, columnNamePattern);
-    }
-
-    /**
      * @see java.sql.DatabaseMetaData#getColumnPrivileges(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override public ResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern) throws SQLException {

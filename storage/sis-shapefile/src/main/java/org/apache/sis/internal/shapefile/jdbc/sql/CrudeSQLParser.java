@@ -1,6 +1,8 @@
 package org.apache.sis.internal.shapefile.jdbc.sql;
 
+import java.io.File;
 import java.util.Objects;
+import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.jdbc.AbstractJDBC;
 import org.apache.sis.internal.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
@@ -33,8 +35,8 @@ public class CrudeSQLParser extends AbstractJDBC {
         String sql = m_rs.getSQL().trim();
         
         if (sql.toLowerCase().startsWith("select * from ") == false) {
-            String message = format("excp.limited_feature_syntax", sql);
-            throw new SQLInvalidStatementException(message, m_rs.getSQL(), m_rs.getDatabase().getFile());
+            String message = format(Level.WARNING, "excp.limited_feature_syntax", sql);
+            throw new SQLInvalidStatementException(message, m_rs.getSQL(), m_rs.getFile());
         }
         
         final String whereWord = " where ";
@@ -50,8 +52,8 @@ public class CrudeSQLParser extends AbstractJDBC {
         
         // If the condition is empty, it's a syntax error because a WHERE clause went before.
         if (whereCondition.isEmpty()) {
-            String message = format("excp.where_without_conditions", sql);            
-            throw new SQLInvalidStatementException(message, m_rs.getSQL(), m_rs.getDatabase().getFile());
+            String message = format(Level.WARNING, "excp.where_without_conditions", sql);            
+            throw new SQLInvalidStatementException(message, m_rs.getSQL(), m_rs.getFile());
         }
         
         // Currently, all the condition are made of three parts :
@@ -61,8 +63,8 @@ public class CrudeSQLParser extends AbstractJDBC {
         String[] parts = whereCondition.split(" ");
         
         if (parts.length != 3) {
-            String message = format("excp.limited_feature_conditional_parsing", whereCondition, sql);
-            throw new SQLInvalidStatementException(message, m_rs.getSQL(), m_rs.getDatabase().getFile());
+            String message = format(Level.WARNING, "excp.limited_feature_conditional_parsing", whereCondition, sql);
+            throw new SQLInvalidStatementException(message, m_rs.getSQL(), m_rs.getFile());
         }
         
         // Detect and promote litterals in parameters to their best types.
@@ -100,6 +102,13 @@ public class CrudeSQLParser extends AbstractJDBC {
     @Override public boolean isWrapperFor(Class<?> iface) {
         logStep("isWrapperFor", iface);
         return false;
+    }
+
+    /**
+     * @see org.apache.sis.internal.shapefile.jdbc.AbstractJDBC#getFile()
+     */
+    @Override protected File getFile() {
+        return m_rs.getFile();
     }
 
     /**

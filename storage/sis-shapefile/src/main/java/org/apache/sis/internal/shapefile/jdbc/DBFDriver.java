@@ -68,7 +68,14 @@ public class DBFDriver extends AbstractJDBC implements Driver {
     @Override
     public Connection connect(final String url, @SuppressWarnings("unused") Properties info) throws SQLException {
         Objects.requireNonNull(url, "the DBase3 url cannot be null");
-        return new DBFConnection(new File(url));
+        File file = new File(url);
+        
+        try {
+            return new DBFConnection(file, new MappedByteReader(file));
+        }
+        catch(FileNotFoundException e) {
+            throw new SQLException(e.getMessage(), e);
+        }
     }
 
     /**
@@ -85,11 +92,18 @@ public class DBFDriver extends AbstractJDBC implements Driver {
     }
 
     /**
+     * @see org.apache.sis.internal.shapefile.jdbc.AbstractJDBC#getFile()
+     */
+    @Override protected File getFile() {
+        return null;
+    }
+
+    /**
      * Gets information about the possible properties for this driver.
      * The current version has none.
      */
     @Override
-    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) {
+    public DriverPropertyInfo[] getPropertyInfo(@SuppressWarnings("unused") String url, @SuppressWarnings("unused") Properties info) {
         return new DriverPropertyInfo[0];
     }
 

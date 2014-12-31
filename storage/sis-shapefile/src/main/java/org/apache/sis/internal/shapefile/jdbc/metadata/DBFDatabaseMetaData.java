@@ -16,23 +16,21 @@
  */
 package org.apache.sis.internal.shapefile.jdbc.metadata;
 
+import java.io.File;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.resultset.*;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
-import org.apache.sis.storage.shapefile.Database;
 
 /**
  * Database Metadata.
  * @author Marc LE BIHAN
  */
 public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabaseMetaData {
-    /** Database. */
-    private Database m_database;
-    
     /** Connection. */
     private DBFConnection m_connection;
     
@@ -43,7 +41,6 @@ public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabase
     public DBFDatabaseMetaData(DBFConnection connection) {
         Objects.requireNonNull(connection, "The database connection used to create Database metadata cannot be null.");
         m_connection = connection;
-        m_database = connection.getDatabase();
     }
 
     /**
@@ -71,11 +68,31 @@ public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabase
     }
 
     /**
+     * @see java.sql.DatabaseMetaData#getColumns(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     * @throws SQLConnectionClosedException if the connection is closed. 
+     */
+    @Override 
+    public ResultSet getColumns(@SuppressWarnings("unused") String catalog, @SuppressWarnings("unused") String schemaPattern, @SuppressWarnings("unused") String tableNamePattern, @SuppressWarnings("unused") String columnNamePattern) throws SQLConnectionClosedException {
+        try(DBFStatement stmt = (DBFStatement)m_connection.createStatement()) {
+            return new DBFBuiltInMemoryResultSetForColumnsListing(stmt, m_connection.getFieldsDescriptors());
+        }
+    }
+
+    /**
+     * Returns the Database File.
+     * @return Database File.
+     */
+    @Override 
+    public File getFile() {
+        return m_connection.getFile();
+    }
+
+    /**
      * @see java.sql.DatabaseMetaData#getURL()
      */
     @Override public String getURL() {
         logStep("getURL");
-        return m_database.getFile().getAbsolutePath();
+        return getFile().getAbsolutePath();
     }
 
     /**
@@ -1280,5 +1297,4 @@ public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabase
     @Override protected Class<?> getInterface() {
         return DatabaseMetaData.class;
     }
-
 }

@@ -45,11 +45,7 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends AbstractBuiltInMe
         switch(columnLabel) {
             case "TABLE_NAME":                // String => table name.
             {
-                // The table default to the file name (without its extension .dbf).
-                String fileName = getDatabase().getFile().getName(); 
-                int indexDBF = fileName.lastIndexOf(".");
-                String tableName = fileName.substring(0, indexDBF);
-                
+                String tableName = getTableName();
                 m_wasNull = (tableName == null);
                 return tableName;
             }
@@ -83,7 +79,7 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends AbstractBuiltInMe
         logStep("next");
         
         if (m_index > 1) {
-            throw new SQLNoResultException(format(Level.SEVERE, "excp.only_one_table_per_dbf"), "Driver manager asks for table listing", getDatabase().getFile());
+            throw new SQLNoResultException(format(Level.WARNING, "excp.only_one_table_per_dbf"), "Driver manager asks for table listing", getFile());
         }
 
         m_index ++;

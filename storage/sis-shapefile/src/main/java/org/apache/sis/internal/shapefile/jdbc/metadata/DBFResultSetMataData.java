@@ -16,17 +16,18 @@
  */
 package org.apache.sis.internal.shapefile.jdbc.metadata;
 
+import java.io.File;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.sql.Types;
 import java.util.Objects;
+import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.jdbc.AbstractJDBC;
-import org.apache.sis.internal.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
-import org.apache.sis.internal.shapefile.jdbc.resultset.SQLIllegalColumnIndexException;
-import org.apache.sis.storage.shapefile.DataType;
-import org.apache.sis.storage.shapefile.Database;
-import org.apache.sis.storage.shapefile.FieldDescriptor;
+import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
+import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
+import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
+import org.apache.sis.internal.shapefile.jdbc.resultset.*;
 
 /**
  * ResultSet Metadata.
@@ -36,6 +37,9 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     /** ResultSet. */
     private DBFRecordBasedResultSet m_rs;
     
+    /** Database metadata. */
+    private DBFDatabaseMetaData m_metadata;
+    
     /**
      * Construct a ResultSetMetaData.
      * @param rs ResultSet.
@@ -43,6 +47,13 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     public DBFResultSetMataData(DBFRecordBasedResultSet rs) {
         Objects.requireNonNull(rs, "A non null ResultSet is required.");
         m_rs = rs;
+        
+        try {
+            m_metadata = (DBFDatabaseMetaData)rs.getStatement().getConnection().getMetaData();
+        }
+        catch(SQLException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
     
     /**
@@ -63,21 +74,32 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
 
     /**
      * @see java.sql.ResultSetMetaData#getColumnCount()
+     * @throws SQLConnectionClosedException if the connection is closed. 
      */
-    @Override public int getColumnCount() {
+    @SuppressWarnings("resource") // The current connection is only used and has not to be closed. 
+    @Override public int getColumnCount() throws SQLConnectionClosedException {
         logStep("getColumnCount");
-        return m_rs.getDatabase().getFieldsDescriptor().size();
+        DBFConnection cnt = (DBFConnection)(((DBFStatement)m_rs.getStatement()).getConnection());
+        
+        return cnt.getColumnCount();
     }
 
     /**
      * @see java.sql.ResultSetMetaData#isAutoIncrement(int)
      * @throws SQLIllegalColumnIndexException if the column index is illegal. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override public boolean isAutoIncrement(int column) throws SQLIllegalColumnIndexException {
+    @Override public boolean isAutoIncrement(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("isAutoIncrement", column);
-        
-        FieldDescriptor field = getField(column);
-        return field.getType().equals(DataType.AutoIncrement);
+
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            return rsDatabase.getString("TYPE_NAME").equals("AUTO_INCREMENT");
+        }
+        catch(SQLNoSuchFieldException e) {
+            // We encounter an internal API error in this case.
+            String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "TYPE_NAME", e.getMessage());
+            throw new RuntimeException(message, e);
+        }
     }
 
     /**
@@ -99,12 +121,18 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     /**
      * @see java.sql.ResultSetMetaData#isCurrency(int)
      * @throws SQLIllegalColumnIndexException if the column index is illegal. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override public boolean isCurrency(int column) throws SQLIllegalColumnIndexException {
+    @Override public boolean isCurrency(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("isCurrency", column);
 
-        FieldDescriptor field = getField(column);
-        return field.getType().equals(DataType.Currency);
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            return rsDatabase.getString("TYPE_NAME").equals("CURRENCY");
+        }
+        catch(SQLNoSuchFieldException e) {
+            String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "TYPE_NAME", e.getMessage());
+            throw new RuntimeException(message, e);
+        }
     }
 
     /**
@@ -126,65 +154,83 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     /**
      * @see java.sql.ResultSetMetaData#getColumnDisplaySize(int)
      * @throws SQLIllegalColumnIndexException if the column index is illegal. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override public int getColumnDisplaySize(int column) throws SQLIllegalColumnIndexException {
+    @Override public int getColumnDisplaySize(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnDisplaySize", column);
         
-        FieldDescriptor field = getField(column);
-        
-        switch(field.getType()) {
-            case AutoIncrement:
-            case Character:
-            case Integer:
-               return field.getLength();
-                
-            case Date:
-                return 8;
-                
-            // Add decimal separator for decimal numbers.
-            case Double:
-            case FloatingPoint:
-            case Number:
-                return field.getLength() + 1;
-                
-            case Logical:
-                return 5; // Translation for true, false, null.
-
-            // Unhandled types default to field length.
-            case Currency:
-            case DateTime:
-            case Memo:
-            case Picture:
-            case TimeStamp:
-            case VariField:
-            case Variant:
-                return field.getLength();
-                
-            default:
-                return field.getLength();
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            switch(rsDatabase.getString("TYPE_NAME")) {
+                case "AUTO_INCREMENT":
+                case "CHAR":
+                case "INTEGER":
+                   return rsDatabase.getInt("COLUMN_SIZE");
+                    
+                case "DATE":
+                    return 8;
+                    
+                // Add decimal separator for decimal numbers.
+                case "DOUBLE":
+                case "FLOAT":
+                case "DECIMAL":
+                    return rsDatabase.getInt("COLUMN_SIZE") + 1;
+                    
+                case "BOOLEAN":
+                    return 5; // Translation for true, false, null.
+    
+                // Unhandled types default to field length.
+                case "CURRENCY":
+                case "DATETIME":
+                case "TIMESTAMP":
+                case "MEMO":
+                case "PICTURE":
+                case "VARIFIELD":
+                case "VARIANT":
+                case "UNKNOWN":
+                    return rsDatabase.getInt("COLUMN_SIZE");
+                    
+                default:
+                    return rsDatabase.getInt("COLUMN_SIZE");
+            }
+        }
+        catch(SQLNoSuchFieldException e) {
+            String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "TYPE_NAME", e.getMessage());
+            throw new RuntimeException(message, e);
         }
     }
 
     /**
      * @see java.sql.ResultSetMetaData#getColumnLabel(int)
      * @throws SQLIllegalColumnIndexException if the column index is illegal. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override public String getColumnLabel(int column) throws SQLIllegalColumnIndexException {
+    @Override public String getColumnLabel(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnLabel", column);
-
-        FieldDescriptor field = getField(column);
-        return field.getName();
+        
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            return rsDatabase.getString("COLUMN_NAME");
+        }
+        catch(SQLNoSuchFieldException e) {
+            String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "COLUMN_NAME", e.getMessage());
+            throw new RuntimeException(message, e);
+        }
     }
 
     /**
      * @see java.sql.ResultSetMetaData#getColumnName(int)
      * @throws SQLIllegalColumnIndexException if the column index is illegal. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override public String getColumnName(int column) throws SQLIllegalColumnIndexException {
+    @Override public String getColumnName(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnName", column);
-
-        FieldDescriptor field = getField(column);
-        return field.getName();
+        
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            return rsDatabase.getString("COLUMN_NAME");
+        }
+        catch(SQLNoSuchFieldException e) {
+            String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "COLUMN_NAME", e.getMessage());
+            throw new RuntimeException(message, e);
+        }
     }
 
     /**
@@ -192,91 +238,40 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
      */
     @Override public String getSchemaName(int column) {
         logStep("getSchemaName", column);
-
         return ""; // No schema name in DBase 3.
     }
 
     /**
      * @see java.sql.ResultSetMetaData#getPrecision(int)
      * @throws SQLIllegalColumnIndexException if the column index is illegal. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override public int getPrecision(int column) throws SQLIllegalColumnIndexException {
+    @Override public int getPrecision(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getPrecision", column);
-
-        FieldDescriptor field = getField(column);
         
-        switch(field.getType()) {
-            case AutoIncrement:
-            case Character:
-            case Integer:
-               return field.getLength();
-                
-            case Date:
-                return 8;
-                
-            case Double:
-            case FloatingPoint:
-            case Number:
-                return field.getLength();
-                
-            case Logical:
-                return 0;
-
-            case Currency:
-            case DateTime:
-            case TimeStamp:
-                return field.getLength();
-
-            case Memo:
-            case Picture:
-            case VariField:
-            case Variant:
-                return 0;
-
-            default:
-                return field.getLength();
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            return rsDatabase.getInt("COLUMN_SIZE");
+        }
+        catch(SQLNoSuchFieldException e) {
+            String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "COLUMN_SIZE", e.getMessage());
+            throw new RuntimeException(message, e);
         }
     }
 
     /**
      * @see java.sql.ResultSetMetaData#getScale(int)
      * @throws SQLIllegalColumnIndexException if the column index is illegal. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override public int getScale(int column) throws SQLIllegalColumnIndexException {
+    @Override public int getScale(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getScale", column);
-
-        FieldDescriptor field = getField(column);
         
-        switch(field.getType()) {
-            case AutoIncrement:
-            case Character:
-            case Integer:
-               return field.getLength();
-                
-            case Date:
-                return 8;
-                
-            case Double:
-            case FloatingPoint:
-            case Number:
-                return field.getLength();
-                
-            case Logical:
-                return 0;
-
-            case Currency:
-            case DateTime:
-            case TimeStamp:
-                return field.getLength();
-
-            case Memo:
-            case Picture:
-            case VariField:
-            case Variant:
-                return 0;
-
-            default:
-                return field.getLength();
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            return rsDatabase.getInt("DECIMAL_DIGITS");
+        }
+        catch(SQLNoSuchFieldException e) {
+            String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "DECIMAL_DIGITS", e.getMessage());
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -287,7 +282,7 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
         logStep("getTableName", column);
 
         // The table default to the file name (without its extension .dbf).
-        String fileName = m_rs.getDatabase().getFile().getName(); 
+        String fileName = m_rs.getFile().getName(); 
         int indexDBF = fileName.lastIndexOf(".");
         String tableName = fileName.substring(0, indexDBF);
         
@@ -306,119 +301,32 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
      * @see java.sql.ResultSetMetaData#getColumnType(int)
      * @throws SQLIllegalColumnIndexException if the column index is illegal. 
      */
-    @Override public int getColumnType(int column) throws SQLIllegalColumnIndexException {
+    @Override public int getColumnType(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnType", column);
-
-        FieldDescriptor field = getField(column);
         
-        switch(field.getType()) {
-            case AutoIncrement:
-                return Types.INTEGER;
-                
-            case Character:
-                return Types.CHAR;
-                
-            case Integer:
-               return Types.INTEGER;
-                
-            case Date:
-                return Types.DATE;
-                
-            case Double:
-                return Types.DOUBLE;
-                
-            case FloatingPoint:
-                return Types.FLOAT;
-                
-            case Number:
-                return Types.DECIMAL;
-                
-            case Logical:
-                return Types.BOOLEAN;
-
-            case Currency:
-                return Types.NUMERIC;
-                
-            case DateTime:
-                return Types.TIMESTAMP; // TODO : I think ?
-                
-            case TimeStamp:
-                return Types.TIMESTAMP;
-
-            case Memo:
-                return Types.BLOB;
-                
-            case Picture:
-                return Types.BLOB;
-                
-            case VariField:
-                return Types.OTHER;
-                
-            case Variant:
-                return Types.OTHER;
-
-            default:
-                return Types.OTHER;
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            return rsDatabase.getInt("DATA_TYPE");
+        }
+        catch(SQLNoSuchFieldException e) {
+            String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "DATA_TYPE", e.getMessage());
+            throw new RuntimeException(message, e);
         }
     }
 
     /**
      * @see java.sql.ResultSetMetaData#getColumnTypeName(int)
      * @throws SQLIllegalColumnIndexException if the column index is illegal. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override public String getColumnTypeName(int column) throws SQLIllegalColumnIndexException {
+    @Override public String getColumnTypeName(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnTypeName", column);
-
-        FieldDescriptor field = getField(column);
         
-        switch(field.getType()) {
-            case AutoIncrement:
-                return "AUTO_INCREMENT";
-                
-            case Character:
-                return "CHAR";
-                
-            case Integer:
-               return "INTEGER";
-                
-            case Date:
-                return "DATE";
-                
-            case Double:
-                return "DOUBLE";
-                
-            case FloatingPoint:
-                return "FLOAT";
-                
-            case Number:
-                return "DECIMAL";
-                
-            case Logical:
-                return "BOOLEAN";
-
-            case Currency:
-                return "CURRENCY";
-                
-            case DateTime:
-                return "DATETIME";
-                
-            case TimeStamp:
-                return "TIMESTAMP";
-
-            case Memo:
-                return "MEMO";
-                
-            case Picture:
-                return "PICTURE";
-                
-            case VariField:
-                return "VARIFIELD";
-                
-            case Variant:
-                return "VARIANT";
-
-            default:
-                return "UNKNOWN";
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            return rsDatabase.getString("TYPE_NAME");
+        }
+        catch(SQLNoSuchFieldException e) {
+            String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "TYPE_NAME", e.getMessage());
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -450,60 +358,69 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
      * @see java.sql.ResultSetMetaData#getColumnClassName(int)
      * @throws SQLFeatureNotSupportedException if underlying class implementing a type isn't currently set. 
      * @throws SQLIllegalColumnIndexException if the column index is illegal. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override public String getColumnClassName(int column) throws SQLFeatureNotSupportedException, SQLIllegalColumnIndexException {
+    @Override public String getColumnClassName(int column) throws SQLFeatureNotSupportedException, SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnClassName", column);
 
-        FieldDescriptor field = getField(column);
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            switch(rsDatabase.getString("TYPE_NAME")) {
+                case "AUTO_INCREMENT":
+                    return Integer.class.getName();
+                    
+                case "CHAR":
+                    return String.class.getName();
+                    
+                case "INTEGER":
+                   return Integer.class.getName();
+                    
+                case "DATE":
+                    return java.sql.Date.class.getName();
+                    
+                case "DOUBLE":
+                    return Double.class.getName();
+                    
+                case "FLOAT":
+                    return Float.class.getName();
+                    
+                case "DECIMAL":
+                    return Double.class.getName();
+                    
+                case "BOOLEAN":
+                    return Boolean.class.getName();
         
-        switch(field.getType()) {
-            case AutoIncrement:
-                return Integer.class.getName();
-                
-            case Character:
-                return String.class.getName();
-                
-            case Integer:
-                return Integer.class.getName();
-                
-            case Date:
-                return java.sql.Date.class.getName();
-                
-            case Double:
-                return Double.class.getName();
-                
-            case FloatingPoint:
-                return Float.class.getName();
-                
-            case Number:
-                return Double.class.getName();
-                
-            case Logical:
-                return Boolean.class.getName();
-
-            case Currency:
-                return Double.class.getName();
-                
-            case DateTime:
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on DateTime");
-                
-            case TimeStamp:
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on TimeStamp");
-
-            case Memo:
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Memo");
-                
-            case Picture:
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Picture");
-                
-            case VariField:
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on VariField");
-                
-            case Variant:
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Variant");
-
-            default:
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + field.getType());
+                case "CURRENCY":
+                    return Double.class.getName();
+                    
+                case "DATETIME":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on DateTime");
+                    
+                case "TIMESTAMP":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on TimeStamp");
+                    
+                case "MEMO":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Memo");
+                    
+                case "PICTURE":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Picture");
+                    
+                case "VARIFIELD":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on VariField");
+                    
+                case "VARIANT":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Variant");
+                    
+                case "UNKNOWN":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + rsDatabase.getString("TYPE_NAME"));
+                    
+                default:
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + rsDatabase.getString("TYPE_NAME"));
+            }
+        }
+        catch(SQLNoSuchFieldException e) {
+            // We encounter an internal API error in this case.
+            String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "TYPE_NAME", e.getMessage());
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -515,26 +432,42 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     }
     
     /**
-     * Return the underlying database binary representation.
-     * This function shall not check the closed state of this connection, as it can be used in exception messages descriptions.
-     * @return Database.
+     * @see org.apache.sis.internal.shapefile.jdbc.AbstractJDBC#getFile()
      */
-    public Database getDatabase() {
-        return(m_rs.getDatabase());
+    @Override
+    protected File getFile() {
+        return m_rs.getFile();
     }
-
+    
     /**
-     * Returns the field descriptor of a given ResultSet column index.
-     * @param columnIndex Column index, first column is 1, second is 2, etc.
-     * @return Field Descriptor.
-     * @throws SQLIllegalColumnIndexException if the index is out of bounds.
+     * Returns a ResultSet set on the wished column.
+     * @param column Column.
+     * @return ResultSet describing to wished column?
+     * @throws SQLIllegalColumnIndexException if the column index is out of bounds.
+     * @throws SQLConnectionClosedException if the underlying connection is closed.
      */
-    private FieldDescriptor getField(int columnIndex) throws SQLIllegalColumnIndexException {
-        if (columnIndex < 1 || columnIndex > getDatabase().getFieldsDescriptor().size()) {
-            String message = format("excp.illegal_column_index_metadata", columnIndex, getDatabase().getFieldsDescriptor().size());
-            throw new SQLIllegalColumnIndexException(message, m_rs.getSQL(), getDatabase().getFile(), columnIndex);
+    private DBFBuiltInMemoryResultSetForColumnsListing desc(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
+        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = (DBFBuiltInMemoryResultSetForColumnsListing)m_metadata.getColumns(null, null, null, null);
+        
+        if (column > getColumnCount()) {
+            rsDatabase.close();
+            String message = format(Level.WARNING, "excp.illegal_column_index_metadata", column, getColumnCount());
+            throw new SQLIllegalColumnIndexException(message, m_rs.getSQL(), getFile(), column);
         }
         
-        return getDatabase().getFieldsDescriptor().get(columnIndex-1);
+        // TODO Implements ResultSet:absolute(int) instead.
+        for(int index=1; index <= column; index ++) {
+            try {
+                rsDatabase.next();
+            }
+            catch(SQLNoResultException e) {
+                // We encounter an internal API error in this case.
+                rsDatabase.close();
+                String message = format(Level.SEVERE, "assert.less_column_in_metadata_than_expected", column, getColumnCount());
+                throw new RuntimeException(message, e);
+            }
+        }
+        
+        return rsDatabase;
     }
 }

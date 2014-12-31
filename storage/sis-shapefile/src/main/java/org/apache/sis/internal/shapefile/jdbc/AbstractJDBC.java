@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
+import java.io.File;
 import java.sql.*;
 import java.util.logging.Level;
 
@@ -74,7 +75,7 @@ public abstract class AbstractJDBC extends AbstractAutoChecker implements Wrappe
      * @throws SQLFeatureNotSupportedException the not supported feature.
      */
     public final SQLFeatureNotSupportedException unsupportedOperation(final String methodOrWishedFeatureName) throws SQLFeatureNotSupportedException {
-        String message = format(Level.SEVERE, "excp.unsupportedDriverFeature", getInterface(), methodOrWishedFeatureName, getClass().getSimpleName());
+        String message = format(Level.WARNING, "excp.unsupportedDriverFeature", getInterface(), methodOrWishedFeatureName, getClass().getSimpleName());
         throw new SQLFeatureNotSupportedException(message);
     }
 
@@ -95,7 +96,7 @@ public abstract class AbstractJDBC extends AbstractAutoChecker implements Wrappe
             arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed. 
         }
         
-        String message = format(Level.SEVERE, "excp.unsupportedDriverFeature_with_arguments", getInterface(), methodOrWishedFeatureName, getClass().getSimpleName(), arguments.toString());
+        String message = format(Level.WARNING, "excp.unsupportedDriverFeature_with_arguments", getInterface(), methodOrWishedFeatureName, getClass().getSimpleName(), arguments.toString());
         throw new SQLFeatureNotSupportedException(message);
     }
 
@@ -132,6 +133,12 @@ public abstract class AbstractJDBC extends AbstractAutoChecker implements Wrappe
     public void logUnsupportedOperation(final String methodName, Object... args) {
         format(Level.WARNING, "excp.unsupportedDriverFeature_with_arguments", getInterface(), methodName, getClass().getSimpleName(), arguments(args));
     }
+    
+    /**
+     * Returns the Database File.
+     * @return Database File.
+     */
+    abstract protected File getFile();
     
     /**
      * Concat arguments in a StringBuffer.
