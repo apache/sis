@@ -141,9 +141,10 @@ public abstract class ReferencingServices extends SystemListener {
     public abstract FormattableObject toFormattableObject(IdentifiedObject object);
 
     /**
-     * Sets a geographic bounding box from the specified envelope. If the envelope contains
-     * a CRS, then the bounding box will be projected to a geographic CRS. Otherwise, the envelope
-     * is assumed already in appropriate CRS.
+     * Sets a geographic bounding box from the specified envelope.
+     * If the envelope contains a CRS which is not geographic, then the bounding box will be transformed
+     * to a geographic CRS (without datum shift if possible). Otherwise, the envelope is assumed already
+     * in a geographic CRS using (<var>longitude</var>, <var>latitude</var>) axis order.
      *
      * @param  envelope The source envelope.
      * @param  target The target bounding box.
@@ -175,8 +176,18 @@ public abstract class ReferencingServices extends SystemListener {
             throws TransformException;
 
     /**
-     * Sets a temporal extent with the value inferred from the given envelope,
-     * and optionally sets a geographic bounding box if a spatial component if found.
+     * Sets the geographic, vertical and temporal extents with the values inferred from the given envelope.
+     * If the given {@code target} has more geographic or vertical extents than needed (0 or 1), then the
+     * extraneous extents are removed.
+     *
+     * <p>Behavior regarding missing dimensions:</p>
+     * <ul>
+     *   <li>If the given envelope has no horizontal component, then all geographic extents are removed
+     *       from the given {@code target}. Non-geographic extents (e.g. descriptions and polygons) are
+     *       left unchanged.</li>
+     *   <li>If the given envelope has no vertical component, then the vertical extent is set to {@code null}.</li>
+     *   <li>If the given envelope has no temporal component, then the temporal extent is set to {@code null}.</li>
+     * </ul>
      *
      * @param  envelope The source envelope.
      * @param  target The target spatio-temporal extent.
