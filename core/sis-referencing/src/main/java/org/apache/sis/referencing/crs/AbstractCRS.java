@@ -306,7 +306,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * }
      *
      * However our attempts to apply this approach have not been conclusive.
-     * For an unknown reason, the unmarlshalled CS object was empty.</div>
+     * For an unknown reason, the unmarshalled CS object was empty.</div>
      *
      * @param  name The property name, used only in case of error message to format.
      * @throws IllegalStateException If the coordinate system has already been set.

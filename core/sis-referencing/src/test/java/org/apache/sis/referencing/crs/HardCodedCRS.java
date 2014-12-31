@@ -143,7 +143,14 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedCS.DAYS), HardCodedDatum.MODIFIED_JULIAN, HardCodedCS.DAYS);
 
     /**
-     * A (λ,φ,h,t) CRS where <var>h</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
+     * A (λ,φ,H) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
+     * This constant uses the "geoid" term as an approximation for the gravity related height.
+     */
+    public static final DefaultCompoundCRS GEOID_3D = new DefaultCompoundCRS(
+            properties("WGS 84 + height"), WGS84, GRAVITY_RELATED_HEIGHT);
+
+    /**
+     * A (λ,φ,H,t) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT} and <var>t</var> is {@link #TIME}.
      * This constant uses the "geoid" term as an approximation for the gravity related height.
      */
     public static final DefaultCompoundCRS GEOID_4D = new DefaultCompoundCRS(

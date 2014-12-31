@@ -985,6 +985,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @param  endIndex   The index after the last valid ordinate value of the corners.
      * @return The sub-envelope of dimension {@code endIndex - beginIndex}.
      * @throws IndexOutOfBoundsException If an index is out of bounds.
+     *
+     * @see org.apache.sis.referencing.CRS#getComponentAt(CoordinateReferenceSystem, int, int)
      */
     // Must be overridden in SubEnvelope
     public GeneralEnvelope subEnvelope(final int beginIndex, final int endIndex) throws IndexOutOfBoundsException {
