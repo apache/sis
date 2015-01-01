@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.metadata;
+package org.apache.sis.internal.referencing;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -37,7 +37,7 @@ import org.apache.sis.internal.jaxb.Context;
  * <p><strong>Do not rely on this API!</strong> It may change in incompatible way in any future release.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.5 (derived from geotk-2.0)
  * @version 0.5
  * @module
  */

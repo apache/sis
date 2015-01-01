@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.metadata;
+package org.apache.sis.internal.referencing;
 
 import org.opengis.referencing.cs.*;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.internal.metadata.ReferencingUtilities.*;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
 
 
 /**
  * Tests {@link ReferencingUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
- * @version 0.4
+ * @since   0.5 (derived from 0.4)
+ * @version 0.5
  * @module
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {

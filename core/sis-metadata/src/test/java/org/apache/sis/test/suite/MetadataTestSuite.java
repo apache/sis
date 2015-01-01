@@ -32,7 +32,6 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.NameMeaningTest.class,
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
-    org.apache.sis.internal.metadata.ReferencingUtilitiesTest.class,
     org.apache.sis.internal.metadata.OtherLocalesTest.class,
 
     // Classes using Java reflection.
