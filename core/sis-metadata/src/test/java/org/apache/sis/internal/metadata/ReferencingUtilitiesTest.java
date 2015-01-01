@@ -17,9 +17,6 @@
 package org.apache.sis.internal.metadata;
 
 import org.opengis.referencing.cs.*;
-import org.opengis.referencing.crs.*;
-import org.opengis.referencing.datum.*;
-import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -36,26 +33,6 @@ import static org.apache.sis.internal.metadata.ReferencingUtilities.*;
  * @module
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {
-    /**
-     * Tests {@link ReferencingUtilities#toURNType(Class)}.
-     */
-    @Test
-    public void testToURNType() {
-        assertEquals("crs",             toURNType(GeographicCRS       .class));
-        assertEquals("crs",             toURNType(ProjectedCRS        .class));
-        assertEquals("crs",             toURNType(VerticalCRS         .class));
-        assertEquals("crs",             toURNType(TemporalCRS         .class));
-        assertEquals("datum",           toURNType(GeodeticDatum       .class));
-        assertEquals("datum",           toURNType(VerticalDatum       .class));
-        assertEquals("datum",           toURNType(TemporalDatum       .class));
-        assertEquals("ellipsoid",       toURNType(Ellipsoid           .class));
-        assertEquals("meridian",        toURNType(PrimeMeridian       .class));
-        assertEquals("cs",              toURNType(EllipsoidalCS       .class));
-        assertEquals("cs",              toURNType(CartesianCS         .class));
-        assertEquals("axis",            toURNType(CoordinateSystemAxis.class));
-        assertEquals("referenceSystem", toURNType(ReferenceSystem     .class));
-    }
-
     /**
      * Tests {@link ReferencingUtilities#toWKTType(Class, Class)}.
      */

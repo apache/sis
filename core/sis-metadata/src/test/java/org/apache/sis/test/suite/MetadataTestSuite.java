@@ -30,6 +30,7 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.metadata.NameMeaningTest.class,
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
     org.apache.sis.internal.metadata.ReferencingUtilitiesTest.class,
     org.apache.sis.internal.metadata.OtherLocalesTest.class,
