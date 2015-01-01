@@ -33,7 +33,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
-import org.apache.sis.internal.metadata.ReferencingUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;

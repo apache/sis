@@ -35,7 +35,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
-import static org.apache.sis.internal.metadata.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;

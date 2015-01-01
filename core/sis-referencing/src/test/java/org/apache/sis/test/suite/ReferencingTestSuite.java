@@ -55,6 +55,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
+    org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
     org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class,
     org.apache.sis.referencing.IdentifiedObjectsTest.class,
