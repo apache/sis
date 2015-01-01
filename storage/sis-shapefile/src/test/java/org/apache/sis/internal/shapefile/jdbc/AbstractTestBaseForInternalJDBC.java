@@ -11,6 +11,7 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
+import org.apache.sis.storage.shapefile.ShapeFileTest;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.logging.Logging;
 import org.junit.Before;
@@ -43,7 +44,7 @@ abstract public class AbstractTestBaseForInternalJDBC extends TestCase {
      */
     @Before
     public void setup() throws URISyntaxException {
-        final URL url = AbstractTestBaseForInternalJDBC.class.getResource("SignedBikeRoute_4326_clipped.dbf");
+        final URL url = ShapeFileTest.class.getResource("SignedBikeRoute_4326_clipped.dbf");
         assertNotNull("The database file used for testing doesn't exist.", url);
         dbfFile = new File(url.toURI());
         assertTrue(dbfFile.isFile());
