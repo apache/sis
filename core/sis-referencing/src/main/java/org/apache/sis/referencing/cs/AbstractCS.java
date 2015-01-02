@@ -64,7 +64,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see DefaultCoordinateSystemAxis
@@ -325,8 +325,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
 
     /**
      * Returns a coordinate system equivalent to this one but with axes rearranged according the given convention.
-     * If this coordinate system is already compatible with the given convention, then this method returns
-     * {@code this}.
+     * If this coordinate system is already compatible with the given convention, then this method returns {@code this}.
      *
      * @param  convention The axes convention for which a coordinate system is desired.
      * @return A coordinate system compatible with the given convention (may be {@code this}).
@@ -341,9 +340,10 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         AbstractCS cs = derived.get(convention);
         if (cs == null) {
             switch (convention) {
-                case NORMALIZED:     cs = Normalizer.normalize(this, true);  break;
-                case RIGHT_HANDED:   cs = Normalizer.normalize(this, false); break;
-                case POSITIVE_RANGE: cs = Normalizer.shiftAxisRange(this);   break;
+                case NORMALIZED:              cs = Normalizer.normalize(this, true,  true);  break;
+                case CONVENTIONALLY_ORIENTED: cs = Normalizer.normalize(this, true,  false); break;
+                case RIGHT_HANDED:            cs = Normalizer.normalize(this, false, false); break;
+                case POSITIVE_RANGE:          cs = Normalizer.shiftAxisRange(this);          break;
                 default: throw new AssertionError(convention);
             }
             for (final AbstractCS existing : derived.values()) {
