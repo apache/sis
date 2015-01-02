@@ -72,10 +72,19 @@ public final strictfp class AbstractCSTest extends TestCase {
     @Test
     public void testForRightHandedConvention() {
         final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"),
-                HardCodedAxes.GEODETIC_LATITUDE, HardCodedAxes.TIME, HardCodedAxes.ALTITUDE, HardCodedAxes.GEODETIC_LONGITUDE);
+                HardCodedAxes.GEODETIC_LATITUDE,
+                HardCodedAxes.TIME,
+                HardCodedAxes.ALTITUDE,
+                HardCodedAxes.GEODETIC_LONGITUDE);
         verifyAxesConvention(AxesConvention.RIGHT_HANDED, cs,
-                HardCodedAxes.GEODETIC_LONGITUDE, HardCodedAxes.GEODETIC_LATITUDE, HardCodedAxes.ALTITUDE, HardCodedAxes.TIME);
-        assertSame("Right-handed CS shall be same as normalized.",
+                HardCodedAxes.GEODETIC_LONGITUDE,
+                HardCodedAxes.GEODETIC_LATITUDE,
+                HardCodedAxes.ALTITUDE,
+                HardCodedAxes.TIME);
+        assertSame("Right-handed CS shall be same as conventionally oriented for this test.",
+                cs.forConvention(AxesConvention.RIGHT_HANDED),
+                cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED));
+        assertSame("Right-handed CS shall be same as normalized for this test.",
                 cs.forConvention(AxesConvention.RIGHT_HANDED),
                 cs.forConvention(AxesConvention.NORMALIZED));
     }
@@ -89,14 +98,13 @@ public final strictfp class AbstractCSTest extends TestCase {
     public void testForNormalizedConvention() {
         /*
          * Some expected axes, identical to the ones in HardCodedAxes except for name or units.
+         * We verify the properties inferred by the constructor as a matter of principle, even
+         * if it is not really the purpose of this test.
          */
         final DefaultCoordinateSystemAxis EASTING = new DefaultCoordinateSystemAxis(
                 singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E", AxisDirection.EAST, SI.METRE);
         final DefaultCoordinateSystemAxis HEIGHT = new DefaultCoordinateSystemAxis(
                 singletonMap(NAME_KEY, "Height"), "h", AxisDirection.UP, SI.METRE);
-        /*
-         * Verifies the properties inferred by the constructor.
-         */
         assertEquals("minimumValue", Double.NEGATIVE_INFINITY, EASTING.getMinimumValue(), STRICT);
         assertEquals("maximumValue", Double.POSITIVE_INFINITY, EASTING.getMaximumValue(), STRICT);
         assertNull  ("rangeMeaning", EASTING.getRangeMeaning());
@@ -104,14 +112,29 @@ public final strictfp class AbstractCSTest extends TestCase {
         assertEquals("maximumValue", Double.POSITIVE_INFINITY, HEIGHT.getMaximumValue(), STRICT);
         assertNull  ("rangeMeaning", HEIGHT.getRangeMeaning());
         /*
-         * Test RIGHT_HANDED as a matter of principle before to test NORMALIZED.
+         * Now the actual test. First we opportunistically test RIGHT_HANDED and CONVENTIONALLY_ORIENTED
+         * before to test NORMALIZED, in order to test in increasing complexity.
          */
         final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"),
-                HardCodedAxes.TIME, HardCodedAxes.NORTHING, HardCodedAxes.WESTING, HardCodedAxes.HEIGHT_cm);
+                HardCodedAxes.TIME,
+                HardCodedAxes.NORTHING,
+                HardCodedAxes.WESTING,
+                HardCodedAxes.HEIGHT_cm);
         verifyAxesConvention(AxesConvention.RIGHT_HANDED, cs,
-                HardCodedAxes.NORTHING, HardCodedAxes.WESTING, HardCodedAxes.HEIGHT_cm, HardCodedAxes.TIME);
+                HardCodedAxes.NORTHING,
+                HardCodedAxes.WESTING,
+                HardCodedAxes.HEIGHT_cm,
+                HardCodedAxes.TIME);
+        verifyAxesConvention(AxesConvention.CONVENTIONALLY_ORIENTED, cs,
+                EASTING,
+                HardCodedAxes.NORTHING,
+                HardCodedAxes.HEIGHT_cm,
+                HardCodedAxes.TIME);
         verifyAxesConvention(AxesConvention.NORMALIZED, cs,
-                EASTING, HardCodedAxes.NORTHING, HEIGHT, HardCodedAxes.TIME);
+                EASTING,
+                HardCodedAxes.NORTHING,
+                HEIGHT,
+                HardCodedAxes.TIME);
     }
 
     /**

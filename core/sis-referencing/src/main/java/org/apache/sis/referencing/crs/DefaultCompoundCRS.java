@@ -333,8 +333,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     @Override
     public synchronized DefaultCompoundCRS forConvention(final AxesConvention convention) {
         ensureNonNull("convention", convention);
-        final Map<AxesConvention,AbstractCRS> derived = derived();
-        DefaultCompoundCRS crs = (DefaultCompoundCRS) derived.get(convention);
+        DefaultCompoundCRS crs = (DefaultCompoundCRS) getCached(convention);
         if (crs == null) {
             crs = this;
             boolean changed = false;
@@ -356,7 +355,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
                 }
                 crs = new DefaultCompoundCRS(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), newComponents);
             }
-            derived.put(convention, crs);
+            crs = (DefaultCompoundCRS) setCached(convention, crs);
         }
         return crs;
     }

@@ -23,10 +23,20 @@ import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+
+import static java.util.Collections.singletonMap;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 
 
 /**
@@ -154,6 +164,59 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return sameContent;
+    }
+
+    /**
+     * Derives a geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order
+     * in decimal degrees, relative to Greenwich. If no such CRS can be obtained of created,
+     * returns null.
+     *
+     * <p>This method is similar to the use of {@link AxesConvention#NORMALIZED} except for the following:</p>
+     * <ul>
+     *   <li>The datum prime meridian is set to Greenwich.</li>
+     *   <li>This method does not require an Apache SIS implementation of the CRS object.</li>
+     * </ul>
+     *
+     * @param  crs A source CRS, or {@code null}.
+     * @return A two-dimensional geographic CRS with standard axes, or {@code null} if none.
+     */
+    public static GeographicCRS toNormalizedGeographicCRS(CoordinateReferenceSystem crs) {
+        /*
+         * ProjectedCRS instances always have a GeographicCRS as their base.
+         * More generally, derived CRS are always derived from a base, which
+         * is often (but not necessarily) geographic.
+         */
+        while (crs instanceof GeneralDerivedCRS) {
+            crs = ((GeneralDerivedCRS) crs).getBaseCRS();
+        }
+        /*
+         * At this point we usually have a GeographicCRS, but it could also be a GeocentricCRS.
+         * In any case if the datum does not have the Greenwich prime meridian, we need to fix.
+         */
+        if (crs instanceof GeodeticCRS) {
+            GeodeticDatum datum = ((GeodeticCRS) crs).getDatum();
+            if (datum.getPrimeMeridian().getGreenwichLongitude() != 0) {
+                datum = new DefaultGeodeticDatum(singletonMap(NAME_KEY, datum.getName().getCode()),
+                        datum.getEllipsoid(), CommonCRS.WGS84.primeMeridian());
+            } else if (crs instanceof DefaultGeographicCRS) {
+                return ((DefaultGeographicCRS) crs).forConvention(AxesConvention.NORMALIZED);
+            }
+            final CoordinateSystem cs = CommonCRS.defaultGeographic().getCoordinateSystem();
+            if (crs instanceof GeographicCRS && Utilities.equalsIgnoreMetadata(cs, crs.getCoordinateSystem())) {
+                return (GeographicCRS) crs;
+            }
+            return new DefaultGeographicCRS(singletonMap(DefaultGeographicCRS.NAME_KEY, crs.getName().getCode()),
+                    datum, (EllipsoidalCS) cs);
+        }
+        if (crs instanceof CompoundCRS) {
+            for (final CoordinateReferenceSystem e : ((CompoundCRS) crs).getComponents()) {
+                final GeographicCRS candidate = toNormalizedGeographicCRS(e);
+                if (candidate != null) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
     }
 
     /**
