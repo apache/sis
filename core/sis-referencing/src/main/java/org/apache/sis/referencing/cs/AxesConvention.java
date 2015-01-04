@@ -22,37 +22,54 @@ import org.opengis.referencing.cs.AxisDirection; // For javadoc
 /**
  * High-level characteristics about the axes of a coordinate system.
  * This enumeration provides a convenient way to identify some common axes conventions like
- * (<var>longitude</var>, <var>latitude</var>) axis order or the [0 … 360]° range of longitude values
- * (instead than the more usual [-180 … +180]° range). Apache SIS Coordinate System objects can be made
+ * axis order or range of longitude values. Apache SIS Coordinate System objects can be made
  * compliant to a given convention by calls to their {@code forConvention(AxesConvention)} method.
- * The following table summarizes the coordinate system aspects that may be modified:
+ *
+ * <p>The following table summarizes the coordinate system aspects that may be modified by each enum value,
+ * with an example of change applied by the enum. Blank cells mean that the property is not changed by the
+ * enum value.</p>
  *
  * <table class="sis">
- *   <caption>Coordinate system properties concerned by enumeration values</caption>
+ *   <caption>Coordinate system properties changed by enum values</caption>
  *   <tr>
  *     <th>Property</th>
- *     <th>Enumeration values</th>
  *     <th>Example</th>
+ *     <th>{@linkplain #NORMALIZED}</th>
+ *     <th>{@linkplain #CONVENTIONALLY_ORIENTED}</th>
+ *     <th>{@linkplain #RIGHT_HANDED}</th>
+ *     <th>{@linkplain #POSITIVE_RANGE}</th>
  *   </tr>
  *   <tr>
  *     <td>Axis order</td>
- *     <td>{@link #NORMALIZED}, {@link #CONVENTIONALLY_ORIENTED}, {@link #RIGHT_HANDED}</td>
  *     <td>(<var>longitude</var>, <var>latitude</var>)</td>
+ *     <td style="text-align:center">✔</td>
+ *     <td style="text-align:center">✔</td>
+ *     <td style="text-align:center">✔</td>
+ *     <td></td>
  *   </tr>
  *   <tr>
  *     <td>Axis direction</td>
- *     <td>{@link #NORMALIZED}, {@link #CONVENTIONALLY_ORIENTED}</td>
  *     <td>({@linkplain AxisDirection#EAST east}, {@linkplain AxisDirection#NORTH north})</td>
+ *     <td style="text-align:center">✔</td>
+ *     <td style="text-align:center">✔</td>
+ *     <td></td>
+ *     <td></td>
  *   </tr>
  *   <tr>
  *     <td>Unit of measurement</td>
- *     <td>{@link #NORMALIZED}</td>
- *     <td>Angular degrees, metres</td>
+ *     <td>Angular degrees &amp; metres</td>
+ *     <td style="text-align:center">✔</td>
+ *     <td></td>
+ *     <td></td>
+ *     <td></td>
  *   </tr>
  *   <tr>
  *     <td>Range of values</td>
- *     <td>{@link #POSITIVE_RANGE}</td>
  *     <td>[0 … 360]° of longitude</td>
+ *     <td></td>
+ *     <td></td>
+ *     <td></td>
+ *     <td style="text-align:center">✔</td>
  *   </tr>
  * </table>
  *
@@ -97,7 +114,7 @@ public enum AxesConvention {
      *
      * <ul>
      *   <li>Axes are oriented and ordered as defined for {@link #CONVENTIONALLY_ORIENTED} coordinate systems.</li>
-     *   <li>Known units are normalized:
+     *   <li>Known units are normalized (this list may be expanded in future SIS versions):
      *     <ul>
      *       <li>Angular units are set to {@link javax.measure.unit.NonSI#DEGREE_ANGLE}.</li>
      *       <li>Linear units are set to {@link javax.measure.unit.SI#METRE}.</li>
@@ -123,7 +140,7 @@ public enum AxesConvention {
      * (e.g. {@code SOUTH} → {@code NORTH}):</p>
      *
      * <table class="sis">
-     *   <caption>Directions used by convention</caption>
+     *   <caption>Axis directions used by convention</caption>
      *   <tr>
      *     <th>Preferred {@link AxisDirection}</th>
      *     <th>Purpose</th>
