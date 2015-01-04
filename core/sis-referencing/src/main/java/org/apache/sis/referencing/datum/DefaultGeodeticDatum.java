@@ -35,11 +35,13 @@ import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
+import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
@@ -111,7 +113,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see DefaultEllipsoid
@@ -231,6 +233,10 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *   </tr>
      * </table>
      *
+     * If the given {@code properties} map contains Bursa-Wolf parameters, then for all of them the
+     * {@linkplain BursaWolfParameters#getTargetDatum() target datum} prime meridian shall be equal
+     * (ignoring metadata) to the {@code primeMeridian} parameter given to this constructor.
+     *
      * @param properties    The properties to be given to the identified object.
      * @param ellipsoid     The ellipsoid.
      * @param primeMeridian The prime meridian.
@@ -252,6 +258,11 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 ensureNonNullElement("bursaWolf", i, param);
                 param = param.clone();
                 param.verify();
+                final GeodeticDatum targetDatum = param.getTargetDatum();
+                if (targetDatum != null && !equalsIgnoreMetadata(primeMeridian, targetDatum.getPrimeMeridian())) {
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.MismatchedPrimeMeridianInBWP_1, primeMeridian.getName()));
+                }
                 bursaWolf[i] = param;
             }
         }
@@ -330,6 +341,10 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Returns all Bursa-Wolf parameters specified in the {@code properties} map at construction time.
      * For a discussion about what Bursa-Wolf parameters are, see the class javadoc.
+     *
+     * <p><b>Invariant:</b> for all Bursa-Wolf parameters, the {@linkplain BursaWolfParameters#getTargetDatum()
+     * target datum} prime meridian is equals (ignoring metadata) to this datum {@linkplain #getPrimeMeridian()
+     * prime meridian}.</p>
      *
      * @return The Bursa-Wolf parameters, or an empty array if none.
      */
