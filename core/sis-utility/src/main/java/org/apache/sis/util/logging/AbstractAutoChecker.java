@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.logging;
 
+import java.lang.reflect.Constructor;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.Objects;
@@ -124,6 +125,43 @@ abstract public class AbstractAutoChecker {
 
         if (logger.isLoggable(logLevel))
             format(logLevel, key, args);
+    }
+
+    /**
+     * Throw an exception by reflection.
+     * @param <E> Class of the exception to build.
+     * @param classException Class of the exception to build.
+     * @param message Exception message.
+     * @param cause Exception root cause.
+     * @throws E wished exception.
+     */
+    static public <E extends Throwable> void throwException(Class<E> classException, String message, Throwable cause) throws E {
+       throw(exception(classException, message, cause));
+    }
+    
+    /**
+     * Build an exception by reflection.
+     * @param <E> Class of the exception to build.
+     * @param classException Class of the exception to build.
+     * @param message Exception message.
+     * @param cause Exception root cause.
+     * @return E wished exception.
+     */
+    static private <E extends Throwable> E exception(Class<E> classException, String message, Throwable cause) {
+       Objects.requireNonNull(classException, "The class of the exception to throw cannot be null."); //$NON-NLS-1$
+       
+       try
+       {
+            Constructor<E> cstr = classException.getConstructor(String.class, Throwable.class);
+            E exception = cstr.newInstance(message, cause);
+            return(exception);
+       }
+       catch(Exception e) {
+            // Create the error message manually to avoid re-entrance in function of this class, that if it has a trouble here could have also a problem everywhere.
+            String format = "The exception of class {0} (message ''{1}'') can''t be created by reflection. An exception of class {2} happened with the message {3}.";
+            String msg = MessageFormat.format(format, classException.getName(), message, e.getClass().getName(), e.getMessage());
+            throw new RuntimeException(msg, e);
+       }
     }
     
     /**

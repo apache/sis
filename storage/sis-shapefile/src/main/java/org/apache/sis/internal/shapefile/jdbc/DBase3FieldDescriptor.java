@@ -29,7 +29,7 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
  * @version 0.5
  * @module
  */
-public class FieldDescriptor extends AbstractAutoChecker {
+public class DBase3FieldDescriptor extends AbstractAutoChecker {
     /** Field name. */
     private byte[] fieldName = new byte[11];
 
@@ -63,7 +63,7 @@ public class FieldDescriptor extends AbstractAutoChecker {
      * Create a field descriptor from the current position of the binary stream.
      * @param byteBuffer ByteBuffer.
      */
-    public FieldDescriptor(MappedByteBuffer byteBuffer) {
+    public DBase3FieldDescriptor(MappedByteBuffer byteBuffer) {
         // Field name.
         byteBuffer.get(fieldName);
 

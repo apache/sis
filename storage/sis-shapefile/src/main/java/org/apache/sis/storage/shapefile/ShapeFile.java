@@ -16,26 +16,15 @@
  */
 package org.apache.sis.storage.shapefile;
 
-import java.io.IOException;
-import java.nio.ByteOrder;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.io.FileInputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
 import java.util.Objects;
-import java.text.MessageFormat;
-import com.esri.core.geometry.Point;
-import com.esri.core.geometry.Polygon;
-import com.esri.core.geometry.Polyline;
-import com.esri.core.geometry.Geometry;
 
-import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.storage.DataStoreException;
-
+import org.apache.sis.internal.shapefile.InvalidShapefileFormatException;
+import org.apache.sis.internal.shapefile.ShapefileNotFoundException;
+import org.apache.sis.internal.shapefile.jdbc.DbaseFileNotFoundException;
+import org.apache.sis.internal.shapefile.jdbc.InvalidDbaseFileFormatException;
+import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 
 /**
  * Provides a ShapeFile Reader.
@@ -49,302 +38,37 @@ import org.opengis.feature.Feature;
  * @see <a href="http://ulisse.elettra.trieste.it/services/doc/dbase/DBFstruct.htm">dBASE III File Structure</a>
  */
 public class ShapeFile {
-    /** Name of the Geometry field. */
-    private static final String GEOMETRY_NAME = "geometry";
-
-    /** File code. */
-    private int fileCode; // big
-
-    /** File length. */
-    private int fileLength; // big // The value for file length is the total length of the file in 16-bit words
-
-    /** File version. */
-    private int version; // little
-
-    /** Shapefile type. */
-    private ShapeTypeEnum shapeType; // little
-
-    /** X Min. */
-    private double xmin; // little
-
-    /** Y Min. */
-    private double ymin; // little
-
-    /** X Max. */
-    private double xmax; // little
-
-    /** Y Max. */
-    private double ymax; // little
-
-    /** Z Min. */
-    private double zmin; // little
-
-    /** Z Max. */
-    private double zmax; // little
-
-    /** M Min. */
-    private double mmin; // little
-
-    /** M Max. */
-    private double mmax; // little
-
-    /** Features existing in the shapefile. */
-    private Map<Integer, Feature> featureMap = new HashMap<>();
-
+    /** Shapefile. */
+    private File shapeFile;
+    
+    /** Database file. */
+    private File databaseFile;
+    
     /**
      * Construct a Shapefile from a file.
      * @param shpfile file to read.
-     * @throws IOException if the file cannot be opened.
-     * @throws DataStoreException if the shapefile is not valid.
      */
-    public ShapeFile(String shpfile) throws IOException, DataStoreException {
+    public ShapeFile(String shpfile) {
         Objects.requireNonNull(shpfile, "The shapefile to load cannot be null.");
 
+        shapeFile = new File(shpfile);
+        
         // Deduct database file name.
         StringBuilder dbfFileName = new StringBuilder(shpfile);
         dbfFileName.replace(shpfile.length() - 3, shpfile.length(), "dbf");
-
-        try(FileInputStream fis = new FileInputStream(shpfile); FileChannel fc = fis.getChannel();) {
-            int fsize = (int) fc.size();
-            MappedByteBuffer rf = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
-
-            this.fileCode = rf.getInt();
-            rf.getInt();
-            rf.getInt();
-            rf.getInt();
-            rf.getInt();
-            rf.getInt();
-            this.fileLength = rf.getInt() * 2;
-
-            rf.order(ByteOrder.LITTLE_ENDIAN);
-            this.version = rf.getInt();
-            this.shapeType = ShapeTypeEnum.get(rf.getInt());
-            this.xmin = rf.getDouble();
-            this.ymin = rf.getDouble();
-            this.xmax = rf.getDouble();
-            this.ymax = rf.getDouble();
-            this.zmin = rf.getDouble();
-            this.zmax = rf.getDouble();
-            this.mmin = rf.getDouble();
-            this.mmax = rf.getDouble();
-            rf.order(ByteOrder.BIG_ENDIAN);
-
-            //final DefaultFeatureType featureType = getFeatureType(shpfile);
-
-            //dbf.getByteBuffer().get(); // should be 0d for field terminator
-            //loadFeatures(featureType, rf);
-        } 
+        databaseFile = new File(dbfFileName.toString());
     }
 
     /**
-     * Returns the feature count of the shapefile.
-     * @return Feature count.
+     * Find features corresponding to an SQL request SELECT * FROM database.
+     * @return Features
+     * @throws SQLInvalidStatementException if the SQL statement is invalid. 
+     * @throws DbaseFileNotFoundException if the database file has not been found.
+     * @throws ShapefileNotFoundException if the shapefile has not been found.
+     * @throws InvalidDbaseFileFormatException if the database file format is invalid.
+     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
      */
-    /*
-    public int getFeatureCount() {
-        return this.getRowCount();
-    }
-    */
-
-    /**
-     * Returns the feature Map.
-     * @return Feature Map.
-     */
-    public Map<Integer, Feature> getFeatureMap() {
-        return this.featureMap;
-    }
-    
-    /**
-     * Load the features of a shapefile.
-     * @param featureType Features descriptor.
-     * @param rf byte buffer mapper.
-     * @throws DataStoreException if a validation problem occurs.
-     */
-    /*
-    private void loadFeatures(DefaultFeatureType featureType, MappedByteBuffer rf) throws DataStoreException {
-        for (Integer i = 0; i < getRowCount(); i++) {
-            // insert points into some type of list
-            int RecordNumber = rf.getInt();
-            @SuppressWarnings("unused")
-            int ContentLength = rf.getInt();
-
-            rf.order(ByteOrder.LITTLE_ENDIAN);
-            int iShapeType = rf.getInt();
-            final Feature f = featureType.newInstance();
-
-            ShapeTypeEnum type = ShapeTypeEnum.get(iShapeType);
-
-            if (type == null)
-                throw new DataStoreException(MessageFormat.format("The shapefile feature type {0} doesn''t match to any known feature type.", featureType));
-
-            switch (type) {
-            case Point:
-                loadPointFeature(rf, f);
-                break;
-
-            case Polygon:
-                loadPolygonFeature(rf, f);
-                break;
-
-            case PolyLine:
-                loadPolylineFeature(rf, f);
-                break;
-
-            default:
-                throw new DataStoreException("Unsupported shapefile type: " + iShapeType);
-            }
-
-            rf.order(ByteOrder.BIG_ENDIAN);
-            // read in each Record and Populate the Feature
-
-            loadRowIntoFeature(f);
-
-            this.featureMap.put(RecordNumber, f);
-        }
-    }
-    */
-
-    /**
-     * Load point feature.
-     * @param rf Byte buffer.
-     * @param feature Feature to fill.
-     */
-    private void loadPointFeature(MappedByteBuffer rf, Feature feature) {
-        double x = rf.getDouble();
-        double y = rf.getDouble();
-        Point pnt = new Point(x, y);
-        feature.setPropertyValue(GEOMETRY_NAME, pnt);
-    }
-
-    /**
-     * Load polygon feature.
-     * @param rf Byte buffer.
-     * @param feature Feature to fill.
-     * @throws DataStoreException if the polygon cannot be handled.
-     */
-    private void loadPolygonFeature(MappedByteBuffer rf, Feature feature) throws DataStoreException {
-        /* double xmin = */rf.getDouble();
-        /* double ymin = */rf.getDouble();
-        /* double xmax = */rf.getDouble();
-        /* double ymax = */rf.getDouble();
-        int NumParts = rf.getInt();
-        int NumPoints = rf.getInt();
-
-        if (NumParts > 1) {
-            throw new DataStoreException("Polygons with multiple linear rings have not implemented yet.");
-        }
-
-        // read the one part
-        @SuppressWarnings("unused")
-        int Part = rf.getInt();
-        Polygon poly = new Polygon();
-
-        // create a line from the points
-        double xpnt = rf.getDouble();
-        double ypnt = rf.getDouble();
-        // Point oldpnt = new Point(xpnt, ypnt);
-        poly.startPath(xpnt, ypnt);
-
-        for (int j = 0; j < NumPoints - 1; j++) {
-            xpnt = rf.getDouble();
-            ypnt = rf.getDouble();
-            poly.lineTo(xpnt, ypnt);
-        }
-
-        feature.setPropertyValue(GEOMETRY_NAME, poly);
-    }
-
-    /**
-     * Load polyline feature.
-     * @param rf Byte buffer.
-     * @param feature Feature to fill.
-     */
-    private void loadPolylineFeature(MappedByteBuffer rf, Feature feature) {
-        /* double xmin = */rf.getDouble();
-        /* double ymin = */rf.getDouble();
-        /* double xmax = */rf.getDouble();
-        /* double ymax = */rf.getDouble();
-
-        int NumParts = rf.getInt();
-        int NumPoints = rf.getInt();
-
-        int[] NumPartArr = new int[NumParts + 1];
-
-        for (int n = 0; n < NumParts; n++) {
-            int idx = rf.getInt();
-            NumPartArr[n] = idx;
-        }
-        NumPartArr[NumParts] = NumPoints;
-
-        double xpnt, ypnt;
-        Polyline ply = new Polyline();
-
-        for (int m = 0; m < NumParts; m++) {
-            xpnt = rf.getDouble();
-            ypnt = rf.getDouble();
-            ply.startPath(xpnt, ypnt);
-
-            for (int j = NumPartArr[m]; j < NumPartArr[m + 1] - 1; j++) {
-                xpnt = rf.getDouble();
-                ypnt = rf.getDouble();
-                ply.lineTo(xpnt, ypnt);
-            }
-        }
-
-        feature.setPropertyValue(GEOMETRY_NAME, ply);
-    }
-
-    /**
-     * Create a feature descriptor.
-     * @param name Name of the field.
-     * @return The feature type.
-     */
-    /*
-    private DefaultFeatureType getFeatureType(final String name) {
-        Objects.requireNonNull(name, "The feature name cannot be null.");
-
-        final int n = getFieldsDescriptor().size();
-        final DefaultAttributeType<?>[] attributes = new DefaultAttributeType<?>[n + 1];
-        final Map<String, Object> properties = new HashMap<>(4);
-
-        // Load data field.
-        for (int i = 0; i < n; i++) {
-            properties.put(DefaultAttributeType.NAME_KEY, getFieldsDescriptor().get(i).getName());
-            attributes[i] = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
-        }
-
-        // Add geometry field.
-        properties.put(DefaultAttributeType.NAME_KEY, GEOMETRY_NAME);
-        attributes[n] = new DefaultAttributeType<>(properties, Geometry.class, 1, 1, null);
-
-        // Add name.
-        properties.put(DefaultAttributeType.NAME_KEY, name);
-        return new DefaultFeatureType(properties, false, null, attributes);
-    }
-    */
-
-    /**
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        StringBuilder s = new StringBuilder();
-        String lineSeparator = System.getProperty("line.separator", "\n");
-
-        s.append("FileCode: ").append(fileCode).append(lineSeparator);
-        s.append("FileLength: ").append(fileLength).append(lineSeparator);
-        s.append("Version: ").append(version).append(lineSeparator);
-        s.append("ShapeType: ").append(shapeType).append(lineSeparator);
-        s.append("xmin: ").append(xmin).append(lineSeparator);
-        s.append("ymin: ").append(ymin).append(lineSeparator);
-        s.append("xmax: ").append(xmax).append(lineSeparator);
-        s.append("ymax: ").append(ymax).append(lineSeparator);
-        s.append("zmin: ").append(zmin).append(lineSeparator);
-        s.append("zmax: ").append(zmax).append(lineSeparator);
-        s.append("mmin: ").append(mmin).append(lineSeparator);
-        s.append("mmax: ").append(mmax).append(lineSeparator);
-        s.append("------------------------").append(lineSeparator);
-
-        return s.toString();
+    public InputFeatureStream findAll() throws InvalidDbaseFileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException, SQLInvalidStatementException, InvalidShapefileFormatException {
+        return new InputFeatureStream(shapeFile, databaseFile);
     }
 }

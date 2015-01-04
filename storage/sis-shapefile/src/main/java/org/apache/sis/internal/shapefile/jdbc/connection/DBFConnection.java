@@ -24,9 +24,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import org.apache.sis.internal.shapefile.jdbc.ByteReader;
-import org.apache.sis.internal.shapefile.jdbc.FieldDescriptor;
-import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
+import org.apache.sis.internal.shapefile.jdbc.*;
 import org.apache.sis.internal.shapefile.jdbc.metadata.DBFDatabaseMetaData;
 import org.apache.sis.internal.shapefile.jdbc.resultset.*;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
@@ -47,23 +45,23 @@ public class DBFConnection extends AbstractConnection {
     private HashSet<DBFStatement> m_openedStatements = new HashSet<>(); 
     
     /** ByteReader. */
-    private ByteReader m_byteReader;
+    private Dbase3ByteReader m_byteReader;
     
     /**
      * Constructs a connection to the given database.
      * @param datafile Data file ({@code .dbf} extension).
      * @param byteReader Byte reader to use for reading binary content.
-     * @throws SQLException if the Database file cannot be found or is not a file. 
+     * @throws DbaseFileNotFoundException if the Database file cannot be found or is not a file. 
      */
-    public DBFConnection(final File datafile, ByteReader byteReader) throws SQLException {
+    public DBFConnection(final File datafile, Dbase3ByteReader byteReader) throws DbaseFileNotFoundException {
         // Check that file exists.
         if (!datafile.exists()) {
-            throw new SQLException(format(Level.WARNING, "excp.file_not_found", datafile.getAbsolutePath()));
+            throw new DbaseFileNotFoundException(format(Level.WARNING, "excp.file_not_found", datafile.getAbsolutePath()));
         }
         
         // Check that its not a directory.
         if (datafile.isDirectory()) {
-            throw new SQLException(format(Level.WARNING, "excp.directory_not_expected", datafile.getAbsolutePath()));
+            throw new DbaseFileNotFoundException(format(Level.WARNING, "excp.directory_not_expected", datafile.getAbsolutePath()));
         }
         
        databaseFile = datafile;
@@ -75,7 +73,7 @@ public class DBFConnection extends AbstractConnection {
      * Closes the connection to the database.
      */
     @Override
-    public void close() throws SQLClosingIOFailureException {
+    public void close() {
         if (isClosed())
             return;
         
@@ -88,7 +86,7 @@ public class DBFConnection extends AbstractConnection {
             
             m_byteReader.close();
         } catch (IOException e) {
-            throw new SQLClosingIOFailureException(format(e.getLocalizedMessage(), e), null, getFile());
+            format(Level.FINE, e.getMessage(), e);
         }
     }
 
@@ -289,7 +287,7 @@ public class DBFConnection extends AbstractConnection {
      * Returns the fields descriptors in their binary format.
      * @return Fields descriptors.
      */
-    public List<FieldDescriptor> getFieldsDescriptors() {
+    public List<DBase3FieldDescriptor> getFieldsDescriptors() {
         return m_byteReader.getFieldsDescriptors();
     }
 

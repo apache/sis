@@ -63,19 +63,17 @@ public class DBFDriver extends AbstractJDBC implements Driver {
      * @param  url  The path to a {@code .dbf} file.
      * @param  info Ignored in current implementation.
      * @return A connection to the given DBF file.
-     * @throws SQLException if this method can not create a connection to the given file.
+     * @throws InvalidDbaseFileFormatException if the database file format is invalid.
+     * @throws DbaseFileNotFoundException if the database file doesn't exist.
+     * @throws InvalidDbaseFileFormatException if the database file has a wrong format.
      */
     @Override
-    public Connection connect(final String url, @SuppressWarnings("unused") Properties info) throws SQLException {
+    @SuppressWarnings("resource") // the function opens a connection.
+    public Connection connect(final String url, @SuppressWarnings("unused") Properties info) throws InvalidDbaseFileFormatException, DbaseFileNotFoundException {
         Objects.requireNonNull(url, "the DBase3 url cannot be null");
         File file = new File(url);
         
-        try {
-            return new DBFConnection(file, new MappedByteReader(file));
-        }
-        catch(FileNotFoundException e) {
-            throw new SQLException(e.getMessage(), e);
-        }
+        return new DBFConnection(file, new MappedByteReader(file));
     }
 
     /**

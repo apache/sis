@@ -16,10 +16,9 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
-import java.io.*;
+import java.io.File;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteOrder;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -27,63 +26,28 @@ import org.apache.sis.internal.shapefile.jdbc.resultset.SQLIllegalColumnIndexExc
 import org.apache.sis.internal.shapefile.jdbc.resultset.SQLNoSuchFieldException;
 import org.opengis.feature.Feature;
 
+
 /**
  * Reader of a Database Binary content by the way of a {@link java.nio.MappedByteBuffer}
- * @author Marc LE BIHAN
+ *
+ * @author  Marc Le Bihan
+ * @version 0.5
+ * @since   0.5
+ * @module
  */
-class MappedByteReader extends AbstractByteReader {
-    /** The DBF file. */
-    private File file;
-    
-    /** Input Stream on the DBF. */
-    private FileInputStream fis;
-
-    /** File channel on the file. */
-    private FileChannel fc;
-
-    /** Buffer reader. */
-    private MappedByteBuffer df;
-    
-    /** Indicates if the byte buffer is closed. */
-    private boolean isClosed = false;
-    
+public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCloseable {
     /** List of field descriptors. */
-    private List<FieldDescriptor> m_fieldsDescriptors = new ArrayList<>();
+    private List<DBase3FieldDescriptor> m_fieldsDescriptors = new ArrayList<>();
     
     /**
      * Construct a mapped byte reader on a file.
      * @param dbase3File File.
-     * @throws FileNotFoundException the file name cannot be null.
      * @throws InvalidDbaseFileFormatException if the database seems to be invalid.
+     * @throws DbaseFileNotFoundException if the Dbase file has not been found. 
      */
-    public MappedByteReader(File dbase3File) throws FileNotFoundException, InvalidDbaseFileFormatException {
-        Objects.requireNonNull(dbase3File, "The file cannot be null.");
-        
-        this.file = dbase3File;
-        fis = new FileInputStream(dbase3File);
-        fc = fis.getChannel();
+    public MappedByteReader(File dbase3File) throws InvalidDbaseFileFormatException, DbaseFileNotFoundException {
+        super(dbase3File);
         loadDescriptor();
-    }
-
-    /**
-     * Close the MappedByteReader.
-     * @throws IOException if the close operation fails.
-     */
-    @Override public void close() throws IOException {
-        if (fc != null)
-            fc.close();
-
-        if (fis != null)
-            fis.close();
-        
-        isClosed = true;
-    }
-
-    /**
-     * @see org.apache.sis.internal.shapefile.jdbc.ByteReader#isClosed()
-     */
-    @Override public boolean isClosed() {
-        return isClosed;
     }
 
     /**
@@ -92,12 +56,12 @@ class MappedByteReader extends AbstractByteReader {
      */
     @Override public void loadRowIntoFeature(Feature feature) {
         // TODO: ignore deleted records
-        df.get(); // denotes whether deleted or current
+        getByteBuffer().get(); // denotes whether deleted or current
         // read first part of record
 
-        for (FieldDescriptor fd : m_fieldsDescriptors) {
+        for (DBase3FieldDescriptor fd : m_fieldsDescriptors) {
             byte[] data = new byte[fd.getLength()];
-            df.get(data);
+            getByteBuffer().get(data);
 
             int length = data.length;
             while (length != 0 && data[length - 1] <= ' ') {
@@ -117,7 +81,7 @@ class MappedByteReader extends AbstractByteReader {
      */
     @Override 
     public boolean nextRowAvailable() {
-        return df.hasRemaining();
+        return getByteBuffer().hasRemaining();
     }
 
     /**
@@ -127,14 +91,14 @@ class MappedByteReader extends AbstractByteReader {
     @Override 
     public Map<String, Object> readNextRowAsObjects() {
         // TODO: ignore deleted records
-        byte isDeleted = df.get(); // denotes whether deleted or current
+        byte isDeleted = getByteBuffer().get(); // denotes whether deleted or current
         // read first part of record
 
         HashMap<String, Object> fieldsValues = new HashMap<>();
 
-        for (FieldDescriptor fd : m_fieldsDescriptors) {
+        for (DBase3FieldDescriptor fd : m_fieldsDescriptors) {
             byte[] data = new byte[fd.getLength()];
-            df.get(data);
+            getByteBuffer().get(data);
 
             int length = data.length;
             while (length != 0 && data[length - 1] <= ' ') {
@@ -155,51 +119,48 @@ class MappedByteReader extends AbstractByteReader {
      */
     private void loadDescriptor() throws InvalidDbaseFileFormatException {
         try {
-            int fsize = (int) fc.size();
-            df = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
+            this.dbaseVersion = getByteBuffer().get();
+            getByteBuffer().get(this.dbaseLastUpdate);
     
-            this.dbaseVersion = df.get();
-            df.get(this.dbaseLastUpdate);
-    
-            df.order(ByteOrder.LITTLE_ENDIAN);
-            this.rowCount = df.getInt();
-            this.dbaseHeaderBytes = df.getShort();
-            this.dbaseRecordBytes = df.getShort();
-            df.order(ByteOrder.BIG_ENDIAN);
+            getByteBuffer().order(ByteOrder.LITTLE_ENDIAN);
+            this.rowCount = getByteBuffer().getInt();
+            this.dbaseHeaderBytes = getByteBuffer().getShort();
+            this.dbaseRecordBytes = getByteBuffer().getShort();
+            getByteBuffer().order(ByteOrder.BIG_ENDIAN);
             
-            df.get(reservedFiller1);
-            this.reservedIncompleteTransaction = df.get();
-            this.reservedEncryptionFlag = df.get();
-            df.get(reservedFreeRecordThread);
-            df.get(reservedMultiUser);
-            reservedMDXFlag = df.get();
+            getByteBuffer().get(reservedFiller1);
+            this.reservedIncompleteTransaction = getByteBuffer().get();
+            this.reservedEncryptionFlag = getByteBuffer().get();
+            getByteBuffer().get(reservedFreeRecordThread);
+            getByteBuffer().get(reservedMultiUser);
+            reservedMDXFlag = getByteBuffer().get();
             
             // Translate code page value to a known charset.
-            this.codePage = df.get();
+            this.codePage = getByteBuffer().get();
             this.charset = toCharset(this.codePage);             
             
-            df.get(reservedFiller2); 
+            getByteBuffer().get(reservedFiller2); 
     
-            while(df.position() < this.dbaseHeaderBytes - 1) {
-                FieldDescriptor fd = new FieldDescriptor(df); 
+            while(getByteBuffer().position() < this.dbaseHeaderBytes - 1) {
+                DBase3FieldDescriptor fd = new DBase3FieldDescriptor(getByteBuffer()); 
                 this.m_fieldsDescriptors.add(fd);
                 // loop until you hit the 0Dh field terminator
             }
             
-            this.descriptorTerminator = df.get();
+            this.descriptorTerminator = getByteBuffer().get();
 
             // If the last character read after the field descriptor isn't 0x0D, the expected mark has not been found and the DBF is corrupted.
             if (descriptorTerminator != 0x0D) {
-                String message = format(Level.WARNING, "excp.filedescriptor_problem", file.getAbsolutePath(), "Character marking the end of the fields descriptors (0x0D) has not been found.");
+                String message = format(Level.WARNING, "excp.filedescriptor_problem", getFile().getAbsolutePath(), "Character marking the end of the fields descriptors (0x0D) has not been found.");
                 throw new InvalidDbaseFileFormatException(message);
             }
         }
-        catch(IOException e) {
+        catch(BufferUnderflowException e) {
             // This exception doesn't denote a trouble of file opening because the file has been checked before 
             // the calling of this private function.
             // Therefore, an internal structure problem cause maybe a premature End of file or anything else, but the only thing
             // we can conclude is : we are not before a device trouble, but a file format trouble.
-            String message = format(Level.WARNING, "excp.filedescriptor_problem", file.getAbsolutePath(), e.getMessage());
+            String message = format(Level.WARNING, "excp.filedescriptor_problem", getFile().getAbsolutePath(), e.getMessage());
             throw new InvalidDbaseFileFormatException(message);
         }
     }
@@ -209,7 +170,7 @@ class MappedByteReader extends AbstractByteReader {
      * @return Fields descriptors.
      */
     @Override 
-    public List<FieldDescriptor> getFieldsDescriptors() {
+    public List<DBase3FieldDescriptor> getFieldsDescriptors() {
         return m_fieldsDescriptors;
     }
 
@@ -226,7 +187,7 @@ class MappedByteReader extends AbstractByteReader {
     }
 
     /**
-     * @see org.apache.sis.internal.shapefile.jdbc.ByteReader#getColumnCount()
+     * @see org.apache.sis.internal.shapefile.jdbc.Dbase3ByteReader#getColumnCount()
      */
     @Override 
     public int getColumnCount() {
@@ -245,8 +206,8 @@ class MappedByteReader extends AbstractByteReader {
     public int findColumn(String columnLabel, String sql) throws SQLNoSuchFieldException {
         // If the column name is null, no search is needed.
         if (columnLabel == null) {
-            String message = format(Level.WARNING, "excp.no_such_column_in_resultset", columnLabel, sql, file.getName());
-            throw new SQLNoSuchFieldException(message, sql, file, columnLabel);
+            String message = format(Level.WARNING, "excp.no_such_column_in_resultset", columnLabel, sql, getFile().getName());
+            throw new SQLNoSuchFieldException(message, sql, getFile(), columnLabel);
         }
         
         // Search the field among the fields descriptors.
@@ -257,8 +218,8 @@ class MappedByteReader extends AbstractByteReader {
         }
 
         // If we are here, we haven't found our field. Throw an exception.
-        String message = format(Level.WARNING, "excp.no_such_column_in_resultset", columnLabel, sql, file.getName());
-        throw new SQLNoSuchFieldException(message, sql, file, columnLabel);
+        String message = format(Level.WARNING, "excp.no_such_column_in_resultset", columnLabel, sql, getFile().getName());
+        throw new SQLNoSuchFieldException(message, sql, getFile(), columnLabel);
     }
     
     /**
@@ -268,10 +229,10 @@ class MappedByteReader extends AbstractByteReader {
      * @return Field Descriptor.
      * @throws SQLIllegalColumnIndexException if the index is out of bounds.
      */
-    private FieldDescriptor getField(int columnIndex, String sql) throws SQLIllegalColumnIndexException {
+    private DBase3FieldDescriptor getField(int columnIndex, String sql) throws SQLIllegalColumnIndexException {
         if (columnIndex < 1 || columnIndex > getColumnCount()) {
             String message = format(Level.WARNING, "excp.illegal_column_index", columnIndex, getColumnCount());
-            throw new SQLIllegalColumnIndexException(message, sql, file, columnIndex);
+            throw new SQLIllegalColumnIndexException(message, sql, getFile(), columnIndex);
         }
         
         return m_fieldsDescriptors.get(columnIndex-1);

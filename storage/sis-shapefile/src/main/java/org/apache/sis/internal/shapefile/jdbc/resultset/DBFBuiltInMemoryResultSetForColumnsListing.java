@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.apache.sis.internal.shapefile.jdbc.FieldDescriptor;
+import org.apache.sis.internal.shapefile.jdbc.DBase3FieldDescriptor;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 
 /**
@@ -32,10 +32,10 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  */
 public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInMemoryResultSet {
     /** Current field descriptor. */
-    private FieldDescriptor m_current;
+    private DBase3FieldDescriptor m_current;
     
     /** Iterator. */
-    private Iterator<FieldDescriptor> m_it;
+    private Iterator<DBase3FieldDescriptor> m_it;
     
     /** Column index. */
     private int m_columnIndex;
@@ -48,7 +48,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
      * @param stmt Statement.
      * @param fieldsDescriptors Fields descriptors.
      */
-    public DBFBuiltInMemoryResultSetForColumnsListing(DBFStatement stmt, List<FieldDescriptor> fieldsDescriptors) {
+    public DBFBuiltInMemoryResultSetForColumnsListing(DBFStatement stmt, List<DBase3FieldDescriptor> fieldsDescriptors) {
         super(stmt, "driver list columns in this DBase 3 file");
         m_it = fieldsDescriptors.iterator();
     }

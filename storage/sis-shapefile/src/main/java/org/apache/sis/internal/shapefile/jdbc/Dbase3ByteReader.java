@@ -30,7 +30,7 @@ import org.opengis.feature.Feature;
  * Database byte reader contract. Used to allow refactoring of core byte management of a DBase file.
  * @author Marc LE BIHAN
  */
-public interface ByteReader {
+public interface Dbase3ByteReader {
     /**
      * Close the MappedByteReader.
      * @throws IOException if the close operation fails.
@@ -47,7 +47,7 @@ public interface ByteReader {
      * Returns the fields descriptors in their binary format.
      * @return Fields descriptors.
      */
-    public List<FieldDescriptor> getFieldsDescriptors();
+    public List<DBase3FieldDescriptor> getFieldsDescriptors();
     
     /**
      * Returns the column index for the given column name.
