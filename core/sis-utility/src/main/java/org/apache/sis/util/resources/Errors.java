@@ -151,6 +151,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotSetPropertyValue_1 = 11;
 
         /**
+         * Can not transform envelope to a geodetic CRS.
+         */
+        public static final short CanNotTransformEnvelopeToGeodetic = 174;
+
+        /**
          * Circular reference.
          */
         public static final short CircularReference = 52;
@@ -464,6 +469,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedParameterDescriptor_1 = 146;
 
         /**
+         * Bursa-Wolf parameters shall target a datum having the “{0}” prime meridian.
+         */
+        public static final short MismatchedPrimeMeridianInBWP_1 = 175;
+
+        /**
          * Mismatched type for “{0}” property.
          */
         public static final short MismatchedPropertyType_1 = 154;
@@ -479,6 +489,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MissingAuthority_1 = 135;
 
         /**
+         * No horizontal dimension found in “{0}”.
+         */
+        public static final short MissingHorizontalDimension_1 = 169;
+
+        /**
          * “{0}” has no namespace.
          */
         public static final short MissingNamespace_1 = 163;
@@ -492,6 +507,16 @@ public final class Errors extends IndexedResourceBundle {
          * Missing scheme in URI.
          */
         public static final short MissingSchemeInURI = 62;
+
+        /**
+         * No spatial or temporal dimension found in “{0}”
+         */
+        public static final short MissingSpatioTemporalDimension_1 = 170;
+
+        /**
+         * No temporal dimension found in “{0}”
+         */
+        public static final short MissingTemporalDimension_1 = 171;
 
         /**
          * Missing value for “{0}” option.
@@ -512,6 +537,11 @@ public final class Errors extends IndexedResourceBundle {
          * Missing value in the “{0}” column.
          */
         public static final short MissingValueInColumn_1 = 65;
+
+        /**
+         * No vertical dimension found in “{0}”
+         */
+        public static final short MissingVerticalDimension_1 = 172;
 
         /**
          * Options “{0}” and “{1}” are mutually exclusive.
@@ -872,6 +902,11 @@ public final class Errors extends IndexedResourceBundle {
          * Feature named “{0}” has not yet been resolved.
          */
         public static final short UnresolvedFeatureName_1 = 164;
+
+        /**
+         * Coordinate reference system is unspecified.
+         */
+        public static final short UnspecifiedCRS = 173;
 
         /**
          * No format is specified for objects of class ‘{0}’.
