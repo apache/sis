@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.sql.Date;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;
@@ -293,7 +294,81 @@ public class DBFRecordBasedResultSet extends AbstractResultSet {
         DBFResultSetMataData meta = new DBFResultSetMataData(this); 
         return meta;
     }
+    
+    /**
+     * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractUnimplementedFeaturesOfResultSet#getObject(int)
+     */
+    @Override 
+    public Object getObject(int column) throws SQLConnectionClosedException, SQLIllegalColumnIndexException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {
+        try(DBFBuiltInMemoryResultSetForColumnsListing field = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(column, m_sql)) {
+            String fieldType;
+            
+            try
+            {
+                fieldType = field.getString("TYPE_NAME");
+            }
+            catch(SQLNoSuchFieldException e) {
+                // This is an internal trouble because the field type must be found.
+                throw new RuntimeException(e.getMessage(), e);
+            }
+            
+            switch(fieldType) {
+                case "AUTO_INCREMENT":
+                case "INTEGER":
+                    return getInt(column);
+                    
+                case "CHAR":
+                    return getString(column);
+                    
+                case "DATE":
+                    return getDate(column);
+                    
+                case "DOUBLE":
+                case "DECIMAL":
+                case "CURRENCY":
+                    return getDouble(column);
+                    
+                case "FLOAT":
+                    return getFloat(column);
+                    
+                case "BOOLEAN":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Boolean");
+                    
+                case "DATETIME":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on DateTime");
+                    
+                case "TIMESTAMP":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on TimeStamp");
+                    
+                case "MEMO":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Memo");
+                    
+                case "PICTURE":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Picture");
+                    
+                case "VARIFIELD":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on VariField");
+                    
+                case "VARIANT":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Variant");
+                    
+                case "UNKNOWN":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + fieldType);
+                    
+                default:
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + fieldType);
+            }            
+        }
+    }
 
+    /**
+     * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractResultSet#getObject(java.lang.String)
+     */
+    @Override 
+    public Object getObject(String columnLabel) throws SQLConnectionClosedException, SQLIllegalColumnIndexException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {
+        return getObject(findColumn(columnLabel));
+    }
+    
     /**
      * @see java.sql.ResultSet#getShort(java.lang.String)
      * @throws SQLConnectionClosedException if the connection is closed.
