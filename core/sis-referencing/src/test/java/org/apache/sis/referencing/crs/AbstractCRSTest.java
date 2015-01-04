@@ -33,16 +33,16 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn(org.apache.sis.referencing.cs.AbstractCSTest.class)
 public final strictfp class AbstractCRSTest extends TestCase {
     /**
-     * Tests {@link AbstractCRS#forConvention(AxesConvention)}.
+     * Tests {@link AbstractCRS#forConvention(AxesConvention)} with {@link AxesConvention#RIGHT_HANDED}.
      */
     @Test
-    public void testForConvention() {
+    public void testForRightHandedConvention() {
         final AbstractCRS toTest, expected, actual;
         toTest   =  new AbstractCRS(singletonMap(NAME_KEY, "My CRS"),
                     new AbstractCS (singletonMap(NAME_KEY, "My strange CS"),
@@ -54,8 +54,10 @@ public final strictfp class AbstractCRSTest extends TestCase {
 
         assertEquals("forConvention(RIGHT_HANDED)", expected, actual);
         assertSame(actual,   toTest  .forConvention(AxesConvention.RIGHT_HANDED));
+        assertSame(actual,   toTest  .forConvention(AxesConvention.CONVENTIONALLY_ORIENTED));
         assertSame(actual,   toTest  .forConvention(AxesConvention.NORMALIZED));
         assertSame(expected, expected.forConvention(AxesConvention.RIGHT_HANDED));
+        assertSame(expected, expected.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED));
         assertSame(expected, expected.forConvention(AxesConvention.NORMALIZED));
     }
 }
