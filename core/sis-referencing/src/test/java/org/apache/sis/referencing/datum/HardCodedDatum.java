@@ -35,7 +35,7 @@ import static org.opengis.referencing.IdentifiedObject.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class HardCodedDatum {
@@ -43,7 +43,20 @@ public final strictfp class HardCodedDatum {
      * Greenwich meridian (EPSG:8901), with angular measurements in decimal degrees.
      */
     public static final DefaultPrimeMeridian GREENWICH = new DefaultPrimeMeridian(
-            properties("Greenwich", "8901"), 0, NonSI.DEGREE_ANGLE);;
+            properties("Greenwich", "8901"), 0, NonSI.DEGREE_ANGLE);
+
+    /**
+     * Paris meridian (EPSG:8903), with angular measurements in grad.
+     */
+    public static final DefaultPrimeMeridian PARIS = new DefaultPrimeMeridian(
+            properties("Paris", "8903"), 2.5969213, NonSI.GRADE);
+
+    /**
+     * Old Paris meridian (EPSG:8914) defined as 2°20'13.95"E.
+     * Equivalent to 2.596898 grad (value given by EPSG).
+     */
+    public static final DefaultPrimeMeridian PARIS_RGS = new DefaultPrimeMeridian(
+            properties("Paris RGS", "8914"), 2 + (20 + 13.95/60)/60, NonSI.DEGREE_ANGLE);
 
     /**
      * WGS 1984 datum (EPSG:6326). Prime meridian is Greenwich.

@@ -34,10 +34,10 @@ import org.opengis.referencing.cs.AxisDirection; // For javadoc
  *   <tr>
  *     <th>Property</th>
  *     <th>Example</th>
- *     <th>{@linkplain #NORMALIZED}</th>
- *     <th>{@linkplain #CONVENTIONALLY_ORIENTED}</th>
- *     <th>{@linkplain #RIGHT_HANDED}</th>
- *     <th>{@linkplain #POSITIVE_RANGE}</th>
+ *     <th>{@linkplain #NORMALIZED              Normalized}</th>
+ *     <th>{@linkplain #CONVENTIONALLY_ORIENTED Conventionally<br>oriented}</th>
+ *     <th>{@linkplain #RIGHT_HANDED            Right<br>handed}</th>
+ *     <th>{@linkplain #POSITIVE_RANGE          Positive<br>range}</th>
  *   </tr>
  *   <tr>
  *     <td>Axis order</td>
@@ -109,8 +109,8 @@ import org.opengis.referencing.cs.AxisDirection; // For javadoc
  */
 public enum AxesConvention {
     /**
-     * Axes order, direction, units, prime meridian and range of ordinate values are forced to commonly used
-     * pre-defined values. This enum represents the following changes to apply on a coordinate system:
+     * Axes order, direction and units of measure are forced to commonly used pre-defined values.
+     * This enum represents the following changes to apply on a coordinate system:
      *
      * <ul>
      *   <li>Axes are oriented and ordered as defined for {@link #CONVENTIONALLY_ORIENTED} coordinate systems.</li>
@@ -123,10 +123,12 @@ public enum AxesConvention {
      *   </li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
-     * The rules for normalized coordinate systems may be adjusted in future SIS versions based on experience gained.
-     * For more predictable results, consider using the {@link #CONVENTIONALLY_ORIENTED} or {@link #RIGHT_HANDED} enum
-     * instead.</div>
+     * Current implementation does not normalize longitude values to the [-180 … +180]° range and does not set
+     * the {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPrimeMeridian() prime meridian} to
+     * Greenwich, because doing so would cause the conversion between old and new coordinate systems to be non-affine.
+     * Furthermore changing the prime meridian would be a datum change rather than a coordinate system change.
+     * However those rules may be adjusted in future SIS versions based on experience gained.
+     * For more predictable results, consider using {@link #CONVENTIONALLY_ORIENTED} or {@link #RIGHT_HANDED} instead.
      *
      * @see org.apache.sis.referencing.CommonCRS#normalizedGeographic()
      */
@@ -215,12 +217,12 @@ public enum AxesConvention {
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getRangeMeaning() range meaning}
      * are shifted to their ranges of positive values. The units of measurement and range period are unchanged.
      *
-     * <p><b>Usage:</b><br>
+     * {@section Usage}
      * The most frequent usage of this enum is for shifting longitude values from the [-180 … +180]° range
      * to the [0 … 360]° range. However this enum could also be used with climatological calendars if their
-     * time axis has a wrapround range meaning.</p>
+     * time axis has a wrapround range meaning.
      *
-     * <p><b>Caution:</b><br>
+     * <p><b>Caution:</b>
      * Conversions between the original Coordinate System and new CS compliant to this {@code POSITIVE_RANGE}
      * may not be affine. For example if an image was spanning the [0 … 360]° range of longitude values, then
      * a change to the [-180 … +180]° range requires cutting the right side (the side spanning the [180 … 360]°

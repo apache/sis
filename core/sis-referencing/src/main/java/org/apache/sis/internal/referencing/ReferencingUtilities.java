@@ -19,24 +19,24 @@ package org.apache.sis.internal.referencing;
 import java.util.Collection;
 import java.util.logging.Logger;
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
-import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 
 import static java.util.Collections.singletonMap;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
+import static org.apache.sis.internal.util.Numerics.epsilonEqual;
 
 
 /**
@@ -167,15 +167,11 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Derives a geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order
-     * in decimal degrees, relative to Greenwich. If no such CRS can be obtained of created,
-     * returns null.
+     * Derives a geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order in decimal degrees.
+     * If no such CRS can be obtained or created, returns {@code null}.
      *
-     * <p>This method is similar to the use of {@link AxesConvention#NORMALIZED} except for the following:</p>
-     * <ul>
-     *   <li>The datum prime meridian is set to Greenwich.</li>
-     *   <li>This method does not require an Apache SIS implementation of the CRS object.</li>
-     * </ul>
+     * <p>This method does not set the prime meridian to Greenwich.
+     * Meridian rotation, if needed, shall be performed by the caller.</p>
      *
      * @param  crs A source CRS, or {@code null}.
      * @return A two-dimensional geographic CRS with standard axes, or {@code null} if none.
@@ -189,16 +185,11 @@ public final class ReferencingUtilities extends Static {
         while (crs instanceof GeneralDerivedCRS) {
             crs = ((GeneralDerivedCRS) crs).getBaseCRS();
         }
-        /*
-         * At this point we usually have a GeographicCRS, but it could also be a GeocentricCRS.
-         * In any case if the datum does not have the Greenwich prime meridian, we need to fix.
-         */
         if (crs instanceof GeodeticCRS) {
-            GeodeticDatum datum = ((GeodeticCRS) crs).getDatum();
-            if (datum.getPrimeMeridian().getGreenwichLongitude() != 0) {
-                datum = new DefaultGeodeticDatum(singletonMap(NAME_KEY, datum.getName().getCode()),
-                        datum.getEllipsoid(), CommonCRS.WGS84.primeMeridian());
-            } else if (crs instanceof DefaultGeographicCRS) {
+            /*
+             * At this point we usually have a GeographicCRS, but it could also be a GeocentricCRS.
+             */
+            if (crs instanceof DefaultGeographicCRS) {
                 return ((DefaultGeographicCRS) crs).forConvention(AxesConvention.NORMALIZED);
             }
             final CoordinateSystem cs = CommonCRS.defaultGeographic().getCoordinateSystem();
@@ -206,7 +197,7 @@ public final class ReferencingUtilities extends Static {
                 return (GeographicCRS) crs;
             }
             return new DefaultGeographicCRS(singletonMap(DefaultGeographicCRS.NAME_KEY, crs.getName().getCode()),
-                    datum, (EllipsoidalCS) cs);
+                    ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
         }
         if (crs instanceof CompoundCRS) {
             for (final CoordinateReferenceSystem e : ((CompoundCRS) crs).getComponents()) {
@@ -217,6 +208,46 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the longitude value relative to the Greenwich Meridian, expressed in the specified units.
+     * This method provides the same functionality than {@link DefaultPrimeMeridian#getGreenwichLongitude(Unit)},
+     * but on arbitrary implementation.
+     *
+     * @param  primeMeridian The prime meridian from which to get the Greenwich longitude.
+     * @param  unit The unit for the prime meridian to return.
+     * @return The prime meridian in the given units.
+     *
+     * @see DefaultPrimeMeridian#getGreenwichLongitude(Unit)
+     */
+    public static double getGreenwichLongitude(final PrimeMeridian primeMeridian, final Unit<Angle> unit) {
+        if (primeMeridian instanceof DefaultPrimeMeridian) { // Maybe the user overrode some methods.
+            return ((DefaultPrimeMeridian) primeMeridian).getGreenwichLongitude(unit);
+        } else {
+            return primeMeridian.getAngularUnit().getConverterTo(unit).convert(primeMeridian.getGreenwichLongitude());
+        }
+    }
+
+    /**
+     * Returns {@code true} if the Greenwich longitude of the {@code actual} prime meridian is equals to the
+     * Greenwich longitude of the {@code expected} prime meridian. The comparison is performed in unit of the
+     * expected prime meridian.
+     *
+     * @param expected The expected prime meridian, or {@code null}.
+     * @param actual The actual prime meridian, or {@code null}.
+     * @return {@code true} if both prime meridian have the same Greenwich longitude,
+     *         in unit of the expected prime meridian.
+     */
+    public static boolean isGreenwichLongitudeEquals(final PrimeMeridian expected, final PrimeMeridian actual) {
+        if (expected == actual) {
+            return true;
+        }
+        if (expected == null || actual == null) {
+            return false;
+        }
+        return epsilonEqual(expected.getGreenwichLongitude(),
+                getGreenwichLongitude(actual, expected.getAngularUnit()));
     }
 
     /**
